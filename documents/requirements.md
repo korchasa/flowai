@@ -13,9 +13,9 @@
 
 ## 3. Functional requirements
 ### 3.1 FR-1: Task Management
-- **Description:** Execute guided development workflows via `/task-*` commands
+- **Description:** Execute guided development workflows via `/task-*` commands. The current set spans planning, execution, debugging, documentation, and helper flows (task-plan, task-execute, task-fix, task-commit, task-update-docs, task-review, task-github-issue-create, task-investigate, task-analyze-error, task-answer, task-create-command, task-create-run-ts-script, debug-server-error, alpha-task-build-claude).
 - **Use case scenario:** Developer runs `/task-plan` to break down complex features
-- **Acceptance criteria:** [x] 8 task commands available, [x] Each command provides structured workflow
+- **Acceptance criteria:** [x] 14 task commands available, [x] Each command provides structured workflow
 
 ### 3.2 FR-2: Code Quality Enforcement
 - **Description:** Apply coding standards automatically via rules system

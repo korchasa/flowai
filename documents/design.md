@@ -20,8 +20,8 @@ graph LR
 
 ## 3. Components
 ### 3.1 Task Commands System
-- **Purpose:** Execute structured development workflows
-- **Interfaces:** `/task-*` commands, outputs status/progress
+- **Purpose:** Execute structured development workflows that span planning, execution, debugging, documentation, CLI helpers, and commit prep.
+- **Interfaces:** `/task-*` commands (task-plan, task-execute, task-fix, task-commit, task-update-docs, task-review, task-github-issue-create, task-investigate, task-analyze-error, task-answer, task-create-command, task-create-run-ts-script, debug-server-error, alpha-task-build-claude); outputs status/progress to the user.
 - **Dependencies:** Cursor IDE command system, Git integration
 
 ### 3.2 Rules Engine
