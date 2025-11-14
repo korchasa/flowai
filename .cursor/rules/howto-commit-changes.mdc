@@ -4,6 +4,7 @@ globs:
 alwaysApply: false
 ---
 - Code must be checked with `./run check` before any commit
+- The AI assistant must not decide which files or changes to include or exclude from a commit: all verified non-PII changes in the working tree must be staged together for the current commit, and only when potential PII is present (secrets, tokens, personal data, etc.) should it pause and ask the user for explicit confirmation before proceeding.
 - Commit messages must fully comply with the 'Conventional Commits' v1.0.0 specification with strict profile, including the definition of breaking changes.
 - Package updates and the addition of new ones should be done in a separate commit before the main one.
 - Commit messages must be only in english.
