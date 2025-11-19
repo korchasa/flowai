@@ -1,0 +1,51 @@
+---
+description: Strict rules for Proof-of-Concept (PoC) mode
+globs: []
+alwaysApply: true
+---
+## Proof-of-Concept (PoC) mode
+
+### General principles
+- PoC is created **only** to validate a limited set of hypotheses and risks, not as a foundation for a production system.
+- All participants must understand that PoC code **may be completely discarded**, and this is a normal, acceptable outcome.
+- PoC has a strict timebox and implementation volume limit; any changes beyond the approved scope are rejected.
+- Basic team development standards (code style, security, testing, TDD, etc.) remain mandatory unless these rules explicitly allow relaxations.
+
+### Scope of responsibility
+- Before starting PoC, it is mandatory to document:
+  - hypothesis formulations,
+  - success criteria (minimum 1–3 measurable metrics),
+  - constraints on timelines, budget, and resources.
+- Any task not tied to hypothesis validation and success criteria is **prohibited**.
+
+### Architecture and code
+- Architecture should be as simple as possible (monolithic, minimum number of services and technologies).
+- It is prohibited to pre-design scalability, microservices, complex DevOps, and optimizations that are not needed for hypothesis validation.
+- Implementation simplifications are allowed, but:
+  - it is not allowed to introduce knowingly false solutions or "stubs" that distort hypothesis validation results,
+  - it is not allowed to deliberately violate basic standards of quality, security, and confidentiality.
+- PoC code is considered **disposable**: migration to production is possible only after separate design and rework.
+
+### Quality, testing, and observability
+- Only tests that protect logic parts critical to hypotheses are written; the goal is not maximum coverage, but reliable validation.
+- Minimum sufficient logging and error handling are mandatory to interpret PoC results.
+- Performance optimization is performed only if it directly affects the tested hypothesis or success criteria.
+
+### Data and security
+- Security and privacy priority **is not reduced** due to PoC status.
+- Work with real user data is allowed only in the absence of alternatives and with compliance to all security and legal requirements.
+- Confidential data, secrets, and keys are not stored in the repository, logs, and build artifacts.
+- Integrations with external systems are replaced by test environments, sandbox environments, or strictly controlled API keys where possible.
+
+### PoC process and completion
+- Responsible parties for technical results and business results are assigned in advance for PoC.
+- PoC results are documented: which hypotheses are confirmed/refuted, what limitations and risks are identified.
+- Upon PoC completion, one of the following decisions is made:
+  - stop (idea rejected),
+  - conduct another PoC with refined hypotheses,
+  - proceed to design and implementation of a production solution, **without** continuing PoC code development.
+
+### Strictly prohibited in PoC
+- Use PoC as a "backdoor" to introduce unagreed architecture or technologies into the production system.
+- Replace real validations with "demo effect" where the demonstration result does not match the solution's actual capabilities.
+- Ignore established success criteria by retroactively substituting them with more convenient formulations.

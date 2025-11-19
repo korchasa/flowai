@@ -1,21 +1,41 @@
-# Task Execution
+# Task Ask
 
 ## Overview
-Answer the user's question.
+Analyze and answer a user's question in Autonomous Mode by carefully reading documentation and inspecting the codebase, without modifying any project files.
 
 ## Steps
-1. **Preparation**
-   - Read all docs in `./documents`
-   - Review the task in `./documents/whiteboard.md`
+1. **Understand the question**
+   - Read all available docs in `./documents` (SRS, SDS, file structure, manuals, whiteboard) if they exist
+   - Clarify and restate the user's question in a more precise and structured form
+   - Ask the user follow-up questions if the task, constraints, or expected output are not fully clear
+   - Explicitly list assumptions, missing details, and the intended scope of the answer
 
-2. **Restate the question**
-   - Restate the user's question in your own words.
+2. **Documentation-based analysis**
+   - Map the question to relevant requirements in `documents/requirements.md` (SRS)
+   - Map the question to relevant design decisions in `documents/design.md` (SDS)
+   - Consider architecture, constraints, and interfaces described in the documentation
 
-3. **Answer the question**
-   - Answer the question.
+3. **Code analysis**
+   - Locate relevant files, modules, and functions in the codebase
+   - Read and understand current implementation and its behavior in the context of the question
+   - Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies
+
+4. **Answer synthesis**
+   - Formulate a clear, structured answer in the language of the original question
+   - Explain how the existing code and design relate to the question and requirements
+   - Highlight limitations, edge cases, and potential improvements where relevant
+   - If critical uncertainties remain, clearly state them and explicitly ask the user for additional input instead of guessing
+
+5. **Constraints**
+   - Do **not** modify any files in the repository
+   - Do **not** use tools or commands that change the working tree or project configuration
+   - Use tools only in read-only ways (e.g., reading files, searching code, inspecting diagnostics)
 
 ## Checklist
-- [ ] Docs read and task reviewed
-- [ ] Question restated
-- [ ] Question answered
-- [ ] Code is not modified
+- [ ] Documentation read (where available) and question clarified
+- [ ] Necessary clarification questions asked to the user (if needed)
+- [ ] Relevant code located and analyzed
+- [ ] Answer formulated and structured
+- [ ] No file modifications performed
+
+
