@@ -17,6 +17,8 @@ alwaysApply: true
 - Strict mode (`strict: true`)
 - Interfaces > types for objects
 - Union types over enums for simple cases
+- Pass all class dependencies via constructors or factory methods.
+- Pass dependencies for specific method calls via method parameters.
 - Avoid `any`; use `unknown` for truly unknown types
 - `readonly` for immutable data
 - Use utility types (`Partial`, `Pick`, etc.)
@@ -39,6 +41,7 @@ export async function fetchData(
   // ...
 }
 ```
+
 
 #### Testing
 - Don't change prod code to pass tests
