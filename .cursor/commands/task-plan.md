@@ -12,6 +12,7 @@ Create a clear, critiqued plan in `./documents/whiteboard.md` with options analy
 ## Steps
 1. **Read all docs in `./documents`**
 2. **Analyze and restate the user query**
+If the user query contains an internal contradiction, tell the user about it and ask them to resolve it.
 3. **Collect all relevant information**
    - Analyze the codebase
    - Make a search on the internet
