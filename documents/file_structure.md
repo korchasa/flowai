@@ -3,13 +3,12 @@
 ## Root Directory
 - `.cursor/` - Cursor IDE configuration, rules, and commands.
 - `documents/` - Project documentation (SRS, SDS, etc.).
-- `run.ts` - Deno-based project maintenance script.
 - `README.md` - Project entry point and overview.
 - `.gitignore` - Git ignore rules.
 
 ## .cursor Directory
-- `commands/` - Executable task workflows (11 commands).
-  - `task-*.md` - Standard task definitions (analyze-error, commit, plan, review, etc.).
+- `commands/` - Executable task workflows (12 commands).
+  - `task-*.md` - Standard task definitions (check, commit, plan, investigate, etc.).
   - `alpha-task-*.md` - Experimental task definitions.
 - `rules/` - Context rules and guides (20 rules total).
   - `rules-code-style-*/` - Language-specific coding standards (4 variants).

@@ -25,17 +25,17 @@
 - **Interfaces:** Markdown files starting with `task-` or `alpha-task-`.
 - **Dependencies:** User input, existing codebase.
 - **Key Files:**
-  - `task-analyze-error.md`: Error analysis workflow.
   - `task-answer.md`: Question answering with codebase context.
   - `task-check.md`: Quick project validation.
   - `task-commit.md`: Conventional Commits workflow.
   - `task-create-command.md`: Command creation utility.
   - `task-create-run-ts-script.md`: Maintenance script generation.
+  - `task-do.md`: General task execution workflow.
   - `task-execute.md`: Task implementation workflow.
-  - `task-fix.md`: Error fixing and testing.
-  - `task-investigate.md`: Deep codebase investigation.
+  - `task-github-issue-create.md`: GitHub issue creation workflow.
+  - `task-investigate-autonomous.md`: Autonomous investigation workflow.
+  - `task-investigate-step-by-step.md`: Step-by-step investigation workflow.
   - `task-plan.md`: Task planning and breakdown.
-  - `task-review.md`: Code review workflow.
   - `task-update-docs.md`: Documentation maintenance.
   - `alpha-task-build-claude-md.md`: Experimental Claude.md generation.
 
@@ -57,11 +57,12 @@
 - **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
 - **Dependencies:** Updated by `task-update-docs`.
 
-### 3.4 Project Maintenance (`run.ts`)
+### 3.4 Project Maintenance
 - **Purpose:** Provide automated project maintenance and quality assurance.
-- **Interfaces:** Deno-based CLI script with commands (check, test, dev).
-- **Dependencies:** Deno runtime, project source files.
-- **Key Features:**
+- **Status:** Planned - maintenance script to be implemented.
+- **Planned Interfaces:** Deno-based CLI script with commands (check, test, dev).
+- **Planned Dependencies:** Deno runtime, project source files.
+- **Planned Features:**
   - Automated code checking and validation
   - Test execution framework
   - Development server management
