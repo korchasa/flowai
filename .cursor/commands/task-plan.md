@@ -1,3 +1,7 @@
+---
+description: Create critiqued plan in whiteboard.md with options analysis and Definition of Done
+---
+
 # Task Planning
 
 ## Overview

@@ -1,3 +1,7 @@
+---
+description: Create comprehensive run.ts script for project automation with check command stages
+---
+
 # Create Run Script
 
 ## Overview

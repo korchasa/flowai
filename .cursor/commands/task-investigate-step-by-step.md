@@ -1,3 +1,7 @@
+---
+description: Iterative root cause analysis with strict user control and sequential experiments
+---
+
 # Investigate (Step-by-Step)
 
 ## Overview

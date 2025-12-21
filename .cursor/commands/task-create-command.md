@@ -1,3 +1,7 @@
+---
+description: Interactive process to create custom command files following project structure
+---
+
 # Create New Command
 
 ## Overview

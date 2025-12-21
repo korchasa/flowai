@@ -1,3 +1,7 @@
+---
+description: Run project check suite and analyze failures to determine root causes without fixes
+---
+
 # Check and Analyze
 
 ## Overview

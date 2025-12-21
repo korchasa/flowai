@@ -1,3 +1,7 @@
+---
+description: Guided commit workflow following Conventional Commits and repository rules
+---
+
 # Commit Workflow
 
 ## Overview

@@ -1,3 +1,7 @@
+---
+description: Generate optimized AGENTS.md from .cursor/rules/*/RULE.md files following best practices
+---
+
 # Build AGENTS.md
 
 ## Overview

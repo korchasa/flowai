@@ -1,3 +1,7 @@
+---
+description: Diagnose root cause using BED-LLM and discrete-outcome experiments without code modifications
+---
+
 # Investigate Issue
 
 ## Overview

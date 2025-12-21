@@ -1,3 +1,7 @@
+---
+description: Synchronize project documentation with latest code changes using concise writing
+---
+
 # Update Documentation
 
 ## Overview

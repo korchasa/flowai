@@ -1,3 +1,7 @@
+---
+description: Execute task in Autonomous Mode using strict TDD with documentation updates
+---
+
 # Task Execution
 
 ## Overview
