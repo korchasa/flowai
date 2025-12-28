@@ -20,7 +20,7 @@ Guided flow to prepare, commit, and publish changes following Conventional Commi
    - Review all non-document files that changed in this iteration, confirm they reflect the intended behavior, and ensure they are ready to ship together with the documentation.
 
 3. **Change review**
-   - Study all changes since the last commit (use `GIT_PAGER=cat`).
+   - Study all changes since the last commit (ALWAYS use `GIT_PAGER=cat`).
    - Ensure package updates (add/update) are isolated in their own commit.
    - Stage every verified non-PII change (source, tests, assets, documentation) so the resulting commit covers the full working tree state, not just docs.
    - Do **not** decide or ask the user which of the changed files to include or exclude: inclusion is non-interactive and must cover all verified non-PII changes; if you detect potential PII (secrets, tokens, personal data, etc.) in the diff, stop, show the relevant hunks to the user, and ask for explicit confirmation before continuing.
@@ -38,7 +38,7 @@ Guided flow to prepare, commit, and publish changes following Conventional Commi
 - [ ] Project checked with `./run check`
 - [ ] `./documents` reviewed and updated to reflect current state (English-only, compact, structured)
 - [ ] Facts extracted from changes and compressed without losing meaning
-- [ ] Changes reviewed using `GIT_PAGER=cat`
+- [ ] Changes reviewed
 - [ ] Dependency changes isolated in dedicated commit
 - [ ] All verified non-PII changes staged; potential PII reviewed with the user and explicitly confirmed
 - [ ] Commit complies with Conventional Commits (strict)
