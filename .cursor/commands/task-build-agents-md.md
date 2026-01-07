@@ -8,12 +8,12 @@ description: Generate optimized AGENTS.md from .cursor/rules/*/RULE.md files fol
 Generate optimized `AGENTS.md` in project root from `.cursor/rules/*/RULE.md` files following best practices.
 
 ## Important Restrictions
-- **NO SCRIPTS**: Do not create, use, or suggest any scripts for this task
-- **Manual execution only**: All steps must be performed manually using available tools
-- **No automation**: Do not automate file reading, processing, or writing operations
-- **Direct tool usage**: Use file reading and writing tools directly to perform each step
+- **Manual Tool Usage**: Execute all steps using standard file manipulation tools.
+- **Direct Execution**: Perform reading and writing operations directly.
+- **No Scripts**: Avoid creating or running temporary scripts for this task.
 
-## CLAUDE.md Best Practices
+## Content Guidelines (for AGENTS.md)
+*Reflects best practices from `CLAUDE.md` to ensure the generated file is optimized for AI agents.*
 - **Concise**: File prepended to every prompt; minimize token usage
 - **Declarative bullets**: Short bullet points, not narrative paragraphs
 - **Specific**: "Use 2-space indentation" > "Format code properly"
@@ -44,6 +44,15 @@ Generate optimized `AGENTS.md` in project root from `.cursor/rules/*/RULE.md` fi
    - Preserve markdown structure and formatting
 
 4. **Build AGENTS.md structure**
+   Construct the file using the following order:
+   1. Main content (`main/RULE.md`)
+   2. Documentation Standards (`docs-*/RULE.md`)
+   3. Command Rules (`rules-run-commands/RULE.md`)
+   4. General Rules (`rules-*/RULE.md`)
+   5. How-To Guides (`howto-*/RULE.md`)
+   6. Other (`other/RULE.md`)
+
+   *Visual Layout:*
    ```
    [content from main/RULE.md if exists]
    [content from docs-*/RULE.md files]

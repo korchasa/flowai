@@ -74,6 +74,7 @@ Interactive process to create or update the Product Vision document (`documents/
         -   If no, proceed to the interview for a fresh start.
 
 2.  **Interview Phase (Conduct one by one)**
+    -   **Important**: Save the current state of answers to `documents/whiteboard.md` after each step to prevent data loss.
     -   **Vision Statement**: Ask about the target customer, their needs, the product category, key benefits, and how it differs from competitors. Aim to fill the template: "For [target], who [need], [Product] is [category] that [benefit]. Unlike [competitor], our product [differentiator]."
     -   **Target Audience**: Ask for details on user personas, market segments, and who the product is *not* for (anti-personas).
     -   **Problem Statement**: Ask about the current state, why existing solutions fail, and any evidence of the problem.

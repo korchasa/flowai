@@ -18,12 +18,11 @@ Synchronize project documentation in `./documents` with the latest code changes 
    - Apply combined extractive + abstractive summarization: extract ALL facts then compress without losing facts
    - Prioritize essential information; remove fluff and redundancies
    - Use compact formats: lists, tables, YAML, Mermaid diagrams
-   - Optimize lexicon: remove stopwords; use shorter synonyms
+   - Optimize lexicon: use concise language
    - Apply entity compression: after first mention use common abbreviations
    - Avoid filler phrases; use direct language
    - Structure clearly with headings and sections
-   - Lemmatize when applicable
-   - Prefer special symbols, numerals, ligatures where relevant
+   - Prefer special symbols, numerals where relevant
 
 ## Checklist
 - [ ] Changes since last commit analyzed

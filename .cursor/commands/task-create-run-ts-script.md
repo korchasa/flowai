@@ -16,7 +16,7 @@ Create a comprehensive `run.ts` script for project automation following the proj
 2. **Generate run.ts file**
    - Create `run.ts` in the project root
    - Implement as a single, independently executable TypeScript file
-   - Base implementation on Deno framework (<https://deno.land>)
+   - Base implementation on Deno framework (https://deno.lang/)
 
 3. **Implement required commands**
    - `init` - Install project dependencies
@@ -25,13 +25,13 @@ Create a comprehensive `run.ts` script for project automation following the proj
    - `dev` - Run project in development mode
 
 4. **Implement check command with stages**
-   - `check` command with sequential stages:
+   - `check` command with sequential stages (adapt to project needs):
      - `clean` - Clean the project
      - `compile` - Compile the project
-     - `comment-scan` - Scan for TODOs, FIXMEs, debug prints, and linter suppressions
-     - `format` - Format code with project formatter
-     - `lint` - Lint code with project linter
-     - `test` - Run all unit, integration, and acceptance tests
+     - `comment-scan` - Scan for TODOs, FIXMEs, debug prints and linter supppressions
+     - `format` - Format code
+     - `lint` - Lint code
+     - `test` - Run tests
      - `analyze` - Run static analysis
 
 5. **Test and validate**
