@@ -10,7 +10,8 @@ Guided flow to prepare, commit, and publish changes following Conventional Commi
 ## Todo List
 1. **Pre-flight checks**
    - Run `./run check` if the project wasn’t checked since the last modification.
-   - Review the current `./documents` tree (except `whiteboard.md`) and catalogue the facts that need reflection in the docs; inspect changes since the last commit (`GIT_PAGER=cat` or similar) to understand what must be captured.
+   - **All git commands must disable pager** by setting `GIT_PAGER=cat` (e.g., `GIT_PAGER=cat git log`, `GIT_PAGER=cat git diff`, etc.) to ensure non-interactive output.
+   - Review the current `./documents` tree (except `whiteboard.md`) and catalogue the facts that need reflection in the docs; inspect changes since the last commit (`GIT_PAGER=cat git diff` or similar) to understand what must be captured.
 
 2. **Workspace sync**
    - Update every doc under `./documents` (excluding `whiteboard.md`) to describe the current project state in English; remove historical changelog content and focus on present facts.
