@@ -9,7 +9,7 @@ Execute a task in Autonomous Mode using strict TDD, keeping documentation update
 
 ## Todo List
 1. **Preparation**
-   - Read all docs in `./documents`
+   - Read all relevant documentation
    - Review the task in `./documents/whiteboard.md`
 
 2. **Implement with TDD**
