@@ -1,78 +1,51 @@
 ---
-description: Interactive process to create custom command files following project structure
+description: Create or improve an IDE command
 ---
 
 # Create New Command
 
 ## Overview
-Interactive process to create a custom command file (e.g., `task-*.md`) based on user needs, following the project's standard command structure.
+You are an expert Prompt Engineer. Your goal is to create a robust, reusable custom command file (e.g., `*.md`) in the `.cursor/commands/` directory. You must ensure the command is atomic, logically sound, and follows the project's architectural standards.
+
+## ToDo List
+
+### Step 1: Contextual Analysis & Discovery
+1.  **Search & Verify**: Scan `.cursor/commands/` for existing files. If a similar command exists, ask the user if they want to **update** the existing one or create a **variation**.
+2.  **Determine Scope**: Is this for a specific technology (e.g., React, Python), a workflow (e.g., Refactoring, Testing), or a project-wide standard?
+3.  **Chain-of-Thought**: Before drafting, briefly describe your understanding of the intent and the logic you plan to implement.
+
+### Step 2: Mandatory Q&A Session
+If the request is not fully defined, **STOP**. You must collect:
+-   **Core Goal**: What is the "Definition of Done"?
+-   **Trigger/Context**: When should the user run this? (e.g., "After creating a new API route").
+-   **Manual Workflow**: "What are the exact steps you take when doing this manually?"
+-   **Edge Cases**: What should the AI avoid changing or breaking?
+
+### Step 3: Drafting the Command (Standard Template)
+The output file MUST strictly follow this Markdown structure:
+
+```markdown
+---
+description: [Action-oriented description for the AI agent]
+---
+
+# [Title: e.g., Task: Refactor Component]
+
+## Overview
+[Purpose and high-level logic]
+
+## Constraints & Rules
+- [Rule 1: e.g., "Never modify existing exported types"]
+- [Rule 2: e.g., "Always use functional components"]
+- **Language Policy**: Code/Commits in English. Chat/Analysis in User's Language.
 
 ## Todo List
+1. **[Phase Name]**
+   - [Specific action]
+   - [Verification sub-step]
+2. **[Phase Name]**
+   ...
 
-1. **Analyze Request & Context**
-   - Understand what the user wants to automate.
-   - Check if a similar command already exists in `.cursor/commands/` to avoid duplicates.
-   - Identify the scope (personal vs. project-wide).
-
-2. **Conduct Q&A Session (If Needed)**
-   - If the user's request is vague or missing details, **STOP** and ask clarifying questions.
-   - Key information needed:
-     - **Goal**: What is the primary purpose?
-     - **Steps**: What are the specific actionable steps?
-     - **Validation**: How do we know it's done? (Checklist items)
-     - **Constraints**: Any specific rules or restricted actions?
-     - **Output**: specific format required?
-   - *Example Question*: "What are the exact steps you usually take to perform this task manually?"
-
-3. **Draft Command Structure**
-   - The command **MUST** follow this standard template:
-     ```markdown
-     ---
-     description: [Active verb] [Action description]
-     ---
-
-     # [Command Title]
-
-     ## Overview
-     [Brief description of the command's purpose]
-
-     ## Constraints
-     - [Constraint 1]
-     - [Constraint 2]
-
-     ## Todo List
-     1. **[Step 1 Name]**
-        - [Action detail]
-        - [Action detail]
-     2. **[Step 2 Name]**
-        ...
-
-     ## Checklist
-     - [ ] [Verification item 1]
-     - [ ] [Verification item 2]
-     ```
-
-4. **Evaluate and Refine (Prompt Engineering Check)**
-   - Critique the draft against these criteria before saving:
-     - **Positive Constraints**: Rephrase "Do not X" to "Keep X unchanged" or "Use Y only".
-     - **Cognitive Load**: Ensure steps are atomic and don't require complex "mental math".
-     - **Language Policy**:
-       - Code, Commits, Documentation: **English**.
-       - Chat, Plans, Analysis: **User's Language** (or Hybrid).
-     - **No Hidden Rules**: All constraints must be in the "Todo List" or a dedicated "Constraints" section, not hidden in body text.
-     - **Technical Abstraction**: Move low-level shell commands (like `mkdir`, `git`) to tools or scripts; keep the prompt focused on logic/decisions.
-   - Adjust the draft to fix any violations.
-
-5. **Finalize**
-   - Create the file in the appropriate directory (default: `.cursor/commands/`).
-   - Inform the user of the command name and how to use it (e.g., "Run by opening the file or typing `@.cursor/commands/task-name.md`").
-
-## Checklist
-- [ ] User's intent is clearly understood (Q&A performed if needed).
-- [ ] Command file structure matches the standard project template (Frontmatter, Overview, Todo List, Checklist).
-- [ ] Filename uses kebab-case `task-name.md` convention.
-- [ ] **Prompt Engineering Audit Passed**:
-  - [ ] No unnecessary negative constraints.
-  - [ ] No hidden instructions.
-  - [ ] No cognitive overload.
-- [ ] File created.
+## Validation Checklist
+- [ ] [Measurable outcome 1]
+- [ ] [Measurable outcome 2]
