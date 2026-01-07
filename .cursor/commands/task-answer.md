@@ -24,16 +24,19 @@ Analyze and answer a user's question in Autonomous Mode by carefully reading doc
    - Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies
 
 4. **Answer synthesis**
-   - Formulate a clear, structured answer in the language of the original question (reports should be in the language of the query unless user explicitly requests otherwise)
    - Explain how the existing code and design relate to the question and requirements
    - Highlight limitations, edge cases, and potential improvements where relevant
    - If critical uncertainties remain, clearly state them and explicitly ask the user for additional input instead of guessing
    - For large responses (>1000 characters), save detailed analysis to `documents/whiteboard.md` and provide summary in chat
 
-5. **Constraints**
-   - Do **not** modify any files in the repository except `documents/whiteboard.md` for large responses
-   - Do **not** use tools or commands that change the working tree or project configuration
-   - Use tools only in read-only ways (e.g., reading files, searching code, inspecting diagnostics) unless saving to whiteboard
+5. **Constraints & Rules**
+   - **Language Policy**:
+     - Code, technical terms, and quotes from codebase: **English**.
+     - Analysis, explanations, and chat responses: **User's Query Language** (or Russian if undefined).
+   - **Read-Only Mode**:
+     - Keep all repository files unchanged (except `documents/whiteboard.md`).
+     - Use tools in read-only mode (reading files, searching code).
+     - **DO NOT** modify project configuration or code.
 
 ## Checklist
 - [ ] Documentation read (where available) and question clarified

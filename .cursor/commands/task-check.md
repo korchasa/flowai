@@ -28,19 +28,19 @@ Run the project's check suite (`./run check`) and analyze any failures to determ
      - Distinguish between transient issues (flaky tests) and permanent failures.
 
 4. **Report Findings**
-   - Summarize the health of the project.
+   - Summarize the health of the project in the Chat.
    - List all found issues with their determined causes.
-   - **DO NOT** attempt to fix any errors.
+   - **DO NOT** attempt to fix any errors (Report only).
    - Provide recommendations for next steps (e.g., "Run linter auto-fix", "Update test case").
 
 ## Checklist
 - [ ] `./run check` executed
 - [ ] Output captured and analyzed
 - [ ] Root causes identified for all failures
-- [ ] Report generated
+- [ ] Report generated in Chat
 - [ ] No code changes applied
 
-## Output Format
+## Output Format (in Chat)
 - **Status**: [PASS/FAIL]
 - **Summary**: Brief overview of the check results.
 - **Detailed Analysis**:

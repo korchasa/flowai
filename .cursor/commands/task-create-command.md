@@ -11,7 +11,7 @@ Interactive process to create a custom command file (e.g., `task-*.md`) based on
 
 1. **Analyze Request & Context**
    - Understand what the user wants to automate.
-   - Check if a similar command already exists.
+   - Check if a similar command already exists in `.cursor/commands/` to avoid duplicates.
    - Identify the scope (personal vs. project-wide).
 
 2. **Conduct Q&A Session (If Needed)**
@@ -27,10 +27,18 @@ Interactive process to create a custom command file (e.g., `task-*.md`) based on
 3. **Draft Command Structure**
    - The command **MUST** follow this standard template:
      ```markdown
+     ---
+     description: [Active verb] [Action description]
+     ---
+
      # [Command Title]
 
      ## Overview
      [Brief description of the command's purpose]
+
+     ## Constraints
+     - [Constraint 1]
+     - [Constraint 2]
 
      ## Todo List
      1. **[Step 1 Name]**
@@ -44,11 +52,16 @@ Interactive process to create a custom command file (e.g., `task-*.md`) based on
      - [ ] [Verification item 2]
      ```
 
-4. **Generate and Review**
-   - Create the content following the drafted structure.
-   - Ensure the filename follows the pattern `task-[action]-[object].md` (e.g., `task-analyze-logs.md`).
-   - Validate that the "Todo List" provides clear, atomic instructions for the agent.
-   - Validate that the "Checklist" allows for objective verification.
+4. **Evaluate and Refine (Prompt Engineering Check)**
+   - Critique the draft against these criteria before saving:
+     - **Positive Constraints**: Rephrase "Do not X" to "Keep X unchanged" or "Use Y only".
+     - **Cognitive Load**: Ensure steps are atomic and don't require complex "mental math".
+     - **Language Policy**:
+       - Code, Commits, Documentation: **English**.
+       - Chat, Plans, Analysis: **User's Language** (or Hybrid).
+     - **No Hidden Rules**: All constraints must be in the "Todo List" or a dedicated "Constraints" section, not hidden in body text.
+     - **Technical Abstraction**: Move low-level shell commands (like `mkdir`, `git`) to tools or scripts; keep the prompt focused on logic/decisions.
+   - Adjust the draft to fix any violations.
 
 5. **Finalize**
    - Create the file in the appropriate directory (default: `.cursor/commands/`).
@@ -56,7 +69,10 @@ Interactive process to create a custom command file (e.g., `task-*.md`) based on
 
 ## Checklist
 - [ ] User's intent is clearly understood (Q&A performed if needed).
-- [ ] Command file structure matches the standard project template (Overview, Todo List, Checklist).
+- [ ] Command file structure matches the standard project template (Frontmatter, Overview, Todo List, Checklist).
 - [ ] Filename uses kebab-case `task-name.md` convention.
-- [ ] Content is actionable and clear.
+- [ ] **Prompt Engineering Audit Passed**:
+  - [ ] No unnecessary negative constraints.
+  - [ ] No hidden instructions.
+  - [ ] No cognitive overload.
 - [ ] File created.

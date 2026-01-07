@@ -55,7 +55,7 @@ Diagnose the root cause without production code modifications using BED-LLM and 
 - Do not reveal chain-of-thought; report only final conclusions and brief rationale.
 
 ## Rollback and cleanliness policy
-- Any diagnostic change lives in hypothesis/* and is rolled back when falsified.
+- Any diagnostic change should live in temporary files or a separate branch (e.g., `hypothesis/*`) and must be rolled back when falsified.
 - Any product change lives in fix/* and merges only on approval.
 - Between experiments the worktree is clean (empty git status).
 
