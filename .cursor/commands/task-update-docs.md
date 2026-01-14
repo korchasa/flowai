@@ -1,34 +1,38 @@
 ---
-description: Synchronize project documentation with latest code changes using concise writing
+description: Synchronize project documentation with latest code changes
 ---
 
 # Update Documentation
 
 ## Overview
-Synchronize project documentation in `./documents` with the latest code changes using concise, high-information writing.
+Synchronize project documentation in `./documents` with the latest code changes.
 
-## Todo List
-1. **Preparation**
-   - Read all existing docs in `./documents`
-   - Study all changes since the last commit (use `| cat` for git operations)
+## Context
+<context>
+The documentation serves as the project's memory. It must be kept accurate and concise.
+</context>
 
-2. **Update docs**
-   - Update all docs in `./documents` (except `./documents/whiteboard.md`) to reflect current state
-   - English only; remove history/changelogs; keep only current state
-   - Apply combined extractive + abstractive summarization: extract ALL facts then compress without losing facts
-   - Prioritize essential information; remove fluff and redundancies
-   - Use compact formats: lists, tables, YAML, Mermaid diagrams
-   - Optimize lexicon: use concise language
-   - Apply entity compression: after first mention use common abbreviations
-   - Avoid filler phrases; use direct language
-   - Structure clearly with headings and sections
-   - Prefer special symbols, numerals where relevant
+## Rules & Constraints
+<rules>
+1. **Conciseness**: Use combined extractive + abstractive summarization.
+2. **English Only**: Content must be in English (except `whiteboard.md`).
+3. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+</rules>
 
-## Checklist
-- [ ] Changes since last commit analyzed
-- [ ] All docs (except whiteboard) updated to current state
-- [ ] English-only content ensured
-- [ ] Facts preserved; content compressed
-- [ ] Compact formats used where possible
-- [ ] Language optimized; fillers removed
-- [ ] Clear structure with headings
+## Instructions
+<step_by_step>
+1. **Initialize**
+   - Use `todo_write` to create a plan based on these steps.
+2. **Preparation**
+   - Read existing docs and analyze git changes since last commit.
+3. **Update docs**
+   - Update all docs (except whiteboard) using compact formats (lists, tables, Mermaid).
+   - Eliminate filler phrases and prioritize direct language.
+</step_by_step>
+
+## Verification
+<verification>
+- [ ] All docs (except whiteboard) updated to current state.
+- [ ] Facts preserved; content compressed.
+- [ ] Compact formats used where possible.
+</verification>
