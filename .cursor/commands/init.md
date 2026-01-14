@@ -1,22 +1,22 @@
 ---
-description: Analyze project structure and tooling to generate AGENT.md
+description: Analyze project structure and tooling to generate AGENTS.md
 ---
 
 # Task: Initialize Project Agent Documentation
 
 ## Overview
-Analyze the project (or specified folder) to identify tooling and architectural decisions, then generate an `AGENT.md` file.
+Analyze the project (or specified folder) to identify tooling and architectural decisions, then generate an `AGENTS.md` file.
 
 ## Context
 <context>
-The user wants to bootstrap an AI agent's understanding of the project. The agent needs to autonomously explore the codebase, recognize the technology stack, understand the directory structure, and infer key architectural patterns. This information must be synthesized into a clear, structured `AGENT.md` file that serves as a reference for future agent interactions.
+The user wants to bootstrap an AI agent's understanding of the project. The agent needs to autonomously explore the codebase, recognize the technology stack, understand the directory structure, and infer key architectural patterns. This information must be synthesized into a clear, structured `AGENTS.md` file that serves as a reference for future agent interactions.
 </context>
 
 ## Rules & Constraints
 <rules>
 1. **No Hallucinations**: Only document tooling and architecture that is explicitly found in the codebase.
-2. **Standard Format**: The `AGENT.md` file must follow a consistent Markdown structure.
-3. **Overwrite Safety**: If `AGENT.md` exists, ask for confirmation before overwriting or append/merge if appropriate (default to asking).
+2. **Standard Format**: The `AGENTS.md` file must follow a consistent Markdown structure.
+3. **Overwrite Safety**: If `AGENTS.md` exists, ask for confirmation before overwriting or append/merge if appropriate (default to asking).
 4. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
 </rules>
 
@@ -40,7 +40,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Read** `README.md` (if it exists) to understand the stated project purpose and architecture.
    - **Infer** patterns based on structure (e.g., `pages/` + `app/` -> Next.js App Router; `controllers/` + `models/` -> MVC).
 
-4. **Synthesize AGENT.md Content**
+4. **Synthesize AGENTS.md Content**
    - Draft the content starting with the **Mandatory Header**:
      ```markdown
      # YOU MUST
@@ -69,18 +69,18 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      - `## Architecture`: Description of the folder structure and inferred design patterns.
      - `## Key Decisions`: Any explicit architectural choices found in docs or inferred (e.g., "Uses Tailwind for styling", "Uses Jest for testing").
 
-5. **Create AGENT.md**
+5. **Create AGENTS.md**
    - **Write** the file to the project root (or specified folder).
-   - `file_path`: `AGENT.md` (or `[target_dir]/AGENT.md`).
+   - `file_path`: `AGENTS.md` (or `[target_dir]/AGENTS.md`).
 
 6. **Verify**
-   - Check that `AGENT.md` exists and contains the analyzed information.
+   - Check that `AGENTS.md` exists and contains the analyzed information.
 </step_by_step>
 
 ## Verification
 <verification>
 [ ] Tooling analysis covers major package managers and config files.
 [ ] Architecture analysis identifies key directories and patterns.
-[ ] `AGENT.md` is created in the correct location.
-[ ] `AGENT.md` contains "Tooling Stack" and "Architecture" sections.
+[ ] `AGENTS.md` is created in the correct location.
+[ ] `AGENTS.md` contains "Tooling Stack" and "Architecture" sections.
 </verification>
