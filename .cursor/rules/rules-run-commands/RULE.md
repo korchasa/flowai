@@ -3,11 +3,11 @@ description:
 globs:
 alwaysApply: true
 ---
-## CLI COMMANDS FOR `./run`
+## CLI COMMANDS VIA `deno task`
 
 ### Usage:
 ```
-./run.ts <command> [args...]
+deno task <command> [args...]
 ```
 
 ### Commands:

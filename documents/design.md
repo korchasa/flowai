@@ -37,7 +37,7 @@
   - `execute.md`: Task implementation workflow.
   - `init.md`: Project initialization workflow.
   - `investigate.md`: Investigation workflow.
-  - `migrate-run-ts.md`: Migration workflow for run.ts.
+  - `migrate-run-ts.md`: Migration workflow to Deno tasks.
   - `plan.md`: Task planning and breakdown.
   - `update-docs.md`: Documentation maintenance.
   - `write-skill.md`: Skill documentation workflow.
@@ -62,10 +62,10 @@
 
 ### 3.4 Project Maintenance
 - **Purpose:** Provide automated project maintenance and quality assurance.
-- **Status:** Planned - maintenance script to be implemented.
-- **Planned Interfaces:** Deno-based CLI script with commands (check, test, dev).
-- **Planned Dependencies:** Deno runtime, project source files.
-- **Planned Features:**
+- **Status:** Implemented - Deno tasks and scripts available.
+- **Interfaces:** Deno tasks (`deno task check`, `deno task test`, `deno task dev`).
+- **Dependencies:** Deno runtime, scripts in `./scripts/`.
+- **Features:**
   - Automated code checking and validation
   - Test execution framework
   - Development server management

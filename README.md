@@ -22,10 +22,10 @@ Use these commands by typing `/<command>` in Cursor chat:
 
 - `/answer` - Answer questions with context from codebase
 - `/build-agents-md` - Generate optimized AGENTS.md from rules files
-- `/check` - **Quick check**: run `./run check` + read-only error analysis without code modifications
+- `/check` - **Quick check**: run `deno task check` + read-only error analysis without code modifications
 - `/commit` - Git commit workflow following Conventional Commits
 - `/create-command` - Create a new Cursor command
-- `/create-run-ts-script` - Create the `./run` maintenance script
+- `/create-run-ts-script` - Create the Deno task scripts
 - `/do` - General task execution workflow
 - `/execute` - Execute and implement planned tasks
 - `/github-issue-create` - Create GitHub issues using GODS framework
@@ -53,8 +53,8 @@ Key Principles:
   - two documentation schema options: cline-bank (7 files) and simplified (Software Requirements Specification + Software Design Specification, 4 files);
   - documentation in a compact style, and there is a dedicated task for its compacting;
 - saving the current task into a file (`./documents/whiteboard.md`) for transfer between chats and stages;
-- maximum automatic regression control: the entire project verification reduces to a single command (`./run check`), so the agent cannot perform only part of the checks; the same command is used in CI;
-- a single list for invoking all project commands (`./run`).
+- maximum automatic regression control: the entire project verification reduces to a single command (`deno task check`), so the agent cannot perform only part of the checks; the same command is used in CI;
+- a single list for invoking all project commands (`deno task`).
 
 ## Available Components
 
@@ -63,10 +63,10 @@ Task commands provide guided workflows for specific development activities (use 
 
 - `answer.md` - Answer questions with context
 - `build-agents-md.md` - Generate optimized AGENTS.md from rules files
-- `check.md` - **Quick check**: run `./run check` + read-only error analysis without code modifications. Proposes solutions to user
+- `check.md` - **Quick check**: run `deno task check` + read-only error analysis without code modifications. Proposes solutions to user
 - `commit.md` - Commit workflow following Conventional Commits (strict)
 - `create-command.md` - Create a new Cursor command
-- `create-run-ts-script.md` - Create the `./run` maintenance script
+- `create-run-ts-script.md` - Create the Deno task scripts
 - `do.md` - General task execution workflow
 - `execute.md` - Execute and implement planned tasks
 - `github-issue-create.md` - Create GitHub issues using GODS framework
@@ -108,7 +108,7 @@ Rules that govern development practices and code quality:
 
 ### Project Maintenance
 - `main-example.mdc` - Example main configuration file
-- `run-commands.mdc` - CLI commands description (`./run.ts`)
+- `run-commands.mdc` - CLI commands description (`deno task`)
 
 ## License
 

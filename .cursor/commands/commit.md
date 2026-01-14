@@ -25,7 +25,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Pre-flight checks**
-   - Run `./run check` if the project wasn’t checked since the last modification.
+   - Run `deno task check` if the project wasn’t checked since the last modification.
    - Review `./documents` tree and catalogue facts that need reflection.
    - Inspect changes since last commit using `GIT_PAGER=cat git diff`.
 3. **Workspace sync**
@@ -47,7 +47,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 
 ## Verification
 <verification>
-- [ ] Project checked with `./run check`.
+- [ ] Project checked with `deno task check`.
 - [ ] `./documents` reviewed and updated to reflect current state.
 - [ ] Facts extracted from changes and compressed.
 - [ ] Changes reviewed and staged.

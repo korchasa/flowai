@@ -30,12 +30,12 @@ Implementation command focused on Test-Driven Development and documentation sync
    - Update `whiteboard.md` progress.
    - Add/update relevant comments.
 4. **Quality gate**
-   - Run `./run check` and fix all issues until clean.
+   - Run `deno task check` and fix all issues until clean.
 </step_by_step>
 
 ## Verification
 <verification>
 - [ ] Work done via TDD with incremental changes.
 - [ ] Progress reflected in `whiteboard.md`.
-- [ ] `./run check` passes cleanly.
+- [ ] `deno task check` passes cleanly.
 </verification>

@@ -50,9 +50,10 @@
 
 ### 3.5 Project Maintenance (FR-5)
 - **Description:** The system must provide automated project maintenance capabilities through scripts.
-- **Use case scenario:** Developer runs `./run.ts check` to validate project integrity. Script performs linting, testing, and other checks.
+- **Use case scenario:** Developer runs `deno task check` to validate project integrity. Tasks perform linting, testing, and other checks.
 - **Acceptance criteria:**
-  - [x] Deno-based maintenance script (`run.ts`) with command-line interface
+  - [x] Deno tasks configured in `deno.json`
+  - [x] Task scripts stored in `./scripts/` and invoked via `deno task`
   - [x] Support for check, test, and dev commands
   - [x] Automated quality assurance workflows
 

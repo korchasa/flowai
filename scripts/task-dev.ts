@@ -1,0 +1,28 @@
+import { runCommandsInParallel } from "./utils.ts";
+import type { CommandSpec } from "./utils.ts";
+
+export function buildDevCommands(): CommandSpec[] {
+  return [
+    {
+      cmd: "deno",
+      args: ["fmt", "--watch", "scripts", "deno.json"],
+    },
+    {
+      cmd: "deno",
+      args: ["lint", "--watch", "scripts"],
+    },
+  ];
+}
+
+async function main(): Promise<void> {
+  await runCommandsInParallel(buildDevCommands());
+}
+
+if (import.meta.main) {
+  try {
+    await main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    Deno.exit(1);
+  }
+}
