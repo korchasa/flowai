@@ -51,6 +51,7 @@
   - `docs-schema-*/`: Documentation templates and schemas (RDS-SDS, Cline-bank).
   - `rules-run-commands/`: Command execution rules.
   - `main-example/`: Core project rules and guidelines.
+  - `skill-creator/`: Skill authoring guide with templates and scripts.
 
 ### 3.3 Project Documentation (`documents/`)
 - **Purpose:** Serve as the long-term memory of the project.

@@ -9,7 +9,7 @@
 ## .cursor Directory
 - `commands/` - Executable task workflows (12 commands).
   - `task-*.md` - Standard task definitions (check, commit, plan, investigate, etc.).
-- `rules/` - Context rules and guides (20 rules total).
+- `rules/` - Context rules and guides (21 rules total).
   - `rules-code-style-*/` - Language-specific coding standards (4 variants).
   - `rules-*/` - Core behavioral frameworks (Autonomous, TDD, Zen, PoC).
   - `rules-design-style-guide/` - Design principles and guidelines.
@@ -17,6 +17,7 @@
   - `docs-schema-*/` - Documentation templates (2 schemas).
   - `rules-run-commands/` - Command execution rules.
   - `main-example/` - Core project rules and guidelines.
+  - `skill-creator/` - Skill authoring guide with templates and scripts.
 
 ## File Organization Patterns
 - **Commands:** Named `task-<action>.md`. Stored in `.cursor/commands/`.
