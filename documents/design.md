@@ -29,28 +29,30 @@
   - `task-build-agents-md.md`: AGENTS.md generation workflow.
   - `task-check.md`: Quick project validation.
   - `task-commit.md`: Conventional Commits workflow.
-  - `task-create-command.md`: Command creation utility.
+  - `engineer-command.md`: Command engineering (Create/Edit) utility.
+  - `engineer-rule.md`: Rule creation utility.
+  - `migrate-run-ts.md`: Migration workflow for run.ts.
   - `task-create-run-ts-script.md`: Maintenance script generation.
+  - `task-create-vision-doc.md`: Vision document creation workflow.
   - `task-do.md`: General task execution workflow.
   - `task-execute.md`: Task implementation workflow.
-  - `task-github-issue-create.md`: GitHub issue creation workflow.
   - `task-investigate-autonomous.md`: Autonomous investigation workflow.
   - `task-investigate-step-by-step.md`: Step-by-step investigation workflow.
   - `task-plan.md`: Task planning and breakdown.
   - `task-update-docs.md`: Documentation maintenance.
+  - `task-write-skill.md`: Skill documentation workflow.
 
 ### 3.2 Context Rules (`.cursor/rules/`)
 - **Purpose:** Provide automatic context to the LLM for code generation, style, and behavior.
 - **Interfaces:** Directory-based `RULE.md` files with YAML frontmatter, loaded by Cursor based on file globs or context.
 - **Dependencies:** None.
 - **Key Directories:**
-  - `rules-code-style-*/`: Language-specific coding standards (TypeScript, Swift, Fullstack, Deno).
+  - `rules-code-style-*/`: Language-specific coding standards (TypeScript strict/deno, Swift, Go, Fullstack).
   - `rules-*/`: Core behavioral frameworks (Autonomous, TDD, Zen, PoC).
   - `rules-design-style-guide/`: Design principles and guidelines.
   - `howto-*/`: Practical guides for workflows and tools (12 guides total).
-  - `docs-schema-*/`: Documentation templates and schemas (RDS-SDS, Cline-bank).
+  - `docs-schema-*/`: Documentation templates and schemas (RDS-SDS, vision RDS-SDS, Cline-bank).
   - `rules-run-commands/`: Command execution rules.
-  - `main-example/`: Core project rules and guidelines.
   - `skill-creator/`: Skill authoring guide with templates and scripts.
 
 ### 3.3 Project Documentation (`documents/`)

@@ -1,5 +1,5 @@
 ---
-description: Create comprehensive run.ts script for project automation with check command stages
+description: Create comprehensive run.ts script for project automation
 ---
 
 # Create Run Script
@@ -7,54 +7,42 @@ description: Create comprehensive run.ts script for project automation with chec
 ## Overview
 Create a comprehensive `run.ts` script for project automation following the project's specification and documentation requirements.
 
-## Todo List
-1. **Read specifications**
-   - Review project documentation and requirements
-   - Understand the project's technology stack and build process
-   - Identify all required automation commands
+## Context
+<context>
+The project uses a Deno-based `run.ts` script for common tasks like init, test, and check.
+</context>
 
-2. **Generate run.ts file**
-   - Create `run.ts` in the project root
-   - Implement as a single, independently executable TypeScript file
-   - Base implementation on Deno framework (https://deno.lang/)
+## Rules & Constraints
+<rules>
+1. **Deno Powered**: Implementation MUST be based on Deno framework.
+2. **Single File**: Implement as a single, independently executable TypeScript file.
+3. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+</rules>
 
-3. **Implement required commands**
-   - `init` - Install project dependencies
-   - `test-one <test path>` - Run specific test by path
-   - `cleanup` - Clean the project directory
-   - `dev` - Run project in development mode
+## Instructions
+<step_by_step>
+1. **Initialize**
+   - Use `todo_write` to create a plan based on these steps.
+2. **Read specifications**
+   - Review project documentation and requirements.
+   - Identify all required automation commands (init, test-one, cleanup, dev, check).
+3. **Generate run.ts file**
+   - Create `run.ts` in the project root.
+   - Implement basic structure and command parsing.
+4. **Implement required commands**
+   - Implement `init`, `test-one`, `cleanup`, and `dev`.
+5. **Implement check command**
+   - Implement `check` command with stages: clean, compile, comment-scan, format, lint, test, analyze.
+6. **Test and validate**
+   - Execute `./run.ts <command>` for each command.
+   - Verify functionality and fix any issues.
+</step_by_step>
 
-4. **Implement check command with stages**
-   - `check` command with sequential stages (adapt to project needs):
-     - `clean` - Clean the project
-     - `compile` - Compile the project
-     - `comment-scan` - Scan for TODOs, FIXMEs, debug prints and linter supppressions
-     - `format` - Format code
-     - `lint` - Lint code
-     - `test` - Run tests
-     - `analyze` - Run static analysis
-
-5. **Test and validate**
-   - Execute `./run.ts <command> [options]` for each command
-   - Verify all commands are executable and functional
-   - Fix any errors or issues discovered during testing
-
-## Checklist
-- [ ] Project specifications and documentation reviewed
-- [ ] `run.ts` file created in project root
-- [ ] File is single, independently executable TypeScript file
-- [ ] Deno framework properly implemented
-- [ ] `init` command implemented (dependency installation)
-- [ ] `test-one <test path>` command implemented (specific test execution)
-- [ ] `cleanup` command implemented (project cleanup)
-- [ ] `dev` command implemented (development mode)
-- [ ] `check` command implemented with all stages:
-  - [ ] `clean` stage
-  - [ ] `compile` stage
-  - [ ] `comment-scan` stage
-  - [ ] `format` stage
-  - [ ] `lint` stage
-  - [ ] `test` stage
-  - [ ] `analyze` stage
-- [ ] All commands tested and verified working
-- [ ] Errors fixed and functionality validated
+## Verification
+<verification>
+- [ ] `run.ts` file created in project root.
+- [ ] File is single, independently executable TypeScript file.
+- [ ] All required commands (init, test-one, cleanup, dev, check) implemented.
+- [ ] `check` command includes all required stages.
+- [ ] All commands tested and verified working.
+</verification>

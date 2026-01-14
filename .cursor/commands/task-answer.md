@@ -1,48 +1,59 @@
 ---
 description: Analyze and answer user questions in Autonomous Mode by reading documentation and inspecting codebase
 ---
+
 # Task Answer
 
 ## Overview
 Analyze and answer a user's question in Autonomous Mode by carefully reading documentation and inspecting the codebase. For large responses, save detailed analysis to `documents/whiteboard.md`.
 
-## Todo List
-1. **Understand the question**
-   - Read all available docs in `./documents` (SRS, SDS, file structure, manuals, whiteboard) if they exist
-   - Clarify and restate the user's question in a more precise and structured form
-   - Ask the user follow-up questions if the task, constraints, or expected output are not fully clear
-   - Explicitly list assumptions, missing details, and the intended scope of the answer
+## Context
+<context>
+The user has a question about the project's logic, architecture, or implementation. The project uses a structured documentation system in `./documents` and follows specific design patterns.
+</context>
 
-2. **Documentation-based analysis**
-   - Map the question to relevant requirements in `documents/requirements.md` (SRS)
-   - Map the question to relevant design decisions in `documents/design.md` (SDS)
-   - Consider architecture, constraints, and interfaces described in the documentation
+## Rules & Constraints
+<rules>
+1. **Language Policy**:
+   - Code, technical terms, and quotes from codebase: **English**.
+   - Analysis, explanations, and chat responses: **User's Query Language** (or Russian if undefined).
+2. **Read-Only Mode**:
+   - Keep all repository files unchanged (except `documents/whiteboard.md`).
+   - Use tools in read-only mode (reading files, searching code).
+   - **DO NOT** modify project configuration or code.
+3. **Accuracy**: Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies.
+4. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+</rules>
 
-3. **Code analysis**
-   - Locate relevant files, modules, and functions in the codebase
-   - Read and understand current implementation and its behavior in the context of the question
-   - Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies
+## Instructions
+<step_by_step>
+1. **Initialize**
+   - Use `todo_write` to create a plan based on these steps.
+2. **Understand the question**
+   - Read all available docs in `./documents` (SRS, SDS, file structure, manuals, whiteboard) if they exist.
+   - Clarify and restate the user's question in a more precise and structured form.
+   - Ask the user follow-up questions if the task, constraints, or expected output are not fully clear.
+   - Explicitly list assumptions, missing details, and the intended scope of the answer.
+3. **Documentation-based analysis**
+   - Map the question to relevant requirements in `documents/requirements.md` (SRS).
+   - Map the question to relevant design decisions in `documents/design.md` (SDS).
+   - Consider architecture, constraints, and interfaces described in the documentation.
+4. **Code analysis**
+   - Locate relevant files, modules, and functions in the codebase.
+   - Read and understand current implementation and its behavior in the context of the question.
+   - Identify matches, gaps, or inconsistencies between implementation and documentation.
+5. **Answer synthesis**
+   - Explain how the existing code and design relate to the question and requirements.
+   - Highlight limitations, edge cases, and potential improvements where relevant.
+   - If critical uncertainties remain, clearly state them and ask for input instead of guessing.
+   - For large responses (>1000 characters), save detailed analysis to `documents/whiteboard.md` and provide summary in chat.
+</step_by_step>
 
-4. **Answer synthesis**
-   - Explain how the existing code and design relate to the question and requirements
-   - Highlight limitations, edge cases, and potential improvements where relevant
-   - If critical uncertainties remain, clearly state them and explicitly ask the user for additional input instead of guessing
-   - For large responses (>1000 characters), save detailed analysis to `documents/whiteboard.md` and provide summary in chat
-
-5. **Constraints & Rules**
-   - **Language Policy**:
-     - Code, technical terms, and quotes from codebase: **English**.
-     - Analysis, explanations, and chat responses: **User's Query Language** (or Russian if undefined).
-   - **Read-Only Mode**:
-     - Keep all repository files unchanged (except `documents/whiteboard.md`).
-     - Use tools in read-only mode (reading files, searching code).
-     - **DO NOT** modify project configuration or code.
-
-## Checklist
-- [ ] Documentation read (where available) and question clarified
-- [ ] Necessary clarification questions asked to the user (if needed)
-- [ ] Relevant code located and analyzed
-- [ ] Answer formulated and structured
-- [ ] Response saved to `documents/whiteboard.md` if large, otherwise provided directly
-
-
+## Verification
+<verification>
+- [ ] Documentation read (where available) and question clarified.
+- [ ] Necessary clarification questions asked to the user (if needed).
+- [ ] Relevant code located and analyzed.
+- [ ] Answer formulated and structured.
+- [ ] Response saved to `documents/whiteboard.md` if large, otherwise provided directly.
+</verification>
