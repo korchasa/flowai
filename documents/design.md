@@ -88,9 +88,10 @@
 
 ## 6. Non-functional Aspects
 - **Scalability:** Modular file structure allows easy addition of new rules.
-- **Fault tolerance:** Text-based instructions are robust; agent error recovery is handled via interactive chat.
+- **Fault tolerance:** Text-based instructions are robust; agent error recovery is handled via interactive chat and the `AskQuestion` tool.
 - **Security:** Rules are local to the project; no external data leakage unless explicitly configured via MCP.
 - **Monitoring and logging:** Git history tracks changes to rules and docs.
+- **Interactivity:** Support for explicit mode switching and structured questioning via dedicated tools.
 
 ## 7. Constraints and Trade-offs
 - **Simplified:** No centralized database; relies on file system.

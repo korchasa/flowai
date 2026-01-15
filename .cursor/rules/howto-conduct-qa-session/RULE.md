@@ -6,19 +6,23 @@ alwaysApply: false
 
 When you need to clarify requirements, gather missing information, or discuss design choices with the user, follow these strict guidelines.
 
-## 1. Language
+## 1. Tool Usage
+- **AskQuestion Tool**: If the `AskQuestion` tool is available in the environment, **MUST** use it to ask questions instead of writing them as plain text in the chat.
+    - Each question should be asked via a separate tool call if possible, or as a structured list if the tool supports it.
+
+## 2. Language
 - **Match the User's Language**: Ask questions in the same language as the user's last query (e.g., Russian if the user asks in Russian), unless explicitly instructed otherwise.
 
-## 2. Formatting & Structure
+## 3. Formatting & Structure
 - **Number Your Questions**: Always use a numbered list for questions (1., 2., 3., ...).
 - **Batch Size**: Ask **1 to 5 questions** per response. Do not overwhelm the user with too many questions at once.
 - **Prioritize**: Start with the most critical or blocking questions first.
 
-## 3. Content & Guidance
+## 4. Content & Guidance
 - **Provide Context**: Never ask a "naked" question. Add background information or context to help the user understand *why* you are asking.
 - **Facilitate Decision Making**: Provide data or hints that make it easier for the user to answer.
 
-## 4. Option Comparison
+## 5. Option Comparison
 - **Compare Variants**: If asking the user to choose between options (A vs. B), explicitly compare them in the question description.
     - Highlight trade-offs (pros/cons).
     - Explain the impact of each choice.
