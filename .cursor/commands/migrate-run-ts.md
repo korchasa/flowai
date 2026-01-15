@@ -53,8 +53,12 @@ The project currently uses a single `run.ts` file (and potentially a `./run` wra
     -   Run each new task using `deno task <command_name>`.
     -   Verify the output matches the expected behavior of the original script.
 
-7.  **Cleanup**
-    -   Delete `./run.ts` and `./run` (if it exists).
+7.  **Fix References**
+    -   Grep for `./run` in the codebase.
+    -   Replace all occurrences with `deno task`.
+
+8.  **Cleanup**
+    -   Delete `./run.ts` and `./run` files (if it exists).
 </step_by_step>
 
 ## Verification
