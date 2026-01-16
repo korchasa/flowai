@@ -73,7 +73,7 @@ description: [Action-oriented description for the AI agent]
 </verification>
 ````
 
-## Validation Checklist
+## Verification
 - [ ] Command file is in `.cursor/commands/`.
 - [ ] Filename follows `<action>.md` or specific naming convention (e.g., `engineer-command.md`).
 - [ ] Content uses the **XML-based architecture** (`<context>`, `<rules>`, `<step_by_step>`).
