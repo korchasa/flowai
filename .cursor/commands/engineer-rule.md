@@ -44,7 +44,7 @@ Cursor rules (`.cursor/rules/`) provide persistent context to the AI agent.
 <step_by_step>
 1.  **Initialize & Plan**
     -   Analyze the request: Is it a new rule or an update? What is the domain?
-    -   **Clarify Rule Type**: Ask the user (use the `AskQuestion` tool if available): "Should this rule always apply, apply intelligently based on description, or apply only to specific files (globs)?" (Unless explicitly stated in the request).
+    -   **Clarify Rule Type**: Ask the user: "Should this rule always apply, apply intelligently based on description, or apply only to specific files (globs)?" (Unless explicitly stated in the request).
     -   Search existing rules: `ls .cursor/rules` or search relevant terms.
     -   Use `todo_write` to create a plan.
 

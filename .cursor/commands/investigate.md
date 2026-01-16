@@ -25,7 +25,7 @@ Used for debugging and root cause analysis without introducing permanent changes
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Intake**
-   - Restate problem and gather missing critical data (logs, repro steps, etc.). If the `AskQuestion` tool is available, use it for gathering data from the user.
+   - Restate problem and gather missing critical data (logs, repro steps, etc.).
 3. **Hypotheses**
    - Propose 5-10 candidate root causes with probabilities.
    - Apply sample-then-filter.

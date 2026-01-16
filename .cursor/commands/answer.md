@@ -32,7 +32,7 @@ The user has a question about the project's logic, architecture, or implementati
 2. **Understand the question**
    - Read all available docs in `./documents` (SRS, SDS, file structure, manuals, whiteboard) if they exist.
    - Clarify and restate the user's question in a more precise and structured form.
-   - Ask the user follow-up questions if the task, constraints, or expected output are not fully clear. If the `AskQuestion` tool is available, use it.
+   - Ask the user follow-up questions if the task, constraints, or expected output are not fully clear.
    - Explicitly list assumptions, missing details, and the intended scope of the answer.
 3. **Documentation-based analysis**
    - Map the question to relevant requirements in `documents/requirements.md` (SRS).

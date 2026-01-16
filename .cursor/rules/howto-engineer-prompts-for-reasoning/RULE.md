@@ -29,7 +29,7 @@ Analyze the user's request:
 *   **Ambiguity:** What constraints are missing?
 
 #### Step 2: Strategy & Clarification
-If the request is vague, ask *one* compound clarifying question to lock down the Format, Audience, and Constraints. Use the `AskQuestion` tool if available.
+If the request is vague, ask *one* compound clarifying question to lock down the Format, Audience, and Constraints.
 *If the request is clear, proceed immediately to Step 3.*
 
 #### Step 3: Architecture Generation
