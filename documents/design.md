@@ -44,7 +44,6 @@
   - `plan-and-execute.md`: Planning and execution workflow.
   - `plan.md`: Task planning using GODS framework and chat-first reasoning.
   - `update-docs.md`: Documentation maintenance.
-  - `write-skill.md`: Skill documentation workflow.
 
 ### 3.2 Context Rules (`.cursor/rules/`)
 - **Purpose:** Provide automatic context to the LLM for code generation, style, and behavior.
