@@ -57,14 +57,6 @@
   - [x] Support for check, test, and dev commands
   - [x] Automated quality assurance workflows
 
-### 3.6 Interactive Clarification (FR-6)
-- **Description:** The system must support interactive clarification with the user when information is missing or ambiguous.
-- **Use case scenario:** Agent is executing a command and needs more details. It uses the `AskQuestion` tool to prompt the user.
-- **Acceptance criteria:**
-  - [x] Integration of `AskQuestion` tool into commands and rules
-  - [x] Support for mode switching to `plan` mode before complex tasks
-  - [x] Consistent formatting for questions (numbered lists, context provided)
-
 ## 4. Non-functional requirements
 - **Performance:** Rules and commands must be concise to fit within the context window.
 - **Reliability:** Instructions must be unambiguous to prevent agent hallucination or error.
@@ -76,7 +68,7 @@
   - Cursor Chat: Primary interface for user-agent interaction.
   - File System: Storage for rules, commands, and documentation.
   - Git: Version control operations.
-  - MCP: Integration with external tools (GitHub, etc.) and interactivity tools (`AskQuestion`).
+  - MCP: Integration with external tools (GitHub, etc.).
 - **Protocols and data formats:** Markdown (`.md`, RULE.md).
 - **UI/UX constraints:** Text-based chat interface.
 
@@ -85,4 +77,3 @@
   - All defined commands are executable by the Cursor agent.
   - Rules are correctly loaded and applied by the Cursor agent.
   - Documentation accurately reflects the project state.
-
