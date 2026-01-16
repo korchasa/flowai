@@ -25,11 +25,15 @@ Implementation command focused on Test-Driven Development and documentation sync
    - Use `todo_write` to create a plan based on these steps.
 2. **Preparation**
    - Read documentation and review task in `whiteboard.md`.
-3. **Implement with TDD**
+3. **Analysis & Gap Filling**
+   - Analyze if all necessary context is available.
+   - If missing info, search project code/docs and the internet.
+   - If questions remain, conduct a Q&A session with the user.
+4. **Implement with TDD**
    - Iterative TDD cycle for each subtask.
    - Update `whiteboard.md` progress.
    - Add/update relevant comments.
-4. **Quality gate**
+5. **Quality gate**
    - Run `deno task check` and fix all issues until clean.
 </step_by_step>
 
