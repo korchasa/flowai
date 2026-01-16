@@ -8,7 +8,7 @@
   - **IDE:** Integrated Development Environment.
   - **MCP:** Model Context Protocol.
   - **MDC:** Markdown Configuration (Cursor rules format).
-  - **GODS:** Git Operations & Development Standards (framework).
+  - **GODS:** Goal, Overview, Done, Solution (planning framework).
 
 ## 2. General description
 - **System context:** A set of configuration files (`.md`, RULE.md) located in the `.cursor` directory of a project, interpreted by the Cursor AI agent to guide development, enforce rules, and execute workflows.
@@ -21,7 +21,7 @@
 - **Description:** The system must provide executable workflows for common development tasks, accessible via chat commands.
 - **Use case scenario:** User types `/commit` to start a commit workflow. Agent reads the command file and follows the steps.
 - **Acceptance criteria:**
-    - [x] Support for 18 task commands including planning, execution, investigation, and documentation
+    - [x] Support for 19 task commands including planning, execution, investigation, and documentation
   - [x] Commands follow `/<command>` naming convention (file name without `task-` prefix)
   - [x] Each command provides guided workflow with checklist
 

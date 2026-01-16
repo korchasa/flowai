@@ -32,15 +32,17 @@
   - `create-run-ts-script.md`: Maintenance script generation.
   - `create-vision-doc.md`: Vision document creation workflow.
   - `do.md`: General task execution workflow.
+  - `docs-check.md`: Documentation consistency and integrity check.
   - `engineer-command.md`: Command engineering (Create/Edit) utility.
   - `engineer-prompt.md`: Engineering prompt utility.
   - `engineer-rule.md`: Rule creation utility.
-  - `execute.md`: Task implementation workflow.
+  - `execute.md`: Task implementation workflow with TDD and gap analysis.
   - `init.md`: Project initialization workflow.
   - `investigate.md`: Investigation workflow.
+  - `maintenance.md`: Project maintenance and health check workflow.
   - `migrate-run-ts.md`: Migration workflow to Deno tasks.
   - `plan-and-execute.md`: Planning and execution workflow.
-  - `plan.md`: Task planning and breakdown.
+  - `plan.md`: Task planning using GODS framework and chat-first reasoning.
   - `update-docs.md`: Documentation maintenance.
   - `write-skill.md`: Skill documentation workflow.
 
