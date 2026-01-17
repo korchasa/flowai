@@ -5,6 +5,39 @@ A collection of Cursor rules, designed to standardize work across various softwa
 !!!WARNING!!!
 DO NOT USE THIS FILES AS IS. YOU MUST MODIFY THEM TO FIT YOUR PROJECT AND YOUR STYLE OF WORK.
 
+## Developer Workflow
+
+This section provides clear instructions on when and what tools to use during the development lifecycle.
+
+### 1. Start of Project
+**Goal**: Ensure the environment is ready and the project base is solid.
+
+*   **Initialize Project**: Use `/init` to set up the project structure and initial documentation if starting fresh.
+*   **Define Vision**: Use `/create-vision-doc` to create or update the project vision in `documents/vision.md`.
+
+### 2. For Each Task
+**Goal**: Implement features or fixes with high quality and documentation coverage.
+
+1.  **Plan**: Use `/plan` to analyze the request, break it down into steps, and create a plan.
+2.  **Execute**: Use `/do` (or `/execute`) to write code. This ensures adherence to TDD and documentation updates.
+3.  **Verify**:
+    *   Run `deno task test` to check specific tests.
+    *   **MANDATORY**: Run `deno task check` before completion to ensure the entire project is healthy.
+4.  **Commit**: Use `/commit` to generate a Conventional Commits compliant message and commit changes.
+   
+### 3. Periodic Maintenance
+**Goal**: Keep the project clean, documented, and up-to-date.
+
+*   **Health Check**: Run `/check` or `deno task check` regularly to catch regressions.
+*   **Documentation Audit**: Use `/docs-check` to verify documentation integrity and consistency.
+*   **Update Agents**: Run `deno task check` to ensure all rules are consistent. (Note: `build-agents-md` is deprecated).
+
+### 4. Specific cases
+*   **Deep Investigation**: Use `/investigate` if you encounter complex bugs or unexplained behavior.
+*   **Engineering Utilities**: Use `/engineer-prompt`, `/engineer-rule`, or `/engineer-command` when creating or refining AI instructions.
+*   **Codebase Q&A**: Use `/answer` to get explanations or find logic within the project.
+*   **Maintenance Audit**: Use `/maintenance` for a comprehensive project health check and optimization suggestions.
+
 ## Using Commands in Cursor
 
 Cursor supports custom commands that create reusable workflows launched with `/` prefix in chat input. This helps standardize team processes and speeds up typical tasks.
@@ -18,13 +51,12 @@ Cursor supports custom commands that create reusable workflows launched with `/`
 
 ### Available Commands
 
-Use these commands by typing `/<command>` in Cursor chat:
+Use these commands by typing `/` in Cursor chat:
 
 - `/answer` - Answer questions with context from codebase
-- `/build-agents-md` - Generate optimized AGENTS.md from rules files
 - `/check` - **Quick check**: run `deno task check` + read-only error analysis
 - `/commit` - Git commit workflow following Conventional Commits
-- `/create-run-ts-script` - Create the Deno task scripts
+- `/create-deno-scripts` - Create the Deno task scripts
 - `/create-vision-doc` - Create vision documentation
 - `/do` - General task execution workflow
 - `/docs-check` - Documentation consistency and integrity check
@@ -43,34 +75,38 @@ For more information, see [Cursor Commands Documentation](https://cursor.com/doc
 
 ## Framework
 
-The main idea is to work together with the agent, keeping control over the process and acting as a guardrail between stages, explicitly switching them using `/<command>` syntax.
+The core philosophy is to collaborate with the agent using explicit workflows and rigid verification, while maintaining all context in the repository.
 
-Key Principles:
-- instruction unification (in progress): setting up a new project should boil down to selecting instructions and editing `main.mdc`;
-- splitting instructions into types:
-  - Stages (Manual Apply): stages of work over the project (`<command>.md`);
-  - Rules (Always Apply): working rules: tdd, code style, etc (`rules-*`);
-  - Documentation (Always Apply): documentation guidelines (`docs-schema-*`);
-  - Project Maintenance (Always Apply): list of console commands for project maintenance (`rules-run-commands`);
-  - Howto (Apply Intelligent): automatic instructions for situational tasks that may arise for the model during work (`howto-*`);
-- documentation as the agent's long-term memory:
-  - all project documentation must reside in the repository;
-  - two documentation schema options: cline-bank (7 files) and simplified (Software Requirements Specification + Software Design Specification, 4 files);
-  - documentation in a compact style, and there is a dedicated task for its compacting;
-- saving the current task into a file (`./documents/whiteboard.md`) for transfer between chats and stages;
-- maximum automatic regression control: the entire project verification reduces to a single command (`deno task check`), so the agent cannot perform only part of the checks; the same command is used in CI;
-- a single list for invoking all project commands (`deno task`).
+### Key Principles
+
+1.  **Agent-Driven Workflow**: The agent operates within defined boundaries using `/` to switch contexts (Planning, Execution, Review).
+2.  **Structured Knowledge**:
+    *   **Commands** (`.cursor/commands/`): Interactive workflows for the agent.
+    *   **Rules** (`.cursor/rules/`): Best practices, code styles, and how-to guides.
+    *   **Documentation** (`documents/`): The "Long-Term Memory" of the project. All architectural decisions and requirements must be recorded here.
+3.  **Unified Verification**:
+    *   `deno task check` is the single source of truth for project health.
+    *   If `deno task check` fails, the task is not complete.
+4.  **Zero-Config Dev**:
+    *   All project scripts are centralized in `deno.json`.
+    *   No hidden dependencies or manual setup steps.
+
+### Architecture
+
+*   **Stages** (`.md`): Manual entry points for different phases of work.
+*   **Rules** (`rules-*`): Always-active guidelines (TDD, Code Style).
+*   **Docs Schemas** (`docs-schema-*`): Templates for documentation.
+*   **How-To** (`howto-*`): Context-sensitive guides for specific problems.
 
 ## Available Components
 
 ### Task Commands
-Task commands provide guided workflows for specific development activities (use with `/<command>` in Cursor chat):
+Task commands provide guided workflows for specific development activities (use with `/` in Cursor chat):
 
 - `answer.md` - Answer questions with context
-- `build-agents-md.md` - Generate optimized AGENTS.md from rules files
 - `check.md` - **Quick check**: run `deno task check` + read-only error analysis
 - `commit.md` - Commit workflow following Conventional Commits (strict)
-- `create-run-ts-script.md` - Create the Deno task scripts
+- `create-deno-scripts.md` - Create the Deno task scripts
 - `create-vision-doc.md` - Create vision documentation
 - `do.md` - General task execution workflow
 - `docs-check.md` - Documentation consistency and integrity check
@@ -88,7 +124,6 @@ Task commands provide guided workflows for specific development activities (use 
 ### Documentation Rules
 Documentation schemas and guidelines (stored in `.cursor/rules/`):
 
-- `docs-schema-cline-bank/` - Cline-bank documentation schema (7 files)
 - `docs-schema-rds-sds/` - RDS-SDS documentation schema (4 files)
 - `docs-schema-vision-rds-sds/` - Vision RDS-SDS documentation schema
 
