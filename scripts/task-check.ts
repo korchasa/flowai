@@ -1,6 +1,9 @@
 import { runCommands } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
+/**
+ * Builds the list of commands to check project health (fmt, lint, test).
+ */
 export function buildCheckCommands(): CommandSpec[] {
   return [
     {

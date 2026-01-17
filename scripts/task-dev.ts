@@ -1,6 +1,9 @@
 import { runCommandsInParallel } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
+/**
+ * Builds the list of commands for development (watch mode for fmt and lint).
+ */
 export function buildDevCommands(): CommandSpec[] {
   return [
     {

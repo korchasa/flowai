@@ -22,15 +22,20 @@ Use these commands by typing `/<command>` in Cursor chat:
 
 - `/answer` - Answer questions with context from codebase
 - `/build-agents-md` - Generate optimized AGENTS.md from rules files
-- `/check` - **Quick check**: run `deno task check` + read-only error analysis without code modifications
+- `/check` - **Quick check**: run `deno task check` + read-only error analysis
 - `/commit` - Git commit workflow following Conventional Commits
-- `/create-command` - Create a new Cursor command
 - `/create-run-ts-script` - Create the Deno task scripts
+- `/create-vision-doc` - Create vision documentation
 - `/do` - General task execution workflow
+- `/docs-check` - Documentation consistency and integrity check
+- `/engineer-command` - Command engineering (Create/Edit) utility
+- `/engineer-prompt` - Prompt engineering utility
+- `/engineer-rule` - Rule engineering utility
 - `/execute` - Execute and implement planned tasks
-- `/github-issue-create` - Create GitHub issues using GODS framework
-- `/investigate-autonomous` - **Deep investigation**: autonomous root cause diagnosis
-- `/investigate-step-by-step` - **Deep investigation**: user-controlled root cause diagnosis
+- `/init` - Project initialization workflow
+- `/investigate` - Deep investigation and root cause diagnosis
+- `/maintenance` - Project maintenance and health audit
+- `/migrate-run-ts` - Migration to Deno tasks
 - `/plan` - Plan and break down complex development tasks
 - `/update-docs` - Update project documentation
 
@@ -45,8 +50,8 @@ Key Principles:
 - splitting instructions into types:
   - Stages (Manual Apply): stages of work over the project (`<command>.md`);
   - Rules (Always Apply): working rules: tdd, code style, etc (`rules-*`);
-  - Documentation (Always Apply): documentation guidelines (`docs-*`);
-  - Project Maintenance (Always Apply): list of console commands for project maintenance (`run-commands.mdc`);
+  - Documentation (Always Apply): documentation guidelines (`docs-schema-*`);
+  - Project Maintenance (Always Apply): list of console commands for project maintenance (`rules-run-commands`);
   - Howto (Apply Intelligent): automatic instructions for situational tasks that may arise for the model during work (`howto-*`);
 - documentation as the agent's long-term memory:
   - all project documentation must reside in the repository;
@@ -63,52 +68,59 @@ Task commands provide guided workflows for specific development activities (use 
 
 - `answer.md` - Answer questions with context
 - `build-agents-md.md` - Generate optimized AGENTS.md from rules files
-- `check.md` - **Quick check**: run `deno task check` + read-only error analysis without code modifications. Proposes solutions to user
+- `check.md` - **Quick check**: run `deno task check` + read-only error analysis
 - `commit.md` - Commit workflow following Conventional Commits (strict)
-- `create-command.md` - Create a new Cursor command
 - `create-run-ts-script.md` - Create the Deno task scripts
+- `create-vision-doc.md` - Create vision documentation
 - `do.md` - General task execution workflow
+- `docs-check.md` - Documentation consistency and integrity check
+- `engineer-command.md` - Command engineering (Create/Edit) utility
+- `engineer-prompt.md` - Prompt engineering utility
+- `engineer-rule.md` - Rule engineering utility
 - `execute.md` - Execute and implement planned tasks
-- `github-issue-create.md` - Create GitHub issues using GODS framework
-- `investigate-autonomous.md` - **Deep investigation**: autonomous root cause diagnosis
-- `investigate-step-by-step.md` - **Deep investigation**: user-controlled root cause diagnosis
+- `init.md` - Project initialization workflow
+- `investigate.md` - Deep investigation and root cause diagnosis
+- `maintenance.md` - Project maintenance and health audit
+- `migrate-run-ts.md` - Migration to Deno tasks
 - `plan.md` - Plan and break down complex development tasks
 - `update-docs.md` - Update project documentation
 
 ### Documentation Rules
-Documentation schemas and guidelines:
+Documentation schemas and guidelines (stored in `.cursor/rules/`):
 
-- `docs-schema-cline-bank.mdc` - Cline-bank documentation schema (7 files)
-- `docs-schema-rds-sds.mdc` - RDS-SDS documentation schema (4 files)
+- `docs-schema-cline-bank/` - Cline-bank documentation schema (7 files)
+- `docs-schema-rds-sds/` - RDS-SDS documentation schema (4 files)
+- `docs-schema-vision-rds-sds/` - Vision RDS-SDS documentation schema
 
 ### How-to Guides
-Practical guides for common development scenarios:
+Practical guides for common development scenarios (stored in `.cursor/rules/`):
 
-- `howto-commit-changes.mdc` - How to commit changes following repository rules
-- `howto-compact-docs.mdc` - How to write documentation in compact style
-- `howto-debug-by-playwright.mdc` - Manually test or debug using Playwright MCP tools
-- `howto-fix-tests.mdc` - How to fix failing tests
-- `howto-manage-github-tickets-by-mcp.mdc` - How to manage GitHub tickets using MCP
-- `howto-working-with-git.mdc` - How to work with git in this repository
-- `howto-write-in-informational-style.mdc` - How to write in informational style
+- `howto-commit-changes/` - How to commit changes following repository rules
+- `howto-compact-docs/` - How to write documentation in compact style
+- `howto-conduct-qa-session/` - How to conduct a QA session
+- `howto-debug-by-playwright/` - Manually test or debug using Playwright MCP tools
+- `howto-engineer-prompts-*/` - Prompt engineering guides (instant/reasoning)
+- `howto-fix-tests/` - How to fix failing tests
+- `howto-manage-github-tickets-by-mcp/` - How to manage GitHub tickets using MCP
+- `howto-working-with-git/` - How to work with git in this repository
+- `howto-write-gods-tasks/` - How to write tasks using GODS framework
+- `howto-write-in-informational-style/` - How to write in informational style
+- `howto-write-prd/` - How to write PRD
 
 ### Development Rules
-Rules that govern development practices and code quality:
+Rules that govern development practices and code quality (stored in `.cursor/rules/`):
 
-- `rule-design-style-guide.mdc` - Design style guide rules
-- `rules-autonomous.mdc` - Autonomous mode development principles
-- `rules-code-style-fullstack.mdc` - Fullstack code style guidelines
-- `rules-code-style-swift.mdc` - Swift code style rules
-- `rules-code-style-ts-strict.mdc` - TypeScript strict mode rules
-- `rules-code-style-ts-deno.mdc` - TypeScript Deno-specific rules
-- `rules-gods.mdc` - GODS framework for issue creation and management
-- `rules-poc.mdc` - Proof of Concept (PoC) mode rules
-- `rules-tdd.mdc` - Test-Driven Development rules and flow
-- `rules-zen.mdc` - Zen principles for clean development
+- `rules-autonomous/` - Autonomous mode development principles
+- `rules-code-style-*/` - Language-specific code style guidelines (Fullstack, Go, Swift, TS strict, TS deno)
+- `rules-design-style-guide/` - Design style guide rules
+- `rules-poc/` - Proof of Concept (PoC) mode rules
+- `rules-run-commands/` - Command execution rules
+- `rules-tdd/` - Test-Driven Development rules and flow
+- `rules-zen/` - Zen principles for clean development
+- `skill-creator/` - Skill authoring guide with templates and scripts
 
 ### Project Maintenance
-- `main-example.mdc` - Example main configuration file
-- `run-commands.mdc` - CLI commands description (`deno task`)
+- `run-commands/` - CLI commands description (`deno task`)
 
 ## License
 

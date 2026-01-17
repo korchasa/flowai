@@ -34,14 +34,13 @@
   - `do.md`: General task execution workflow.
   - `docs-check.md`: Documentation consistency and integrity check.
   - `engineer-command.md`: Command engineering (Create/Edit) utility.
-  - `engineer-prompt.md`: Engineering prompt utility.
+  - `engineer-prompt.md`: Prompt engineering utility.
   - `engineer-rule.md`: Rule creation utility.
   - `execute.md`: Task implementation workflow with TDD and gap analysis.
   - `init.md`: Project initialization workflow.
-  - `investigate.md`: Investigation workflow.
-  - `maintenance.md`: Project maintenance and health check workflow.
+  - `investigate.md`: Deep investigation and root cause diagnosis.
+  - `maintenance.md`: Project maintenance and health audit.
   - `migrate-run-ts.md`: Migration workflow to Deno tasks.
-  - `plan-and-execute.md`: Planning and execution workflow.
   - `plan.md`: Task planning using GODS framework and chat-first reasoning.
   - `update-docs.md`: Documentation maintenance.
 
