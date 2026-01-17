@@ -1,8 +1,14 @@
+/**
+ * Specification for a command to be executed.
+ */
 export type CommandSpec = {
   cmd: string;
   args: string[];
 };
 
+/**
+ * Formats a command for display or logging.
+ */
 function formatCommand({ cmd, args }: CommandSpec): string {
   if (args.length === 0) {
     return cmd;
@@ -10,6 +16,10 @@ function formatCommand({ cmd, args }: CommandSpec): string {
   return `${cmd} ${args.join(" ")}`;
 }
 
+/**
+ * Runs a single command and waits for it to complete.
+ * @throws Error if the command fails.
+ */
 export async function runCommand(command: CommandSpec): Promise<void> {
   const process = new Deno.Command(command.cmd, {
     args: command.args,
@@ -25,12 +35,19 @@ export async function runCommand(command: CommandSpec): Promise<void> {
   }
 }
 
+/**
+ * Runs multiple commands sequentially.
+ */
 export async function runCommands(commands: CommandSpec[]): Promise<void> {
   for (const command of commands) {
     await runCommand(command);
   }
 }
 
+/**
+ * Runs multiple commands in parallel.
+ * @throws Error if any command fails.
+ */
 export async function runCommandsInParallel(
   commands: CommandSpec[],
 ): Promise<void> {

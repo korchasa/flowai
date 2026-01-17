@@ -1,6 +1,9 @@
 import { runCommand } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
+/**
+ * Builds the command to run tests, forwarding any additional arguments.
+ */
 export function buildTestCommand(args: string[]): CommandSpec {
   const baseArgs = ["test"];
   if (args.length === 0) {
