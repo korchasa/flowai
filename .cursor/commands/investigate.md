@@ -1,48 +1,54 @@
 ---
-description: Diagnose root cause using BED-LLM and experiments
+description: Iterative issue investigation with user-controlled hypothesis selection
 ---
 
 # Investigate Issue
 
 ## Overview
-Diagnose the root cause without production code modifications using BED-LLM and discrete-outcome experiments.
+Diagnose the root cause through a controlled, iterative process where the user selects hypotheses and approves experiments.
 
 ## Context
 <context>
-Used for debugging and root cause analysis without introducing permanent changes to the codebase.
+Used for debugging and root cause analysis. The process is iterative and relies on user guidance to navigate the hypothesis space.
 </context>
 
 ## Rules & Constraints
 <rules>
 1. **No Production Changes**: Diagnostic changes must be rolled back or isolated.
 2. **Clean Baseline**: Worktree must be clean between experiments.
-3. **EIG Ranking**: Rank experiments by Expected Information Gain.
-4. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+3. **User Control**: The agent MUST NOT proceed to experiment execution without explicit user selection of a hypothesis and approval of the experiment design.
+4. **Transparency**: Always display the current "Hypothesis Board" with probabilities and evidence before asking for the next step.
+5. **Mandatory**: The agent MUST use `todo_write` to track the execution steps and current iteration state.
 </rules>
 
 ## Instructions
 <step_by_step>
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
-2. **Intake**
-   - Restate problem and gather missing critical data (logs, repro steps, etc.).
-3. **Hypotheses**
-   - Propose 5-10 candidate root causes with probabilities.
-   - Apply sample-then-filter.
-4. **Design Experiments**
-   - Produce 3-5 diverse experiments ranked by EIG.
-   - Pick max-EIG experiment and get user approval.
-5. **Update Beliefs**
-   - Run experiment, collect outcomes, and update hypothesis board.
-   - Branch to fix or next experiment.
-6. **Restore Baseline**
-   - Remove diagnostic changes and ensure clean worktree.
+   - Gather initial data (logs, error messages, environment details).
+2. **Hypotheses Generation**
+   - Propose 3-7 candidate root causes (hypotheses) with initial probabilities and reasoning.
+   - **Checkpoint**: Present the list to the user and ask: "Which hypothesis should we investigate first?"
+3. **Experiment Design**
+   - For the selected hypothesis, design a discrete-outcome experiment.
+   - Explain what "Success" and "Failure" outcomes will mean for the hypothesis.
+   - **Checkpoint**: Get user approval for the experiment design.
+4. **Execution & Update**
+   - Run the approved experiment.
+   - Collect outcomes and update the Hypothesis Board (adjust probabilities, add evidence).
+   - Restore baseline (revert diagnostic changes).
+5. **Iteration Loop**
+   - Show the updated Hypothesis Board and a summary of the last experiment's findings.
+   - Ask the user: "Would you like to continue with another hypothesis from the list, generate new ones, or do we have enough info to propose a fix?"
+6. **Final Report**
+   - Once the root cause is identified, provide a summary of evidence and recommend a fix.
 </step_by_step>
 
 ## Verification
 <verification>
-- [ ] Hypotheses prioritized with probabilities.
-- [ ] Max-EIG experiment approved and executed.
-- [ ] Outcomes collected and beliefs updated.
-- [ ] Baseline restored (no stray changes).
+[ ] Hypotheses presented and selected by user.
+[ ] Experiment designed and approved before execution.
+[ ] Hypothesis Board updated after each iteration.
+[ ] Baseline restored after each experiment.
+[ ] Final recommendation based on experimental evidence.
 </verification>
