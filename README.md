@@ -98,6 +98,24 @@ The core philosophy is to collaborate with the agent using explicit workflows an
 *   **Docs Schemas** (`docs-schema-*`): Templates for documentation.
 *   **How-To** (`howto-*`): Context-sensitive guides for specific problems.
 
+## Project Documentation
+
+Documentation in this project is not just information for developers — it is the **Long-Term Memory** of the AI agent. AI models have a limited context window and lose information between chat sessions. By keeping a structured set of documents in the `documents/` folder, we ensure that any agent (or developer) can quickly understand the project's state, goals, and architecture.
+
+### Why Documentation is Critical
+- **Context Persistence**: Documents bridge the gap between sessions, providing the agent with the necessary background to make informed decisions.
+- **Architectural Integrity**: By recording decisions in `design.md`, we prevent the agent from proposing solutions that contradict the established architecture.
+- **Goal Alignment**: `vision.md` and `requirements.md` keep the development focused on solving the right problems.
+- **Autonomous Operation**: Clear documentation is what allows the agent to work autonomously without constant human guidance.
+
+### Document Types and Their Purpose
+
+- **`vision.md` (Product Vision)**: The "North Star" of the project. It explains *why* the project exists, who it's for, and what makes it unique. It helps the agent understand high-level priorities.
+- **`requirements.md` (SRS)**: Detailed functional and non-functional requirements. Defines *what* the system must do and is the primary reference for acceptance criteria.
+- **`design.md` (SDS)**: Technical architecture, component descriptions, and data models. Describes *how* the system is implemented to ensure architectural consistency.
+- **`file_structure.md`**: A logical map of the repository. Helps the agent navigate the codebase and understand where new logic should be placed.
+- **`AGENTS.md`**: High-level rules for AI agents. Enforces mandatory workflows and defines agent responsibilities.
+
 ## Available Components
 
 ### Task Commands
