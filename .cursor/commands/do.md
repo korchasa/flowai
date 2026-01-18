@@ -24,7 +24,7 @@ General purpose task execution command for code changes and logic implementation
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Preparation**
-   - Read all docs in `./documents`.
+   - Read project docs in `./documents`.
    - Analyze requirements and constraints.
 3. **Implementation**
    - Resolve user query with code changes.
