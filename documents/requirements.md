@@ -21,7 +21,7 @@
 - **Description:** The system must provide executable workflows for common development tasks, accessible via chat commands.
 - **Use case scenario:** User types `/commit` to start a commit workflow. Agent reads the command file and follows the steps.
 - **Acceptance criteria:**
-    - [x] Support for 17 task commands including planning, execution, investigation, and documentation
+    - [x] Support for task commands including planning, execution, investigation, and documentation
   - [x] Commands follow `/<command>` naming convention (file name without `task-` prefix)
   - [x] Each command provides guided workflow with checklist
 
