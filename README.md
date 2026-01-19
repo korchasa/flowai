@@ -28,7 +28,7 @@ This section provides clear instructions on when and what tools to use during th
 ### 3. Periodic Maintenance
 **Goal**: Keep the project clean, documented, and up-to-date.
 
-*   **Health Check**: Run `/check` or `deno task check` regularly to catch regressions.
+*   **Health Check**: Run `/check-and-fix` or `deno task check` regularly to catch regressions.
 *   **Documentation Audit**: Use `/docs-check` to verify documentation integrity and consistency.
 *   **Update Agents**: Run `deno task check` to ensure all rules are consistent. (Note: `build-agents-md` is deprecated).
 
@@ -54,7 +54,7 @@ Cursor supports custom commands that create reusable workflows launched with `/`
 Use these commands by typing `/` in Cursor chat:
 
 - `/answer` - Answer questions with context from codebase
-- `/check` - **Quick check**: run `deno task check` + read-only error analysis
+- `/check-and-fix` - **Iterative check and fix**: run project checks and fix errors until success
 - `/commit` - Git commit workflow following Conventional Commits
 - `/create-deno-scripts` - Create the Deno task scripts
 - `/create-vision-doc` - Create vision documentation
@@ -122,7 +122,7 @@ Documentation in this project is not just information for developers — it is t
 Task commands provide guided workflows for specific development activities (use with `/` in Cursor chat):
 
 - `answer.md` - Answer questions with context
-- `check.md` - **Quick check**: run `deno task check` + read-only error analysis
+- `check-and-fix.md` - **Iterative check and fix**: run project checks and fix errors until success
 - `commit.md` - Commit workflow following Conventional Commits (strict)
 - `create-deno-scripts.md` - Create the Deno task scripts
 - `create-vision-doc.md` - Create vision documentation

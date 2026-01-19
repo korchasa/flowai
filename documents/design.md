@@ -22,11 +22,11 @@
 ## 3. Components
 ### 3.1 Task Commands (`.cursor/commands/`)
 - **Purpose:** Provide step-by-step instructions for specific development activities.
-- **Interfaces:** Markdown files without the `task-` prefix (e.g., `check.md`).
+- **Interfaces:** Markdown files without the `task-` prefix (e.g., `check-and-fix.md`).
 - **Dependencies:** User input, existing codebase.
 - **Key Files:**
   - `answer.md`: Question answering with codebase context.
-  - `check.md`: Quick project validation.
+  - `check-and-fix.md`: Iterative project validation and repair.
   - `commit.md`: Conventional Commits workflow.
   - `create-deno-scripts.md`: Maintenance script generation.
   - `create-vision-doc.md`: Vision document creation workflow.

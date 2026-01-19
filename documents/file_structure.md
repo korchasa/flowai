@@ -10,7 +10,7 @@
 - `deno.json` - Deno task configuration.
 
 ## .cursor Directory
-- `commands/` - Executable task workflows (18 commands).
+- `commands/` - Executable task workflows.
   - `*.md` - Standard task definitions (check, commit, plan, investigate, etc.).
 - `rules/` - Context rules and guides (26 rule directories total).
   - `rules-code-style-*/` - Language-specific coding standards (5 variants).
