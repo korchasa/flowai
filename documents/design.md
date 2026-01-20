@@ -28,7 +28,7 @@
   - `answer.md`: Question answering with codebase context.
   - `check-and-fix.md`: Iterative project validation and repair.
   - `commit.md`: Conventional Commits workflow.
-  - `create-deno-scripts.md`: Maintenance script generation.
+  - `create-scripts.md`: Maintenance script generation.
   - `create-vision-doc.md`: Vision document creation workflow.
   - `do.md`: General task execution workflow.
   - `docs-check.md`: Documentation consistency and integrity check.
