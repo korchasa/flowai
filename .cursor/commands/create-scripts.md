@@ -25,7 +25,7 @@ The project uses Deno task scripts in `./scripts/` and `deno.json` tasks for com
    - Use `todo_write` to create a plan based on these steps.
 2. **Read specifications**
    - Review project documentation and requirements.
-   - Identify all required automation commands (init, test-one, cleanup, dev, check).
+   - Identify all required automation commands.
 3. **Create task scripts**
    - Ensure `./scripts/` exists.
    - Create `task-<command>.ts` files for each command.
@@ -33,9 +33,7 @@ The project uses Deno task scripts in `./scripts/` and `deno.json` tasks for com
    - Create/update `deno.json`.
    - Map each command name to its script execution.
 5. **Implement required commands**
-   - Implement `init`, `test-one`, `cleanup`, and `dev`.
 6. **Implement check command**
-   - Implement `check` command with stages: clean, compile, comment-scan, format, lint, test, analyze.
 7. **Test and validate**
    - Execute `deno task <command>` for each command.
    - Verify functionality and fix any issues.
