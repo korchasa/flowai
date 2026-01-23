@@ -23,12 +23,16 @@ General purpose task execution command for code changes and logic implementation
 <step_by_step>
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
-2. **Preparation**
+2. **Prepare**
    - Read project docs in `./documents`.
    - Analyze requirements and constraints.
-3. **Implementation**
+3. **Implement**
    - Resolve user query with code changes.
    - Add/update comments at file, function, and block levels.
+4. **Verify**
+   - Ensure that the task was correctly understood.
+   - Ensure that the task was performed as requested by the user.
+   - Check that no temporary or garbage data (files, edits, etc.) remains.
 </step_by_step>
 
 ## Verification
@@ -36,4 +40,5 @@ General purpose task execution command for code changes and logic implementation
 - [ ] Task scope and acceptance clarified.
 - [ ] Code/comments cover critical logic.
 - [ ] Final response respects project rules.
+- [ ] No temporary or garbage data remains.
 </verification>
