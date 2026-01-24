@@ -6,13 +6,17 @@ description: >-
 disable-model-invocation: true
 ---
 
-
 # Task: Project Maintenance & Health Audit
 
 ## Overview
-Execute a rigorous 7-point maintenance sweep to identify structural deviations, documentation inconsistencies, dead code, complexity hotspots, technical debt, missing code documentation, and terminology drift. All findings must be actionable and saved to `whiteboard.md`.
+
+Execute a rigorous 7-point maintenance sweep to identify structural deviations,
+documentation inconsistencies, dead code, complexity hotspots, technical debt,
+missing code documentation, and terminology drift. All findings must be
+actionable and saved to `whiteboard.md`.
 
 ## Context
+
 <context>
 This command is the "Garbage Collector" and "Building Inspector" for the project. It ensures the codebase remains maintainable, documented, and aligned with architectural standards.
 It addresses:
@@ -26,6 +30,7 @@ It addresses:
 </context>
 
 ## Rules & Constraints
+
 <rules>
 1.  **Output Target**: All findings MUST be written to `whiteboard.md`. Start with a timestamped header.
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
@@ -36,75 +41,95 @@ It addresses:
 </rules>
 
 ## Instructions
+
 <step_by_step>
-1.  **Initialize & Plan**
-    -   Use `todo_write` to create a plan covering the 7 phases below.
-    -   Read `whiteboard.md` to preserve existing long-term notes (if any), but clear old automated reports.
-    -   Identify project's primary language and source directories.
 
-2.  **Phase 1: Structure & Organization**
-    -   **Rule**: The file tree must match `documents/file_structure.md`.
-    -   **Action**: Use `list_dir` to map the actual project structure.
-    -   **Check**:
-        -   Are there files in the root that should be in subfolders?
-        -   Are there "Orphan" files not mentioned in `file_structure.md`?
-    -   **Report**: List any deviations.
+1. **Initialize & Plan**
+   - Use `todo_write` to create a plan covering the 7 phases below.
+   - Read `whiteboard.md` to preserve existing long-term notes (if any), but
+     clear old automated reports.
+   - Identify project's primary language and source directories.
 
-3.  **Phase 2: Code Hygiene & Dependencies**
-    -   **Dead Code**: Identify exported/public symbols in source directories that are never imported/called elsewhere.
-    -   **Unused Imports**: Scan source files for imports/includes that are not used in the file body.
-    -   **Test Quality**: Read test files (e.g., `*.test.*`, `*_test.*`, `test_*.py`). Flag tests that:
-        -   Have no assertions.
-        -   Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
-        -   Are commented out.
+2. **Phase 1: Structure & Organization**
+   - **Rule**: The file tree must match `documents/file_structure.md`.
+   - **Action**: Use `list_dir` to map the actual project structure.
+   - **Check**:
+     - Are there files in the root that should be in subfolders?
+     - Are there "Orphan" files not mentioned in `file_structure.md`?
+   - **Report**: List any deviations.
 
-4.  **Phase 3: Complexity & Hotspots**
-    -   **Files**: Flag any source file exceeding **500 lines**.
-    -   **Functions**: Scan for functions/methods exceeding **50 lines**.
-    -   **God Objects**: Identify classes/modules with mixed concerns (e.g., logic + UI + database in one file).
+3. **Phase 2: Code Hygiene & Dependencies**
+   - **Dead Code**: Identify exported/public symbols in source directories that
+     are never imported/called elsewhere.
+   - **Unused Imports**: Scan source files for imports/includes that are not
+     used in the file body.
+   - **Test Quality**: Read test files (e.g., `*.test.*`, `*_test.*`,
+     `test_*.py`). Flag tests that:
+     - Have no assertions.
+     - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
+     - Are commented out.
 
-5.  **Phase 4: Technical Debt Aggregation**
-    -   **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
-    -   **Group**: Organize by file/module.
-    -   **Analysis**: Flag any that look critical or like "temporary" fixes that became permanent.
+4. **Phase 3: Complexity & Hotspots**
+   - **Files**: Flag any source file exceeding **500 lines**.
+   - **Functions**: Scan for functions/methods exceeding **50 lines**.
+   - **God Objects**: Identify classes/modules with mixed concerns (e.g.,
+     logic + UI + database in one file).
 
-6.  **Phase 5: Consistency (Docs vs. Code)**
-    -   **Terminology**: Extract key terms from `README.md` and `documents/`. Check if code uses different synonyms (e.g., "User" in docs vs "Customer" in code).
-    -   **Drift**: Pick 3 major claims from `documents/*.md` (e.g., "The system handles X asynchronously"). Verify if the code actually does that.
+5. **Phase 4: Technical Debt Aggregation**
+   - **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
+   - **Group**: Organize by file/module.
+   - **Analysis**: Flag any that look critical or like "temporary" fixes that
+     became permanent.
 
-7.  **Phase 6: Code Documentation Coverage**
-    -   **Rule**: Every file, class, method, and exported function MUST have documentation (JSDoc, Docstring, Rustdoc, etc.).
-    -   **Check**:
-        -   **Responsibility**: Does the comment explain *what* it does?
-        -   **Nuances**: For complex logic (cyclomatic complexity > 5 or > 20 lines), are there examples or edge case warnings?
-    -   **Scan**: primary source directories.
-    -   **Report**: List undocumented symbols.
+6. **Phase 5: Consistency (Docs vs. Code)**
+   - **Terminology**: Extract key terms from `README.md` and `documents/`. Check
+     if code uses different synonyms (e.g., "User" in docs vs "Customer" in
+     code).
+   - **Drift**: Pick 3 major claims from `documents/*.md` (e.g., "The system
+     handles X asynchronously"). Verify if the code actually does that.
 
-8.  **Phase 7: Reporting**
-    -   Compile all findings into `whiteboard.md` with the following format:
-        ```markdown
-        # Maintenance Report (YYYY-MM-DD)
+7. **Phase 6: Code Documentation Coverage**
+   - **Rule**: Every file, class, method, and exported function MUST have
+     documentation (JSDoc, Docstring, Rustdoc, etc.).
+   - **Check**:
+     - **Responsibility**: Does the comment explain _what_ it does?
+     - **Nuances**: For complex logic (cyclomatic complexity > 5 or > 20 lines),
+       are there examples or edge case warnings?
+   - **Scan**: primary source directories.
+   - **Report**: List undocumented symbols.
 
-        ## 1. Structural Issues
-        - [ ] File X is in root but should be in Y. (Fix: Move file)
+8. **Phase 7: Reporting**
+   - Compile all findings into `whiteboard.md` with the following format:
+     ```markdown
+     # Maintenance Report (YYYY-MM-DD)
 
-        ## 2. Hygiene & Quality
-        - [ ] Unused export `myFunc` in `utils.*`. (Fix: Delete)
-        - [ ] `main.*` is 550 lines. (Fix: Extract `processLogic` to new file)
+     ## 1. Structural Issues
 
-        ## 3. Technical Debt
-        - [ ] 5 TODOs in `api.*` regarding error handling.
+     - [ ] File X is in root but should be in Y. (Fix: Move file)
 
-        ## 4. Consistency
-        - [ ] Docs say "User", code says "Client". (Fix: Standardize on User)
+     ## 2. Hygiene & Quality
 
-        ## 5. Documentation Coverage
-        - [ ] `utils.*` - function `parseData` missing docs. (Fix: Add docs)
-        - [ ] `ComplexClass` missing usage example. (Fix: Add example)
-        ```
+     - [ ] Unused export `myFunc` in `utils.*`. (Fix: Delete)
+     - [ ] `main.*` is 550 lines. (Fix: Extract `processLogic` to new file)
+
+     ## 3. Technical Debt
+
+     - [ ] 5 TODOs in `api.*` regarding error handling.
+
+     ## 4. Consistency
+
+     - [ ] Docs say "User", code says "Client". (Fix: Standardize on User)
+
+     ## 5. Documentation Coverage
+
+     - [ ] `utils.*` - function `parseData` missing docs. (Fix: Add docs)
+     - [ ] `ComplexClass` missing usage example. (Fix: Add example)
+     ```
+
 </step_by_step>
 
 ## Verification
+
 <verification>
 [ ] Verified file structure against `file_structure.md`.
 [ ] Scanned for dead code and unused imports.

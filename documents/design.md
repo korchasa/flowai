@@ -1,10 +1,14 @@
 # Software Design Specification (SDS)
 
 ## 1. Introduction
-- **Document purpose:** Detail the implementation and architecture of the AI-First IDE Rules and Skills project.
-- **Relation to SRS:** Implements requirements defined in `documents/requirements.md`.
+
+- **Document purpose:** Detail the implementation and architecture of the
+  AI-First IDE Rules and Skills project.
+- **Relation to SRS:** Implements requirements defined in
+  `documents/requirements.md`.
 
 ## 2. System Architecture
+
 - **Overview diagram:**
   ```mermaid
   graph TD
@@ -20,7 +24,9 @@
   - **Documentation Subsystem:** Stores project state and memory.
 
 ## 3. Components
+
 ### 3.1 Skills (`.cursor/skills/`)
+
 - **Purpose:** Provide specialized capabilities and workflows.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
@@ -29,6 +35,7 @@
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
 
 ### 3.2 Agents (`.cursor/agents/`)
+
 - **Purpose:** Define specialized AI personas and roles.
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
@@ -37,14 +44,17 @@
   - `project-checker.md`: Specialist in running project checks.
 
 ### 3.3 Project Documentation (`documents/`)
+
 - **Purpose:** Serve as the long-term memory of the project.
 - **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
 - **Dependencies:** Updated by `cmd-update-docs`.
 
 ### 3.4 Project Maintenance
+
 - **Purpose:** Provide automated project maintenance and quality assurance.
 - **Status:** Implemented - Deno tasks and scripts available.
-- **Interfaces:** Deno tasks (`deno task check`, `deno task test`, `deno task dev`, `deno task bench`).
+- **Interfaces:** Deno tasks (`deno task check`, `deno task test`,
+  `deno task dev`, `deno task bench`).
 - **Dependencies:** Deno runtime, scripts in `./scripts/`.
 - **Features:**
   - Automated code checking and validation
@@ -53,6 +63,7 @@
   - Benchmark execution (`scripts/benchmarks/`)
 
 ## 4. Data and Storage
+
 - **Entities and attributes:**
   - **Skill:** Name, Content, Path.
   - **Agent:** Name, Prompt, Capabilities.
@@ -60,6 +71,7 @@
 - **Migration policies:** Manual updates via git.
 
 ## 5. Algorithms and Logic
+
 - **Key algorithms:**
   - **Skill Matching:** Cursor matches user intent to available skills.
   - **Agent Selection:** Cursor selects appropriate agents based on task.
@@ -68,15 +80,19 @@
   - Code changes must follow defined style rules.
 
 ## 6. Non-functional Aspects
-- **Scalability:** Modular file structure allows easy addition of new skills and agents.
+
+- **Scalability:** Modular file structure allows easy addition of new skills and
+  agents.
 - **Fault tolerance:** Text-based instructions are robust.
 - **Security:** Skills are local to the project.
 - **Monitoring and logging:** Git history tracks changes.
 
 ## 7. Constraints and Trade-offs
+
 - **Simplified:** No centralized database; relies on file system.
 - **Deferred:** Automated regression testing of skills.
 
 ## 8. Future Extensions
+
 - Integration with other AI IDEs.
 - Automated validation scripts for skill syntax.

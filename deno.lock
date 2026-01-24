@@ -130,6 +130,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@std/flags@0.224",
       "jsr:@std/fs@0.224",
       "jsr:@std/path@0.224",
       "jsr:@std/yaml@0.224"

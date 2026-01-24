@@ -33,8 +33,10 @@ export interface BenchmarkResult {
   durationMs: number;
   tokensUsed: number;
   toolCallsCount: number;
+  model: string;
   checklistResults: Record<string, { pass: boolean; reason: string }>;
   logs: string; // Full conversation log
+  evidence?: string; // Debug evidence
 }
 
 export interface LLMMessage {

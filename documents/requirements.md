@@ -1,8 +1,11 @@
 # Software Requirements Specification (SRS)
 
 ## 1. Introduction
-- **Document purpose:** Define requirements for the AI-First IDE Rules and Commands project.
-- **Scope:** A collection of Cursor rules and commands to standardize and enhance development workflows in AI-first IDEs (initially Cursor).
+
+- **Document purpose:** Define requirements for the AI-First IDE Rules and
+  Commands project.
+- **Scope:** A collection of Cursor rules and commands to standardize and
+  enhance development workflows in AI-first IDEs (initially Cursor).
 - **Audience:** Developers and AI agents working in Cursor.
 - **Definitions and abbreviations:**
   - **IDE:** Integrated Development Environment.
@@ -11,46 +14,71 @@
   - **GODS:** Goal, Overview, Done, Solution (planning framework).
 
 ## 2. General description
-- **System context:** A set of configuration files (`.md`, RULE.md) located in the `.cursor` directory of a project, interpreted by the Cursor AI agent to guide development, enforce rules, and execute workflows.
+
+- **System context:** A set of configuration files (`.md`, RULE.md) located in
+  the `.cursor` directory of a project, interpreted by the Cursor AI agent to
+  guide development, enforce rules, and execute workflows.
 - **Assumptions and constraints:**
-  - **Assumptions:** The user is using Cursor IDE. The project structure follows the defined conventions.
-  - **Constraints:** functionality is limited by Cursor's rule capabilities and the agent's context window.
+  - **Assumptions:** The user is using Cursor IDE. The project structure follows
+    the defined conventions.
+  - **Constraints:** functionality is limited by Cursor's rule capabilities and
+    the agent's context window.
 
 ## 3. Functional requirements
+
 ### 3.1 Command Execution (FR-1)
-- **Description:** The system must provide executable workflows for common development tasks, accessible via chat commands.
-- **Use case scenario:** User types `/commit` to start a commit workflow. Agent reads the command file and follows the steps.
+
+- **Description:** The system must provide executable workflows for common
+  development tasks, accessible via chat commands.
+- **Use case scenario:** User types `/commit` to start a commit workflow. Agent
+  reads the command file and follows the steps.
 - **Acceptance criteria:**
-    - [x] Support for task commands including planning, execution, investigation, and documentation
-  - [x] Commands follow `/<command>` naming convention (file name without `task-` prefix)
+  - [x] Support for task commands including planning, execution, investigation,
+        and documentation
+  - [x] Commands follow `/<command>` naming convention (file name without
+        `task-` prefix)
   - [x] Each command provides guided workflow with checklist
 
 ### 3.2 Rule Enforcement (FR-2)
-- **Description:** The system must automatically apply development rules and coding standards.
-- **Use case scenario:** Agent writes code. The system provides context on coding style (e.g., TypeScript, Swift) and principles (e.g., Zen, TDD).
+
+- **Description:** The system must automatically apply development rules and
+  coding standards.
+- **Use case scenario:** Agent writes code. The system provides context on
+  coding style (e.g., TypeScript, Swift) and principles (e.g., Zen, TDD).
 - **Acceptance criteria:**
   - [x] Code style rules (TS, Swift, etc.).
   - [x] Development principles (Autonomous, Zen, TDD).
   - [x] Documentation standards.
 
 ### 3.3 Documentation Management (FR-3)
-- **Description:** The system must define and enforce documentation schemas to maintain project knowledge.
-- **Use case scenario:** Agent updates project documentation. The system ensures it follows the RDS-SDS or Cline-bank schema.
+
+- **Description:** The system must define and enforce documentation schemas to
+  maintain project knowledge.
+- **Use case scenario:** Agent updates project documentation. The system ensures
+  it follows the RDS-SDS or Cline-bank schema.
 - **Acceptance criteria:**
   - [x] Support for different documentation schemas.
   - [x] Instructions for compact documentation.
 
 ### 3.4 Automation & How-To (FR-4)
-- **Description:** The system must provide guides for complex or situational tasks.
-- **Use case scenario:** User asks how to fix tests. Agent retrieves `howto-fix-tests/RULE.md` and follows the procedure.
+
+- **Description:** The system must provide guides for complex or situational
+  tasks.
+- **Use case scenario:** User asks how to fix tests. Agent retrieves
+  `howto-fix-tests/RULE.md` and follows the procedure.
 - **Acceptance criteria:**
-  - [x] Support for 13 how-to guides covering commit workflows, documentation, debugging, testing, Git operations, GitHub management, and GODS tasks
-  - [x] Guides follow `howto-*/` directory naming convention with `RULE.md` files
+  - [x] Support for 13 how-to guides covering commit workflows, documentation,
+        debugging, testing, Git operations, GitHub management, and GODS tasks
+  - [x] Guides follow `howto-*/` directory naming convention with `RULE.md`
+        files
   - [x] Each guide provides step-by-step instructions for specific scenarios
 
 ### 3.5 Project Maintenance (FR-5)
-- **Description:** The system must provide automated project maintenance capabilities through scripts.
-- **Use case scenario:** Developer runs `deno task check` to validate project integrity. Tasks perform linting, testing, and other checks.
+
+- **Description:** The system must provide automated project maintenance
+  capabilities through scripts.
+- **Use case scenario:** Developer runs `deno task check` to validate project
+  integrity. Tasks perform linting, testing, and other checks.
 - **Acceptance criteria:**
   - [x] Deno tasks configured in `deno.json`
   - [x] Task scripts stored in `./scripts/` and invoked via `deno task`
@@ -58,21 +86,32 @@
   - [x] Automated quality assurance workflows
 
 ### 3.6 Developer Onboarding & Workflow Clarity (FR-6)
-- **Description:** The project's `README.md` must provide clear, actionable instructions for developers on when and how to use the available tools.
-- **Use case scenario:** A new developer joins the project and reads the `README.md` to understand the workflow for starting the project, implementing a task, and performing periodic maintenance.
+
+- **Description:** The project's `README.md` must provide clear, actionable
+  instructions for developers on when and how to use the available tools.
+- **Use case scenario:** A new developer joins the project and reads the
+  `README.md` to understand the workflow for starting the project, implementing
+  a task, and performing periodic maintenance.
 - **Acceptance criteria:**
   - [x] Instructions for project initialization and environment verification.
-  - [x] Step-by-step workflow for task implementation (Plan -> Execute -> Verify -> Commit).
-  - [x] Schedule for periodic maintenance (Health Check, Docs Audit, Agent Updates).
+  - [x] Step-by-step workflow for task implementation (Plan -> Execute -> Verify
+        -> Commit).
+  - [x] Schedule for periodic maintenance (Health Check, Docs Audit, Agent
+        Updates).
   - [x] Guidance for specific cases (Investigate, Answer, Engineer).
 
 ## 4. Non-functional requirements
-- **Performance:** Rules and commands must be concise to fit within the context window.
-- **Reliability:** Instructions must be unambiguous to prevent agent hallucination or error.
-- **Scalability:** The system must allow adding new commands and rules without breaking existing ones.
+
+- **Performance:** Rules and commands must be concise to fit within the context
+  window.
+- **Reliability:** Instructions must be unambiguous to prevent agent
+  hallucination or error.
+- **Scalability:** The system must allow adding new commands and rules without
+  breaking existing ones.
 - **Usability:** Commands must be intuitive (e.g., `/commit`).
 
 ## 5. Interfaces
+
 - **APIs and integrations:**
   - Cursor Chat: Primary interface for user-agent interaction.
   - File System: Storage for rules, commands, and documentation.
@@ -82,6 +121,7 @@
 - **UI/UX constraints:** Text-based chat interface.
 
 ## 6. Acceptance criteria
+
 - The system is considered accepted if the following are met:
   - All defined commands are executable by the Cursor agent.
   - Rules are correctly loaded and applied by the Cursor agent.

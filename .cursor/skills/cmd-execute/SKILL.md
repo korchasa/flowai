@@ -4,18 +4,21 @@ description: Execute task in Autonomous Mode using strict TDD
 disable-model-invocation: true
 ---
 
-
 # Task Execution
 
 ## Overview
-Execute a task in Autonomous Mode using strict TDD, keeping documentation updated.
+
+Execute a task in Autonomous Mode using strict TDD, keeping documentation
+updated.
 
 ## Context
+
 <context>
 Implementation command focused on Test-Driven Development and documentation synchronization.
 </context>
 
 ## Rules & Constraints
+
 <rules>
 1. **Strict TDD**: Write failing test first, then minimal implementation, then refactor.
 2. **Whiteboard Tracking**: Continuously update progress in `./documents/whiteboard.md`.
@@ -23,7 +26,9 @@ Implementation command focused on Test-Driven Development and documentation sync
 </rules>
 
 ## Instructions
+
 <step_by_step>
+
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Preparation**
@@ -37,10 +42,10 @@ Implementation command focused on Test-Driven Development and documentation sync
    - Update `whiteboard.md` progress.
    - Add/update relevant comments.
 5. **Quality gate**
-   - Run `deno task check` and fix all issues until clean.
-</step_by_step>
+   - Run `deno task check` and fix all issues until clean. </step_by_step>
 
 ## Verification
+
 <verification>
 - [ ] Work done via TDD with incremental changes.
 - [ ] Progress reflected in `whiteboard.md`.

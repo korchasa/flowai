@@ -1,10 +1,5 @@
-import {
-  dirname,
-  fromFileUrl,
-  join,
-} from "https://deno.land/std@0.224.0/path/mod.ts";
-import { ensureDir } from "https://deno.land/std@0.224.0/fs/mod.ts";
-import { parse } from "https://deno.land/std@0.224.0/flags/mod.ts";
+import { join } from "@std/path";
+import { parse } from "@std/flags";
 import { GitCommitterBench } from "./benchmarks/scenarios/git-committer.bench.ts";
 import {
   BenchmarkResult,
@@ -18,6 +13,8 @@ const SCENARIOS: BenchmarkScenario[] = [
   GitCommitterBench,
 ];
 
+const MODEL = "google/gemini-2.0-flash-001";
+
 async function runScenario(
   scenario: BenchmarkScenario,
 ): Promise<BenchmarkResult> {
@@ -26,6 +23,8 @@ async function runScenario(
   // 1. Setup Sandbox
   const sandboxPath = await Deno.makeTempDir({ prefix: "cursor_bench_" });
   console.log(`  Sandbox created: ${sandboxPath}`);
+
+  let result: (BenchmarkResult & { evidence: string }) | undefined;
 
   try {
     await scenario.setup(sandboxPath);
@@ -64,10 +63,10 @@ Ensure ALL commands are inside this block.
 Write ONE command per line. Do NOT use '&&'.
 `;
 
-    console.log("  Invoking Agent LLM...");
+    console.log(`  Invoking Agent LLM (${MODEL})...`);
     const response = await chatCompletion(
       messages,
-      "google/gemini-2.0-flash-001",
+      MODEL,
       0,
     );
     tokensUsed += response.usage?.total_tokens || 0;
@@ -94,10 +93,33 @@ Write ONE command per line. Do NOT use '&&'.
         toolCallsCount++;
         executedCommands += `> ${cmdStr}\n`;
 
-        // Very basic command parsing
-        const parts = cmdStr.split(" ");
-        const cmdName = parts[0];
-        const cmdArgs = parts.slice(1).map((arg) => arg.replace(/^"|"$/g, "")); // simple unquote
+        // Better command parsing
+        const args: string[] = [];
+        let current = "";
+        let inQuote = false;
+
+        for (let i = 0; i < cmdStr.length; i++) {
+          const char = cmdStr[i];
+          if (char === '"') {
+            inQuote = !inQuote;
+            continue;
+          }
+
+          if (char === " " && !inQuote) {
+            if (current.length > 0) {
+              args.push(current);
+              current = "";
+            }
+          } else {
+            current += char;
+          }
+        }
+        if (current.length > 0) {
+          args.push(current);
+        }
+
+        const cmdName = args[0];
+        const cmdArgs = args.slice(1);
 
         try {
           const command = new Deno.Command(cmdName, {
@@ -162,7 +184,7 @@ ${new TextDecoder().decode(logOut.stdout)}
       !item.critical || checklistResults[item.id]?.pass
     );
 
-    return {
+    result = {
       scenarioId: scenario.id,
       success,
       score,
@@ -171,13 +193,21 @@ ${new TextDecoder().decode(logOut.stdout)}
       toolCallsCount,
       checklistResults,
       logs: agentOutput,
-    };
+      model: MODEL,
+      evidence, // Attach evidence to result for debugging
+    } as BenchmarkResult & { evidence: string };
+
+    return result;
   } finally {
     // Cleanup
-    try {
-      await Deno.remove(sandboxPath, { recursive: true });
-    } catch {
-      // ignore
+    if (result?.success) {
+      try {
+        await Deno.remove(sandboxPath, { recursive: true });
+      } catch {
+        // ignore
+      }
+    } else {
+      console.log(`\n  DEBUG: Sandbox kept for debugging at: ${sandboxPath}`);
     }
   }
 }
@@ -211,6 +241,15 @@ async function main() {
         const mark = res.pass ? "x" : " ";
         console.log(`    ${color}[${mark}] ${id}: ${res.reason}\x1b[0m`);
       }
+
+      if (!result.success) {
+        console.log("\n  --- DEBUG INFO (FAILED) ---");
+        console.log("  Agent Output:");
+        console.log(result.logs);
+        console.log("\n  Evidence:");
+        console.log(result.evidence);
+        console.log("  ---------------------------\n");
+      }
     } catch (e) {
       console.error(`  Error running scenario ${scenario.id}:`, e);
     }
@@ -219,6 +258,7 @@ async function main() {
   console.log("\n--- SUMMARY ---");
   console.table(results.map((r) => ({
     id: r.scenarioId,
+    model: r.model,
     success: r.success,
     score: r.score.toFixed(1),
     ms: r.durationMs.toFixed(0),

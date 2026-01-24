@@ -1,5 +1,5 @@
 import { BenchmarkScenario } from "../lib/types.ts";
-import { join } from "https://deno.land/std@0.224.0/path/mod.ts";
+import { join } from "@std/path";
 
 export const GitCommitterBench: BenchmarkScenario = {
   id: "git-committer-basic",
@@ -48,11 +48,6 @@ export const GitCommitterBench: BenchmarkScenario = {
       join(sandboxPath, "utils.ts"),
       "export const add = (a: number, b: number) => a + b; // New feature",
     );
-
-    // Stage it? The agent might expect staged or unstaged.
-    // Let's leave it unstaged to see if the agent handles 'git add'.
-    // Actually, git-committer usually expects us to have staged changes or it adds them.
-    // Let's leave it unstaged.
   },
 
   userQuery:
@@ -60,25 +55,33 @@ export const GitCommitterBench: BenchmarkScenario = {
 
   checklist: [
     {
-      id: "git_add_executed",
+      id: "git_status_checked",
       description:
-        "Did the agent run 'git add' (or equivalent) to stage the file?",
+        "Did the agent run 'git status' to check the state before acting? (Check EXECUTED COMMANDS)",
+      critical: false,
+    },
+    {
+      id: "file_committed",
+      description:
+        "Is `utils.ts` present in the last commit stats? (Check LAST COMMIT evidence)",
       critical: true,
     },
     {
-      id: "git_commit_executed",
-      description: "Did the agent run 'git commit'?",
+      id: "commit_message_match",
+      description:
+        "Does the actual commit message contain 'add sum function'? (Check LAST COMMIT evidence)",
       critical: true,
     },
     {
       id: "conventional_commits",
       description:
-        "Does the commit message follow Conventional Commits (e.g., feat: ...)?",
-      critical: false, // The user provided a specific message, so maybe the agent just used it. But the agent prompt says it should follow standards.
+        "Does the actual commit message follow Conventional Commits (e.g., feat: ...)? (Check LAST COMMIT evidence)",
+      critical: false,
     },
     {
-      id: "no_hallucinations",
-      description: "Did the agent avoid inventing commands that don't exist?",
+      id: "clean_status",
+      description:
+        "Is the final git status clean (no untracked/staged files)? (Check FINAL GIT STATUS evidence)",
       critical: true,
     },
   ],

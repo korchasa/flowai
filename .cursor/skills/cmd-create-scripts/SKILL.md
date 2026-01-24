@@ -4,18 +4,21 @@ description: Create Deno task scripts for project automation
 disable-model-invocation: true
 ---
 
-
 # Create Task Scripts
 
 ## Overview
-Create Deno task scripts and `deno.json` tasks for project automation following the project's specification and documentation requirements.
+
+Create Deno task scripts and `deno.json` tasks for project automation following
+the project's specification and documentation requirements.
 
 ## Context
+
 <context>
 The project uses Deno task scripts in `./scripts/` and `deno.json` tasks for common automation commands.
 </context>
 
 ## Rules & Constraints
+
 <rules>
 1. **Deno Powered**: Implementation MUST be based on Deno framework.
 2. **Modular Scripts**: Each task must live in its own TypeScript file under `./scripts/`.
@@ -23,7 +26,9 @@ The project uses Deno task scripts in `./scripts/` and `deno.json` tasks for com
 </rules>
 
 ## Instructions
+
 <step_by_step>
+
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Read specifications**
@@ -39,10 +44,10 @@ The project uses Deno task scripts in `./scripts/` and `deno.json` tasks for com
 6. **Implement check command**
 7. **Test and validate**
    - Execute `deno task <command>` for each command.
-   - Verify functionality and fix any issues.
-</step_by_step>
+   - Verify functionality and fix any issues. </step_by_step>
 
 ## Verification
+
 <verification>
 - [ ] `./scripts/` contains task scripts for all required commands.
 - [ ] `deno.json` tasks map to the task scripts.

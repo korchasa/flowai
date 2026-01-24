@@ -8,13 +8,13 @@ description: How to manage tickets
 - All tickets must be written according to the GODS framework.
 - All tickets and messages must be in English.
 - To manipulate tickets, use tools:
-    + add_issue_comment
-    + create_issue
-    + get_issue
-    + get_issue_comments
-    + list_issues
-    + search_issues
-    + update_issue
+  - add_issue_comment
+  - create_issue
+  - get_issue
+  - get_issue_comments
+  - list_issues
+  - search_issues
+  - update_issue
 
 ```
 # Framework GODS: Clear and Precise Task Setting

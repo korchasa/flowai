@@ -2,7 +2,6 @@ import { LLMMessage, LLMResponse } from "./types.ts";
 
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 const DEFAULT_MODEL = "google/gemini-2.0-flash-001"; // Fast and cheap for the agent
-const JUDGE_MODEL = "google/gemini-2.0-flash-001"; // Smart enough for judging, cheap enough for running
 
 if (!OPENROUTER_API_KEY) {
   console.warn("WARNING: OPENROUTER_API_KEY is not set. LLM calls will fail.");

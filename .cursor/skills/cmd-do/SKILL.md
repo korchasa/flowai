@@ -4,18 +4,20 @@ description: Execute task in Autonomous Mode with code implementation and commen
 disable-model-invocation: true
 ---
 
-
 # Do something
 
 ## Overview
+
 Execute a task in Autonomous Mode in project context.
 
 ## Context
+
 <context>
 General purpose task execution command for code changes and logic implementation.
 </context>
 
 ## Rules & Constraints
+
 <rules>
 1. **Language Policy**: Technical terms in English, explanations in User's language.
 2. **Quality**: No stubs or hacks; include comments for critical logic.
@@ -23,7 +25,9 @@ General purpose task execution command for code changes and logic implementation
 </rules>
 
 ## Instructions
+
 <step_by_step>
+
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
 2. **Prepare**
@@ -36,9 +40,10 @@ General purpose task execution command for code changes and logic implementation
    - Ensure that the task was correctly understood.
    - Ensure that the task was performed as requested by the user.
    - Check that no temporary or garbage data (files, edits, etc.) remains.
-</step_by_step>
+     </step_by_step>
 
 ## Verification
+
 <verification>
 - [ ] Task scope and acceptance clarified.
 - [ ] Code/comments cover critical logic.
