@@ -28,7 +28,8 @@ This ensures the system evolves and becomes more efficient over time.
 1. **Evidence-Based**: Base all observations on the actual conversation history and tool outputs from the current session.
 2. **Specific References**: When suggesting improvements, cite the specific file (e.g., `.cursor/rules/foo.md`) or command (e.g., `.cursor/commands/bar.md`).
 3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
-4. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
+4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
+5. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
 </rules>
 
 ## Instructions

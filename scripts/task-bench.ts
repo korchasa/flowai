@@ -1,6 +1,20 @@
 import { join } from "@std/path";
 import { parse } from "@std/flags";
-import { GitCommitterBench } from "./benchmarks/scenarios/git-committer.bench.ts";
+import {
+  GitCommitterAtomicDocsBench,
+  GitCommitterAtomicHunkBench,
+  GitCommitterAtomicRefactorBench,
+  GitCommitterBasicBench,
+  GitCommitterCheckBench,
+  GitCommitterCheckFailBench,
+  GitCommitterDepsBench,
+  GitCommitterSyncDocsBench,
+} from "./benchmarks/scenarios/git-committer.bench.ts";
+import {
+  InterviewerArchitectureChoiceBench,
+  InterviewerBugReportBench,
+  InterviewerClarifyFeatureBench,
+} from "./benchmarks/scenarios/interviewer.bench.ts";
 import {
   BenchmarkResult,
   BenchmarkScenario,
@@ -8,9 +22,20 @@ import {
 } from "./benchmarks/lib/types.ts";
 import { chatCompletion } from "./benchmarks/lib/llm.ts";
 import { evaluateChecklist } from "./benchmarks/lib/judge.ts";
+import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
 const SCENARIOS: BenchmarkScenario[] = [
-  GitCommitterBench,
+  GitCommitterBasicBench,
+  GitCommitterAtomicRefactorBench,
+  GitCommitterAtomicDocsBench,
+  GitCommitterCheckBench,
+  GitCommitterSyncDocsBench,
+  GitCommitterAtomicHunkBench,
+  GitCommitterDepsBench,
+  GitCommitterCheckFailBench,
+  InterviewerClarifyFeatureBench,
+  InterviewerBugReportBench,
+  InterviewerArchitectureChoiceBench,
 ];
 
 const MODEL = "google/gemini-2.0-flash-001";
@@ -21,8 +46,32 @@ async function runScenario(
   console.log(`\nRunning scenario: ${scenario.name} (${scenario.id})...`);
 
   // 1. Setup Sandbox
-  const sandboxPath = await Deno.makeTempDir({ prefix: "cursor_bench_" });
+  const workDir = join(Deno.cwd(), "scripts/benchmarks/work");
+  const scenarioDir = join(workDir, scenario.id);
+  const sandboxPath = join(scenarioDir, "sandbox");
+
+  // Clean previous run
+  try {
+    await Deno.remove(scenarioDir, { recursive: true });
+  } catch (e) {
+    if (!(e instanceof Deno.errors.NotFound)) {
+      throw e;
+    }
+  }
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
   console.log(`  Sandbox created: ${sandboxPath}`);
+
+  const tracer = new TraceLogger(scenarioDir);
+  const agentPath = join(Deno.cwd(), scenario.targetAgentPath);
+
+  await tracer.init(
+    scenario.name,
+    scenario.id,
+    MODEL,
+    scenario.targetAgentPath,
+    scenario.userQuery,
+  );
 
   let result: (BenchmarkResult & { evidence: string }) | undefined;
 
@@ -30,7 +79,6 @@ async function runScenario(
     await scenario.setup(sandboxPath);
 
     // 2. Load Agent Prompt
-    const agentPath = join(Deno.cwd(), scenario.targetAgentPath);
     const agentContent = await Deno.readTextFile(agentPath);
 
     // 3. Run Agent (Simulation)
@@ -61,6 +109,7 @@ git commit -m "feat: my feature"
 \`\`\`
 Ensure ALL commands are inside this block.
 Write ONE command per line. Do NOT use '&&'.
+DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add <file>' instead.
 `;
 
     console.log(`  Invoking Agent LLM (${MODEL})...`);
@@ -74,6 +123,8 @@ Write ONE command per line. Do NOT use '&&'.
     const agentOutput = response.content;
     const durationMs = performance.now() - start;
 
+    await tracer.logLLMInteraction(messages, agentOutput);
+
     console.log("  Agent finished. Analyzing output...");
 
     // 4. Simulate Execution (Naive)
@@ -82,6 +133,8 @@ Write ONE command per line. Do NOT use '&&'.
     let match;
     let executedCommands = "";
     let toolCallsCount = 0;
+
+    await tracer.logExecutionSection();
 
     while ((match = bashRegex.exec(agentOutput)) !== null) {
       const script = match[1];
@@ -118,8 +171,21 @@ Write ONE command per line. Do NOT use '&&'.
           args.push(current);
         }
 
-        const cmdName = args[0];
-        const cmdArgs = args.slice(1);
+        // Handle env vars (e.g. GIT_PAGER=cat git ...)
+        let cmdName = args[0];
+        let cmdArgs = args.slice(1);
+        const env: Record<string, string> = {};
+
+        while (cmdName.includes("=")) {
+          const [key, val] = cmdName.split("=");
+          env[key] = val;
+          if (cmdArgs.length > 0) {
+            cmdName = cmdArgs[0];
+            cmdArgs = cmdArgs.slice(1);
+          } else {
+            break; // Should not happen for valid commands
+          }
+        }
 
         try {
           const command = new Deno.Command(cmdName, {
@@ -127,6 +193,7 @@ Write ONE command per line. Do NOT use '&&'.
             cwd: sandboxPath,
             stdout: "piped",
             stderr: "piped",
+            env, // Pass env vars
           });
           const output = await command.output();
           const stdout = new TextDecoder().decode(output.stdout);
@@ -134,8 +201,11 @@ Write ONE command per line. Do NOT use '&&'.
 
           executedCommands += `STDOUT: ${stdout}\n`;
           if (stderr) executedCommands += `STDERR: ${stderr}\n`;
+
+          await tracer.logCommand(cmdStr, output.code, stdout, stderr);
         } catch (e) {
           executedCommands += `ERROR: ${e}\n`;
+          await tracer.logCommand(cmdStr, -1, "", String(e));
         }
       }
     }
@@ -149,20 +219,25 @@ Write ONE command per line. Do NOT use '&&'.
     const statusOut = await gitStatus.output();
 
     const gitLog = new Deno.Command("git", {
-      args: ["log", "-1", "--stat"],
+      args: ["log", "-5", "--stat"],
       cwd: sandboxPath,
     });
     const logOut = await gitLog.output();
+
+    const statusStr = new TextDecoder().decode(statusOut.stdout);
+    const logStr = new TextDecoder().decode(logOut.stdout);
+
+    await tracer.logEvidence(statusStr, logStr);
 
     const evidence = `
 --- EXECUTED COMMANDS ---
 ${executedCommands}
 
 --- FINAL GIT STATUS ---
-${new TextDecoder().decode(statusOut.stdout)}
+${statusStr}
 
 --- LAST COMMIT ---
-${new TextDecoder().decode(logOut.stdout)}
+${logStr}
     `;
 
     // 6. Judge
@@ -173,6 +248,8 @@ ${new TextDecoder().decode(logOut.stdout)}
       evidence, // The file/system state changes
       scenario.checklist,
     );
+
+    await tracer.logEvaluation(checklistResults, scenario.checklist);
 
     // 7. Calculate Score
     const totalItems = scenario.checklist.length;
@@ -197,18 +274,12 @@ ${new TextDecoder().decode(logOut.stdout)}
       evidence, // Attach evidence to result for debugging
     } as BenchmarkResult & { evidence: string };
 
+    await tracer.logSummary(result);
+
     return result;
   } finally {
-    // Cleanup
-    if (result?.success) {
-      try {
-        await Deno.remove(sandboxPath, { recursive: true });
-      } catch {
-        // ignore
-      }
-    } else {
-      console.log(`\n  DEBUG: Sandbox kept for debugging at: ${sandboxPath}`);
-    }
+    // Keep sandbox for inspection
+    console.log(`  Sandbox available at: ${sandboxPath}\n`);
   }
 }
 
@@ -237,9 +308,28 @@ async function main() {
       );
       console.log("  Checklist:");
       for (const [id, res] of Object.entries(result.checklistResults)) {
-        const color = res.pass ? "\x1b[32m" : "\x1b[31m";
-        const mark = res.pass ? "x" : " ";
-        console.log(`    ${color}[${mark}] ${id}: ${res.reason}\x1b[0m`);
+        const item = scenario.checklist.find((i) => i.id === id);
+        const isCritical = item?.critical ?? true;
+
+        let color = "\x1b[32m"; // Green
+        let mark = "x";
+        let label = "";
+
+        if (!res.pass) {
+          if (isCritical) {
+            color = "\x1b[31m"; // Red
+            mark = " ";
+            label = " (ERROR)";
+          } else {
+            color = "\x1b[33m"; // Yellow
+            mark = "!";
+            label = " (WARNING)";
+          }
+        }
+
+        console.log(
+          `    ${color}[${mark}] ${id}${label}: ${res.reason}\x1b[0m`,
+        );
       }
 
       if (!result.success) {
@@ -256,14 +346,40 @@ async function main() {
   }
 
   console.log("\n--- SUMMARY ---");
-  console.table(results.map((r) => ({
-    id: r.scenarioId,
-    model: r.model,
-    success: r.success,
-    score: r.score.toFixed(1),
-    ms: r.durationMs.toFixed(0),
-    tokens: r.tokensUsed,
-  })));
+  console.log(
+    `${"ID".padEnd(30)} | ${"Model".padEnd(30)} | ${
+      "Status".padEnd(
+        15,
+      )
+    } | ${"Score".padEnd(6)} | ${"Time (ms)".padEnd(10)} | ${"Tokens"}`,
+  );
+  console.log("-".repeat(110));
+
+  for (const r of results) {
+    let status = r.success ? "PASSED" : "FAILED";
+    let color = r.success ? "\x1b[32m" : "\x1b[31m"; // Green : Red
+
+    if (r.success && r.score < 100) {
+      status = "WARNING"; // Passed with non-critical failures
+      color = "\x1b[33m"; // Yellow
+    }
+
+    const statusStr = `${color}${status.padEnd(15)}\x1b[0m`;
+
+    console.log(
+      `${r.scenarioId.padEnd(30)} | ${r.model.padEnd(30)} | ${statusStr} | ${
+        r.score
+          .toFixed(1)
+          .padEnd(6)
+      } | ${r.durationMs.toFixed(0).padEnd(10)} | ${r.tokensUsed}`,
+    );
+  }
+
+  const hasFailures = results.some((r) => !r.success);
+  if (hasFailures) {
+    console.log("\n\x1b[31mSome tests failed.\x1b[0m");
+    Deno.exit(1);
+  }
 }
 
 if (import.meta.main) {

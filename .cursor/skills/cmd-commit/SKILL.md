@@ -39,16 +39,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 
 1. **Initialize**
    - Use `todo_write` to create a plan based on these steps.
-2. **Pre-flight checks**
-   - Run `deno task check` if the project wasn’t checked since the last
-     modification.
-   - Review `./documents` tree and catalogue facts that need reflection.
-   - Inspect changes using `GIT_PAGER=cat git diff` (staged and unstaged).
-3. **Workspace sync**
-   - Update docs under `./documents` (excluding `whiteboard.md`) to reflect
-     current project state in **English**.
-   - Apply combined extractive/abstractive summarization.
-4. **Atomic Grouping Strategy**
+2. **Atomic Grouping Strategy**
    - Analyze all file changes and hunks.
    - **Formulate a Commit Plan** by grouping changes into atomic units:
      1. **Style/Formatting**: `style: ...`
@@ -59,12 +50,12 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
         distinct)
    - _Note: Use `git add -p` logic if a single file contains mixed types of
      changes (e.g., refactor + fix)._
-5. **Commit Execution Loop**
+3. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files or hunks for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
-6. **Publish**
+4. **Publish**
    - Push all created commits to GitHub.
    - If not on `main`, create a pull request via `gh pr create` and share the
      link. </step_by_step>
@@ -72,8 +63,6 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 ## Verification
 
 <verification>
-- [ ] Project checked with `deno task check`.
-- [ ] `./documents` updated.
 - [ ] Changes grouped into Atomic Commits (no mixed logical concerns).
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.

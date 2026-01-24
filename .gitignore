@@ -5,3 +5,4 @@ documents/whiteboard.md
 tmp/
 .env
 scripts/benchmarks/sandbox/
+scripts/benchmarks/work/
