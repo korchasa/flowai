@@ -1,22 +1,24 @@
 import { join } from "@std/path";
 import { parse } from "@std/flags";
-import {
-  CommitAtomicDocsBench,
-  CommitAtomicHunkBench,
-  CommitAtomicRefactorBench,
-  CommitBasicBench,
-  CommitCheckBench,
-  CommitCheckFailBench,
-  CommitDepsBench,
-  CommitSyncDocsBench,
-} from "./benchmarks/scenarios/af-commit.bench.ts";
-import {
-  PlanBasicBench,
-  PlanContextBench,
-  PlanInteractiveBench,
-} from "./benchmarks/scenarios/af-plan.bench.ts";
 import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
+
+// Import scenarios from the new structure
+import { CommitBasicBench } from "./benchmarks/scenarios/af-commit/basic/mod.ts";
+import { CommitAtomicRefactorBench } from "./benchmarks/scenarios/af-commit/atomic-refactor/mod.ts";
+import { CommitAtomicDocsBench } from "./benchmarks/scenarios/af-commit/atomic-docs/mod.ts";
+import { CommitCheckBench } from "./benchmarks/scenarios/af-commit/check/mod.ts";
+import { CommitSyncDocsBench } from "./benchmarks/scenarios/af-commit/sync-docs/mod.ts";
+import { CommitAtomicHunkBench } from "./benchmarks/scenarios/af-commit/atomic-hunk/mod.ts";
+import { CommitDepsBench } from "./benchmarks/scenarios/af-commit/deps/mod.ts";
+import { CommitCheckFailBench } from "./benchmarks/scenarios/af-commit/check-fail/mod.ts";
+
+import { PlanBasicBench } from "./benchmarks/scenarios/af-plan/basic/mod.ts";
+import { PlanContextBench } from "./benchmarks/scenarios/af-plan/context/mod.ts";
+import { PlanInteractiveBench } from "./benchmarks/scenarios/af-plan/interactive/mod.ts";
+import { PlanRefactorBench } from "./benchmarks/scenarios/af-plan/refactor/mod.ts";
+import { PlanMigrationBench } from "./benchmarks/scenarios/af-plan/migration/mod.ts";
+import { PlanDbFeatureBench } from "./benchmarks/scenarios/af-plan/db-feature/mod.ts";
 
 const SCENARIOS: BenchmarkScenario[] = [
   CommitBasicBench,
@@ -30,6 +32,9 @@ const SCENARIOS: BenchmarkScenario[] = [
   PlanBasicBench,
   PlanContextBench,
   PlanInteractiveBench,
+  PlanRefactorBench,
+  PlanMigrationBench,
+  PlanDbFeatureBench,
 ];
 
 const DEFAULT_MODEL = "google/gemini-2.0-flash-001";

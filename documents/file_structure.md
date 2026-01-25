@@ -7,7 +7,7 @@
 - `scripts/` - Deno task scripts and benchmarks.
   - `benchmarks/` - Agent benchmarking system.
     - `lib/` - Core benchmarking logic.
-    - `scenarios/` - Test scenario definitions.
+    - `scenarios/` - Test scenario definitions grouped by skill (e.g., `af-commit/basic/mod.ts`).
     - `work/` - Runtime sandboxes (git-ignored).
 - `AGENTS.md` - Persistent project-wide agent rules.
 - `README.md` - Project entry point and overview.

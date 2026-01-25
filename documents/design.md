@@ -49,27 +49,10 @@
 - **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
 - **Dependencies:** Updated by `af-update-docs`.
 
-### 3.4 Project Maintenance and Benchmarking
-
-- **Purpose:** Provide automated project maintenance, quality assurance, and
-  performance evaluation.
-- **Status:** Implemented - Deno tasks and scripts available.
-- **Interfaces:** Deno tasks (`deno task check`, `deno task test`,
-  `deno task dev`, `deno task bench`).
-- **Dependencies:** Deno runtime, scripts in `./scripts/`.
-- **Features:**
-  - Automated code checking and validation.
-  - Test execution framework.
-  - Development server management.
-  - Benchmark execution (`scripts/benchmarks/`).
-  - **Cost Tracking**: Calculates financial cost of LLM usage per scenario and
-    total run.
-  - **Evaluation Metrics**: Uses Errors (critical failures), Warnings
-    (non-critical failures), Steps, Time, and Cost for objective assessment.
-  - **Evaluation Modes**:
-    - **Quality**: Checklist-based verification (Pass/Fail). Uses LLM-Judge to verify evidence against criteria.
-    - **Model Selection (SBS)**: Pairwise comparison (Side-by-Side). The Judge receives two sets of logs and evidence and must choose the winner based on efficiency, correctness, and style. Results contribute to ELO ratings.
-    - **Version Comparison (Deltas)**: Automatic comparison of the current run against a baseline (stored in `benchmarks/history.json`). Reports changes in Cost, Time, and Score.
+- **Maintenance & Benchmarking**:
+  - `deno task bench`: Evaluates agents via evidence-based scenarios.
+  - **Hierarchical Scenarios**: Scenarios are organized as `scripts/benchmarks/scenarios/<skill>/<scenario>/mod.ts`.
+  - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.
 
 ## 4. Data and Storage
 
