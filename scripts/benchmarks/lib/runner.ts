@@ -194,7 +194,7 @@ DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add 
               output.code,
               stdout,
               stderr,
-              { step },
+              { step, script },
             );
           } catch (e) {
             const errorMsg = e instanceof Error && e.name === "AbortError"
@@ -329,7 +329,11 @@ ${logStr}
       evidence, // Attach evidence to result for debugging
     } as BenchmarkResult & { evidence: string };
 
-    await tracer.logSummary(result);
+    await tracer.logSummary({
+      ...result,
+      errors: result.errorsCount,
+      warnings: result.warningsCount,
+    });
 
     return result;
   } finally {

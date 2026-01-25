@@ -32,6 +32,21 @@ export class TraceLogger {
     await Deno.writeTextFile(this.tracePath, html);
   }
 
+  private wrapCollapsible(content: string, style = ""): string {
+    return `
+      <div class="data-block" ${style ? `style="${style}"` : ""}>
+        <div class="data-content">${content}</div>
+        <div class="blur-overlay"></div>
+        <div class="expand-btn-container">
+          <button class="expand-btn" onclick="toggleExpand(this)">
+            <span>Show More</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
   private render(): string {
     const meta = this.scenarioMetadata!;
 
@@ -164,6 +179,7 @@ export class TraceLogger {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -278,18 +294,21 @@ export class TraceLogger {
       background: #333;
     }
 
-    .event {
-      background: #252526;
-      border: 1px solid #333;
-      border-radius: 4px;
-      margin-bottom: 10px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+    /* Event Colors & Variables */
+    .event { --bg: #252526; background: var(--bg); border: 1px solid #333; border-radius: 4px; margin-bottom: 10px; overflow: hidden; display: flex; flex-direction: column; }
+    .event-message[data-role="user"] { --bg: #1e2a35; border-left: 4px solid #007acc; }
+    .event-message[data-role="assistant"] { --bg: #2d2d2d; border-left: 4px solid #ce9178; }
+    .event-message[data-role="system"] { --bg: #252526; border-left: 4px solid #444; opacity: 0.8; }
+    .event-interaction { --bg: #1e2e2a; border-left: 4px solid #4ec9b0; }
+    .event-command { --bg: #2d2d25; border-left: 4px solid #dcdcaa; }
+    .event-evaluation { --bg: #2d252d; border-left: 4px solid #c586c0; }
+    .event-summary { --bg: #252d25; border-left: 4px solid #6a9955; }
+    .event-evidence { --bg: #1e2d35; border-left: 4px solid #9cdcfe; }
+    .event-tools_definition { --bg: #252526; border-left: 4px solid #569cd6; opacity: 0.8; }
+
     .event-header {
       padding: 8px 15px;
-      background: #2d2d2d;
+      background: rgba(255,255,255,0.05);
       display: flex;
       align-items: center;
       gap: 10px;
@@ -303,7 +322,7 @@ export class TraceLogger {
       font-weight: bold;
       padding: 2px 6px;
       border-radius: 3px;
-      background: #444;
+      background: rgba(255,255,255,0.1);
       color: #eee;
     }
     .title { font-weight: 500; flex-grow: 1; }
@@ -316,25 +335,99 @@ export class TraceLogger {
     }
     .content {
       padding: 15px;
-      border-top: 1px solid #333;
-      overflow-x: auto;
-      max-height: 20em;
-      overflow-y: auto;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .data-block {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      margin: 8px 0;
+    }
+    .data-content {
+      max-height: 15.5em; /* Approx 10 lines */
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .data-content.expanded {
+      max-height: none;
+    }
+    .blur-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, var(--bg));
+      pointer-events: none;
+      display: none;
+      z-index: 10;
+    }
+    .data-block.has-overflow .data-content:not(.expanded) + .blur-overlay {
+      display: block;
+    }
+    .expand-btn-container {
+      display: flex;
+      justify-content: center;
+      margin-top: -20px;
+      position: relative;
+      z-index: 20;
+      padding-bottom: 10px;
+    }
+    .expand-btn {
+      background: #444;
+      border: 1px solid #555;
+      color: #eee;
+      padding: 6px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85em;
+      font-weight: 500;
+      display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+      align-items: center;
+      gap: 6px;
+    }
+    .expand-btn:hover {
+      background: #555;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      color: #fff;
+    }
+    .expand-btn svg {
+      transition: transform 0.3s ease;
+    }
+    .data-content.expanded ~ .expand-btn-container .expand-btn svg {
+      transform: rotate(180deg);
+    }
+    .data-content.expanded ~ .expand-btn-container {
+      margin-top: 10px;
     }
     
-    pre { background: #000; padding: 10px; border-radius: 4px; margin: 0; }
+    pre {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 4px;
+      margin: 0;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
     code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
     
-    /* Event Colors */
-    .event-message[data-role="user"] { border-left: 4px solid #007acc; background: #1e2a35; }
-    .event-message[data-role="assistant"] { border-left: 4px solid #ce9178; background: #2d2d2d; }
-    .event-message[data-role="system"] { border-left: 4px solid #444; opacity: 0.8; }
-    .event-interaction { border-left: 4px solid #4ec9b0; background: #1e2e2a; }
-    .event-command { border-left: 4px solid #dcdcaa; background: #2d2d25; }
-    .event-evaluation { border-left: 4px solid #c586c0; background: #2d252d; }
-    .event-summary { border-left: 4px solid #6a9955; background: #252d25; }
-    .event-evidence { border-left: 4px solid #9cdcfe; background: #1e2d35; }
-    .event-tools_definition { border-left: 4px solid #569cd6; opacity: 0.8; }
+    /* Line numbers style */
+    .hljs-ln-numbers {
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      text-align: center;
+      color: #555;
+      border-right: 1px solid #333;
+      vertical-align: top;
+      padding-right: 10px !important;
+    }
+    .hljs-ln-code {
+      padding-left: 10px !important;
+    }
 
     .top-summary { margin-bottom: 20px; }
     .summary-card {
@@ -453,10 +546,31 @@ export class TraceLogger {
       });
     }
 
+    function toggleExpand(btn) {
+      const container = btn.closest('.data-block');
+      const inner = container.querySelector('.data-content');
+      inner.classList.toggle('expanded');
+      const label = btn.querySelector('span');
+      label.textContent = inner.classList.contains('expanded') ? 'Show Less' : 'Show More';
+    }
+
+    function initCollapsibles() {
+      document.querySelectorAll('.data-content').forEach(inner => {
+        if (inner.scrollHeight > inner.offsetHeight + 5) {
+          const container = inner.closest('.data-block');
+          container.classList.add('has-overflow');
+          const btn = container.querySelector('.expand-btn');
+          if (btn) btn.style.display = 'flex';
+        }
+      });
+    }
+
     document.addEventListener('DOMContentLoaded', (event) => {
       document.querySelectorAll('pre code').forEach((el) => {
         hljs.highlightElement(el);
+        hljs.lineNumbersBlock(el);
       });
+      initCollapsibles();
     });
   </script>
 </body>
@@ -503,16 +617,9 @@ export class TraceLogger {
       const isSystem = msg.role === "system";
       const description = isSystem ? "System Prompt" : "User Message";
 
-      let content = msg.content;
-      if (isSystem) {
-        content = `<pre><code class="language-markdown">${
-          escape(msg.content)
-        }</code></pre>`;
-      } else {
-        content = `<pre><code class="language-markdown">${
-          escape(msg.content)
-        }</code></pre>`;
-      }
+      const content = this.wrapCollapsible(
+        `<pre><code class="language-markdown">${escape(msg.content)}</code></pre>`,
+      );
 
       this.addEvent("message", {
         role: msg.role,
@@ -530,7 +637,7 @@ export class TraceLogger {
       step: context.step,
       model: context.model,
       description: "Model response",
-    }, `<pre><code class="language-markdown">${escape(response)}</code></pre>`);
+    }, this.wrapCollapsible(`<pre><code class="language-markdown">${escape(response)}</code></pre>`));
 
     await this.save();
   }
@@ -544,17 +651,30 @@ export class TraceLogger {
     exitCode: number,
     stdout: string,
     stderr: string,
-    context?: { step: number },
+    context?: { step: number; script?: string },
   ) {
     let content = `<b>Command:</b> <code>${command}</code><br>`;
+    if (context?.script) {
+      content += `<b>Script:</b>${
+        this.wrapCollapsible(
+          `<pre><code class="language-bash">${context.script.trim()}</code></pre>`,
+        )
+      }`;
+    }
     content += `<b>Exit Code:</b> ${exitCode}<br>`;
     if (stdout.trim()) {
-      content +=
-        `<b>Stdout:</b><pre><code class="language-bash">${stdout.trim()}</code></pre>`;
+      content += `<b>Stdout:</b>${
+        this.wrapCollapsible(
+          `<pre><code class="language-bash">${stdout.trim()}</code></pre>`,
+        )
+      }`;
     }
     if (stderr.trim()) {
-      content +=
-        `<b>Stderr:</b><pre><code class="language-bash">${stderr.trim()}</code></pre>`;
+      content += `<b>Stderr:</b>${
+        this.wrapCollapsible(
+          `<pre><code class="language-bash">${stderr.trim()}</code></pre>`,
+        )
+      }`;
     }
 
     this.addEvent("command", {
@@ -562,17 +682,25 @@ export class TraceLogger {
       exit_code: exitCode,
       step: context?.step,
       source: "system",
-      description: `Command: ${command}`,
+      description: command === "script_block"
+        ? `Script Block (Step ${context?.step})`
+        : `Command: ${command}`,
     }, content);
 
     await this.save();
   }
 
   async logEvidence(gitStatus: string, gitLog: string) {
-    let content =
-      `<h3>Git Status</h3><pre><code class="language-bash">${gitStatus.trim()}</code></pre>`;
-    content +=
-      `<h3>Git Log</h3><pre><code class="language-bash">${gitLog.trim()}</code></pre>`;
+    let content = `<h3>Git Status</h3>${
+      this.wrapCollapsible(
+        `<pre><code class="language-bash">${gitStatus.trim()}</code></pre>`,
+      )
+    }`;
+    content += `<h3>Git Log</h3>${
+      this.wrapCollapsible(
+        `<pre><code class="language-bash">${gitLog.trim()}</code></pre>`,
+      )
+    }`;
 
     this.addEvent("evidence", {
       source: "system",
@@ -599,16 +727,24 @@ export class TraceLogger {
         const description = isSystem
           ? "Judge System Prompt"
           : "Judge Input (Evidence)";
-        const msgContent = `<pre><code class="language-markdown">${
-          escape(msg.content)
-        }</code></pre>`;
+        const msgContent = this.wrapCollapsible(
+          `<pre><code class="language-markdown">${escape(msg.content)}</code></pre>`,
+        );
 
         content +=
           `<div class="event-message" style="margin-bottom: 10px;"><b>${description}</b>${msgContent}</div>`;
       }
-      content += `<h4>Judge Response</h4><pre><code class="language-json">${
-        escape(judgeInteraction.response)
-      }</code></pre><hr>`;
+      content += `<h4>Judge Response</h4>${
+        this.wrapCollapsible(
+          `<pre><code class="language-json">${escape(judgeInteraction.response)}</code></pre>`,
+        )
+      }<hr>`;
+
+      this.addEvent("interaction", {
+        source: "judge",
+        description: "Judge model response",
+        model: "google/gemini-2.0-flash-001", // Hardcoded as per evaluateChecklist implementation
+      }, this.wrapCollapsible(`<pre><code class="language-json">${escape(judgeInteraction.response)}</code></pre>`));
     }
 
     content +=
@@ -627,7 +763,10 @@ export class TraceLogger {
         <b style="color: ${color}">${icon} ${item.id}</b>: ${item.description}
         ${
         res?.reason
-          ? `<br><i style="font-size: 0.9em; color: #aaa;">Reason: ${res.reason}</i>`
+          ? this.wrapCollapsible(
+            `<i style="font-size: 0.9em; color: #aaa;">Reason: ${res.reason}</i>`,
+            "margin-top: 8px;",
+          )
           : ""
       }
       </li>`;
@@ -648,6 +787,8 @@ export class TraceLogger {
       score: number;
       durationMs: number;
       tokensUsed: number;
+      errors: number;
+      warnings: number;
     },
   ) {
     const statusColor = result.success ? "#6a9955" : "#f44336";
@@ -660,8 +801,12 @@ export class TraceLogger {
           <span class="metric-label">Result</span>
         </div>
         <div class="metric">
-          <span class="metric-value">${result.score.toFixed(1)}%</span>
-          <span class="metric-label">Score</span>
+          <span class="metric-value">${result.errors}</span>
+          <span class="metric-label">Errors</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">${result.warnings}</span>
+          <span class="metric-label">Warnings</span>
         </div>
         <div class="metric">
           <span class="metric-value">${
@@ -692,7 +837,7 @@ export class TraceLogger {
     this.addEvent("tools_definition", {
       source: "system",
       description: "Available tools",
-    }, `<pre><code class="language-json">${toolsDescription}</code></pre>`);
+    }, this.wrapCollapsible(`<pre><code class="language-json">${toolsDescription}</code></pre>`));
 
     await this.save();
   }

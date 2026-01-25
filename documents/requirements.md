@@ -113,6 +113,7 @@
 - [x] Financial cost calculation per scenario and per run.
 - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
 - [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
+- [x] Unified data block UI with smart blur, line numbering, and word wrap.
 - [ ] Three evaluation modes:
   - **Quality (Checklist)**: Binary/Semantic verification of requirements.
     - **Model Selection (SBS/ELO)**: Side-by-Side comparison of two models to determine the superior one.
