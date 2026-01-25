@@ -14,44 +14,74 @@ export async function evaluateChecklist(
   );
 
   const systemPrompt = `
-You are an impartial automated auditor.
-Your job is to verify if an AI Agent followed instructions based on a strict checklist.
+# ROLE
+You are an impartial automated auditor for AI Agent benchmarks.
 
-CONTEXT:
-User Query:
-${userQuery}
+# GOAL
+<objective>
+Evaluate the agent's performance by comparing its actions and results against a provided checklist.
+</objective>
 
-Agent Output/Actions (Logs):
-${agentLogs}
+# CONTEXT
+<context_description>
+You are provided with the user's original query, the agent's execution logs, and the resulting file changes (diffs).
+Your task is to verify if the agent successfully fulfilled the requirements based on the evidence.
+</context_description>
 
-File Changes (Diffs):
-${fileDiffs}
+# RULES
+<rules>
+1. Base your judgment ONLY on the provided evidence in <evidence>.
+2. Be strict: a "pass" is true only if the requirement is fully and clearly met.
+3. Output ONLY a valid JSON object. No markdown blocks, no preamble, no explanation outside the JSON.
+4. The 'reason' field for each item must explain WHY it passed or failed based on specific evidence.
+</rules>
 
-CHECKLIST:
-${checklistJson}
+# INSTRUCTIONS
+<instructions>
+1. Carefully analyze the data in <evidence>.
+2. Compare the evidence against each item in <checklist_items>.
+3. For each item, provide a "reason" (string) and a "pass" (boolean).
+4. Construct and output the final JSON object.
+</instructions>
 
-INSTRUCTIONS:
-1. Analyze the Context against each item in the Checklist.
-2. For each item, provide a "reason" explaining your finding, and then a strict "pass" (boolean).
-3. Output ONLY a valid JSON object mapping the checklist item 'id' to an object with 'reason' (string) and 'pass' (boolean).
-4. Do NOT output markdown formatting (like \`\`\`json), just the raw JSON string.
-
-EXAMPLE OUTPUT:
+# EXAMPLE OUTPUT
 {
   "check_id_1": {
-    "reason": "The agent executed the command correctly.",
+    "reason": "The agent executed 'git commit' and the diff shows the expected changes in main.ts.",
     "pass": true
   },
   "check_id_2": {
-    "reason": "The agent failed to update the file.",
+    "reason": "The agent failed to update the README.md file as requested.",
     "pass": false
   }
 }
 `;
 
+  const userMessage = `
+<evidence>
+  <user_query>
+  ${userQuery}
+  </user_query>
+
+  <agent_logs>
+  ${agentLogs}
+  </agent_logs>
+
+  <file_diffs>
+  ${fileDiffs}
+  </file_diffs>
+</evidence>
+
+<checklist_items>
+${checklistJson}
+</checklist_items>
+
+Evaluate the agent performance now.
+`;
+
   const messages: LLMMessage[] = [
     { role: "system", content: systemPrompt },
-    { role: "user", content: "Evaluate the agent performance now." },
+    { role: "user", content: userMessage },
   ];
 
   try {

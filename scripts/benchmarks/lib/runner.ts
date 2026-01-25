@@ -254,20 +254,35 @@ ${logStr}
 
     await tracer.logEvaluation(checklistResults, scenario.checklist);
 
-    // 7. Calculate Score
+    // 7. Calculate Score and Metrics
     const totalItems = scenario.checklist.length;
     const passedItems = Object.values(checklistResults).filter((v) =>
       v.pass
     ).length;
     const score = totalItems > 0 ? (passedItems / totalItems) * 100 : 0;
-    const success = scenario.checklist.every((item) =>
-      !item.critical || checklistResults[item.id]?.pass
-    );
+
+    let errorsCount = 0;
+    let warningsCount = 0;
+
+    for (const item of scenario.checklist) {
+      const res = checklistResults[item.id];
+      if (!res || !res.pass) {
+        if (item.critical) {
+          errorsCount++;
+        } else {
+          warningsCount++;
+        }
+      }
+    }
+
+    const success = errorsCount === 0;
 
     result = {
       scenarioId: scenario.id,
       success,
       score,
+      errorsCount,
+      warningsCount,
       durationMs,
       tokensUsed,
       totalCost,

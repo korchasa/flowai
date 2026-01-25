@@ -50,6 +50,8 @@ export interface BenchmarkResult {
   scenarioId: string;
   success: boolean;
   score: number; // Percentage of passed checks (0-100)
+  errorsCount: number; // Number of critical failures
+  warningsCount: number; // Number of non-critical failures
   durationMs: number;
   tokensUsed: number;
   totalCost: number;

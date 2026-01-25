@@ -47,6 +47,8 @@ async function main() {
   const results: BenchmarkResult[] = [];
   const workDir = join(Deno.cwd(), "scripts/benchmarks/work");
 
+  let totalCostAll = 0;
+
   for (const scenario of scenariosToRun) {
     for (let i = 0; i < runs; i++) {
       if (runs > 1) {
@@ -55,11 +57,13 @@ async function main() {
       try {
         const result = await runScenario(scenario, { model, workDir });
         results.push(result);
+        totalCostAll += result.totalCost;
 
+        const statusLabel = result.success ? "PASSED" : "FAILED";
         console.log(
-          `  Result: ${result.success ? "PASSED" : "FAILED"} (Score: ${
-            result.score.toFixed(1)
-          }%) Cost: $${result.totalCost.toFixed(6)}`,
+          `  Result: ${statusLabel} (Errors: ${result.errorsCount}, Warnings: ${result.warningsCount}) Cost: $${
+            result.totalCost.toFixed(6)
+          }`,
         );
         console.log("  Checklist:");
         for (const [id, res] of Object.entries(result.checklistResults)) {
@@ -107,35 +111,39 @@ async function main() {
       "Status".padEnd(
         15,
       )
-    } | ${"Score".padEnd(6)} | ${"Time (ms)".padEnd(10)} | ${
+    } | ${"E/W".padEnd(6)} | ${"Steps".padEnd(6)} | ${
+      "Time (ms)".padEnd(10)
+    } | ${
       "Tokens".padEnd(
         10,
       )
     } | ${"Cost ($)"}`,
   );
-  console.log("-".repeat(130));
+  console.log("-".repeat(140));
 
   for (const r of results) {
     let status = r.success ? "PASSED" : "FAILED";
     let color = r.success ? "\x1b[32m" : "\x1b[31m"; // Green : Red
 
-    if (r.success && r.score < 100) {
+    if (r.success && r.warningsCount > 0) {
       status = "WARNING"; // Passed with non-critical failures
       color = "\x1b[33m"; // Yellow
     }
 
     const statusStr = `${color}${status.padEnd(15)}\x1b[0m`;
+    const ewStr = `${r.errorsCount}/${r.warningsCount}`;
 
     console.log(
       `${r.scenarioId.padEnd(30)} | ${r.model.padEnd(30)} | ${statusStr} | ${
-        r.score
-          .toFixed(1)
-          .padEnd(6)
-      } | ${r.durationMs.toFixed(0).padEnd(10)} | ${
-        r.tokensUsed.toString().padEnd(10)
-      } | $${r.totalCost.toFixed(6)}`,
+        ewStr.padEnd(6)
+      } | ${r.toolCallsCount.toString().padEnd(6)} | ${
+        r.durationMs.toFixed(0).padEnd(10)
+      } | ${r.tokensUsed.toString().padEnd(10)} | $${r.totalCost.toFixed(6)}`,
     );
   }
+
+  console.log("-".repeat(140));
+  console.log(`TOTAL COST: $${totalCostAll.toFixed(6)}`);
 
   if (runs > 1) {
     console.log("\n--- PASS RATES ---");

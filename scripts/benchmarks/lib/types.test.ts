@@ -6,6 +6,8 @@ Deno.test("Types - BenchmarkResult should have totalCost", () => {
     scenarioId: "test",
     success: true,
     score: 100,
+    errorsCount: 0,
+    warningsCount: 0,
     durationMs: 100,
     tokensUsed: 100,
     totalCost: 0.001,
