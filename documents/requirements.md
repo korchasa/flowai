@@ -100,15 +100,29 @@
         Updates).
   - [x] Guidance for specific cases (Investigate, Answer, Engineer).
 
-## 4. Non-functional requirements
+### 3.7 Benchmarking (FR-7)
+
+- **Description:** The system must provide an evidence-based benchmarking system to
+  evaluate agent performance objectively.
+- **Use case scenario:** Developer runs `deno task bench` to see how well the
+  agent handles specific scenarios.
+- **Acceptance criteria:**
+  - [x] Isolated sandbox execution for scenarios.
+  - [x] Evidence collection (git status, logs, file changes).
+  - [x] LLM-based Judge for semantic verification.
+  - [x] Financial cost calculation per scenario and per run.
+  - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
+  - [ ] Three evaluation modes: Quality (Checklist), Model Selection (ELO), and Version Comparison (Deltas).
+
 
 - **Performance:** Rules and commands must be concise to fit within the context
   window.
-- **Reliability:** Instructions must be unambiguous to prevent agent
-  hallucination or error.
-- **Scalability:** The system must allow adding new commands and rules without
-  breaking existing ones.
-- **Usability:** Commands must be intuitive (e.g., `/commit`).
+- **Reliability:** Benchmarks must use isolated sandboxes and evidence-based
+  verification.
+- **Scalability:** The benchmarking system must support multiple evaluation modes
+  (Quality, Selection, Comparison).
+- **Usability:** Commands must be intuitive (e.g., `/af-commit`). Benchmark
+  reports must be human-readable and provide actionable feedback via `trace.md`.
 
 ## 5. Interfaces
 

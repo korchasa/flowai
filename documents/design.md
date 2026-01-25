@@ -49,18 +49,27 @@
 - **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
 - **Dependencies:** Updated by `af-update-docs`.
 
-### 3.4 Project Maintenance
+### 3.4 Project Maintenance and Benchmarking
 
-- **Purpose:** Provide automated project maintenance and quality assurance.
+- **Purpose:** Provide automated project maintenance, quality assurance, and
+  performance evaluation.
 - **Status:** Implemented - Deno tasks and scripts available.
 - **Interfaces:** Deno tasks (`deno task check`, `deno task test`,
   `deno task dev`, `deno task bench`).
 - **Dependencies:** Deno runtime, scripts in `./scripts/`.
 - **Features:**
-  - Automated code checking and validation
-  - Test execution framework
-  - Development server management
-  - Benchmark execution (`scripts/benchmarks/`)
+  - Automated code checking and validation.
+  - Test execution framework.
+  - Development server management.
+  - Benchmark execution (`scripts/benchmarks/`).
+  - **Cost Tracking**: Calculates financial cost of LLM usage per scenario and
+    total run.
+  - **Evaluation Metrics**: Uses Errors (critical failures), Warnings
+    (non-critical failures), Steps, Time, and Cost for objective assessment.
+  - **Evaluation Modes**:
+    - **Quality**: Checklist-based verification (Pass/Fail).
+    - **Model Selection**: Pairwise comparison (SBS) with ELO ratings.
+    - **Version Comparison**: Delta analysis between versions.
 
 ## 4. Data and Storage
 

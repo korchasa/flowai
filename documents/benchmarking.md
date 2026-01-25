@@ -67,10 +67,11 @@ Each scenario run generates a `trace.md` file containing a comprehensive record 
 
 ...
 
-## 5. Evaluation
-
-- [x] **<check-id>**: <description>
-- [ ] **<check-id>**: <description> (WARNING/ERROR)
+### 5. Evaluation
+    
+| ID | Description | Pass | Reason |
+|----|-------------|------|--------|
+| <id> | <desc> | [x] | <reason> |
 
 ## Summary
 
