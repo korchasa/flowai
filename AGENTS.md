@@ -45,7 +45,7 @@ EFFECTIVENESS ENTIRELY DEPENDS ON ITS ACCURACY.
 
 ## Architecture
 
-- `.cursor/skills/cmd-*/` stores chat-invoked workflows (Commands).
+- `.cursor/skills/af-*/` stores chat-invoked workflows (Commands).
 - `.cursor/skills/` stores other skills and how-to guides.
 - `.cursor/agents/` stores autonomous sub-agents.
 - `documents/` stores SRS/SDS and supporting documentation.

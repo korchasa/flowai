@@ -28,7 +28,7 @@ The solution is the **AssistFlow**—a structured system of persistent context (
 
 We cannot fully trust the LLM's choices. To guarantee a correct SDLC, we are forced to extract some instructions into **Commands** (skills with `disable-model-invocation: true`). This prevents the agent from automatically transitioning between critical stages, such as moving from planning to execution or from execution to committing, without human verification. Commands act as **guardrails**, enforcing a human-in-the-loop approach for critical state transitions. This results in three distinct types of instructions:
 
-1. **Commands**: Located in `.cursor/skills/cmd-*`. Manually triggered by the user. They enforce process boundaries.
+1. **Commands**: Located in `.cursor/skills/af-*`. Manually triggered by the user. They enforce process boundaries.
 2. **Skills**: Located in `.cursor/skills/` (all others). Automatically triggered by the agent when it recognizes a need.
 3. **Subagents**: Located in `.cursor/agents/`. Automatically triggered by the agent. The agent sees only the result of the subagent's work, not the internal process.
 

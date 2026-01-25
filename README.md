@@ -17,7 +17,7 @@ the development lifecycle.
 
 - **Initialize Project**: Use `init` skill to set up the project structure
   and initial documentation if starting fresh.
-- **Define Vision**: Use `cmd-create-vision-doc` skill to create or update the
+- **Define Vision**: Use `af-create-vision-doc` skill to create or update the
   project vision in `documents/vision.md`.
 
 ### 2. For Each Task
@@ -25,34 +25,34 @@ the development lifecycle.
 **Goal**: Implement features or fixes with high quality and documentation
 coverage.
 
-1. **Plan**: Use `cmd-plan` skill to analyze the request, break it down into
+1. **Plan**: Use `af-plan` skill to analyze the request, break it down into
    steps, and create a plan.
-2. **Execute**: Use `cmd-do` (or `cmd-execute`) skill to write code. This
+2. **Execute**: Use `af-do` (or `af-execute`) skill to write code. This
    ensures adherence to TDD and documentation updates.
 3. **Verify**:
    - Run `deno task test` to check specific tests.
    - **MANDATORY**: Run `deno task check` before completion to ensure the entire
      project is healthy.
-4. **Commit**: Use `cmd-commit` skill to generate a Conventional Commits
+4. **Commit**: Use `af-commit` skill to generate a Conventional Commits
    compliant message and commit changes.
 
 ### 3. Periodic Maintenance
 
 **Goal**: Keep the project clean, documented, and up-to-date.
 
-- **Health Check**: Run `cmd-check-and-fix` or `deno task check` regularly to
+- **Health Check**: Run `af-check-and-fix` or `deno task check` regularly to
   catch regressions.
 - **Update Agents**: Run `deno task check` to ensure all rules are consistent.
 
 ### 4. Specific cases
 
-- **Deep Investigation**: Use `cmd-investigate` if you encounter complex bugs or
+- **Deep Investigation**: Use `af-investigate` if you encounter complex bugs or
   unexplained behavior.
-- **Engineering Utilities**: Use `cmd-engineer-prompt` or `cmd-engineer-rule`
+- **Engineering Utilities**: Use `af-engineer-prompt` or `af-engineer-rule`
   when creating or refining AI instructions.
-- **Codebase Q&A**: Use `cmd-answer` to get explanations or find logic within
+- **Codebase Q&A**: Use `af-answer` to get explanations or find logic within
   the project.
-- **Maintenance Audit**: Use `cmd-maintenance` for a comprehensive project
+- **Maintenance Audit**: Use `af-maintenance` for a comprehensive project
   health check and optimization suggestions.
 
 ## Using Skills in Cursor
@@ -69,21 +69,21 @@ standardize team processes and speeds up typical tasks.
 
 ### Available Skills
 
-- `cmd-answer` - Answer questions with context from codebase
-- `cmd-check-and-fix` - **Iterative check and fix**: run project checks and fix
+- `af-answer` - Answer questions with context from codebase
+- `af-check-and-fix` - **Iterative check and fix**: run project checks and fix
   errors until success
-- `cmd-commit` - Git commit workflow following Conventional Commits
-- `cmd-create-scripts` - Create the Deno task scripts
-- `cmd-create-vision-doc` - Create vision documentation
-- `cmd-do` - General task execution workflow
-- `cmd-engineer-prompt` - Prompt engineering utility
-- `cmd-engineer-rule` - Rule engineering utility
-- `cmd-execute` - Execute and implement planned tasks
-- `cmd-investigate` - Deep investigation and root cause diagnosis
-- `cmd-maintenance` - Project maintenance and health audit
-- `cmd-plan` - Plan and break down complex development tasks
-- `cmd-qa` - Quality Assurance workflow
-- `cmd-reflect` - Reflect on recent work and update context
+- `af-commit` - Git commit workflow following Conventional Commits
+- `af-create-scripts` - Create the Deno task scripts
+- `af-create-vision-doc` - Create vision documentation
+- `af-do` - General task execution workflow
+- `af-engineer-prompt` - Prompt engineering utility
+- `af-engineer-rule` - Rule engineering utility
+- `af-execute` - Execute and implement planned tasks
+- `af-investigate` - Deep investigation and root cause diagnosis
+- `af-maintenance` - Project maintenance and health audit
+- `af-plan` - Plan and break down complex development tasks
+- `af-qa` - Quality Assurance workflow
+- `af-reflect` - Reflect on recent work and update context
 - `draw-mermaid-diagrams` - Create and edit Mermaid diagrams
 - `init` - Project initialization workflow
 - `write-agent-benchmarks` - Create and run agent benchmarks
@@ -114,7 +114,7 @@ and rigid verification, while maintaining all context in the repository.
 - **Skills** (`.cursor/skills/`): Capabilities and workflows.
 - **Agents** (`.cursor/agents/`): AI personas.
 - **Docs Schemas** (`docs-schema-*`): Templates for documentation.
-- **How-To** (`howto-*`): Context-sensitive guides for specific problems.
+- **How-To** (`af-skill-*`): Context-sensitive guides for specific problems.
 
 ## Project Documentation
 

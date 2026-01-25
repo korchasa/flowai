@@ -65,11 +65,11 @@
 - **Description:** The system must provide guides for complex or situational
   tasks.
 - **Use case scenario:** User asks how to fix tests. Agent retrieves
-  `howto-fix-tests/RULE.md` and follows the procedure.
+  `af-skill-fix-tests/RULE.md` and follows the procedure.
 - **Acceptance criteria:**
   - [x] Support for 13 how-to guides covering commit workflows, documentation,
         debugging, testing, Git operations, GitHub management, and GODS tasks
-  - [x] Guides follow `howto-*/` directory naming convention with `RULE.md`
+  - [x] Guides follow `af-skill-*/` directory naming convention with `RULE.md`
         files
   - [x] Each guide provides step-by-step instructions for specific scenarios
 

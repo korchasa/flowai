@@ -30,8 +30,8 @@
 - **Purpose:** Provide specialized capabilities and workflows.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
-  - `cmd-*`: Command-like skills (e.g., `cmd-check-and-fix`, `cmd-commit`).
-  - `howto-*`: Practical guides (e.g., `howto-fix-tests`).
+  - `af-*`: Command-like skills (e.g., `af-check-and-fix`, `af-commit`).
+  - `af-skill-*`: Practical guides (e.g., `af-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
 
 ### 3.2 Agents (`.cursor/agents/`)
@@ -47,7 +47,7 @@
 
 - **Purpose:** Serve as the long-term memory of the project.
 - **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
-- **Dependencies:** Updated by `cmd-update-docs`.
+- **Dependencies:** Updated by `af-update-docs`.
 
 ### 3.4 Project Maintenance
 

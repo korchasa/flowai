@@ -14,8 +14,8 @@
 
 - `agents/` - Agent definitions and prompts.
 - `skills/` - Executable skills and workflows.
-  - `cmd-*/` - Command-like skills (formerly commands).
-  - `howto-*/` - How-to guides and workflows.
+  - `af-*/` - Command-like skills (formerly commands).
+  - `af-skill-*/` - How-to guides and workflows.
   - `rules-*/` - Context rules and behavioral frameworks.
 
 ## File Organization Patterns
