@@ -1,3 +1,5 @@
+import { dirname } from "@std/path";
+
 /**
  * Specification for a command to be executed.
  */
@@ -65,5 +67,44 @@ export async function runCommandsInParallel(
   if (failed) {
     const code = failed.code ?? 1;
     throw new Error(`Command failed (${code}).`);
+  }
+}
+
+/**
+ * Moves a file and cleans up empty parent directories.
+ */
+export async function moveFileWithCleanup(
+  src: string,
+  dest: string,
+): Promise<void> {
+  // Ensure destination directory exists
+  await Deno.mkdir(dirname(dest), { recursive: true });
+
+  // Move the file
+  await runCommand({ cmd: "mv", args: [src, dest] });
+
+  // Cleanup empty directories
+  let currentDir = dirname(src);
+  const rootDir = Deno.cwd();
+
+  while (currentDir !== rootDir && currentDir !== "/" && currentDir !== ".") {
+    try {
+      const entries = [];
+      for await (const entry of Deno.readDir(currentDir)) {
+        entries.push(entry);
+      }
+
+      if (entries.length === 0) {
+        await Deno.remove(currentDir);
+        currentDir = dirname(currentDir);
+      } else {
+        break;
+      }
+    } catch (error) {
+      if (error instanceof Deno.errors.NotFound) {
+        break;
+      }
+      throw error;
+    }
   }
 }
