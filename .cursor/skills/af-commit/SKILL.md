@@ -67,7 +67,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      1. Stage specific files or hunks for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
-     - *Note: Ensure documentation changes are included in the same commit as the logic they describe.*
+     - _Note: Ensure documentation changes are included in the same commit as the logic they describe._
 5. **Publish**
    - Push all created commits to GitHub.
    - If not on `main`, create a pull request via `gh pr create` and share the

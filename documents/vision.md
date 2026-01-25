@@ -41,21 +41,25 @@ All persistent agent instructions that must be included in every chat session ar
 It is crucial to distinguish between the requirements for the **AssistFlow** itself and the requirements for **Consumer Projects** that utilize the framework.
 
 #### A. AssistFlow Requirements (This Repo)
+
 These are the requirements for developing and maintaining the framework itself:
-1.  **Self-Hosting**: The framework is developed using the framework.
-2.  **Tech Stack**: TypeScript, Deno.
-3.  **Validation**: `deno task check` (lint, format, typecheck).
-4.  **Testing**: `deno task test` (unit tests for scripts).
-5.  **Benchmarking**: `deno task bench` (validating agent behavior against scenarios).
-6.  **Distribution**: Must be easily installable into other repositories (e.g., via `deno task init`).
+
+1. **Self-Hosting**: The framework is developed using the framework.
+2. **Tech Stack**: TypeScript, Deno.
+3. **Validation**: `deno task check` (lint, format, typecheck).
+4. **Testing**: `deno task test` (unit tests for scripts).
+5. **Benchmarking**: `deno task bench` (validating agent behavior against scenarios).
+6. **Distribution**: Must be easily installable into other repositories (e.g., via `deno task init`).
 
 #### B. Consumer Project Requirements (Projects using the Framework)
+
 These are the requirements imposed on any project that adopts the AssistFlow:
-1.  **Structure**: Must have a `.cursor` folder and a `documents` folder.
-2.  **Documentation**: Must maintain SRS/SDS in `documents/`.
-3.  **Verification**: Must provide a standard command for verification (e.g., `npm run check`, `make test`, `cargo check`) that the agent can invoke.
-4.  **Context**: Must provide an `AGENTS.md` (or equivalent) for persistent context.
-5.  **Discipline**: Users must follow the command-driven workflow (`/plan`, `/do`, etc.) rather than free-form chat for complex tasks.
+
+1. **Structure**: Must have a `.cursor` folder and a `documents` folder.
+2. **Documentation**: Must maintain SRS/SDS in `documents/`.
+3. **Verification**: Must provide a standard command for verification (e.g., `npm run check`, `make test`, `cargo check`) that the agent can invoke.
+4. **Context**: Must provide an `AGENTS.md` (or equivalent) for persistent context.
+5. **Discipline**: Users must follow the command-driven workflow (`/plan`, `/do`, etc.) rather than free-form chat for complex tasks.
 
 ## 5. Business Goals
 

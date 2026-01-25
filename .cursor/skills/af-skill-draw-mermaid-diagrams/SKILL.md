@@ -9,10 +9,10 @@ description: Draw and edit Mermaid diagrams in Markdown. Use when the user wants
 
 When the user asks to create a diagram or visualize a process, use Mermaid syntax within Markdown code blocks.
 
-1.  **Identify the Diagram Type**: Determine the best diagram type for the user's request (e.g., Flowchart for processes, Sequence Diagram for interactions, ER Diagram for data structures).
-2.  **Consult the Specification**: Refer to `SPEC.md` for syntax details if needed.
-3.  **Generate Markdown**: Output the diagram inside a `mermaid` code block.
-4.  **Validate (Optional)**: For complex diagrams, use the validation script to check for syntax errors.
+1. **Identify the Diagram Type**: Determine the best diagram type for the user's request (e.g., Flowchart for processes, Sequence Diagram for interactions, ER Diagram for data structures).
+2. **Consult the Specification**: Refer to `SPEC.md` for syntax details if needed.
+3. **Generate Markdown**: Output the diagram inside a `mermaid` code block.
+4. **Validate (Optional)**: For complex diagrams, use the validation script to check for syntax errors.
 
 ## Validation
 
@@ -24,14 +24,14 @@ python .cursor/skills/af-skill-draw-mermaid-diagrams/scripts/validate.py path/to
 
 ## Diagram Types Selection
 
-*   **Flowchart**: Algorithms, workflows, decision trees.
-*   **Sequence Diagram**: API interactions, user flows, system communication.
-*   **Class Diagram**: Object-oriented structure, database schemas (alternative to ER).
-*   **State Diagram**: State machines, lifecycle of an object.
-*   **ER Diagram**: Database schemas, entity relationships.
-*   **Gantt Chart**: Project schedules, timelines.
-*   **User Journey**: User experience mapping.
-*   **Pie Chart**: Simple data distribution.
+- **Flowchart**: Algorithms, workflows, decision trees.
+- **Sequence Diagram**: API interactions, user flows, system communication.
+- **Class Diagram**: Object-oriented structure, database schemas (alternative to ER).
+- **State Diagram**: State machines, lifecycle of an object.
+- **ER Diagram**: Database schemas, entity relationships.
+- **Gantt Chart**: Project schedules, timelines.
+- **User Journey**: User experience mapping.
+- **Pie Chart**: Simple data distribution.
 
 ## Examples
 
@@ -60,4 +60,4 @@ sequenceDiagram
 
 ## Resources
 
-*   [Mermaid Specification](SPEC.md)
+- [Mermaid Specification](SPEC.md)

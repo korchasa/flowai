@@ -10,7 +10,7 @@ export interface BenchmarkScenario {
   targetAgentPath: string;
   userQuery: string;
   checklist: BenchmarkChecklistItem[];
-  setup: (sandboxPath: string) => Promise<void>; 
+  setup: (sandboxPath: string) => Promise<void>;
 }
 
 export interface BenchmarkResult {

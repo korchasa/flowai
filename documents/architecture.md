@@ -25,37 +25,37 @@ scripts/task-check.ts
 scripts/task-dev.test.ts
 scripts/task-bench.ts
 scripts/task-dev.ts
-scripts/benchmarks/work/git-committer-atomic-docs/trace.md
-scripts/benchmarks/work/git-committer-atomic-docs/sandbox/main.ts
-scripts/benchmarks/work/git-committer-atomic-docs/sandbox/README.md
-scripts/benchmarks/work/git-committer-basic/trace.md
-scripts/benchmarks/work/git-committer-basic/sandbox/utils.ts
-scripts/benchmarks/work/git-committer-basic/sandbox/README.md
-scripts/benchmarks/work/git-committer-check-fail/trace.md
-scripts/benchmarks/work/git-committer-check-fail/sandbox/deno.json
-scripts/benchmarks/work/git-committer-check-fail/sandbox/file.ts
-scripts/benchmarks/work/git-committer-atomic-refactor/trace.md
-scripts/benchmarks/work/git-committer-atomic-refactor/sandbox/math.ts
-scripts/benchmarks/work/git-committer-atomic-refactor/sandbox/utils.ts
-scripts/benchmarks/work/git-committer-sync-docs/trace.md
-scripts/benchmarks/work/git-committer-sync-docs/sandbox/src.ts
-scripts/benchmarks/work/git-committer-sync-docs/sandbox/documents/README.md
+scripts/benchmarks/work/af-commit-atomic-docs/trace.md
+scripts/benchmarks/work/af-commit-atomic-docs/sandbox/main.ts
+scripts/benchmarks/work/af-commit-atomic-docs/sandbox/README.md
+scripts/benchmarks/work/af-commit-basic/trace.md
+scripts/benchmarks/work/af-commit-basic/sandbox/utils.ts
+scripts/benchmarks/work/af-commit-basic/sandbox/README.md
+scripts/benchmarks/work/af-commit-check-fail/trace.md
+scripts/benchmarks/work/af-commit-check-fail/sandbox/deno.json
+scripts/benchmarks/work/af-commit-check-fail/sandbox/file.ts
+scripts/benchmarks/work/af-commit-atomic-refactor/trace.md
+scripts/benchmarks/work/af-commit-atomic-refactor/sandbox/math.ts
+scripts/benchmarks/work/af-commit-atomic-refactor/sandbox/utils.ts
+scripts/benchmarks/work/af-commit-sync-docs/trace.md
+scripts/benchmarks/work/af-commit-sync-docs/sandbox/src.ts
+scripts/benchmarks/work/af-commit-sync-docs/sandbox/documents/README.md
 scripts/benchmarks/work/interviewer-clarify-feature/trace.md
 scripts/benchmarks/work/interviewer-clarify-feature/sandbox/README.md
-scripts/benchmarks/work/git-committer-deps/trace.md
-scripts/benchmarks/work/git-committer-deps/sandbox/mod.ts
-scripts/benchmarks/work/git-committer-deps/sandbox/deno.json
+scripts/benchmarks/work/af-commit-deps/trace.md
+scripts/benchmarks/work/af-commit-deps/sandbox/mod.ts
+scripts/benchmarks/work/af-commit-deps/sandbox/deno.json
 scripts/benchmarks/work/interviewer-bug-report/trace.md
 scripts/benchmarks/work/interviewer-bug-report/sandbox/error.log
-scripts/benchmarks/work/git-committer-check/trace.md
-scripts/benchmarks/work/git-committer-check/sandbox/deno.json
-scripts/benchmarks/work/git-committer-check/sandbox/file.ts
+scripts/benchmarks/work/af-commit-check/trace.md
+scripts/benchmarks/work/af-commit-check/sandbox/deno.json
+scripts/benchmarks/work/af-commit-check/sandbox/file.ts
 scripts/benchmarks/work/interviewer-arch-choice/trace.md
 scripts/benchmarks/work/interviewer-arch-choice/sandbox/deno.json
-scripts/benchmarks/work/git-committer-atomic-hunk/trace.md
-scripts/benchmarks/work/git-committer-atomic-hunk/sandbox/code.ts
+scripts/benchmarks/work/af-commit-atomic-hunk/trace.md
+scripts/benchmarks/work/af-commit-atomic-hunk/sandbox/code.ts
 scripts/benchmarks/scenarios/interviewer.bench.ts
-scripts/benchmarks/scenarios/git-committer.bench.ts
+scripts/benchmarks/scenarios/af-commit.bench.ts
 scripts/benchmarks/lib/judge.ts
 scripts/benchmarks/lib/types.ts
 scripts/benchmarks/lib/llm.ts
@@ -160,4 +160,4 @@ coverage.
 1. **Plan**: Use `af-plan` skill to analyze the request, break it down into
    steps, and create a plan.
 2. **Execute**: Use `af-do` (or `af-execute`) skill to wri
-...
+   ...

@@ -1,14 +1,16 @@
 # Benchmarking Subsystem Design
 
 ## 1. Overview
+
 The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by running scenarios in isolated sandbox environments. It validates not just the text output, but the actual side effects (files created, git commits, etc.).
 
 ## 2. Directory Structure
+
 Work artifacts are stored in `scripts/benchmarks/work/`, which is git-ignored.
 
 ```text
 scripts/benchmarks/work/
-└── <scenario-id>/              # e.g., git-committer-basic
+└── <scenario-id>/              # e.g., af-commit-basic
     ├── sandbox/                # Isolated execution environment
     │   ├── .git/
     │   ├── README.md
@@ -17,6 +19,7 @@ scripts/benchmarks/work/
 ```
 
 ## 3. Trace Log (`trace.md`)
+
 Each scenario run generates a `trace.md` file containing a comprehensive record of the session. This allows for post-mortem analysis of the agent's reasoning and actions.
 
 ### Format Specification
@@ -29,35 +32,48 @@ Each scenario run generates a `trace.md` file containing a comprehensive record 
 **Model:** `<model-name>`
 
 ## 1. Context
+
 **Agent Rules:** `<path-to-agent-rules>`
 **User Query:**
+
 > <user-query>
 
 ## 2. LLM Interaction
+
 ### Input Messages
+
 **System:** ...
 **User:** ...
 
 ### Model Output
+
 <raw-llm-response>
 
 ## 3. Execution Trace
+
 **Command:** `<command>`
+
 - **Exit Code:** `<code >`
 - **Stdout:** ...
 - **Stderr:** ...
 
 ## 4. Evidence State
+
 ### Git Status
+
 ...
+
 ### Git Log
+
 ...
 
 ## 5. Evaluation
+
 - [x] **<check-id>**: <description>
 - [ ] **<check-id>**: <description> (WARNING/ERROR)
 
 ## Summary
+
 - **Result:** PASSED / FAILED
 - **Score:** <N>%
 - **Duration:** <N>ms
@@ -65,6 +81,7 @@ Each scenario run generates a `trace.md` file containing a comprehensive record 
 ```
 
 ## 4. Execution Flow
+
 1. **Setup**: Clean `scripts/benchmarks/work/<scenario-id>`, create `sandbox/`.
 2. **Init**: Initialize `trace.md` with header and context.
 3. **Simulation**: Run LLM, log inputs and outputs to `trace.md`.

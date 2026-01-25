@@ -5,13 +5,15 @@
 A flowchart is a type of diagram that represents an algorithm, workflow or process.
 
 ### 1.1 Graph Directions
-* `TB` - top bottom
-* `BT` - bottom top
-* `RL` - right left
-* `LR` - left right
-* `TD` - same as TB
+
+- `TB` - top bottom
+- `BT` - bottom top
+- `RL` - right left
+- `LR` - left right
+- `TD` - same as TB
 
 Example:
+
 ```mermaid
 graph TD;
     A-->B;
@@ -21,26 +23,29 @@ graph TD;
 ```
 
 ### 1.2 Nodes & Shapes
-* `id` - Default box
-* `id1[Text]` - Rectangle with text
-* `id1(Text)` - Rounded edges
-* `id1((Text))` - Circle
-* `id1>Text]` - Asymmetric shape
-* `id1{Text}` - Rhombus (Decision)
+
+- `id` - Default box
+- `id1[Text]` - Rectangle with text
+- `id1(Text)` - Rounded edges
+- `id1((Text))` - Circle
+- `id1>Text]` - Asymmetric shape
+- `id1{Text}` - Rhombus (Decision)
 
 ### 1.3 Links
-* `A-->B` - Arrow head
-* `A---B` - Open link
-* `A-- Text ---B` - Text on link
-* `A---|Text|B` - Text on link
-* `A-->|Text|B` - Link with arrow and text
-* `A-- Text -->B` - Link with arrow and text
-* `A-.->B` - Dotted link
-* `A-. Text .->B` - Dotted link with text
-* `A==>B` - Thick link
-* `A== Text ==>B` - Thick link with text
+
+- `A-->B` - Arrow head
+- `A---B` - Open link
+- `A-- Text ---B` - Text on link
+- `A---|Text|B` - Text on link
+- `A-->|Text|B` - Link with arrow and text
+- `A-- Text -->B` - Link with arrow and text
+- `A-.->B` - Dotted link
+- `A-. Text .->B` - Dotted link with text
+- `A==>B` - Thick link
+- `A== Text ==>B` - Thick link with text
 
 ### 1.4 Subgraphs
+
 ```mermaid
 graph TB
     c1-->a2
@@ -60,6 +65,7 @@ graph TB
 A Sequence diagram is an interaction diagram that shows how processes operate with one another and in what order.
 
 ### 2.1 Participants
+
 ```mermaid
 sequenceDiagram
     participant Alice
@@ -69,6 +75,7 @@ sequenceDiagram
 ```
 
 ### 2.2 Aliases
+
 ```mermaid
 sequenceDiagram
     participant A as Alice
@@ -78,14 +85,16 @@ sequenceDiagram
 ```
 
 ### 2.3 Messages
-* `->` Solid line without arrow
-* `-->` Dotted line without arrow
-* `->>` Solid line with arrowhead
-* `-->>` Dotted line with arrowhead
-* `-x` Solid line with a cross at the end (async)
-* `--x` Dotted line with a cross at the end (async)
+
+- `->` Solid line without arrow
+- `-->` Dotted line without arrow
+- `->>` Solid line with arrowhead
+- `-->>` Dotted line with arrowhead
+- `-x` Solid line with a cross at the end (async)
+- `--x` Dotted line with a cross at the end (async)
 
 ### 2.4 Activations
+
 ```mermaid
 sequenceDiagram
     Alice->>John: Hello John, how are you?
@@ -93,12 +102,15 @@ sequenceDiagram
     John-->>Alice: Great!
     deactivate John
 ```
+
 Shortcut: `Alice->>+John: Hello` and `John-->>-Alice: Great!`
 
 ### 2.5 Notes
+
 `Note [ right of | left of | over ] [Actor]: Text`
 
 ### 2.6 Loops
+
 ```mermaid
 sequenceDiagram
     Alice->John: Hello
@@ -108,6 +120,7 @@ sequenceDiagram
 ```
 
 ### 2.7 Alt (Alternative paths)
+
 ```mermaid
 sequenceDiagram
     Alice->>John: Hello
@@ -136,6 +149,7 @@ gantt
 ```
 
 ## 4. Class Diagrams
+
 ```mermaid
 classDiagram
     Class01 <|-- AveryLongClass : Cool
@@ -154,6 +168,7 @@ classDiagram
 ```
 
 ## 5. State Diagrams
+
 ```mermaid
 stateDiagram-v2
     [*] --> Still
@@ -165,6 +180,7 @@ stateDiagram-v2
 ```
 
 ## 6. Entity Relationship Diagrams
+
 ```mermaid
 erDiagram
     CUSTOMER ||--o{ ORDER : places
@@ -173,6 +189,7 @@ erDiagram
 ```
 
 ## 7. User Journey
+
 ```mermaid
 journey
     title My working day
@@ -186,6 +203,7 @@ journey
 ```
 
 ## 8. Pie Chart
+
 ```mermaid
 pie title Pets adopted by volunteers
     "Dogs" : 386

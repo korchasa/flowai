@@ -39,7 +39,7 @@
 - **Purpose:** Define specialized AI personas and roles.
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
-  - `git-committer.md`: Specialist in QA, documentation updates, and atomic commits.
+  - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.
 
