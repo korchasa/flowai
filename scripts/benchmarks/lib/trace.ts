@@ -67,7 +67,8 @@ export class TraceLogger {
         let stepHeader = "";
 
         if (
-          event.metadata.step !== undefined && event.metadata.step !== currentStep
+          event.metadata.step !== undefined &&
+          event.metadata.step !== currentStep
         ) {
           currentStep = event.metadata.step as number;
           stepHeader = `
@@ -493,7 +494,9 @@ export class TraceLogger {
       <header>
         <h1>Benchmark Trace: ${escape(meta.name)}</h1>
         <div class="meta-grid">
-          <div class="meta-item"><b>ID:</b> <code>${escape(meta.id)}</code></div>
+          <div class="meta-item"><b>ID:</b> <code>${
+      escape(meta.id)
+    }</code></div>
           <div class="meta-item"><b>Model:</b> <code>${
       escape(meta.model)
     }</code></div>
@@ -618,7 +621,9 @@ export class TraceLogger {
       const description = isSystem ? "System Prompt" : "User Message";
 
       const content = this.wrapCollapsible(
-        `<pre><code class="language-markdown">${escape(msg.content)}</code></pre>`,
+        `<pre><code class="language-markdown">${
+          escape(msg.content)
+        }</code></pre>`,
       );
 
       this.addEvent("message", {
@@ -632,12 +637,18 @@ export class TraceLogger {
       }, content);
     }
 
-    this.addEvent("interaction", {
-      source: context.source,
-      step: context.step,
-      model: context.model,
-      description: "Model response",
-    }, this.wrapCollapsible(`<pre><code class="language-markdown">${escape(response)}</code></pre>`));
+    this.addEvent(
+      "interaction",
+      {
+        source: context.source,
+        step: context.step,
+        model: context.model,
+        description: "Model response",
+      },
+      this.wrapCollapsible(
+        `<pre><code class="language-markdown">${escape(response)}</code></pre>`,
+      ),
+    );
 
     await this.save();
   }
@@ -728,7 +739,9 @@ export class TraceLogger {
           ? "Judge System Prompt"
           : "Judge Input (Evidence)";
         const msgContent = this.wrapCollapsible(
-          `<pre><code class="language-markdown">${escape(msg.content)}</code></pre>`,
+          `<pre><code class="language-markdown">${
+            escape(msg.content)
+          }</code></pre>`,
         );
 
         content +=
@@ -736,15 +749,25 @@ export class TraceLogger {
       }
       content += `<h4>Judge Response</h4>${
         this.wrapCollapsible(
-          `<pre><code class="language-json">${escape(judgeInteraction.response)}</code></pre>`,
+          `<pre><code class="language-json">${
+            escape(judgeInteraction.response)
+          }</code></pre>`,
         )
       }<hr>`;
 
-      this.addEvent("interaction", {
-        source: "judge",
-        description: "Judge model response",
-        model: "google/gemini-2.0-flash-001", // Hardcoded as per evaluateChecklist implementation
-      }, this.wrapCollapsible(`<pre><code class="language-json">${escape(judgeInteraction.response)}</code></pre>`));
+      this.addEvent(
+        "interaction",
+        {
+          source: "judge",
+          description: "Judge model response",
+          model: "google/gemini-2.0-flash-001", // Hardcoded as per evaluateChecklist implementation
+        },
+        this.wrapCollapsible(
+          `<pre><code class="language-json">${
+            escape(judgeInteraction.response)
+          }</code></pre>`,
+        ),
+      );
     }
 
     content +=
@@ -762,13 +785,13 @@ export class TraceLogger {
         `<li style="margin-bottom: 10px; padding: 10px; border-radius: 4px; background: #2d2d2d; border-left: 4px solid ${color}">
         <b style="color: ${color}">${icon} ${item.id}</b>: ${item.description}
         ${
-        res?.reason
-          ? this.wrapCollapsible(
-            `<i style="font-size: 0.9em; color: #aaa;">Reason: ${res.reason}</i>`,
-            "margin-top: 8px;",
-          )
-          : ""
-      }
+          res?.reason
+            ? this.wrapCollapsible(
+              `<i style="font-size: 0.9em; color: #aaa;">Reason: ${res.reason}</i>`,
+              "margin-top: 8px;",
+            )
+            : ""
+        }
       </li>`;
     }
     content += `</ul>`;
@@ -834,10 +857,16 @@ export class TraceLogger {
   }
 
   async logTools(toolsDescription: string) {
-    this.addEvent("tools_definition", {
-      source: "system",
-      description: "Available tools",
-    }, this.wrapCollapsible(`<pre><code class="language-json">${toolsDescription}</code></pre>`));
+    this.addEvent(
+      "tools_definition",
+      {
+        source: "system",
+        description: "Available tools",
+      },
+      this.wrapCollapsible(
+        `<pre><code class="language-json">${toolsDescription}</code></pre>`,
+      ),
+    );
 
     await this.save();
   }
