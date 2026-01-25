@@ -24,6 +24,26 @@ export interface BenchmarkScenario {
    * Checklist for the LLM Judge to verify.
    */
   checklist: BenchmarkChecklistItem[];
+
+  /**
+   * Mocks for external tools.
+   * Key: Tool name (e.g., "gh")
+   * Value: Script content (e.g., "echo 'PR Created'")
+   */
+  mocks?: Record<string, string>;
+
+  /**
+   * Maximum number of steps in the REPL loop.
+   * Defaults to 10.
+   */
+  maxSteps?: number;
+
+  /**
+   * Timeout for each step in milliseconds.
+   * Covers both LLM response and command execution.
+   * Defaults to no timeout.
+   */
+  stepTimeoutMs?: number;
 }
 
 export interface BenchmarkResult {
@@ -32,6 +52,7 @@ export interface BenchmarkResult {
   score: number; // Percentage of passed checks (0-100)
   durationMs: number;
   tokensUsed: number;
+  totalCost: number;
   toolCallsCount: number;
   model: string;
   checklistResults: Record<string, { pass: boolean; reason: string }>;
@@ -50,5 +71,6 @@ export interface LLMResponse {
     prompt_tokens: number;
     completion_tokens: number;
     total_tokens: number;
+    cost?: number;
   };
 }

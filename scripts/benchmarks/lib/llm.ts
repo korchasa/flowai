@@ -1,18 +1,19 @@
 import { LLMMessage, LLMResponse } from "./types.ts";
 
-const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 const DEFAULT_MODEL = "google/gemini-2.0-flash-001"; // Fast and cheap for the agent
-
-if (!OPENROUTER_API_KEY) {
-  console.warn("WARNING: OPENROUTER_API_KEY is not set. LLM calls will fail.");
-}
 
 export async function chatCompletion(
   messages: LLMMessage[],
   model: string = DEFAULT_MODEL,
   temperature: number = 0,
+  signal?: AbortSignal,
 ): Promise<LLMResponse> {
+  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
+
   if (!OPENROUTER_API_KEY) {
+    console.warn(
+      "WARNING: OPENROUTER_API_KEY is not set. LLM calls will fail.",
+    );
     throw new Error("OPENROUTER_API_KEY is not set.");
   }
 
@@ -31,6 +32,7 @@ export async function chatCompletion(
         messages,
         temperature,
       }),
+      signal,
     },
   );
 
