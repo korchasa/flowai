@@ -12,17 +12,25 @@ The system covers the execution lifecycle of agent scenarios, from environment s
 
 ### 1.3 Benchmarking Modes
 
-The system MUST support two primary evaluation modes:
+The system MUST support three primary evaluation modes:
 
 1. **Quality Evaluation (Checklist-based)**:
-   - Evaluates a single agent/model against a predefined set of criteria (checklist).
-   - Provides absolute scores and detailed feedback on specific failures.
-   - Best for regression testing and verifying specific capabilities.
-2. **Model Selection (Pairwise Comparison & ELO)**:
-   - Compares outputs from two or more models/agents on the same task.
-   - Uses an LLM-as-a-Judge to perform pairwise comparison (Side-by-Side).
-   - Calculates ELO ratings to rank models objectively over multiple scenarios.
-   - Best for choosing the most capable model for a specific class of tasks.
+   - **Goal**: Verify if an agent meets the minimum quality standards.
+   - **Method**: Evaluates a single agent against a predefined checklist of criteria (Critical Errors vs Warnings).
+   - **Metrics**: Pass/Fail status, Errors count, Warnings count, Steps taken, Time, Financial Cost.
+   - **Use Case**: CI/CD pipelines, regression testing, daily health checks.
+
+2. **Model Selection (Pairwise Comparison)**:
+   - **Goal**: Determine which LLM/Model performs best on a specific task.
+   - **Method**: **LLM-as-a-Judge Side-by-Side (SBS)**. The Judge receives the task context and the outputs (logs, artifacts) from two different models. It analyzes them concurrently and selects the winner based on reasoning, quality, and efficiency.
+   - **Metrics**: Win Rate, ELO Rating.
+   - **Use Case**: Choosing the default model for a new agent or feature.
+
+3. **Version Comparison (Regression/Improvement Tracking)**:
+   - **Goal**: Measure the impact of changes to the agent's prompt or logic.
+   - **Method**: **LLM-as-a-Judge Side-by-Side (SBS)**. The Judge compares the execution of the current version (HEAD) against a baseline (BASE). It determines if the changes resulted in better logic or output quality, essentially treating the versions as two competing models.
+   - **Metrics**: Win/Loss vs Baseline (Quality), Delta values (Cost, Time) for human review.
+   - **Use Case**: optimizing prompts, refactoring agent logic.
 
 ## 2. Core Philosophy
 
@@ -100,9 +108,10 @@ The system MUST support two primary evaluation modes:
 #### 3.2.3 Cost & Efficiency Metrics
 
 - The system MUST track:
-  - **Token Usage**: Prompt and completion tokens.
+  - **Financial Cost**: Total cost of LLM usage (input/output tokens).
   - **Steps Taken**: Number of turns in the loop.
   - **Duration**: Wall-clock time.
+  - **Token Usage**: Prompt and completion tokens.
 - **Constraint**: Tests can fail if they exceed a "Budget" (cost or steps), even if the functional result is correct.
 
 ### 3.2.4 Output Normalization
@@ -145,26 +154,24 @@ The system MUST support two primary evaluation modes:
 
 ### 5.1 Scenario Definition
 
-```typescript
-interface BenchmarkScenario {
-  id: string; // Unique ID
-  name: string; // Readable name
-  targetAgent: string; // Path to agent definition
-  setup: (sandbox) => Promise<void>; // Fixture setup
-  userQuery: string; // Initial prompt
-  checklist: CheckItem[]; // Evaluation criteria
-  maxSteps?: number; // Loop limit
-  mocks?: Record<string, string>; // Tool mocks
-}
+```pseudocode
+Structure BenchmarkScenario:
+    id: String              // Unique identifier (e.g., "af-commit-basic")
+    name: String            // Human-readable name
+    targetAgentPath: Path   // Path to the agent/skill definition
+    setup: Function(sandboxPath: Path) -> Promise // Fixture setup logic
+    userQuery: String       // The initial task for the agent
+    checklist: List<ChecklistItem> // Evaluation criteria
+    maxSteps: Integer       // Optional limit on interaction turns (default: 10)
+    mocks: Map<String, String> // Optional tool mocks (command -> response)
 ```
 
 ### 5.2 Checklist Item
 
-```typescript
-interface CheckItem {
-  id: string;
-  description: string;
-  critical: boolean; // True = Test Failure, False = Warning
-  type?: "static" | "semantic"; // Static (grep) vs Semantic (LLM judge)
-}
+```pseudocode
+Structure ChecklistItem:
+    id: String              // Unique identifier within the scenario
+    description: String     // What the judge should verify
+    critical: Boolean       // True: Failure fails the test. False: Results in a warning.
+    type: Enum              // Optional: "static" (regex/grep) or "semantic" (LLM judge)
 ```

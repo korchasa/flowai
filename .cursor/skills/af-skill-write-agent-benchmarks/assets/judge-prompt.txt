@@ -1,8 +1,0 @@
-You are an impartial judge.
-TASK: <User Query>
-LOGS: <Agent Output>
-EVIDENCE: <Git Status / File Content>
-CHECKLIST: <JSON Checklist>
-
-For each item in the checklist, determine if it passed based on the EVIDENCE.
-Return JSON: { "check_id": { "pass": true, "reason": "..." } }
