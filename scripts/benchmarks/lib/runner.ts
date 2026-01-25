@@ -147,46 +147,50 @@ DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add 
         while ((match = bashRegex.exec(agentOutput)) !== null) {
           foundCommands = true;
           const script = match[1];
-          const commands = script.split("\n").filter((line) =>
-            line.trim() !== "" && !line.trim().startsWith("#")
-          );
+          // Execute the entire block as a single script
+          // This supports heredocs, loops, and multi-line commands correctly
+          toolCallsCount++;
+          executedCommands += `> [Script Block]\n${script}\n`;
+          stepCommands += `> [Script Block]\n${script}\n`;
 
-          for (const cmdStr of commands) {
-            toolCallsCount++;
-            executedCommands += `> ${cmdStr}\n`;
-            stepCommands += `> ${cmdStr}\n`;
+          try {
+            const scriptPath = join(sandboxPath, `step_${step}_script.sh`);
+            await Deno.writeTextFile(scriptPath, script);
+            await Deno.chmod(scriptPath, 0o755);
 
-            try {
-              // Robust execution via sh -c
-              const command = new Deno.Command("sh", {
-                args: ["-c", cmdStr],
-                cwd: sandboxPath,
-                stdout: "piped",
-                stderr: "piped",
-                env: mockEnv,
-                signal: stepSignal,
-              });
-              const output = await command.output();
-              const stdout = new TextDecoder().decode(output.stdout);
-              const stderr = new TextDecoder().decode(output.stderr);
+            const command = new Deno.Command("sh", {
+              args: [scriptPath],
+              cwd: sandboxPath,
+              stdout: "piped",
+              stderr: "piped",
+              env: mockEnv,
+              signal: stepSignal,
+            });
+            const output = await command.output();
+            const stdout = new TextDecoder().decode(output.stdout);
+            const stderr = new TextDecoder().decode(output.stderr);
 
-              executedCommands += `STDOUT: ${stdout}\n`;
-              stepCommands += `STDOUT: ${stdout}\n`;
-              if (stderr) {
-                executedCommands += `STDERR: ${stderr}\n`;
-                stepCommands += `STDERR: ${stderr}\n`;
-              }
-
-              await tracer.logCommand(cmdStr, output.code, stdout, stderr);
-            } catch (e) {
-              const errorMsg = e instanceof Error && e.name === "AbortError"
-                ? "Step timeout exceeded during command execution"
-                : String(e);
-              executedCommands += `ERROR: ${errorMsg}\n`;
-              stepCommands += `ERROR: ${errorMsg}\n`;
-              await tracer.logCommand(cmdStr, -1, "", errorMsg);
-              if (e instanceof Error && e.name === "AbortError") break;
+            executedCommands += `STDOUT: ${stdout}\n`;
+            stepCommands += `STDOUT: ${stdout}\n`;
+            if (stderr) {
+              executedCommands += `STDERR: ${stderr}\n`;
+              stepCommands += `STDERR: ${stderr}\n`;
             }
+
+            await tracer.logCommand(
+              "script_block",
+              output.code,
+              stdout,
+              stderr,
+            );
+          } catch (e) {
+            const errorMsg = e instanceof Error && e.name === "AbortError"
+              ? "Step timeout exceeded during command execution"
+              : String(e);
+            executedCommands += `ERROR: ${errorMsg}\n`;
+            stepCommands += `ERROR: ${errorMsg}\n`;
+            await tracer.logCommand("script_block", -1, "", errorMsg);
+            if (e instanceof Error && e.name === "AbortError") break;
           }
           if (stepSignal?.aborted) break;
         }
