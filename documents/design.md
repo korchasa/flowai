@@ -53,6 +53,7 @@
   - `deno task bench`: Evaluates agents via evidence-based scenarios.
   - **Hierarchical Scenarios**: Scenarios are organized as `scripts/benchmarks/scenarios/<skill>/<scenario>/mod.ts`.
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.
+  - **Rich Tracing**: Generates `trace.html` with step-by-step timeline, syntax highlighting, and floating navigation.
 
 ## 4. Data and Storage
 

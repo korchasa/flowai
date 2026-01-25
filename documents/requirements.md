@@ -107,13 +107,14 @@
 - **Use case scenario:** Developer runs `deno task bench` to see how well the
   agent handles specific scenarios.
 - **Acceptance criteria:**
-  - [x] Isolated sandbox execution for scenarios.
-  - [x] Evidence collection (git status, logs, file changes).
-  - [x] LLM-based Judge for semantic verification.
-  - [x] Financial cost calculation per scenario and per run.
-  - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
-  - [ ] Three evaluation modes:
-    - **Quality (Checklist)**: Binary/Semantic verification of requirements.
+- [x] Isolated sandbox execution for scenarios.
+- [x] Evidence collection (git status, logs, file changes).
+- [x] LLM-based Judge for semantic verification.
+- [x] Financial cost calculation per scenario and per run.
+- [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
+- [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
+- [ ] Three evaluation modes:
+  - **Quality (Checklist)**: Binary/Semantic verification of requirements.
     - **Model Selection (SBS/ELO)**: Side-by-Side comparison of two models to determine the superior one.
     - **Version Comparison (Deltas)**: Tracking performance changes (Cost, Time, Quality) between agent versions.
   - [ ] Comprehensive coverage: Scenarios for all core agents (`af-plan`, `af-init`, `af-investigate`, etc.).
