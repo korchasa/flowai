@@ -1,4 +1,4 @@
-import { BenchmarkScenario } from "../../lib/types.ts";
+import { BenchmarkScenario } from "../../../lib/types.ts";
 import { join } from "@std/path";
 
 const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
