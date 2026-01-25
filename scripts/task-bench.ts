@@ -39,11 +39,43 @@ const SCENARIOS: BenchmarkScenario[] = [
 
 const DEFAULT_MODEL = "google/gemini-2.0-flash-001";
 
+function printHelp() {
+  console.log(`
+Usage: deno task bench [options]
+
+Options:
+  -f, --filter <string>  Filter scenarios by ID (substring match)
+  -m, --model <string>   Model to use (default: ${DEFAULT_MODEL})
+  -n, --runs <number>    Number of runs per scenario (default: 1)
+  --help                 Show this help message
+  `);
+}
+
 async function main() {
   const args = parse(Deno.args, {
     string: ["model", "filter", "runs"],
-    alias: { m: "model", f: "filter", n: "runs" },
+    boolean: ["help"],
+    alias: { m: "model", f: "filter", n: "runs", h: "help" },
+    unknown: (arg) => {
+      if (arg.startsWith("-")) {
+        console.error(`Unknown argument: ${arg}`);
+        printHelp();
+        Deno.exit(1);
+      }
+      return true;
+    },
   });
+
+  if (args.help) {
+    printHelp();
+    Deno.exit(0);
+  }
+
+  if (args._.length > 0) {
+    console.error(`Unexpected positional arguments: ${args._.join(", ")}`);
+    printHelp();
+    Deno.exit(1);
+  }
 
   const filter = args.filter;
   const model = args.model || DEFAULT_MODEL;
