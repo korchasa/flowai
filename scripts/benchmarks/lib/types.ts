@@ -2,6 +2,7 @@ export interface BenchmarkChecklistItem {
   id: string;
   description: string;
   critical: boolean;
+  type?: "static" | "semantic";
 }
 
 export interface BenchmarkScenario {

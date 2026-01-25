@@ -10,6 +10,10 @@ import {
   CommitDepsBench,
   CommitSyncDocsBench,
 } from "./benchmarks/scenarios/af-commit.bench.ts";
+import {
+  PlanBasicBench,
+  PlanContextBench,
+} from "./benchmarks/scenarios/af-plan.bench.ts";
 import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
 
@@ -22,6 +26,8 @@ const SCENARIOS: BenchmarkScenario[] = [
   CommitAtomicHunkBench,
   CommitDepsBench,
   CommitCheckFailBench,
+  PlanBasicBench,
+  PlanContextBench,
 ];
 
 const DEFAULT_MODEL = "google/gemini-2.0-flash-001";
