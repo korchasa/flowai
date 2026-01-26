@@ -870,4 +870,30 @@ export class TraceLogger {
 
     await this.save();
   }
+
+  async logSystemPrompt(content: string) {
+    this.addEvent(
+      "message",
+      {
+        role: "system",
+        source: "system",
+        description: "Assembled System Prompt",
+        role_attr: "system",
+      },
+      this.wrapCollapsible(
+        `<pre><code class="language-markdown">${escape(content)}</code></pre>`,
+      ),
+    );
+    await this.save();
+  }
+}
+
+// Simple HTML escaping helper for use outside the class if needed
+function escape(str: string) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }

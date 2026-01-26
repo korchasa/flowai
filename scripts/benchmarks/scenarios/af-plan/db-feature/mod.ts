@@ -8,7 +8,8 @@ export const PlanDbFeatureBench: BenchmarkScenario = {
   targetAgentPath: AGENT_PATH,
 
   setup: async (_sandboxPath: string) => {
-    // Schema and service are now in fixture/
+    // Initial state is automatically loaded from 'fixture/' directory.
+    // Use this function only for dynamic setup (e.g., git init, complex mocks).
   },
 
   userQuery:
