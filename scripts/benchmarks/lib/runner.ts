@@ -4,6 +4,7 @@ import { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
+import { generateSystemMessage } from "./system-prompt-generator.ts";
 
 export interface RunnerOptions {
   agentConfig: ModelConfig;
@@ -63,17 +64,30 @@ export async function runScenario(
   try {
     // 1.5 Copy fixtures if exist
     const scenarioPathParts = scenario.id.split("-");
-    if (scenarioPathParts[0] === "af") {
+    let fixturePath = scenario.fixturePath;
+
+    if (!fixturePath && scenarioPathParts[0] === "af") {
       const skill = scenarioPathParts[1];
       const id = scenarioPathParts.slice(2).join("-");
-      const fixturePath = join(
+      // Try with full id first, then fallback to parts if needed
+      fixturePath = join(
         Deno.cwd(),
         "scripts/benchmarks/scenarios",
         `af-${skill}`,
-        id,
+        id || scenarioPathParts.slice(2).join("-"),
         "fixture",
       );
 
+      // Special case for af-plan-db which is in af-plan/db-feature
+      if (scenario.id === "af-plan-db") {
+        fixturePath = join(
+          Deno.cwd(),
+          "scripts/benchmarks/scenarios/af-plan/db-feature/fixture",
+        );
+      }
+    }
+
+    if (fixturePath) {
       try {
         const fixtureStat = await Deno.stat(fixturePath);
         if (fixtureStat.isDirectory) {
@@ -89,14 +103,53 @@ export async function runScenario(
       }
     }
 
+    // 2. Load Agent Prompt and AGENTS.md
+    let agentsMarkdown = scenario.agentsMarkdown;
+    if (!agentsMarkdown) {
+      const agentsPath = join(sandboxPath, "AGENTS.md");
+      try {
+        agentsMarkdown = await Deno.readTextFile(agentsPath);
+      } catch (e) {
+        if (!(e instanceof Deno.errors.NotFound)) {
+          throw e;
+        }
+        // If not in sandbox after fixture copy, try to find it in the fixture source
+        if (fixturePath) {
+          try {
+            agentsMarkdown = await Deno.readTextFile(join(fixturePath, "AGENTS.md"));
+          } catch (_) {
+            // Still not found
+          }
+        }
+      }
+    }
+
+    if (!agentsMarkdown) {
+      throw new Error(
+        `AGENTS.md is mandatory for scenario ${scenario.id}. Please provide it in agentsMarkdown or in the fixture directory.`,
+      );
+    }
+
+    if (agentsMarkdown) {
+      await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), agentsMarkdown);
+    }
+
     await scenario.setup(sandboxPath);
 
-    // 2. Load Agent Prompt
-    const agentContent = await Deno.readTextFile(agentPath);
+    const skillContent = await Deno.readTextFile(agentPath);
+
+    const systemMessage = await generateSystemMessage({
+      scenario,
+      sandboxPath,
+      skillContent,
+      agentsMarkdown: agentsMarkdown || "",
+    });
+
+    await tracer.logSystemPrompt(systemMessage);
 
     // 3. Run Agent (Simulation)
     const messages: LLMMessage[] = [
-      { role: "system", content: agentContent },
+      { role: "system", content: systemMessage },
       { role: "user", content: scenario.userQuery },
     ];
 

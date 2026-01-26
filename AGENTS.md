@@ -50,8 +50,9 @@ EFFECTIVENESS ENTIRELY DEPENDS ON ITS ACCURACY.
 - `.cursor/agents/` stores autonomous sub-agents.
 - `documents/` stores SRS/SDS and supporting documentation.
 - `scripts/` stores Deno task scripts used by `deno task`.
-  - `scripts/benchmarks/` stores agent benchmarking infrastructure.
-    - `lib/` stores shared benchmarking logic and utilities.
+    - `scripts/benchmarks/` stores agent benchmarking infrastructure.
+      - `README.md` describes the benchmarking scheme, context assembly, and isolation.
+      - `lib/` stores shared benchmarking logic and utilities.
     - `scenarios/` stores benchmark scenarios with their `mod.ts` and `fixture/` directories.
 
 ## Key Decisions

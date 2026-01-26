@@ -115,11 +115,10 @@
 - [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
 - [x] Unified data block UI with smart blur, line numbering, and word wrap.
 - [x] JSON-based configuration for model presets (agent and judge).
-- [ ] Three evaluation modes:
-  - **Quality (Checklist)**: Binary/Semantic verification of requirements.
-    - **Model Selection (SBS/ELO)**: Side-by-Side comparison of two models to determine the superior one.
-    - **Version Comparison (Deltas)**: Tracking performance changes (Cost, Time, Quality) between agent versions.
-  - [ ] Comprehensive coverage: Scenarios for all core agents (`af-plan`, `af-init`, `af-investigate`, etc.).
+- [x] **Realistic Context Assembly**: System prompts mimic Cursor's real context
+      (user_info, project_layout, git_status, AGENTS.md, available_skills).
+- [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
+      fixtures or provided via config.
 
 ### 3.8 Skill Coverage Matrix
 

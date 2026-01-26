@@ -6,7 +6,10 @@
 - `documents/` - Project documentation (SRS, SDS, etc.).
 - `scripts/` - Deno task scripts and benchmarks.
   - `benchmarks/` - Agent benchmarking system.
+    - `README.md` - Overview of the benchmarking system, context assembly, and isolation.
     - `lib/` - Core benchmarking logic.
+      - `system-prompt-generator.ts` - Logic for assembling realistic system prompts.
+      - `system-prompt.template.md` - Template for the system prompt.
     - `scenarios/` - Test scenario definitions grouped by skill (e.g., `af-commit/basic/mod.ts`).
       - `<scenario_id>/fixture/` - Initial file state for the scenario.
     - `work/` - Runtime sandboxes (git-ignored).

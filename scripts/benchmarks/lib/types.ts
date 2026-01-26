@@ -17,6 +17,13 @@ export interface BenchmarkScenario {
   setup: (sandboxPath: string) => Promise<void>;
 
   /**
+   * Path to the fixture directory (optional).
+   * If provided, contents will be copied to the sandbox before setup.
+   * If not provided, the runner may look for a 'fixture' directory relative to the scenario's 'mod.ts'.
+   */
+  fixturePath?: string;
+
+  /**
    * The initial query from the user to the agent.
    */
   userQuery: string;
@@ -51,6 +58,21 @@ export interface BenchmarkScenario {
    * Used for testing interactive flows.
    */
   userReplies?: string[];
+
+  /**
+   * Custom system instructions template.
+   * If provided, it will be used instead of the default one.
+   * Should contain {{AGENTS}} and {{SKILL}} placeholders.
+   */
+  systemInstructionsTemplate?: string;
+
+  /**
+   * AGENTS.md content.
+   * If provided as string, it will be used.
+   * If not provided, the runner will try to load it from the scenario's fixture directory.
+   * If still not found, the benchmark will fail as AGENTS.md is now mandatory.
+   */
+  agentsMarkdown?: string;
 }
 
 export interface BenchmarkResult {

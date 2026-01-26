@@ -14,7 +14,8 @@ This skill defines a universal, language-agnostic standard for benchmarking Auto
 1.  **Evidence-Based Verification**: We do not trust the agent's words. We verify its actions.
     *   **Bad**: The agent says "I fixed the bug." -> Judge believes it.
     *   **Good**: The agent says "I fixed the bug." -> Judge runs the test suite in the sandbox and verifies the exit code is 0.
-2.  **Isolation & Safety**: Every test run must execute in a completely isolated environment (Sandbox) to prevent side effects on the host system.
+2.  **Strict Isolation (Docker)**: Test run MUST execute in a completely isolated Docker container. This ensures a clean, reproducible environment and prevents any side effects on the host system.
+    *   *Note*: A single container MAY be reused for multiple scenarios within the same run, provided that the environment is fully reset (e.g., cleaning the working directory and resetting system state) between scenarios.
 3.  **Determinism**: Benchmarks should be reproducible. Mock external network calls where possible and use fixed seeds.
 4.  **Freedom of Implementation**: This standard describes **WHAT** needs to be built, not **HOW**. You are free to implement these modules in any language (Python, TS, Go, etc.).
 
@@ -41,8 +42,9 @@ A robust benchmarking system consists of four key modules.
 
 ### 3.1 The Sandbox (Environment)
 The interface through which the agent interacts with the world.
-*   **Isolation**: Must use temporary directories, Docker, or VMs.
+*   **Isolation**: MUST use Docker containers for execution.
 *   **Capabilities**: FileSystem operations, Shell execution (`git`, `npm`), and Snapshotting (capturing state before/after).
+*   **Fixture Loading**: Automatically populates the sandbox from a `fixture/` directory if it exists within the scenario folder.
 
 ### 3.2 The Runner (Orchestrator)
 The central controller managing the test lifecycle (`Setup` -> `Run Agent` -> `Collect Evidence` -> `Teardown`).
@@ -77,7 +79,9 @@ What specific capability are you testing?
 
 ### Step 2: Design the Setup (Pre-condition)
 Create the initial state that presents the problem.
-*   *Action*: Write code to create a file `script.py` containing `print("hello"` (missing closing paren).
+*   **Static Setup**: Place files in a `fixture/` directory within your scenario folder. These files should be automatically copied to the sandbox by the Runner before the agent starts.
+*   **Dynamic Setup**: Use the scenario's setup logic (e.g., a setup function or script) for actions like `git init`, setting up environment variables, or creating files that depend on the dynamic sandbox path.
+    *   *Example*: Initialize a git repository or create a `.env` file with temporary paths.
 
 ### Step 3: Define the Task (Trigger)
 Write the prompt that instructs the agent.
@@ -95,9 +99,9 @@ Add the scenario to your Runner's registry.
 ## 5. Workflow: Running & Debugging
 
 ### Execution Loop
-1.  **Init**: Runner creates a clean Sandbox (e.g., `/tmp/bench-123`).
-2.  **Seed**: Runner executes Scenario Setup (writes the buggy file).
-3.  **Act**: Agent runs in the sandbox.
+1.  **Init**: Runner ensures a clean Sandbox (e.g., starts a new Docker container or resets an existing one).
+2.  **Seed**: Runner executes Scenario Setup (copies fixtures and runs setup logic).
+3.  **Act**: Agent runs in the sandbox container.
     *   Agent reads file -> runs file (fails) -> edits file -> runs file (passes).
 4.  **Stop**: Agent signals completion or timeout.
 5.  **Evidence**: Runner collects `git diff` and execution logs.
