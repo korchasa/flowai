@@ -19,8 +19,7 @@ export const CommitBasicBench: BenchmarkScenario = {
     // This makes it an untracked file, which is what the scenario expects.
   },
 
-  userQuery:
-    "I added a sum function in utils.ts. Commit this changes.",
+  userQuery: "I added a sum function in utils.ts. Commit this changes.",
 
   checklist: [
     {
