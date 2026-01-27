@@ -11,32 +11,36 @@ Each scenario run occurs in an isolated temporary directory (`scripts/benchmarks
 - The directory is completely cleared before starting.
 - Files from the `fixture/` folder of the corresponding scenario are copied to the sandbox.
 - All agent commands (bash scripts) are executed within this directory.
+- The sandbox remains available after the run for manual inspection.
+
+### Docker Isolation
+
+Benchmarks always run in an isolated Docker container to protect the host system from agent-generated commands. The environment is based on `denoland/deno:alpine` with `git` and `bash` installed.
+
+```bash
+deno task bench
+```
+
+This command automatically builds the `assistflow-bench` image and runs the orchestrator inside it.
 
 ### Runner (Orchestrator)
 
 Manages the test lifecycle:
 
-1. **Setup**: Creating the sandbox, copying fixtures, executing `scenario.setup()`.
-2. **Context Assembly**: Assembling the system prompt and preparing `AGENTS.md`.
+1. **Setup**: Creating the sandbox, copying fixtures, and executing the scenario's `setup()` function.
+2. **Context Assembly**: Assembling the system prompt that mimics Cursor's real context.
 3. **Execution Loop**: Iterative interaction with the LLM (up to 10 steps by default).
-4. **Evidence Collection**: Collecting logs, `git status`, `git diff`, and file states after the agent's work.
+4. **Evidence Collection**: Collecting `git status`, `git log`, and command outputs after the agent's work.
 5. **Judging**: Evaluating results using an LLM judge.
 
 ## Context Assembly
 
-The Runner forms a system prompt that is as close as possible to reality in Cursor:
+The Runner forms a system prompt using `scripts/benchmarks/lib/system-prompt-generator.ts` and `system-prompt.template.md`, which is as close as possible to reality in Cursor:
 
-1. **System Instructions**: A template from `lib/prompts.ts` is used, including `user_info` (OS, Shell, Date). The template contains the following placeholders:
-   - `{{AGENTS}}`: The content of the `AGENTS.md` file is inserted here. This is a key element defining general behavior rules and project context.
-   - `{{SKILL}}`: The content of the `.md` file of the skill being tested (from `targetAgentPath`) is inserted here. This defines the specific logic and steps for task execution.
-
-2. **AGENTS.md**:
-   - **Mandatory** for each scenario.
-   - Searched in `fixture/AGENTS.md` or passed explicitly in `agentsMarkdown`.
-   - Inserted into the `<rules>` section of the system prompt.
-   - Copied to the sandbox root so the agent can read it.
-
-3. **Skill/Agent Definition**: The content of the skill's `.md` file (e.g., `af-plan/SKILL.md`) is appended to the end of the system prompt.
+1. **Environment Data**: Includes `user_info` (OS, Shell, Date), `project_layout` (recursive file tree of the sandbox), and `git_status`.
+2. **AGENTS.md**: **Mandatory** for each scenario. It defines general behavior rules and project context.
+3. **Available Skills**: Automatically includes all skills from `.cursor/skills/` (excluding those with `disable-model-invocation: true`).
+4. **Single-Turn Query**: The user query is embedded directly into the system prompt's `<user_query>` section to simulate a real-world single-turn agent invocation.
 
 ## Agent Response Handling
 
@@ -44,8 +48,8 @@ Agents in benchmark mode operate in tool emulation mode:
 
 - They **do not use** real MCP tools or `todo_write`.
 - Instead, they output commands in `` ```bash `` code blocks.
-- The Runner intercepts these blocks, writes them to temporary `.sh` files inside the sandbox, and executes them.
-- The execution result (stdout/stderr) is returned to the agent as `Command Output`.
+- The Runner intercepts these blocks, executes them in the sandbox as shell scripts, and returns the output to the agent as `Command Output`.
+- Interactive commands (like `git add -p`) are NOT supported.
 
 ## Result Evaluation (Judging)
 
@@ -59,38 +63,49 @@ Evaluation is performed by an LLM judge based on:
 Criteria can be:
 
 - **Critical**: If the check fails, the entire scenario is considered `FAILED`.
-- **Non-critical**: Affect the final score but do not lead to failure.
+- **Non-critical (Warnings)**: Affect the final score but do not lead to failure.
+
+## Configuration
+
+The system uses `benchmarks.config.json` to store model presets for agents and judges.
+
+- **Default Agent**: `gemini-2.5-flash-lite`
+- **Default Judge**: `gemini-2.5-flash-lite`
 
 ## How to Run Benchmarks
 
-### Locally
-
 ```bash
-deno task bench
+deno task bench [options]
 ```
 
-### In Docker (recommended for security)
+### Options
 
-To isolate agent command execution from the host system, use Docker. This will automatically build the necessary image and run benchmarks in an isolated container with the current directory mounted.
-
-```bash
-deno task bench --docker
-```
+- `-f, --filter <string>`: Filter scenarios by ID (substring match).
+- `-p, --preset <string>`: Agent preset to use (e.g., `gemini-3-flash`).
+- `--judge-preset <string>`: Judge preset to use.
+- `-n, --runs <number>`: Number of runs per scenario (default: 1).
 
 ## How to Create a New Benchmark
 
-1. Create a directory in `scenarios/af-<skill>/<name>`.
+1. Create a directory in `scripts/benchmarks/scenarios/<skill>/<name>`.
 2. Create `fixture/AGENTS.md` with a project description for this test.
 3. Create `mod.ts` exporting a `BenchmarkScenario` object.
 4. Define a `checklist` with clear verification criteria.
-5. Run to verify:
+5. Register the scenario in `scripts/task-bench.ts`.
+6. Run to verify:
    ```bash
-   deno task bench --scenario <scenario-id>
+   deno task bench --filter <scenario-id>
    ```
 
-## Debugging
+### Advanced Scenario Features
 
-After each run, the following are created in the `work/<scenario-id>/` folder:
+- **Mocks**: Provide custom scripts for external tools (e.g., `gh`, `npm`) in the `mocks` field.
+- **User Replies**: Simulate interactive flows by providing a list of `userReplies` to be sent when the agent stops issuing commands.
+- **Timeouts**: Set `stepTimeoutMs` to limit the duration of individual steps.
 
-- `sandbox/`: Final state of files (can be inspected manually).
-- `trace.md`: Full execution log, including system prompts, LLM responses, command outputs, and judge's reasoning.
+## Debugging and Tracing
+
+After each run, work artifacts are stored in `scripts/benchmarks/work/<scenario-id>/`:
+
+- **`sandbox/`**: Final state of files (can be inspected manually).
+- **`trace.html`**: A rich, interactive execution log with step-by-step timeline, syntax highlighting, and unified data UI for logs and prompts.
