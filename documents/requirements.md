@@ -49,6 +49,7 @@
   - [x] Code style rules (TS, Swift, etc.).
   - [x] Development principles (Autonomous, Zen, TDD).
   - [x] Documentation standards.
+  - [x] Translation of all project documentation and benchmarks README to English.
 
 ### 3.3 Documentation Management (FR-3)
 
