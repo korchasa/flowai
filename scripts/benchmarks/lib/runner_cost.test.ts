@@ -16,6 +16,7 @@ Deno.test("Runner - should aggregate cost from multiple turns", async () => {
     targetAgentPath: agentPath,
     setup: async () => {},
     userQuery: "Test",
+    agentsMarkdown: "# Test Agent\n- Rule 1",
     checklist: [],
   };
 

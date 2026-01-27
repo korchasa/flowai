@@ -19,6 +19,7 @@ Deno.test("Runner - Multi-turn Interaction", async () => {
       await Deno.writeTextFile(join(sandbox, "test.txt"), "initial");
     },
     userQuery: "Change test.txt to 'modified'",
+    agentsMarkdown: "# Test Agent\n- Rule 1",
     checklist: [
       { id: "check1", description: "File modified", critical: true },
     ],
