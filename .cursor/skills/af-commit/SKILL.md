@@ -44,7 +44,6 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Analyze Impact**: For each code change, identify which documentation files must be updated:
      - `requirements.md`: If functional/non-functional requirements changed.
      - `design.md`: If architecture, components, or data structures changed.
-     - `file_structure.md`: If files were added, moved, or deleted.
      - `AGENTS.md`: If global project rules or agent definitions changed.
    - **Apply Compression Rules**:
      - Use **combined extractive + abstractive summarization** (preserve all facts, minimize words).

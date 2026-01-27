@@ -157,17 +157,6 @@ EFFECTIVENESS ENTIRELY DEPENDS ON ITS ACCURACY.
 - What has been deferred to future versions
 ```
 
-### File Structure Map Format (file @documents/file_structure.md)
-
-Parts of the file:
-
-- tree-view tree(with file purposes and relationships) for:
-  - root directory
-  - sources
-  - tests
-- file organization patterns
-- English language only
-
 ### Whiteboard Format (file @documents/whiteboard.md)
 
 - Temporary notes

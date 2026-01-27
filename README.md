@@ -147,8 +147,6 @@ can quickly understand the project's state, goals, and architecture.
 - **`design.md` (SDS)**: Technical architecture, component descriptions, and
   data models. Describes _how_ the system is implemented to ensure architectural
   consistency.
-- **`file_structure.md`**: A logical map of the repository. Helps the agent
-  navigate the codebase and understand where new logic should be placed.
 - **`AGENTS.md`**: High-level rules for AI agents. Enforces mandatory workflows
   and defines agent responsibilities.
 

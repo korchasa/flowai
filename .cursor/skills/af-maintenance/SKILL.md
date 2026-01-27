@@ -50,15 +50,7 @@ It addresses:
      clear old automated reports.
    - Identify project's primary language and source directories.
 
-2. **Phase 1: Structure & Organization**
-   - **Rule**: The file tree must match `documents/file_structure.md`.
-   - **Action**: Use `list_dir` to map the actual project structure.
-   - **Check**:
-     - Are there files in the root that should be in subfolders?
-     - Are there "Orphan" files not mentioned in `file_structure.md`?
-   - **Report**: List any deviations.
-
-3. **Phase 2: Code Hygiene & Dependencies**
+2. **Phase 2: Code Hygiene & Dependencies**
    - **Dead Code**: Identify exported/public symbols in source directories that
      are never imported/called elsewhere.
    - **Unused Imports**: Scan source files for imports/includes that are not
@@ -69,26 +61,26 @@ It addresses:
      - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
      - Are commented out.
 
-4. **Phase 3: Complexity & Hotspots**
+3. **Phase 3: Complexity & Hotspots**
    - **Files**: Flag any source file exceeding **500 lines**.
    - **Functions**: Scan for functions/methods exceeding **50 lines**.
    - **God Objects**: Identify classes/modules with mixed concerns (e.g.,
      logic + UI + database in one file).
 
-5. **Phase 4: Technical Debt Aggregation**
+4. **Phase 4: Technical Debt Aggregation**
    - **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
    - **Group**: Organize by file/module.
    - **Analysis**: Flag any that look critical or like "temporary" fixes that
      became permanent.
 
-6. **Phase 5: Consistency (Docs vs. Code)**
+5. **Phase 5: Consistency (Docs vs. Code)**
    - **Terminology**: Extract key terms from `README.md` and `documents/`. Check
      if code uses different synonyms (e.g., "User" in docs vs "Customer" in
      code).
    - **Drift**: Pick 3 major claims from `documents/*.md` (e.g., "The system
      handles X asynchronously"). Verify if the code actually does that.
 
-7. **Phase 6: Code Documentation Coverage**
+6. **Phase 6: Code Documentation Coverage**
    - **Rule**: Every file, class, method, and exported function MUST have
      documentation (JSDoc, Docstring, Rustdoc, etc.).
    - **Check**:
@@ -98,7 +90,7 @@ It addresses:
    - **Scan**: primary source directories.
    - **Report**: List undocumented symbols.
 
-8. **Phase 7: Reporting**
+7. **Phase 7: Reporting**
    - Compile all findings into `whiteboard.md` with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
@@ -131,7 +123,6 @@ It addresses:
 ## Verification
 
 <verification>
-[ ] Verified file structure against `file_structure.md`.
 [ ] Scanned for dead code and unused imports.
 [ ] Checked file/function length limits (500/50 lines).
 [ ] Aggregated all TODO/FIXME tags.
