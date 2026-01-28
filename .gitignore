@@ -5,3 +5,4 @@ documents/whiteboard.md
 tmp/
 .env
 scripts/benchmarks/work/
+benchmark-trace.html

@@ -58,7 +58,10 @@
   - **Realistic Context**: `system-prompt-generator.ts` assembles system prompts using `system-prompt.template.md`, simulating Cursor's context (including dynamic project layout, git status, and user query).
   - **Single-Turn Query**: User query is embedded directly into the system prompt's `<user_query>` section, mimicking a single-turn interaction for benchmarks.
   - **Skill Integration**: Automatically includes all skills from `.cursor/skills` (excluding those with `disable-model-invocation: true`).
-  - **Rich Tracing**: Generates `trace.html` with step-by-step timeline, syntax highlighting, and floating navigation.
+  - **Unified Tracing**: Generates a single `benchmark-trace.html` at project root.
+  - **Interactive Dashboard**: Global summary table with per-scenario results, scores, metrics, and anchor navigation.
+  - **Hierarchical Reporting**: Groups scenarios by skill in the timeline and dashboard.
+  - **Rich Tracing**: Step-by-step timeline, syntax highlighting, judge model visibility, and floating navigation.
   - **Unified Data UI**: All technical data (logs, scripts, prompts) use a consistent `.data-block` component with line numbers, word wrap, and smart expand/collapse.
 
 ## 4. Data and Storage

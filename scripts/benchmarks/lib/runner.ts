@@ -12,6 +12,7 @@ export interface RunnerOptions {
   workDir: string;
   llmClient?: typeof chatCompletion;
   judgeClient?: typeof evaluateChecklist;
+  tracer?: TraceLogger;
 }
 
 export async function runScenario(
@@ -38,7 +39,7 @@ export async function runScenario(
 
   console.log(`  Sandbox created: ${sandboxPath}`);
 
-  const tracer = new TraceLogger(scenarioDir);
+  const tracer = options.tracer || new TraceLogger(scenarioDir);
   const agentPath = scenario.targetAgentPath.startsWith("/")
     ? scenario.targetAgentPath
     : join(Deno.cwd(), scenario.targetAgentPath);
@@ -399,6 +400,7 @@ ${logStr}
     await tracer.logEvaluation(checklistResults, checklistToJudge, {
       messages: judgeOutput.messages,
       response: judgeOutput.response,
+      model: options.judgeConfig.model,
     });
 
     // 7. Calculate Score and Metrics
@@ -442,6 +444,7 @@ ${logStr}
 
     await tracer.logSummary({
       ...result,
+      totalCost: result.totalCost,
       errors: result.errorsCount,
       warnings: result.warningsCount,
     });

@@ -37,6 +37,7 @@ Deno.test("TraceLogger should generate self-contained HTML", async () => {
     score: 100,
     durationMs: 1000,
     tokensUsed: 500,
+    totalCost: 0.001,
     errors: 0,
     warnings: 0,
   });
@@ -62,6 +63,38 @@ Deno.test("TraceLogger should generate self-contained HTML", async () => {
   assertStringIncludes(content, "PASSED");
   // The score is not currently rendered in the summary card HTML, but it's in the metadata
   // assertStringIncludes(content, "100.0%");
+
+  await Deno.remove(tempDir, { recursive: true });
+});
+
+Deno.test("TraceLogger should support multiple scenarios", async () => {
+  const tempDir = await Deno.makeTempDir();
+  const tracer = new TraceLogger(tempDir);
+  const tracePath = join(tempDir, "trace.html");
+
+  await tracer.init("Scenario 1", "id-1", "model-1", "agent-1.md", "Query 1");
+  await tracer.logLLMInteraction(
+    [{ role: "user", content: "Hi 1" }],
+    "Resp 1",
+    { step: 1, source: "agent" },
+  );
+
+  await tracer.init("Scenario 2", "id-2", "model-2", "agent-2.md", "Query 2");
+  await tracer.logLLMInteraction(
+    [{ role: "user", content: "Hi 2" }],
+    "Resp 2",
+    { step: 1, source: "agent" },
+  );
+
+  const content = await Deno.readTextFile(tracePath);
+
+  // Check for both scenarios
+  assertStringIncludes(content, "id-1");
+  assertStringIncludes(content, "id-2");
+  assertStringIncludes(content, "Query 1");
+  assertStringIncludes(content, "Query 2");
+  assertStringIncludes(content, "Resp 1");
+  assertStringIncludes(content, "Resp 2");
 
   await Deno.remove(tempDir, { recursive: true });
 });
