@@ -7,26 +7,39 @@ export interface TraceEvent {
   timestamp: string;
   metadata: Record<string, unknown>;
   content: string;
+  scenarioId: string;
+}
+
+export interface ScenarioMetadata {
+  name: string;
+  id: string;
+  model: string;
+  agentPath: string;
+  userQuery: string;
+  date: string;
+  summary?: {
+    success: boolean;
+    score: number;
+    durationMs: number;
+    tokensUsed: number;
+    totalCost: number;
+    errors: number;
+    warnings: number;
+  };
 }
 
 export class TraceLogger {
   private tracePath: string;
   private events: TraceEvent[] = [];
-  private scenarioMetadata: {
-    name: string;
-    id: string;
-    model: string;
-    agentPath: string;
-    userQuery: string;
-    date: string;
-  } | null = null;
+  private scenarios: Map<string, ScenarioMetadata> = new Map();
+  private currentScenarioId: string | null = null;
 
-  constructor(workDir: string) {
-    this.tracePath = join(workDir, "trace.html");
+  constructor(workDir: string, filename = "trace.html") {
+    this.tracePath = join(workDir, filename);
   }
 
   private async save() {
-    if (!this.scenarioMetadata) return;
+    if (this.scenarios.size === 0) return;
 
     const html = this.render();
     await Deno.writeTextFile(this.tracePath, html);
@@ -39,7 +52,7 @@ export class TraceLogger {
         <div class="blur-overlay"></div>
         <div class="expand-btn-container">
           <button class="expand-btn" onclick="toggleExpand(this)">
-            <span>Show More</span>
+            <span>SHOW MORE</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
           </button>
         </div>
@@ -47,8 +60,19 @@ export class TraceLogger {
     `;
   }
 
+  private formatScenarioName(id: string, name: string): string {
+    if (id.startsWith("af-")) {
+      const parts = id.split("-");
+      if (parts.length >= 2) {
+        const skill = `af-${parts[1]}`;
+        return `${skill}: ${name}`;
+      }
+    }
+    return name;
+  }
+
   private render(): string {
-    const meta = this.scenarioMetadata!;
+    const scenarios = Array.from(this.scenarios.values());
 
     // Simple HTML escaping
     const escape = (str: string) =>
@@ -59,121 +83,285 @@ export class TraceLogger {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
-    let currentStep = -1;
-    const eventsHtml = this.events
-      .map((event, index) => {
-        const title = event.metadata.description || event.type;
-        const eventId = `event-${index}`;
-        let stepHeader = "";
+    const dashboardHtml = `
+      <section class="dashboard">
+        <h2>BENCHMARK DASHBOARD</h2>
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th>SCENARIO</th>
+              <th class="text-right">RESULT</th>
+              <th class="text-right">SCORE</th>
+              <th class="text-right">ERR/WRN</th>
+              <th class="text-right">DURATION</th>
+              <th class="text-right">TOKENS</th>
+              <th class="text-right">COST ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+      scenarios.map((s) => {
+        const statusClass = s.summary
+          ? (s.summary.success ? "status-pass" : "status-fail")
+          : "status-pending";
+        const statusText = s.summary
+          ? (s.summary.success ? "PASSED" : "FAILED")
+          : "PENDING";
+        return `
+                <tr>
+                  <td><a href="#scenario-${s.id}">${
+          escape(this.formatScenarioName(s.id, s.name))
+        }</a></td>
+                  <td class="${statusClass} text-right">${statusText}</td>
+                  <td class="text-right">${
+          s.summary ? s.summary.score.toFixed(1) + "%" : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? `${s.summary.errors}/${s.summary.warnings}` : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? (s.summary.durationMs / 1000).toFixed(1) + "s" : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? s.summary.tokensUsed : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? "$" + s.summary.totalCost.toFixed(6) : "-"
+        }</td>
+                </tr>
+              `;
+      }).join("")
+    }
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td>TOTAL</td>
+              <td class="text-right">${
+      scenarios.every((s) => s.summary?.success) ? "PASSED" : "FAILED"
+    }</td>
+              <td class="text-right">${
+      (scenarios.reduce((acc, s) => acc + (s.summary?.score || 0), 0) /
+        scenarios.length).toFixed(1)
+    }%</td>
+              <td class="text-right">${
+      scenarios.reduce((acc, s) => acc + (s.summary?.errors || 0), 0)
+    }/${scenarios.reduce((acc, s) => acc + (s.summary?.warnings || 0), 0)}</td>
+              <td class="text-right">${
+      (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs || 0), 0) /
+        1000).toFixed(1)
+    }s</td>
+              <td class="text-right">${
+      scenarios.reduce((acc, s) => acc + (s.summary?.tokensUsed || 0), 0)
+    }</td>
+              <td class="text-right">$${
+      scenarios.reduce((acc, s) => acc + (s.summary?.totalCost || 0), 0)
+        .toFixed(6)
+    }</td>
+            </tr>
+          </tfoot>
+        </table>
+      </section>
+    `;
 
-        if (
-          event.metadata.step !== undefined &&
-          event.metadata.step !== currentStep
-        ) {
-          currentStep = event.metadata.step as number;
-          stepHeader = `
-            <div class="step-separator">
-              <h2>Step ${currentStep}</h2>
-              <div class="line"></div>
+    const scenariosHtml = scenarios.map((meta) => {
+      let currentStep = -1;
+      const scenarioEvents = this.events.filter((e) =>
+        e.scenarioId === meta.id
+      );
+
+      const eventsHtml = scenarioEvents
+        .map((event, index) => {
+          const title = event.metadata.description || event.type;
+          const eventId = `event-${meta.id}-${index}`;
+          let stepHeader = "";
+
+          if (
+            event.metadata.step !== undefined &&
+            event.metadata.step !== currentStep
+          ) {
+            currentStep = event.metadata.step as number;
+            stepHeader = `
+              <div class="step-separator">
+                <h2>Step ${currentStep}</h2>
+                <div class="line"></div>
+              </div>
+            `;
+          }
+
+          let content = event.content;
+          if (content.includes("%")) {
+            try {
+              content = decodeURIComponent(content);
+            } catch {
+              // If decoding fails, keep original content
+            }
+          }
+
+          const eventClass = `event event-${event.type}`;
+          const roleAttr = event.metadata.role_attr
+            ? `data-role="${event.metadata.role_attr}"`
+            : "";
+          const sourceAttr = event.metadata.source
+            ? `data-source="${event.metadata.source}"`
+            : "";
+          const stepAttr = event.metadata.step !== undefined
+            ? `data-step="${event.metadata.step}"`
+            : "";
+          const dataAttrs =
+            `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
+
+          const iconMap: Record<string, string> = {
+            message: "💬",
+            interaction: "🤖",
+            command: "🐚",
+            evidence: "📂",
+            evaluation: "⚖️",
+            summary: "📊",
+            tools_definition: "🛠️",
+            context: "📝",
+          };
+          const icon = iconMap[event.type] || "🔹";
+
+          const headerContent = `
+            <span class="timestamp">${
+            new Date(event.timestamp).toLocaleTimeString()
+          }</span>
+            <span class="type-icon">${icon}</span>
+            <span class="type">${event.type}</span>
+            <span class="title">${escape(String(title))}</span>
+            ${
+            event.metadata.step !== undefined
+              ? `<span class="step-badge">Step ${event.metadata.step}</span>`
+              : ""
+          }
+          `;
+
+          return `
+            ${stepHeader}
+            <div class="${eventClass}" ${dataAttrs}>
+              <div class="event-header">${headerContent}</div>
+              <div class="content">${content}</div>
             </div>
           `;
-        }
+        })
+        .join("\n");
 
-        let content = event.content;
-        if (content.includes("%")) {
-          try {
-            content = decodeURIComponent(content);
-          } catch {
-            // If decoding fails, keep original content
-          }
-        }
-
-        const eventClass = `event event-${event.type}`;
-        const roleAttr = event.metadata.role_attr
-          ? `data-role="${event.metadata.role_attr}"`
-          : "";
-        const sourceAttr = event.metadata.source
-          ? `data-source="${event.metadata.source}"`
-          : "";
-        const stepAttr = event.metadata.step !== undefined
-          ? `data-step="${event.metadata.step}"`
-          : "";
-        const dataAttrs =
-          `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
-
-        const iconMap: Record<string, string> = {
-          message: "💬",
-          interaction: "🤖",
-          command: "🐚",
-          evidence: "📂",
-          evaluation: "⚖️",
-          summary: "📊",
-          tools_definition: "🛠️",
-          context: "📝",
-        };
-        const icon = iconMap[event.type] || "🔹";
-
-        const headerContent = `
-          <span class="timestamp">${
-          new Date(event.timestamp).toLocaleTimeString()
-        }</span>
-          <span class="type-icon">${icon}</span>
-          <span class="type">${event.type}</span>
-          <span class="title">${escape(String(title))}</span>
-          ${
-          event.metadata.step !== undefined
-            ? `<span class="step-badge">Step ${event.metadata.step}</span>`
-            : ""
-        }
-        `;
-
-        return `
-          ${stepHeader}
-          <div class="${eventClass}" ${dataAttrs}>
-            <div class="event-header">${headerContent}</div>
-            <div class="content">${content}</div>
+      const summaryHtml = meta.summary
+        ? `
+        <div class="summary-card">
+          <div class="metric">
+            <span class="metric-value" style="color: ${
+          meta.summary.success ? "var(--success-color)" : "var(--error-color)"
+        }">${meta.summary.success ? "PASSED" : "FAILED"}</span>
+            <span class="metric-label">Result</span>
           </div>
-        `;
-      })
-      .join("\n");
+          <div class="metric">
+            <span class="metric-value">${meta.summary.errors}</span>
+            <span class="metric-label">Errors</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">${meta.summary.warnings}</span>
+            <span class="metric-label">Warnings</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">${
+          (meta.summary.durationMs / 1000).toFixed(1)
+        }s</span>
+            <span class="metric-label">Duration</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">${meta.summary.tokensUsed}</span>
+            <span class="metric-label">Tokens</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">$${
+          meta.summary.totalCost.toFixed(6)
+        }</span>
+            <span class="metric-label">Cost</span>
+          </div>
+        </div>`
+        : "";
 
-    // Generate ToC
-    const tocItems: string[] = [];
-    let lastStep = -1;
+      return `
+        <article id="scenario-${meta.id}" class="scenario-section">
+          <header class="scenario-header">
+            <h1>Trace: ${
+        escape(this.formatScenarioName(meta.id, meta.name))
+      }</h1>
+            <div class="meta-grid">
+              <div class="meta-item"><b>ID:</b> <code>${
+        escape(meta.id)
+      }</code></div>
+              <div class="meta-item"><b>MODEL:</b> <code>${
+        escape(meta.model)
+      }</code></div>
+              <div class="meta-item"><b>DATE:</b> ${
+        new Date(meta.date).toLocaleString()
+      }</div>
+              <div class="meta-item"><b>AGENT:</b> <code>${
+        escape(meta.agentPath)
+      }</code></div>
+            </div>
+          </header>
 
-    this.events.forEach((event, index) => {
-      if (
-        event.metadata.step !== undefined && event.metadata.step !== lastStep
-      ) {
-        lastStep = event.metadata.step as number;
-        tocItems.push(
-          `<li><a href="#event-${index}">Step ${lastStep}</a></li>`,
-        );
+          ${summaryHtml}
+
+          <div class="event event-context">
+            <div class="event-header"><span class="title">INITIAL QUERY</span></div>
+            <div class="content">
+              <blockquote>${
+        escape(meta.userQuery).replace(/\n/g, "<br>")
+      }</blockquote>
+            </div>
+          </div>
+
+          <div class="events-container">
+            ${eventsHtml}
+          </div>
+        </article>
+      `;
+    }).join("\n<hr class='scenario-divider'>\n");
+
+    // Generate ToC grouped by skills
+    const groupedScenarios: Record<string, ScenarioMetadata[]> = {};
+    scenarios.forEach((s) => {
+      let skill = "other";
+      if (s.id.startsWith("af-")) {
+        const parts = s.id.split("-");
+        if (parts.length >= 2) {
+          skill = `af-${parts[1]}`;
+        }
       }
-      if (event.type === "evaluation") {
-        tocItems.push(
-          `<li><a href="#event-${index}" class="toc-eval">Judge Eval</a></li>`,
-        );
+      if (!groupedScenarios[skill]) {
+        groupedScenarios[skill] = [];
       }
-      if (event.type === "summary") {
-        tocItems.push(
-          `<li><a href="#event-${index}" class="toc-summary">Summary</a></li>`,
-        );
-      }
+      groupedScenarios[skill].push(s);
     });
 
-    const tocHtml = tocItems.join("\n");
-
-    const summaryEvent = this.events.find((e) => e.type === "summary");
-    const summaryHtml = summaryEvent
-      ? `<div class="top-summary" id="summary-section">${summaryEvent.content}</div>`
-      : "";
+    const tocHtml = Object.entries(groupedScenarios)
+      .map(([skill, skillScenarios]) => {
+        const skillTitle = skill.toUpperCase();
+        const items = skillScenarios
+          .map((s) =>
+            `<li><a href="#scenario-${s.id}" class="toc-scenario">${
+              escape(s.name)
+            }</a></li>`
+          )
+          .join("");
+        return `
+        <div class="toc-group">
+          <div class="toc-group-title">${escape(skillTitle)}</div>
+          <ul>${items}</ul>
+        </div>
+      `;
+      })
+      .join("\n");
 
     return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Benchmark Trace: ${escape(meta.name)}</title>
+  <title>Benchmark Trace</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
@@ -182,20 +370,34 @@ export class TraceLogger {
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/markdown.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
   <style>
+    :root {
+      --bg-main: #f5f5f5;
+      --bg-panel: #ffffff;
+      --bg-nav: #020129;
+      --text-main: #0a0a0a;
+      --text-muted: #717171;
+      --text-on-dark: #fafafa;
+      --border-color: #e5e5e5;
+      --accent-color: #020129;
+      --error-color: #e7000b;
+      --success-color: #020129;
+      --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: var(--font-mono);
       line-height: 1.6;
-      color: #e1e1e1;
-      background: #1e1e1e;
+      color: var(--text-main);
+      background: var(--bg-main);
       margin: 0;
       padding: 20px;
-      padding-top: 60px;
+      padding-top: 80px;
       display: flex;
       justify-content: center;
     }
     .main-layout {
       display: flex;
-      gap: 20px;
+      gap: 24px;
       width: 100%;
       max-width: 1400px;
       position: relative;
@@ -206,148 +408,161 @@ export class TraceLogger {
     }
     .toc-panel {
       position: sticky;
-      top: 80px;
-      width: 180px;
+      top: 100px;
+      width: 200px;
       height: fit-content;
-      max-height: calc(100vh - 120px);
-      background: #252526;
-      border: 1px solid #333;
-      border-radius: 4px;
-      padding: 15px;
+      max-height: calc(100vh - 140px);
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      padding: 20px;
       overflow-y: auto;
       font-size: 0.85em;
       z-index: 100;
       align-self: flex-start;
     }
-    .toc-panel h3 { margin-top: 0; font-size: 1em; border-bottom: 1px solid #444; padding-bottom: 8px; }
+    .toc-panel h3 { margin-top: 0; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; font-weight: bold; }
     .toc-panel ul { list-style: none; padding: 0; margin: 0; }
-    .toc-panel li { margin-bottom: 8px; }
-    .toc-panel a { color: #aaa; text-decoration: none; display: block; }
-    .toc-panel a:hover { color: #007acc; }
-    .toc-panel a.toc-eval { color: #c586c0; font-weight: bold; margin-top: 10px; border-top: 1px solid #444; padding-top: 8px; }
-    .toc-panel a.toc-summary { color: #6a9955; font-weight: bold; }
+    .toc-panel li { margin-bottom: 10px; }
+    .toc-panel a { color: var(--text-muted); text-decoration: none; display: block; }
+    .toc-panel a:hover { color: var(--accent-color); text-decoration: underline; }
+    .toc-panel a.toc-scenario { color: var(--text-muted); font-weight: normal; }
+    .toc-group { margin-bottom: 20px; }
+    .toc-group-title { font-weight: bold; color: var(--text-main); font-size: 0.9em; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+    .toc-group ul { padding-left: 10px; }
 
-    header {
-      border-bottom: 1px solid #333;
-      padding-bottom: 20px;
-      margin-bottom: 20px;
+    .dashboard {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      padding: 32px;
+      margin-bottom: 48px;
     }
-    h1 { margin: 0; color: #fff; }
+    .dashboard h2 { margin-top: 0; margin-bottom: 24px; font-size: 1.5em; font-weight: bold; }
+    .dashboard-table { width: 100%; border-collapse: collapse; }
+    .dashboard-table th, .dashboard-table td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    .dashboard-table th { font-size: 0.8em; color: var(--text-muted); text-transform: uppercase; }
+    .text-right { text-align: right !important; }
+    .total-row { font-weight: bold; background: var(--bg-main); }
+    .total-row td { border-top: 2px solid var(--accent-color); }
+    .status-pass { color: #2e7d32; font-weight: bold; }
+    .status-fail { color: var(--error-color); font-weight: bold; }
+    .status-pending { color: var(--text-muted); }
+
+    .scenario-section { margin-bottom: 64px; }
+    .scenario-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+    .scenario-divider { border: 0; height: 4px; background: var(--border-color); margin: 64px 0; }
+
+    h1 { margin: 0; color: var(--text-main); font-size: 2.5em; font-weight: bold; letter-spacing: -1px; }
     .meta-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px;
-      margin-top: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
       font-size: 0.9em;
-      color: #aaa;
+      color: var(--text-muted);
     }
-    .meta-item b { color: #ddd; }
+    .meta-item b { color: var(--text-main); }
     
     .nav-bar {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      background: #2d2d2d;
-      border-bottom: 1px solid #444;
-      padding: 10px 20px;
+      background: var(--bg-nav);
+      color: var(--text-on-dark);
+      padding: 12px 24px;
       z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
     }
-    .nav-links { display: flex; gap: 15px; }
-    .nav-links a { color: #aaa; text-decoration: none; font-size: 0.9em; }
-    .nav-links a:hover { color: #fff; }
-    .filters { display: flex; gap: 10px; align-items: center; }
-    .filter-btn {
-      background: #444;
-      border: none;
-      color: #ccc;
-      padding: 4px 8px;
-      border-radius: 3px;
-      cursor: pointer;
-      font-size: 0.8em;
-    }
-    .filter-btn.active { background: #007acc; color: #fff; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { color: var(--text-on-dark); text-decoration: none; font-size: 0.9em; font-weight: bold; }
+    .nav-links a:hover { opacity: 0.8; }
 
     /* Step Grouping */
     .step-separator {
-      margin-top: 40px;
-      margin-bottom: 20px;
-      border-bottom: 2px solid #333;
-      padding-bottom: 5px;
+      margin-top: 48px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 8px;
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 16px;
     }
     .step-separator h2 {
       margin: 0;
-      font-size: 1.2em;
-      color: #007acc;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: 1.4em;
+      color: var(--accent-color);
+      font-weight: bold;
     }
     .step-separator .line {
       flex-grow: 1;
       height: 1px;
-      background: #333;
+      background: var(--border-color);
     }
 
-    /* Event Colors & Variables */
-    .event { --bg: #252526; background: var(--bg); border: 1px solid #333; border-radius: 4px; margin-bottom: 10px; overflow: hidden; display: flex; flex-direction: column; }
-    .event-message[data-role="user"] { --bg: #1e2a35; border-left: 4px solid #007acc; }
-    .event-message[data-role="assistant"] { --bg: #2d2d2d; border-left: 4px solid #ce9178; }
-    .event-message[data-role="system"] { --bg: #252526; border-left: 4px solid #444; opacity: 0.8; }
-    .event-interaction { --bg: #1e2e2a; border-left: 4px solid #4ec9b0; }
-    .event-command { --bg: #2d2d25; border-left: 4px solid #dcdcaa; }
-    .event-evaluation { --bg: #2d252d; border-left: 4px solid #c586c0; }
-    .event-summary { --bg: #252d25; border-left: 4px solid #6a9955; }
-    .event-evidence { --bg: #1e2d35; border-left: 4px solid #9cdcfe; }
-    .event-tools_definition { --bg: #252526; border-left: 4px solid #569cd6; opacity: 0.8; }
-
+    /* Event Styles */
+    .event { 
+      background: var(--bg-panel); 
+      border: 1px solid var(--border-color); 
+      margin-bottom: 16px; 
+      display: flex; 
+      flex-direction: column; 
+    }
     .event-header {
-      padding: 8px 15px;
-      background: rgba(255,255,255,0.05);
+      padding: 12px 20px;
+      background: var(--bg-main);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       user-select: none;
+      border-bottom: 1px solid var(--border-color);
     }
-    .timestamp { color: #888; font-family: monospace; font-size: 0.85em; }
+    .timestamp { color: var(--text-muted); font-size: 0.85em; }
     .type-icon { font-size: 1.2em; }
     .type {
       text-transform: uppercase;
       font-size: 0.7em;
       font-weight: bold;
-      padding: 2px 6px;
-      border-radius: 3px;
-      background: rgba(255,255,255,0.1);
-      color: #eee;
+      padding: 2px 8px;
+      background: var(--accent-color);
+      color: var(--text-on-dark);
     }
-    .title { font-weight: 500; flex-grow: 1; }
+    .title { font-weight: bold; flex-grow: 1; color: var(--text-main); }
     .step-badge {
       font-size: 0.7em;
-      background: #007acc;
-      color: #fff;
-      padding: 2px 6px;
-      border-radius: 10px;
+      background: var(--text-muted);
+      color: var(--text-on-dark);
+      padding: 2px 8px;
     }
     .content {
-      padding: 15px;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      padding: 20px;
     }
+    
+    .event-message[data-role="user"] { border-top: 4px solid var(--accent-color); }
+    .event-message[data-role="assistant"] { border-top: 4px solid var(--text-muted); }
+    .event-message[data-role="system"] { opacity: 0.9; }
+    .event-interaction { border-top: 4px solid var(--accent-color); }
+    .event-command { border-top: 4px solid var(--text-muted); }
+    .event-evaluation { border-top: 4px solid var(--accent-color); }
+    .event-summary { border-top: 4px solid var(--accent-color); }
+
     .data-block {
       position: relative;
       display: flex;
       flex-direction: column;
-      margin: 8px 0;
+      margin: 12px 0;
+      border: 1px solid var(--border-color);
     }
     .data-content {
-      max-height: 15.5em; /* Approx 10 lines */
+      max-height: 20em;
       overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: max-height 0.4s ease;
+      background: #fdfdfd;
     }
     .data-content.expanded {
       max-height: none;
@@ -357,43 +572,38 @@ export class TraceLogger {
       bottom: 0;
       left: 0;
       right: 0;
-      height: 60px;
-      background: linear-gradient(to bottom, transparent, var(--bg));
+      height: 80px;
+      background: linear-gradient(to bottom, transparent, #fdfdfd);
       pointer-events: none;
       display: none;
       z-index: 10;
     }
-    .data-block.has-overflow .data-content:not(.expanded) + .blur-overlay {
+    .data-block.has-overflow .data-content:not(.expanded) ~ .blur-overlay {
       display: block;
     }
     .expand-btn-container {
       display: flex;
       justify-content: center;
-      margin-top: -20px;
+      margin-top: -24px;
       position: relative;
       z-index: 20;
-      padding-bottom: 10px;
+      padding-bottom: 16px;
     }
     .expand-btn {
-      background: #444;
-      border: 1px solid #555;
-      color: #eee;
-      padding: 6px 16px;
-      border-radius: 20px;
+      background: var(--bg-nav);
+      border: none;
+      color: var(--text-on-dark);
+      padding: 8px 20px;
       cursor: pointer;
       font-size: 0.85em;
-      font-weight: 500;
+      font-weight: bold;
       display: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      transition: all 0.2s ease;
+      font-family: var(--font-mono);
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
     .expand-btn:hover {
-      background: #555;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-      color: #fff;
+      opacity: 0.9;
     }
     .expand-btn svg {
       transition: transform 0.3s ease;
@@ -402,131 +612,108 @@ export class TraceLogger {
       transform: rotate(180deg);
     }
     .data-content.expanded ~ .expand-btn-container {
-      margin-top: 10px;
+      margin-top: 12px;
     }
     
     pre {
-      background: rgba(0,0,0,0.3);
-      padding: 10px;
-      border-radius: 4px;
+      background: #f8f8f8;
+      padding: 16px;
       margin: 0;
       white-space: pre-wrap;
       word-wrap: break-word;
+      border: none;
     }
-    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    code { font-family: var(--font-mono); color: var(--text-main); }
     
     /* Line numbers style */
     .hljs-ln-numbers {
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
       user-select: none;
       text-align: center;
-      color: #555;
-      border-right: 1px solid #333;
+      color: #ccc;
+      border-right: 1px solid var(--border-color);
       vertical-align: top;
-      padding-right: 10px !important;
+      padding-right: 12px !important;
     }
     .hljs-ln-code {
-      padding-left: 10px !important;
+      padding-left: 12px !important;
     }
 
-    .top-summary { margin-bottom: 20px; }
     .summary-card {
-      background: #2d3d2d;
-      padding: 20px;
-      border-radius: 8px;
+      background: var(--bg-panel);
+      padding: 32px;
       display: flex;
       justify-content: space-around;
       text-align: center;
-      border: 1px solid #6a9955;
+      border: 1px solid var(--border-color);
+      border-top: 8px solid var(--accent-color);
+      margin-bottom: 32px;
     }
-    .metric-value { display: block; font-size: 1.5em; font-weight: bold; color: #fff; }
-    .metric-label { font-size: 0.8em; color: #aaa; text-transform: uppercase; }
+    .metric-value { display: block; font-size: 2em; font-weight: bold; color: var(--text-main); }
+    .metric-label { font-size: 0.8em; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-top: 4px; }
     
-    /* Markdown-like styles for content */
-    .content h2, .content h3 { margin-top: 0; }
+    .content h3 { margin-top: 24px; margin-bottom: 12px; font-size: 1.2em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
     .content blockquote {
-      border-left: 4px solid #444;
+      border-left: 4px solid var(--accent-color);
       margin: 0;
-      padding-left: 15px;
-      color: #aaa;
+      padding: 12px 20px;
+      background: var(--bg-main);
+      color: var(--text-main);
+      font-style: italic;
     }
 
     .back-to-top {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #007acc;
-      color: #fff;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
+      bottom: 32px;
+      right: 32px;
+      background: var(--bg-nav);
+      color: var(--text-on-dark);
+      width: 48px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
       text-decoration: none;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
       font-weight: bold;
-      opacity: 0.7;
+      z-index: 1000;
     }
-    .back-to-top:hover { opacity: 1; }
+    .back-to-top:hover { opacity: 0.9; }
+
+    /* Highlight.js overrides for light theme */
+    .hljs { background: transparent; color: var(--text-main); }
+    .hljs-keyword { color: #0000ff; font-weight: bold; }
+    .hljs-string { color: #a31515; }
+    .hljs-comment { color: #008000; font-style: normal; }
+    .hljs-strong { color: var(--text-main); font-weight: bold; }
+    .hljs-emphasis { color: var(--text-main); }
+    .hljs-section { color: var(--accent-color); font-weight: bold; }
+    .hljs-link { color: #0000ee; text-decoration: underline; }
+    .hljs-bullet { color: #d44950; }
+    .hljs-code { color: #444; background: #f4f4f4; }
+    .hljs-quote { color: var(--text-muted); }
+    .hljs-attr { color: #0000ff; }
+    .hljs-number { color: #098658; }
+    .hljs-literal { color: #0000ff; }
+    .hljs-type { color: #267f99; }
+    .hljs-tag { color: #800000; }
+    .hljs-name { color: #800000; }
+    .hljs-title { color: #0000ff; }
   </style>
 </head>
 <body>
   <nav class="nav-bar">
     <div class="nav-links">
-      <a href="#">Top</a>
-      <a href="#events">Events</a>
-      <a href="#evaluation">Evaluation</a>
-    </div>
-    <div class="filters">
-      <span style="font-size: 0.8em; color: #888;">Filter:</span>
-      <button class="filter-btn active" onclick="filterEvents('all')">All</button>
-      <button class="filter-btn" onclick="filterEvents('message')">Messages</button>
-      <button class="filter-btn" onclick="filterEvents('command')">Commands</button>
-      <button class="filter-btn" onclick="filterEvents('interaction')">Model</button>
-      <button class="filter-btn" onclick="filterEvents('evaluation')">Eval</button>
+      <a href="#">TASKS.GURU BENCHMARK TRACE</a>
     </div>
   </nav>
 
   <div class="main-layout">
     <div class="container">
-      <header>
-        <h1>Benchmark Trace: ${escape(meta.name)}</h1>
-        <div class="meta-grid">
-          <div class="meta-item"><b>ID:</b> <code>${
-      escape(meta.id)
-    }</code></div>
-          <div class="meta-item"><b>Model:</b> <code>${
-      escape(meta.model)
-    }</code></div>
-          <div class="meta-item"><b>Date:</b> ${
-      new Date(meta.date).toLocaleString()
-    }</div>
-          <div class="meta-item"><b>Agent:</b> <code>${
-      escape(meta.agentPath)
-    }</code></div>
-        </div>
-      </header>
-
-      ${summaryHtml}
-
-      <div class="event event-context">
-        <div class="event-header"><span class="title">Initial Query</span></div>
-        <div class="content">
-          <blockquote>${
-      escape(meta.userQuery).replace(/\n/g, "<br>")
-    }</blockquote>
-        </div>
-      </div>
-
-      <div id="events">
-        ${eventsHtml}
-      </div>
+      ${dashboardHtml}
+      ${scenariosHtml}
     </div>
 
     <aside class="toc-panel">
-      <h3>Timeline</h3>
+      <h3>SCENARIOS</h3>
       <ul>
         ${tocHtml}
       </ul>
@@ -536,25 +723,12 @@ export class TraceLogger {
   <a href="#" class="back-to-top">↑</a>
 
   <script>
-    function filterEvents(type) {
-      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      document.querySelectorAll('.event').forEach(el => {
-        if (type === 'all' || el.getAttribute('data-type') === type || el.classList.contains('event-context')) {
-          el.style.display = 'block';
-        } else {
-          el.style.display = 'none';
-        }
-      });
-    }
-
     function toggleExpand(btn) {
       const container = btn.closest('.data-block');
       const inner = container.querySelector('.data-content');
       inner.classList.toggle('expanded');
       const label = btn.querySelector('span');
-      label.textContent = inner.classList.contains('expanded') ? 'Show Less' : 'Show More';
+      label.textContent = inner.classList.contains('expanded') ? 'SHOW LESS' : 'SHOW MORE';
     }
 
     function initCollapsibles() {
@@ -587,14 +761,15 @@ export class TraceLogger {
     agentPath: string,
     userQuery: string,
   ) {
-    this.scenarioMetadata = {
+    this.scenarios.set(scenarioId, {
       name: scenarioName,
       id: scenarioId,
       model: model,
       agentPath: agentPath,
       userQuery: userQuery,
       date: new Date().toISOString(),
-    };
+    });
+    this.currentScenarioId = scenarioId;
     await this.save();
   }
 
@@ -603,11 +778,13 @@ export class TraceLogger {
     metadata: Record<string, unknown>,
     content: string,
   ) {
+    if (!this.currentScenarioId) return;
     this.events.push({
       type,
       timestamp: new Date().toISOString(),
       metadata,
       content,
+      scenarioId: this.currentScenarioId,
     });
   }
 
@@ -727,12 +904,18 @@ export class TraceLogger {
     judgeInteraction?: {
       messages: { role: string; content: string }[];
       response: string;
+      model?: string;
     },
   ) {
     let content = "";
 
     if (judgeInteraction) {
       content += `<h3>Judge Interaction</h3>`;
+      const judgeModel = judgeInteraction.model || "unknown";
+      content +=
+        `<div style="margin-bottom: 15px; font-size: 0.9em; color: var(--text-muted);"><b>Judge Model:</b> <code>${
+          escape(judgeModel)
+        }</code></div>`;
       for (const msg of judgeInteraction.messages) {
         const isSystem = msg.role === "system";
         const description = isSystem
@@ -777,18 +960,18 @@ export class TraceLogger {
       const res = checklistResults[item.id];
       const passed = res?.pass;
       const color = passed
-        ? "#6a9955"
-        : (item.critical ? "#f44336" : "#ff9800");
+        ? "var(--success-color)"
+        : (item.critical ? "var(--error-color)" : "#ff9800");
       const icon = passed ? "✓" : "✗";
 
       content +=
-        `<li style="margin-bottom: 10px; padding: 10px; border-radius: 4px; background: #2d2d2d; border-left: 4px solid ${color}">
+        `<li style="margin-bottom: 12px; padding: 16px; background: var(--bg-main); border-left: 4px solid ${color}">
         <b style="color: ${color}">${icon} ${item.id}</b>: ${item.description}
         ${
           res?.reason
             ? this.wrapCollapsible(
-              `<i style="font-size: 0.9em; color: #aaa;">Reason: ${res.reason}</i>`,
-              "margin-top: 8px;",
+              `<i style="font-size: 0.9em; color: var(--text-muted);">Reason: ${res.reason}</i>`,
+              "margin-top: 12px;",
             )
             : ""
         }
@@ -810,11 +993,21 @@ export class TraceLogger {
       score: number;
       durationMs: number;
       tokensUsed: number;
+      totalCost: number;
       errors: number;
       warnings: number;
     },
   ) {
-    const statusColor = result.success ? "#6a9955" : "#f44336";
+    if (this.currentScenarioId) {
+      const scenario = this.scenarios.get(this.currentScenarioId);
+      if (scenario) {
+        scenario.summary = result;
+      }
+    }
+
+    const statusColor = result.success
+      ? "var(--success-color)"
+      : "var(--error-color)";
     const content = `
       <div class="summary-card">
         <div class="metric">
