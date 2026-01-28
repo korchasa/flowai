@@ -3,7 +3,6 @@ import { parse } from "@std/flags";
 import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
 import { loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
-import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
 // Import scenarios from the new structure
 import { CommitBasicBench } from "./benchmarks/scenarios/af-commit/basic/mod.ts";
@@ -114,7 +113,6 @@ async function main() {
 
   const results: BenchmarkResult[] = [];
   const workDir = join(Deno.cwd(), "scripts/benchmarks/work");
-  const globalTracer = new TraceLogger(Deno.cwd(), "benchmark-trace.html");
 
   let totalCostAll = 0;
 
@@ -128,7 +126,6 @@ async function main() {
           agentConfig,
           judgeConfig,
           workDir,
-          tracer: globalTracer,
         });
         results.push(result);
         totalCostAll += result.totalCost;
@@ -295,11 +292,7 @@ async function main() {
   const hasFailures = results.some((r) => !r.success);
   if (hasFailures) {
     console.log("\n\x1b[31mSome tests failed.\x1b[0m");
-    console.log(`\x1b[34mGlobal trace: ./benchmark-trace.html\x1b[0m`);
     Deno.exit(1);
-  } else {
-    console.log(`\n\x1b[32mAll tests passed!\x1b[0m`);
-    console.log(`\x1b[34mGlobal trace: ./benchmark-trace.html\x1b[0m`);
   }
 }
 

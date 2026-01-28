@@ -108,24 +108,21 @@
 - **Use case scenario:** Developer runs `deno task bench` to see how well the
   agent handles specific scenarios.
 - **Acceptance criteria:**
-  - [x] Isolated sandbox execution for scenarios.
-  - [x] Evidence collection (git status, logs, file changes).
-  - [x] LLM-based Judge for semantic verification.
-  - [x] Financial cost calculation per scenario and per run.
-  - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
-  - [x] **Unified Benchmark Trace**: Consolidates all scenario traces into a single `benchmark-trace.html` at project root.
-  - [x] **Benchmark Dashboard**: Global summary table with per-scenario results, scores, metrics, and anchor links.
-  - [x] **Skill-Based Grouping**: Scenarios are organized by skill in the report's navigation and timeline.
-  - [x] **Rich HTML Tracing**: Step-by-step timeline, syntax highlighting, floating navigation, and judge model visibility.
-  - [x] Unified data block UI with smart blur, line numbering, and word wrap.
-  - [x] JSON-based configuration for model presets (agent and judge).
-  - [x] **Realistic Context Assembly**: System prompts mimic Cursor's real context
-        (user_info, project_layout, git_status, AGENTS.md, available_skills, user_query).
-  - [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to simulate real-world single-turn agent invocation.
-  - [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
-        fixtures or provided via config.
-  - [x] **Secure Execution**: Benchmarks run in an isolated Docker container by default to prevent host system damage.
-  - [x] **Automatic Environment**: `deno task bench` automatically builds and runs the required Docker image.
+- [x] Isolated sandbox execution for scenarios.
+- [x] Evidence collection (git status, logs, file changes).
+- [x] LLM-based Judge for semantic verification.
+- [x] Financial cost calculation per scenario and per run.
+- [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
+- [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
+- [x] Unified data block UI with smart blur, line numbering, and word wrap.
+- [x] JSON-based configuration for model presets (agent and judge).
+- [x] **Realistic Context Assembly**: System prompts mimic Cursor's real context
+      (user_info, project_layout, git_status, AGENTS.md, available_skills, user_query).
+- [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to simulate real-world single-turn agent invocation.
+- [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
+      fixtures or provided via config.
+- [x] **Secure Execution**: Benchmarks run in an isolated Docker container by default to prevent host system damage.
+- [x] **Automatic Environment**: `deno task bench` automatically builds and runs the required Docker image.
 
 ### 3.8 Skill Coverage Matrix
 
