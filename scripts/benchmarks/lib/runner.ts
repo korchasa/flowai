@@ -126,10 +126,13 @@ export async function runScenario(
       }
     }
 
+    // If still no agentsMarkdown, use a minimal default instead of throwing
     if (!agentsMarkdown) {
-      throw new Error(
-        `AGENTS.md is mandatory for scenario ${scenario.id}. Please provide it in agentsMarkdown or in the fixture directory.`,
+      console.log(
+        `  Warning: AGENTS.md not found for scenario ${scenario.id}. Using minimal default.`,
       );
+      agentsMarkdown =
+        "# Agent Reference\n\nThis is a minimal AGENTS.md for initialization benchmarks.";
     }
 
     if (agentsMarkdown) {

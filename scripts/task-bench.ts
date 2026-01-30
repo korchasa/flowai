@@ -22,6 +22,8 @@ import { PlanMigrationBench } from "./benchmarks/scenarios/af-plan/migration/mod
 import { PlanDbFeatureBench } from "./benchmarks/scenarios/af-plan/db-feature/mod.ts";
 import { PlanVariantsObviousBench } from "./benchmarks/scenarios/af-plan/variants-obvious/mod.ts";
 import { PlanVariantsComplexBench } from "./benchmarks/scenarios/af-plan/variants-complex/mod.ts";
+import { InitBrownfieldBench } from "./benchmarks/scenarios/af-init/brownfield/mod.ts";
+import { InitGreenfieldBench } from "./benchmarks/scenarios/af-init/greenfield/mod.ts";
 
 const SCENARIOS: BenchmarkScenario[] = [
   CommitBasicBench,
@@ -40,6 +42,8 @@ const SCENARIOS: BenchmarkScenario[] = [
   PlanDbFeatureBench,
   PlanVariantsObviousBench,
   PlanVariantsComplexBench,
+  InitBrownfieldBench,
+  InitGreenfieldBench,
 ];
 
 function printHelp(defaultAgentPreset: string, defaultJudgePreset: string) {
