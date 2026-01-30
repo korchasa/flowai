@@ -6,7 +6,7 @@ The benchmarking system is designed for objective evaluation of AI agent perform
 
 ### Sandbox
 
-Each scenario run occurs in an isolated temporary directory (`scripts/benchmarks/work/<scenario-id>/sandbox`).
+Each scenario run occurs in an isolated temporary directory (`benchmarks/<scenario-id>/sandbox`).
 
 - The directory is completely cleared before starting.
 - Files from the `fixture/` folder of the corresponding scenario are copied to the sandbox.
@@ -105,7 +105,7 @@ deno task bench [options]
 
 ## Debugging and Tracing
 
-After each run, work artifacts are stored in `scripts/benchmarks/work/<scenario-id>/`:
+After each run, work artifacts are stored in `benchmarks/<scenario-id>/`:
 
 - **`sandbox/`**: Final state of files (can be inspected manually).
 - **`trace.html`**: A rich, interactive execution log with step-by-step timeline, syntax highlighting, and unified data UI for logs and prompts.

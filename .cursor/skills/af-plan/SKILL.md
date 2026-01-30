@@ -52,8 +52,9 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - Ensure `Overview` includes the "Why", "Context", and "Constraints" found
      during research.
 4. **Strategic Analysis (Chat Only)**
-   - Generate 2-3 implementation variants **in the chat**.
-   - Compare them (Pros/Cons) based on the researched context.
+   - Generate implementation variants **in the chat** based on task complexity.
+   - **Quality over quantity**: Provide 1 robust variant if the path is obvious, or multiple if real architectural trade-offs exist. Do NOT create "filler" variants to meet a quota.
+   - Compare them (Pros/Cons) based on the researched context (if multiple).
    - **CRITICAL**: STOP and wait for user input. Explicitly ask the user to
      select a variant. Do NOT proceed to Step 5.
 5. **Detail Solution (S)**

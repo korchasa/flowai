@@ -37,6 +37,7 @@ Deno.test("TraceLogger should generate self-contained HTML", async () => {
     score: 100,
     durationMs: 1000,
     tokensUsed: 500,
+    totalCost: 0.01,
     errors: 0,
     warnings: 0,
   });

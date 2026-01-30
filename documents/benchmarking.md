@@ -6,7 +6,7 @@ The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by
 
 ## 2. Directory Structure
 
-Work artifacts are stored in `scripts/benchmarks/work/`, which is git-ignored. Scenarios are organized hierarchically.
+Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios are organized hierarchically.
 
 ```text
 scripts/benchmarks/
@@ -40,7 +40,7 @@ The trace is a structured HTML document designed for readability and detailed in
 
 ## 4. Execution Flow
 
-1. **Setup**: Clean `scripts/benchmarks/work/<scenario-id>`, create `sandbox/`.
+1. **Setup**: Clean `benchmarks/<scenario-id>`, create `sandbox/`.
 2. **Init**: Initialize `trace.html` with header and context.
 3. **Simulation**: Run LLM, log inputs and outputs to `trace.html`.
 4. **Execution**: Parse and run commands in `sandbox/`, log results to `trace.html`.

@@ -20,6 +20,8 @@ import { PlanInteractiveBench } from "./benchmarks/scenarios/af-plan/interactive
 import { PlanRefactorBench } from "./benchmarks/scenarios/af-plan/refactor/mod.ts";
 import { PlanMigrationBench } from "./benchmarks/scenarios/af-plan/migration/mod.ts";
 import { PlanDbFeatureBench } from "./benchmarks/scenarios/af-plan/db-feature/mod.ts";
+import { PlanVariantsObviousBench } from "./benchmarks/scenarios/af-plan/variants-obvious/mod.ts";
+import { PlanVariantsComplexBench } from "./benchmarks/scenarios/af-plan/variants-complex/mod.ts";
 
 const SCENARIOS: BenchmarkScenario[] = [
   CommitBasicBench,
@@ -36,6 +38,8 @@ const SCENARIOS: BenchmarkScenario[] = [
   PlanRefactorBench,
   PlanMigrationBench,
   PlanDbFeatureBench,
+  PlanVariantsObviousBench,
+  PlanVariantsComplexBench,
 ];
 
 function printHelp(defaultAgentPreset: string, defaultJudgePreset: string) {
@@ -112,7 +116,7 @@ async function main() {
   console.log(`Runs per scenario: ${runs}`);
 
   const results: BenchmarkResult[] = [];
-  const workDir = join(Deno.cwd(), "scripts/benchmarks/work");
+  const workDir = join(Deno.cwd(), "benchmarks");
 
   let totalCostAll = 0;
 
