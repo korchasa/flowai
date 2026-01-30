@@ -137,7 +137,7 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `af-do` | General task execution | [ ] | |
 | `af-engineer-command` | Creating new AF commands | [ ] | |
 | `af-execute` | Executing planned tasks | [ ] | |
-| `af-init` | Project initialization | [ ] | |
+| `af-init` | Project initialization | [x] | `af-init-*` |
 | `af-investigate` | Code investigation/debugging | [ ] | |
 | `af-maintenance` | Periodic project health checks | [ ] | |
 | `af-plan` | Task planning (GODS) | [x] | `af-plan-*` |
