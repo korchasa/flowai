@@ -15,7 +15,7 @@ the development lifecycle.
 
 **Goal**: Ensure the environment is ready and the project base is solid.
 
-- **Initialize Project**: Use `init` skill to set up the project structure
+- **Initialize Project**: Use `af-init` skill to set up the project structure
   and initial documentation if starting fresh.
 - **Define Vision**: Use `af-create-vision-doc` skill to create or update the
   project vision in `documents/vision.md`.
