@@ -18,7 +18,7 @@ import { createTempDir } from "./utils.ts";
 // Load environment variables from .env file
 await load({ export: true });
 
-const TEST_MODEL = "auto";
+const TEST_MODEL = "gemini-3-flash";
 const JUDGE_CONFIG = { model: "google/gemini-2.0-flash-001", temperature: 0 };
 
 // ============================================================================
