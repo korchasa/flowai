@@ -60,17 +60,17 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        8. **Architecture**: Patterns?
        9. **Key Decisions**: Tools/Methodologies?
 
-       Return a SINGLE JSON object: { 
-         "project_name": "...", 
-         "vision_statement": "...",
-         "target_audience": "...",
-         "problem_statement": "...",
-         "solution_differentiators": "...",
-         "risks_assumptions": "...",
-         "stack": ["..."],
-         "architecture": "...", 
-         "key_decisions": "...", 
-         "preferences": ["tdd", "strict-mode", ...] 
+       Return a SINGLE JSON object: {
+       "project_name": "...",
+       "vision_statement": "...",
+       "target_audience": "...",
+       "problem_statement": "...",
+       "solution_differentiators": "...",
+       "risks_assumptions": "...",
+       "stack": ["..."],
+       "architecture": "...",
+       "key_decisions": "...",
+       "preferences": ["tdd", "strict-mode", ...]
        }"
    - **Save Output**: Save to `interview_data.json`.
 

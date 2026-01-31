@@ -15,6 +15,7 @@
 - DO NOT USE STUBS, "CRUTCHES", DECEPTIONS, OR OTHER PREMODS TO BYPASS CHECKS.
 
 ## Project Information
+
 - Project Name: {{PROJECT_NAME}}
 
 ## Project Vision
@@ -164,6 +165,7 @@ REMEMBER: AFTER EACH MEMORY RESET, YOU START COMPLETELY FROM SCRATCH. DOCUMENTAT
 ### How to write in compressed style (apply to all documentation)
 
 Following the rules:
+
 - Remove history: Remove history, updates, and changelog.
 - Use only english in all files.
 - Use combined extractive & abstractive summarization: First, extract ALL facts, then compress them into concise, coherent content WITHOUT LOSING ANY FACTS.
