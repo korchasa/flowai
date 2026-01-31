@@ -10,8 +10,7 @@ disable-model-invocation: true
 
 ## Overview
 
-Create a clear, critiqued plan in `./documents/whiteboard.md` using the GODS
-framework.
+Create a clear, critiqued plan in `./documents/whiteboard.md` using the GODS framework.
 
 ## Context
 
