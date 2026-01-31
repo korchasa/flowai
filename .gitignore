@@ -4,5 +4,5 @@ skeleton.md
 documents/whiteboard.md
 tmp/
 .env
-benchmarks/
+/benchmarks/
 __pycache__/
