@@ -132,7 +132,7 @@ async function main() {
       }
       try {
         const result = await runScenario(scenario, {
-          agentConfig,
+          agentModel: agentConfig.model,
           judgeConfig,
           workDir,
         });

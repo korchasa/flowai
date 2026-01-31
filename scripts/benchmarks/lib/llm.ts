@@ -3,7 +3,7 @@ import { load } from "@std/dotenv";
 
 export interface ModelConfig {
   model: string;
-  temperature?: number;
+  temperature: number;
   provider?: {
     order?: string[];
     allow_fallbacks?: boolean;

@@ -9,7 +9,7 @@ import { SpawnedAgent } from "./spawned_agent.ts";
 import { SimulatedUser } from "./simulated_user.ts";
 
 export interface RunnerOptions {
-  agentConfig: ModelConfig;
+  agentModel: string;
   judgeConfig: ModelConfig;
   workDir: string;
   llmClient?: typeof chatCompletion;
@@ -47,7 +47,7 @@ export async function runScenario(
   await tracer.init(
     scenario.name,
     scenario.id,
-    options.agentConfig.model,
+    options.agentModel,
     scenario.targetAgentPath,
     scenario.userQuery,
   );
@@ -158,24 +158,52 @@ export async function runScenario(
     console.log("  Starting agent interaction...");
     const start = performance.now();
 
-    // Setup mocks
-    const mocksDir = join(scenarioDir, "mocks");
-    const mockEnv: Record<string, string> = {};
-
+    // Setup mocks using Cursor Hooks mechanism
     if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-      await Deno.mkdir(mocksDir, { recursive: true });
-      for (const [tool, script] of Object.entries(scenario.mocks)) {
-        const mockPath = join(mocksDir, tool);
-        // Add shebang if missing
-        const content = script.startsWith("#!")
-          ? script
-          : `#!/bin/sh\n${script}`;
-        await Deno.writeTextFile(mockPath, content);
-        await Deno.chmod(mockPath, 0o755);
+      const hooksDir = join(sandboxPath, ".cursor", "hooks");
+      await Deno.mkdir(hooksDir, { recursive: true });
+
+      const hookDefinitions: Array<{ command: string; matcher: string }> = [];
+
+      for (const [tool, mockOutput] of Object.entries(scenario.mocks)) {
+        const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
+        
+        // Create hook script that returns deny + agent_message with mock output
+        const hookScript = `#!/bin/bash
+# Read stdin (JSON with command details)
+read -r input
+
+# Return mock response - deny execution and inject mock output
+cat <<'MOCK_EOF'
+{
+  "permission": "deny",
+  "agent_message": ${JSON.stringify(mockOutput)}
+}
+MOCK_EOF
+`;
+        await Deno.writeTextFile(hookScriptPath, hookScript);
+        await Deno.chmod(hookScriptPath, 0o755);
+
+        hookDefinitions.push({
+          command: `.cursor/hooks/mock-${tool}.sh`,
+          matcher: tool,
+        });
       }
-      // Prepend to PATH
-      const currentPath = Deno.env.get("PATH") || "";
-      mockEnv["PATH"] = `${mocksDir}:${currentPath}`;
+
+      // Create hooks.json
+      const hooksConfig = {
+        version: 1,
+        hooks: {
+          beforeShellExecution: hookDefinitions,
+        },
+      };
+
+      await Deno.writeTextFile(
+        join(sandboxPath, ".cursor", "hooks.json"),
+        JSON.stringify(hooksConfig, null, 2),
+      );
+
+      console.log(`  Created Cursor hooks for: ${Object.keys(scenario.mocks).join(", ")}`);
     }
 
     // Prepare Environment
@@ -191,9 +219,8 @@ export async function runScenario(
 
     const agent = new SpawnedAgent({
       workspace: sandboxPath,
-      model: options.agentConfig.model,
+      model: options.agentModel,
       prompt: fullPrompt,
-      env: mockEnv,
       maxSteps: scenario.maxSteps || 10,
     });
 
@@ -216,7 +243,7 @@ export async function runScenario(
     await tracer.logLLMInteraction(
       [{ role: "system", content: "Agent Output Log" }],
       logs,
-      { step: 1, source: "agent", model: options.agentConfig.model }
+      { step: 1, source: "agent", model: options.agentModel }
     );
 
     // 5. Gather Evidence for Judge
@@ -319,7 +346,7 @@ ${logStr}
       toolCallsCount: 0, 
       checklistResults,
       logs,
-      model: options.agentConfig.model,
+      model: options.agentModel,
       evidence, 
     } as BenchmarkResult & { evidence: string };
 
