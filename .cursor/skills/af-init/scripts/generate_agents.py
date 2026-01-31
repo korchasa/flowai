@@ -54,6 +54,21 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
     if 'key_decisions' in interview_data:
         key_decisions = interview_data['key_decisions']
 
+    # Vision Construction
+    vision_parts = []
+    if 'vision_statement' in interview_data:
+        vision_parts.append(f"### Vision Statement\n\n{interview_data['vision_statement']}")
+    if 'target_audience' in interview_data:
+        vision_parts.append(f"### Target Audience\n\n{interview_data['target_audience']}")
+    if 'problem_statement' in interview_data:
+        vision_parts.append(f"### Problem Statement\n\n{interview_data['problem_statement']}")
+    if 'solution_differentiators' in interview_data:
+        vision_parts.append(f"### Solution & Differentiators\n\n{interview_data['solution_differentiators']}")
+    if 'risks_assumptions' in interview_data:
+        vision_parts.append(f"### Risks & Assumptions\n\n{interview_data['risks_assumptions']}")
+    
+    vision_content = "\n\n".join(vision_parts) if vision_parts else "No vision provided."
+
     # Rule Selection
     selected_rules = []
     
@@ -85,7 +100,7 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
         dest = os.path.join(rules_dest_dir, rule_dir)
         if os.path.exists(src):
             if os.path.exists(dest):
-                 shutil.rmtree(dest)
+                shutil.rmtree(dest)
             shutil.copytree(src, dest)
             copied_rules.append(rule_dir)
             
@@ -99,6 +114,7 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
     content = content.replace('{{DEVELOPMENT_COMMANDS}}', dev_commands_str)
     content = content.replace('{{ARCHITECTURE}}', architecture)
     content = content.replace('{{KEY_DECISIONS}}', key_decisions)
+    content = content.replace('{{PROJECT_VISION}}', vision_content)
     
     # Write output
     with open(output_path, 'w') as f:
@@ -113,8 +129,8 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
         print("Created documents/ directory")
 
     # Create placeholder files
+    # Note: vision.md is NO LONGER created here.
     placeholders = {
-        'vision.md': '# Project Vision\n\nDescribe the high-level goals and vision of the project here.',
         'requirements.md': '# Requirements\n\nList the functional and non-functional requirements.',
         'architecture.md': '# Architecture\n\nDescribe the system architecture.'
     }
