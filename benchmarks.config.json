@@ -17,7 +17,15 @@
       "temperature": 0
     },
     "gemini-3-flash": {
-      "model": "google/gemini-3-flash-preview",
+      "model": "gemini-3-flash",
+      "temperature": 0
+    },
+    "composer-1": {
+      "model": "composer-1",
+      "temperature": 0
+    },
+    "opus-4.5-thinking": {
+      "model": "opus-4.5-thinking",
       "temperature": 0
     },
     "glm-4.7-flash": {
