@@ -166,7 +166,8 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 window.
 
 - **Reliability:** Benchmarks must use isolated sandboxes and evidence-based
-  verification.
+  verification. Execution must be protected by timeouts (e.g., 60s per step) to
+  ensure system stability.
 - **Scalability:** The benchmarking system must support multiple evaluation modes
   (Quality, Selection, Comparison).
 - **Usability:** Commands must be intuitive (e.g., `/af-commit`). Benchmark

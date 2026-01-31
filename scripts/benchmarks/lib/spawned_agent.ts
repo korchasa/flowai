@@ -7,6 +7,8 @@ export interface AgentOptions {
   commandPath?: string;
   /** Maximum number of resume steps. Defaults to 10. */
   maxSteps?: number;
+  /** Maximum execution time in milliseconds for a single step. Defaults to 60000 (1 minute). */
+  stepTimeout?: number;
 }
 
 export interface AgentResult {
@@ -43,6 +45,7 @@ export class SpawnedAgent {
     onInputRequired?: (logs: string) => Promise<string | null>,
   ): Promise<AgentResult> {
     const maxSteps = this.options.maxSteps || 10;
+    const stepTimeout = this.options.stepTimeout || 60000;
     let finalResult: AgentResult = { code: 0, logs: "" };
     let nextPrompt = this.options.prompt || "";
 
@@ -56,11 +59,26 @@ export class SpawnedAgent {
       );
 
       await this.start(nextPrompt);
-      const result = await this.wait();
-      finalResult = result;
+
+      // Wait with timeout
+      const timeoutPromise = new Promise<AgentResult>((_, reject) => {
+        setTimeout(() => {
+          this.kill();
+          reject(new Error(`Step timeout after ${stepTimeout}ms`));
+        }, stepTimeout);
+      });
+
+      try {
+        const stepResult = await Promise.race([this.wait(), timeoutPromise]);
+        finalResult = stepResult;
+      } catch (e) {
+        this.fullLog.push(`\n[Timeout Error] ${e.message}\n`);
+        finalResult = { code: 124, logs: this.fullLog.join("") };
+        break;
+      }
 
       // Check if agent finished task definitively
-      if (this.isTaskFinished(result.logs)) {
+      if (this.isTaskFinished(finalResult.logs)) {
         await this.logAction("done", step + 1, maxSteps);
         break;
       }
