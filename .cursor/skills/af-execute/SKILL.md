@@ -21,7 +21,7 @@ Implementation command focused on Test-Driven Development and documentation sync
 
 <rules>
 1. **Strict TDD**: Write failing test first, then minimal implementation, then refactor.
-2. **Whiteboard Tracking**: Continuously update progress in `./documents/whiteboard.md`.
+2. **Whiteboard Tracking**: Continuously update progress and found facts in `./documents/whiteboard.md`.
 3. **Planning**: The agent MUST use `todo_write` to track the execution steps.
 </rules>
 
@@ -36,6 +36,7 @@ Implementation command focused on Test-Driven Development and documentation sync
 3. **Analysis & Gap Filling**
    - Analyze if all necessary context is available.
    - If missing info, search project code/docs and the internet.
+   - Record any new facts, decisions, or constraints found during analysis in `whiteboard.md`.
    - If questions remain, conduct a Q&A session with the user.
 4. **Implement with TDD**
    - Iterative TDD cycle for each subtask.
