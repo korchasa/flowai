@@ -13,7 +13,7 @@ export const PlanInteractiveBench: BenchmarkScenario = {
 
   userQuery: "Plan a simple CLI tool that prints 'Hello World'.",
 
-  userReplies: ["I prefer Variant 1 (Deno native)."],
+  userPersona: "You are a developer who prefers Deno native implementation. When asked about implementation variants, always choose Variant 1 (Deno native).",
 
   checklist: [
     {
@@ -29,16 +29,16 @@ export const PlanInteractiveBench: BenchmarkScenario = {
       critical: true,
     },
     {
-      id: "todo_used",
-      description: "Did the logs contain 'todo_write'?",
-      critical: false,
-      type: "static",
-    },
-    {
       id: "no_switch_mode",
       description: "Did the logs NOT contain 'SwitchMode'?",
       critical: true,
       type: "static",
+    },
+    {
+      id: "question_asked",
+      description: "Did the agent ask the user to select an implementation variant?",
+      critical: true,
+      type: "semantic",
     },
   ],
 };

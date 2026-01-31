@@ -54,10 +54,10 @@ export interface BenchmarkScenario {
   stepTimeoutMs?: number;
 
   /**
-   * List of simulated user replies to send when the agent pauses (issues no commands).
-   * Used for testing interactive flows.
+   * Simulated user persona for interactive Q&A.
+   * Describes the user's preferences and goals to the Simulated User LLM.
    */
-  userReplies?: string[];
+  userPersona?: string;
 
   /**
    * Custom system instructions template.

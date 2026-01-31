@@ -1,10 +1,12 @@
 import { join } from "@std/path";
-import { BenchmarkResult, BenchmarkScenario, LLMMessage } from "./types.ts";
+import { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
 import { generateSystemMessage } from "./system-prompt-generator.ts";
+import { SpawnedAgent } from "./spawned_agent.ts";
+import { SimulatedUser } from "./simulated_user.ts";
 
 export interface RunnerOptions {
   agentConfig: ModelConfig;
@@ -18,7 +20,6 @@ export async function runScenario(
   scenario: BenchmarkScenario,
   options: RunnerOptions,
 ): Promise<BenchmarkResult> {
-  const llm = options.llmClient || chatCompletion;
   const judge = options.judgeClient || evaluateChecklist;
   console.log(`\nRunning scenario: ${scenario.name} (${scenario.id})...`);
 
@@ -53,9 +54,9 @@ export async function runScenario(
 
   // Log tools if any
   if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-    const toolsDesc = Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
+    const toolsDesc = scenario.mocks ? Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
       "\n",
-    );
+    ) : "";
     await tracer.logTools(toolsDesc);
   }
 
@@ -153,32 +154,9 @@ export async function runScenario(
 
     await tracer.logSystemPrompt(systemMessage);
 
-    // 3. Run Agent (Simulation)
-    const messages: LLMMessage[] = [
-      { role: "system", content: systemMessage },
-    ];
-
-    messages[0].content += `\n\nIMPORTANT FOR BENCHMARK:
-You are running in a benchmark mode.
-DO NOT use any tools directly.
-SKIP the 'todo_write' step. DO NOT output 'todo_write' commands.
-Instead, output the shell commands you WANT to run inside a SINGLE markdown code block with the 'bash' language tag.
-Example:
-\`\`\`bash
-git add .
-git commit -m "feat: my feature"
-\`\`\`
-Ensure ALL commands are inside this block.
-Write ONE command per line. Do NOT use '&&'.
-DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add <file>' instead.
-`;
-
+    // 3. Run Agent (High-Level Lifecycle)
+    console.log("  Starting agent interaction...");
     const start = performance.now();
-    let tokensUsed = 0;
-    let totalCost = 0;
-    let toolCallsCount = 0;
-    let executedCommands = "";
-    let fullLog = "";
 
     // Setup mocks
     const mocksDir = join(scenarioDir, "mocks");
@@ -200,148 +178,46 @@ DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add 
       mockEnv["PATH"] = `${mocksDir}:${currentPath}`;
     }
 
-    await tracer.logExecutionSection();
+    // Prepare Environment
+    const fullPrompt = `${systemMessage}\n\nUser Query: ${scenario.userQuery}`;
 
-    const MAX_STEPS = scenario.maxSteps || 10;
-    let step = 0;
-    let userReplyIndex = 0;
-    let maxStepsReached = false;
+    const simulatedUser = scenario.userPersona
+      ? new SimulatedUser({
+        persona: scenario.userPersona,
+        config: options.judgeConfig, // Use judge config for simulated user
+        llmClient: options.llmClient,
+      })
+      : null;
 
-    while (step < MAX_STEPS) {
-      step++;
-      console.log(`  Step ${step}/${MAX_STEPS}...`);
+    const agent = new SpawnedAgent({
+      workspace: sandboxPath,
+      model: options.agentConfig.model,
+      prompt: fullPrompt,
+      env: mockEnv,
+      maxSteps: scenario.maxSteps || 10,
+    });
 
-      const stepSignal = scenario.stepTimeoutMs
-        ? AbortSignal.timeout(scenario.stepTimeoutMs)
-        : undefined;
-
-      try {
-        const response = await llm(
-          messages,
-          options.agentConfig,
-          undefined,
-          stepSignal,
-        );
-        tokensUsed += response.usage?.total_tokens || 0;
-        totalCost += response.usage?.cost || 0;
-        const agentOutput = response.content;
-        fullLog += `\n\n--- Step ${step} ---\nAgent: ${agentOutput}`;
-
-        await tracer.logLLMInteraction(messages, agentOutput, {
-          step,
-          source: "agent",
-          model: options.agentConfig.model,
-        });
-        messages.push({ role: "assistant", content: agentOutput });
-
-        // Parse commands
-        const bashRegex = /```bash\n([\s\S]*?)\n```/g;
-        let match;
-        let stepCommands = "";
-        let foundCommands = false;
-
-        while ((match = bashRegex.exec(agentOutput)) !== null) {
-          foundCommands = true;
-          const script = match[1];
-          // Execute the entire block as a single script
-          // This supports heredocs, loops, and multi-line commands correctly
-          toolCallsCount++;
-          executedCommands += `> [Script Block]\n${script}\n`;
-          stepCommands += `> [Script Block]\n${script}\n`;
-
-          try {
-            const scriptPath = join(sandboxPath, `step_${step}_script.sh`);
-            await Deno.writeTextFile(scriptPath, script);
-            await Deno.chmod(scriptPath, 0o755);
-
-            const command = new Deno.Command("sh", {
-              args: [scriptPath],
-              cwd: sandboxPath,
-              stdout: "piped",
-              stderr: "piped",
-              env: mockEnv,
-              signal: stepSignal,
-            });
-            const output = await command.output();
-            const stdout = new TextDecoder().decode(output.stdout);
-            const stderr = new TextDecoder().decode(output.stderr);
-
-            executedCommands += `STDOUT: ${stdout}\n`;
-            stepCommands += `STDOUT: ${stdout}\n`;
-            if (stderr) {
-              executedCommands += `STDERR: ${stderr}\n`;
-              stepCommands += `STDERR: ${stderr}\n`;
-            }
-
-            // Cleanup the script file immediately after execution
-            try {
-              await Deno.remove(scriptPath);
-            } catch (e) {
-              console.warn(
-                `  Warning: Failed to cleanup script at ${scriptPath}: ${e}`,
-              );
-            }
-
-            await tracer.logCommand(
-              "script_block",
-              output.code,
-              stdout,
-              stderr,
-              { step, script },
-            );
-          } catch (e) {
-            const errorMsg = e instanceof Error && e.name === "AbortError"
-              ? "Step timeout exceeded during command execution"
-              : String(e);
-            executedCommands += `ERROR: ${errorMsg}\n`;
-            stepCommands += `ERROR: ${errorMsg}\n`;
-            await tracer.logCommand("script_block", -1, "", errorMsg, { step });
-            if (e instanceof Error && e.name === "AbortError") break;
-          }
-          if (stepSignal?.aborted) break;
-        }
-
-        if (!foundCommands) {
-          if (
-            scenario.userReplies &&
-            userReplyIndex < scenario.userReplies.length
-          ) {
-            const reply = scenario.userReplies[userReplyIndex];
-            console.log(`  Sending user reply: "${reply}"`);
-            messages.push({
-              role: "user",
-              content: reply,
-            });
-            userReplyIndex++;
-            continue;
-          }
-
-          console.log("  No commands found. Agent finished.");
-          break;
-        }
-
-        if (step === MAX_STEPS) {
-          console.log("  MAX_STEPS reached.");
-          maxStepsReached = true;
-        }
-
-        // Feed back output
-        messages.push({
-          role: "user",
-          content: `Command Output:\n${stepCommands}`,
-        });
-      } catch (e) {
-        const errorMsg = e instanceof Error && e.name === "AbortError"
-          ? "Step timeout exceeded"
-          : String(e);
-        console.log(`  Error: ${errorMsg}`);
-        fullLog += `\n\n--- Step ${step} ERROR ---\n${errorMsg}`;
-        break;
+    const { code, logs } = await agent.run(async (allLogs) => {
+      if (!simulatedUser) {
+        console.log("  No simulated user and agent needs input. Stopping.");
+        return null;
       }
-    }
+      const response = await simulatedUser.getResponse(allLogs);
+      if (response) {
+        console.log(`  Simulated User response: "${response}"`);
+      }
+      return response;
+    });
 
     const durationMs = performance.now() - start;
-    console.log("  Agent finished. Analyzing output...");
+
+    console.log(`  Agent finished with exit code ${code}`);
+    await tracer.logExecutionSection();
+    await tracer.logLLMInteraction(
+      [{ role: "system", content: "Agent Output Log" }],
+      logs,
+      { step: 1, source: "agent", model: options.agentConfig.model }
+    );
 
     // 5. Gather Evidence for Judge
     // Get git status/diff to show what happened
@@ -363,8 +239,11 @@ DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add 
     await tracer.logEvidence(statusStr, logStr);
 
     const evidence = `
---- EXECUTED COMMANDS ---
-${executedCommands}
+--- AGENT LOGS ---
+${logs}
+
+--- RAW PTY LOGS ---
+${logs}
 
 --- FINAL GIT STATUS ---
 ${statusStr}
@@ -377,24 +256,25 @@ ${logStr}
     console.log("  Judging results...");
     const judgeOutput = await judge(
       scenario.userQuery,
-      fullLog, // The conversation log
+      logs, // The conversation log (stdout of agent)
       evidence, // The file/system state changes
       scenario.checklist,
       options.judgeConfig,
     );
     const checklistResults = judgeOutput.results;
-    if (maxStepsReached) {
-      checklistResults["max_steps_reached"] = {
+    
+    if (code !== 0) {
+      checklistResults["exit_code_zero"] = {
         pass: false,
-        reason: `Scenario reached MAX_STEPS (${MAX_STEPS}) without finishing.`,
+        reason: `Agent exited with non-zero code: ${code}`,
       };
     }
 
     const checklistToJudge = [...scenario.checklist];
-    if (maxStepsReached) {
+    if (code !== 0) {
       checklistToJudge.push({
-        id: "max_steps_reached",
-        description: "Scenario should finish within MAX_STEPS",
+        id: "exit_code_zero",
+        description: "Agent should exit successfully",
         critical: true,
       });
     }
@@ -434,13 +314,13 @@ ${logStr}
       errorsCount,
       warningsCount,
       durationMs,
-      tokensUsed,
-      totalCost,
-      toolCallsCount,
+      tokensUsed: 0, 
+      totalCost: 0, 
+      toolCallsCount: 0, 
       checklistResults,
-      logs: fullLog,
+      logs,
       model: options.agentConfig.model,
-      evidence, // Attach evidence to result for debugging
+      evidence, 
     } as BenchmarkResult & { evidence: string };
 
     await tracer.logSummary({
