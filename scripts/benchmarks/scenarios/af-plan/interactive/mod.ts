@@ -10,6 +10,8 @@ export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
   userPersona =
     "You are a developer who prefers Deno native implementation. When asked about implementation variants, always choose Variant 1 (Deno native).";
 
+  interactive = true;
+
   checklist = [
     {
       id: "variants_presented",

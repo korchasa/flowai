@@ -88,8 +88,11 @@ fi
   });
 
   try {
-    const result = await agent.run((_logs) => {
+    const result = await agent.run((_logs, messages) => {
       inputCalled++;
+      assertEquals(messages.length, 1);
+      assertEquals(messages[0].role, "assistant");
+      assertEquals(messages[0].content, "AGENT: Need input");
       return Promise.resolve("User Response");
     });
 
@@ -236,24 +239,38 @@ Deno.test("SpawnedAgent - Error Handling (Invalid Command)", async () => {
   }
 });
 
-Deno.test("SpawnedAgent - No PTY behavior", async () => {
-  const tempDir = await createTempDir("agent-no-pty");
-  const mockAgentBin = join(tempDir, "mock-agent.sh");
+Deno.test("SpawnedAgent - Message Accumulation", async () => {
+  const tempDir = await createTempDir("agent-messages");
+  const mockAgentBin = join(tempDir, "mock-agent-messages.sh");
 
   await Deno.writeTextFile(
     mockAgentBin,
     `#!/bin/sh
-if [ -t 0 ]; then
-  echo "PTY DETECTED"
-else
-  echo "NO PTY"
-fi
-cat <<'EOF'
+RESUME=false
+for arg in "$@"; do
+  if [ "$arg" = "--resume" ]; then RESUME=true; fi
+done
+
+if [ "$RESUME" = "false" ]; then
+  cat <<'EOF'
 {
-  "session_id": "no-pty-session",
-  "result": {"result": "Done"}
+  "session_id": "msg-session",
+  "messages": [{"type": "assistant", "content": "Hello"}]
 }
 EOF
+else
+  cat <<'EOF'
+{
+  "session_id": "msg-session",
+  "messages": [
+    {"type": "assistant", "content": "Hello"},
+    {"type": "user", "content": "Hi"},
+    {"type": "assistant", "content": "How can I help?"}
+  ],
+  "result": {"subtype": "success", "result": "Done"}
+}
+EOF
+fi
 exit 0
 `,
   );
@@ -266,10 +283,25 @@ exit 0
   });
 
   try {
-    const result = await agent.run();
-    assertStringIncludes(result.logs, "NO PTY");
+    let callCount = 0;
+    await agent.run(async (_logs, messages) => {
+      callCount++;
+      if (callCount === 1) {
+        assertEquals(messages.length, 1);
+        assertEquals(messages[0].content, "Hello");
+        return "Hi";
+      }
+      return null;
+    });
+
+    const finalMessages = agent.getMessages();
+    assertEquals(finalMessages.length, 3);
+    assertEquals(finalMessages[0].content, "Hello");
+    assertEquals(finalMessages[1].content, "Hi");
+    assertEquals(finalMessages[2].content, "How can I help?");
   } finally {
     await agent.kill();
     await Deno.remove(tempDir, { recursive: true });
   }
 });
+
