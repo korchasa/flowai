@@ -1,4 +1,5 @@
 import { LLMMessage, LLMResponse } from "./types.ts";
+import { load } from "@std/dotenv";
 
 export interface ModelConfig {
   model: string;
@@ -42,6 +43,13 @@ export async function chatCompletion(
   temperature?: number,
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
+  // Load .env if present
+  try {
+    await load({ export: true });
+  } catch (_) {
+    // Ignore if .env is missing or fails to load
+  }
+
   const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
   if (!OPENROUTER_API_KEY) {
