@@ -61,8 +61,9 @@ export class SpawnedAgent {
       await this.start(nextPrompt);
 
       // Wait with timeout
+      let timeoutId: number | undefined;
       const timeoutPromise = new Promise<AgentResult>((_, reject) => {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           this.kill();
           reject(new Error(`Step timeout after ${stepTimeout}ms`));
         }, stepTimeout);
@@ -70,9 +71,12 @@ export class SpawnedAgent {
 
       try {
         const stepResult = await Promise.race([this.wait(), timeoutPromise]);
+        if (timeoutId) clearTimeout(timeoutId);
         finalResult = stepResult;
       } catch (e) {
-        this.fullLog.push(`\n[Timeout Error] ${e.message}\n`);
+        if (timeoutId) clearTimeout(timeoutId);
+        const error = e as Error;
+        this.fullLog.push(`\n[Timeout Error] ${error.message}\n`);
         finalResult = { code: 124, logs: this.fullLog.join("") };
         break;
       }
