@@ -21,6 +21,7 @@
 - **Main subsystems and their roles:**
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
+  - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
   - **Documentation Subsystem:** Stores project state and memory.
 
 ## 3. Components
@@ -40,6 +41,7 @@
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
   - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
+  - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.
 

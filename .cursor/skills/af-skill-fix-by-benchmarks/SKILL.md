@@ -18,53 +18,43 @@ This command provides a systematic approach to debugging and improving AssistFlo
 ### 1. Identify the Benchmark
 
 Find the relevant benchmark scenario for the skill you are working on.
-
 - Scenarios are located in `scripts/benchmarks/scenarios/`.
-- Each scenario has a `mod.ts` file defining the test logic and a `fixture/` directory with initial files.
 
-### 2. Run the Benchmark
+### 2. Run and Analyze (via Subagent)
 
-Execute the benchmark using the Deno task:
+Delegate the execution and initial analysis to the `benchmark-runner` subagent.
 
-```bash
-deno task bench -f <scenario-id>
-```
+> "Run the benchmark for scenario <scenario-id> and analyze the results."
 
-Example: `deno task bench -f af-commit-basic`
+The subagent will:
+- Execute `deno task bench -f <scenario-id>`
+- Report Pass/Fail status
+- Detail specific checklist failures and evidence
 
-### 3. Analyze the Failure
+### 3. Determine Root Cause
 
-If the benchmark fails, perform a root cause analysis:
+Based on the subagent's report and your own analysis of the skill:
 
-1. **Analyze**: Read the prompt, codebase, and local documentation.
-2. **Check the Trace**: Read the `trace.html` (or `trace.md` if available) in `benchmarks/<scenario-id>/`.
-3. **Examine Evidence**: Look at the "EVIDENCE" section in the trace which includes `git status`, `git diff`, and logs.
-4. **Inspect Sandbox**: The sandbox directory `benchmarks/<scenario-id>/sandbox/` is preserved for manual inspection.
-5. **Compare Logs**: Compare the agent's actions in the log with the expected behavior defined in the scenario's `checklist`.
+1.  **Analyze**: Why did the specific checklist items fail?
+2.  **Hypothesize**:
+    - **Prompt Issue**: Ambiguous instructions in `SKILL.md`.
+    - **Tool Issue**: Missing or misused tools.
+    - **Context Issue**: Missing project knowledge.
+    - **Model Limitation**: Task too complex for the model.
 
-### 4. Determine Root Cause
+### 4. Propose and Argument Fixes
 
-Identify why the agent failed:
-
-- **Prompt Issue**: The instructions in `SKILL.md` are ambiguous or missing key steps.
-- **Tool Issue**: A required tool is missing, broken, or not used correctly.
-- **Context Issue**: The agent didn't have enough information about the project structure or conventions.
-- **Model Limitation**: The model used for the agent is not capable enough for the task (check if it works with a smarter model).
-
-### 5. Propose and Argument Fixes
-
-Present the findings to the user:
-
-- **Finding**: Clearly state what failed and why (the root cause).
-- **Proposed Fix**: Describe the specific changes needed (e.g., "Add a step to check git status before committing in SKILL.md").
-- **Argumentation**: Explain how this fix addresses the root cause and why it's the best approach.
+Present the findings:
+- **Finding**: Root cause of the failure.
+- **Proposed Fix**: Specific changes to `SKILL.md` or code.
+- **Argumentation**: Why this fix works.
 - **Verification Plan**: State that the benchmark will be re-run after the fix to verify success.
 
-### 6. Implement and Verify
+### 5. Implement and Verify
 
-1. Apply the agreed-upon fix.
-2. Re-run the benchmark: `deno task bench -f <scenario-id>`.
-3. Confirm all judge checklist items pass.
+1.  Apply the agreed-upon fix.
+2.  Ask `benchmark-runner` to run the benchmark again to verify.
+3.  Confirm all checks pass.
 
 ## Tips for Root Cause Analysis
 

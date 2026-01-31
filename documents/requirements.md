@@ -153,6 +153,7 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `af-skill-draw-mermaid`     | Drawing Mermaid diagrams       |     [ ]     |               |
 | `af-skill-eng-prompt-inst`  | Prompt engineering (Instant)   |     [ ]     |               |
 | `af-skill-eng-prompt-reas`  | Prompt engineering (Reasoning) |     [ ]     |               |
+| `af-skill-fix-by-benchmarks` | Fixing skills via benchmarks |     [x]     |               |
 | `af-skill-fix-tests`        | Fixing broken tests            |     [ ]     |               |
 | `af-skill-manage-github`    | Managing GitHub via MCP        |     [ ]     |               |
 | `af-skill-write-bench`      | Writing agent benchmarks       |     [x]     |               |
