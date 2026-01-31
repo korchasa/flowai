@@ -64,7 +64,7 @@ Present the findings to the user:
 
 1. Apply the agreed-upon fix.
 2. Re-run the benchmark: `deno task bench -f <scenario-id>`.
-3. Confirm all checklist items pass.
+3. Confirm all judge checklist items pass.
 
 ## Tips for Root Cause Analysis
 
