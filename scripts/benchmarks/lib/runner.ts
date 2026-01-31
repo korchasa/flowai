@@ -5,7 +5,7 @@ import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
-import { SimulatedUser } from "./simulated_user.ts";
+import { UserEmulator } from "./user_emulator.ts";
 import { calculateSessionUsage } from "./usage.ts";
 
 export interface RunnerOptions {
@@ -210,8 +210,8 @@ MOCK_EOF
     // Prepare Environment
     const fullPrompt = scenario.userQuery;
 
-    const simulatedUser = scenario.userPersona
-      ? new SimulatedUser({
+    const userEmulator = scenario.interactive && scenario.userPersona
+      ? new UserEmulator({
         persona: scenario.userPersona,
         config: options.judgeConfig, // Use judge config for simulated user
         llmClient: options.llmClient,
@@ -226,13 +226,23 @@ MOCK_EOF
       stepTimeout: 60000, // 1 minute timeout per step
     });
 
-    const { code, logs } = await agent.run(async (allLogs) => {
-      if (!simulatedUser) {
+    const { code, logs } = await agent.run(async (_allLogs, messages) => {
+      if (!userEmulator) {
         return null;
       }
-      const response = await simulatedUser.getResponse(allLogs);
+      const response = await userEmulator.getResponse(messages);
       if (response) {
-        console.log(`  Simulated User response: "${response}"`);
+        const gray = "\x1b[90m";
+        const reset = "\x1b[0m";
+        const output = `${gray}?? ${response}${reset}\n`;
+        await Deno.stdout.write(new TextEncoder().encode(output));
+
+        // Log to trace
+        await tracer.logLLMInteraction(
+          messages.map(m => ({ role: m.role, content: m.content })),
+          response,
+          { step: 1, source: "user_emulation", model: options.judgeConfig.model }
+        );
       }
       return response;
     });

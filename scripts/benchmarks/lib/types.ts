@@ -61,6 +61,12 @@ export interface BenchmarkScenario {
   userPersona?: string;
 
   /**
+   * Whether the scenario is interactive.
+   * If true, the UserEmulator will be used to interact with the agent.
+   */
+  interactive?: boolean;
+
+  /**
    * Custom system instructions template.
    * @deprecated Context is now discovered natively by cursor-agent.
    */

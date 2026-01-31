@@ -27,6 +27,7 @@ export class SpawnedAgent {
   private isFinished: boolean = false;
   private sessionId: string | null = null;
   private parsedResult: Record<string, unknown> | null = null;
+  private messages: Array<{ role: string; content: string }> = [];
 
   private exitPromise: Promise<AgentResult> | null = null;
   private resolveExit!: (res: AgentResult) => void;
@@ -37,12 +38,16 @@ export class SpawnedAgent {
     return this.sessionId;
   }
 
+  public getMessages(): Array<{ role: string; content: string }> {
+    return this.messages;
+  }
+
   /**
    * Runs the agent until completion, handling input requests via callback.
    * @param onInputRequired Callback to get user input when agent is waiting.
    */
   async run(
-    onInputRequired?: (logs: string) => Promise<string | null>,
+    onInputRequired?: (logs: string, messages: Array<{ role: string; content: string }>) => Promise<string | null>,
   ): Promise<AgentResult> {
     const maxSteps = this.options.maxSteps || 10;
     const stepTimeout = this.options.stepTimeout || 60000;
@@ -83,8 +88,9 @@ export class SpawnedAgent {
 
       // If we have a callback, check if we need to resume
       if (onInputRequired) {
-        const input = await onInputRequired(this.fullLog.join(""));
+        const input = await onInputRequired(this.fullLog.join(""), this.messages);
         if (input && input !== "WAIT") {
+          this.fullLog.push(`\n[USER INPUT] ${input}\n`);
           nextPrompt = input;
           // Continue to next step in loop
           continue;
@@ -97,10 +103,11 @@ export class SpawnedAgent {
         break;
       }
 
-      // If not finished and no input provided, we might still need to continue
-      // but without a prompt it will just exit again. 
-      // In a real scenario, we'd probably want to stop here if no input was provided.
-      break;
+      // If not finished and no input provided, we stop to avoid infinite loops
+      if (onInputRequired) {
+        break;
+      }
+      // If no input callback, we continue until maxSteps or isTaskFinished
     }
 
     return finalResult;
@@ -304,13 +311,43 @@ export class SpawnedAgent {
         this.sessionId = obj.session_id;
       }
       this.parsedResult = obj;
+
+      // Extract messages if available
+      if (Array.isArray(obj.messages)) {
+        for (const msg of obj.messages) {
+          if (msg.type === "assistant" || msg.type === "user") {
+            const role = msg.type === "assistant" ? "assistant" : "user";
+            // Avoid duplicates if we are resuming and getting the same messages
+            const exists = this.messages.some(m => m.role === role && m.content === msg.content);
+            if (!exists) {
+              this.messages.push({ role, content: msg.content });
+            }
+          }
+        }
+      }
+
+      // CRITICAL: If there's a "result" field, it's often the actual assistant response 
+      // that isn't included in the "messages" array.
+      if (obj.result && typeof obj.result === "string") {
+        const exists = this.messages.some(m => m.role === "assistant" && m.content === obj.result);
+        if (!exists) {
+          this.messages.push({ role: "assistant", content: obj.result });
+        }
+      } else if (obj.result && typeof obj.result === "object" && obj.result.result && typeof obj.result.result === "string") {
+        const exists = this.messages.some(m => m.role === "assistant" && m.content === obj.result.result);
+        if (!exists) {
+          this.messages.push({ role: "assistant", content: obj.result.result });
+        }
+      }
     } catch (_) {
       // Ignore parse errors
     }
   }
 
   private isTaskFinished(_logs: string): boolean {
-    if (this.parsedResult && this.parsedResult.result) {
+    // In JSON mode, cursor-agent returns a "result" field only when it's truly done.
+    // If it's just a message or tool call, "result" is usually null or absent.
+    if (this.parsedResult && this.parsedResult.result !== undefined && this.parsedResult.result !== null) {
       return true;
     }
     return false;
