@@ -102,6 +102,12 @@ export interface BenchmarkResult {
   warningsCount: number; // Number of non-critical failures
   durationMs: number;
   tokensUsed: number;
+  tokensDetails?: {
+    input: number;
+    output: number;
+    cacheRead: number;
+    cacheWrite: number;
+  };
   totalCost: number;
   toolCallsCount: number;
   model: string;

@@ -6,6 +6,7 @@ import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { SimulatedUser } from "./simulated_user.ts";
+import { calculateSessionUsage } from "./usage.ts";
 
 export interface RunnerOptions {
   agentModel: string;
@@ -239,6 +240,27 @@ MOCK_EOF
     const durationMs = performance.now() - start;
 
     console.log(`  Agent finished with exit code ${code}`);
+
+    // 4. Calculate Usage (Tokens)
+    let tokensUsed = 0;
+    let tokensDetails: BenchmarkResult["tokensDetails"] = undefined;
+    const sessionId = agent.getSessionId();
+    if (sessionId) {
+      const usage = await calculateSessionUsage(sessionId);
+      if (usage) {
+        tokensUsed = usage.tokens.total;
+        tokensDetails = {
+          input: usage.tokens.input,
+          output: usage.tokens.output,
+          cacheRead: usage.tokens.cacheRead,
+          cacheWrite: usage.tokens.cacheWrite,
+        };
+        console.log(
+          `  Usage: ${tokensUsed} tokens (Input: ${tokensDetails.input}, Output: ${tokensDetails.output}, Cache Read: ${tokensDetails.cacheRead}, Cache Write: ${tokensDetails.cacheWrite})`,
+        );
+      }
+    }
+
     await tracer.logExecutionSection();
     await tracer.logLLMInteraction(
       [{ role: "system", content: "Agent Output Log" }],
@@ -341,7 +363,8 @@ ${logStr}
       errorsCount,
       warningsCount,
       durationMs,
-      tokensUsed: 0,
+      tokensUsed,
+      tokensDetails,
       totalCost: 0,
       toolCallsCount: 0,
       checklistResults,

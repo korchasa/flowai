@@ -112,6 +112,7 @@
 - [x] Evidence collection (git status, logs, file changes).
 - [x] LLM-based Judge for semantic verification.
 - [x] Financial cost calculation per scenario and per run.
+- [x] Detailed token usage breakdown (Input, Output, Cache Read, Cache Write).
 - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
 - [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
 - [x] Unified data block UI with smart blur, line numbering, and word wrap.
