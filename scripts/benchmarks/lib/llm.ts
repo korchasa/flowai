@@ -26,7 +26,8 @@ export async function loadConfig(
 ): Promise<BenchmarkConfig> {
   try {
     const content = await Deno.readTextFile(path);
-    return JSON.parse(content);
+    const config = JSON.parse(content) as BenchmarkConfig;
+    return config;
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
       throw new Error(

@@ -134,9 +134,8 @@ async function main() {
   const agentPresetName = args.preset || config.default_agent_model;
   const agentPreset = config.presets[agentPresetName];
 
-  const agentConfig: ModelConfig = agentPreset
-    ? { ...agentPreset }
-    : { model: agentPresetName, temperature: 0 };
+  // If preset exists, use its model, otherwise use preset name as model ID
+  const agentModel = agentPreset ? agentPreset.model : agentPresetName;
 
   const judgePresetName = args["judge-preset"] || config.default_judge_preset;
   const judgePreset = config.presets[judgePresetName];
@@ -156,7 +155,7 @@ async function main() {
 
   console.log(`Found ${scenariosToRun.length} scenarios.`);
   console.log(`Using agent preset: ${agentPresetName}`);
-  console.log(`Using agent model: ${agentConfig.model}`);
+  console.log(`Using agent model: ${agentModel}`);
   console.log(`Using judge preset: ${judgePresetName}`);
   console.log(`Using judge model: ${judgeConfig.model}`);
   console.log(`Runs per scenario: ${runs}`);
@@ -173,7 +172,7 @@ async function main() {
       }
       try {
         const result = await runScenario(scenario, {
-          agentModel: agentConfig.model,
+          agentModel,
           judgeConfig,
           workDir,
         });
