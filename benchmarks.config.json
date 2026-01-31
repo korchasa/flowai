@@ -16,18 +16,6 @@
       "model": "google/gemini-3-pro-preview",
       "temperature": 0
     },
-    "gemini-3-flash": {
-      "model": "gemini-3-flash",
-      "temperature": 0
-    },
-    "composer-1": {
-      "model": "composer-1",
-      "temperature": 0
-    },
-    "opus-4.5-thinking": {
-      "model": "opus-4.5-thinking",
-      "temperature": 0
-    },
     "glm-4.7-flash": {
       "model": "z-ai/glm-4.7-flash",
       "temperature": 0,
@@ -39,6 +27,12 @@
       "provider": { "order": ["siliconflow/fp8","deepinfra/fp4","parasail/fp8"] }
     }
   },
-  "default_agent_preset": "gemini-2.5-flash-lite",
+  "agent_models": [
+    "gemini-3-flash",
+    "gemini-3-pro",
+    "opus-4.5-thinking",
+    "composer-1"
+  ],
+  "default_agent_model": "gemini-3-flash",
   "default_judge_preset": "gemini-2.5-flash-lite"
 }
