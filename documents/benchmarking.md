@@ -40,14 +40,25 @@ The trace is a structured HTML document designed for readability and detailed in
 
 ## 5. Current State (2026-01-31)
 
-| Scenario ID | Result | Errors | Warnings | Notes |
-| :--- | :--- | :---: | :---: | :--- |
-| `af-commit-basic` | FAILED | 1 | 0 | Unclean status after commit (untracked files) |
-| `af-commit-atomic-refactor` | PASSED | 0 | 0 | |
-| `af-commit-atomic-docs` | PASSED | 0 | 0 | |
-| `af-commit-check` | PASSED | 0 | 0 | |
-| `af-commit-sync-docs` | PASSED | 0 | 0 | |
-| `af-commit-atomic-hunk` | PASSED | 0 | 0 | |
-| `af-commit-deps` | FAILED | 2 | 0 | Missing 'chore:' and 'feat:' prefixes in atomic commits |
-| `af-commit-check-fail` | FAILED | 1 | 0 | Committed changes despite `deno task check` failure |
-| `af-plan-basic` | INTERRUPTED | - | - | Stopped due to PTY read error or missing simulated user |
+| Scenario ID | Result | Errors | Warnings | Time (s) | Notes |
+| :--- | :--- | :---: | :---: | :---: | :--- |
+| `af-answer-basic` | PASSED | 0 | 0 | 17.6 | |
+| `af-commit-basic` | FAILED | 1 | 0 | 13.7 | Unclean status after commit (untracked .cursor/ files) |
+| `af-commit-atomic-refactor` | PASSED | 0 | 0 | 21.1 | |
+| `af-commit-atomic-docs` | PASSED | 0 | 0 | 18.9 | |
+| `af-commit-check` | PASSED | 0 | 0 | 30.0+ | |
+| `af-commit-check-fail` | PASSED | 0 | 0 | 19.9 | Correctly refused to commit on check failure |
+| `af-commit-deps` | FAILED | 2 | 0 | 22.1 | Missing 'chore:' and 'feat:' prefixes |
+| `af-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
+| `af-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
+| `af-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
+| `af-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
+| `af-plan-basic` | FAILED | 3 | 0 | 26.5 | No whiteboard, no GODS, no variants |
+| `af-plan-context` | PASSED | 0 | 0 | 25.5 | |
+| `af-plan-db` | FAILED | 1 | 0 | 22.7 | Missing migration step |
+| `af-plan-interactive` | FAILED | 3 | 0 | 22.9 | No variants, no whiteboard, no selection question |
+| `af-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
+| `af-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
+| `af-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
+| `af-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
+| `af-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |

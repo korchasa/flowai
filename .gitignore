@@ -6,3 +6,4 @@ tmp/
 .env
 /benchmarks/
 __pycache__/
+benchmarks.lock
