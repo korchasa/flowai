@@ -25,7 +25,13 @@ When asked to run a benchmark for a scenario (e.g., `af-commit-basic`):
 3.  **Analyze (if Failed)**:
     *   Locate the benchmark output directory: `benchmarks/<scenario-id>/`.
     *   Read the failure details from the command output.
-    *   If needed, inspect the sandbox at `benchmarks/<scenario-id>/sandbox/` to see the actual state of files.
+    *   **Inspect Sandbox State**:
+        *   The current state is at `benchmarks/<scenario-id>/sandbox/`.
+        *   To see what changed compared to the initial state (fixtures), run this oneliner:
+            ```bash
+            diff -r scripts/benchmarks/scenarios/$(echo <scenario-id> | sed 's/\([^-]*\)-\([^-]*\)-.*/\1-\2/')/$(echo <scenario-id> | sed 's/[^-]*-[^-]*-//')/fixture benchmarks/<scenario-id>/sandbox --exclude=".cursor" --exclude=".git"
+            ```
+            *(Note: Adjust the path if the scenario structure is different, e.g., for `af-plan-db` use `scripts/benchmarks/scenarios/af-plan/db-feature/fixture`)*
     *   Look for the `trace` files if you need to see the agent's internal thought process (though usually the judge output is sufficient for the *what*).
 
 4.  **Report**:
