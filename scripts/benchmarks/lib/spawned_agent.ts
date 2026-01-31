@@ -33,6 +33,10 @@ export class SpawnedAgent {
 
   constructor(private options: AgentOptions) {}
 
+  public getSessionId(): string | null {
+    return this.sessionId;
+  }
+
   /**
    * Runs the agent until completion, handling input requests via callback.
    * @param onInputRequired Callback to get user input when agent is waiting.
