@@ -1,7 +1,7 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitBasicBench: BenchmarkScenario = {
   id: "af-commit-basic",
@@ -19,7 +19,8 @@ export const CommitBasicBench: BenchmarkScenario = {
     // This makes it an untracked file, which is what the scenario expects.
   },
 
-  userQuery: "I added a sum function in utils.ts. Commit this changes.",
+  userQuery:
+    "/af-commit I added a sum function in utils.ts. Commit this changes.",
 
   checklist: [
     {

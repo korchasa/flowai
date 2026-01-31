@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const SKILL_PATH = ".cursor/skills/af-answer/SKILL.md";
+const SKILL_PATH = "catalog/skills/af-answer/SKILL.md";
 
 export const AnswerBasicBench: BenchmarkScenario = {
   id: "af-answer-basic",
@@ -12,12 +12,14 @@ export const AnswerBasicBench: BenchmarkScenario = {
     // Fixtures are copied automatically
   },
 
-  userQuery: "How is password hashing implemented in this project? Does it follow the requirements?",
+  userQuery:
+    "/af-answer How is password hashing implemented in this project? Does it follow the requirements?",
 
   checklist: [
     {
       id: "docs_read",
-      description: "Did the agent read documents/requirements.md and documents/design.md?",
+      description:
+        "Did the agent read documents/requirements.md and documents/design.md?",
       critical: true,
     },
     {
@@ -27,7 +29,8 @@ export const AnswerBasicBench: BenchmarkScenario = {
     },
     {
       id: "correct_answer",
-      description: "Did the agent correctly identify that bcrypt is used for hashing as required?",
+      description:
+        "Did the agent correctly identify that bcrypt is used for hashing as required?",
       critical: true,
       type: "semantic",
     },

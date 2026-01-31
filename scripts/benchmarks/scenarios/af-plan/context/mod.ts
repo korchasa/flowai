@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanContextBench: BenchmarkScenario = {
   id: "af-plan-context",
@@ -12,7 +12,7 @@ export const PlanContextBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Plan implementation of the requirement described in documents/requirements.md.",
+    "/af-plan Plan implementation of the requirement described in documents/requirements.md.",
 
   checklist: [
     {

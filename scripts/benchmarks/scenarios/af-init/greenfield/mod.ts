@@ -1,7 +1,7 @@
 import { join } from "@std/path";
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const SKILL_PATH = ".cursor/skills/af-init/SKILL.md";
+const SKILL_PATH = "catalog/skills/af-init/SKILL.md";
 
 export const InitGreenfieldBench: BenchmarkScenario = {
   id: "af-init-greenfield",
@@ -28,18 +28,21 @@ Always confirm when asked to overwrite or create files.`,
   checklist: [
     {
       id: "interview_started",
-      description: "Did the agent start an interview to gather project details?",
+      description:
+        "Did the agent start an interview to gather project details?",
       critical: true,
       type: "semantic",
     },
     {
       id: "agents_md_created",
-      description: "Was AGENTS.md created after the interview (simulated or actual)?",
+      description:
+        "Was AGENTS.md created after the interview (simulated or actual)?",
       critical: true,
     },
     {
       id: "doc_rules_present",
-      description: "Does the generated AGENTS.md contain 'Code Documentation Rules'?",
+      description:
+        "Does the generated AGENTS.md contain 'Code Documentation Rules'?",
       critical: true,
       type: "semantic",
     },

@@ -1,7 +1,7 @@
 import { join } from "@std/path";
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanVariantsObviousBench: BenchmarkScenario = {
   id: "af-plan-variants-obvious",
@@ -14,17 +14,19 @@ export const PlanVariantsObviousBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Use the af-plan skill to plan the creation of a 'hello.txt' file containing 'Hello World'. Context: This is a test project. No other requirements. Just plan it.",
+    "/af-plan Plan the creation of a 'hello.txt' file containing 'Hello World'. Context: This is a test project. No other requirements. Just plan it.",
 
   checklist: [
     {
       id: "whiteboard_created",
-      description: "Did the agent create/write to 'documents/whiteboard.md' (as required by the planning process)?",
+      description:
+        "Did the agent create/write to 'documents/whiteboard.md' (as required by the planning process)?",
       critical: true,
     },
     {
       id: "single_variant",
-      description: "Did the agent present EXACTLY ONE implementation variant in the chat? It should NOT offer alternatives for such a simple task.",
+      description:
+        "Did the agent present EXACTLY ONE implementation variant in the chat? It should NOT offer alternatives for such a simple task.",
       critical: true,
       type: "semantic",
     },

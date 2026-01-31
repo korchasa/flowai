@@ -2,7 +2,7 @@ import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 import { join } from "@std/path";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitSyncDocsBench: BenchmarkScenario = {
   id: "af-commit-sync-docs",
@@ -24,7 +24,7 @@ export const CommitSyncDocsBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "I added a new feature in src.ts. Commit changes, but first update the documentation in documents/README.md to reflect the changes.",
+    "/af-commit I added a new feature in src.ts. Commit changes, but first update the documentation in documents/README.md to reflect the changes.",
 
   checklist: [
     {

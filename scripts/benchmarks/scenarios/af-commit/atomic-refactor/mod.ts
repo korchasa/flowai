@@ -2,7 +2,7 @@ import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 import { join } from "@std/path";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitAtomicRefactorBench: BenchmarkScenario = {
   id: "af-commit-atomic-refactor",
@@ -30,7 +30,7 @@ export const CommitAtomicRefactorBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Commit changes. I renamed a function in math.ts (refactoring) and added utils.ts (new feature). Separate refactoring from the new feature.",
+    "/af-commit Commit changes. I renamed a function in math.ts (refactoring) and added utils.ts (new feature). Separate refactoring from the new feature.",
 
   checklist: [
     {

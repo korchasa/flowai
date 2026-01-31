@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanDbFeatureBench: BenchmarkScenario = {
   id: "af-plan-db",
@@ -13,7 +13,7 @@ export const PlanDbFeatureBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Plan adding a 'role' field to the User model. It should be an enum with values 'USER' and 'ADMIN', defaulting to 'USER'. Update the registration flow to support it.",
+    "/af-plan Plan adding a 'role' field to the User model. It should be an enum with values 'USER' and 'ADMIN', defaulting to 'USER'. Update the registration flow to support it.",
 
   checklist: [
     {

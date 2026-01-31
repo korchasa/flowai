@@ -2,7 +2,7 @@ import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 import { join } from "@std/path";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitAtomicHunkBench: BenchmarkScenario = {
   id: "af-commit-atomic-hunk",
@@ -25,7 +25,7 @@ export const CommitAtomicHunkBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Commit changes. I renamed a function (logic) and added a comment (style). Split them into two commits (style and refactor).",
+    "/af-commit Commit changes. I renamed a function (logic) and added a comment (style). Split them into two commits (style and refactor).",
 
   checklist: [
     {

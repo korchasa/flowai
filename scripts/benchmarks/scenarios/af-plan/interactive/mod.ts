@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanInteractiveBench: BenchmarkScenario = {
   id: "af-plan-interactive",
@@ -11,9 +11,10 @@ export const PlanInteractiveBench: BenchmarkScenario = {
     // documents/ directory is now in fixture/
   },
 
-  userQuery: "Plan a simple CLI tool that prints 'Hello World'.",
+  userQuery: "/af-plan Plan a simple CLI tool that prints 'Hello World'.",
 
-  userPersona: "You are a developer who prefers Deno native implementation. When asked about implementation variants, always choose Variant 1 (Deno native).",
+  userPersona:
+    "You are a developer who prefers Deno native implementation. When asked about implementation variants, always choose Variant 1 (Deno native).",
 
   checklist: [
     {
@@ -36,7 +37,8 @@ export const PlanInteractiveBench: BenchmarkScenario = {
     },
     {
       id: "question_asked",
-      description: "Did the agent ask the user to select an implementation variant?",
+      description:
+        "Did the agent ask the user to select an implementation variant?",
       critical: true,
       type: "semantic",
     },

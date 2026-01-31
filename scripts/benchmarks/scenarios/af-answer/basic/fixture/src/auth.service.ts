@@ -5,8 +5,8 @@ export class AuthService {
     return await bcrypt.hash(password, 10);
   }
 
-  async validateLogin(email: string, pass: string): Promise<boolean> {
+  async validateLogin(_email: string, _pass: string): Promise<boolean> {
     // TODO: implement
-    return true;
+    return await Promise.resolve(true);
   }
 }

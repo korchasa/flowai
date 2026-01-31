@@ -2,7 +2,7 @@ import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 import { join } from "@std/path";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitDepsBench: BenchmarkScenario = {
   id: "af-commit-deps",
@@ -29,7 +29,7 @@ export const CommitDepsBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Commit changes. I updated the version in deno.json and the logic in mod.ts. Split them.",
+    "/af-commit Commit changes. I updated the version in deno.json and the logic in mod.ts. Split them.",
 
   checklist: [
     {

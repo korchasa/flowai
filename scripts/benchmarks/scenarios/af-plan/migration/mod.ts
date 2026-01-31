@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanMigrationBench: BenchmarkScenario = {
   id: "af-plan-migration",
@@ -12,7 +12,7 @@ export const PlanMigrationBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Plan a migration of src/data-loader.js to use modern Node.js APIs (fs/promises) and 'fetch' instead of 'request'. Also switch to async/await.",
+    "/af-plan Plan a migration of src/data-loader.js to use modern Node.js APIs (fs/promises) and 'fetch' instead of 'request'. Also switch to async/await.",
 
   checklist: [
     {

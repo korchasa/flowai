@@ -1,7 +1,7 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 import { runGit, setupGitRepo } from "../../../lib/utils.ts";
 
-const AGENT_PATH = ".cursor/skills/af-commit/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-commit/SKILL.md";
 
 export const CommitCheckFailBench: BenchmarkScenario = {
   id: "af-commit-check-fail",
@@ -22,7 +22,7 @@ export const CommitCheckFailBench: BenchmarkScenario = {
     );
   },
 
-  userQuery: "Commit changes.",
+  userQuery: "/af-commit Commit changes.",
 
   checklist: [
     {

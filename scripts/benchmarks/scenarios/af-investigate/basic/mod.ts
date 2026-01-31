@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const SKILL_PATH = ".cursor/skills/af-investigate/SKILL.md";
+const SKILL_PATH = "catalog/skills/af-investigate/SKILL.md";
 
 export const InvestigateBasicBench: BenchmarkScenario = {
   id: "af-investigate-basic",
@@ -12,7 +12,8 @@ export const InvestigateBasicBench: BenchmarkScenario = {
     // Fixtures are copied automatically
   },
 
-  userQuery: "The calculateTotal function in src/math.ts returns incorrect results. For price 10 and quantity 2, it returns 30 instead of 20. Investigate this. I want to see multiple hypotheses first. Use only standard CLI tools like cat, ls, grep.",
+  userQuery:
+    "/af-investigate The calculateTotal function in src/math.ts returns incorrect results. For price 10 and quantity 2, it returns 30 instead of 20. Investigate this. I want to see multiple hypotheses first. Use only standard CLI tools like cat, ls, grep.",
 
   checklist: [
     {
@@ -23,7 +24,8 @@ export const InvestigateBasicBench: BenchmarkScenario = {
     },
     {
       id: "user_control",
-      description: "Did the agent STOP after proposing hypotheses and ask the user to select one?",
+      description:
+        "Did the agent STOP after proposing hypotheses and ask the user to select one?",
       critical: true,
       type: "semantic",
     },

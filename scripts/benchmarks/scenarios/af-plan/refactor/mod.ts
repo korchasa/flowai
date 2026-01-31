@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanRefactorBench: BenchmarkScenario = {
   id: "af-plan-refactor",
@@ -12,7 +12,7 @@ export const PlanRefactorBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Plan a refactoring of src/UserManager.ts to separate concerns. It does too much right now.",
+    "/af-plan Plan a refactoring of src/UserManager.ts to separate concerns. It does too much right now.",
 
   checklist: [
     {

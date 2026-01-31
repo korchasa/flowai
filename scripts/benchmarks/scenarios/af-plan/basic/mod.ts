@@ -1,6 +1,6 @@
 import { BenchmarkScenario } from "../../../lib/types.ts";
 
-const AGENT_PATH = ".cursor/skills/af-plan/SKILL.md";
+const AGENT_PATH = "catalog/skills/af-plan/SKILL.md";
 
 export const PlanBasicBench: BenchmarkScenario = {
   id: "af-plan-basic",
@@ -12,7 +12,7 @@ export const PlanBasicBench: BenchmarkScenario = {
   },
 
   userQuery:
-    "Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.",
+    "/af-plan Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.",
 
   checklist: [
     {
