@@ -116,6 +116,7 @@
 - [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
 - [x] Unified data block UI with smart blur, line numbering, and word wrap.
 - [x] JSON-based configuration for model presets (agent and judge).
+- [x] **Support for direct model names**: Allows using model names directly if no preset matches.
 - [x] **Realistic Context Assembly**: System prompts mimic Cursor's real context
       (user_info, project_layout, git_status, AGENTS.md, available_skills, user_query).
 - [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to simulate real-world single-turn agent invocation.

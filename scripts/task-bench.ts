@@ -72,7 +72,7 @@ async function main() {
     unknown: (arg) => {
       if (arg.startsWith("-")) {
         console.error(`Unknown argument: ${arg}`);
-        printHelp(config.default_agent_preset, config.default_judge_preset);
+        printHelp(config.default_agent_model, config.default_judge_preset);
         Deno.exit(1);
       }
       return true;
@@ -80,24 +80,22 @@ async function main() {
   });
 
   if (args.help) {
-    printHelp(config.default_agent_preset, config.default_judge_preset);
+    printHelp(config.default_agent_model, config.default_judge_preset);
     Deno.exit(0);
   }
 
   if (args._.length > 0) {
     console.error(`Unexpected positional arguments: ${args._.join(", ")}`);
-    printHelp(config.default_agent_preset, config.default_judge_preset);
+    printHelp(config.default_agent_model, config.default_judge_preset);
     Deno.exit(1);
   }
 
-  const agentPresetName = args.preset || config.default_agent_preset;
+  const agentPresetName = args.preset || config.default_agent_model;
   const agentPreset = config.presets[agentPresetName];
-  if (!agentPreset) {
-    console.error(`Unknown agent preset: ${agentPresetName}`);
-    Deno.exit(1);
-  }
 
-  const agentConfig: ModelConfig = { ...agentPreset };
+  const agentConfig: ModelConfig = agentPreset
+    ? { ...agentPreset }
+    : { model: agentPresetName, temperature: 0 };
 
   const judgePresetName = args["judge-preset"] || config.default_judge_preset;
   const judgePreset = config.presets[judgePresetName];

@@ -15,7 +15,7 @@ export interface ModelConfig {
 
 export interface BenchmarkConfig {
   presets: Record<string, ModelConfig>;
-  default_agent_preset: string;
+  default_agent_model: string;
   default_judge_preset: string;
 }
 

@@ -1,0 +1,1 @@
+../../../catalog/skills/af-plan/SKILL.md

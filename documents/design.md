@@ -54,7 +54,8 @@
   - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (PTY-based).
   - **Docker**: Optional Docker isolation (`Dockerfile` based on `denoland/deno:alpine`) with `git`, `bash`, `curl`, and `cursor-agent` installed.
   - **Hierarchical Scenarios**: Scenarios are organized as `scripts/benchmarks/scenarios/<skill>/<scenario>/mod.ts`.
-  - **JSON Configuration**: `benchmarks.config.json` stores unified model presets for agents and judges, enabling fail-fast initialization and CLI selection.
+  - **JSON Configuration**: `benchmarks.config.json` stores unified model presets.
+  - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.
   - **Realistic Context**: `system-prompt-generator.ts` assembles system prompts using `system-prompt.template.md`, simulating Cursor's context (including dynamic project layout, git status, and user query).
   - **Single-Turn Query**: User query is embedded directly into the system prompt's `<user_query>` section, mimicking a single-turn interaction for benchmarks.
