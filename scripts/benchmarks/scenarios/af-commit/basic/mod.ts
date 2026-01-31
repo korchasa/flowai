@@ -9,8 +9,8 @@ export const CommitBasicBench = new class extends BenchmarkSkillScenario {
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);
 
-    // Initial commit with README and AGENTS.md
-    await runGit(sandboxPath, ["add", "README.md", "AGENTS.md"]);
+    // Initial commit with README, AGENTS.md and .cursor
+    await runGit(sandboxPath, ["add", "README.md", "AGENTS.md", ".cursor"]);
     await runGit(sandboxPath, ["commit", "-m", "Initial commit"]);
 
     // utils.ts is already in sandbox but NOT in git yet.
