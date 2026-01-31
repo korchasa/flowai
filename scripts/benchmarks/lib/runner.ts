@@ -4,7 +4,6 @@ import { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
-import { generateSystemMessage } from "./system-prompt-generator.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { SimulatedUser } from "./simulated_user.ts";
 
@@ -40,9 +39,6 @@ export async function runScenario(
   console.log(`  Sandbox created: ${sandboxPath}`);
 
   const tracer = new TraceLogger(scenarioDir);
-  const agentPath = scenario.targetAgentPath.startsWith("/")
-    ? scenario.targetAgentPath
-    : join(Deno.cwd(), scenario.targetAgentPath);
 
   await tracer.init(
     scenario.name,
@@ -54,9 +50,11 @@ export async function runScenario(
 
   // Log tools if any
   if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-    const toolsDesc = scenario.mocks ? Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
-      "\n",
-    ) : "";
+    const toolsDesc = scenario.mocks
+      ? Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
+        "\n",
+      )
+      : "";
     await tracer.logTools(toolsDesc);
   }
 
@@ -104,6 +102,18 @@ export async function runScenario(
       }
     }
 
+    // 1.6 Copy catalog to .cursor
+    const catalogPath = join(Deno.cwd(), "catalog");
+    const dotCursorPath = join(sandboxPath, ".cursor");
+
+    try {
+      await Deno.mkdir(dotCursorPath, { recursive: true });
+      console.log(`  Copying catalog from ${catalogPath} to ${dotCursorPath}`);
+      await copyRecursive(catalogPath, dotCursorPath);
+    } catch (e) {
+      console.warn(`  Warning: Failed to copy catalog: ${e}`);
+    }
+
     // 2. Load Agent Prompt and AGENTS.md
     let agentsMarkdown = scenario.agentsMarkdown;
     if (!agentsMarkdown) {
@@ -142,18 +152,6 @@ export async function runScenario(
 
     await scenario.setup(sandboxPath);
 
-    const skillContent = await Deno.readTextFile(agentPath);
-
-    const systemMessage = await generateSystemMessage({
-      scenario,
-      sandboxPath,
-      skillContent,
-      agentsMarkdown: agentsMarkdown || "",
-      userQuery: scenario.userQuery,
-    });
-
-    await tracer.logSystemPrompt(systemMessage);
-
     // 3. Run Agent (High-Level Lifecycle)
     console.log("  Starting agent interaction...");
     const start = performance.now();
@@ -167,7 +165,7 @@ export async function runScenario(
 
       for (const [tool, mockOutput] of Object.entries(scenario.mocks)) {
         const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
-        
+
         // Create hook script that returns deny + agent_message with mock output
         const hookScript = `#!/bin/bash
 # Read stdin (JSON with command details)
@@ -203,11 +201,13 @@ MOCK_EOF
         JSON.stringify(hooksConfig, null, 2),
       );
 
-      console.log(`  Created Cursor hooks for: ${Object.keys(scenario.mocks).join(", ")}`);
+      console.log(
+        `  Created Cursor hooks for: ${Object.keys(scenario.mocks).join(", ")}`,
+      );
     }
 
     // Prepare Environment
-    const fullPrompt = `${systemMessage}\n\nUser Query: ${scenario.userQuery}`;
+    const fullPrompt = scenario.userQuery;
 
     const simulatedUser = scenario.userPersona
       ? new SimulatedUser({
@@ -243,7 +243,7 @@ MOCK_EOF
     await tracer.logLLMInteraction(
       [{ role: "system", content: "Agent Output Log" }],
       logs,
-      { step: 1, source: "agent", model: options.agentModel }
+      { step: 1, source: "agent", model: options.agentModel },
     );
 
     // 5. Gather Evidence for Judge
@@ -289,7 +289,7 @@ ${logStr}
       options.judgeConfig,
     );
     const checklistResults = judgeOutput.results;
-    
+
     if (code !== 0) {
       checklistResults["exit_code_zero"] = {
         pass: false,
@@ -341,13 +341,13 @@ ${logStr}
       errorsCount,
       warningsCount,
       durationMs,
-      tokensUsed: 0, 
-      totalCost: 0, 
-      toolCallsCount: 0, 
+      tokensUsed: 0,
+      totalCost: 0,
+      toolCallsCount: 0,
       checklistResults,
       logs,
       model: options.agentModel,
-      evidence, 
+      evidence,
     } as BenchmarkResult & { evidence: string };
 
     await tracer.logSummary({

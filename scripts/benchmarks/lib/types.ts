@@ -61,8 +61,7 @@ export interface BenchmarkScenario {
 
   /**
    * Custom system instructions template.
-   * If provided, it will be used instead of the default one.
-   * Should contain {{AGENTS}} and {{SKILL}} placeholders.
+   * @deprecated Context is now discovered natively by cursor-agent.
    */
   systemInstructionsTemplate?: string;
 
@@ -70,7 +69,6 @@ export interface BenchmarkScenario {
    * AGENTS.md content.
    * If provided as string, it will be used.
    * If not provided, the runner will try to load it from the scenario's fixture directory.
-   * If still not found, the benchmark will fail as AGENTS.md is now mandatory.
    */
   agentsMarkdown?: string;
 }
