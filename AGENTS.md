@@ -96,7 +96,7 @@ The benchmarking system (`scripts/task-bench.ts`) is designed to evaluate agent 
 
 ### Hierarchy and purpose
 
-- Product Vision (VISION): The starting point and most important document. Defines the "Why" and "For Whom". Answers the questions: what is the long-term goal and value.
+- Product Vision (VISION): The starting point and most important document. Defines the "Why" and "For Whom". Answers the questions: what is the long-term goal and value. Stored in `AGENTS.md`.
 - Software Requirements Specification (SRS): Is the primary source of truth for the project. Answers the questions: what are we doing and why. Depends on Product Vision.
 - Software Design Specification (SDS): Is a source of project implementation details. Depends on Software Requirements Specification (SRS). Answers the question: how we do it.
 - File Structure Map: A map of the project's file structure and its purpose.

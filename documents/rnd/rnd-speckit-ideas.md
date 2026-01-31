@@ -31,7 +31,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 
 #### Adaptation Options
 
-1. **Integration**: Add the contents of `memory/constitution.md` to the existing `vision.md` as an "Immutable Principles" section, making it part of the mandatory context.
+1. **Integration**: Add the contents of `memory/constitution.md` to the existing Product Vision in `AGENTS.md` as an "Immutable Principles" section, making it part of the mandatory context.
 
 ### 5. Management of Forced Uncertainty
 

@@ -17,8 +17,6 @@ the development lifecycle.
 
 - **Initialize Project**: Use `af-init` skill to set up the project structure
   and initial documentation if starting fresh.
-- **Define Vision**: Use `af-create-vision-doc` skill to create or update the
-  project vision in `documents/vision.md`.
 
 ### 2. For Each Task
 
@@ -74,7 +72,6 @@ standardize team processes and speeds up typical tasks.
   errors until success
 - `af-commit` - Git commit workflow following Conventional Commits
 - `af-create-scripts` - Create the Deno task scripts
-- `af-create-vision-doc` - Create vision documentation
 - `af-do` - General task execution workflow
 - `af-engineer-prompt` - Prompt engineering utility
 - `af-engineer-rule` - Rule engineering utility
@@ -131,14 +128,14 @@ can quickly understand the project's state, goals, and architecture.
 - **Architectural Integrity**: By recording decisions in `design.md`, we prevent
   the agent from proposing solutions that contradict the established
   architecture.
-- **Goal Alignment**: `vision.md` and `requirements.md` keep the development
+- **Goal Alignment**: Product Vision (in `AGENTS.md`) and `requirements.md` keep the development
   focused on solving the right problems.
 - **Autonomous Operation**: Clear documentation is what allows the agent to work
   autonomously without constant human guidance.
 
 ### Document Types and Their Purpose
 
-- **`vision.md` (Product Vision)**: The "North Star" of the project. It explains
+- **Product Vision**: The "North Star" of the project (stored in `AGENTS.md`). It explains
   _why_ the project exists, who it's for, and what makes it unique. It helps the
   agent understand high-level priorities.
 - **`requirements.md` (SRS)**: Detailed functional and non-functional
