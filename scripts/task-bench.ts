@@ -76,7 +76,7 @@ async function main() {
     const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
     console.error(
       `\x1b[31mError: Another benchmark process (PID: ${pid}) is already running.\x1b[0m`,
-    );    
+    );
     Deno.exit(1);
   }
 
