@@ -235,3 +235,41 @@ Deno.test("SpawnedAgent - Error Handling (Invalid Command)", async () => {
     await Deno.remove(tempDir, { recursive: true });
   }
 });
+
+Deno.test("SpawnedAgent - No PTY behavior", async () => {
+  const tempDir = await createTempDir("agent-no-pty");
+  const mockAgentBin = join(tempDir, "mock-agent.sh");
+
+  await Deno.writeTextFile(
+    mockAgentBin,
+    `#!/bin/sh
+if [ -t 0 ]; then
+  echo "PTY DETECTED"
+else
+  echo "NO PTY"
+fi
+cat <<'EOF'
+{
+  "session_id": "no-pty-session",
+  "result": {"result": "Done"}
+}
+EOF
+exit 0
+`,
+  );
+  await Deno.chmod(mockAgentBin, 0o755);
+
+  const agent = new SpawnedAgent({
+    commandPath: mockAgentBin,
+    workspace: tempDir,
+    model: "test-model",
+  });
+
+  try {
+    const result = await agent.run();
+    assertStringIncludes(result.logs, "NO PTY");
+  } finally {
+    await agent.kill();
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});

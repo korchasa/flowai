@@ -52,7 +52,7 @@
 - **Maintenance & Benchmarking**:
   - `deno task bench`: Evaluates agents via evidence-based scenarios. Supports direct model selection via `-m, --model` flag.
   - **Parallel Execution Protection**: Uses `benchmarks.lock` file containing the PID to prevent concurrent runs. Implements signal listeners (`SIGINT`, `SIGTERM`) and `unload` events for reliable cleanup.
-  - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (PTY-based).
+  - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based).
   - **Docker**: Optional Docker isolation (`Dockerfile` based on `denoland/deno:alpine`) with `git`, `bash`, `curl`, and `cursor-agent` installed.
   - **Hierarchical Scenarios**: Scenarios are organized as `scripts/benchmarks/scenarios/<skill>/<scenario>/mod.ts`.
   - **JSON Configuration**: `benchmarks.config.json` stores unified model presets.

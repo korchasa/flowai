@@ -1,5 +1,3 @@
-import { Pty } from "@sigma/pty-ffi";
-
 export interface AgentOptions {
   workspace: string;
   model: string;
@@ -17,11 +15,11 @@ export interface AgentResult {
 }
 
 /**
- * Encapsulates the execution of a cursor-agent process in a PTY.
+ * Encapsulates the execution of a cursor-agent process using Deno.Command.
  * Handles automatic flag generation, output monitoring, and lifecycle management (resume).
  */
 export class SpawnedAgent {
-  private pty: Pty | null = null;
+  private process: Deno.ChildProcess | null = null;
   private fullLog: string[] = [];
   private outputBuffer: string = "";
   private isFinished: boolean = false;
@@ -76,7 +74,6 @@ export class SpawnedAgent {
         } else {
           // Agent not finished, but user has nothing to say or simulator said WAIT.
           // We resume with a default prompt to let agent continue its internal logic.
-          // "Continue" is a safe bet for cursor-agent to proceed with next steps.
           nextPrompt = "Continue";
         }
       } else {
@@ -130,13 +127,27 @@ export class SpawnedAgent {
     const command = this.options.commandPath || "cursor-agent";
     const args = this.buildArgs(prompt);
 
-    this.pty = new Pty(command, {
+    const cmd = new Deno.Command(command, {
       args,
       cwd: this.options.workspace,
       env: this.options.env || {},
+      stdin: "piped",
+      stdout: "piped",
+      stderr: "piped",
     });
 
-    this.monitorPty();
+    try {
+      this.process = cmd.spawn();
+      // Close stdin immediately as we don't need it for most cases
+      // and it prevents resource leaks in tests
+      try {
+        this.process.stdin.close();
+      } catch (_) { /* ignore */ }
+      this.monitorProcess();
+    } catch (e) {
+      this.fullLog.push(`Error starting process: ${e}\n`);
+      this.cleanup(1);
+    }
   }
 
   private buildArgs(prompt: string): string[] {
@@ -163,28 +174,41 @@ export class SpawnedAgent {
     return args;
   }
 
-  private async monitorPty() {
-    if (!this.pty) return;
+  private async monitorProcess() {
+    if (!this.process) return;
 
     const decoder = new TextDecoder("utf-8", { fatal: false, ignoreBOM: true });
 
     try {
-      const readable = this.pty.readable as unknown as AsyncIterable<
-        string | Uint8Array
-      >;
+      // We read both stdout and stderr
+      const stdoutReader = this.process.stdout.getReader();
+      const stderrReader = this.process.stderr.getReader();
 
-      for await (const chunk of readable) {
-        let text: string;
-
-        if (typeof chunk === "string") {
-          text = chunk;
-        } else {
-          text = decoder.decode(chunk, { stream: true });
+      const readStream = async (
+        reader: ReadableStreamDefaultReader<Uint8Array>,
+      ) => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const text = decoder.decode(value, { stream: true });
+            this.outputBuffer += text;
+            this.fullLog.push(text);
+          }
+        } catch (e) {
+          if (!(e instanceof Deno.errors.Interrupted)) {
+            this.fullLog.push(`\n[Stream Error] ${e}\n`);
+          }
+        } finally {
+          reader.releaseLock();
         }
+      };
 
-        this.outputBuffer += text;
-        this.fullLog.push(text);
-      }
+      // Run both readers in parallel
+      await Promise.all([
+        readStream(stdoutReader),
+        readStream(stderrReader),
+      ]);
 
       // Final flush
       const finalFlush = decoder.decode();
@@ -193,17 +217,15 @@ export class SpawnedAgent {
         this.fullLog.push(finalFlush);
       }
 
-      // Parse complete JSON output after process ends
+      const status = await this.process.status;
       this.parseOutput(this.outputBuffer);
-
-      // Print extracted message in gray color
       await this.printFormattedOutput();
+      this.cleanup(status.code);
     } catch (e) {
       if (!(e instanceof Deno.errors.Interrupted)) {
-        console.error("PTY Monitor error:", e);
+        console.error("Process Monitor error:", e);
       }
-    } finally {
-      this.cleanup(0);
+      this.cleanup(1);
     }
   }
 
@@ -213,10 +235,8 @@ export class SpawnedAgent {
     const gray = "\x1b[90m";
     const reset = "\x1b[0m";
 
-    // Extract first non-empty line from result or messages
     let firstLine = "";
 
-    // Try result first
     const result = this.parsedResult.result as
       | Record<string, unknown>
       | undefined;
@@ -226,7 +246,6 @@ export class SpawnedAgent {
       firstLine = this.getFirstChars(this.parsedResult.result);
     }
 
-    // If no result, try messages
     if (!firstLine) {
       const messages = this.parsedResult.messages as
         | Array<Record<string, unknown>>
@@ -254,19 +273,14 @@ export class SpawnedAgent {
   }
 
   private parseOutput(output: string) {
-    // Find JSON object in output (may have non-JSON text around it)
     const jsonMatch = output.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return;
 
     try {
       const obj = JSON.parse(jsonMatch[0]);
-
-      // Extract session_id from root
       if (obj.session_id) {
         this.sessionId = obj.session_id;
       }
-
-      // Store parsed result for isTaskFinished check
       this.parsedResult = obj;
     } catch (_) {
       // Ignore parse errors
@@ -274,7 +288,6 @@ export class SpawnedAgent {
   }
 
   private isTaskFinished(_logs: string): boolean {
-    // Check if parsedResult has result field (indicates task completion)
     if (this.parsedResult && this.parsedResult.result) {
       return true;
     }
@@ -284,14 +297,10 @@ export class SpawnedAgent {
   /**
    * Writes text to the agent's stdin.
    */
-  async writeInput(input: string) {
-    if (!this.pty || this.isFinished) return;
-    try {
-      await this.pty.write(input + "\n");
-      this.fullLog.push(`[STDIN] ${input}\n`);
-    } catch (_) {
-      // Ignore write errors if process is closing
-    }
+  writeInput(_input: string) {
+    // Stdin is closed in start() to prevent leaks.
+    // If we need interactive stdin in the future, we should manage its lifecycle.
+    this.fullLog.push(`[STDIN] (ignored, stdin closed) ${_input}\n`);
   }
 
   /**
@@ -307,12 +316,12 @@ export class SpawnedAgent {
   /**
    * Forcefully terminates the agent process.
    */
-  async kill() {
+  kill() {
     if (this.isFinished) return;
 
-    if (this.pty) {
+    if (this.process) {
       try {
-        await this.pty.write("\x03");
+        this.process.kill("SIGINT");
       } catch (_) { /* ignore */ }
     }
     this.cleanup(130);

@@ -108,7 +108,7 @@
 - **Use case scenario:** Developer runs `deno task bench` to see how well the
   agent handles specific scenarios.
 - **Acceptance criteria:**
-- [x] Isolated sandbox execution for scenarios using `SpawnedAgent` (PTY-based).
+- [x] Isolated sandbox execution for scenarios using `SpawnedAgent` (direct `Deno.Command` based).
 - [x] Evidence collection (git status, logs, file changes).
 - [x] LLM-based Judge for semantic verification.
 - [x] Financial cost calculation per scenario and per run.
@@ -124,7 +124,7 @@
 - [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to simulate real-world single-turn agent invocation.
 - [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
       fixtures or provided via config.
-- [x] **Secure Execution**: Benchmarks run in an isolated environment (Docker or local PTY).
+- [x] **Secure Execution**: Benchmarks run in an isolated environment (Docker or local process).
 - [x] **Simulated User**: Support for interactive flows via `SimulatedUser` LLM.
 - [x] **Environment Management**: `.env` support for API keys in benchmarks.
 
