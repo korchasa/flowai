@@ -5,3 +5,4 @@ documents/whiteboard.md
 tmp/
 .env
 benchmarks/
+__pycache__/
