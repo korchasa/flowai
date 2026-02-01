@@ -22,7 +22,9 @@ export class UserEmulator {
    * Decides if the agent is waiting for input and provides the response.
    * Returns null if no input is needed.
    */
-  async getResponse(messages: Array<{ role: string; content: string }>): Promise<string | null> {
+  async getResponse(
+    messages: Array<{ role: string; content: string }>,
+  ): Promise<string | null> {
     const llmMessages: LLMMessage[] = [
       {
         role: "system",
@@ -42,9 +44,9 @@ RULES:
 - If the agent asks a multiple-choice question, pick one based on your persona.
 - If the agent asks for confirmation, say 'yes' or 'no' based on your persona.`,
       },
-      ...messages.map(m => ({
+      ...messages.map((m) => ({
         role: m.role as "user" | "assistant",
-        content: m.content
+        content: m.content,
       })),
     ];
 

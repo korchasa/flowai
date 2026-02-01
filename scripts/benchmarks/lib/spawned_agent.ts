@@ -16,6 +16,15 @@ export interface AgentResult {
   logs: string;
 }
 
+interface AgentOutput {
+  session_id?: string;
+  result?: string | {
+    subtype: string;
+    result: string;
+  };
+  subtype?: string;
+}
+
 /**
  * Encapsulates the execution of a cursor-agent process using Deno.Command.
  * Handles automatic flag generation, output monitoring, and lifecycle management (resume).
@@ -26,7 +35,7 @@ export class SpawnedAgent {
   private outputBuffer: string = "";
   private isFinished: boolean = false;
   private sessionId: string | null = null;
-  private parsedResult: Record<string, unknown> | null = null;
+  private parsedResult: AgentOutput | null = null;
   private messages: Array<{ role: string; content: string }> = [];
 
   private exitPromise: Promise<AgentResult> | null = null;
@@ -43,11 +52,16 @@ export class SpawnedAgent {
   }
 
   /**
-   * Runs the agent until completion, handling input requests via callback.
-   * @param onInputRequired Callback to get user input when agent is waiting.
+   * Runs the agent until completion.
+   * If the agent needs input and a user emulator is provided, it will be used.
+   * Otherwise, the first result is considered final.
    */
   async run(
-    onInputRequired?: (logs: string, messages: Array<{ role: string; content: string }>) => Promise<string | null>,
+    userEmulator?: {
+      getResponse: (
+        messages: Array<{ role: string; content: string }>,
+      ) => Promise<string | null>;
+    },
   ): Promise<AgentResult> {
     const maxSteps = this.options.maxSteps || 10;
     const stepTimeout = this.options.stepTimeout || 60000;
@@ -55,7 +69,6 @@ export class SpawnedAgent {
     let nextPrompt = this.options.prompt || "";
 
     for (let step = 0; step < maxSteps; step++) {
-      // Log step start with query
       await this.logAction(
         step === 0 ? "start" : "resume",
         step + 1,
@@ -65,7 +78,6 @@ export class SpawnedAgent {
 
       await this.start(nextPrompt);
 
-      // Wait with timeout
       let timeoutId: number | undefined;
       const timeoutPromise = new Promise<AgentResult>((_, reject) => {
         timeoutId = setTimeout(() => {
@@ -86,28 +98,18 @@ export class SpawnedAgent {
         break;
       }
 
-      // If we have a callback, check if we need to resume
-      if (onInputRequired) {
-        const input = await onInputRequired(this.fullLog.join(""), this.messages);
+      // If we have a user emulator, try to get a response to continue
+      if (userEmulator) {
+        const input = await userEmulator.getResponse(this.messages);
         if (input && input !== "WAIT") {
           this.fullLog.push(`\n[USER INPUT] ${input}\n`);
           nextPrompt = input;
-          // Continue to next step in loop
           continue;
         }
       }
 
-      // Check if agent finished task definitively according to its own output
-      if (this.isTaskFinished(finalResult.logs)) {
-        await this.logAction("done", step + 1, maxSteps);
-        break;
-      }
-
-      // If not finished and no input provided, we stop to avoid infinite loops
-      if (onInputRequired) {
-        break;
-      }
-      // If no input callback, we continue until maxSteps or isTaskFinished
+      // If no emulator or no input from it, we are done
+      break;
     }
 
     return finalResult;
@@ -152,6 +154,16 @@ export class SpawnedAgent {
     this.exitPromise = new Promise((resolve) => {
       this.resolveExit = resolve;
     });
+
+    if (prompt) {
+      // Avoid duplicating the prompt if we are resuming with the same prompt
+      const lastMsg = this.messages[this.messages.length - 1];
+      if (
+        !lastMsg || lastMsg.role !== "user" || lastMsg.content !== prompt
+      ) {
+        this.messages.push({ role: "user", content: prompt });
+      }
+    }
 
     const command = this.options.commandPath || "cursor-agent";
     const args = this.buildArgs(prompt);
@@ -266,27 +278,11 @@ export class SpawnedAgent {
 
     let firstLine = "";
 
-    const result = this.parsedResult.result as
-      | Record<string, unknown>
-      | undefined;
+    const result = this.parsedResult.result;
     if (result && typeof result === "object" && result.result) {
       firstLine = this.getFirstChars(String(result.result));
     } else if (typeof this.parsedResult.result === "string") {
       firstLine = this.getFirstChars(this.parsedResult.result);
-    }
-
-    if (!firstLine) {
-      const messages = this.parsedResult.messages as
-        | Array<Record<string, unknown>>
-        | undefined;
-      if (Array.isArray(messages)) {
-        for (const msg of messages) {
-          if (msg.content) {
-            firstLine = this.getFirstChars(String(msg.content));
-            if (firstLine) break;
-          }
-        }
-      }
     }
 
     if (firstLine) {
@@ -302,52 +298,81 @@ export class SpawnedAgent {
   }
 
   private parseOutput(output: string) {
-    const jsonMatch = output.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return;
+    // Find all JSON objects in the output.
+    let searchIndex = 0;
+    while (true) {
+      const start = output.indexOf("{", searchIndex);
+      if (start === -1) break;
 
-    try {
-      const obj = JSON.parse(jsonMatch[0]);
-      if (obj.session_id) {
-        this.sessionId = obj.session_id;
-      }
-      this.parsedResult = obj;
-
-      // Extract messages if available
-      if (Array.isArray(obj.messages)) {
-        for (const msg of obj.messages) {
-          if (msg.type === "assistant" || msg.type === "user") {
-            const role = msg.type === "assistant" ? "assistant" : "user";
-            // Avoid duplicates if we are resuming and getting the same messages
-            const exists = this.messages.some(m => m.role === role && m.content === msg.content);
-            if (!exists) {
-              this.messages.push({ role, content: msg.content });
-            }
+      let depth = 0;
+      let end = -1;
+      for (let i = start; i < output.length; i++) {
+        if (output[i] === "{") depth++;
+        else if (output[i] === "}") {
+          depth--;
+          if (depth === 0) {
+            end = i;
+            break;
           }
         }
       }
 
-      // CRITICAL: If there's a "result" field, it's often the actual assistant response 
-      // that isn't included in the "messages" array.
-      if (obj.result && typeof obj.result === "string") {
-        const exists = this.messages.some(m => m.role === "assistant" && m.content === obj.result);
-        if (!exists) {
-          this.messages.push({ role: "assistant", content: obj.result });
-        }
-      } else if (obj.result && typeof obj.result === "object" && obj.result.result && typeof obj.result.result === "string") {
-        const exists = this.messages.some(m => m.role === "assistant" && m.content === obj.result.result);
-        if (!exists) {
-          this.messages.push({ role: "assistant", content: obj.result.result });
+      if (end === -1) break;
+
+      const potentialJson = output.slice(start, end + 1);
+      try {
+        const obj = JSON.parse(potentialJson) as AgentOutput;
+        this.processJsonObject(obj);
+        searchIndex = end + 1;
+      } catch (_) {
+        searchIndex = start + 1;
+      }
+    }
+  }
+
+  private processJsonObject(obj: AgentOutput) {
+    if (obj.session_id) {
+      this.sessionId = obj.session_id;
+    }
+    this.parsedResult = obj;
+
+    // Since cursor-agent doesn't return messages in JSON,
+    // we rely on the fact that we added the user prompt in start()
+    // and now we just add the assistant's result.
+    if (obj.result) {
+      const content = typeof obj.result === "string"
+        ? obj.result
+        : obj.result.result;
+      if (content) {
+        // Avoid adding the same result multiple times if processJsonObject is called multiple times
+        const lastMsg = this.messages[this.messages.length - 1];
+        if (
+          !lastMsg || lastMsg.role !== "assistant" ||
+          lastMsg.content !== content
+        ) {
+          this.messages.push({ role: "assistant", content });
         }
       }
-    } catch (_) {
-      // Ignore parse errors
     }
   }
 
   private isTaskFinished(_logs: string): boolean {
-    // In JSON mode, cursor-agent returns a "result" field only when it's truly done.
-    // If it's just a message or tool call, "result" is usually null or absent.
-    if (this.parsedResult && this.parsedResult.result !== undefined && this.parsedResult.result !== null) {
+    // In JSON mode, cursor-agent returns a "result" field.
+    // We check the subtype to see if it's actually finished.
+    // "input_required" means the agent is waiting for user input.
+    if (this.parsedResult && this.parsedResult.subtype === "input_required") {
+      return false;
+    }
+    if (this.parsedResult && this.parsedResult.subtype === "success") {
+      return true;
+    }
+    // If subtype is missing but result is present, we assume success for now
+    // to maintain compatibility with older versions or different mocks.
+    if (
+      this.parsedResult && !this.parsedResult.subtype &&
+      this.parsedResult.result !== undefined &&
+      this.parsedResult.result !== null
+    ) {
       return true;
     }
     return false;

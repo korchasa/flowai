@@ -42,14 +42,26 @@ export async function setupGitRepo(path: string) {
 }
 
 /**
- * Recursively copies a directory or file.
+ * Recursively copies a directory or file, skipping specified directory names.
  */
-export async function copyRecursive(src: string, dest: string) {
+export async function copyRecursive(
+  src: string,
+  dest: string,
+  skipDirs: string[] = [],
+) {
   const stat = await Deno.stat(src);
   if (stat.isDirectory) {
+    const dirName = src.split(/[\\/]/).pop();
+    if (dirName && skipDirs.includes(dirName)) {
+      return;
+    }
     await Deno.mkdir(dest, { recursive: true });
     for await (const entry of Deno.readDir(src)) {
-      await copyRecursive(join(src, entry.name), join(dest, entry.name));
+      await copyRecursive(
+        join(src, entry.name),
+        join(dest, entry.name),
+        skipDirs,
+      );
     }
   } else {
     await Deno.copyFile(src, dest);
