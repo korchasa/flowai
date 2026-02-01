@@ -18,7 +18,7 @@ This command provides a systematic approach to debugging and improving AssistFlo
 ### 1. Identify the Benchmark
 
 Find the relevant benchmark scenario for the skill you are working on.
-- Scenarios are located in `scripts/benchmarks/scenarios/`.
+- Scenarios are located in `benchmarks/<skill>/scenarios/`.
 
 ### 2. Run and Analyze (via Subagent)
 

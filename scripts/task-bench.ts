@@ -7,16 +7,19 @@ import { loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
 
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
-  const scenariosDir = join(Deno.cwd(), "benchmarks/scenarios");
+  const benchmarksDir = join(Deno.cwd(), "benchmarks");
 
-  if (existsSync(scenariosDir)) {
+  if (existsSync(benchmarksDir)) {
     for await (
-      const entry of walk(scenariosDir, {
-        maxDepth: 10,
+      const entry of walk(benchmarksDir, {
+        maxDepth: 12,
         includeFiles: true,
         match: [/mod\.ts$/],
       })
     ) {
+      if (!entry.path.includes("/scenarios/")) {
+        continue;
+      }
       try {
         const module = await import(`file://${entry.path}`);
         for (const exportName in module) {
@@ -138,10 +141,19 @@ async function main() {
 
   const results: BenchmarkResult[] = [];
 
-  // Determine work directory: if scenario has a skill, use its local benchmarks/runs
-  // Otherwise fallback to global benchmarks/
-  const getWorkDir = (_scenario: BenchmarkScenario) => {
-    return join(Deno.cwd(), "benchmarks/runs");
+  // Determine work directory based on skill-centric layout
+  const getWorkDir = (scenario: BenchmarkScenario) => {
+    if (scenario.skill) {
+      return join(Deno.cwd(), "benchmarks", scenario.skill, "runs");
+    }
+
+    const scenarioIdParts = scenario.id.split("-");
+    if (scenarioIdParts.length >= 2) {
+      const inferredSkill = `${scenarioIdParts[0]}-${scenarioIdParts[1]}`;
+      return join(Deno.cwd(), "benchmarks", inferredSkill, "runs");
+    }
+
+    return join(Deno.cwd(), "benchmarks", "misc", "runs");
   };
 
   let totalCostAll = 0;

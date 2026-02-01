@@ -6,21 +6,24 @@ The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by
 
 ## 2. Directory Structure
 
-Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios are organized hierarchically.
+Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios and
+runs are organized by skill.
 
 ```text
-scripts/benchmarks/
-├── scenarios/
-│   └── <skill>/
-│       └── <scenario>/
-│           └── mod.ts          # Scenario definition
-└── work/
-    └── <scenario-id>/          # e.g., af-commit-basic
-        ├── sandbox/            # Isolated execution environment
-        │   ├── .git/
-        │   ├── README.md
-        │   └── ... (project files)
-        └── trace.md            # Execution log and report
+benchmarks/
+├── <skill>/
+│   ├── scenarios/
+│   │   └── <scenario>/
+│   │       └── mod.ts          # Scenario definition
+│   └── runs/
+│       └── <scenario-id>/      # e.g., af-commit-basic
+│           ├── sandbox/        # Isolated execution environment
+│           │   ├── .git/
+│           │   ├── README.md
+│           │   └── ... (project files)
+│           └── trace.html      # Execution log and report
+├── benchmarks.lock
+└── config.json
 ```
 
 ## 3. Trace Log (`trace.html`)

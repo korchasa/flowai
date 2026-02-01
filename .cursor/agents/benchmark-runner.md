@@ -30,15 +30,15 @@ When asked to run a benchmark for a scenario (e.g., `af-commit-basic`):
 2.  **Monitor**: Watch the output for the "JUDGE RESULT" section.
 
 3.  **Analyze (if Failed)**:
-    *   Locate the benchmark output directory: `benchmarks/<scenario-id>/`.
+    *   Locate the benchmark output directory: `benchmarks/<skill>/runs/<scenario-id>/`.
     *   Read the failure details from the command output.
     *   **Inspect Sandbox State**:
-        *   The current state is at `benchmarks/<scenario-id>/sandbox/`.
+        *   The current state is at `benchmarks/<skill>/runs/<scenario-id>/sandbox/`.
         *   To see what changed compared to the initial state (fixtures), run this oneliner:
             ```bash
-            diff -r scripts/benchmarks/scenarios/$(echo <scenario-id> | sed 's/\([^-]*\)-\([^-]*\)-.*/\1-\2/')/$(echo <scenario-id> | sed 's/[^-]*-[^-]*-//')/fixture benchmarks/<scenario-id>/sandbox --exclude=".cursor" --exclude=".git"
+            diff -r benchmarks/$(echo <scenario-id> | cut -d- -f1-2)/scenarios/$(echo <scenario-id> | cut -d- -f3-)/fixture benchmarks/$(echo <scenario-id> | cut -d- -f1-2)/runs/<scenario-id>/sandbox --exclude=".cursor" --exclude=".git"
             ```
-            *(Note: Adjust the path if the scenario structure is different, e.g., for `af-plan-db` use `scripts/benchmarks/scenarios/af-plan/db-feature/fixture`)*
+            *(Note: Adjust the path if the scenario structure is different, e.g., for `af-plan-db` use `benchmarks/af-plan/scenarios/db-feature/fixture`)*
     *   Look for the `trace` files if you need to see the agent's internal thought process (though usually the judge output is sufficient for the *what*).
 
 4.  **Report**:
@@ -54,5 +54,5 @@ When asked to run a benchmark for a scenario (e.g., `af-commit-basic`):
 # Tips
 
 - Always run the benchmark in the foreground.
-- If the user doesn't provide a scenario ID, ask for it or try to infer it from the context (e.g., if they are working on `af-commit`, look for scenarios in `scripts/benchmarks/scenarios/af-commit/`).
+- If the user doesn't provide a scenario ID, ask for it or try to infer it from the context (e.g., if they are working on `af-commit`, look for scenarios in `benchmarks/af-commit/scenarios/`).
 - Do not try to *fix* the code. Your job is to *diagnose* the benchmark run.

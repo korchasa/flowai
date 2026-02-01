@@ -68,7 +68,7 @@ Criteria can be:
 
 ## Configuration
 
-The system uses `benchmarks.config.json` to store model presets for agents and judges.
+The system uses `benchmarks/config.json` to store model presets for agents and judges.
 
 - **Default Agent**: `gemini-2.5-flash-lite`
 - **Default Judge**: `gemini-2.5-flash-lite`
@@ -88,7 +88,7 @@ deno task bench [options]
 
 ## How to Create a New Benchmark
 
-1. Create a directory in `scripts/benchmarks/scenarios/<skill>/<name>`.
+1. Create a directory in `benchmarks/<skill>/scenarios/<name>`.
 2. Create `fixture/AGENTS.md` with a project description for this test.
 3. Create `mod.ts` exporting a `BenchmarkScenario` object.
 4. Define a `checklist` with clear verification criteria.
@@ -106,7 +106,7 @@ deno task bench [options]
 
 ## Debugging and Tracing
 
-After each run, work artifacts are stored in `benchmarks/<scenario-id>/`:
+After each run, work artifacts are stored in `benchmarks/<skill>/runs/<scenario-id>/`:
 
 - **`sandbox/`**: Final state of files (can be inspected manually).
 - **`trace.html`**: A rich, interactive execution log with step-by-step timeline, syntax highlighting, and unified data UI for logs and prompts.
