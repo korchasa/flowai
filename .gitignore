@@ -2,8 +2,8 @@
 .vscode
 skeleton.md
 tmp/
+benchmarks/runs/
+benchmarks/benchmarks.lock
 .env
-/benchmarks/
-catalog/skills/*/benchmarks/runs/
 __pycache__/
 benchmarks.lock
