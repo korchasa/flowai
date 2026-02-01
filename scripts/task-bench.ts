@@ -7,44 +7,12 @@ import { loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
 
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
-  const skillsDir = join(Deno.cwd(), "catalog/skills");
+  const scenariosDir = join(Deno.cwd(), "benchmarks/scenarios");
 
-  // 1. Discover scenarios in catalog/skills/*/benchmarks/*/mod.ts
-  if (existsSync(skillsDir)) {
+  if (existsSync(scenariosDir)) {
     for await (
-      const entry of walk(skillsDir, {
+      const entry of walk(scenariosDir, {
         maxDepth: 10,
-        includeFiles: true,
-        match: [/mod\.ts$/],
-      })
-    ) {
-      if (entry.path.includes("/benchmarks/")) {
-        try {
-          const module = await import(`file://${entry.path}`);
-          for (const exportName in module) {
-            const value = module[exportName];
-            if (
-              value && typeof value === "object" && "id" in value &&
-              "userQuery" in value
-            ) {
-              scenarios.push(value as BenchmarkScenario);
-            }
-          }
-        } catch (e) {
-          console.warn(
-            `  Warning: Failed to import scenario from ${entry.path}: ${e}`,
-          );
-        }
-      }
-    }
-  }
-
-  // 2. Discover scenarios in scripts/benchmarks/scenarios/**/mod.ts (legacy)
-  const legacyDir = join(Deno.cwd(), "scripts/benchmarks/scenarios");
-  if (existsSync(legacyDir)) {
-    for await (
-      const entry of walk(legacyDir, {
-        maxDepth: 5,
         includeFiles: true,
         match: [/mod\.ts$/],
       })
@@ -57,17 +25,12 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
             value && typeof value === "object" && "id" in value &&
             "userQuery" in value
           ) {
-            // Avoid duplicates if already found in skills
-            if (
-              !scenarios.some((s) => s.id === (value as BenchmarkScenario).id)
-            ) {
-              scenarios.push(value as BenchmarkScenario);
-            }
+            scenarios.push(value as BenchmarkScenario);
           }
         }
       } catch (e) {
         console.warn(
-          `  Warning: Failed to import legacy scenario from ${entry.path}: ${e}`,
+          `  Warning: Failed to import scenario from ${entry.path}: ${e}`,
         );
       }
     }
@@ -90,7 +53,7 @@ Options:
 }
 
 async function main() {
-  const lockFile = join(Deno.cwd(), "benchmarks.lock");
+  const lockFile = join(Deno.cwd(), "benchmarks/benchmarks.lock");
 
   if (existsSync(lockFile)) {
     const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
@@ -177,16 +140,8 @@ async function main() {
 
   // Determine work directory: if scenario has a skill, use its local benchmarks/runs
   // Otherwise fallback to global benchmarks/
-  const getWorkDir = (scenario: BenchmarkScenario) => {
-    if (scenario.skill) {
-      return join(
-        Deno.cwd(),
-        "catalog/skills",
-        scenario.skill,
-        "benchmarks/runs",
-      );
-    }
-    return join(Deno.cwd(), "benchmarks");
+  const getWorkDir = (_scenario: BenchmarkScenario) => {
+    return join(Deno.cwd(), "benchmarks/runs");
   };
 
   let totalCostAll = 0;

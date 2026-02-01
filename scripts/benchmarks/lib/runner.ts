@@ -87,28 +87,6 @@ export async function runScenario(
       }
     }
 
-    if (!fixturePath && scenario.id.startsWith("af-")) {
-      const scenarioPathParts = scenario.id.split("-");
-      const skill = scenarioPathParts[1];
-      const id = scenarioPathParts.slice(2).join("-");
-      // Try with full id first, then fallback to parts if needed
-      fixturePath = join(
-        Deno.cwd(),
-        "scripts/benchmarks/scenarios",
-        `af-${skill}`,
-        id || scenarioPathParts.slice(2).join("-"),
-        "fixture",
-      );
-
-      // Special case for af-plan-db which is in af-plan/db-feature
-      if (scenario.id === "af-plan-db") {
-        fixturePath = join(
-          Deno.cwd(),
-          "scripts/benchmarks/scenarios/af-plan/db-feature/fixture",
-        );
-      }
-    }
-
     if (fixturePath) {
       try {
         const fixtureStat = await Deno.stat(fixturePath);

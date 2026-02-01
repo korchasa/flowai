@@ -22,7 +22,7 @@ export interface BenchmarkConfig {
 export const DEFAULT_CONFIG: BenchmarkConfig | null = null;
 
 export async function loadConfig(
-  path = "benchmarks.config.json",
+  path = "benchmarks/config.json",
 ): Promise<BenchmarkConfig> {
   try {
     const content = await Deno.readTextFile(path);
