@@ -1,73 +1,62 @@
 ---
 name: af-reflect
-description: Analyze recent task execution to improve agent instructions and rules.
+description: Analyze agent's process and logic to find behavioral errors.
 disable-model-invocation: true
 ---
 
-# Task: Reflect on Performance & Instructions
+# Task: Reflect on Process & Logic
 
 ## Overview
 
-Analyze the recent task execution to identify improvements for agent
-instructions, rules, and documentation.
+Analyze the task execution (either current history or a provided transcript) to identify errors in the **agent's process and logic**.
+Focus on *how* the agent attempted to solve the problem, not just the code it wrote.
 
 ## Context
 
 <context>
-The agent has just completed a task or a series of interactions. The goal is to perform a "retrospective" to identify:
-- Ambiguities in current instructions.
-- Missing tools or context.
-- Contradictions in rules.
-- Opportunities to optimize workflows.
-This ensures the system evolves and becomes more efficient over time.
+The goal is to perform a "Root Cause Analysis" of the agent's behavior.
+We are looking for:
+- **Logic Loops**: Repeating the same failing action.
+- **False Assumptions**: Assuming a state without verifying.
+- **Ignoring Feedback**: Ignoring tool error messages.
+- **Process Violations**: Skipping required steps (like reading docs or verifying).
+- **Hallucinations**: Inventing facts or file contents.
 </context>
 
 ## Rules & Constraints
 
 <rules>
-1. **Evidence-Based**: Base all observations on the actual conversation history and tool outputs from the current session.
-2. **Specific References**: When suggesting improvements, cite the specific file (e.g., `.cursor/rules/foo.md`) or command (e.g., `.cursor/commands/bar.md`).
-3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
-4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
-5. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
+1. **Process-First**: Do not focus on syntax errors in code unless they result from a logical failure (e.g., forgetting to read the file first).
+2. **Evidence-Based**: Cite specific turns or log lines where the logic failed.
+3. **Constructive**: Propose a *behavioral* fix (e.g., "Always check `ls` before `read_file`").
+4. **Input Flexibility**: If the user provides a transcript file, analyze that. Otherwise, analyze the current session history.
 </rules>
 
 ## Instructions
 
 <step_by_step>
 
-1. **Initialize**
-   - Use `todo_write` to create a plan for the reflection process.
+1. **Identify Source**
+   - If the user points to a transcript file, read it.
+   - Otherwise, review the current conversation history.
 
-2. **Analyze Interaction History**
-   - Review the user's initial query and subsequent turns.
-   - Identify:
-     - Were there any tool errors?
-     - Did the agent have to ask clarifying questions that could have been
-       avoided with better rules?
-     - Did the agent take unnecessary steps?
-     - Was the tone and style consistent with instructions?
+2. **Analyze Execution Flow**
+   - Map out the agent's "Thought -> Action -> Result" loop.
+   - Identify where the chain broke:
+     - Did the Thought match the Goal?
+     - Did the Action match the Thought?
+     - Did the Agent interpret the Result correctly?
 
-3. **Evaluate Active Rules & Commands**
-   - Check the rules that were active during the session.
-   - Determine if any rule caused friction or if a missing rule led to
-     suboptimal performance.
+3. **Detect Logic Patterns**
+   - **Looping**: Is the agent retrying without changing strategy?
+   - **Blindness**: Is the agent ignoring "File not found" or linter errors?
+   - **Stubbornness**: Is the agent forcing a solution that doesn't fit?
 
-4. **Draft Improvements**
-   - Formulate specific changes.
-   - Format: "In file `[path]`, change `[old text]` to `[new text]`" or "Add new
-     rule regarding `[topic]`".
+4. **Formulate Report**
+   - **Summary**: What went wrong in the *process*?
+   - **Root Cause**: Why did the agent make this mistake? (e.g., "Assumed file existed").
+   - **Corrective Action**: What should the agent do differently next time? (e.g., "Use `list_dir` before `read_file`").
 
-5. **Report Findings**
-   - Present a summary of the reflection.
-   - List the proposed actionable items.
-   - Ask the user if they want to apply these changes immediately.
-     </step_by_step>
-
-## Verification
-
-<verification>
-[ ] Reflection covers both positive aspects and areas for improvement.
-[ ] Proposed changes are linked to specific files or rules.
-[ ] The report is concise and actionable.
-</verification>
+5. **Output**
+   - Present the report in a clear, markdown format.
+</step_by_step>
