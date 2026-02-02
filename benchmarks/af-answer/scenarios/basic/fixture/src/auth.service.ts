@@ -6,7 +6,6 @@ export class AuthService {
   }
 
   async validateLogin(_email: string, _pass: string): Promise<boolean> {
-    // TODO: implement
     return await Promise.resolve(true);
   }
 }

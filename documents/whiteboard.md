@@ -8,8 +8,6 @@
 
 ## 2. Technical Debt
 
-- [ ] `catalog/skills/af-engineer-command/scripts/init_command.py` contains 7 TODOs related to template completion.
-- [ ] `benchmarks/af-answer/scenarios/basic/fixture/src/auth.service.ts` has a TODO for implementation.
 - [ ] `scripts/benchmarks/lib/trace.ts` has a hardcoded judge model name in `logEvaluation` (line 1037) which might drift from `evaluateChecklist`.
 
 ## 3. Consistency
