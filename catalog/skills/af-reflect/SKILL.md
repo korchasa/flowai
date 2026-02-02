@@ -26,37 +26,42 @@ We are looking for:
 ## Rules & Constraints
 
 <rules>
-1. **Process-First**: Do not focus on syntax errors in code unless they result from a logical failure (e.g., forgetting to read the file first).
-2. **Evidence-Based**: Cite specific turns or log lines where the logic failed.
-3. **Constructive**: Propose a *behavioral* fix (e.g., "Always check `ls` before `read_file`").
-4. **Input Flexibility**: If the user provides a transcript file, analyze that. Otherwise, analyze the current session history.
+1. **Evidence-Based**: Base all observations on the actual conversation history and tool outputs from the current session.
+2. **Specific References**: When suggesting improvements, cite the specific file (e.g., `.cursor/rules/foo.md`) or command (e.g., `.cursor/commands/bar.md`).
+3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
+4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
+5. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
 </rules>
 
 ## Instructions
 
 <step_by_step>
-
-1. **Identify Source**
+1. **Initialize**
+   - Use `todo_write` to create a plan for the reflection process.
+    
+2. **Identify Source**
    - If the user points to a transcript file, read it.
    - Otherwise, review the current conversation history.
 
-2. **Analyze Execution Flow**
+3. **Analyze Execution Flow**
    - Map out the agent's "Thought -> Action -> Result" loop.
    - Identify where the chain broke:
      - Did the Thought match the Goal?
      - Did the Action match the Thought?
      - Did the Agent interpret the Result correctly?
 
-3. **Detect Logic Patterns**
+4. **Detect Logic Patterns**
    - **Looping**: Is the agent retrying without changing strategy?
    - **Blindness**: Is the agent ignoring "File not found" or linter errors?
    - **Stubbornness**: Is the agent forcing a solution that doesn't fit?
 
-4. **Formulate Report**
+5. **Formulate Report**
    - **Summary**: What went wrong in the *process*?
    - **Root Cause**: Why did the agent make this mistake? (e.g., "Assumed file existed").
    - **Corrective Action**: What should the agent do differently next time? (e.g., "Use `list_dir` before `read_file`").
 
-5. **Output**
-   - Present the report in a clear, markdown format.
+6. **Report Findings**
+   - Present a summary of the reflection.
+   - List the proposed actionable items.
+   - Ask the user if they want to apply these changes immediately.
 </step_by_step>
