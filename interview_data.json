@@ -1,0 +1,12 @@
+{
+  "project_name": "AssistFlow",
+  "vision_statement": "A collection of Cursor skills and agents, designed to standardize work across various software development contexts.",
+  "target_audience": "Developers using Cursor IDE",
+  "problem_statement": "AI models have a limited context window and lose information between chat sessions, leading to inconsistent development practices.",
+  "solution_differentiators": "Uses explicit workflows (skills) and rigid verification (deno task check) to maintain context and quality.",
+  "risks_assumptions": "Assumes users will follow the defined workflows and keep documentation up-to-date.",
+  "stack": ["TypeScript", "Deno", "Python"],
+  "architecture": "- `catalog/skills/`: Source of truth for skills\n- `catalog/agents/`: Source of truth for agents\n- `documents/`: SRS/SDS and supporting documentation\n- `scripts/`: Deno task scripts",
+  "key_decisions": "- Use Cursor skills and commands as the primary workflow system\n- Store project knowledge in `documents/` using SRS/SDS schema\n- Centralize verification through `deno task check`",
+  "preferences": ["tdd", "strict-mode", "informational-style"]
+}
