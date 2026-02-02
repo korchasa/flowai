@@ -166,6 +166,7 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `af-skill-write-info`       | Writing in info style          |     [ ]     |               |
 | `af-skill-write-prd`        | Writing PRDs                   |     [ ]     |               |
 | `af-skill-cursor-agent-integration` | Integration with cursor-agent CLI | [x] | |
+| `af-skill-analyze-context` | Analyze token usage in context | [x] | |
 | `af-refactor-user-manager` | Refactoring UserManager        |     [ ]     |               |
 
 ## 4. Non-functional requirements

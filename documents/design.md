@@ -42,6 +42,7 @@
 - **Key Agents:**
   - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
   - `skill-executor.md`: Specialist in executing specific skills.
+  - `prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
   - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.
