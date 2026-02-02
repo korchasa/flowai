@@ -1034,7 +1034,7 @@ export class TraceLogger {
         {
           source: "judge",
           description: "Judge model response",
-          model: "google/gemini-2.0-flash-001", // Hardcoded as per evaluateChecklist implementation
+          model: judgeInteraction.model || "unknown",
         },
         `<pre><code class="language-json">${
           escape(judgeInteraction.response)
