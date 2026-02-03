@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 ## Overview
 
-Execute a task in Autonomous Mode in project context.
+Execute a task in project context.
 
 ## Context
 
