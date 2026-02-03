@@ -41,6 +41,7 @@
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
   - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
+  - `executor.md`: General-purpose agent for executing any prompt or task.
   - `skill-executor.md`: Specialist in executing specific skills.
   - `prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
   - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
