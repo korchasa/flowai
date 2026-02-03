@@ -9,7 +9,7 @@ Deno.test("loadConfig - should load valid config", async () => {
       test: { model: "test-model", temperature: 0.5 },
       test_judge: { model: "judge-model" },
     },
-    default_agent_preset: "test",
+    default_agent_model: "test",
     default_judge_preset: "test_judge",
   };
 
@@ -19,6 +19,7 @@ Deno.test("loadConfig - should load valid config", async () => {
     const config = await loadConfig(tempConfig);
     assertEquals(config.presets.test.model, "test-model");
     assertEquals(config.presets.test_judge.model, "judge-model");
+    assertEquals(config.default_agent_model, "test");
   } finally {
     await Deno.remove(tempConfig);
   }

@@ -1034,7 +1034,7 @@ export class TraceLogger {
         {
           source: "judge",
           description: "Judge model response",
-          model: "google/gemini-2.0-flash-001", // Hardcoded as per evaluateChecklist implementation
+          model: judgeInteraction.model || "unknown",
         },
         `<pre><code class="language-json">${
           escape(judgeInteraction.response)
@@ -1147,22 +1147,6 @@ export class TraceLogger {
       ),
     );
 
-    await this.save();
-  }
-
-  async logSystemPrompt(content: string) {
-    this.addEvent(
-      "message",
-      {
-        role: "system",
-        source: "system",
-        description: "Assembled System Prompt",
-        role_attr: "system",
-      },
-      this.wrapCollapsible(
-        `<pre><code class="language-markdown">${escape(content)}</code></pre>`,
-      ),
-    );
     await this.save();
   }
 }

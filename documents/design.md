@@ -21,6 +21,7 @@
 - **Main subsystems and their roles:**
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
+  - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
   - **Documentation Subsystem:** Stores project state and memory.
 
 ## 3. Components
@@ -30,7 +31,7 @@
 - **Purpose:** Provide specialized capabilities and workflows.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
-  - `af-*`: Command-like skills (e.g., `af-check-and-fix`, `af-commit`).
+  - `af-*`: Command-like skills (e.g., `af-maintenance`, `af-commit`, `af-auto`).
   - `af-skill-*`: Practical guides (e.g., `af-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
 
@@ -40,26 +41,55 @@
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
   - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
+  - `skill-executor.md`: Specialist in executing specific skills.
+  - `prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
+  - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.
 
 ### 3.3 Project Documentation (`documents/`)
 
-- **Purpose:** Serve as the long-term memory of the project.
-- **Interfaces:** Markdown files following SRS/SDS or Cline-bank schema.
-- **Dependencies:** Updated by `af-update-docs`.
+...
+
+### 3.4 User Management System (Refactored)
+
+- **Purpose:** Manage user lifecycle with separated concerns.
+- **Components:**
+  - `UserManager`: Orchestrates the user creation/deletion process.
+  - `UserRepository`: Handles JSON file persistence.
+  - `EmailService`: Handles sending notifications.
+  - `Logger`: Handles application logging.
+  - `UserValidator`: Handles input validation.
+
+- **Interfaces:**
+  - `User`: `{ id: number, name: string, email: string }`
+
+- **Proposed Structure:**
+  - `src/UserManager.ts` (Orchestrator)
+  - `src/UserRepository.ts` (Data Access)
+  - `src/EmailService.ts` (Notifications)
+  - `src/Logger.ts` (Logging)
+  - `src/UserValidator.ts` (Validation)
+  - `src/types.ts` (Common types)
 
 - **Maintenance & Benchmarking**:
-  - `deno task bench`: Evaluates agents via evidence-based scenarios.
-  - **Docker Isolation**: Benchmarks run inside a Docker container (`Dockerfile` based on `denoland/deno:alpine`) with `git` and `bash` installed. The project directory is mounted as a volume.
-  - **Hierarchical Scenarios**: Scenarios are organized as `scripts/benchmarks/scenarios/<skill>/<scenario>/mod.ts`.
-  - **JSON Configuration**: `benchmarks.config.json` stores unified model presets for agents and judges, enabling fail-fast initialization and CLI selection.
+  - `deno task bench`: Evaluates agents via evidence-based scenarios. Supports direct model selection via `-m, --model` flag.
+  - **Parallel Execution Protection**: Uses `benchmarks/benchmarks.lock` file containing the PID to prevent concurrent runs. Implements signal listeners (`SIGINT`, `SIGTERM`) and `unload` events for reliable cleanup.
+  - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based).
+  - **Docker**: Optional Docker isolation (`Dockerfile` based on `denoland/deno:alpine`) with `git`, `bash`, `curl`, and `cursor-agent` installed.
+  - **Hierarchical Scenarios**: Scenarios are organized as `benchmarks/<skill>/scenarios/<scenario>/mod.ts`.
+  - **JSON Configuration**: `benchmarks/config.json` stores unified model presets.
+  - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.
+  - **Execution Stability**: Implements a 60-second step timeout in `SpawnedAgent` to prevent infinite hangs during benchmark execution.
+  - **Usage Calculation**: Automatically calculates token usage (input, output, cache read/write) based on session transcripts using `calculateSessionUsage`.
   - **Realistic Context**: `system-prompt-generator.ts` assembles system prompts using `system-prompt.template.md`, simulating Cursor's context (including dynamic project layout, git status, and user query).
   - **Single-Turn Query**: User query is embedded directly into the system prompt's `<user_query>` section, mimicking a single-turn interaction for benchmarks.
   - **Skill Integration**: Automatically includes all skills from `.cursor/skills` (excluding those with `disable-model-invocation: true`).
   - **Rich Tracing**: Generates `trace.html` with step-by-step timeline, syntax highlighting, and floating navigation.
   - **Unified Data UI**: All technical data (logs, scripts, prompts) use a consistent `.data-block` component with line numbers, word wrap, and smart expand/collapse.
+  - **Interactive Flows**: `SimulatedUser` component handles multi-turn interactions by simulating user responses via LLM.
+  - **Multi-Turn Benchmarking**: `SpawnedAgent` and `runner.ts` support automatic session resumption (`--resume`) when `SimulatedUser` provides input, enabling testing of complex interactive workflows.
 
 ## 4. Data and Storage
 

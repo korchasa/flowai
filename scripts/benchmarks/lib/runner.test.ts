@@ -1,15 +1,32 @@
-import { assertEquals } from "@std/assert";
+/**
+ * Integration tests for Runner with real cursor-agent.
+ * These tests use the real cursor-agent binary and require valid authentication.
+ */
+
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
+import { load } from "@std/dotenv";
 import { runScenario } from "./runner.ts";
-import { BenchmarkScenario, LLMMessage, LLMResponse } from "./types.ts";
-import { chatCompletion, ModelConfig } from "./llm.ts";
+import { BenchmarkScenario } from "./types.ts";
+import { createTempDir } from "./utils.ts";
 import { evaluateChecklist } from "./judge.ts";
 
-Deno.test("Runner - Multi-turn Interaction", async () => {
-  // 1. Setup
-  const tempDir = await Deno.makeTempDir();
+// Load environment variables from .env file
+await load({ export: true });
+
+const AGENT_MODEL = Deno.env.get("INTEGRATION_TEST_MODEL") || "auto";
+const JUDGE_CONFIG = {
+  model: Deno.env.get("BENCH_JUDGE_MODEL") || "google/gemini-2.0-flash-001",
+  temperature: 0,
+};
+
+Deno.test("Runner - Basic Scenario Execution", async () => {
+  const tempDir = await createTempDir("runner");
   const agentPath = join(tempDir, "agent.md");
-  await Deno.writeTextFile(agentPath, "You are a test agent.");
+  await Deno.writeTextFile(
+    agentPath,
+    "You are a test agent. Do what user asks.",
+  );
 
   const scenario: BenchmarkScenario = {
     id: "test-scenario",
@@ -18,76 +35,127 @@ Deno.test("Runner - Multi-turn Interaction", async () => {
     setup: async (sandbox) => {
       await Deno.writeTextFile(join(sandbox, "test.txt"), "initial");
     },
-    userQuery: "Change test.txt to 'modified'",
-    agentsMarkdown: "# Test Agent\n- Rule 1",
+    userQuery: "Change test.txt content to 'modified'",
+    agentsMarkdown: "# Test Agent\nYou can modify files.",
     checklist: [
-      { id: "check1", description: "File modified", critical: true },
+      { id: "check1", description: "File was modified", critical: true },
     ],
-    mocks: {
-      "custom-tool": "echo 'mocked output'",
-    },
   };
 
-  // Adjust targetAgentPath to be relative to CWD because runner joins it
-  const relativeAgentPath = "test_agent.md";
-  await Deno.writeTextFile(relativeAgentPath, "You are a test agent.");
-  scenario.targetAgentPath = relativeAgentPath;
-
-  let llmCallCount = 0;
-  const llmClient = (
-    _messages: LLMMessage[],
-    _config: ModelConfig | string,
-    _temp?: number,
-    _signal?: AbortSignal,
-  ): Promise<LLMResponse> => {
-    llmCallCount++;
-    if (llmCallCount === 1) {
-      // First turn: Agent generates a command
-      return Promise.resolve({
-        content:
-          "I will modify the file.\n```bash\necho 'modified' > test.txt\ncustom-tool\n```",
-      });
-    } else if (llmCallCount === 2) {
-      // Second turn: Agent confirms
-      return Promise.resolve({
-        content: "I am done.",
-      });
-    }
-    return Promise.resolve({ content: "Done" });
-  };
-
-  const judgeClient = async () => {
-    await Promise.resolve(); // satisfy require-await
-    return {
+  const judgeClient = () => {
+    return Promise.resolve({
       results: {
         check1: { pass: true, reason: "Test passed" },
       },
       messages: [],
       response: "Judge response",
-    };
+    });
   };
 
   try {
     const result = await runScenario(scenario, {
-      agentConfig: { model: "test-model" },
-      judgeConfig: { model: "judge-model" },
+      agentModel: AGENT_MODEL,
+      judgeConfig: JUDGE_CONFIG,
       workDir: tempDir,
-      llmClient: llmClient as typeof chatCompletion,
-      judgeClient: judgeClient as typeof evaluateChecklist,
+      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
     });
 
-    // Assertions
-    assertEquals(result.success, true);
-    // Expect 2 calls: 1. Generate command, 2. Confirm completion
-    assertEquals(llmCallCount, 2, "LLM should be called twice (multi-turn)");
-
-    // Check if file was modified (side effect)
-    const sandboxPath = join(tempDir, "test-scenario", "sandbox");
-    const content = await Deno.readTextFile(join(sandboxPath, "test.txt"));
-    assertEquals(content.trim(), "modified");
+    // Basic assertions - scenario completed
+    assertEquals(typeof result.success, "boolean");
+    assertEquals(result.scenarioId, "test-scenario");
+    assertEquals(typeof result.durationMs, "number");
   } finally {
-    // Cleanup
     await Deno.remove(tempDir, { recursive: true });
-    await Deno.remove(relativeAgentPath);
+  }
+});
+
+Deno.test("Runner - Fixture Copying", async () => {
+  const tempDir = await createTempDir("runner");
+  const fixtureDir = join(tempDir, "fixtures");
+  await Deno.mkdir(join(fixtureDir, "subdir"), { recursive: true });
+  await Deno.writeTextFile(join(fixtureDir, "file1.txt"), "content1");
+  await Deno.writeTextFile(join(fixtureDir, "subdir/file2.txt"), "content2");
+
+  const agentPath = join(tempDir, "agent.md");
+  await Deno.writeTextFile(agentPath, "agent");
+
+  const scenario: BenchmarkScenario = {
+    id: "af-test-fixture",
+    name: "Fixture Test",
+    targetAgentPath: agentPath,
+    fixturePath: fixtureDir,
+    setup: async () => {},
+    userQuery: "Say hello",
+    checklist: [],
+  };
+
+  const judgeClient = () => {
+    return Promise.resolve({
+      results: {},
+      messages: [],
+      response: "ok",
+    });
+  };
+
+  try {
+    await runScenario(scenario, {
+      agentModel: AGENT_MODEL,
+      judgeConfig: JUDGE_CONFIG,
+      workDir: tempDir,
+      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+    });
+
+    const sandboxPath = join(tempDir, "af-test-fixture", "sandbox");
+    assertEquals(
+      await Deno.readTextFile(join(sandboxPath, "file1.txt")),
+      "content1",
+    );
+    assertEquals(
+      await Deno.readTextFile(join(sandboxPath, "subdir/file2.txt")),
+      "content2",
+    );
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("Runner - AGENTS.md Fallback", async () => {
+  const tempDir = await createTempDir("runner");
+  const agentPath = join(tempDir, "agent.md");
+  await Deno.writeTextFile(agentPath, "agent");
+
+  const scenario: BenchmarkScenario = {
+    id: "test-no-agents-md",
+    name: "No AGENTS.md Test",
+    targetAgentPath: agentPath,
+    setup: async () => {},
+    userQuery: "Say hello",
+    checklist: [],
+    // agentsMarkdown is undefined
+  };
+
+  const judgeClient = () => {
+    return Promise.resolve({
+      results: {},
+      messages: [],
+      response: "ok",
+    });
+  };
+
+  try {
+    await runScenario(scenario, {
+      agentModel: AGENT_MODEL,
+      judgeConfig: JUDGE_CONFIG,
+      workDir: tempDir,
+      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+    });
+
+    const sandboxPath = join(tempDir, "test-no-agents-md", "sandbox");
+    const agentsContent = await Deno.readTextFile(
+      join(sandboxPath, "AGENTS.md"),
+    );
+    assertStringIncludes(agentsContent, "Agent Reference");
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
   }
 });

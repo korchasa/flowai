@@ -1,8 +1,9 @@
 import { join } from "@std/path";
 import { TraceLogger } from "./trace.ts";
+import { createTempDir } from "./utils.ts";
 
 Deno.test("TraceLogger should generate self-contained HTML", async () => {
-  const tempDir = await Deno.makeTempDir();
+  const tempDir = await createTempDir("trace");
   const tracer = new TraceLogger(tempDir);
   const tracePath = join(tempDir, "trace.html");
 

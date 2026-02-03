@@ -1,4 +1,4 @@
-import { assertEquals } from "./test-assert.ts";
+import { assertEquals } from "@std/assert";
 import { buildCheckCommands } from "./task-check.ts";
 
 Deno.test("buildCheckCommands returns expected steps", () => {

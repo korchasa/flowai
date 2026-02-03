@@ -1,7 +1,9 @@
 .DS_Store
 .vscode
 skeleton.md
-documents/whiteboard.md
 tmp/
+benchmarks/*/runs/
+benchmarks/*/runs/**
+benchmarks/benchmarks.lock
 .env
-benchmarks/
+__pycache__/

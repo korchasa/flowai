@@ -1,13 +1,15 @@
-import { join } from "@std/path";
-import { BenchmarkResult, BenchmarkScenario, LLMMessage } from "./types.ts";
+import { dirname, fromFileUrl, join } from "@std/path";
+import { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
-import { generateSystemMessage } from "./system-prompt-generator.ts";
+import { SpawnedAgent } from "./spawned_agent.ts";
+import { UserEmulator } from "./user_emulator.ts";
+import { calculateSessionUsage } from "./usage.ts";
 
 export interface RunnerOptions {
-  agentConfig: ModelConfig;
+  agentModel: string;
   judgeConfig: ModelConfig;
   workDir: string;
   llmClient?: typeof chatCompletion;
@@ -18,7 +20,6 @@ export async function runScenario(
   scenario: BenchmarkScenario,
   options: RunnerOptions,
 ): Promise<BenchmarkResult> {
-  const llm = options.llmClient || chatCompletion;
   const judge = options.judgeClient || evaluateChecklist;
   console.log(`\nRunning scenario: ${scenario.name} (${scenario.id})...`);
 
@@ -39,23 +40,22 @@ export async function runScenario(
   console.log(`  Sandbox created: ${sandboxPath}`);
 
   const tracer = new TraceLogger(scenarioDir);
-  const agentPath = scenario.targetAgentPath.startsWith("/")
-    ? scenario.targetAgentPath
-    : join(Deno.cwd(), scenario.targetAgentPath);
 
   await tracer.init(
     scenario.name,
     scenario.id,
-    options.agentConfig.model,
-    scenario.targetAgentPath,
+    options.agentModel,
+    scenario.targetAgentPath || "",
     scenario.userQuery,
   );
 
   // Log tools if any
   if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-    const toolsDesc = Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
-      "\n",
-    );
+    const toolsDesc = scenario.mocks
+      ? Object.keys(scenario.mocks).map((t) => `- **${t}**`).join(
+        "\n",
+      )
+      : "";
     await tracer.logTools(toolsDesc);
   }
 
@@ -63,27 +63,27 @@ export async function runScenario(
 
   try {
     // 1.5 Copy fixtures if exist
-    const scenarioPathParts = scenario.id.split("-");
     let fixturePath = scenario.fixturePath;
 
-    if (!fixturePath && scenarioPathParts[0] === "af") {
-      const skill = scenarioPathParts[1];
-      const id = scenarioPathParts.slice(2).join("-");
-      // Try with full id first, then fallback to parts if needed
-      fixturePath = join(
-        Deno.cwd(),
-        "scripts/benchmarks/scenarios",
-        `af-${skill}`,
-        id || scenarioPathParts.slice(2).join("-"),
-        "fixture",
-      );
-
-      // Special case for af-plan-db which is in af-plan/db-feature
-      if (scenario.id === "af-plan-db") {
-        fixturePath = join(
-          Deno.cwd(),
-          "scripts/benchmarks/scenarios/af-plan/db-feature/fixture",
-        );
+    if (!fixturePath) {
+      // Try to find fixture relative to the scenario's mod.ts
+      // This assumes the scenario is an instance of a class defined in a mod.ts
+      try {
+        // @ts-ignore: Accessing internal property to find the file path
+        const stack = new Error().stack;
+        const match = stack?.match(/at\s+(?:new\s+)?.*\((.*mod\.ts):/);
+        if (match && match[1]) {
+          const modPath = match[1].startsWith("file://")
+            ? fromFileUrl(match[1])
+            : match[1];
+          const candidate = join(dirname(modPath), "fixture");
+          const stat = await Deno.stat(candidate);
+          if (stat.isDirectory) {
+            fixturePath = candidate;
+          }
+        }
+      } catch (_) {
+        // Fallback to old heuristic if dynamic detection fails
       }
     }
 
@@ -93,6 +93,18 @@ export async function runScenario(
         if (fixtureStat.isDirectory) {
           console.log(`  Copying fixtures from: ${fixturePath}`);
           await copyRecursive(fixturePath, sandboxPath);
+
+          // Rename AGENTS.md.orig to AGENTS.md if it exists
+          try {
+            await Deno.rename(
+              join(sandboxPath, "AGENTS.md.orig"),
+              join(sandboxPath, "AGENTS.md"),
+            );
+          } catch (e) {
+            if (!(e instanceof Deno.errors.NotFound)) {
+              throw e;
+            }
+          }
         }
       } catch (e) {
         if (!(e instanceof Deno.errors.NotFound)) {
@@ -101,6 +113,22 @@ export async function runScenario(
           );
         }
       }
+    }
+
+    // 1.6 Copy catalog to .cursor
+    const catalogPath = join(Deno.cwd(), "catalog");
+    const dotCursorPath = join(sandboxPath, ".cursor");
+
+    try {
+      await Deno.mkdir(dotCursorPath, { recursive: true });
+      console.log(`  Copying catalog from ${catalogPath} to ${dotCursorPath}`);
+      await copyRecursive(catalogPath, dotCursorPath, [
+        "benchmarks",
+        "runs",
+        "tmp",
+      ]);
+    } catch (e) {
+      console.warn(`  Warning: Failed to copy catalog: ${e}`);
     }
 
     // 2. Load Agent Prompt and AGENTS.md
@@ -120,7 +148,13 @@ export async function runScenario(
               join(fixturePath, "AGENTS.md"),
             );
           } catch (_) {
-            // Still not found
+            try {
+              agentsMarkdown = await Deno.readTextFile(
+                join(fixturePath, "AGENTS.md.orig"),
+              );
+            } catch (__) {
+              // Still not found
+            }
           }
         }
       }
@@ -141,207 +175,111 @@ export async function runScenario(
 
     await scenario.setup(sandboxPath);
 
-    const skillContent = await Deno.readTextFile(agentPath);
+    // 3. Run Agent (High-Level Lifecycle)
+    console.log("  Starting agent interaction...");
+    const start = performance.now();
 
-    const systemMessage = await generateSystemMessage({
-      scenario,
-      sandboxPath,
-      skillContent,
-      agentsMarkdown: agentsMarkdown || "",
-      userQuery: scenario.userQuery,
+    // Setup mocks using Cursor Hooks mechanism
+    if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
+      const hooksDir = join(sandboxPath, ".cursor", "hooks");
+      await Deno.mkdir(hooksDir, { recursive: true });
+
+      const hookDefinitions: Array<{ command: string; matcher: string }> = [];
+
+      for (const [tool, mockOutput] of Object.entries(scenario.mocks)) {
+        const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
+
+        // Create hook script that returns deny + agent_message with mock output
+        const hookScript = `#!/bin/bash
+# Read stdin (JSON with command details)
+read -r input
+
+# Return mock response - deny execution and inject mock output
+cat <<'MOCK_EOF'
+{
+  "permission": "deny",
+  "agent_message": ${JSON.stringify(mockOutput)}
+}
+MOCK_EOF
+`;
+        await Deno.writeTextFile(hookScriptPath, hookScript);
+        await Deno.chmod(hookScriptPath, 0o755);
+
+        hookDefinitions.push({
+          command: `.cursor/hooks/mock-${tool}.sh`,
+          matcher: tool,
+        });
+      }
+
+      // Create hooks.json
+      const hooksConfig = {
+        version: 1,
+        hooks: {
+          beforeShellExecution: hookDefinitions,
+        },
+      };
+
+      await Deno.writeTextFile(
+        join(sandboxPath, ".cursor", "hooks.json"),
+        JSON.stringify(hooksConfig, null, 2),
+      );
+
+      console.log(
+        `  Created Cursor hooks for: ${Object.keys(scenario.mocks).join(", ")}`,
+      );
+    }
+
+    // Prepare Environment
+    const fullPrompt = scenario.userQuery;
+
+    const userEmulator = scenario.interactive && scenario.userPersona
+      ? new UserEmulator({
+        persona: scenario.userPersona,
+        config: options.judgeConfig, // Use judge config for simulated user
+        llmClient: options.llmClient,
+      })
+      : null;
+
+    const agent = new SpawnedAgent({
+      workspace: sandboxPath,
+      model: options.agentModel,
+      prompt: fullPrompt,
+      maxSteps: scenario.maxSteps || 10,
+      stepTimeout: 60000, // 1 minute timeout per step
     });
 
-    await tracer.logSystemPrompt(systemMessage);
+    const { code, logs } = await agent.run(userEmulator || undefined);
 
-    // 3. Run Agent (Simulation)
-    const messages: LLMMessage[] = [
-      { role: "system", content: systemMessage },
-    ];
+    const durationMs = performance.now() - start;
 
-    messages[0].content += `\n\nIMPORTANT FOR BENCHMARK:
-You are running in a benchmark mode.
-DO NOT use any tools directly.
-SKIP the 'todo_write' step. DO NOT output 'todo_write' commands.
-Instead, output the shell commands you WANT to run inside a SINGLE markdown code block with the 'bash' language tag.
-Example:
-\`\`\`bash
-git add .
-git commit -m "feat: my feature"
-\`\`\`
-Ensure ALL commands are inside this block.
-Write ONE command per line. Do NOT use '&&'.
-DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add <file>' instead.
-`;
+    console.log(`  Agent finished with exit code ${code}`);
 
-    const start = performance.now();
+    // 4. Calculate Usage (Tokens)
     let tokensUsed = 0;
-    let totalCost = 0;
-    let toolCallsCount = 0;
-    let executedCommands = "";
-    let fullLog = "";
-
-    // Setup mocks
-    const mocksDir = join(scenarioDir, "mocks");
-    const mockEnv: Record<string, string> = {};
-
-    if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-      await Deno.mkdir(mocksDir, { recursive: true });
-      for (const [tool, script] of Object.entries(scenario.mocks)) {
-        const mockPath = join(mocksDir, tool);
-        // Add shebang if missing
-        const content = script.startsWith("#!")
-          ? script
-          : `#!/bin/sh\n${script}`;
-        await Deno.writeTextFile(mockPath, content);
-        await Deno.chmod(mockPath, 0o755);
+    let tokensDetails: BenchmarkResult["tokensDetails"] = undefined;
+    const sessionId = agent.getSessionId();
+    if (sessionId) {
+      const usage = await calculateSessionUsage(sessionId);
+      if (usage) {
+        tokensUsed = usage.tokens.total;
+        tokensDetails = {
+          input: usage.tokens.input,
+          output: usage.tokens.output,
+          cacheRead: usage.tokens.cacheRead,
+          cacheWrite: usage.tokens.cacheWrite,
+        };
+        console.log(
+          `  Usage: ${tokensUsed} tokens (Input: ${tokensDetails.input}, Output: ${tokensDetails.output}, Cache Read: ${tokensDetails.cacheRead}, Cache Write: ${tokensDetails.cacheWrite})`,
+        );
       }
-      // Prepend to PATH
-      const currentPath = Deno.env.get("PATH") || "";
-      mockEnv["PATH"] = `${mocksDir}:${currentPath}`;
     }
 
     await tracer.logExecutionSection();
-
-    const MAX_STEPS = scenario.maxSteps || 10;
-    let step = 0;
-    let userReplyIndex = 0;
-    let maxStepsReached = false;
-
-    while (step < MAX_STEPS) {
-      step++;
-      console.log(`  Step ${step}/${MAX_STEPS}...`);
-
-      const stepSignal = scenario.stepTimeoutMs
-        ? AbortSignal.timeout(scenario.stepTimeoutMs)
-        : undefined;
-
-      try {
-        const response = await llm(
-          messages,
-          options.agentConfig,
-          undefined,
-          stepSignal,
-        );
-        tokensUsed += response.usage?.total_tokens || 0;
-        totalCost += response.usage?.cost || 0;
-        const agentOutput = response.content;
-        fullLog += `\n\n--- Step ${step} ---\nAgent: ${agentOutput}`;
-
-        await tracer.logLLMInteraction(messages, agentOutput, {
-          step,
-          source: "agent",
-          model: options.agentConfig.model,
-        });
-        messages.push({ role: "assistant", content: agentOutput });
-
-        // Parse commands
-        const bashRegex = /```bash\n([\s\S]*?)\n```/g;
-        let match;
-        let stepCommands = "";
-        let foundCommands = false;
-
-        while ((match = bashRegex.exec(agentOutput)) !== null) {
-          foundCommands = true;
-          const script = match[1];
-          // Execute the entire block as a single script
-          // This supports heredocs, loops, and multi-line commands correctly
-          toolCallsCount++;
-          executedCommands += `> [Script Block]\n${script}\n`;
-          stepCommands += `> [Script Block]\n${script}\n`;
-
-          try {
-            const scriptPath = join(sandboxPath, `step_${step}_script.sh`);
-            await Deno.writeTextFile(scriptPath, script);
-            await Deno.chmod(scriptPath, 0o755);
-
-            const command = new Deno.Command("sh", {
-              args: [scriptPath],
-              cwd: sandboxPath,
-              stdout: "piped",
-              stderr: "piped",
-              env: mockEnv,
-              signal: stepSignal,
-            });
-            const output = await command.output();
-            const stdout = new TextDecoder().decode(output.stdout);
-            const stderr = new TextDecoder().decode(output.stderr);
-
-            executedCommands += `STDOUT: ${stdout}\n`;
-            stepCommands += `STDOUT: ${stdout}\n`;
-            if (stderr) {
-              executedCommands += `STDERR: ${stderr}\n`;
-              stepCommands += `STDERR: ${stderr}\n`;
-            }
-
-            // Cleanup the script file immediately after execution
-            try {
-              await Deno.remove(scriptPath);
-            } catch (e) {
-              console.warn(
-                `  Warning: Failed to cleanup script at ${scriptPath}: ${e}`,
-              );
-            }
-
-            await tracer.logCommand(
-              "script_block",
-              output.code,
-              stdout,
-              stderr,
-              { step, script },
-            );
-          } catch (e) {
-            const errorMsg = e instanceof Error && e.name === "AbortError"
-              ? "Step timeout exceeded during command execution"
-              : String(e);
-            executedCommands += `ERROR: ${errorMsg}\n`;
-            stepCommands += `ERROR: ${errorMsg}\n`;
-            await tracer.logCommand("script_block", -1, "", errorMsg, { step });
-            if (e instanceof Error && e.name === "AbortError") break;
-          }
-          if (stepSignal?.aborted) break;
-        }
-
-        if (!foundCommands) {
-          if (
-            scenario.userReplies &&
-            userReplyIndex < scenario.userReplies.length
-          ) {
-            const reply = scenario.userReplies[userReplyIndex];
-            console.log(`  Sending user reply: "${reply}"`);
-            messages.push({
-              role: "user",
-              content: reply,
-            });
-            userReplyIndex++;
-            continue;
-          }
-
-          console.log("  No commands found. Agent finished.");
-          break;
-        }
-
-        if (step === MAX_STEPS) {
-          console.log("  MAX_STEPS reached.");
-          maxStepsReached = true;
-        }
-
-        // Feed back output
-        messages.push({
-          role: "user",
-          content: `Command Output:\n${stepCommands}`,
-        });
-      } catch (e) {
-        const errorMsg = e instanceof Error && e.name === "AbortError"
-          ? "Step timeout exceeded"
-          : String(e);
-        console.log(`  Error: ${errorMsg}`);
-        fullLog += `\n\n--- Step ${step} ERROR ---\n${errorMsg}`;
-        break;
-      }
-    }
-
-    const durationMs = performance.now() - start;
-    console.log("  Agent finished. Analyzing output...");
+    await tracer.logLLMInteraction(
+      [{ role: "system", content: "Agent Output Log" }],
+      logs,
+      { step: 1, source: "agent", model: options.agentModel },
+    );
 
     // 5. Gather Evidence for Judge
     // Get git status/diff to show what happened
@@ -360,41 +298,58 @@ DO NOT use interactive commands like 'git add -p' or 'git add -i'. Use 'git add 
     const statusStr = new TextDecoder().decode(statusOut.stdout);
     const logStr = new TextDecoder().decode(logOut.stdout);
 
+    // Read whiteboard.md content if it exists
+    let whiteboardContent = "";
+    try {
+      whiteboardContent = await Deno.readTextFile(
+        join(sandboxPath, "documents", "whiteboard.md"),
+      );
+    } catch (_) {
+      whiteboardContent = "(file not found)";
+    }
+
     await tracer.logEvidence(statusStr, logStr);
 
     const evidence = `
---- EXECUTED COMMANDS ---
-${executedCommands}
+--- AGENT LOGS ---
+${logs}
+
+--- RAW PTY LOGS ---
+${logs}
 
 --- FINAL GIT STATUS ---
 ${statusStr}
 
 --- LAST COMMIT ---
 ${logStr}
+
+--- DOCUMENTS/WHITEBOARD.MD ---
+${whiteboardContent}
     `;
 
     // 6. Judge
     console.log("  Judging results...");
     const judgeOutput = await judge(
       scenario.userQuery,
-      fullLog, // The conversation log
+      logs, // The conversation log (stdout of agent)
       evidence, // The file/system state changes
       scenario.checklist,
       options.judgeConfig,
     );
     const checklistResults = judgeOutput.results;
-    if (maxStepsReached) {
-      checklistResults["max_steps_reached"] = {
+
+    if (code !== 0) {
+      checklistResults["exit_code_zero"] = {
         pass: false,
-        reason: `Scenario reached MAX_STEPS (${MAX_STEPS}) without finishing.`,
+        reason: `Agent exited with non-zero code: ${code}`,
       };
     }
 
     const checklistToJudge = [...scenario.checklist];
-    if (maxStepsReached) {
+    if (code !== 0) {
       checklistToJudge.push({
-        id: "max_steps_reached",
-        description: "Scenario should finish within MAX_STEPS",
+        id: "exit_code_zero",
+        description: "Agent should exit successfully",
         critical: true,
       });
     }
@@ -435,12 +390,13 @@ ${logStr}
       warningsCount,
       durationMs,
       tokensUsed,
-      totalCost,
-      toolCallsCount,
+      tokensDetails,
+      totalCost: 0,
+      toolCallsCount: 0,
       checklistResults,
-      logs: fullLog,
-      model: options.agentConfig.model,
-      evidence, // Attach evidence to result for debugging
+      logs,
+      model: options.agentModel,
+      evidence,
     } as BenchmarkResult & { evidence: string };
 
     await tracer.logSummary({

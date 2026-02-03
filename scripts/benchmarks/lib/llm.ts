@@ -1,8 +1,9 @@
 import { LLMMessage, LLMResponse } from "./types.ts";
+import { load } from "@std/dotenv";
 
 export interface ModelConfig {
   model: string;
-  temperature?: number;
+  temperature: number;
   provider?: {
     order?: string[];
     allow_fallbacks?: boolean;
@@ -14,18 +15,19 @@ export interface ModelConfig {
 
 export interface BenchmarkConfig {
   presets: Record<string, ModelConfig>;
-  default_agent_preset: string;
+  default_agent_model: string;
   default_judge_preset: string;
 }
 
 export const DEFAULT_CONFIG: BenchmarkConfig | null = null;
 
 export async function loadConfig(
-  path = "benchmarks.config.json",
+  path = "benchmarks/config.json",
 ): Promise<BenchmarkConfig> {
   try {
     const content = await Deno.readTextFile(path);
-    return JSON.parse(content);
+    const config = JSON.parse(content) as BenchmarkConfig;
+    return config;
   } catch (e) {
     if (e instanceof Deno.errors.NotFound) {
       throw new Error(
@@ -42,6 +44,13 @@ export async function chatCompletion(
   temperature?: number,
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
+  // Load .env if present
+  try {
+    await load({ export: true });
+  } catch (_) {
+    // Ignore if .env is missing or fails to load
+  }
+
   const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
   if (!OPENROUTER_API_KEY) {
