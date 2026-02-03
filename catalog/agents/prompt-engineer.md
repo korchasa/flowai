@@ -1,5 +1,6 @@
 ---
 name: prompt-engineer
+model: gemini-3-pro
 description: Expert in crafting detailed prompts for reasoning models. Use proactively when the user needs to structure a complex, non-coding task, compare approaches, and generate a high-quality prompt.
 ---
 
