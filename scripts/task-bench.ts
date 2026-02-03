@@ -1,58 +1,58 @@
-import { join } from "@std/path";
+import { dirname, join } from "@std/path";
 import { parse } from "@std/flags";
+import { existsSync, walk } from "@std/fs";
 import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
 import { loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
 
-// Import scenarios from the new structure
-import { CommitBasicBench } from "./benchmarks/scenarios/af-commit/basic/mod.ts";
-import { CommitAtomicRefactorBench } from "./benchmarks/scenarios/af-commit/atomic-refactor/mod.ts";
-import { CommitAtomicDocsBench } from "./benchmarks/scenarios/af-commit/atomic-docs/mod.ts";
-import { CommitCheckBench } from "./benchmarks/scenarios/af-commit/check/mod.ts";
-import { CommitSyncDocsBench } from "./benchmarks/scenarios/af-commit/sync-docs/mod.ts";
-import { CommitAtomicHunkBench } from "./benchmarks/scenarios/af-commit/atomic-hunk/mod.ts";
-import { CommitDepsBench } from "./benchmarks/scenarios/af-commit/deps/mod.ts";
-import { CommitCheckFailBench } from "./benchmarks/scenarios/af-commit/check-fail/mod.ts";
+async function discoverScenarios(): Promise<BenchmarkScenario[]> {
+  const scenarios: BenchmarkScenario[] = [];
+  const benchmarksDir = join(Deno.cwd(), "benchmarks");
 
-import { PlanBasicBench } from "./benchmarks/scenarios/af-plan/basic/mod.ts";
-import { PlanContextBench } from "./benchmarks/scenarios/af-plan/context/mod.ts";
-import { PlanInteractiveBench } from "./benchmarks/scenarios/af-plan/interactive/mod.ts";
-import { PlanRefactorBench } from "./benchmarks/scenarios/af-plan/refactor/mod.ts";
-import { PlanMigrationBench } from "./benchmarks/scenarios/af-plan/migration/mod.ts";
-import { PlanDbFeatureBench } from "./benchmarks/scenarios/af-plan/db-feature/mod.ts";
-import { PlanVariantsObviousBench } from "./benchmarks/scenarios/af-plan/variants-obvious/mod.ts";
-import { PlanVariantsComplexBench } from "./benchmarks/scenarios/af-plan/variants-complex/mod.ts";
-import { InitBrownfieldBench } from "./benchmarks/scenarios/af-init/brownfield/mod.ts";
-import { InitGreenfieldBench } from "./benchmarks/scenarios/af-init/greenfield/mod.ts";
+  if (existsSync(benchmarksDir)) {
+    for await (
+      const entry of walk(benchmarksDir, {
+        maxDepth: 12,
+        includeFiles: true,
+        match: [/mod\.ts$/],
+      })
+    ) {
+      if (!entry.path.includes("/scenarios/")) {
+        continue;
+      }
+      try {
+        const module = await import(`file://${entry.path}`);
+        for (const exportName in module) {
+          const value = module[exportName];
+          if (
+            value && typeof value === "object" && "id" in value &&
+            "userQuery" in value
+          ) {
+            const scenario = value as BenchmarkScenario;
+            if (!scenario.fixturePath) {
+              scenario.fixturePath = join(dirname(entry.path), "fixture");
+            }
+            scenarios.push(scenario);
+          }
+        }
+      } catch (e) {
+        console.warn(
+          `  Warning: Failed to import scenario from ${entry.path}: ${e}`,
+        );
+      }
+    }
+  }
 
-const SCENARIOS: BenchmarkScenario[] = [
-  CommitBasicBench,
-  CommitAtomicRefactorBench,
-  CommitAtomicDocsBench,
-  CommitCheckBench,
-  CommitSyncDocsBench,
-  CommitAtomicHunkBench,
-  CommitDepsBench,
-  CommitCheckFailBench,
-  PlanBasicBench,
-  PlanContextBench,
-  PlanInteractiveBench,
-  PlanRefactorBench,
-  PlanMigrationBench,
-  PlanDbFeatureBench,
-  PlanVariantsObviousBench,
-  PlanVariantsComplexBench,
-  InitBrownfieldBench,
-  InitGreenfieldBench,
-];
+  return scenarios;
+}
 
-function printHelp(defaultAgentPreset: string, defaultJudgePreset: string) {
+function printHelp(defaultAgentModel: string, defaultJudgePreset: string) {
   console.log(`
 Usage: deno task bench [options]
 
 Options:
   -f, --filter <string>        Filter scenarios by ID (substring match)
-  -p, --preset <string>        Agent preset to use (default: ${defaultAgentPreset})
+  -m, --model <string>         Agent model to use (default: ${defaultAgentModel})
   --judge-preset <string>      Judge preset to use (default: ${defaultJudgePreset})
   -n, --runs <number>          Number of runs per scenario (default: 1)
   --help                       Show this help message
@@ -60,16 +60,47 @@ Options:
 }
 
 async function main() {
+  const lockFile = join(Deno.cwd(), "benchmarks/benchmarks.lock");
+
+  if (existsSync(lockFile)) {
+    const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
+    console.error(
+      `\x1b[31mError: Another benchmark process (PID: ${pid}) is already running.\x1b[0m`,
+    );
+    Deno.exit(1);
+  }
+
+  await Deno.writeTextFile(lockFile, Deno.pid.toString());
+
+  // Ensure lock file is removed on exit
+  const cleanup = () => {
+    try {
+      Deno.removeSync(lockFile);
+    } catch {
+      // Ignore if already removed
+    }
+  };
+
+  globalThis.addEventListener("unload", cleanup);
+  Deno.addSignalListener("SIGINT", () => {
+    cleanup();
+    Deno.exit(130);
+  });
+  Deno.addSignalListener("SIGTERM", () => {
+    cleanup();
+    Deno.exit(143);
+  });
+
   const config = await loadConfig();
 
   const args = parse(Deno.args, {
-    string: ["filter", "runs", "preset", "judge-preset"],
+    string: ["filter", "runs", "model", "judge-preset"],
     boolean: ["help"],
-    alias: { f: "filter", n: "runs", h: "help", p: "preset" },
+    alias: { f: "filter", n: "runs", h: "help", m: "model" },
     unknown: (arg) => {
       if (arg.startsWith("-")) {
         console.error(`Unknown argument: ${arg}`);
-        printHelp(config.default_agent_preset, config.default_judge_preset);
+        printHelp(config.default_agent_model, config.default_judge_preset);
         Deno.exit(1);
       }
       return true;
@@ -77,24 +108,17 @@ async function main() {
   });
 
   if (args.help) {
-    printHelp(config.default_agent_preset, config.default_judge_preset);
+    printHelp(config.default_agent_model, config.default_judge_preset);
     Deno.exit(0);
   }
 
   if (args._.length > 0) {
     console.error(`Unexpected positional arguments: ${args._.join(", ")}`);
-    printHelp(config.default_agent_preset, config.default_judge_preset);
+    printHelp(config.default_agent_model, config.default_judge_preset);
     Deno.exit(1);
   }
 
-  const agentPresetName = args.preset || config.default_agent_preset;
-  const agentPreset = config.presets[agentPresetName];
-  if (!agentPreset) {
-    console.error(`Unknown agent preset: ${agentPresetName}`);
-    Deno.exit(1);
-  }
-
-  const agentConfig: ModelConfig = { ...agentPreset };
+  const agentModel = args.model || config.default_agent_model;
 
   const judgePresetName = args["judge-preset"] || config.default_judge_preset;
   const judgePreset = config.presets[judgePresetName];
@@ -108,30 +132,45 @@ async function main() {
   const filter = args.filter;
   const runs = parseInt(args.runs || "1", 10);
 
+  const allScenarios = await discoverScenarios();
   const scenariosToRun = filter
-    ? SCENARIOS.filter((s) => s.id.includes(String(filter)))
-    : SCENARIOS;
+    ? allScenarios.filter((s) => s.id.includes(String(filter)))
+    : allScenarios;
 
   console.log(`Found ${scenariosToRun.length} scenarios.`);
-  console.log(`Using agent preset: ${agentPresetName}`);
-  console.log(`Using agent model: ${agentConfig.model}`);
+  console.log(`Using agent model: ${agentModel}`);
   console.log(`Using judge preset: ${judgePresetName}`);
   console.log(`Using judge model: ${judgeConfig.model}`);
   console.log(`Runs per scenario: ${runs}`);
 
   const results: BenchmarkResult[] = [];
-  const workDir = join(Deno.cwd(), "benchmarks");
+
+  // Determine work directory based on skill-centric layout
+  const getWorkDir = (scenario: BenchmarkScenario) => {
+    if (scenario.skill) {
+      return join(Deno.cwd(), "benchmarks", scenario.skill, "runs");
+    }
+
+    const scenarioIdParts = scenario.id.split("-");
+    if (scenarioIdParts.length >= 2) {
+      const inferredSkill = `${scenarioIdParts[0]}-${scenarioIdParts[1]}`;
+      return join(Deno.cwd(), "benchmarks", inferredSkill, "runs");
+    }
+
+    return join(Deno.cwd(), "benchmarks", "misc", "runs");
+  };
 
   let totalCostAll = 0;
 
   for (const scenario of scenariosToRun) {
+    const workDir = getWorkDir(scenario);
     for (let i = 0; i < runs; i++) {
       if (runs > 1) {
         console.log(`\n--- Run ${i + 1}/${runs} for ${scenario.id} ---`);
       }
       try {
         const result = await runScenario(scenario, {
-          agentConfig,
+          agentModel,
           judgeConfig,
           workDir,
         });
@@ -193,7 +232,8 @@ async function main() {
   if (failedResults.length > 0) {
     console.log("\n--- DETAILED ERRORS & WARNINGS ---");
     for (const r of failedResults) {
-      const scenario = SCENARIOS.find((s) => s.id === r.scenarioId);
+      const scenario = allScenarios.find((s) => s.id === r.scenarioId);
+      const workDir = scenario ? getWorkDir(scenario) : "unknown";
       console.log(
         `\nScenario: ${scenario?.name || r.scenarioId} (${r.scenarioId})`,
       );

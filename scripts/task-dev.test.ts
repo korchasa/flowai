@@ -1,4 +1,4 @@
-import { assertEquals } from "./test-assert.ts";
+import { assertEquals } from "@std/assert";
 import { buildDevCommands } from "./task-dev.ts";
 
 Deno.test("buildDevCommands returns formatter and linter watch", () => {

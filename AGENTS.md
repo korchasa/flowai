@@ -1,215 +1,168 @@
 # YOU MUST
 
 - STRICTLY FOLLOW YOUR ROLE.
-- START PROCESSING USER INPUT BY READING THE DOCUMENTATION IN `./documents` AT
-  BEGIN OF THE TASK.
-- FINISH PROCESSING USER INPUT BY RUNNING `deno task check` AND FIXING ALL FOUND
-  ERRORS, WARNINGS, AND LINTING PROBLEMS.
-- YOU WILL BE REWARDED FOR FOLLOWING INSTRUCTIONS AND GOOD ANSWERS.
-- DO NOT USE STUBS IN THE CODE, AS I HAVE NO FINGERS, AND THIS IS A TRAUMA.
-- ALWAYS INDEPENDENTLY CHECK HYPOTHESES.
 - ALWAYS CHECK THE CHANGES MADE BY RUNNING THE APPROPRIATE TESTS OR SCRIPTS.
-- ALWAYS SUPPLEMENT CHANGES WITH NEW BENCHMARK SCENARIOS.
-- ALWAYS KEEP THE PROJECT IN WORKING CONDITION: WITHOUT ERRORS, WARNINGS, AND
-  PROBLEMS IN THE FORMATER AND LINTER OUTPUT
+- ALWAYS KEEP THE PROJECT IN WORKING CONDITION: WITHOUT ERRORS, WARNINGS, AND PROBLEMS IN THE FORMATER AND LINTER OUTPUT
 - STRICTLY FOLLOW TDD RULES.
-- ANSWER IN LANGUAGE OF THE USER QUERY.
-- WRITE ALL DOCUMENTATION IN ENGLISH IN INFORMATIONAL STYLE.
-- IF YOU SEE CONTRADICTIONS IN THE REQUEST OR CONTEXT, SAY ABOUT THEM, ASK THE
-  NECESSARY QUESTIONS AND STOP.
+- WRITE ALL DOCUMENTATION IN ENGLISH IN COMPRESSED STYLE.
+- IF YOU SEE CONTRADICTIONS IN THE REQUEST OR CONTEXT, SAY ABOUT THEM, ASK THE NECESSARY QUESTIONS AND STOP.
 - DO NOT USE STUBS, "CRUTCHES", DECEPTIONS, OR OTHER PREMODS TO BYPASS CHECKS.
+- IF YOU ATTEMPT TO FIX AN ISSUE 2+ TIMES WITHOUT SUCCESS, STOP. DO NOT MAKE A 3RD ATTEMPT. INSTEAD, OUTPUT A "STOP-ANALYSIS REPORT" LISTING: 1) CURRENT STATE, 2) EXPECTED STATE, 3) DIFFERENCE, 4) HYPOTHESES. WAIT FOR USER CONFIRMATION.
+---
+- REMEMBER, AGENTS AND SKILLS IN THE catalog/ FOLDER ARE THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN .cursor/. DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH YOUR OWN AGENTS AND SKILLS.
+- ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
 
-## REMEMBER
 
-AFTER EACH MEMORY RESET, YOU START COMPLETELY FROM SCRATCH. DOCUMENTATION IS THE
-ONLY LINK TO PREVIOUS WORK. IT MUST BE MAINTAINED WITH ACCURACY AND CLARITY, AS
-EFFECTIVENESS ENTIRELY DEPENDS ON ITS ACCURACY.
+## Project Information
 
-# Agent Reference: AssistFlow
+- Project Name: AssistFlow
 
-## Tooling Stack
+## Project Vision
 
-- Language: TypeScript.
-- Runtime: Deno.
-- Task runner: Deno tasks in `deno.json`.
-- Test execution: `deno task test` via `scripts/task-test.ts`.
-- Project checks: `deno task check` via `scripts/task-check.ts`.
-- Dev runner: `deno task dev` via `scripts/task-dev.ts`.
-- Benchmarking: `deno task bench` via `scripts/task-bench.ts`.
+### Vision Statement
+
+A collection of Cursor skills and agents, designed to standardize work across various software development contexts.
+
+### Target Audience
+
+Developers using Cursor IDE
+
+### Problem Statement
+
+AI models have a limited context window and lose information between chat sessions, leading to inconsistent development practices.
+
+### Solution & Differentiators
+
+Uses explicit workflows (skills), rigid verification (deno task check), and persistent memory through comprehensive documentation to maintain context and quality. 
+
+### Risks & Assumptions
+
+Assumes users will follow the defined workflows and keep documentation up-to-date.
+
+## Project tooling Stack
+
+- Python
+- Deno
+- TypeScript
 
 ## Development Commands
 
-- `deno task check` - Run all project checks via `scripts/task-check.ts`.
-- `deno task test` - Run test task via `scripts/task-test.ts`.
-- `deno task dev` - Run development task via `scripts/task-dev.ts`.
-- `deno task bench` - Run agent benchmarks via `scripts/task-bench.ts`.
+- `deno task start` (check deno.json)
+- `deno task check` (check deno.json)
+- `deno task test` (check deno.json)
 
 ## Architecture
 
-- `.cursor/skills/af-*/` stores chat-invoked workflows (Commands).
-- `.cursor/skills/` stores other skills and how-to guides.
-- `.cursor/agents/` stores autonomous sub-agents.
-- `documents/` stores SRS/SDS and supporting documentation.
-- `scripts/` stores Deno task scripts used by `deno task`.
-    - `scripts/benchmarks/` stores agent benchmarking infrastructure.
-      - `README.md` describes the benchmarking scheme, context assembly, and isolation.
-      - `lib/` stores shared benchmarking logic and utilities.
-    - `scenarios/` stores benchmark scenarios with their `mod.ts` and `fixture/` directories.
+- `catalog/skills/`: Source of truth for skills (logical Commands and Skills)
+- `catalog/agents/`: Source of truth for agents
+- `documents/`: SRS/SDS and supporting documentation
+- `scripts/`: Deno task scripts
+
+## Terminology (agentskills.io)
+
+All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). Logically, they are divided into:
+- **Commands** (`af-*`): High-level task workflows (e.g., `/af-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
+- **Skills** (`af-skill-*`): Procedural knowledge and specialized capabilities (e.g., `af-skill-draw-mermaid`). Can be discovered and used by agents to perform specific sub-tasks.
 
 ## Key Decisions
 
-- Use Cursor skills and commands (implemented as skills) as the primary workflow system.
-- Store project knowledge in `documents/` using SRS/SDS schema.
-- Centralize verification through a single `deno task check` entry point.
+- Use Cursor skills and commands as the primary workflow system
+- Store project knowledge in `documents/` using SRS/SDS schema
+- Centralize verification through `deno task check`
 
-## Benchmarking Principles
+## DOCS STRUCTURE & RULES (`documents/`)
 
-The benchmarking system (`scripts/task-bench.ts`) is designed to evaluate agent performance objectively. We use these benchmarks to verify the quality of our subagents and skills.
+**CRITICAL:** MEMORY RESETS. DOCS = ONLY LINK TO PAST. MAINTAIN ACCURACY.
 
-1. **Verify Side Effects, Not Just Output**:
-   - The primary validation method must be checking the actual state of the
-     sandbox environment (e.g., file existence, content, git status, logs).
-   - Do not rely solely on parsing the agent's text response. An agent might say
-     "I did it" without actually doing it.
-   - **Example**: To verify a commit, check `git log` and `git status` in the
-     sandbox, do not just look for a `git commit` string in the agent's output.
+### Hierarchy
+1. **`AGENTS.md`**: "Why" & "For Whom". Long-term goal/value. READ-ONLY.
+2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth. Depends on VISION.
+3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
+4. **Whiteboard** (`documents/whiteboard.md`): Temporary notes.
 
-2. **Smart Scenarios**:
-   - Scenarios should simulate real-world tasks with measurable outcomes.
-   - Use "Evidence" collection (e.g., executing `git status` after the agent
-     runs) to provide ground truth for the judge.
+### Rules
+- **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
+- **Workflow**: New req -> Update SRS -> Update SDS -> Implement.
+- **Status**: `[x]` = implemented, `[ ]` = pending.
 
-3. **Critical vs. Non-Critical Checks**:
-   - **Critical**: Failures that mean the task was not completed (e.g., file not
-     created, code not compilable). These result in a FAILED test.
-   - **Non-Critical (Warnings)**: Stylistic or process preferences (e.g., "Did
-     the agent check status before committing?"). These affect the score but do
-     not necessarily fail the test if the outcome is correct.
-
-4. **Repeatability**:
-   - Scenarios must run in isolated, clean sandbox environments.
-   - The evaluation logic must be robust enough to handle variations in model
-     output (e.g., different command formatting) as long as the functional
-     result is correct.
-
-## DOCUMENTATION STRUCTURE AND RULES (directory `documents`)
-
-### Hierarchy and purpose
-
-- Product Vision (VISION): The starting point and most important document. Defines the "Why" and "For Whom". Answers the questions: what is the long-term goal and value.
-- Software Requirements Specification (SRS): Is the primary source of truth for the project. Answers the questions: what are we doing and why. Depends on Product Vision.
-- Software Design Specification (SDS): Is a source of project implementation details. Depends on Software Requirements Specification (SRS). Answers the question: how we do it.
-- File Structure Map: A map of the project's file structure and its purpose.
-- Whiteboard: A temporary notes file for in-progress notes.
-
-### Documentation Rules
-
-- Application MUST STRICTLY COMPLY with the VISION, SRS and SDS.
-- VISION is read-only
-- When adding a new requirement or updating existing ones: update SRS (if needed) -> update SDS -> implementation.
-- Implemented requirements and acceptance criteria should be marked with [x] before the requirement and criterion title. Not implemented ones should be marked with [ ] or omitted.
-
-### Software Requirements Specification (SRS) Format (file @documents/requirements.md)
-
+### SRS Format (`documents/requirements.md`)
 ```markdown
-# Software Requirements Specification (SRS)
-
-## 1. Introduction
-
-- **Project description:**
-- **Definitions and abbreviations:**
-
-## 2. General description
-
-- **System context:** (diagram or environment description)
-- **Assumptions and constraints:**
-- **Assumptions:**
-
-## 3. Functional requirements
-
-### 3.1 Requirement FR-1
-
-- **Description:**
-- **Use case scenario:** [with links to bdd/gherkin files, if used in project]
-- **Acceptance criteria:**
-
-### 3.2 Requirement FR-2
-
+# SRS
+## 1. Intro
+- **Desc:**
+- **Def/Abbr:**
+## 2. General
+- **Context:**
+- **Assumptions/Constraints:**
+## 3. Functional Reqs
+### 3.1 FR-1
+- **Desc:**
+- **Scenario:**
+- **Acceptance:**
 ...
-
-## 4. Non-functional requirements
-
-- **Performance:**
-- **Reliability:**
-- **Security:**
-- **Scalability:**
-- **Availability/UX:**
-
+## 4. Non-Functional
+- **Perf/Reliability/Sec/Scale/UX:**
 ## 5. Interfaces
-
-- **APIs and integrations:**
-- **Protocols and data formats:**
-- **UI/UX constraints:**
-
-## 6. Acceptance criteria
-
-- The system is considered accepted if the following are met: ...
+- **API/Proto/UI:**
+## 6. Acceptance
+- **Criteria:**
 ```
 
-### Software Design Specification (SDS) Format (file @documents/design.md)
-
+### SDS Format (`documents/design.md`)
 ```markdown
-# Software Design Specification (SDS)
-
-## 1. Introduction
-
-- **Document purpose:**
-- **Relation to SRS:** (links to requirements)
-
-## 2. System Architecture
-
-- **Overview diagram:** (C4/UML/block diagram)
-- **Main subsystems and their roles:**
-
-## 3. Components
-
-### 3.1 Component A
-
+# SDS
+## 1. Intro
 - **Purpose:**
-- **Interfaces:** (API, input/output)
-- **Dependencies:**
-
-### 3.2 Component B
-
+- **Rel to SRS:**
+## 2. Arch
+- **Diagram:**
+- **Subsystems:**
+## 3. Components
+### 3.1 Comp A
+- **Purpose:**
+- **Interfaces:**
+- **Deps:**
 ...
-
-## 4. Data and Storage
-
-- **Entities and attributes:**
-- **ER diagram:**
-- **Migration policies:**
-
-## 5. Algorithms and Logic
-
-- **Key algorithms:** (pseudocode or diagram)
-- **Business rules:**
-
-## 6. Non-functional Aspects
-
-- **Scalability:**
-- **Fault tolerance:**
-- **Security:**
-- **Monitoring and logging:**
-
-## 7. Constraints and Trade-offs
-
-- What has been simplified
-- What has been deferred to future versions
+## 4. Data
+- **Entities:**
+- **ERD:**
+- **Migration:**
+## 5. Logic
+- **Algos:**
+- **Rules:**
+## 6. Non-Functional
+- **Scale/Fault/Sec/Logs:**
+## 7. Constraints
+- **Simplified/Deferred:**
 ```
 
-### Whiteboard Format (file @documents/whiteboard.md)
+### Whiteboard Format (`documents/whiteboard.md`)
+- Temp notes/plans. Clean up after session.
 
-- Temporary notes
-- Ongoing plans and progress marks.
-- The only file for in-progress notes.
-- Must be cleaned up after new session starts.
+### Compressed Style Rules (All Docs)
+- **No History**: No changelogs.
+- **English Only**.
+- **Summarize**: Extract facts -> compress. No loss of facts.
+- **Essential Info**: No fluff. High-info words.
+- **Compact**: Lists, tables, YAML, Mermaid.
+- **Lexicon**: No stopwords. Short synonyms.
+- **Entities**: Abbreviate after 1st use.
+- **Direct**: No filler.
+- **Structure**: Headings/sections.
+- **Symbols**: Replace words with symbols/nums.
+
+## CODE DOCS
+- **Module**: `AGENTS.md` (responsibility/decisions).
+- **Comments**: Class/Method/Func (JSDoc/GoDoc). Why/How > What. No trivial comments.
+
+## TDD FLOW
+1. **RED**: Write test (`deno test <id>`).
+2. **GREEN**: Pass test (`deno test <id>`).
+3. **REFACTOR**: Improve code/tests. No behavior change. (`deno test <id>`).
+4. **CHECK**: `deno fmt && deno lint && deno test`. Fix all.
+
+### Test Rules
+- Tests in same pkg. Private methods OK.
+- Code ONLY to fix tests/issues.
+- NO STUBS. Real code.
+- Run ALL tests before finish.

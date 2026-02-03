@@ -68,9 +68,9 @@
 - **Use case scenario:** User asks how to fix tests. Agent retrieves
   `af-skill-fix-tests/RULE.md` and follows the procedure.
 - **Acceptance criteria:**
-  - [x] Support for 13 how-to guides covering commit workflows, documentation,
-        debugging, testing, Git operations, GitHub management, and GODS tasks
-  - [x] Guides follow `af-skill-*/` directory naming convention with `RULE.md`
+  - [x] Support for 14 how-to guides covering commit workflows, documentation,
+        debugging, testing, Git operations, GitHub management, hooks configuration, and GODS tasks
+  - [x] Guides follow `af-skill-*/` directory naming convention with `SKILL.md`
         files
   - [x] Each guide provides step-by-step instructions for specific scenarios
 
@@ -108,59 +108,74 @@
 - **Use case scenario:** Developer runs `deno task bench` to see how well the
   agent handles specific scenarios.
 - **Acceptance criteria:**
-- [x] Isolated sandbox execution for scenarios.
+- [x] Isolated sandbox execution for scenarios using `SpawnedAgent` (direct `Deno.Command` based).
 - [x] Evidence collection (git status, logs, file changes).
 - [x] LLM-based Judge for semantic verification.
 - [x] Financial cost calculation per scenario and per run.
+- [x] Detailed token usage breakdown (Input, Output, Cache Read, Cache Write).
+- [x] **Parallel Execution Protection**: Prevents multiple benchmark processes from running simultaneously using a lock file (`benchmarks/benchmarks.lock`).
 - [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost.
 - [x] Rich HTML tracing with step-by-step timeline and syntax highlighting.
 - [x] Unified data block UI with smart blur, line numbering, and word wrap.
 - [x] JSON-based configuration for model presets (agent and judge).
-- [x] **Realistic Context Assembly**: System prompts mimic Cursor's real context
-      (user_info, project_layout, git_status, AGENTS.md, available_skills, user_query).
+  - [x] **Support for direct model names**: Allows using model names directly if no preset matches.
+  - [x] **Simplified Model Selection**: Replaced presets with direct model selection in `deno task bench` via `-m, --model` flag.
+  - [x] **Native Context Discovery**: Benchmarks rely on `cursor-agent`'s native context discovery by ensuring the sandbox structure mimics a real project (including `.cursor/` folder).
+- [x] **Agent Under Test**: Benchmarks execute the `cursor-agent` binary in headless CLI mode within a dedicated sandbox environment, with interaction via standard input/output and arguments (e.g., `--resume` for multi-turn conversations).
 - [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to simulate real-world single-turn agent invocation.
 - [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
       fixtures or provided via config.
-- [x] **Secure Execution**: Benchmarks run in an isolated Docker container by default to prevent host system damage.
-- [x] **Automatic Environment**: `deno task bench` automatically builds and runs the required Docker image.
+- [x] **Secure Execution**: Benchmarks run in an isolated environment (Docker or local process).
+- [x] **Simulated User**: Support for interactive flows via `SimulatedUser` LLM.
+- [x] **Environment Management**: `.env` support for API keys in benchmarks.
 
 ### 3.8 Skill Coverage Matrix
 
 The benchmarking system must cover all core AssistFlow skills to ensure reliability across all workflows.
 
-| Skill ID | Description | Benchmarked | Scenario ID |
-| :--- | :--- | :---: | :--- |
-| **Commands (af-*)** | | | |
-| `af-answer` | Answering user questions | [ ] | |
-| `af-commit` | Atomic commits and QA | [x] | `af-commit-*` |
-| `af-create-vision-doc` | Creating VISION.md | [ ] | |
-| `af-do` | General task execution | [ ] | |
-| `af-engineer-command` | Creating new AF commands | [ ] | |
-| `af-execute` | Executing planned tasks | [ ] | |
-| `af-init` | Project initialization | [x] | `af-init-*` |
-| `af-investigate` | Code investigation/debugging | [ ] | |
-| `af-maintenance` | Periodic project health checks | [ ] | |
-| `af-plan` | Task planning (GODS) | [x] | `af-plan-*` |
-| `af-qa` | Quality assurance session | [ ] | |
-| `af-reflect` | Self-reflection on task | [ ] | |
-| **Guides (af-skill-*)** | | | |
-| `af-skill-conduct-qa` | Conducting QA sessions | [ ] | |
-| `af-skill-debug-playwright`| Debugging with Playwright | [ ] | |
-| `af-skill-draw-mermaid` | Drawing Mermaid diagrams | [ ] | |
-| `af-skill-eng-prompt-inst` | Prompt engineering (Instant) | [ ] | |
-| `af-skill-eng-prompt-reas` | Prompt engineering (Reasoning)| [ ] | |
-| `af-skill-fix-tests` | Fixing broken tests | [ ] | |
-| `af-skill-manage-github` | Managing GitHub via MCP | [ ] | |
-| `af-skill-write-bench` | Writing agent benchmarks | [x] | |
-| `af-skill-write-dep` | Writing DEP documents | [ ] | |
-| `af-skill-write-gods` | Writing GODS tasks | [ ] | |
-| `af-skill-write-info` | Writing in info style | [ ] | |
-| `af-skill-write-prd` | Writing PRDs | [ ] | |
+| Skill ID                    | Description                    | Benchmarked | Scenario ID   |
+| :-------------------------- | :----------------------------- | :---------: | :------------ |
+| **Commands (af-*)**         |                                |             |               |
+| `af-answer`                 | Answering user questions       |     [ ]     |               |
+| `af-commit`                 | Atomic commits and QA          |     [x]     | `af-commit-*` |
+| `af-create-vision-doc`      | Creating VISION.md             |     [ ]     |               |
+| `af-do`                     | General task execution         |     [ ]     |               |
+| `af-engineer-command`       | Creating new AF commands       |     [ ]     |               |
+| `af-engineer-hook`          | Creating Cursor hooks          |     [ ]     |               |
+| `af-execute`                | Executing planned tasks        |     [ ]     |               |
+| `af-init`                   | Project initialization         |     [x]     | `af-init-*`   |
+| `af-investigate`            | Code investigation/debugging   |     [ ]     |               |
+| `af-maintenance`            | Periodic project health checks |     [ ]     |               |
+| `af-plan`                   | Task planning (GODS)           |     [x]     | `af-plan-*`   |
+| `af-plan-interactive`     | Plan with multi-turn selection |     [x]     | `af-plan-interactive` |
+| `af-qa`                     | Quality assurance session      |     [ ]     |               |
+| `af-reflect`                | Self-reflection on task        |     [ ]     |               |
+| **Guides (af-skill-*)**     |                                |             |               |
+| `af-skill-conduct-qa`       | Conducting QA sessions         |     [ ]     |               |
+| `af-skill-debug-playwright` | Debugging with Playwright      |     [ ]     |               |
+| `af-skill-draw-mermaid`     | Drawing Mermaid diagrams       |     [ ]     |               |
+| `af-skill-eng-prompt-inst`  | Prompt engineering (Instant)   |     [ ]     |               |
+| `af-skill-eng-prompt-reas`  | Prompt engineering (Reasoning) |     [ ]     |               |
+| `af-skill-engineer-hook`    | Creating Cursor hooks          |     [ ]     |               |
+| `af-skill-fix-by-benchmarks` | Fixing skills via benchmarks |     [x]     |               |
+| `af-skill-fix-tests`        | Fixing broken tests            |     [ ]     |               |
+| `af-skill-manage-github`    | Managing GitHub via MCP        |     [ ]     |               |
+| `af-skill-write-bench`      | Writing agent benchmarks       |     [x]     |               |
+| `af-skill-write-dep`        | Writing DEP documents          |     [ ]     |               |
+| `af-skill-write-gods`       | Writing GODS tasks             |     [ ]     |               |
+| `af-skill-write-info`       | Writing in info style          |     [ ]     |               |
+| `af-skill-write-prd`        | Writing PRDs                   |     [ ]     |               |
+| `af-skill-cursor-agent-integration` | Integration with cursor-agent CLI | [x] | |
+| `af-skill-analyze-context` | Analyze token usage in context | [x] | |
+| `af-refactor-user-manager` | Refactoring UserManager        |     [ ]     |               |
 
 ## 4. Non-functional requirements
-  window.
+
+window.
+
 - **Reliability:** Benchmarks must use isolated sandboxes and evidence-based
-  verification.
+  verification. Execution must be protected by timeouts (e.g., 60s per step) to
+  ensure system stability.
 - **Scalability:** The benchmarking system must support multiple evaluation modes
   (Quality, Selection, Comparison).
 - **Usability:** Commands must be intuitive (e.g., `/af-commit`). Benchmark

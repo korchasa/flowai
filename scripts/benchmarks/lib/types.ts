@@ -8,7 +8,8 @@ export interface BenchmarkChecklistItem {
 export interface BenchmarkScenario {
   id: string;
   name: string;
-  targetAgentPath: string; // Path to the agent/skill .md file
+  targetAgentPath?: string; // Path to the agent/skill .md file
+  skill?: string; // Skill identifier (e.g., "af-plan")
 
   /**
    * Setup the sandbox environment.
@@ -54,15 +55,20 @@ export interface BenchmarkScenario {
   stepTimeoutMs?: number;
 
   /**
-   * List of simulated user replies to send when the agent pauses (issues no commands).
-   * Used for testing interactive flows.
+   * Simulated user persona for interactive Q&A.
+   * Describes the user's preferences and goals to the Simulated User LLM.
    */
-  userReplies?: string[];
+  userPersona?: string;
+
+  /**
+   * Whether the scenario is interactive.
+   * If true, the UserEmulator will be used to interact with the agent.
+   */
+  interactive?: boolean;
 
   /**
    * Custom system instructions template.
-   * If provided, it will be used instead of the default one.
-   * Should contain {{AGENTS}} and {{SKILL}} placeholders.
+   * @deprecated Context is now discovered natively by cursor-agent.
    */
   systemInstructionsTemplate?: string;
 
@@ -70,9 +76,28 @@ export interface BenchmarkScenario {
    * AGENTS.md content.
    * If provided as string, it will be used.
    * If not provided, the runner will try to load it from the scenario's fixture directory.
-   * If still not found, the benchmark will fail as AGENTS.md is now mandatory.
    */
   agentsMarkdown?: string;
+}
+
+/**
+ * Base class for scenarios that target a specific skill from the catalog.
+ * Automatically builds targetAgentPath from the skill ID.
+ */
+export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
+  abstract id: string;
+  abstract name: string;
+  abstract skill: string;
+  abstract userQuery: string;
+  abstract checklist: BenchmarkChecklistItem[];
+
+  get targetAgentPath(): string {
+    return `catalog/skills/${this.skill}/SKILL.md`;
+  }
+
+  setup(_sandboxPath: string): Promise<void> {
+    return Promise.resolve();
+  }
 }
 
 export interface BenchmarkResult {
@@ -83,6 +108,12 @@ export interface BenchmarkResult {
   warningsCount: number; // Number of non-critical failures
   durationMs: number;
   tokensUsed: number;
+  tokensDetails?: {
+    input: number;
+    output: number;
+    cacheRead: number;
+    cacheWrite: number;
+  };
   totalCost: number;
   toolCallsCount: number;
   model: string;

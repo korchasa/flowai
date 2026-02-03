@@ -17,8 +17,6 @@ the development lifecycle.
 
 - **Initialize Project**: Use `af-init` skill to set up the project structure
   and initial documentation if starting fresh.
-- **Define Vision**: Use `af-create-vision-doc` skill to create or update the
-  project vision in `documents/vision.md`.
 
 ### 2. For Each Task
 
@@ -40,7 +38,7 @@ coverage.
 
 **Goal**: Keep the project clean, documented, and up-to-date.
 
-- **Health Check**: Run `af-check-and-fix` or `deno task check` regularly to
+- **Health Check**: Run `af-maintenance` or `deno task check` regularly to
   catch regressions.
 - **Update Agents**: Run `deno task check` to ensure all rules are consistent.
 
@@ -70,23 +68,17 @@ standardize team processes and speeds up typical tasks.
 ### Available Skills
 
 - `af-answer` - Answer questions with context from codebase
-- `af-check-and-fix` - **Iterative check and fix**: run project checks and fix
-  errors until success
 - `af-commit` - Git commit workflow following Conventional Commits
-- `af-create-scripts` - Create the Deno task scripts
-- `af-create-vision-doc` - Create vision documentation
 - `af-do` - General task execution workflow
-- `af-engineer-prompt` - Prompt engineering utility
-- `af-engineer-rule` - Rule engineering utility
 - `af-execute` - Execute and implement planned tasks
 - `af-investigate` - Deep investigation and root cause diagnosis
 - `af-maintenance` - Project maintenance and health audit
 - `af-plan` - Plan and break down complex development tasks
 - `af-qa` - Quality Assurance workflow
 - `af-reflect` - Reflect on recent work and update context
-- `draw-mermaid-diagrams` - Create and edit Mermaid diagrams
-- `init` - Project initialization workflow
-- `write-agent-benchmarks` - Create and run agent benchmarks
+- `af-skill-draw-mermaid` - Create and edit Mermaid diagrams
+- `af-init` - Project initialization workflow
+- `af-skill-write-bench` - Create and run agent benchmarks
 
 ## Framework
 
@@ -131,14 +123,14 @@ can quickly understand the project's state, goals, and architecture.
 - **Architectural Integrity**: By recording decisions in `design.md`, we prevent
   the agent from proposing solutions that contradict the established
   architecture.
-- **Goal Alignment**: `vision.md` and `requirements.md` keep the development
+- **Goal Alignment**: Product Vision (in `AGENTS.md`) and `requirements.md` keep the development
   focused on solving the right problems.
 - **Autonomous Operation**: Clear documentation is what allows the agent to work
   autonomously without constant human guidance.
 
 ### Document Types and Their Purpose
 
-- **`vision.md` (Product Vision)**: The "North Star" of the project. It explains
+- **Product Vision**: The "North Star" of the project (stored in `AGENTS.md`). It explains
   _why_ the project exists, who it's for, and what makes it unique. It helps the
   agent understand high-level priorities.
 - **`requirements.md` (SRS)**: Detailed functional and non-functional

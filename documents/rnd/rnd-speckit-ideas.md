@@ -31,9 +31,9 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 
 #### Adaptation Options
 
-1. **Integration**: Add the contents of `memory/constitution.md` to the existing `vision.md` as an "Immutable Principles" section, making it part of the mandatory context.
+1. **Integration**: Add the contents of `memory/constitution.md` to the existing Product Vision in `AGENTS.md` as an "Immutable Principles" section, making it part of the mandatory context.
 
-### 5. Management of Forced Uncertainty
+### 3. Management of Forced Uncertainty
 
 - **Description**: A mechanism to prevent hallucinations by explicitly marking gaps in information.
 - **How it works**:
@@ -49,7 +49,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Questions Section**: In the `/plan` template, add a mandatory "Open Questions" section that the agent must fill in before starting work.
 3. **Validator**: Add a check to the script that looks for such markers and prevents committing code until they are resolved (removed).
 
-### 6. Phase Gates
+### 4. Phase Gates
 
 - **Description**: Quality control points that must be passed before moving to the next stage of development.
 - **How it works**:
@@ -65,7 +65,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Command Gate**: Split the process into two commands: `/plan` (only plans) and `/execute` (accepts the plan only after an explicit "OK" from the user acting as a gate).
 3. **Auto-Gate**: Write a plan validation script (markdown linter) that checks for the presence of necessary sections and the absence of "filler" before allowing execution.
 
-### 8. Template-Based Quality
+### 5. Template-Based Quality
 
 - **Description**: Using structured Markdown templates to constrain LLM behavior.
 - **How it works**:
@@ -81,7 +81,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Built-in Templates**: "Hardcode" document structures directly into the system prompts of commands (`/do`, `/plan`) so that the agent always generates the correct format without extra actions.
 3. **Structure Linting**: Use `deno task check` to check not only the code but also the compliance of Markdown files with given templates (headers, sections).
 
-### 10. TDD Imperative
+### 6. TDD Imperative
 
 - **Description**: An uncompromising requirement to write tests before implementation code.
 - **How it works**:
@@ -97,7 +97,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Test-First Plan**: In the `/plan` command, require first describing test cases as pseudocode or a list of checks, and only then the architecture.
 3. **Post-tests (Relaxed)**: Allow writing code and tests in one chunk/commit, but block the PR if test coverage has dropped (coverage check).
 
-### 11. Task Parallelism (marker [P])
+### 7. Task Parallelism (marker [P])
 
 - **Description**: Explicit identification of tasks that can be performed simultaneously.
 - **How it works**:
@@ -113,7 +113,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Grouping**: Instead of markers, simply group independent tasks into "Stage 1", "Stage 2" blocks, implying parallelism within the stage.
 3. **Do not use**: If work is done in a single thread with one agent, simply ignore this concept to avoid overloading the plan with extra symbols.
 
-### 12. Unit Tests for Requirements ("Unit Tests for English")
+### 8. Unit Tests for Requirements ("Unit Tests for English")
 
 - **Description**: Applying testing principles to the requirements documentation itself.
 - **How it works**:
@@ -129,7 +129,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **LLM-Linter**: Use a separate LLM call to "critique" requirements before they are accepted for work.
 3. **Formalization**: Rewrite requirements in Gherkin format (Given-When-Then) so they are as close to tests as possible and verifiable.
 
-### 13. Semantic Inventory (Requirements Inventory)
+### 9. Semantic Inventory (Requirements Inventory)
 
 - **Description**: Breaking down requirements into a flat, searchable list.
 - **How it works**:
@@ -145,7 +145,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Keyword Search**: Instead of strict IDs, use unique terms/phrases and `grep` to find their implementation.
 3. **Simplified List**: Maintain a simple `features.md` with a list of features and their status (Planned, In Progress, Done), without complex indexing.
 
-### 14. Progressive Disclosure of Context
+### 10. Progressive Disclosure of Context
 
 - **Description**: A strategy for managing the agent's context window by loading only relevant information.
 - **How it works**:
@@ -161,7 +161,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **@Mention policy**: Train the agent and user to explicitly mention only needed files (`@file`), not entire folders, to save tokens.
 3. **RAG**: Connect an external knowledge base (vector search) for large projects so the agent can find relevant documentation snippets itself.
 
-### 15. Handoff Protocol
+### 11. Handoff Protocol
 
 - **Description**: A formal mechanism for transitioning between different agents or stages of the workflow.
 - **How it works**:
@@ -177,7 +177,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Checkpoints**: Save state to a `state.json` file between sessions so the next agent run picks up the context.
 3. **End-to-end ID**: Generate a session/task ID and write it in logs to link actions of different agents/sessions.
 
-### 16. Preservation of Manual Edits
+### 12. Preservation of Manual Edits
 
 - **Description**: Merging automatic generation with manual editing by a human.
 - **How it works**:
@@ -193,7 +193,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **File Separation**: Keep auto-generated content in some files (`foo.gen.ts`) and manual code in others (`foo.ts`), importing the former into the latter.
 3. **Git Diff Review**: Always show the user a diff before overwriting a file and ask for confirmation if manual edits are affected.
 
-### 17. Terminology Drift Detection
+### 13. Terminology Drift Detection
 
 - **Description**: Automatic verification of naming convention consistency across different artifacts.
 - **How it works**:
@@ -209,7 +209,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Rule Linter**: Write a custom rule for a linter (ESLint/other) that forbids the use of synonyms in code (e.g., forbidding `usr`, requiring `user`).
 3. **Periodic Audit**: Once a month, run a task to review documentation and code for discrepancies (via LLM).
 
-### 18. Ignore Enforcement
+### 14. Ignore Enforcement
 
 - **Description**: Ensuring environment hygiene before starting implementation.
 - **How it works**:
@@ -225,7 +225,7 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Repo Template**: Include ideal ignore files in the project creation template so they are there from the beginning.
 3. **Cerberus Agent**: Instruction to the agent: "If you see me asking to read `node_modules`, refuse and suggest adding it to ignore".
 
-### 19. Autonomous Branching and Numbering
+### 15. Autonomous Branching and Numbering
 
 - **Description**: Automated organization of feature branches and directories.
 - **How it works**:
@@ -241,14 +241,14 @@ This document summarizes the key principles and techniques used in the Spec Kit 
 2. **Task Folders**: Create a folder for each major task in `tasks/task-id/` with all documentation and context to isolate work.
 3. **Manual Control**: Leave naming to the user's discretion but require the branch name to appear in commits (convention).
 
-### 20. Sequential Questioning Loop
+### 16. Sequential Questioning Loop
 
 - **Description**: An interactive clarification process limited to one question at a time.
 - **How it works**:
   1. **One at a Time**: Instead of a list of 10 questions, the `/clarify` command asks exactly ONE question.
   2. **Recommended Answer**: For each question, the AI suggests options (A, B, C) and immediately highlights a "Recommended" option with a brief justification.
   3. **Quick Choice**: The user only needs to answer "yes" or "A" to make a decision, which sharply accelerates the specification clarification process.
-- **Framework Implementation**: The `/speckit.clarify` command implements a `Sequential questioning loop`. It reads `spec.md`, finds uncertainties, and conducts a dialogue until they are exhausted (but no more than 5 questions per session).
+- **Framework Implementation**: The `/clarify` command implements a `Sequential questioning loop`. It reads `spec.md`, finds uncertainties, and conducts a dialogue until they are exhausted (but no more than 5 questions per session).
 - **Proof**: `templates/commands/clarify.md` (section "Sequential questioning loop").
 
 #### Adaptation Options
