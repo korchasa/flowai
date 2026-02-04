@@ -28,13 +28,16 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Config vs Impl**: Build/Config changes separate from source code.
    - **Generated Files**: Generated artifacts separate from logic source.
 2. **Automation**: Automatically group and commit changes. DO NOT ask the user for permission to split commits.
-3. **Strict Commits**: Compose messages in **English** per Conventional Commits 1.0.0.
+3. **Dependency Updates**: ALWAYS use `build:` prefix for dependency updates (e.g., `build: update dependencies`) to ensure they trigger automated releases in CI/CD, as these changes affect the final artifact and may contain security patches. Use `chore:` ONLY for non-releasable maintenance tasks (e.g., `.gitignore` updates).
+4. **Strict Commits**: Compose messages in **English** per Conventional Commits 1.0.0.
    - **MANDATORY**: ALWAYS prefix commit messages with a type (e.g., `feat:`, `fix:`, `chore:`, `docs:`, `style:`, `refactor:`, `test:`, `build:`).
+   - **Scope**: MAY use optional scope in parentheses to provide context, e.g., `feat(llm): add retry logic`.
+   - **Breaking Changes**: MUST indicate breaking changes by adding a `!` before the colon (e.g., `feat!: change API contract`) OR by adding `BREAKING CHANGE:` in the footer.
    - **Example**: `feat: add user authentication` or `chore: bump version to 1.1.0`.
    - **CRITICAL**: Commits without these prefixes are STRICTLY FORBIDDEN.
-4. **Git Pager**: Use `GIT_PAGER=cat` for all git commands.
-5. **Planning**: The agent MUST use `todo_write` to track the execution steps.
-6. **Documentation First**: Every logical change MUST be reflected in documentation. Commits without corresponding documentation updates (if applicable) are forbidden.
+5. **Git Pager**: Use `GIT_PAGER=cat` for all git commands.
+6. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+7. **Documentation First**: Every logical change MUST be reflected in documentation. Commits without corresponding documentation updates (if applicable) are forbidden.
 </rules>
 
 ## Instructions
@@ -70,10 +73,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
      - _Note: Ensure documentation changes are included in the same commit as the logic they describe._
-5. **Publish**
-   - Push all created commits to GitHub.
-   - If not on `main`, create a pull request via `gh pr create` and share the
-     link. </step_by_step>
+</step_by_step>
 
 ## Verification
 
@@ -83,5 +83,4 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 - [ ] Changes grouped into Atomic Commits (no mixed logical concerns).
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.
-- [ ] PR created/pushed.
 </verification>
