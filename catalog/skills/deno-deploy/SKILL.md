@@ -19,7 +19,7 @@ This skill covers managing Deno Deploy cloud services using the built-in `deno d
 The `deno deploy` command is integrated into the Deno CLI and is suitable for basic deployment tasks.
 
 ### Commands
-- `deno deploy [OPTIONS] [root-path]`: Deploy the local project to Deno Deploy.
+- `deno deploy [OPTIONS] [entrypoint]`: Deploy the project. If `entrypoint` is omitted, it's guessed from `deno.json` or files.
 - `deno deploy create`: Create a new application.
 - `deno deploy env`: Manage environment variables in the cloud (supports contexts).
 - `deno deploy logs`: Stream live logs from a deployed application.
@@ -47,43 +47,58 @@ deno install -gArf jsr:@deno/deployctl
 - `deployctl projects create <name>`: Create a new project.
 - `deployctl projects delete <name>`: Delete a project.
 
-### Monitoring and Utilities
-- `deployctl top`: Real-time resource usage monitoring.
-- `deployctl logs`: Advanced log streaming and filtering.
-
 ---
 
 ## Troubleshooting & Best Practices
 
-### Private Dependencies (npm/JSR)
-Deployments from local console (via `deployctl` or `deno deploy`) may fail with `Internal Server Error` if the project uses private npm packages.
-- **Cause**: Deno Deploy build servers cannot access your local private registry credentials.
-- **Solution**: Use **GitHub Actions** for deployment. GitHub Actions can be configured with secrets to authenticate against private registries before deploying the build artifact.
+### Local Debugging Protocol (CRITICAL)
+**ALWAYS** test deployment commands locally before updating CI/CD workflows.
+1. Use the same token as in CI/CD.
+2. Verify file uploading and revision creation.
+3. Check for `IsADirectory` errors (often caused by missing `.gitignore` entries like `.playwright-browsers/`).
+
+### Unstable APIs (Deno KV, etc.)
+If your app uses `Deno.openKv()` or other unstable APIs:
+- **Local run**: Requires `--unstable-kv`.
+- **Deno Deploy (CLI)**: The `deno deploy` command **DOES NOT** support `--unstable-kv` or `--unstable` flags.
+- **Deno Deploy (Runtime)**: You **MUST** enable unstable features in `deno.json`:
+  ```json
+  {
+    "unstable": ["kv"]
+  }
+  ```
+  Without this, the app will fail with `TypeError: Deno.openKv is not a function` in the cloud.
+
+### Exclusions and File Management
+- **Native CLI**: `deno deploy` **DOES NOT** support the `--exclude` flag.
+- **Solution**: Use `.gitignore` to exclude files and directories. All files not ignored by git will be uploaded.
+- **Large Directories**: Always exclude large local-only directories (like `.playwright-browsers/`) to avoid `IsADirectory` errors and slow uploads.
 
 ### CI/CD with GitHub Actions
-Recommended workflow for complex projects (monorepos, private deps, E2E tests):
-1. **Checkout & Setup**: Use `actions/checkout` and `denoland/setup-deno@v2`.
-2. **Test & Build**: Run `deno task test` and `deno task build`.
-3. **Deploy**: Use `denoland/deployctl@v1` Action.
-4. **E2E Tests**: Run Playwright/browser tests after deployment using the `deployment_status` event.
+Recommended workflow for complex projects:
+1. **Permissions**: If using OIDC (automatic auth), ensure correct permissions:
+   ```yaml
+   permissions:
+     id-token: write
+     contents: read
+   ```
+2. **Native CLI**: Prefer native `deno deploy` over `deployctl` Action if you encounter authorization issues (`The bearer token is invalid`).
+3. **Explicit Entrypoint**: Always specify the entrypoint file to avoid guessing errors in CI.
+   ```yaml
+   - name: Upload to Deno Deploy
+     run: deno deploy --app=my-app --token=${{ secrets.DENO_DEPLOY_TOKEN }} --prod main.ts
+   ```
 
-### Environment Variables
-- **Build Context**: Use for API tokens or build-time configurations.
-- **Prod/Dev Contexts**: Use for runtime secrets (DB URLs, etc.).
-- **Secrets**: Mark sensitive variables as "Secret" in the Deploy dashboard or via CLI.
+### Private Dependencies (npm/JSR)
+Deployments from local console may fail with `Internal Server Error` if the project uses private npm packages.
+- **Cause**: Deno Deploy build servers cannot access your local private registry credentials.
+- **Solution**: Use **GitHub Actions**. It can authenticate against private registries before deploying.
 
 ## Common Workflows
 
-### Deploying to Production
+### Deploying to Production (Explicit)
 ```bash
-deno deploy --prod
-# OR
-deployctl deploy --prod
-```
-
-### Checking Deployment History
-```bash
-deployctl list
+deno deploy --app=my-app --prod main.ts
 ```
 
 ### Managing Environment Variables

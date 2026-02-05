@@ -34,6 +34,7 @@
   - `af-*`: Command-like skills (e.g., `af-maintenance`, `af-commit`, `af-auto`).
   - `af-skill-*`: Practical guides (e.g., `af-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
+  - `deno-*`: Deno-specific tools (`deno-cli`, `deno-deploy`).
 
 ### 3.2 Agents (`.cursor/agents/`)
 
