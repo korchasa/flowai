@@ -169,6 +169,7 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `af-skill-analyze-context` | Analyze token usage in context | [x] | |
 | `deno-cli` | Manage Deno via CLI | [ ] | |
 | `deno-deploy` | Manage Deno Deploy | [ ] | |
+| `af-skill-ai-skel-ts` | AI agent scaffold | [ ] | |
 | `af-refactor-user-manager` | Refactoring UserManager        |     [ ]     |               |
 
 ## 4. Non-functional requirements
