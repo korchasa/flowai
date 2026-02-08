@@ -3,7 +3,7 @@ import json
 import sys
 import shutil
 
-def generate_agents(project_info_path, interview_data_path, template_path, output_path, rules_src_dir, rules_dest_dir):
+def generate_agents(project_info_path, interview_data_path, template_path, output_path, rules_src_dir, rules_dest_dir, no_overwrite_agents=False, no_overwrite_rules=False):
     with open(project_info_path, 'r') as f:
         project_info = json.load(f)
     
@@ -91,18 +91,22 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
         selected_rules.append('rules-tdd')
         
     # Copy rules
-    if not os.path.exists(rules_dest_dir):
-        os.makedirs(rules_dest_dir)
-        
-    copied_rules = []
-    for rule_dir in selected_rules:
-        src = os.path.join(rules_src_dir, rule_dir)
-        dest = os.path.join(rules_dest_dir, rule_dir)
-        if os.path.exists(src):
-            if os.path.exists(dest):
-                shutil.rmtree(dest)
-            shutil.copytree(src, dest)
-            copied_rules.append(rule_dir)
+    if no_overwrite_rules and os.path.exists(rules_dest_dir):
+        print(f"Rules directory {rules_dest_dir} exists, skipping rules copy (--no-overwrite-rules)")
+        copied_rules = ["(skipped)"]
+    else:
+        if not os.path.exists(rules_dest_dir):
+            os.makedirs(rules_dest_dir)
+            
+        copied_rules = []
+        for rule_dir in selected_rules:
+            src = os.path.join(rules_src_dir, rule_dir)
+            dest = os.path.join(rules_dest_dir, rule_dir)
+            if os.path.exists(src):
+                if os.path.exists(dest):
+                    shutil.rmtree(dest)
+                shutil.copytree(src, dest)
+                copied_rules.append(rule_dir)
             
     # Read Template
     with open(template_path, 'r') as f:
@@ -115,10 +119,15 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
     content = content.replace('{{ARCHITECTURE}}', architecture)
     content = content.replace('{{KEY_DECISIONS}}', key_decisions)
     content = content.replace('{{PROJECT_VISION}}', vision_content)
+    content = content.replace('{{COMMAND_SCRIPTS}}', interview_data.get('command_scripts', '- No scripts configured'))
     
     # Write output
-    with open(output_path, 'w') as f:
-        f.write(content)
+    if no_overwrite_agents and os.path.exists(output_path):
+        print(f"AGENTS.md exists at {output_path}, skipping write (--no-overwrite-agents)")
+    else:
+        with open(output_path, 'w') as f:
+            f.write(content)
+        print(f"Generated AGENTS.md at {output_path}")
 
     # --- New Features Implementation ---
 
@@ -219,13 +228,29 @@ insert_final_newline = true
                  json.dump(pkg_config, f, indent=2)
              print("Created package.json")
 
-    print(f"Generated AGENTS.md at {output_path}")
     print(f"Copied rules: {', '.join(copied_rules)}")
 
 if __name__ == "__main__":
-    # Args: project_info.json interview_data.json template.md output.md rules_src rules_dest
-    if len(sys.argv) < 7:
-        print("Usage: generate_agents.py <project_info> <interview_data> <template> <output> <rules_src> <rules_dest>")
-        sys.exit(1)
-        
-    generate_agents(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6])
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate AssistFlow agent assets.')
+    parser.add_argument('project_info', help='Path to project_info.json')
+    parser.add_argument('interview_data', help='Path to interview_data.json')
+    parser.add_argument('template', help='Path to AGENTS.template.md')
+    parser.add_argument('output', help='Path to output AGENTS.md')
+    parser.add_argument('rules_src', help='Path to rules source directory')
+    parser.add_argument('rules_dest', help='Path to rules destination directory')
+    parser.add_argument('--no-overwrite-agents', action='store_true', help='Do not overwrite AGENTS.md if it exists')
+    parser.add_argument('--no-overwrite-rules', action='store_true', help='Do not overwrite rules if they exist')
+    
+    args = parser.parse_args()
+    
+    generate_agents(
+        args.project_info, 
+        args.interview_data, 
+        args.template, 
+        args.output, 
+        args.rules_src, 
+        args.rules_dest,
+        no_overwrite_agents=args.no_overwrite_agents,
+        no_overwrite_rules=args.no_overwrite_rules
+    )
