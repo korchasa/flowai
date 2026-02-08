@@ -143,7 +143,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 ### Compressed Style Rules (All Docs)
 - **No History**: No changelogs.
-- **English Only**.
+- **English Only(Except whiteboard.md)**.
 - **Summarize**: Extract facts -> compress. No loss of facts.
 - **Essential Info**: No fluff. High-info words.
 - **Compact**: Lists, tables, YAML, Mermaid.

@@ -123,7 +123,7 @@
 
 ### Compressed Style Rules (All Docs)
 - **No History**: No changelogs.
-- **English Only**.
+- **English Only(Except whiteboard.md)**.
 - **Summarize**: Extract facts -> compress. No loss of facts.
 - **Essential Info**: No fluff. High-info words.
 - **Compact**: Lists, tables, YAML, Mermaid.
