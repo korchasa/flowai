@@ -91,9 +91,9 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - Run the generation script. This script handles:
      - **Greenfield**: Creates `documents/`, `.gitignore`, `.editorconfig`, task
        runner configs, and `AGENTS.md`.
-     - **Brownfield**: Creates `documents/` (if missing), populates
-       `architecture.md` with file tree/README, generates `.cursorignore`, and
-       `AGENTS.md`.
+    - **Brownfield**: Creates `documents/` (if missing), populates
+      `whiteboard.md` with file tree/README, generates `.cursorignore`, and
+      `AGENTS.md`.
      ```bash
      python3 .cursor/skills/af-init/scripts/generate_agents.py project_info.json interview_data.json .cursor/skills/af-init/assets/AGENTS.template.md AGENTS.md .cursor/skills/af-init/assets/rules .cursor/rules
      ```

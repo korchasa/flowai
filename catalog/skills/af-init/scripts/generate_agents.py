@@ -131,15 +131,16 @@ def generate_agents(project_info_path, interview_data_path, template_path, outpu
     # Create placeholder files
     # Note: vision.md is NO LONGER created here.
     placeholders = {
-        'requirements.md': '# Requirements\n\nList the functional and non-functional requirements.',
-        'architecture.md': '# Architecture\n\nDescribe the system architecture.'
+        'requirements.md': '# SRS\n## 1. Intro\n- **Desc:**\n- **Def/Abbr:**\n## 2. General\n- **Context:**\n- **Assumptions/Constraints:**\n## 3. Functional Reqs\n### 3.1 FR-1\n- **Desc:**\n- **Scenario:**\n- **Acceptance:**\n## 4. Non-Functional\n- **Perf/Reliability/Sec/Scale/UX:**\n## 5. Interfaces\n- **API/Proto/UI:**\n## 6. Acceptance\n- **Criteria:**',
+        'design.md': '# SDS\n## 1. Intro\n- **Purpose:**\n- **Rel to SRS:**\n## 2. Arch\n- **Diagram:**\n- **Subsystems:**\n## 3. Components\n### 3.1 Comp A\n- **Purpose:**\n- **Interfaces:**\n- **Deps:**\n## 4. Data\n- **Entities:**\n- **ERD:**\n- **Migration:**\n## 5. Logic\n- **Algos:**\n- **Rules:**\n## 6. Non-Functional\n- **Scale/Fault/Sec/Logs:**\n## 7. Constraints\n- **Simplified/Deferred:**',
+        'whiteboard.md': '# Whiteboard\n- Temp notes/plans. Clean up after session.'
     }
     
-    # For Brownfield: Populate architecture.md with discovery info
+    # For Brownfield: Populate whiteboard.md with discovery info
     if not is_greenfield:
-        placeholders['architecture.md'] += f"\n\n## Discovered Structure\n\n```\n" + "\n".join(project_info.get('file_tree', [])) + "\n```"
+        placeholders['whiteboard.md'] += f"\n\n## Discovered Context\n\n```\n" + "\n".join(project_info.get('file_tree', [])) + "\n```"
         if project_info.get('readme_content'):
-             placeholders['architecture.md'] += "\n\n## README Summary\n\n" + project_info.get('readme_content')[:1000] + "\n..."
+             placeholders['whiteboard.md'] += "\n\n## README Summary\n\n" + project_info.get('readme_content')[:1000] + "\n..."
 
     for filename, content in placeholders.items():
         path = os.path.join(docs_dir, filename)

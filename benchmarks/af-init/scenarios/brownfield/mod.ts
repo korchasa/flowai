@@ -43,7 +43,7 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
     {
       id: "documents_folder_created",
       description:
-        "Was the 'documents/' folder created with requirements.md and architecture.md?",
+        "Was the 'documents/' folder created with requirements.md, design.md and whiteboard.md?",
       critical: true,
     },
   ];
