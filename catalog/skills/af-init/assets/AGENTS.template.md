@@ -41,6 +41,9 @@
 ### Detected Commands
 {{DEVELOPMENT_COMMANDS}}
 
+### Command Scripts
+{{COMMAND_SCRIPTS}}
+
 ## Architecture
 
 {{ARCHITECTURE}}

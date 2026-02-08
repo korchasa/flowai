@@ -23,7 +23,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 <rules>
 1. **No Hallucinations**: Only document tooling and architecture that is explicitly found in the codebase or provided by the user.
 2. **Standard Format**: The `AGENTS.md` file must follow the provided template.
-3. **Overwrite Safety**: If `AGENTS.md` exists, ask for confirmation before overwriting or append/merge if appropriate (default to asking).
+3. **Idempotency (Brownfield)**: If components (AGENTS.md, rules, documents) already exist, ask for confirmation before overwriting.
 4. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
 </rules>
 
@@ -87,30 +87,53 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        echo '{ "architecture": "- ...", "key_decisions": "- ..." }' > interview_data.json
        ```
 
-5. **Generate Assets & Scaffolding**
-   - Run the generation script. This script handles:
-     - **Greenfield**: Creates `documents/`, `.gitignore`, `.editorconfig`, task
-       runner configs, and `AGENTS.md`.
-    - **Brownfield**: Creates `documents/` (if missing), populates
-      `whiteboard.md` with file tree/README, generates `.cursorignore`, and
-      `AGENTS.md`.
+5. **Component Inventory (Brownfield only)**
+   - **Condition**: Only if **Brownfield**.
+   - **Action**: Check existence of each component:
+     - `AGENTS.md` - exists?
+     - `documents/` - exists? Which files inside?
+     - `.cursor/rules/` - exists? Which rules?
+     - `scripts/` or dev command config - exists?
+     - `.cursorignore` - exists?
+   - Report findings to user as a checklist and ask: "Create missing components? Override existing? [create missing / override all / select]"
+
+6. **Generate Assets & Scaffolding**
+   - Determine flags for `generate_agents.py` based on Component Inventory (e.g., `--no-overwrite-agents`, `--no-overwrite-rules`).
+   - Run the generation script:
      ```bash
-     python3 .cursor/skills/af-init/scripts/generate_agents.py project_info.json interview_data.json .cursor/skills/af-init/assets/AGENTS.template.md AGENTS.md .cursor/skills/af-init/assets/rules .cursor/rules
+     python3 .cursor/skills/af-init/scripts/generate_agents.py project_info.json interview_data.json .cursor/skills/af-init/assets/AGENTS.template.md AGENTS.md .cursor/skills/af-init/assets/rules .cursor/rules [--no-overwrite-agents] [--no-overwrite-rules]
      ```
 
-6. **Cleanup & Verify**
+7. **Configure Development Commands**
+   - Read `project_info.json` to get detected stack.
+   - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `af-skill-configure-deno-commands`).
+   - If specialized skill exists: Read and follow its `SKILL.md`.
+   - If NO specialized skill:
+     1. Ask user for preferred scripting language (shell/python/stack-native).
+     2. Analyze existing config files.
+     3. Create standard command interface (`check`, `test`, `dev`, `prod`) in `scripts/`.
+     4. Update project config (e.g., `package.json`) to reference these scripts.
+   - **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
+   - **Verify**: Run `check` command to ensure it works.
+
+8. **Cleanup & Verify**
    - Remove temporary files: `rm project_info.json interview_data.json`.
    - Verify `AGENTS.md` exists.
    - Verify `documents/` folder exists.
-   - Verify `.cursor/rules` are populated. </step_by_step>
+   - Verify `.cursor/rules` are populated.
+   - Verify development commands are configured. </step_by_step>
 
 ## Verification
 
 <verification>
 [ ] `project_info.json` generated.
 [ ] Interview conducted (Greenfield) or skipped (Brownfield).
+[ ] Component inventory checked (Brownfield).
+[ ] Existing components preserved unless user confirmed overwrite.
 [ ] `documents/` folder created with placeholders.
 [ ] `.cursorignore` created.
-[ ] `AGENTS.md` generated.
-[ ] Rules copied.
+[ ] `AGENTS.md` generated (or preserved).
+[ ] Rules copied (or preserved).
+[ ] Development commands configured (scripts created + config updated).
+[ ] Check command runs successfully.
 </verification>
