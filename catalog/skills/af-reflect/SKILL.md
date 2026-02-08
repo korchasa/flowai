@@ -30,14 +30,14 @@ We are looking for:
 2. **Specific References**: When suggesting improvements, cite the specific file (e.g., `.cursor/rules/foo.md`) or command (e.g., `.cursor/commands/bar.md`).
 3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
-5. **Mandatory**: The agent MUST use `todo_write` to track the execution steps.
+5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps.
 </rules>
 
 ## Instructions
 
 <step_by_step>
 1. **Initialize**
-   - Use `todo_write` to create a plan for the reflection process.
+   - Use a task management tool (e.g., `todo_write`) to create a plan for the reflection process.
     
 2. **Identify Source**
    - If the user points to a transcript file, read it.

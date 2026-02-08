@@ -31,7 +31,7 @@ The user has a question about the project's logic, architecture, or implementati
    - Use tools in read-only mode (reading files, searching code).
    - **DO NOT** modify project configuration or code.
 3. **Accuracy**: Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies.
-4. **Planning**: The agent MUST use `todo_write` to track the execution steps.
+4. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps.
 </rules>
 
 ## Instructions
@@ -39,7 +39,7 @@ The user has a question about the project's logic, architecture, or implementati
 <step_by_step>
 
 1. **Initialize**
-   - Use `todo_write` to create a plan based on these steps.
+   - Use a task management tool (e.g., `todo_write`) to create a plan based on these steps.
 2. **Understand the question**
    - Read all available docs in `./documents` (SRS, SDS, file structure,
      manuals, whiteboard) if they exist.

@@ -36,7 +36,7 @@ It addresses:
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 3.  **Constructive**: Every "Issue" must have a "Proposed Fix".
 4.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
-5.  **Mandatory**: Use `todo_write` to track progress through the 7 phases.
+5.  **Mandatory**: Use a task management tool (e.g., `todo_write`) to track progress through the 7 phases.
 6.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
 </rules>
 
@@ -45,7 +45,7 @@ It addresses:
 <step_by_step>
 
 1. **Initialize & Plan**
-   - Use `todo_write` to create a plan covering the 7 phases below.
+   - Use a task management tool (e.g., `todo_write`) to create a plan covering the 7 phases below.
    - Read `whiteboard.md` to preserve existing long-term notes (if any), but
      clear old automated reports.
    - Identify project's primary language and source directories.
