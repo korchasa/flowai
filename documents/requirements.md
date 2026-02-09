@@ -173,6 +173,8 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `deno-deploy` | Manage Deno Deploy | [ ] | |
 | `af-skill-ai-skel-ts` | AI agent scaffold | [ ] | |
 | `af-skill-configure-strict-typescript` | Strict TypeScript config | [ ] | |
+| `cursor-desktop-guide` | Guide for Cursor desktop features | [ ] | |
+| `opencode-guide` | Guide for OpenCode features | [ ] | |
 | `af-refactor-user-manager` | Refactoring UserManager        |     [ ]     |               |
 
 ## 4. Non-functional requirements
