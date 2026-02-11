@@ -21,7 +21,7 @@ General purpose task execution command for code changes and logic implementation
 <rules>
 1. **Language Policy**: Technical terms in English, explanations in User's language.
 2. **Quality**: No stubs or hacks; include comments for critical logic.
-3. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps.
+3. **Planning**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps.
 </rules>
 
 ## Instructions
@@ -29,7 +29,7 @@ General purpose task execution command for code changes and logic implementation
 <step_by_step>
 
 1. **Initialize**
-   - Use a task management tool (e.g., `todo_write`) to create a plan based on these steps.
+   - Use a task management tool (e.g., todo write) to create a plan based on these steps.
 2. **Prepare**
    - Read project docs in `./documents`.
    - Analyze requirements and constraints.

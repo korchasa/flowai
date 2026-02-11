@@ -34,7 +34,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Example**: `feat: add user authentication` or `build: bump version to 1.1.0`.
    - **CRITICAL**: Commits without these prefixes are STRICTLY FORBIDDEN.
 5. **Git Pager**: Use `GIT_PAGER=cat` for all git commands.
-6. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps.
+6. **Planning**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps.
 7. **Documentation First**: Every logical change MUST be reflected in documentation. Commits without corresponding documentation updates (if applicable) are forbidden.
 8. **Error Handling**: On any error (commit failure, merge conflict, unexpected git state): investigate the cause, propose a fix method to the user, and **STOP** without making corrections.
 </rules>
@@ -44,7 +44,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 <step_by_step>
 
 1. **Initialize**
-   - Use a task management tool (e.g., `todo_write`) to create a plan based on these steps.
+   - Use a task management tool (e.g., todo write) to create a plan based on these steps.
 2. **Documentation Audit & Compression**
    - **Analyze Impact**: For each code change, identify which documentation files must be updated:
      - `requirements.md`: If functional/non-functional requirements changed.

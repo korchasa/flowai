@@ -24,7 +24,7 @@ Used for debugging and root cause analysis. The process is iterative and relies 
 2. **Clean Baseline**: Worktree must be clean between experiments.
 3. **User Control**: The agent MUST NOT proceed to experiment execution without explicit user selection of a hypothesis and approval of the experiment design.
 4. **Transparency**: Always display the current "Hypothesis Board" with probabilities and evidence before asking for the next step.
-5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps and current iteration state.
+5. **Mandatory**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps and current iteration state.
 </rules>
 
 ## Instructions
@@ -32,7 +32,7 @@ Used for debugging and root cause analysis. The process is iterative and relies 
 <step_by_step>
 
 1. **Initialize**
-   - Use a task management tool (e.g., `todo_write`) to create a plan based on these steps.
+   - Use a task management tool (e.g., todo write) to create a plan based on these steps.
    - Gather initial data (logs, error messages, environment details).
 2. **Hypotheses Generation**
    - Propose 3-7 candidate root causes (hypotheses) with initial probabilities

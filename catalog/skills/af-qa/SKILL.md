@@ -18,7 +18,7 @@ artifacts remain.
 The user has completed a coding task and needs a quality assurance pass.
 You need to verify the implementation against:
 1. The original User Request.
-2. The Plan (tracked in a task management tool like `todo_write` or "whiteboard").
+2. The Plan (tracked in a task management tool like `todo write` or "whiteboard").
 3. General code hygiene (no temp files, no dead code).
 </context>
 
@@ -28,7 +28,7 @@ You need to verify the implementation against:
 1. **Role**: Act as a "Good QA" - be thorough, skeptical, and detail-oriented.
 2. **Verification**: Do not assume it works; verify it (read files, run checks if applicable).
 3. **Cleanup**: Aggressively look for and flag temporary files, TODOs that should have been done, and unused code/data.
-4. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps of this review.
+4. **Mandatory**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps of this review.
 5. **Output**: Provide a clear pass/fail report with specific actionable items if issues are found.
 </rules>
 
@@ -37,9 +37,9 @@ You need to verify the implementation against:
 <step_by_step>
 
 1. **Initialize Review**
-   - Use a task management tool (e.g., `todo_write`) to create a plan for this QA session (e.g., "Analyze
+   - Use a task management tool (e.g., todo write) to create a plan for this QA session (e.g., "Analyze
      Request", "Verify Plan", "Code Audit", "Cleanup Check").
-   - Read the current task status (e.g., from `todo_write` or "whiteboard") to understand the
+   - Read the current task status (e.g., from `todo write` or "whiteboard") to understand the
      original plan.
    - Read the original user request (from chat history or context).
 
