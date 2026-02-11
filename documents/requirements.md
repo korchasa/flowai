@@ -151,7 +151,7 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `af-plan`                   | Task planning (GODS)           |     [x]     | `af-plan-*`   |
 | `af-plan-interactive`     | Plan with multi-turn selection |     [x]     | `af-plan-interactive` |
 | `af-qa`                     | Quality assurance session      |     [ ]     |               |
-| `af-reflect`                | Self-reflection on task        |     [ ]     |               |
+| `af-reflect`                | Self-reflection on task        |     [x]     | `af-reflect-*` |
 | **Guides (af-skill-*)**     |                                |             |               |
 | `af-skill-conduct-qa`       | Conducting QA sessions         |     [ ]     |               |
 | `af-skill-debug-playwright` | Debugging with Playwright      |     [ ]     |               |
