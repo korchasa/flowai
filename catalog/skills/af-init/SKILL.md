@@ -24,7 +24,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 1. **No Hallucinations**: Only document tooling and architecture that is explicitly found in the codebase or provided by the user.
 2. **Standard Format**: The `AGENTS.md` file must follow the provided template.
 3. **Idempotency (Brownfield)**: If components (AGENTS.md, rules, documents) already exist, ask for confirmation before overwriting.
-4. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`) to track the execution steps.
+4. **Mandatory**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps.
 </rules>
 
 ## Instructions
@@ -32,7 +32,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 <step_by_step>
 
 1. **Initialize**
-   - Use a task management tool (e.g., `todo_write`) to create a plan based on these steps.
+   - Use a task management tool (e.g., todo write) to create a plan based on these steps.
 
 2. **Analyze Project**
    - Run the analysis script to detect stack and project state:
