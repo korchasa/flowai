@@ -1,6 +1,6 @@
 ---
 name: af-engineer-command
-description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations.
+description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
 license: Based on https://github.com/anthropics/skills
 ---
 
@@ -18,6 +18,33 @@ Commands are modular, self-contained packages that extend AssistFlow's capabilit
 2. Tool integrations - Instructions for working with specific file formats or APIs
 3. Domain expertise - Company-specific knowledge, schemas, business logic
 4. Bundled resources - Scripts, references, and assets for complex and repetitive tasks
+
+## IDE Detection and Command Placement
+
+Commands work across multiple IDEs. Before creating a command, determine the current environment and ask the user where to place it.
+
+### Command Paths by IDE
+
+| IDE | User Commands | Project Commands | Format |
+|-----|--------------|-----------------|--------|
+| **Cursor** | `~/.cursor/commands/*.md` | `.cursor/commands/*.md` | Markdown (free-form args) |
+| **Claude Code** | `~/.claude/commands/*.md` | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | Markdown + YAML frontmatter (`allowed-tools`, `argument-hint`, `description`, `model`) |
+| **Antigravity** | `~/.gemini/antigravity/global_workflows/*.md` | `.agent/workflows/*.md` | Markdown |
+| **OpenAI Codex** | `~/.codex/prompts/*.md` | - | Markdown + YAML frontmatter (`description`, `argument-hint`) |
+| **OpenCode** | `~/.config/opencode/commands/*.md` | `.opencode/commands/*.md` | Markdown + YAML frontmatter (`description`, `agent`, `model`, `subtask`) |
+
+OpenCode supports `$ARGUMENTS`, `$1`-`$N`, `` !`shell command` ``, `@filepath` in command templates.
+
+### Detection Strategy
+
+1. Check for IDE-specific markers in the project:
+   - `.cursor/` directory -> Cursor
+   - `.claude/` directory -> Claude Code
+   - `.opencode/` directory or `opencode.json` -> OpenCode
+   - `.agent/` directory -> Antigravity
+   - `.codex/` directory or `AGENTS.md` without `.cursor/` -> OpenAI Codex
+2. If multiple detected or none -> ask the user
+3. Ask: personal command (user-level) or project command (shared via repo)?
 
 ## Core Principles
 

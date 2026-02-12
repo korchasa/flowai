@@ -1,81 +1,143 @@
 ---
 name: af-engineer-hook
-description: "Creation and configuration of Cursor hooks (hooks.json) to manage agent behavior, command filtering, auditing, and automation. Use this command when you need to: (1) Create a new hook (e.g., for formatting or security checks), (2) Configure hooks.json, (3) Implement logic for blocking or modifying agent actions via scripts."
+description: "Creation and configuration of event hooks/plugins to manage agent behavior, command filtering, auditing, and automation. Works across IDEs (Cursor, Claude Code, OpenCode). Use when you need to: (1) Create a new hook (e.g., for formatting or security checks), (2) Configure hooks/plugins, (3) Implement logic for blocking or modifying agent actions via scripts."
 ---
 
-# Af Engineer Hook
+# Hook / Plugin Creator
 
 ## Overview
-This command helps design and implement Cursor hooks. Hooks allow you to intercept agent actions (command execution, file read/write, tool usage) and apply rules to them: allow, block (with an explanation), request confirmation, or modify input data.
+This skill helps design and implement event hooks (or plugins). Hooks allow intercepting agent actions (command execution, file read/write, tool usage) and applying rules: allow, block (with explanation), request confirmation, or modify input data.
+
+## IDE Detection and Hook Placement
+
+### Hook Paths by IDE
+
+| IDE | User Hooks | Project Hooks | Format |
+|-----|-----------|--------------|--------|
+| **Cursor** | `~/.cursor/hooks.json` | `.cursor/hooks.json` | JSON config + shell scripts |
+| **Claude Code** | `~/.claude/settings.json` | `.claude/settings.json`<br>`.claude/settings.local.json` | JSON config (command + LLM) |
+| **OpenCode** | `~/.config/opencode/plugins/*.{js,ts}` | `.opencode/plugins/*.{js,ts}`<br>`opencode.json` `plugin` (npm) | JS/TS modules (event-based) |
+| **Antigravity** | - | - | Not supported |
+| **OpenAI Codex** | - | - | Not supported |
+
+### Detection Strategy
+
+1. Check for IDE-specific markers:
+   - `.cursor/` directory -> Cursor
+   - `.claude/` directory -> Claude Code
+   - `.opencode/` directory or `opencode.json` -> OpenCode
+2. If multiple detected or none -> ask the user
 
 ## Main Workflow
 
-1. **Define the Event**: Choose the appropriate event (e.g., `beforeShellExecution` for terminal control or `afterFileEdit` for post-processing).
-2. **Choose Implementation Type**:
-   - **Command-based**: A script (Bash, Python, Node.js) that receives JSON and returns JSON.
-   - **Prompt-based**: An instruction for the LLM that evaluates the action.
-3. **Configure hooks.json**: Add the configuration to `.cursor/hooks.json`.
-4. **Implement Logic**: Create the script in `.cursor/hooks/`.
+1. **Define the Event**: Choose the appropriate event for the target IDE
+2. **Choose Implementation Type** (IDE-dependent)
+3. **Configure**: Add configuration to the correct location
+4. **Implement Logic**: Create the script/plugin
 
-## API Reference
-A detailed description of all events, input, and output JSON data is available in [hooks_api.md](references/hooks_api.md).
+## Cursor Hooks
 
-## Implementation Examples
+### Configuration
 
-### 1. Blocking Dangerous Commands (Command-based)
-Scenario: Prohibit the execution of `rm -rf` without confirmation.
+Hooks in `.cursor/hooks.json`:
 
-**hooks.json**:
 ```json
 {
+  "version": 1,
   "hooks": {
+    "afterFileEdit": [{ "command": ".cursor/hooks/format.sh" }],
     "beforeShellExecution": [
-      {
-        "command": ".cursor/hooks/guard.sh",
-        "matcher": "rm "
-      }
+      { "command": ".cursor/hooks/guard.sh", "matcher": "rm " }
     ]
   }
 }
 ```
+
+### Implementation Types
+
+1. **Command-based**: Shell script receiving JSON via stdin, returning JSON via stdout. Exit code 0 = success, 2 = deny.
+2. **Prompt-based**: LLM-evaluated condition.
+   ```json
+   { "type": "prompt", "prompt": "Is this command safe?", "timeout": 10 }
+   ```
+
+### Cursor Events Reference
+
+For detailed event list, input/output JSON formats: see [hooks_api.md](references/hooks_api.md).
+
+### Example: Blocking Dangerous Commands
 
 **guard.sh**:
 ```bash
 #!/bin/bash
 input=$(cat)
 command=$(echo "$input" | jq -r '.command')
-
 if [[ "$command" == *"rm -rf"* ]]; then
-  echo '{"permission": "ask", "user_message": "Are you sure you want to delete this?", "agent_message": "The rm -rf command requires user confirmation."}'
+  echo '{"permission": "ask", "user_message": "Are you sure?", "agent_message": "rm -rf requires confirmation."}'
 else
   echo '{"permission": "allow"}'
 fi
 ```
 
-### 2. Simple Security Check (Prompt-based)
-Scenario: Checking if the agent is trying to send secrets to an external network.
+## Claude Code Hooks
 
-**hooks.json**:
-```json
-{
-  "hooks": {
-    "beforeShellExecution": [
-      {
-        "type": "prompt",
-        "prompt": "Check if this command contains sending API keys or passwords via curl/wget. If so, block it.",
-        "matcher": "curl|wget"
-      }
-    ]
+Configured in `.claude/settings.json` under `hooks` key. Supports both command execution and LLM-based evaluation.
+
+## OpenCode Plugins
+
+OpenCode uses a **plugin system** instead of hook config files.
+
+### Plugin Structure
+
+Plugins are JS/TS files in `.opencode/plugins/` or `~/.config/opencode/plugins/`:
+
+```typescript
+// .opencode/plugins/guard.ts
+import { plugin } from "@opencode-ai/plugin"
+
+export default plugin({
+  name: "guard",
+  hooks: {
+    "tool.execute.before": async (event) => {
+      // inspect event, return modified or block
+    },
+    "file.edited": async (event) => {
+      // run formatter after edit
+    }
   }
+})
+```
+
+### Available Events
+
+| Category | Events |
+|----------|--------|
+| **Tool execution** | `tool.execute.before`, `tool.execute.after` |
+| **Session lifecycle** | `session.created`, `session.idle`, `session.error`, `session.compacted` |
+| **File operations** | `file.edited`, `file.watcher.updated` |
+| **Messages** | `message.updated`, `message.part.updated` |
+| **Permissions** | `permission.asked`, `permission.replied` |
+| **Environment** | `shell.env` (inject env variables) |
+| **TUI** | `tui.prompt.append`, `tui.command.execute`, `tui.toast.show` |
+
+### npm Plugins
+
+External plugins via `opencode.json`:
+
+```jsonc
+{
+  "plugin": ["@my-org/opencode-security-plugin"]
 }
 ```
 
+Dependencies managed via `.opencode/package.json`, installed with `bun install` at startup.
+
 ## Resources
-- [hooks_api.md](references/hooks_api.md) - Full list of events and data formats.
-- `assets/hook_template.sh` - Bash script template for a hook.
+- [hooks_api.md](references/hooks_api.md) - Cursor hooks: full event list and data formats
+- `assets/hook_template.sh` - Bash script template for Cursor hook
 
 ## Tips
-- Use `matcher` in `hooks.json` so that the hook only runs for relevant commands or tools, saving resources.
-- For debugging, check the "Hooks" tab in Cursor settings or the "Hooks" output channel.
-- Remember that paths in `.cursor/hooks.json` are specified relative to the project root.
-  
+- **Cursor**: Use `matcher` so hooks only fire for relevant commands
+- **Cursor**: Debug via "Hooks" tab in settings or "Hooks" output channel
+- **OpenCode**: Plugin dependencies go in `.opencode/package.json`
+- **All**: Paths are relative to project root
