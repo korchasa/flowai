@@ -48,12 +48,14 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "dev_commands_created",
-      description: "Were development command scripts created (e.g., scripts/check.ts for Deno)?",
+      description:
+        "Were development command scripts created (e.g., scripts/check.ts for Deno)?",
       critical: true,
     },
     {
       id: "deno_json_tasks_updated",
-      description: "Does deno.json contain tasks pointing to scripts/ (check, test, dev)?",
+      description:
+        "Does deno.json contain tasks pointing to scripts/ (check, test, dev)?",
       critical: true,
     },
   ];

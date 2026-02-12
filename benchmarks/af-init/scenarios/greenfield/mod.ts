@@ -46,7 +46,8 @@ Always confirm when asked to overwrite or create files.`;
     },
     {
       id: "dev_commands_configured",
-      description: "Were development commands configured with real scripts (not just stub echo commands)?",
+      description:
+        "Were development commands configured with real scripts (not just stub echo commands)?",
       critical: false,
       type: "semantic" as const,
     },
