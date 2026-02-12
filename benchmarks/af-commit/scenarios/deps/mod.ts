@@ -1,5 +1,8 @@
 import { BenchmarkSkillScenario } from "../../../../scripts/benchmarks/lib/types.ts";
-import { runGit, setupGitRepo } from "../../../../scripts/benchmarks/lib/utils.ts";
+import {
+  runGit,
+  setupGitRepo,
+} from "../../../../scripts/benchmarks/lib/utils.ts";
 import { join } from "@std/path";
 
 export const CommitDepsBench = new class extends BenchmarkSkillScenario {
@@ -37,8 +40,7 @@ export const CommitDepsBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "build_commit",
-      description:
-        "Is there a commit with type 'build' for json change?",
+      description: "Is there a commit with type 'build' for json change?",
       critical: true,
     },
     {

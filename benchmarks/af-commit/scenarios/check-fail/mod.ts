@@ -1,5 +1,8 @@
 import { BenchmarkSkillScenario } from "../../../../scripts/benchmarks/lib/types.ts";
-import { runGit, setupGitRepo } from "../../../../scripts/benchmarks/lib/utils.ts";
+import {
+  runGit,
+  setupGitRepo,
+} from "../../../../scripts/benchmarks/lib/utils.ts";
 
 export const CommitCheckFailBench = new class extends BenchmarkSkillScenario {
   id = "af-commit-check-fail";
