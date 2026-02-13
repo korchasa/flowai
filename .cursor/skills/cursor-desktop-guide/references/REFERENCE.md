@@ -74,18 +74,20 @@
 - **Format**: Markdown with YAML frontmatter.
 - **Frontmatter Schema**:
 
-| Field         | Type   | Required | Description                             |
-| :------------ | :----- | :------- | :-------------------------------------- |
-| `name`        | string | Yes      | Agent name.                             |
-| `description` | string | Yes      | Task description and role definition.   |
-| `model`       | string | No       | Suggested model (e.g., "fast", "slow"). |
+| Field         | Type    | Required | Description                                                                 |
+| :------------ | :------ | :------- | :-------------------------------------------------------------------------- |
+| `name`        | string  | Yes      | Agent name.                                                                 |
+| `description` | string  | Yes      | Task description and role definition.                                      |
+| `model`       | string  | No       | Suggested model (`inherit`, `fast`, `slow`, or model ID). Default: inherit. |
+| `readonly`    | boolean | No       | If `true`, agent uses read-only tools only (no file edits). Default: false.  |
 
 - **Example**:
   ```yaml
   ---
   name: qa-reviewer
   description: "Reviews code for testing gaps"
-  model: "fast"
+  model: inherit
+  readonly: false
   ---
   ```
 
