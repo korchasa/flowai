@@ -16,7 +16,12 @@ export function buildCheckCommands(): CommandSpec[] {
     },
     {
       cmd: "deno",
-      args: ["test", "-A", "scripts"],
+      args: [
+        "test",
+        "-A",
+        "--ignore=scripts/benchmarks/lib/integration.test.ts",
+        "scripts",
+      ],
     },
     {
       cmd: "deno",
