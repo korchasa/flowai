@@ -106,7 +106,17 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      python3 .cursor/skills/af-init/scripts/generate_agents.py project_info.json interview_data.json .cursor/skills/af-init/assets/AGENTS.template.md AGENTS.md .cursor/skills/af-init/assets/rules .cursor/rules [--no-overwrite-agents] [--no-overwrite-rules]
      ```
 
-7. **Configure Development Commands**
+7. **Generate Documentation**
+   - **Action**: Generate the core documentation files in `documents/` using the templates defined in `AGENTS.md`.
+   - **Files to Generate**:
+     - `documents/requirements.md` (SRS): Fill based on `interview_data.json` (Greenfield) or inferred context (Brownfield).
+     - `documents/design.md` (SDS): Create initial structure.
+     - `documents/whiteboard.md`:
+       - For **Brownfield**: Include "Discovered Context" (file tree from `project_info.json`) and a summary of the README.
+       - For **Greenfield**: Initialize with empty notes.
+   - **Note**: Do NOT use a script for this. Use your LLM capabilities to generate high-quality, context-aware content.
+
+8. **Configure Development Commands**
    - Read `project_info.json` to get detected stack.
    - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `af-skill-configure-deno-commands`).
    - If specialized skill exists: Read and follow its `SKILL.md`.
@@ -118,7 +128,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
    - **Verify**: Run `check` command to ensure it works.
 
-8. **Cleanup & Verify**
+9. **Cleanup & Verify**
    - Remove temporary files: `rm project_info.json interview_data.json`.
    - Verify `AGENTS.md` exists.
    - Verify `documents/` folder exists.
@@ -132,7 +142,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 [ ] Interview conducted (Greenfield) or skipped (Brownfield).
 [ ] Component inventory checked (Brownfield).
 [ ] Existing components preserved unless user confirmed overwrite.
-[ ] `documents/` folder created with placeholders.
+[ ] `documents/` folder populated with generated content.
 [ ] `.cursorignore` created.
 [ ] `AGENTS.md` generated (or preserved).
 [ ] Rules copied (or preserved).
