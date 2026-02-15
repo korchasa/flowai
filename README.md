@@ -91,7 +91,6 @@ standardize team processes and speeds up typical tasks.
 - `flow-setup-code-style-ts-deno` - Setup Deno/TS code style
 - `flow-setup-code-style-ts-strict` - Setup strict TypeScript
 - `flow-skill-configure-deno-commands` - Configure Deno tasks
-- `flow-skill-configure-strict-typescript` - Configure strict TS rules
 - `flow-skill-ai-skel-ts` - Scaffold AI agent skeleton
 
 #### 4. Specialized Skills (Helper Tools)
