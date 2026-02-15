@@ -1,53 +1,50 @@
 ---
 name: flow-skill-analyze-context
-description: Analyze token usage in the current context, identifying heavy files, duplicates, and distribution by component. Use when the user asks about token usage, context limits, or optimizing context.
+description: Analyze total token usage including conversation history, system prompts, and active rules to estimate cost.
 ---
 
-# Analyze Context Token Usage
+# Analyze Context (Total Cost Estimation)
 
 ## Instructions
 
-1.  **Identify Context Sources**:
-    - List currently open files.
-    - List recently viewed files (from your system prompt info).
-    - Check the `terminals/` directory for active terminal outputs.
+1.  **Scope**: Analyze **ALL** components that contribute to the context window and cost. This includes:
+    - **Conversation History**: User messages, Assistant responses, Tool calls, and Tool outputs.
+    - **System Context**:
+        - **System Prompts**: The core instructions defining the agent's behavior.
+        - **Active Rules**: Content from `AGENTS.md` and any active `.cursor/rules`.
+        - **Skill/Tool Definitions**: The descriptions of available tools and skills (often a significant overhead).
+        - **Attached Context**: Any `<open_and_recently_viewed_files>`, `<git_status>`, or other automatic context blocks.
 
-2.  **Estimate Tokens**:
-    - Run the provided Python script on the identified files to get estimated token counts.
-    - The script uses a heuristic: ~4 chars/token for Code/English, ~1.6 chars/token for Russian/Unicode.
+2.  **Estimation Method**:
+    - Calculate the token count based on the number of characters for each component.
+    - **Formula**: `Token Count = Character Count * Multiplier`
+    - **Multiplier**: Use **0.3** (approx. 1 token per 3.3 characters).
 
-    ```bash
-    python3 catalog/skills/flow-skill-analyze-context/scripts/estimate_tokens.py "path/to/file1" "path/to/file2" ...
-    ```
+3.  **Procedure**:
+    1.  **Conversation**: Estimate chars in the visible chat history.
+    2.  **System/Rules**: Read `AGENTS.md` and any active rule files to estimate their size.
+    3.  **Overhead**: Add a heuristic buffer for Tool/Skill definitions and hidden system prompts (typically **2000-5000 chars** or **~1000 tokens** depending on the number of tools).
+    4.  **Total**: Sum all components.
+    5.  **Report**: Provide a breakdown of the estimated usage.
 
-3.  **Analyze Findings**:
-    - **Heavy Files**: Identify the top 5 files consuming the most tokens.
-    - **Duplicates**: The script identifies exact content matches. Also look for *logical* duplicates (e.g., `src/main.ts` vs `dist/main.js`, or `README.md` vs `docs/index.md`).
-    - **Garbage/Low Value**: Identify files that likely shouldn't be in context:
-        - Lock files (`package-lock.json`, `yarn.lock`, `pnpm-lock.yaml`)
-        - Minified code (`.min.js`, `.map`)
-        - Large data files (`.json`, `.csv`, `.xml` > 10KB)
-        - Build artifacts (`dist/`, `build/`, `.next/`)
-    - **Logical Garbage (Task Irrelevance)**: Compare files against the user's current goal.
-        - *Unrelated Domains*: e.g., `auth.service.ts` when working on `billing.component.ts`.
-        - *Excessive Documentation*: Full `README.md` or `design.md` when fixing a small bug.
-        - *Old Context*: Files from previous tasks that are no longer relevant.
-        - *Tests*: Test files when only exploring implementation (or vice versa).
-    - **Terminal Output**: Check the size of files in `terminals/`. These are often overlooked context consumers.
-
-4.  **Report**:
-    - Present a summary table of token usage.
-    - Highlight "Quick Wins" (files to close/ignore to save space).
-    - Show distribution by file type (e.g., "TypeScript: 40%", "Markdown: 30%").
+4.  **Tools**:
+    - Use the script for calculation:
+      ```bash
+      python3 catalog/skills/flow-skill-analyze-context/scripts/count_tokens.py "TEXT_snippet"
+      ```
+    - Or manual calculation: `Total Chars * 0.3`.
 
 ## Examples
 
-**User:** "Why is my context full?"
+**User:** "How many tokens are we using?"
 **Action:**
-1. Collect paths of all open and recent files.
-2. Run `estimate_tokens.py`.
-3. Report:
-   "Your context is ~120k tokens.
-   - **Heavy hitters:** `huge_log.txt` (50k), `package-lock.json` (30k).
-   - **Duplicates:** `main.js` is a build artifact of `main.ts`.
-   - **Recommendation:** Close `huge_log.txt` and add `package-lock.json` to `.cursorignore`."
+1.  **Chat**: ~5000 chars (User + AI messages).
+2.  **System**: `AGENTS.md` (~3000 chars) + Rules (~1000 chars).
+3.  **Overhead**: ~3000 chars (Tool definitions).
+4.  **Total Chars**: 12,000.
+5.  **Calc**: `12,000 * 0.3 = 3,600 tokens`.
+6.  **Report**:
+    "**Estimated Context Usage:** ~3,600 tokens
+    - **Conversation:** ~1,500 tokens
+    - **System & Rules:** ~1,200 tokens
+    - **Tool Definitions:** ~900 tokens"
