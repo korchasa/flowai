@@ -13,7 +13,7 @@ disable-model-invocation: true
 Execute a rigorous 7-point maintenance sweep to identify structural deviations,
 documentation inconsistencies, dead code, complexity hotspots, technical debt,
 missing code documentation, and terminology drift. All findings must be
-actionable and saved to `whiteboard.md`.
+actionable and saved to whiteboard.
 
 ## Context
 
@@ -32,7 +32,7 @@ It addresses:
 ## Rules & Constraints
 
 <rules>
-1.  **Output Target**: All findings MUST be written to `whiteboard.md`. Start with a timestamped header.
+1.  **Output Target**: All findings MUST be written to whiteboard. Start with a timestamped header.
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 3.  **Constructive**: Every "Issue" must have a "Proposed Fix".
 4.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
@@ -46,7 +46,7 @@ It addresses:
 
 1. **Initialize & Plan**
    - Use a task management tool (e.g., todo write) to create a plan covering the 7 phases below.
-   - Read `whiteboard.md` to preserve existing long-term notes (if any), but
+   - Read project whiteboard to preserve existing long-term notes (if any), but
      clear old automated reports.
    - Identify project's primary language and source directories.
 
@@ -91,7 +91,7 @@ It addresses:
    - **Report**: List undocumented symbols.
 
 7. **Phase 7: Reporting**
-   - Compile all findings into `whiteboard.md` with the following format:
+   - Compile all findings into whiteboard with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
 
@@ -128,5 +128,5 @@ It addresses:
 [ ] Aggregated all TODO/FIXME tags.
 [ ] Verified documentation terminology vs code usage.
 [ ] Checked for missing code documentation (File/Class/Method).
-[ ] Saved structured report to `whiteboard.md`.
+[ ] Saved structured report to whiteboard.
 </verification>
