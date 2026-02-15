@@ -80,7 +80,7 @@ Deno.test("Runner - Fixture Copying", async () => {
   await Deno.writeTextFile(agentPath, "agent");
 
   const scenario: BenchmarkScenario = {
-    id: "af-test-fixture",
+    id: "flow-test-fixture",
     name: "Fixture Test",
     targetAgentPath: agentPath,
     fixturePath: fixtureDir,
@@ -105,7 +105,7 @@ Deno.test("Runner - Fixture Copying", async () => {
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
     });
 
-    const sandboxPath = join(tempDir, "af-test-fixture", "sandbox");
+    const sandboxPath = join(tempDir, "flow-test-fixture", "sandbox");
     assertEquals(
       await Deno.readTextFile(join(sandboxPath, "file1.txt")),
       "content1",

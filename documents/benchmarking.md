@@ -16,7 +16,7 @@ benchmarks/
 │   │   └── <scenario>/
 │   │       └── mod.ts          # Scenario definition
 │   └── runs/
-│       └── <scenario-id>/      # e.g., af-commit-basic
+│       └── <scenario-id>/      # e.g., flow-commit-basic
 │           ├── sandbox/        # Isolated execution environment
 │           │   ├── .git/
 │           │   ├── README.md
@@ -45,23 +45,23 @@ The trace is a structured HTML document designed for readability and detailed in
 
 | Scenario ID | Result | Errors | Warnings | Time (s) | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `af-answer-basic` | PASSED | 0 | 0 | 17.6 | |
-| `af-commit-basic` | PASSED | 0 | 1 | 19.0 | |
-| `af-commit-atomic-refactor` | PASSED | 0 | 0 | 21.1 | |
-| `af-commit-atomic-docs` | PASSED | 0 | 0 | 18.9 | |
-| `af-commit-check` | PASSED | 0 | 0 | 30.0+ | |
-| `af-commit-check-fail` | PASSED | 0 | 0 | 19.9 | Correctly refused to commit on check failure |
-| `af-commit-deps` | PASSED | 0 | 0 | 22.1 |  |
-| `af-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
-| `af-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
-| `af-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
-| `af-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
-| `af-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include whiteboard.md in evidence |
-| `af-plan-context` | PASSED | 0 | 0 | 25.5 | |
-| `af-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
-| `af-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
-| `af-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
-| `af-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
-| `af-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
-| `af-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
-| `af-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |
+| `flow-answer-basic` | PASSED | 0 | 0 | 17.6 | |
+| `flow-commit-basic` | PASSED | 0 | 1 | 19.0 | |
+| `flow-commit-atomic-refactor` | PASSED | 0 | 0 | 21.1 | |
+| `flow-commit-atomic-docs` | PASSED | 0 | 0 | 18.9 | |
+| `flow-commit-check` | PASSED | 0 | 0 | 30.0+ | |
+| `flow-commit-check-fail` | PASSED | 0 | 0 | 19.9 | Correctly refused to commit on check failure |
+| `flow-commit-deps` | PASSED | 0 | 0 | 22.1 |  |
+| `flow-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
+| `flow-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
+| `flow-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
+| `flow-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
+| `flow-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include whiteboard.md in evidence |
+| `flow-plan-context` | PASSED | 0 | 0 | 25.5 | |
+| `flow-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
+| `flow-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
+| `flow-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
+| `flow-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
+| `flow-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
+| `flow-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
+| `flow-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |

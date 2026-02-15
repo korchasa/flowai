@@ -31,18 +31,18 @@
 - **Purpose:** Provide specialized capabilities and workflows.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
-  - `af-*`: Command-like skills (e.g., `af-maintenance`, `af-commit`, `af-auto`).
-  - `af-skill-*`: Practical guides (e.g., `af-skill-fix-tests`).
+  - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`, `flow-auto`).
+  - `flow-skill-*`: Practical guides (e.g., `flow-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
   - `deno-*`: Deno-specific tools (`deno-cli`, `deno-deploy`).
-- **Composition**: Skills can delegate to other skills (e.g., `af-init` delegates development command configuration to `af-skill-configure-*-commands`).
+- **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
 
 ### 3.2 Agents (`.cursor/agents/`)
 
 - **Purpose:** Define specialized AI personas and roles.
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
-  - `af-commit.md`: Specialist in QA, documentation updates, and atomic commits.
+  - `flow-commit.md`: Specialist in QA, documentation updates, and atomic commits.
   - `executor.md`: General-purpose agent for executing any prompt or task.
   - `skill-executor.md`: Specialist in executing specific skills.
   - `prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.

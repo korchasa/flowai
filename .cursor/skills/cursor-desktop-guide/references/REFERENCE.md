@@ -77,9 +77,9 @@
 | Field         | Type    | Required | Description                                                                 |
 | :------------ | :------ | :------- | :-------------------------------------------------------------------------- |
 | `name`        | string  | Yes      | Agent name.                                                                 |
-| `description` | string  | Yes      | Task description and role definition.                                      |
+| `description` | string  | Yes      | Task description and role definition.                                       |
 | `model`       | string  | No       | Suggested model (`inherit`, `fast`, `slow`, or model ID). Default: inherit. |
-| `readonly`    | boolean | No       | If `true`, agent uses read-only tools only (no file edits). Default: false.  |
+| `readonly`    | boolean | No       | If `true`, agent uses read-only tools only (no file edits). Default: false. |
 
 - **Example**:
   ```yaml

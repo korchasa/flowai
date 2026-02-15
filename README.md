@@ -15,7 +15,7 @@ the development lifecycle.
 
 **Goal**: Ensure the environment is ready and the project base is solid.
 
-- **Initialize Project**: Use `af-init` skill to set up the project structure
+- **Initialize Project**: Use `flow-init` skill to set up the project structure
   and initial documentation if starting fresh.
 
 ### 2. For Each Task
@@ -23,34 +23,34 @@ the development lifecycle.
 **Goal**: Implement features or fixes with high quality and documentation
 coverage.
 
-1. **Plan**: Use `af-plan` skill to analyze the request, break it down into
+1. **Plan**: Use `flow-plan` skill to analyze the request, break it down into
    steps, and create a plan.
-2. **Execute**: Use `af-do` (or `af-execute`) skill to write code. This
+2. **Execute**: Use `flow-do` (or `flow-execute`) skill to write code. This
    ensures adherence to TDD and documentation updates.
 3. **Verify**:
    - Run `deno task test` to check specific tests.
    - **MANDATORY**: Run `deno task check` before completion to ensure the entire
      project is healthy.
-4. **Commit**: Use `af-commit` skill to generate a Conventional Commits
+4. **Commit**: Use `flow-commit` skill to generate a Conventional Commits
    compliant message and commit changes.
 
 ### 3. Periodic Maintenance
 
 **Goal**: Keep the project clean, documented, and up-to-date.
 
-- **Health Check**: Run `af-maintenance` or `deno task check` regularly to
+- **Health Check**: Run `flow-maintenance` or `deno task check` regularly to
   catch regressions.
 - **Update Agents**: Run `deno task check` to ensure all rules are consistent.
 
 ### 4. Specific cases
 
-- **Deep Investigation**: Use `af-investigate` if you encounter complex bugs or
+- **Deep Investigation**: Use `flow-investigate` if you encounter complex bugs or
   unexplained behavior.
-- **Engineering Utilities**: Use `af-engineer-prompt` or `af-engineer-rule`
+- **Engineering Utilities**: Use `flow-engineer-prompt` or `flow-engineer-rule`
   when creating or refining AI instructions.
-- **Codebase Q&A**: Use `af-answer` to get explanations or find logic within
+- **Codebase Q&A**: Use `flow-answer` to get explanations or find logic within
   the project.
-- **Maintenance Audit**: Use `af-maintenance` for a comprehensive project
+- **Maintenance Audit**: Use `flow-maintenance` for a comprehensive project
   health check and optimization suggestions.
 
 ## Using Skills in Cursor
@@ -67,18 +67,18 @@ standardize team processes and speeds up typical tasks.
 
 ### Available Skills
 
-- `af-answer` - Answer questions with context from codebase
-- `af-commit` - Git commit workflow following Conventional Commits
-- `af-do` - General task execution workflow
-- `af-execute` - Execute and implement planned tasks
-- `af-investigate` - Deep investigation and root cause diagnosis
-- `af-maintenance` - Project maintenance and health audit
-- `af-plan` - Plan and break down complex development tasks
-- `af-qa` - Quality Assurance workflow
-- `af-reflect` - Reflect on recent work and update context
-- `af-skill-draw-mermaid` - Create and edit Mermaid diagrams
-- `af-init` - Project initialization workflow
-- `af-skill-write-bench` - Create and run agent benchmarks
+- `flow-answer` - Answer questions with context from codebase
+- `flow-commit` - Git commit workflow following Conventional Commits
+- `flow-do` - General task execution workflow
+- `flow-execute` - Execute and implement planned tasks
+- `flow-investigate` - Deep investigation and root cause diagnosis
+- `flow-maintenance` - Project maintenance and health audit
+- `flow-plan` - Plan and break down complex development tasks
+- `flow-qa` - Quality Assurance workflow
+- `flow-reflect` - Reflect on recent work and update context
+- `flow-skill-draw-mermaid` - Create and edit Mermaid diagrams
+- `flow-init` - Project initialization workflow
+- `flow-skill-write-bench` - Create and run agent benchmarks
 
 ## Framework
 
@@ -106,7 +106,7 @@ and rigid verification, while maintaining all context in the repository.
 - **Skills** (`.cursor/skills/`): Capabilities and workflows.
 - **Agents** (`.cursor/agents/`): AI personas.
 - **Docs Schemas** (`docs-schema-*`): Templates for documentation.
-- **How-To** (`af-skill-*`): Context-sensitive guides for specific problems.
+- **How-To** (`flow-skill-*`): Context-sensitive guides for specific problems.
 
 ## Project Documentation
 

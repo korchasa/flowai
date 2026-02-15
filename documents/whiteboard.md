@@ -6,8 +6,8 @@
 
 ## 2. Hygiene & Quality
 
-- [ ] Unused import `join` in `benchmarks/af-init/scenarios/brownfield-idempotent/mod.ts`. (Fix: Remove import)
-- [ ] Unused variable `sandboxPath` in `benchmarks/af-init/scenarios/brownfield-idempotent/mod.ts`. (Fix: Prefix with `_` or remove)
+- [ ] Unused import `join` in `benchmarks/flow-init/scenarios/brownfield-idempotent/mod.ts`. (Fix: Remove import)
+- [ ] Unused variable `sandboxPath` in `benchmarks/flow-init/scenarios/brownfield-idempotent/mod.ts`. (Fix: Prefix with `_` or remove)
 
 ## 3. Complexity & Hotspots
 

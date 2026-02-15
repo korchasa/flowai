@@ -9,7 +9,7 @@ export interface BenchmarkScenario {
   id: string;
   name: string;
   targetAgentPath?: string; // Path to the agent/skill .md file
-  skill?: string; // Skill identifier (e.g., "af-plan")
+  skill?: string; // Skill identifier (e.g., "flow-plan")
 
   /**
    * Setup the sandbox environment.

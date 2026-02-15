@@ -65,8 +65,8 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Terminology (agentskills.io)
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). Logically, they are divided into:
-- **Commands** (`af-*`): High-level task workflows (e.g., `/af-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
-- **Skills** (`af-skill-*`): Procedural knowledge and specialized capabilities (e.g., `af-skill-draw-mermaid`). Can be discovered and used by agents to perform specific sub-tasks.
+- **Commands** (`flow-*`): High-level task workflows (e.g., `/flow-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
+- **Skills** (`flow-skill-*`): Procedural knowledge and specialized capabilities (e.g., `flow-skill-draw-mermaid`). Can be discovered and used by agents to perform specific sub-tasks.
 
 ## Key Decisions
 - Use Cursor skills and commands as the primary workflow system

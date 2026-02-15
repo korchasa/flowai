@@ -61,10 +61,10 @@ export class TraceLogger {
   }
 
   private formatScenarioName(id: string, name: string): string {
-    if (id.startsWith("af-")) {
+    if (id.startsWith("flow-")) {
       const parts = id.split("-");
       if (parts.length >= 2) {
-        const skill = `af-${parts[1]}`;
+        const skill = `flow-${parts[1]}`;
         return `${skill}: ${name}`;
       }
     }
@@ -392,10 +392,10 @@ export class TraceLogger {
     const groupedScenarios: Record<string, ScenarioMetadata[]> = {};
     scenarios.forEach((s) => {
       let skill = "other";
-      if (s.id.startsWith("af-")) {
+      if (s.id.startsWith("flow-")) {
         const parts = s.id.split("-");
         if (parts.length >= 2) {
-          skill = `af-${parts[1]}`;
+          skill = `flow-${parts[1]}`;
         }
       }
       if (!groupedScenarios[skill]) {
