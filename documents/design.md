@@ -43,9 +43,9 @@
 - **Interfaces:** Markdown files in `.cursor/agents/`.
 - **Key Agents:**
   - `flow-commit.md`: Specialist in QA, documentation updates, and atomic commits.
-  - `executor.md`: General-purpose agent for executing any prompt or task.
-  - `skill-executor.md`: Specialist in executing specific skills.
-  - `prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
+  - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
+  - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
+  - `flow-prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
   - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.

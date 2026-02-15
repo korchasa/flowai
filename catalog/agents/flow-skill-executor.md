@@ -1,6 +1,6 @@
 ---
-name: skill-executor
-model: gemini-3-flash
+name: flow-skill-executor
+model: inherit
 description: Specialized agent for executing specific skills upon request. Use this agent when you need to run a specific workflow described in a SKILL.md with specific parameters or a query.
 ---
 

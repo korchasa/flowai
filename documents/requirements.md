@@ -169,6 +169,9 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `flow-skill-write-prd`        | Writing PRDs                   |     [ ]     |               |
 | `flow-skill-cursor-agent-integration` | Integration with cursor-agent CLI | [x] | |
 | `flow-skill-analyze-context` | Analyze token usage in context | [x] | |
+| `flow-diff-specialist` | Analyze git diffs and plan commits | [ ] | |
+| `flow-prompt-engineer` | Craft prompts for reasoning models | [ ] | |
+| `flow-skill-executor` | Execute specific skills or prompts | [ ] | |
 | `deno-cli` | Manage Deno via CLI | [ ] | |
 | `deno-deploy` | Manage Deno Deploy | [ ] | |
 | `flow-skill-ai-skel-ts` | AI agent scaffold | [ ] | |
