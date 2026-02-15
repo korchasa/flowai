@@ -211,7 +211,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 ## TDD FLOW
 
-1. **RED**: Write test (`deno test <id>`).
+1. **RED**: Write test (`deno test <id>`) for new/changed logic or behavior.
 2. **GREEN**: Pass test (`deno test <id>`).
 3. **REFACTOR**: Improve code/tests. No behavior change. (`deno test <id>`).
 4. **CHECK**: `deno fmt && deno lint && deno test`. Fix all.
