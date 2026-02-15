@@ -46,6 +46,7 @@
   - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
   - `flow-prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
+  - `flow-console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
   - `interviewer.md`: Specialist in gathering information.
   - `project-checker.md`: Specialist in running project checks.
