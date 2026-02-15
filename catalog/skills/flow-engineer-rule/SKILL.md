@@ -1,6 +1,7 @@
 ---
 name: flow-engineer-rule
 description: Guide for creating persistent AI rules (coding standards, project conventions, file-specific patterns). Use when users want to create a rule, add coding standards, set up project conventions, configure file-specific patterns, or ask about rules placement. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
 

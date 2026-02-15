@@ -1,6 +1,7 @@
 ---
 name: flow-setup-code-style-ts-deno
 description: Adds TypeScript/Deno code style rules to project AGENTS.md. Use when setting up new Deno projects or when user needs to establish code style guidelines.
+disable-model-invocation: true
 ---
 
 ## Purpose

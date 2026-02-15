@@ -1,6 +1,7 @@
 ---
 name: flow-engineer-subagent
 description: Guide for creating effective Subagents (custom agent definitions). Use when users want to create a new subagent, set up task-specific agents, configure code reviewers, debuggers, or domain-specific assistants. Works across IDEs (Cursor, OpenCode).
+disable-model-invocation: true
 ---
 
 # Subagent Creator

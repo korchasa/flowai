@@ -1,6 +1,7 @@
 ---
 name: flow-engineer-command
 description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
 

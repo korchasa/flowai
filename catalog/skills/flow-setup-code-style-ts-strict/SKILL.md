@@ -1,6 +1,7 @@
 ---
 name: flow-setup-code-style-ts-strict
 description: Adds TypeScript strict mode code style rules to project AGENTS.md. Use when setting up TypeScript projects with strict mode or establishing coding standards.
+disable-model-invocation: true
 ---
 
 ## Purpose

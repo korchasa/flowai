@@ -1,6 +1,7 @@
 ---
 name: flow-engineer-skill
 description: Guide for creating effective Agent Skills (SKILL.md packages). Use when users want to create a new skill, write a skill, author a SKILL.md, or ask about skill structure, best practices, or skill file format. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
 
