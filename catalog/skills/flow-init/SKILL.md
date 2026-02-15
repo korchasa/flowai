@@ -49,30 +49,32 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Condition**: Only if **Greenfield**.
    - **Action**: Launch the `interviewer` subagent.
      - **Subagent Type**: `interviewer`
-     - **Prompt**: "You are helping initialize a new (Greenfield) project.
-       Conduct a brief interview to gather:
-       1. **Project Name**: Name?
-       2. **Vision Statement**: What is the long-term goal and value?
-       3. **Target Audience**: Who is this for?
-       4. **Problem Statement**: What problem are we solving?
-       5. **Solution & Differentiators**: How do we solve it and why is it better?
-       6. **Risks & Assumptions**: What could go wrong?
-       7. **Tech Stack**: Languages/Frameworks? (If not detected)
-       8. **Architecture**: Patterns?
-       9. **Key Decisions**: Tools/Methodologies?
+    - **Prompt**: "You are helping initialize a new (Greenfield) project.
+      Conduct a brief interview to gather:
+      1. **Project Name**: Name?
+      2. **Vision Statement**: What is the long-term goal and value?
+      3. **Target Audience**: Who is this for?
+      4. **Problem Statement**: What problem are we solving?
+      5. **Solution & Differentiators**: How do we solve it and why is it better?
+      6. **Risks & Assumptions**: What could go wrong?
+      7. **Tech Stack**: Languages/Frameworks? (If not detected)
+      8. **Architecture**: Patterns?
+      9. **Key Decisions**: Tools/Methodologies?
+      10. **Deno Tooling**: Do you want to build tooling around the project on Deno? (yes/no)
 
-       Return a SINGLE JSON object: {
-       "project_name": "...",
-       "vision_statement": "...",
-       "target_audience": "...",
-       "problem_statement": "...",
-       "solution_differentiators": "...",
-       "risks_assumptions": "...",
-       "stack": ["..."],
-       "architecture": "...",
-       "key_decisions": "...",
-       "preferences": ["tdd", "strict-mode", ...]
-       }"
+      Return a SINGLE JSON object: {
+      "project_name": "...",
+      "vision_statement": "...",
+      "target_audience": "...",
+      "problem_statement": "...",
+      "solution_differentiators": "...",
+      "risks_assumptions": "...",
+      "stack": ["..."],
+      "architecture": "...",
+      "key_decisions": "...",
+      "preferences": ["tdd", "strict-mode", ...],
+      "use_deno_tooling": boolean
+      }"
    - **Save Output**: Save to `interview_data.json`.
 
 4. **Brownfield Workflow (Discovery)**
@@ -118,6 +120,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 
 8. **Configure Development Commands**
    - Read `project_info.json` to get detected stack.
+   - **Check Interview Data**: If `interview_data.json` has `use_deno_tooling: true`, FORCE usage of `flow-skill-configure-deno-commands`.
    - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flow-skill-configure-deno-commands`).
    - If specialized skill exists: Read and follow its `SKILL.md`.
    - If NO specialized skill:
