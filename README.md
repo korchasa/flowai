@@ -65,20 +65,52 @@ standardize team processes and speeds up typical tasks.
 2. Skills provide structured workflows for development activities.
 3. Each skill contains detailed instructions for specific tasks.
 
-### Available Skills
+### Available Skills & Commands
 
-- `flow-answer` - Answer questions with context from codebase
-- `flow-commit` - Git commit workflow following Conventional Commits
-- `flow-do` - General task execution workflow
-- `flow-execute` - Execute and implement planned tasks
-- `flow-investigate` - Deep investigation and root cause diagnosis
-- `flow-maintenance` - Project maintenance and health audit
-- `flow-plan` - Plan and break down complex development tasks
-- `flow-qa` - Quality Assurance workflow
+#### 1. Core Workflow (Daily Development)
+- `flow-init` - Initialize a new project with AssistFlow structure
+- `flow-plan` - Analyze request and create a detailed plan
+- `flow-do` - Execute a task (general purpose)
+- `flow-execute` - Execute a planned task with TDD
+- `flow-auto` - Autonomous task manager with feedback loop
+- `flow-commit` - Commit changes with Conventional Commits
+- `flow-qa` - Run Quality Assurance checks
 - `flow-reflect` - Reflect on recent work and update context
-- `flow-skill-draw-mermaid` - Create and edit Mermaid diagrams
-- `flow-init` - Project initialization workflow
-- `flow-skill-write-bench` - Create and run agent benchmarks
+- `flow-maintenance` - Project health check and maintenance
+- `flow-investigate` - Deep investigation of bugs/issues
+- `flow-answer` - Answer questions about the codebase
+
+#### 2. Engineering (Extending AssistFlow)
+- `flow-engineer-command` - Create or modify a command
+- `flow-engineer-skill` - Create or modify a skill
+- `flow-engineer-rule` - Create or modify a rule
+- `flow-engineer-hook` - Create or modify a hook
+- `flow-engineer-subagent` - Create or modify a subagent
+
+#### 3. Setup & Configuration
+- `flow-setup-code-style-ts-deno` - Setup Deno/TS code style
+- `flow-setup-code-style-ts-strict` - Setup strict TypeScript
+- `flow-skill-configure-deno-commands` - Configure Deno tasks
+- `flow-skill-configure-strict-typescript` - Configure strict TS rules
+- `flow-skill-ai-skel-ts` - Scaffold AI agent skeleton
+
+#### 4. Specialized Skills (Helper Tools)
+- `flow-skill-draw-mermaid-diagrams` - Create/Edit Mermaid diagrams
+- `flow-skill-write-agent-benchmarks` - Write agent benchmarks
+- `flow-skill-write-dep` - Write a DEP (Development Enhancement Proposal)
+- `flow-skill-write-gods-tasks` - Write tasks in GODS format
+- `flow-skill-write-prd` - Write a PRD (Product Requirements Document)
+- `flow-skill-write-in-informational-style` - Guide for informational writing style
+- `flow-skill-manage-github-tickets-by-mcp` - Manage GitHub tickets
+- `flow-skill-debug-by-playwright` - Debug using Playwright
+- `flow-skill-fix-tests` - Fix failing tests
+- `flow-skill-conduct-qa-session` - Conduct a Q&A session
+- `flow-skill-analyze-context` - Analyze token usage
+- `flow-skill-cursor-agent-integration` - Integrate with Cursor Agent
+- `flow-skill-engineer-prompts-for-instant` - Prompt engineering for instant models
+- `flow-skill-engineer-prompts-for-reasoning` - Prompt engineering for reasoning models
+- `flow-skill-deno-cli` - Deno CLI wrapper
+- `flow-skill-deno-deploy` - Deno Deploy wrapper
 
 ## Framework
 
