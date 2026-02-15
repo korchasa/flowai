@@ -58,9 +58,12 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 3. **Pre-commit Verification**
    - Run project-specific verification (linter, formatter, tests) if configured.
    - If verification fails, report the error and **STOP**.
-4. **Atomic Grouping Strategy**
-   - Analyze all file changes and hunks.
-   - **Formulate a Commit Plan** by grouping changes by logical purpose:
+4. **Atomic Grouping Strategy (Subagent)**
+   - Use the `flow-diff-specialist` subagent to analyze changes and generate a commit plan.
+   - Pass the following prompt to the subagent: "Analyze the current git changes and propose a commit plan grouping changes by logical purpose. Return a JSON structure with proposed commits."
+   - The subagent will return a JSON structure with proposed commits.
+   - Review the plan. If it looks correct, proceed. If not, ask the subagent to refine it.
+   - **Formulate a Commit Plan** based on the subagent's output:
      - Each logically independent change = one commit.
      - Documentation describing a code change goes in the same commit as that code.
      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `docs:` (standalone only), `style:` (standalone only).

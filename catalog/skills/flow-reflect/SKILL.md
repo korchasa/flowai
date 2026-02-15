@@ -35,17 +35,17 @@ The goal is to perform a "Root Cause Analysis" of the agent's behavior AND an au
 2. **Specific References**: When suggesting improvements, cite the specific file (e.g., `.cursor/rules/foo.md`) or command (e.g., `.cursor/commands/bar.md`).
 3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
-5. **Mandatory**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps.
+5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 </rules>
 
 ## Instructions
 
 <step_by_step>
 1. **Initialize**
-   - Use a task management tool (e.g., todo write) to create a plan for the reflection process.
+   - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan for the reflection process.
 
 2. **Identify Source**
-   - If the user points to a transcript file, read it.
+   - If the user points to a transcript file, read it (using `read_file`, `cat`, etc.).
    - Otherwise, review the current conversation history.
 
 3. **Analyze Execution Flow**
