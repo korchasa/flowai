@@ -30,7 +30,7 @@ Acts as a manager that plans, delegates, verifies, and iterates on tasks until c
    - **Execute**:
      - Use a sub-agent `flow-skill-executor` to execute the current prompt.
    - **Verify**:
-     - Read the files modified/created by the Executor (using `read_file`, `grep`,`cat`, etc.).
+      - Read the files modified/created by the Executor.
      - Check if the Acceptance Criteria are met.
    - **Decide**:
      - **Success**: If criteria met, exit loop.

@@ -21,27 +21,29 @@ Subagents work across multiple IDEs. Before creating a subagent, determine the c
 
 ### Control Primitives Map by IDE
 
-| Primitive | Scope | Cursor | OpenCode |
-| :--- | :--- | :--- | :--- |
-| **Custom Agents (Subagents)** | User | `~/.cursor/agents/*.md` | `~/.config/opencode/agents/*.md` |
-| | Project | `.cursor/agents/*.md` | `.opencode/agents/*.md` |
+| Primitive | Scope | Cursor | Claude Code | OpenCode |
+| :--- | :--- | :--- | :--- | :--- |
+| **Custom Agents (Subagents)** | User | `~/.cursor/agents/*.md` | `~/.claude/agents/*.md` | `~/.config/opencode/agents/*.md` |
+| | Project | `.cursor/agents/*.md` | `.claude/agents/*.md` | `.opencode/agents/*.md` |
 
 ### Subagent-Specific Paths
 
 | IDE | Personal Subagents | Project Subagents |
 |-----|-------------------|-------------------|
 | **Cursor** | `~/.cursor/agents/*.md` | `.cursor/agents/*.md` |
+| **Claude Code** | `~/.claude/agents/*.md` | `.claude/agents/*.md` |
 | **OpenCode** | `~/.config/opencode/agents/*.md` | `.opencode/agents/*.md` |
 
 ### Detection Strategy
 
 1. Check for IDE-specific markers in the project:
    - `.cursor/` directory → Cursor
+   - `.claude/` directory → Claude Code
    - `.opencode/` directory or `opencode.json` → OpenCode
 2. If multiple detected or none → ask the user
 3. Ask: personal subagent (user-level) or project subagent (shared via repo)?
 
-**IMPORTANT**: Never create subagents in `~/.cursor/agents-cursor/` — reserved for Cursor internals.
+**IMPORTANT**: Never create subagents in `~/.cursor/agents-cursor/` (reserved for Cursor internals) or other IDE-reserved directories.
 
 ## Core Principles
 
@@ -312,19 +314,21 @@ If context from prior conversation exists, infer the subagent from discussed wor
 
 ### Phase 3: Implementation
 
-1. Create the file:
+1. Create the file in the IDE-appropriate location:
    ```bash
-   # For project-level
-   mkdir -p .cursor/agents
-   touch .cursor/agents/my-agent.md
+   # Cursor (project-level)
+   mkdir -p .cursor/agents && touch .cursor/agents/my-agent.md
 
-   # For user-level
-   mkdir -p ~/.cursor/agents
-   touch ~/.cursor/agents/my-agent.md
+   # Claude Code (project-level)
+   mkdir -p .claude/agents && touch .claude/agents/my-agent.md
+
+   # OpenCode (project-level)
+   mkdir -p .opencode/agents && touch .opencode/agents/my-agent.md
    ```
 
 2. Write the frontmatter with required fields:
    - Cursor: `name`, `description`; optional `model`, `readonly`
+   - Claude Code: `name`, `description`; optional `model`
    - OpenCode: `description`, optional `mode`, `model`, etc.
 
 3. Write the system prompt body:

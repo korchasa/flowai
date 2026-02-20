@@ -36,17 +36,21 @@ General purpose task execution command for code changes and logic implementation
 3. **Implement**
    - Resolve user query with code changes.
    - Add/update comments at file, function, and block levels.
-4. **Verify**
+4. **Quality Gate**
+   - Run the project's check command.
+   - Fix all errors and warnings until output is clean.
+5. **Verify**
    - Ensure that the task was correctly understood.
    - Ensure that the task was performed as requested by the user.
    - Check that no temporary or garbage data (files, edits, etc.) remains.
-     </step_by_step>
+      </step_by_step>
 
 ## Verification
 
 <verification>
 - [ ] Task scope and acceptance clarified.
 - [ ] Code/comments cover critical logic.
+- [ ] Project check command passes cleanly.
 - [ ] Final response respects project rules.
 - [ ] No temporary or garbage data remains.
 </verification>
