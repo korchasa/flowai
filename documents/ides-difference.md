@@ -78,9 +78,18 @@
 - **OpenAI Codex**: `~/.codex/config.toml`, `.codex/config.toml` (`[mcp_servers.*]`).[^19]
 
 ### 2.7 Context Ignoring
-- **Cursor**: `.cursorignore`.[^16]
-- **Claude Code**: `.claude/settings.json` (gitignore respected).[^15]
+
+**Dedicated AI ignore files** (gitignore syntax, project-local):
+- **Cursor**: `.cursorignore` — additive on top of `.gitignore`; negation `!pattern` un-ignores gitignored files.[^16]
+- **Aider**: `.aiderignore` — same syntax; `--no-gitignore` disables `.gitignore` reading entirely; `--add-gitignore-files` forces gitignored files into scope.
+
+**Config-based exclusion** (no dedicated file):
+- **Claude Code**: `permissions.deny: ["Read(path)"]` in `settings.json`; `respectGitignore: true` (default) — set to `false` to surface gitignored files.[^15]
+- **GitHub Copilot**: Server-side YAML in GitHub org/enterprise Settings → Content Exclusion (Business/Enterprise only; 30 min sync lag; independent of `.gitignore`).[^25]
 - **OpenCode**: `.gitignore`, `.ignore`, `opencode.json` (`watcher.ignore`).[^3]
+
+**Rely on `.gitignore` only** (no dedicated mechanism documented):
+- Windsurf, Zed, JetBrains AI Assistant, Continue.dev, OpenAI Codex.
 
 ### 2.8 Custom Agents (Subagents)
 - **Cursor**: `~/.cursor/agents/*.md`, `.cursor/agents/*.md`.
@@ -194,7 +203,9 @@ Script paths: `.cursor/hooks/` → `.claude/hooks/`.
 
 `.cursorignore` — **no direct equivalent** in Claude Code. [^16][^15]
 
-Claude Code respects `.gitignore` by default (`respectGitignore: true`). Content from `.cursorignore` should be manually merged into `.gitignore` or noted as unmigratable.
+Claude Code respects `.gitignore` by default (`respectGitignore: true`). Migration options:
+- Exclusion patterns → add to `.gitignore` or `permissions.deny` in `.claude/settings.json`.
+- Negation patterns (`!pattern`, un-ignoring gitignored files) → set `"respectGitignore": false` in `.claude/settings.json` (global effect, not per-pattern).
 
 ---
 
@@ -238,3 +249,4 @@ Claude Code respects `.gitignore` by default (`respectGitignore: true`). Content
 [^22]: https://code.claude.com/docs/en/memory — Claude Code memory: CLAUDE.md, `.claude/rules/` with `paths` frontmatter
 [^23]: https://code.claude.com/docs/en/sub-agents — Claude Code subagents: `.claude/agents/*.md`, frontmatter fields
 [^24]: https://code.claude.com/docs/en/hooks — Claude Code hooks reference: events, matchers, input/output schema
+[^25]: https://docs.github.com/en/copilot/how-tos/configure-content-exclusion/exclude-content-from-copilot — GitHub Copilot content exclusion
