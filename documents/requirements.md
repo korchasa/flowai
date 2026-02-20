@@ -176,6 +176,8 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
 | `flow-skill-deno-deploy` | Manage Deno Deploy | [ ] | |
 | `flow-skill-ai-skel-ts` | AI agent scaffold | [ ] | |
 | `flow-skill-playwright-cli` | Browser automation via CLI | [ ] | |
+| `flow-skill-deep-research` | Multi-directional web-based deep research | [ ] | |
+| `deep-research-worker` | Single-direction research worker (sub-agent) | [ ] | |
 | `flow-setup-code-style-ts-deno` | Setup Deno/TS code style | [ ] | |
 | `flow-setup-code-style-ts-strict` | Setup strict TypeScript | [ ] | |
 | `cursor-desktop-guide` | Guide for Cursor desktop features | [ ] | |
