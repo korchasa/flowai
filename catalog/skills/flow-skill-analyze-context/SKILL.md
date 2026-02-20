@@ -30,7 +30,7 @@ description: Analyze total token usage including conversation history, system pr
 4.  **Tools**:
     - Use the script for calculation:
       ```bash
-      python3 catalog/skills/flow-skill-analyze-context/scripts/count_tokens.py "TEXT_snippet"
+      python3 ./scripts/count_tokens.py "TEXT_snippet"
       ```
     - Or manual calculation: `Total Chars * 0.3`.
 

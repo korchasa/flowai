@@ -9,7 +9,7 @@ description: Automates browser interactions for web testing, form filling, scree
 
 ```bash
 # open new browser
-playwright-cli open --headed
+playwright-cli open
 # navigate to a page
 playwright-cli goto https://playwright.dev
 # interact with the page using refs from the snapshot
