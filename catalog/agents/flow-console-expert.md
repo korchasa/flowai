@@ -1,7 +1,6 @@
 ---
 name: flow-console-expert
 description: Expert in executing complex console tasks and commands. Use when you need to run shell commands, analyze output, or perform system operations without modifying code.
-model: inherit
 readonly: true
 ---
 
