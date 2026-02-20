@@ -1,8 +1,7 @@
 ---
 name: flow-maintenance
 description: >-
-  Perform a comprehensive "Lead Engineer" audit: structure, consistency, code
-  quality, technical debt, documentation coverage, and terminology checks.
+  Perform a comprehensive "Lead Engineer" audit: structure, consistency, code quality, technical debt, documentation coverage, and terminology checks.
 disable-model-invocation: true
 ---
 
@@ -50,7 +49,13 @@ It addresses:
      clear old automated reports.
    - Identify project's primary language and source directories.
 
-2. **Phase 2: Code Hygiene & Dependencies**
+2. **Phase 1: Structural Integrity**
+   - **File placement**: Check that all source files reside in expected directories per project conventions (e.g., `src/`, `lib/`, `scripts/`). Flag files at wrong levels.
+   - **Dead directories**: Identify empty or orphaned directories with no purpose.
+   - **Naming conventions**: Verify file and directory names follow project conventions (case, separators).
+   - **Config files**: Ensure project config files (`deno.json`, `package.json`, etc.) are at expected locations.
+
+3. **Phase 2: Code Hygiene & Dependencies**
    - **Dead Code**: Identify exported/public symbols in source directories that
      are never imported/called elsewhere.
    - **Unused Imports**: Scan source files for imports/includes that are not
@@ -61,26 +66,26 @@ It addresses:
      - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
      - Are commented out.
 
-3. **Phase 3: Complexity & Hotspots**
+4. **Phase 3: Complexity & Hotspots**
    - **Files**: Flag any source file exceeding **500 lines**.
    - **Functions**: Scan for functions/methods exceeding **50 lines**.
    - **God Objects**: Identify classes/modules with mixed concerns (e.g.,
      logic + UI + database in one file).
 
-4. **Phase 4: Technical Debt Aggregation**
+5. **Phase 4: Technical Debt Aggregation**
    - **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
    - **Group**: Organize by file/module.
    - **Analysis**: Flag any that look critical or like "temporary" fixes that
      became permanent.
 
-5. **Phase 5: Consistency (Docs vs. Code)**
+6. **Phase 5: Consistency (Docs vs. Code)**
    - **Terminology**: Extract key terms from `README.md` and `documents/`. Check
      if code uses different synonyms (e.g., "User" in docs vs "Customer" in
      code).
    - **Drift**: Pick 3 major claims from `documents/*.md` (e.g., "The system
      handles X asynchronously"). Verify if the code actually does that.
 
-6. **Phase 6: Code Documentation Coverage**
+7. **Phase 6: Code Documentation Coverage**
    - **Rule**: Every file, class, method, and exported function MUST have
      documentation (JSDoc, Docstring, Rustdoc, etc.).
    - **Check**:
@@ -90,7 +95,7 @@ It addresses:
    - **Scan**: primary source directories.
    - **Report**: List undocumented symbols.
 
-7. **Phase 7: Reporting**
+8. **Phase 7: Reporting**
    - Compile all findings into whiteboard with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
@@ -123,6 +128,7 @@ It addresses:
 ## Verification
 
 <verification>
+[ ] Checked structural integrity (file placement, naming, configs).
 [ ] Scanned for dead code and unused imports.
 [ ] Checked file/function length limits (500/50 lines).
 [ ] Aggregated all TODO/FIXME tags.
