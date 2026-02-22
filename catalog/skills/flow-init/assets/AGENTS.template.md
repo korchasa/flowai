@@ -2,6 +2,7 @@
 
 - STRICTLY FOLLOW YOUR ROLE.
 - FIRST ACTION IN SESSION: READ ALL PROJECT DOCS. ONE-TIME PER SESSION.
+- AFTER END OF SESSION, REVIEW ALL DOCUMENTS AND MAKE SURE THEY ARE ACCURATE AND UP TO DATE.
 - ALWAYS CHECK THE CHANGES MADE BY RUNNING THE APPROPRIATE TESTS OR SCRIPTS.
 - ALWAYS KEEP THE PROJECT IN WORKING CONDITION: WITHOUT ERRORS, WARNINGS, AND PROBLEMS IN THE FORMATER AND LINTER OUTPUT
 - STRICTLY FOLLOW TDD RULES.
@@ -63,6 +64,7 @@
 - **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).
 - **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons. Quality > quantity. 1 variant OK if path is clear.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/whiteboard.md` using GODS format. Chat-only plans are lost between sessions.
 - **Proactive Resolution**: Before asking user, exhaust available resources (codebase, docs, web) to find the answer autonomously.
 
 ## DOCS STRUCTURE & RULES (`documents/`)
