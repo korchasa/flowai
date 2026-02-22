@@ -19,12 +19,18 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 ## Rules & Constraints
 
 <rules>
-1. **Atomic Commits**: Group changes by logical purpose, not by file type:
-   - Each commit = ONE logical change (one feature, one bug fix, one refactoring).
-   - Documentation describing a code change belongs in the SAME commit.
-   - `docs:` type ONLY when changes are exclusively in documentation.
-   - `style:` type ONLY when changes are exclusively formatting/style.
-   - Logically independent changes MUST be in separate commits (e.g., unrelated bug fix must not be in a feature commit).
+1. **Consolidation-First Commits**: Default to ONE commit. Split ONLY when changes are **genuinely independent** (different business purpose, no causal relationship):
+   - **Default**: ALL changes related to the same purpose → ONE commit. This includes: implementation code + its tests + its documentation + its configuration.
+   - **Split trigger**: Changes serve **different, unrelated purposes** (e.g., an unrelated bug fix mixed with a feature, or a dependency update unrelated to the feature being developed).
+   - **User override**: If the user explicitly asks to split (e.g., "split them", "separate X from Y"), follow the user's request.
+   - Documentation describing a code change belongs in the SAME commit as that code.
+   - `docs:` type ONLY when changes are exclusively in documentation unrelated to any code change.
+   - `style:` type ONLY when changes are exclusively formatting/style unrelated to any logic change.
+   - **Anti-patterns (DO NOT split these into separate commits)**:
+     - Feature code + tests for that feature → 1 commit
+     - Feature code + docs describing that feature → 1 commit
+     - Refactored function + updated imports across files → 1 commit
+     - Config change required by a feature + the feature code → 1 commit
 2. **Automation**: Automatically group and commit changes. DO NOT ask the user for permission to split commits.
 3. **Dependency Updates**: ALWAYS use `build:` prefix for dependency and configuration updates (e.g., `build: update dependencies`). Do NOT use `chore:` type.
 4. **Strict Commits**: Compose messages in **English** per Conventional Commits 1.0.0.
@@ -60,14 +66,15 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - If verification fails, report the error and **STOP**.
 4. **Atomic Grouping Strategy (Subagent)**
    - Use the `flow-diff-specialist` subagent to analyze changes and generate a commit plan.
-   - Pass the following prompt to the subagent: "Analyze the current git changes and propose a commit plan grouping changes by logical purpose. Return a JSON structure with proposed commits."
+   - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
    - The subagent will return a JSON structure with proposed commits.
-   - Review the plan. If it looks correct, proceed. If not, ask the subagent to refine it.
+   - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
    - **Formulate a Commit Plan** based on the subagent's output:
-     - Each logically independent change = one commit.
+     - Default: all changes = one commit.
+     - Split only when changes serve different, unrelated purposes OR the user explicitly requested a split.
      - Documentation describing a code change goes in the same commit as that code.
      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `docs:` (standalone only), `style:` (standalone only).
-   - _If a single file contains logically independent changes, sequentially edit the file to isolate each change, stage and commit it, then apply the next._
+   - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
 5. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
