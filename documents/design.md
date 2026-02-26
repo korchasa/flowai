@@ -55,28 +55,31 @@
 - **Purpose:** Provide specialized capabilities and workflows for end users.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
-  - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`, `flow-auto`).
+  - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`, `flow-do`).
   - `flow-skill-*`: Practical guides (e.g., `flow-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).
 - **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
 
-### 3.2 Product Agents (`framework/agents/`)
+### 3.2 Product Agents (`framework/agents/{ide}/`)
 
-- **Purpose:** Define specialized AI personas and roles for end users.
-- **Interfaces:** Markdown files in `framework/agents/`.
-- **Key Agents:**
-  - `flow-commit.md`: Specialist in QA, documentation updates, and atomic commits.
-  - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
-  - `flow-execute.md`: Specialist in TDD execution of planned tasks.
-  - `flow-plan.md`: Specialist in GODS-based task planning.
-  - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
-  - `flow-prompt-engineer.md`: Specialist in crafting detailed prompts for reasoning models.
-  - `flow-console-expert.md`: Specialist in executing complex console tasks without modifying code.
+- **Purpose:** Define specialized AI subagent personas and roles for end users.
+- **Structure:** Per-IDE subdirectories: `framework/agents/claude/`, `framework/agents/cursor/`, `framework/agents/opencode/`.
+  Each IDE has its own frontmatter format; body (system prompt) is shared.
+- **IDE Frontmatter Differences:**
+  - **Claude Code:** `name`, `description` (req), `tools` (list: Read, Grep, etc.), `disallowedTools`, `model` (sonnet/opus/haiku/inherit).
+  - **Cursor:** `name`, `description` (req), `model` (inherit/fast/slow), `readonly` (bool).
+  - **OpenCode:** `description` (req), `mode: subagent`, `model` (provider/model-id), `tools` (map: write/edit/bash→bool). Filename = agent name.
+- **Key Agents (4, each in 3 IDE variants = 12 files):**
   - `deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flow-skill-deep-research` orchestrator.
-  - `benchmark-runner.md`: Specialist in executing and analyzing agent benchmarks.
-  - `interviewer.md`: Specialist in gathering information.
-  - `project-checker.md`: Specialist in running project checks.
+  - `flow-console-expert.md`: Specialist in executing complex console tasks without modifying code.
+  - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
+  - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
+- **Validation:** `scripts/check-agents.ts` (part of `deno task check`) verifies:
+  - Completeness (same files across all IDE subdirs)
+  - Body sync (system prompt identical across variants)
+  - Description sync
+  - IDE-specific frontmatter correctness (required/forbidden fields)
 
 ### 3.3 Project Documentation (`documents/`)
 
@@ -122,6 +125,60 @@
   - **Interactive Flows**: `SimulatedUser` component handles multi-turn interactions by simulating user responses via LLM.
   - **Multi-Turn Benchmarking**: `SpawnedAgent` and `runner.ts` support automatic session resumption (`--resume`) when `SimulatedUser` provides input, enabling testing of complex interactive workflows.
 
+### 3.5 Global Installer (`scripts/install.ts`) — FR-10
+
+- **Purpose:** Install/update AssistFlow framework globally into IDE config dirs.
+- **Strategy:** Per-item symlinks (each agent file, each skill dir) instead of
+  single directory symlink. Preserves user's custom agents/skills.
+- **IDE Detection:** Checks existence of `~/.cursor/`, `~/.claude/`, `~/.config/opencode/`.
+- **Agent Discovery:** Per-IDE — reads from `framework/agents/{agentSubdir}/` (claude/cursor/opencode).
+  Each IDE gets agent files with IDE-native frontmatter format.
+- **Operations:**
+  - Create `<ide-config>/agents/<name>.md` -> `<framework>/agents/<ide>/<name>.md`
+  - Create `<ide-config>/skills/<name>/` -> `<framework>/skills/<name>/`
+  - Remove stale symlinks pointing to non-existent framework items.
+  - Skip non-symlink files (warn user).
+- **Remote execution:** `deno run -A https://raw.githubusercontent.com/.../install.ts`
+- **Deps:** None (Deno std only).
+
+### 3.6 Conventional Commits `agent:` Type — FR-11
+
+- **Purpose:** Dedicated commit type for AI agent/skill configuration changes.
+- **Integration point:** `flow-commit` SKILL.md — added to recognized types list.
+- **Auto-detection logic:** If all staged files match patterns
+  (`framework/agents/**`, `framework/skills/**`, `.dev/agents/**`, `.dev/skills/**`,
+  `AGENTS.md`, `<ide-dir>/agents/**`, `<ide-dir>/skills/**`) -> suggest `agent:` type.
+- **Affected components:** `flow-commit` SKILL.md, `flow-diff-specialist` agent.
+
+### 3.7 flow-init Section-Level Merge — FR-12
+
+- **Purpose:** Preserve user edits in `AGENTS.md` during re-initialization.
+- **Mechanism:** `AGENTS.md` is divided into framework-managed and user-managed
+  sections using `<!-- AF:BEGIN -->` / `<!-- AF:END -->` delimiters (or heading-based
+  detection).
+  - **Framework sections:** Regenerated from project analysis data.
+  - **User sections:** Content between `---` markers and custom headings — preserved
+    verbatim.
+- **Diff confirmation:** Agent generates proposed `AGENTS.md`, shows diff to user,
+  applies only after confirmation.
+- **Documents guard:** If `documents/*.md` files contain >50 lines of non-template
+  content, skip overwrite and notify user.
+
+### 3.8 Python-to-Deno Migration — FR-13
+
+- **Purpose:** Eliminate Python runtime dependency by rewriting all 12 `.py` scripts
+  to TypeScript (Deno).
+- **Approach:** 1:1 behavioral parity. Same stdin/stdout/exit-code contracts.
+- **Script categories:**
+  - **Analyzers** (`analyze_project`, `count_tokens`): File system inspection, JSON output.
+  - **Generators** (`generate_agents`, `init_*`): Template expansion, file scaffolding.
+  - **Validators** (`validate_*.py`): YAML/Markdown parsing, error reporting.
+  - **Packagers** (`package_*.py`): Bundling skill/command directories.
+- **Test strategy:** Each `.ts` script gets a `_test.ts` file verifying identical
+  output against known fixtures.
+- **SKILL.md updates:** All `python3 scripts/*.py` invocations replaced with
+  `deno run -A scripts/*.ts`.
+
 ## 4. Data and Storage
 
 - **Entities and attributes:**
@@ -154,5 +211,4 @@
 
 ## 8. Future Extensions
 
-- Automated validation scripts for skill syntax.
 - Hook format transformation (`.dev/hooks.json` -> Claude Code `settings.json`, OpenCode `plugins/`).
