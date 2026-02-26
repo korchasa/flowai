@@ -20,11 +20,11 @@
     OpenCode -->|skills, agents| IDE3[OpenCode]
     IDE1 & IDE2 & IDE3 -->|Updates| Docs[documents/*.md]
     IDE1 & IDE2 & IDE3 -->|Executes| Actions[Code/Git/MCP]
-    Catalog[catalog/] -->|product skills| Users[End Users]
+    Framework[framework/] -->|product skills| Users[End Users]
   ```
 - **Main subsystems and their roles:**
   - **Dev Resources (`.dev/`):** IDE-agnostic SPOT for dev skills, agents, hooks. Symlinked to IDE directories via `deno task link`.
-  - **Product Catalog (`catalog/`):** Source of truth for end-user skills/agents. Separate from dev resources.
+  - **Product Framework (`framework/`):** Source of truth for end-user skills/agents. Separate from dev resources.
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
   - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
@@ -50,7 +50,7 @@
   - `.cursor/worktrees.json` -> `.dev/worktrees.json` (Cursor-only)
 - **Constraints:** Claude Code write operations destroy symlinks (known bug). Dev skills are read-only — acceptable risk.
 
-### 3.1.1 Product Skills (`catalog/skills/`)
+### 3.1.1 Product Skills (`framework/skills/`)
 
 - **Purpose:** Provide specialized capabilities and workflows for end users.
 - **Interfaces:** Directories containing `SKILL.md` files.
@@ -61,10 +61,10 @@
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).
 - **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
 
-### 3.2 Product Agents (`catalog/agents/`)
+### 3.2 Product Agents (`framework/agents/`)
 
 - **Purpose:** Define specialized AI personas and roles for end users.
-- **Interfaces:** Markdown files in `catalog/agents/`.
+- **Interfaces:** Markdown files in `framework/agents/`.
 - **Key Agents:**
   - `flow-commit.md`: Specialist in QA, documentation updates, and atomic commits.
   - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.

@@ -10,7 +10,7 @@ export const InitVisionIntegrationBench = new class
 
   async setup(sandboxPath: string) {
     // 1. Copy the flow-init skill files (scripts, assets) to the sandbox
-    const sourceInitDir = join(Deno.cwd(), "catalog/skills/flow-init");
+    const sourceInitDir = join(Deno.cwd(), "framework/skills/flow-init");
     const destInitDir = join(sandboxPath, ".cursor/skills/flow-init");
 
     await Deno.mkdir(destInitDir, { recursive: true });

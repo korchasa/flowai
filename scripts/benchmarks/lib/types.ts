@@ -81,7 +81,7 @@ export interface BenchmarkScenario {
 }
 
 /**
- * Base class for scenarios that target a specific skill from the catalog.
+ * Base class for scenarios that target a specific skill from the framework.
  * Automatically builds targetAgentPath from the skill ID.
  */
 export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
@@ -92,7 +92,7 @@ export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
   abstract checklist: BenchmarkChecklistItem[];
 
   get targetAgentPath(): string {
-    return `catalog/skills/${this.skill}/SKILL.md`;
+    return `framework/skills/${this.skill}/SKILL.md`;
   }
 
   setup(_sandboxPath: string): Promise<void> {

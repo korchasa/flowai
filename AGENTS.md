@@ -20,7 +20,7 @@
 - DO NOT USE TABLES IN CHAT OUTPUT. USE TWO-LEVEL LIST INSTEAD.
 
 ---
-- REMEMBER, EVERYTHING IN THE catalog/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN THEIR IDE'S CONFIG DIR (.cursor/, .claude/, .opencode/). DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH DEV RESOURCES IN .dev/.
+- REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN THEIR IDE'S CONFIG DIR (.cursor/, .claude/, .opencode/). DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH DEV RESOURCES IN .dev/.
 - ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, antigravity, openai codex, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 - ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
@@ -67,8 +67,8 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 
 ## Architecture
 - `.dev/`: SPOT for dev resources (skills, agents, hooks, IDE configs). Symlinked to IDE dirs via `deno task link`.
-- `catalog/skills/`: Source of truth for product skills (logical Commands and Skills)
-- `catalog/agents/`: Source of truth for product agents
+- `framework/skills/`: Source of truth for product skills (logical Commands and Skills)
+- `framework/agents/`: Source of truth for product agents
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
 

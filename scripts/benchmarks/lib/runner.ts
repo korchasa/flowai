@@ -115,20 +115,22 @@ export async function runScenario(
       }
     }
 
-    // 1.6 Copy catalog to .cursor
-    const catalogPath = join(Deno.cwd(), "catalog");
+    // 1.6 Copy framework to .cursor
+    const frameworkPath = join(Deno.cwd(), "framework");
     const dotCursorPath = join(sandboxPath, ".cursor");
 
     try {
       await Deno.mkdir(dotCursorPath, { recursive: true });
-      console.log(`  Copying catalog from ${catalogPath} to ${dotCursorPath}`);
-      await copyRecursive(catalogPath, dotCursorPath, [
+      console.log(
+        `  Copying framework from ${frameworkPath} to ${dotCursorPath}`,
+      );
+      await copyRecursive(frameworkPath, dotCursorPath, [
         "benchmarks",
         "runs",
         "tmp",
       ]);
     } catch (e) {
-      console.warn(`  Warning: Failed to copy catalog: ${e}`);
+      console.warn(`  Warning: Failed to copy framework: ${e}`);
     }
 
     // 2. Load Agent Prompt and AGENTS.md

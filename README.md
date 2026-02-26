@@ -51,7 +51,7 @@ AI models lose context between sessions. AssistFlow compensates by storing all d
 
 This repository contains two distinct layers. Do not confuse them:
 
-- **`catalog/`** — **the product itself**. Skills and agents that users copy into their projects (into `.cursor/skills/`, `.claude/`, etc.). This is what AssistFlow distributes.
+- **`framework/`** — **the product itself**. Skills and agents that users copy into their projects (into `.cursor/skills/`, `.claude/`, etc.). This is what AssistFlow distributes.
 - **`.cursor/`, `.claude/`** — **internal development tooling**. Skills and agents used to develop AssistFlow itself (benchmark runner, cursor-agent integration, code generation helpers). These are not part of the product and are not distributed to users.
 
 ## Developer Workflow
@@ -140,7 +140,7 @@ Every task follows the same supervised loop:
 ## Project Structure
 
 ```
-catalog/                # THE PRODUCT — distributed to users
+framework/              # THE PRODUCT — distributed to users
   skills/               #   Skills (SKILL.md per folder)
   agents/               #   Agents (.md files)
 documents/              # Project documentation (SRS, SDS, whiteboard)
