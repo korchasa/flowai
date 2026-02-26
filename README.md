@@ -87,7 +87,6 @@ Every task follows the same supervised loop:
 - `flow-plan` — task planning (GODS format)
 - `flow-do` — general task execution
 - `flow-execute` — TDD-driven implementation of planned tasks
-- `flow-auto` — autonomous execution with feedback loop
 - `flow-commit` — atomic commits with QA
 - `flow-qa` — quality assurance checks
 - `flow-reflect` — self-analysis of recent work
