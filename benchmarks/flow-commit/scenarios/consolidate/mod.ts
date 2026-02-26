@@ -22,7 +22,7 @@ export const CommitConsolidateBench = new class extends BenchmarkSkillScenario {
     await Deno.writeTextFile(
       join(sandboxPath, "math.ts"),
       [
-        'export function add(a: number, b: number): number {',
+        "export function add(a: number, b: number): number {",
         "  return a + b;",
         "}",
         "",
@@ -84,7 +84,8 @@ export const CommitConsolidateBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "conventional_commits",
-      description: "Does the commit message follow Conventional Commits format?",
+      description:
+        "Does the commit message follow Conventional Commits format?",
       critical: true,
     },
     {
