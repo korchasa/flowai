@@ -55,7 +55,7 @@
 - **Purpose:** Provide specialized capabilities and workflows for end users.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
-  - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`, `flow-do`).
+  - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`).
   - `flow-skill-*`: Practical guides (e.g., `flow-skill-fix-tests`).
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).

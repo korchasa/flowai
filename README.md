@@ -69,7 +69,7 @@ Every task follows the same supervised loop:
 
 1. **Task** — describe what needs to be done
 2. **Plan** (`flow-plan`) — AI proposes a plan in GODS format. You review, adjust, approve
-3. **Execute** (`flow-do` / `flow-execute`) — AI implements the approved plan. You watch the diffs
+3. **Execute** — AI implements the approved plan. You watch the diffs
 4. **Verify** — `deno task check` (or your project's equivalent) must pass. No exceptions
 5. **Commit** (`flow-commit`) — AI prepares atomic commits. You review before push
 
@@ -85,8 +85,6 @@ Every task follows the same supervised loop:
 
 - `flow-init` — project initialization
 - `flow-plan` — task planning (GODS format)
-- `flow-do` — general task execution
-- `flow-execute` — TDD-driven implementation of planned tasks
 - `flow-commit` — atomic commits with QA
 - `flow-qa` — quality assurance checks
 - `flow-reflect` — self-analysis of recent work

@@ -144,13 +144,11 @@ The benchmarking system must cover all core AssistFlow components to ensure reli
 | **Commands (`flow-*`)**                    |                                      |             |                          |
 | `flow-answer`                              | Answering user questions             |     [ ]     |                          |
 | `flow-commit`                              | Atomic commits and QA                |     [x]     | `flow-commit-*`          |
-| `flow-do`                                  | General task execution               |     [ ]     |                          |
 | `flow-engineer-command`                    | Creating new AF commands             |     [ ]     |                          |
 | `flow-engineer-hook`                       | Creating hooks                       |     [ ]     |                          |
 | `flow-engineer-rule`                       | Creating rules                       |     [ ]     |                          |
 | `flow-engineer-skill`                      | Creating skills                      |     [ ]     |                          |
 | `flow-engineer-subagent`                   | Creating subagents                   |     [ ]     |                          |
-| `flow-execute`                             | Executing planned tasks              |     [ ]     |                          |
 | `flow-init`                                | Project initialization               |     [x]     | `flow-init-*`            |
 | `flow-investigate`                         | Code investigation/debugging         |     [ ]     |                          |
 | `flow-maintenance`                         | Periodic project health checks       |     [ ]     |                          |
