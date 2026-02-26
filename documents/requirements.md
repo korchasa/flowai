@@ -69,10 +69,10 @@
 - **Description:** The system must provide guides for complex or situational
   tasks.
 - **Use case scenario:** User asks how to fix tests. Agent retrieves
-  `flow-skill-fix-tests/RULE.md` and follows the procedure.
+  `flow-skill-fix-tests/SKILL.md` and follows the procedure.
 - **Acceptance criteria:**
-  - [x] Support for 14 how-to guides covering commit workflows, documentation,
-        debugging, testing, Git operations, GitHub management, hooks configuration, and GODS tasks
+  - [x] Support for 20 how-to guides covering QA, testing, diagrams, prompts,
+        GitHub management, Deno tooling, research, benchmarks, and documentation
   - [x] Guides follow `flow-skill-*/` directory naming convention with `SKILL.md`
         files
   - [x] Each guide provides step-by-step instructions for specific scenarios
@@ -133,58 +133,63 @@
 - [x] **Simulated User**: Support for interactive flows via `SimulatedUser` LLM.
 - [x] **Environment Management**: `.env` support for API keys in benchmarks.
 
-### 3.8 Skill Coverage Matrix
+### 3.8 Component Coverage Matrix
 
-The benchmarking system must cover all core AssistFlow skills to ensure reliability across all workflows.
+The benchmarking system must cover all core AssistFlow components to ensure reliability across all workflows.
 
-| Skill ID                    | Description                    | Benchmarked | Scenario ID   |
-| :-------------------------- | :----------------------------- | :---------: | :------------ |
-| **Commands (flow-*)**         |                                |             |               |
-| `flow-answer`                 | Answering user questions       |     [ ]     |               |
-| `flow-commit`                 | Atomic commits and QA          |     [x]     | `flow-commit-*` |
-| `flow-create-vision-doc`      | Creating VISION.md             |     [ ]     |               |
-| `flow-do`                     | General task execution         |     [ ]     |               |
-| `flow-engineer-command`       | Creating new AF commands       |     [ ]     |               |
-| `flow-engineer-hook`          | Creating Cursor hooks          |     [ ]     |               |
-| `flow-execute`                | Executing planned tasks        |     [ ]     |               |
-| `flow-init`                   | Project initialization         |     [x]     | `flow-init-*`   |
-| `flow-investigate`            | Code investigation/debugging   |     [ ]     |               |
-| `flow-maintenance`            | Periodic project health checks |     [ ]     |               |
-| `flow-plan`                   | Task planning (GODS)           |     [x]     | `flow-plan-*`   |
-| `flow-plan-interactive`     | Plan with multi-turn selection |     [x]     | `flow-plan-interactive` |
-| `flow-qa`                     | Quality assurance session      |     [ ]     |               |
-| `flow-reflect`                | Self-reflection on task        |     [x]     | `flow-reflect-*` |
-| **Guides (flow-skill-*)**     |                                |             |               |
-| `flow-skill-conduct-qa`       | Conducting QA sessions         |     [ ]     |               |
-| `flow-skill-debug-playwright` | Debugging with Playwright      |     [ ]     |               |
-| `flow-skill-draw-mermaid`     | Drawing Mermaid diagrams       |     [ ]     |               |
-| `flow-skill-eng-prompt-inst`  | Prompt engineering (Instant)   |     [ ]     |               |
-| `flow-skill-eng-prompt-reas`  | Prompt engineering (Reasoning) |     [ ]     |               |
-| `flow-skill-engineer-hook`    | Creating Cursor hooks          |     [ ]     |               |
-| `flow-skill-fix-by-benchmarks` | Fixing skills via benchmarks |     [x]     |               |
-| `flow-skill-fix-tests`        | Fixing broken tests            |     [ ]     |               |
-| `flow-skill-manage-github`    | Managing GitHub via MCP        |     [ ]     |               |
-| `flow-skill-write-bench`      | Writing agent benchmarks       |     [x]     |               |
-| `flow-skill-write-dep`        | Writing DEP documents          |     [ ]     |               |
-| `flow-skill-write-gods`       | Writing GODS tasks             |     [ ]     |               |
-| `flow-skill-write-info`       | Writing in info style          |     [ ]     |               |
-| `flow-skill-write-prd`        | Writing PRDs                   |     [ ]     |               |
-| `flow-skill-cursor-agent-integration` | Integration with cursor-agent CLI | [x] | |
-| `flow-skill-analyze-context` | Analyze token usage in context | [x] | |
-| `flow-diff-specialist` | Analyze git diffs and plan commits | [ ] | |
-| `flow-prompt-engineer` | Craft prompts for reasoning models | [ ] | |
-| `flow-skill-executor` | Execute specific skills or prompts | [ ] | |
-| `flow-skill-deno-cli` | Manage Deno via CLI | [ ] | |
-| `flow-skill-deno-deploy` | Manage Deno Deploy | [ ] | |
-| `flow-skill-ai-skel-ts` | AI agent scaffold | [ ] | |
-| `flow-skill-playwright-cli` | Browser automation via CLI | [ ] | |
-| `flow-skill-deep-research` | Multi-directional web-based deep research | [ ] | |
-| `deep-research-worker` | Single-direction research worker (sub-agent) | [ ] | |
-| `flow-setup-code-style-ts-deno` | Setup Deno/TS code style | [ ] | |
-| `flow-setup-code-style-ts-strict` | Setup strict TypeScript | [ ] | |
-| `cursor-desktop-guide` | Guide for Cursor desktop features | [ ] | |
-| `opencode-guide` | Guide for OpenCode features | [ ] | |
-| `flow-refactor-user-manager` | Refactoring UserManager        |     [ ]     |               |
+#### Skills (`framework/skills/`)
+
+| Skill ID                                   | Description                          | Benchmarked | Scenario ID              |
+| :----------------------------------------- | :----------------------------------- | :---------: | :----------------------- |
+| **Commands (`flow-*`)**                    |                                      |             |                          |
+| `flow-answer`                              | Answering user questions             |     [ ]     |                          |
+| `flow-commit`                              | Atomic commits and QA                |     [x]     | `flow-commit-*`          |
+| `flow-do`                                  | General task execution               |     [ ]     |                          |
+| `flow-engineer-command`                    | Creating new AF commands             |     [ ]     |                          |
+| `flow-engineer-hook`                       | Creating hooks                       |     [ ]     |                          |
+| `flow-engineer-rule`                       | Creating rules                       |     [ ]     |                          |
+| `flow-engineer-skill`                      | Creating skills                      |     [ ]     |                          |
+| `flow-engineer-subagent`                   | Creating subagents                   |     [ ]     |                          |
+| `flow-execute`                             | Executing planned tasks              |     [ ]     |                          |
+| `flow-init`                                | Project initialization               |     [x]     | `flow-init-*`            |
+| `flow-investigate`                         | Code investigation/debugging         |     [ ]     |                          |
+| `flow-maintenance`                         | Periodic project health checks       |     [ ]     |                          |
+| `flow-plan`                                | Task planning (GODS)                 |     [x]     | `flow-plan-*`            |
+| `flow-qa`                                  | Quality assurance session            |     [ ]     |                          |
+| `flow-reflect`                             | Self-reflection on task              |     [x]     | `flow-reflect-*`         |
+| `flow-setup-code-style-ts-deno`            | Setup Deno/TS code style             |     [ ]     |                          |
+| `flow-setup-code-style-ts-strict`          | Setup strict TypeScript              |     [ ]     |                          |
+| **Skills (`flow-skill-*`)**                |                                      |             |                          |
+| `flow-skill-ai-skel-ts`                   | AI agent scaffold                    |     [ ]     |                          |
+| `flow-skill-analyze-context`              | Analyze token usage in context       |     [x]     |                          |
+| `flow-skill-conduct-qa-session`           | Conducting QA sessions               |     [ ]     |                          |
+| `flow-skill-configure-deno-commands`      | Configure Deno development commands  |     [ ]     |                          |
+| `flow-skill-cursor-agent-integration`     | Integration with cursor-agent CLI    |     [x]     |                          |
+| `flow-skill-deep-research`                | Multi-directional web-based research |     [ ]     |                          |
+| `flow-skill-deno-cli`                     | Manage Deno via CLI                  |     [ ]     |                          |
+| `flow-skill-deno-deploy`                  | Manage Deno Deploy                   |     [ ]     |                          |
+| `flow-skill-draw-mermaid-diagrams`        | Drawing Mermaid diagrams             |     [ ]     |                          |
+| `flow-skill-engineer-prompts-for-instant` | Prompt engineering (Instant models)  |     [ ]     |                          |
+| `flow-skill-engineer-prompts-for-reasoning` | Prompt engineering (Reasoning models) | [ ]     |                          |
+| `flow-skill-fix-tests`                    | Fixing broken tests                  |     [ ]     |                          |
+| `flow-skill-manage-github-tickets-by-mcp` | Managing GitHub via MCP              |     [ ]     |                          |
+| `flow-skill-playwright-cli`               | Browser automation via CLI           |     [ ]     |                          |
+| `flow-skill-write-agent-benchmarks`       | Writing agent benchmarks             |     [x]     |                          |
+| `flow-skill-write-dep`                    | Writing DEP documents                |     [ ]     |                          |
+| `flow-skill-write-gods-tasks`             | Writing GODS tasks                   |     [ ]     |                          |
+| `flow-skill-write-in-informational-style` | Writing in info style                |     [ ]     |                          |
+| `flow-skill-write-prd`                    | Writing PRDs                         |     [ ]     |                          |
+
+#### Agents (`framework/agents/{claude,cursor,opencode}/`)
+
+Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
+
+| Agent ID                | Description                              | Benchmarked | Scenario ID |
+| :---------------------- | :--------------------------------------- | :---------: | :---------- |
+| `deep-research-worker`  | Single-direction research worker         |     [ ]     |             |
+| `flow-console-expert`   | Complex console tasks without code edits |     [ ]     |             |
+| `flow-diff-specialist`  | Analyze git diffs and plan commits       |     [ ]     |             |
+| `flow-skill-executor`   | Execute specific skills or prompts       |     [ ]     |             |
 
 ### 3.8 Project Initialization — flow-init (FR-8)
 
@@ -219,6 +224,108 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
   - [x] `check-skills.ts` validates `.dev/skills/` (not `.cursor/skills/`)
   - [x] `.gitignore` excludes symlink targets, includes `.dev/` source
   - [ ] Post-clone setup documented in README
+
+### 3.10 Global Framework Install/Update (FR-10)
+
+- **Description:** A script that installs or updates AssistFlow framework globally
+  for supported IDEs. Each agent and skill is installed as an individual symlink,
+  so framework updates do not overwrite user's own agents/skills in IDE config dirs.
+- **Use case scenario:** Developer runs `deno run -A install.ts` (or a remote URL
+  equivalent). The script detects installed IDEs, creates per-item symlinks for each
+  framework agent and skill into the IDE config directories (`~/.cursor/`, `~/.claude/`,
+  `~/.opencode/`). On re-run, it updates only framework-managed symlinks without
+  touching user-created files.
+- **Acceptance criteria:**
+  - [ ] **FR-10.1 Per-item symlinks**: Each agent file and each skill directory is
+        symlinked individually (not a single directory symlink). This prevents
+        overwriting user's custom agents/skills.
+  - [ ] **FR-10.2 Multi-IDE support**: Script detects and supports Cursor
+        (`~/.cursor/`), Claude Code (`~/.claude/`), OpenCode (`~/.config/opencode/`).
+        Agents are per-IDE: reads from `framework/agents/{claude,cursor,opencode}/`
+        with IDE-native frontmatter format.
+  - [ ] **FR-10.3 Idempotent**: Safe to run multiple times. Existing symlinks are
+        updated, non-symlink files are never overwritten (warn and skip).
+  - [ ] **FR-10.4 Install & update**: Same script handles both fresh install and
+        update. Stale framework symlinks (pointing to removed framework items) are
+        cleaned up.
+  - [ ] **FR-10.5 No user data loss**: User-created files/directories in IDE config
+        dirs are never modified or removed.
+  - [ ] **FR-10.6 Remote execution**: Supports `deno run -A <url>` for one-liner
+        install from repository.
+  - [ ] **FR-10.7 Written in Deno/TypeScript**: No Python dependency.
+
+### 3.11 Conventional Commits — `agent` Type (FR-11)
+
+- **Description:** Add `agent:` as a new commit type in Conventional Commits convention
+  used by `flow-commit`. Covers changes to agents, skills, `AGENTS.md`, and other
+  AI-agent-related configuration in IDE directories.
+- **Use case scenario:** Developer modifies a skill's `SKILL.md` or updates an agent
+  definition. On commit, the message is prefixed with `agent:` (e.g.,
+  `agent: update flow-commit skill with atomic grouping rules`).
+- **Acceptance criteria:**
+  - [ ] **FR-11.1 New type recognized**: `flow-commit` skill recognizes `agent:` as a
+        valid Conventional Commits type.
+  - [ ] **FR-11.2 Scope**: `agent:` type applies to changes in: `framework/agents/`,
+        `framework/skills/`, `.dev/agents/`, `.dev/skills/`, `AGENTS.md`,
+        IDE-specific agent/skill directories.
+  - [ ] **FR-11.3 Auto-detection**: `flow-commit` automatically selects `agent:` type
+        when staged changes are exclusively in agent/skill files.
+  - [ ] **FR-11.4 Documentation**: The `agent:` type is documented in `flow-commit`
+        SKILL.md and project conventions.
+
+### 3.12 flow-init Idempotency with User Edit Preservation (FR-12)
+
+- **Description:** `flow-init` must be fully idempotent: re-running on an already
+  initialized project must preserve user's manual edits in `AGENTS.md` and other
+  generated files. Framework-managed sections are updated; user-added sections are
+  kept intact.
+- **Use case scenario:** User runs `/flow-init` on a project that already has
+  `AGENTS.md` with custom rules added by the user. The agent updates
+  framework-generated sections (e.g., templates, stack info) but preserves all
+  user-added content.
+- **Acceptance criteria:**
+  - [ ] **FR-12.1 Section-level merge**: `AGENTS.md` uses clearly marked sections
+        (e.g., delimiters or headings). Framework-managed sections are regenerated;
+        user sections are preserved verbatim.
+  - [ ] **FR-12.2 No data loss**: User-added rules, key decisions, architecture notes,
+        and custom sections in `AGENTS.md` are never removed or overwritten.
+  - [ ] **FR-12.3 Documents preservation**: Existing `documents/` files
+        (`requirements.md`, `design.md`, `whiteboard.md`) are not overwritten if they
+        contain non-placeholder content.
+  - [ ] **FR-12.4 Diff-based update**: Agent shows diff of proposed changes to
+        `AGENTS.md` and asks for confirmation before applying.
+  - [ ] **FR-12.5 Idempotent re-run**: Running `flow-init` twice in a row with no
+        manual changes produces no modifications on the second run.
+
+### 3.13 Rewrite Python Scripts to Deno/TypeScript (FR-13)
+
+- **Description:** All Python scripts bundled with framework skills must be rewritten
+  in Deno/TypeScript. Eliminates Python runtime dependency for end users.
+- **Use case scenario:** User installs AssistFlow framework. All scripts execute via
+  `deno run` without requiring Python installation.
+- **Acceptance criteria:**
+  - [ ] **FR-13.1 Full migration**: All `.py` scripts in `framework/skills/` are
+        replaced with equivalent `.ts` scripts.
+  - [ ] **FR-13.2 Scripts to migrate** (12 files):
+    - `flow-init/scripts/analyze_project.py`
+    - `flow-init/scripts/generate_agents.py`
+    - `flow-skill-analyze-context/scripts/count_tokens.py`
+    - `flow-engineer-command/scripts/init_command.py`
+    - `flow-engineer-command/scripts/package_command.py`
+    - `flow-engineer-command/scripts/validate_command.py`
+    - `flow-engineer-rule/scripts/validate_rule.py`
+    - `flow-engineer-rule/scripts/init_rule.py`
+    - `flow-engineer-skill/scripts/package_skill.py`
+    - `flow-engineer-skill/scripts/init_skill.py`
+    - `flow-engineer-skill/scripts/validate_skill.py`
+    - `flow-skill-draw-mermaid-diagrams/scripts/validate.py`
+  - [ ] **FR-13.3 Behavioral parity**: Each rewritten script produces identical
+        output (stdout JSON, exit codes) as the Python original.
+  - [ ] **FR-13.4 SKILL.md references updated**: All `SKILL.md` files referencing
+        `python3 scripts/*.py` are updated to `deno run -A scripts/*.ts`.
+  - [ ] **FR-13.5 No Python dependency**: After migration, `Python` is removed from
+        the project tooling stack in `AGENTS.md`.
+  - [ ] **FR-13.6 Tests**: Each rewritten script has unit tests.
 
 ## 4. Non-functional requirements
 
