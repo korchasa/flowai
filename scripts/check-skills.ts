@@ -1,7 +1,7 @@
 import { parse } from "@std/yaml";
 import { join } from "@std/path";
 
-const SKILLS_DIR = ".cursor/skills";
+const SKILLS_DIR = ".dev/skills";
 let hasError = false;
 
 console.log("Checking skill names...");

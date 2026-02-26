@@ -7,3 +7,14 @@ benchmarks/*/runs/**
 benchmarks/benchmarks.lock
 .env
 __pycache__/
+
+# IDE symlinks (created by `deno task link` from .dev/ SPOT)
+.cursor/skills
+.cursor/agents
+.cursor/hooks
+.cursor/hooks.json
+.cursor/worktrees.json
+.claude/skills
+.claude/agents
+.opencode/skills
+.opencode/agents

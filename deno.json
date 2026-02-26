@@ -11,7 +11,8 @@
     "check": "deno run -A scripts/task-check.ts",
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
-    "bench": "deno run -A scripts/task-bench.ts"
+    "bench": "deno run -A scripts/task-bench.ts",
+    "link": "deno run -A scripts/task-link.ts"
   },
   "fmt": {
     "proseWrap": "preserve",

@@ -13,11 +13,14 @@
 - IF ROOT CAUSE IS UNFIXABLE OR OUTSIDE CONTROL: STOP. DO NOT USE WORKAROUNDS. ASK USER FOR HELP.
 - IF ISSUE PERSISTS AFTER 2 ATTEMPTS: STOP. OUTPUT "STOP-ANALYSIS REPORT" (STATE, EXPECTED, 5-WHY CHAIN, ROOT CAUSE, HYPOTHESES). WAIT FOR USER HELP.
 - WHEN EDITING CI/CD, ALWAYS CHECK LOCALLY FIRST.
+- DO NOT USE TABLES IN CHAT OUTPUT. USE TWO-LEVEL LIST INSTEAD.
 
 ---
-- REMEMBER, AGENTS AND SKILLS IN THE catalog/ FOLDER ARE THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN .cursor/. DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH YOUR OWN AGENTS AND SKILLS.
+- REMEMBER, AGENTS AND SKILLS IN THE catalog/ FOLDER ARE THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN THEIR IDE'S CONFIG DIR (.cursor/, .claude/, .opencode/). DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH DEV RESOURCES IN .dev/.
 - ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, antigravity, openai codex, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
+- ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
+- REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, antigravity, openai codex, Claude). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 
 
 ## Project Information
@@ -26,11 +29,11 @@
 ## Project Vision
 ### Vision Statement
 
-A collection of Cursor skills and agents, designed to standardize work across various software development contexts.
+A collection of AI skills and agents, designed to standardize work across various software development contexts and AI IDEs.
 
 ### Target Audience
 
-Developers using Cursor IDE
+Developers using AI-first IDEs (Cursor, Claude Code, OpenCode)
 
 ### Problem Statement
 
@@ -56,10 +59,12 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 - `deno task test` (check deno.json)
 - `deno task dev` (check deno.json)
 - `deno task bench` (check deno.json)
+- `deno task link` — Create symlinks from `.dev/` to IDE directories (run after clone)
 
 ## Architecture
-- `catalog/skills/`: Source of truth for skills (logical Commands and Skills)
-- `catalog/agents/`: Source of truth for agents
+- `.dev/`: SPOT for dev resources (skills, agents, hooks, IDE configs). Symlinked to IDE dirs via `deno task link`.
+- `catalog/skills/`: Source of truth for product skills (logical Commands and Skills)
+- `catalog/agents/`: Source of truth for product agents
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
 
@@ -73,6 +78,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - Use Cursor skills and commands as the primary workflow system
 - Store project knowledge in `documents/` using SRS/SDS schema
 - Centralize verification through `deno task check`
+- Dev resources in `.dev/` (SPOT), symlinked to `.cursor/`, `.claude/`, `.opencode/` for multi-IDE support
 
 ## Planning Rules
 

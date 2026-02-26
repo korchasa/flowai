@@ -12,23 +12,47 @@
 - **Overview diagram:**
   ```mermaid
   graph TD
-    User[User] -->|Chat Input| Cursor[Cursor IDE]
-    Cursor -->|Reads| Skills[.cursor/skills/*/SKILL.md]
-    Cursor -->|Reads| Agents[.cursor/agents/*.md]
-    Cursor -->|Updates| Docs[documents/*.md]
-    Cursor -->|Executes| Actions[Code/Git/MCP]
+    Dev[.dev/ SPOT] -->|symlink| Cursor[.cursor/]
+    Dev -->|symlink| Claude[.claude/]
+    Dev -->|symlink| OpenCode[.opencode/]
+    Cursor -->|skills, agents, hooks| IDE1[Cursor IDE]
+    Claude -->|skills, agents| IDE2[Claude Code]
+    OpenCode -->|skills, agents| IDE3[OpenCode]
+    IDE1 & IDE2 & IDE3 -->|Updates| Docs[documents/*.md]
+    IDE1 & IDE2 & IDE3 -->|Executes| Actions[Code/Git/MCP]
+    Catalog[catalog/] -->|product skills| Users[End Users]
   ```
 - **Main subsystems and their roles:**
+  - **Dev Resources (`.dev/`):** IDE-agnostic SPOT for dev skills, agents, hooks. Symlinked to IDE directories via `deno task link`.
+  - **Product Catalog (`catalog/`):** Source of truth for end-user skills/agents. Separate from dev resources.
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
   - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
   - **Documentation Subsystem:** Stores project state and memory.
+  - **Link Manager (`scripts/task-link.ts`):** Creates/verifies symlinks from `.dev/` to IDE directories. Idempotent.
 
 ## 3. Components
 
-### 3.1 Skills (`.cursor/skills/`)
+### 3.1 Dev Resources (`.dev/`)
 
-- **Purpose:** Provide specialized capabilities and workflows.
+- **Purpose:** IDE-agnostic Single Point of Truth for all dev-time AI resources.
+- **Structure:**
+  - `.dev/skills/` — Dev skills (SKILL.md directories)
+  - `.dev/agents/` — Dev agent definitions (Markdown files)
+  - `.dev/hooks/` — Hook scripts (e.g., `logger.sh`)
+  - `.dev/hooks.json` — Cursor hooks config
+  - `.dev/worktrees.json` — Cursor worktrees config
+- **Linking:** `deno task link` creates symlinks to IDE directories:
+  - `.cursor/skills`, `.claude/skills`, `.opencode/skills` -> `.dev/skills`
+  - `.cursor/agents`, `.claude/agents`, `.opencode/agents` -> `.dev/agents`
+  - `.cursor/hooks` -> `.dev/hooks` (Cursor-only)
+  - `.cursor/hooks.json` -> `.dev/hooks.json` (Cursor-only)
+  - `.cursor/worktrees.json` -> `.dev/worktrees.json` (Cursor-only)
+- **Constraints:** Claude Code write operations destroy symlinks (known bug). Dev skills are read-only — acceptable risk.
+
+### 3.1.1 Product Skills (`catalog/skills/`)
+
+- **Purpose:** Provide specialized capabilities and workflows for end users.
 - **Interfaces:** Directories containing `SKILL.md` files.
 - **Categories:**
   - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`, `flow-auto`).
@@ -37,10 +61,10 @@
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).
 - **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
 
-### 3.2 Agents (`.cursor/agents/`)
+### 3.2 Product Agents (`catalog/agents/`)
 
-- **Purpose:** Define specialized AI personas and roles.
-- **Interfaces:** Markdown files in `.cursor/agents/`.
+- **Purpose:** Define specialized AI personas and roles for end users.
+- **Interfaces:** Markdown files in `catalog/agents/`.
 - **Key Agents:**
   - `flow-commit.md`: Specialist in QA, documentation updates, and atomic commits.
   - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
@@ -130,5 +154,5 @@
 
 ## 8. Future Extensions
 
-- Integration with other AI IDEs.
 - Automated validation scripts for skill syntax.
+- Hook format transformation (`.dev/hooks.json` -> Claude Code `settings.json`, OpenCode `plugins/`).

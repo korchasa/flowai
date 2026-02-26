@@ -4,25 +4,27 @@
 
 - **Document purpose:** Define requirements for the AI-First IDE Rules and
   Commands project.
-- **Scope:** A collection of Cursor rules and commands to standardize and
-  enhance development workflows in AI-first IDEs (initially Cursor).
-- **Audience:** Developers and AI agents working in Cursor.
+- **Scope:** A collection of skills, agents, and commands to standardize and
+  enhance development workflows in AI-first IDEs (Cursor, Claude Code, OpenCode).
+- **Audience:** Developers and AI agents working in supported AI IDEs.
 - **Definitions and abbreviations:**
   - **IDE:** Integrated Development Environment.
   - **MCP:** Model Context Protocol.
   - **MDC:** Markdown Configuration (Cursor rules format).
   - **GODS:** Goal, Overview, Done, Solution (planning framework).
+  - **SPOT:** Single Point of Truth (`.dev/` directory for dev resources).
 
 ## 2. General description
 
-- **System context:** A set of configuration files (`.md`, RULE.md) located in
-  the `.cursor` directory of a project, interpreted by the Cursor AI agent to
-  guide development, enforce rules, and execute workflows.
+- **System context:** A set of configuration files (`.md`, SKILL.md) stored in
+  `.dev/` (SPOT) and symlinked to IDE-specific directories (`.cursor/`, `.claude/`,
+  `.opencode/`). Interpreted by AI agents in supported IDEs.
 - **Assumptions and constraints:**
-  - **Assumptions:** The user is using Cursor IDE. The project structure follows
-    the defined conventions.
-  - **Constraints:** functionality is limited by Cursor's rule capabilities and
-    the agent's context window.
+  - **Assumptions:** Developer uses one of: Cursor, Claude Code, or OpenCode.
+    macOS/Linux environment. `deno task link` run after clone.
+  - **Constraints:** Symlink-based distribution; Claude Code write ops may break
+    symlinks (known bug). Hook configs are Cursor-specific (not cross-IDE).
+    Agent's context window limits apply.
 
 ## 3. Functional requirements
 
@@ -200,9 +202,26 @@ The benchmarking system must cover all core AssistFlow skills to ensure reliabil
   - [ ] Idempotency: confirm before overwriting existing components
   - [ ] Cleanup temporary files after execution
 
+### 3.9 Multi-IDE Dev Resource Distribution (FR-9)
+
+- **Description:** Dev resources (skills, agents, hooks) must be stored in a single
+  IDE-agnostic directory (`.dev/`) and distributed to IDE-specific directories via
+  symlinks.
+- **Use case scenario:** Developer clones project, runs `deno task link`, and all
+  three IDEs (Cursor, Claude Code, OpenCode) discover the same skills and agents.
+- **Acceptance criteria:**
+  - [x] `.dev/` is SPOT for dev skills, agents, hooks, and IDE configs
+  - [x] `deno task link` creates symlinks from `.dev/` to `.cursor/`, `.claude/`,
+        `.opencode/` (skills and agents for all; hooks only for Cursor)
+  - [x] `deno task link` is idempotent (safe to run multiple times)
+  - [x] `deno task link` does not destroy existing real files (warns and skips)
+  - [x] `deno task dev` runs `deno task link` on startup
+  - [x] `check-skills.ts` validates `.dev/skills/` (not `.cursor/skills/`)
+  - [x] `.gitignore` excludes symlink targets, includes `.dev/` source
+  - [ ] Post-clone setup documented in README
+
 ## 4. Non-functional requirements
 
-window.
 
 - **Reliability:** Benchmarks must use isolated sandboxes and evidence-based
   verification. Execution must be protected by timeouts (e.g., 60s per step) to
@@ -215,16 +234,18 @@ window.
 ## 5. Interfaces
 
 - **APIs and integrations:**
-  - Cursor Chat: Primary interface for user-agent interaction.
-  - File System: Storage for rules, commands, and documentation.
+  - AI IDE Chat (Cursor, Claude Code, OpenCode): Primary interface for user-agent interaction.
+  - File System: Storage for rules, commands, and documentation. Symlinks for multi-IDE distribution.
   - Git: Version control operations.
   - MCP: Integration with external tools (GitHub, etc.).
-- **Protocols and data formats:** Markdown (`.md`, RULE.md).
+- **Protocols and data formats:** Markdown (`.md`, SKILL.md, RULE.md).
 - **UI/UX constraints:** Text-based chat interface.
 
 ## 6. Acceptance criteria
 
 - The system is considered accepted if the following are met:
-  - All defined commands are executable by the Cursor agent.
-  - Rules are correctly loaded and applied by the Cursor agent.
+  - All defined commands are executable by agents in supported IDEs.
+  - Rules are correctly loaded and applied by agents.
+  - Dev resources in `.dev/` are accessible from all three IDE directories via symlinks.
+  - `deno task link` creates correct symlinks idempotently.
   - Documentation accurately reflects the project state.

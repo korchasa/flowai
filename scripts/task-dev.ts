@@ -1,4 +1,4 @@
-import { runCommandsInParallel } from "./utils.ts";
+import { runCommand, runCommandsInParallel } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
 /**
@@ -18,6 +18,8 @@ export function buildDevCommands(): CommandSpec[] {
 }
 
 async function main(): Promise<void> {
+  // Ensure .dev/ symlinks are in place before starting dev mode
+  await runCommand({ cmd: "deno", args: ["task", "link"] });
   await runCommandsInParallel(buildDevCommands());
 }
 
