@@ -14,7 +14,7 @@
  * Non-destructive: user files are never overwritten.
  */
 
-import { dirname, fromFileUrl, join, resolve } from "@std/path";
+import { dirname, fromFileUrl, join, resolve } from "jsr:@std/path@^0.224.0";
 
 const REPO_URL = "https://github.com/korchasa/flow.git";
 const INSTALL_DIR_NAME = ".assistflow";
