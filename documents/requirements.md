@@ -23,8 +23,9 @@
   - **Assumptions:** Developer uses one of: Cursor, Claude Code, or OpenCode.
     macOS/Linux environment. `deno task link` run after clone.
   - **Constraints:** Symlink-based distribution; Claude Code write ops may break
-    symlinks (known bug). Hook configs are Cursor-specific (not cross-IDE).
-    Agent's context window limits apply.
+    symlinks (known bug). Agent's context window limits apply.
+    Hook/plugin systems differ per IDE (Cursor hooks, Claude Code hooks with
+    17+ events, OpenCode plugins) — format transformation needed.
 
 ## 3. Functional requirements
 
@@ -215,7 +216,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 - **Acceptance criteria:**
   - [x] `.dev/` is SPOT for dev skills, agents, hooks, and IDE configs
   - [x] `deno task link` creates symlinks from `.dev/` to `.cursor/`, `.claude/`,
-        `.opencode/` (skills and agents for all; hooks only for Cursor)
+        `.opencode/` (skills and agents for all; hooks per-IDE where supported)
   - [x] `deno task link` is idempotent (safe to run multiple times)
   - [x] `deno task link` does not destroy existing real files (warns and skips)
   - [x] `deno task dev` runs `deno task link` on startup
@@ -283,18 +284,23 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   framework-generated sections (e.g., templates, stack info) but preserves all
   user-added content.
 - **Acceptance criteria:**
-  - [ ] **FR-12.1 Section-level merge**: `AGENTS.md` uses clearly marked sections
-        (e.g., delimiters or headings). Framework-managed sections are regenerated;
-        user sections are preserved verbatim.
-  - [ ] **FR-12.2 No data loss**: User-added rules, key decisions, architecture notes,
-        and custom sections in `AGENTS.md` are never removed or overwritten.
-  - [ ] **FR-12.3 Documents preservation**: Existing `documents/` files
-        (`requirements.md`, `design.md`, `whiteboard.md`) are not overwritten if they
-        contain non-placeholder content.
-  - [ ] **FR-12.4 Diff-based update**: Agent shows diff of proposed changes to
-        `AGENTS.md` and asks for confirmation before applying.
+  - [x] **FR-12.1 Multi-file architecture**: `AGENTS.md` split into 3 domain-scoped
+        files: `./AGENTS.md` (core rules + project metadata), `./documents/AGENTS.md`
+        (doc system rules), `./scripts/AGENTS.md` (dev commands). Declarative manifest
+        (`manifest.json`) defines target files, templates, vars, and preservation rules.
+  - [x] **FR-12.2 No data loss**: User content between `---` markers (PROJECT_RULES)
+        extracted and re-injected during updates. Per-file diff shown before applying.
+        User confirms each file individually. Declined changes are not applied.
+  - [x] **FR-12.3 Documents preservation**: `generated_by_llm` entries in manifest
+        define `skip_if_lines_gt` threshold. Files exceeding it are not overwritten.
+  - [x] **FR-12.4 Diff-based update**: `generate_agents.ts render` computes unified
+        diffs for each file. Agent shows diff per file, asks "Apply? [y/n]".
   - [ ] **FR-12.5 Idempotent re-run**: Running `flow-init` twice in a row with no
         manual changes produces no modifications on the second run.
+  - [x] **FR-12.6 Deno/TS scripts**: `generate_agents.py` and `analyze_project.py`
+        replaced by `generate_agents.ts` (Deno). Partial FR-13 fulfillment.
+  - [x] **FR-12.7 OpenCode compatibility**: Agent checks `opencode.json` for
+        subdirectory AGENTS.md glob entries. Warns if missing.
 
 ### 3.13 Rewrite Python Scripts to Deno/TypeScript (FR-13)
 
@@ -306,8 +312,8 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [ ] **FR-13.1 Full migration**: All `.py` scripts in `framework/skills/` are
         replaced with equivalent `.ts` scripts.
   - [ ] **FR-13.2 Scripts to migrate** (12 files):
-    - `flow-init/scripts/analyze_project.py`
-    - `flow-init/scripts/generate_agents.py`
+    - ~~`flow-init/scripts/analyze_project.py`~~ (migrated to `generate_agents.ts`)
+    - ~~`flow-init/scripts/generate_agents.py`~~ (migrated to `generate_agents.ts`)
     - `flow-skill-analyze-context/scripts/count_tokens.py`
     - `flow-engineer-command/scripts/init_command.py`
     - `flow-engineer-command/scripts/package_command.py`
@@ -325,6 +331,90 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [ ] **FR-13.5 No Python dependency**: After migration, `Python` is removed from
         the project tooling stack in `AGENTS.md`.
   - [ ] **FR-13.6 Tests**: Each rewritten script has unit tests.
+
+### 3.14 Cross-IDE Hook/Plugin Format Transformation (FR-14)
+
+- **Description:** All three supported IDEs now have hook/plugin systems with
+  different formats: Cursor hooks (`.cursor/hooks/`), Claude Code hooks
+  (`settings.json`, 17+ event types including `PreToolUse`, `PostToolUse`,
+  `SubagentStart`, `SessionStart`, etc.), and OpenCode plugins
+  (`.opencode/plugins/*.ts` with `tool()` helper and rich event API). The
+  framework must support authoring hooks once and transforming them to
+  IDE-native formats.
+- **Use case scenario:** Developer defines a hook in `.dev/hooks/` (IDE-agnostic
+  format). `deno task link` generates the correct format for each IDE:
+  Cursor hook file, Claude Code `settings.json` entry, OpenCode plugin `.ts` file.
+- **Acceptance criteria:**
+  - [ ] **FR-14.1 Canonical format**: Define an IDE-agnostic hook/plugin format
+        in `.dev/hooks/` (e.g., JSON or YAML).
+  - [ ] **FR-14.2 Cursor output**: Transform to Cursor hook format.
+  - [ ] **FR-14.3 Claude Code output**: Transform to Claude Code `settings.json`
+        hooks section. Support all 17+ event types: `PreToolUse`, `PostToolUse`,
+        `UserPromptSubmit`, `Stop`, `SubagentStart`, `SubagentStop`,
+        `SessionStart`, `SessionEnd`, `PreCompact`, `WorktreeCreate`,
+        `WorktreeRemove`, `TeammateIdle`, `TaskCompleted`, `ConfigChange`,
+        `Notification`, `PermissionRequest`.
+  - [ ] **FR-14.4 OpenCode output**: Transform to OpenCode plugin `.ts` format
+        using `tool()` helper and event subscriptions.
+  - [ ] **FR-14.5 Hook types**: Support `command` (script-based), `prompt`
+        (LLM-based), and `agent` (subagent-based) hook types where the target
+        IDE supports them.
+
+### 3.15 Update `flow-engineer-hook` for Cross-IDE Support (FR-15)
+
+- **Description:** The `flow-engineer-hook` skill currently documents hook
+  creation primarily for Cursor. It must be updated to cover Claude Code's
+  expanded hook system (17+ events, three hook types: command/prompt/agent)
+  and OpenCode's plugin system.
+- **Use case scenario:** User asks to create a hook. The skill guides them
+  through authoring for their target IDE, covering all available event types
+  and hook mechanisms.
+- **Acceptance criteria:**
+  - [ ] **FR-15.1 Claude Code hooks**: Document all 17+ event types, three hook
+        types (command, prompt, agent), and `settings.json` configuration.
+  - [ ] **FR-15.2 OpenCode plugins**: Document `.opencode/plugins/*.ts` format,
+        `tool()` helper, event API, and npm package distribution.
+  - [ ] **FR-15.3 Cursor hooks**: Retain existing Cursor hook documentation.
+  - [ ] **FR-15.4 Cross-IDE guidance**: Skill provides IDE-specific examples
+        and notes which events/types are available per IDE.
+
+### 3.16 Update `flow-engineer-command` for Claude Code Unification (FR-16)
+
+- **Description:** Claude Code has unified commands and skills under a single
+  namespace — `.claude/commands/` and `.claude/skills/` are now merged, with
+  skills as the recommended format. The `flow-engineer-command` skill must
+  reflect this change.
+- **Use case scenario:** User asks to create a command for Claude Code. The skill
+  informs them that Claude Code uses skills (SKILL.md) as the unified format
+  and guides them accordingly.
+- **Acceptance criteria:**
+  - [ ] **FR-16.1 Documentation update**: `flow-engineer-command/SKILL.md` notes
+        that Claude Code commands = skills (unified namespace).
+  - [ ] **FR-16.2 IDE-specific guidance**: Skill provides correct path and format
+        for each IDE (Cursor: `.cursor/commands/`, Claude Code: `.claude/skills/`,
+        OpenCode: `.opencode/commands/`).
+  - [ ] **FR-16.3 No breaking changes**: Existing command creation workflow for
+        Cursor and OpenCode remains unchanged.
+
+### 3.17 Resolve IDE Support Scope (FR-17)
+
+- **Description:** Root `AGENTS.md` line 25 lists 5 IDEs (Cursor, Claude Code,
+  Antigravity, OpenAI Codex, OpenCode) but all infrastructure (scripts, agent
+  directories, install.ts) supports only 3 (Cursor, Claude Code, OpenCode).
+  Several skill SKILL.md files and their Python scripts reference Codex and
+  Antigravity paths. This inconsistency must be resolved.
+- **Use case scenario:** A contributor reads AGENTS.md, expects Codex/Antigravity
+  support, but finds no corresponding agent directories or install logic.
+- **Acceptance criteria:**
+  - [ ] **FR-17.1 Decision**: Explicitly decide whether Codex and Antigravity are
+        supported, aspirational, or unsupported.
+  - [ ] **FR-17.2 AGENTS.md alignment**: Root `AGENTS.md` IDE list matches actual
+        infrastructure support.
+  - [ ] **FR-17.3 Skill references**: `flow-engineer-rule`, `flow-engineer-command`,
+        `flow-engineer-skill` SKILL.md files and their scripts are updated to
+        match the decided IDE scope.
+  - [ ] **FR-17.4 Design doc**: `design.md` lines 211-212 replace "Cursor" with
+        generic "IDE/Agent" terminology.
 
 ## 4. Non-functional requirements
 

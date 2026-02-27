@@ -6,7 +6,7 @@ export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
   name = "Init Greenfield Project with Interview";
   skill = "flow-init";
 
-  async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
     // Empty directory for greenfield
   }
@@ -21,7 +21,8 @@ There are no major risks.
 The tech stack is 'Deno' and 'TypeScript'. 
 The architecture is 'Monolith'. 
 When the agent asks for project details or starts an interview, provide these details. 
-Always confirm when asked to overwrite or create files.`;
+Always confirm when asked to overwrite or create files.
+Always confirm when asked to apply diffs.`;
 
   checklist = [
     {
@@ -38,9 +39,23 @@ Always confirm when asked to overwrite or create files.`;
       critical: true,
     },
     {
+      id: "documents_agents_md_created",
+      description:
+        "Was documents/AGENTS.md created with documentation rules (SRS/SDS formats, compressed style)?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
+      id: "scripts_agents_md_created",
+      description:
+        "Was scripts/AGENTS.md created with development commands?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
       id: "doc_rules_present",
       description:
-        "Does the generated AGENTS.md contain 'Code Documentation Rules'?",
+        "Does documents/AGENTS.md contain 'Documentation Rules' or 'DOCS STRUCTURE'?",
       critical: true,
       type: "semantic" as const,
     },

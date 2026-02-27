@@ -160,19 +160,27 @@
   `AGENTS.md`, `<ide-dir>/agents/**`, `<ide-dir>/skills/**`) -> suggest `agent:` type.
 - **Affected components:** `flow-commit` SKILL.md, `flow-diff-specialist` agent.
 
-### 3.7 flow-init Section-Level Merge — FR-12
+### 3.7 flow-init Multi-File Architecture + Diff-Based Updates — FR-12
 
-- **Purpose:** Preserve user edits in `AGENTS.md` during re-initialization.
-- **Mechanism:** `AGENTS.md` is divided into framework-managed and user-managed
-  sections using `<!-- AF:BEGIN -->` / `<!-- AF:END -->` delimiters (or heading-based
-  detection).
-  - **Framework sections:** Regenerated from project analysis data.
-  - **User sections:** Content between `---` markers and custom headings — preserved
-    verbatim.
-- **Diff confirmation:** Agent generates proposed `AGENTS.md`, shows diff to user,
-  applies only after confirmation.
-- **Documents guard:** If `documents/*.md` files contain >50 lines of non-template
-  content, skip overwrite and notify user.
+- **Purpose:** Preserve user edits during re-initialization. Eliminate monolithic
+  AGENTS.md. Enable declarative file structure management.
+- **Architecture:** 3 AGENTS.md files:
+  - `./AGENTS.md` — core agent rules, project metadata, planning rules, TDD flow.
+  - `./documents/AGENTS.md` — documentation system rules (SRS/SDS/GODS formats).
+  - `./scripts/AGENTS.md` — development commands (standard interface, detected commands).
+- **Declarative manifest:** `manifest.json` in skill assets defines target files,
+  templates, variable mappings, preservation rules, and LLM-generated file thresholds.
+  Adding a new file (e.g., `tests/AGENTS.md`) requires only manifest + template change.
+- **Preservation:** Content between `---` markers in root AGENTS.md extracted and
+  re-injected via `PROJECT_RULES` variable. `<!-- AF:BEGIN/END -->` markers dropped.
+- **Diff-based update:** `generate_agents.ts render` computes unified diff per file.
+  Agent shows diff, asks user per-file. Apply only confirmed files.
+- **Documents guard:** `generated_by_llm` entries define `skip_if_lines_gt` threshold.
+- **Script:** `generate_agents.ts` (Deno/TS) replaces `generate_agents.py` and
+  `analyze_project.py`. Commands: `analyze`, `render`, `apply`.
+- **IDE compat:** Cursor, Codex, Claude Code support subdir AGENTS.md natively.
+  OpenCode needs `opencode.json` glob workaround (agent checks and warns).
+- **Deps:** Deno std (`@std/path`, `@std/fs`).
 
 ### 3.8 Python-to-Deno Migration — FR-13
 

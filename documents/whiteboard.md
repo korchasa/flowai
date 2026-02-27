@@ -1,88 +1,163 @@
-# Global Framework Install/Update (FR-10)
+# flow-init: Multi-File Architecture + Diff-Based Updates + Declarative Manifest
 
 ## Goal
 
-Enable one-command installation of AssistFlow skills and agents into user's IDE config directories. Remove friction: no manual file copying, no repo cloning required from user perspective.
+Eliminate user content loss during `flow-init` re-runs. Split monolithic AGENTS.md into 3 domain-scoped files. Implement declarative manifest for file structure + diff-based per-file update with user confirmation. Rewrite Python scripts to Deno/TS.
 
 ## Overview
 
 ### Context
 
-`scripts/install.ts` already implements a full interactive installer with per-item symlinks, plan/confirm UX, conflict detection, and stale symlink cleanup. But it only works **after cloning the repo** — `frameworkDir` is resolved relative to script location. FR-10.6 requires remote execution via `deno run -A <url>`.
-
-Repo: `https://github.com/korchasa/flow`
-Raw base: `https://raw.githubusercontent.com/korchasa/flow/main/`
+- FR-12 (idempotency with user edit preservation) — fully unimplemented
+- FR-13 (Python-to-Deno migration) — partially addressed here
+- Current `generate_agents.py` has binary overwrite: skip entirely OR full overwrite
+- Only preservation mechanism: `PROJECT_RULES` between `---` markers
+- Users lose: custom YOU MUST rules, custom sections (e.g. Terminology), edits to Planning Rules, custom doc structures
+- @framework/skills/flow-init/SKILL.md — current skill
+- @framework/skills/flow-init/scripts/generate_agents.py — current generator
+- @framework/skills/flow-init/assets/AGENTS.template.md — current template
+- @documents/requirements.md#FR-12 — requirements
+- @documents/design.md#3.7 — current (outdated) design
 
 ### Current State
 
-- `install.ts` — 527 lines, fully implemented for local mode
-- Pure functions exported for testing (`discoverFramework`, `detectIDEs`, `computePlan`, `formatPlan`, `computeRelativePath`)
-- `FsAdapter` interface for testability
-- `deno task install` registered but undocumented in README
+Single template (`AGENTS.template.md`, 213 lines) → single `AGENTS.md`. `generate_agents.py` (Python) does `str.replace()` for 8 placeholders. `--no-overwrite-agents` flag skips write entirely. No merge, no diff, no section awareness.
 
 ### Constraints
 
-- Deno/TypeScript only (FR-10.7)
-- Per-item symlinks, not directory symlinks (FR-10.1)
-- No user data loss (FR-10.5)
-- Idempotent (FR-10.3)
-- macOS/Linux (Windows out of scope)
-- `--uninstall` deferred to v2
-- Simple shallow clone (no sparse checkout in v1)
+- `---` markers in root AGENTS.md preserved (backward compat for PROJECT_RULES)
+- Cross-IDE: Cursor, Codex, Claude Code support subdir AGENTS.md natively. OpenCode needs `opencode.json` glob workaround. Antigravity — no evidence of support.
+- Python scripts rewritten to Deno/TS (FR-13)
+- Benchmarks must cover all scenarios (TDD)
+- No `<!-- AF:BEGIN/END -->` markers (dropped from design)
 
 ## Definition of Done
 
-- [ ] `deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts` works from scratch
-- [ ] Remote mode: auto-clones repo to `~/.assistflow/`, creates symlinks to IDE dirs
-- [ ] `--update` flag: git pull + re-plan symlinks
-- [ ] Local mode (from cloned repo) still works unchanged
-- [ ] `install.sh` bootstrap: checks/installs Deno, delegates to install.ts
-- [ ] README.md has Installation section
-- [ ] Tests for new functions pass
+- [ ] Declarative manifest (`manifest.json`) defines all 3 target files, templates, vars, preservation rules
+- [ ] `generate_agents.ts` (Deno/TS) reads manifest, renders templates, computes diffs
+- [ ] 3 separate templates: root, documents/, scripts/
+- [ ] SKILL.md updated: manifest-driven workflow, per-file diff confirmation, OpenCode compat check
+- [ ] `brownfield-idempotent` benchmark: all 3 files preserved after re-run
+- [ ] New `brownfield-update` benchmark: template change → diff shown, user content preserved
+- [ ] `greenfield` + `brownfield` benchmarks updated for 3-file output
+- [ ] This project's own AGENTS.md split into 3 files
+- [ ] SRS/SDS updated (FR-12 criteria, SDS 3.7 rewrite)
 - [ ] `deno task check` passes
-- [ ] SRS FR-10 criteria updated, SDS section 3.5 updated
+- [ ] `analyze_project.py` rewritten to `analyze_project.ts`
 
 ## Solution
 
-### Architecture
+### Architecture: 3 AGENTS.md files
 
 ```
-Remote mode:
-  deno run -A <raw-url>/install.ts
-    → detect remote (import.meta.url starts with https://)
-    → git clone --depth=1 https://github.com/korchasa/flow.git ~/.assistflow/
-    → frameworkDir = ~/.assistflow/framework/
-    → existing plan/confirm/execute flow
-
-Local mode (unchanged):
-  deno task install
-    → frameworkDir = resolve(scriptDir, "..", "framework")
-    → existing plan/confirm/execute flow
-
---update:
-  git -C ~/.assistflow/ pull --rebase
-  → re-run plan/confirm/execute
+./AGENTS.md              — core agent rules + project metadata
+./documents/AGENTS.md    — documentation system rules
+./scripts/AGENTS.md      — development commands & scripts conventions
 ```
 
-### New Functions in install.ts
+Content distribution:
 
-- `isRemoteExecution(importMetaUrl: string): boolean` — check if running from URL
-- `parseArgs(args: string[]): { update: boolean }` — flag parsing
-- `resolveFrameworkDir(importMetaUrl: string, args: ParsedArgs): Promise<string>` — local vs remote resolution
-- `ensureLocalClone(repoUrl: string, targetDir: string, update: boolean): Promise<void>` — git clone/pull
+- **`./AGENTS.md`**: # YOU MUST, `---` + PROJECT_RULES, Project Info, Vision, Stack, Architecture, Key Decisions, Planning Rules, CODE DOCS, TDD FLOW
+- **`./documents/AGENTS.md`**: DOCS STRUCTURE & RULES (hierarchy, rules, SRS/SDS/GODS formats, compressed style rules, whiteboard rules)
+- **`./scripts/AGENTS.md`**: Development Commands (standard interface description, detected commands, command scripts)
 
-### install.sh (bootstrap, ~15 lines)
+### Declarative Manifest (`manifest.json`)
 
-- Check `command -v deno`
-- If missing: `curl -fsSL https://deno.land/install.sh | sh`
-- `exec deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts "$@"`
+```json
+{
+  "version": 1,
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "template": "assets/AGENTS.template.md",
+      "vars": ["PROJECT_NAME", "PROJECT_VISION", "TOOLING_STACK", "ARCHITECTURE", "KEY_DECISIONS", "PROJECT_RULES"],
+      "preserve": {
+        "type": "markers",
+        "start": "---",
+        "end": "## ",
+        "inject_as": "PROJECT_RULES"
+      },
+      "update": "diff-confirm"
+    },
+    {
+      "path": "documents/AGENTS.md",
+      "template": "assets/AGENTS.documents.template.md",
+      "vars": [],
+      "preserve": null,
+      "update": "diff-confirm"
+    },
+    {
+      "path": "scripts/AGENTS.md",
+      "template": "assets/AGENTS.scripts.template.md",
+      "vars": ["DEVELOPMENT_COMMANDS", "COMMAND_SCRIPTS"],
+      "preserve": null,
+      "update": "diff-confirm"
+    }
+  ],
+  "generated_by_llm": [
+    {"path": "documents/requirements.md", "skip_if_lines_gt": 50, "description": "SRS from interview/analysis data"},
+    {"path": "documents/design.md", "skip_if_lines_gt": 50, "description": "SDS initial structure"},
+    {"path": "documents/whiteboard.md", "skip_if_lines_gt": 10, "description": "Whiteboard with discovered context (brownfield) or empty (greenfield)"}
+  ],
+  "ide_compat": {
+    "opencode": {
+      "check": "opencode.json",
+      "warn_if_missing_globs": ["documents/AGENTS.md", "scripts/AGENTS.md"],
+      "explain_before_read": "I need to check your OpenCode config to ensure subdirectory AGENTS.md files are discoverable by the IDE."
+    }
+  }
+}
+```
 
-### Steps (TDD)
+### Diff-Based Update Flow
 
-1. RED: write tests for `isRemoteExecution`, `parseArgs`, `ensureLocalClone`
-2. GREEN: implement functions in install.ts, modify `main()`
-3. REFACTOR: `deno task check`
-4. Create `install.sh`
-5. Update README.md — Installation section
-6. Update SRS/SDS
-7. Final `deno task check`
+For each file in `manifest.files`:
+1. Script renders template → proposed content (deterministic)
+2. If target doesn't exist → write directly, report "created"
+3. If target exists:
+   a. Extract preserved content (if `preserve` defined)
+   b. Inject preserved content into proposed version
+   c. Compute unified diff (proposed vs current)
+   d. If no diff → report "up to date", skip
+   e. If diff exists → print diff, agent asks user
+4. Agent shows diff to user, asks "Apply changes to <path>? [y/n]"
+5. If yes → run script with `apply` command for that path
+6. If no → skip that file
+
+### Script: `generate_agents.ts` (Deno)
+
+Replaces both `generate_agents.py` and `analyze_project.py`.
+
+CLI:
+```
+deno run generate_agents.ts <command> [options]
+
+Commands:
+  analyze <dir>                  Analyze project, output JSON to stdout
+  render <manifest> <data>       Render all templates, show diffs (JSON output)
+  apply <manifest> <data> <path> Apply rendered template to specific file
+```
+
+### Templates
+
+**`AGENTS.template.md`** (trimmed root):
+- # YOU MUST, `---`/PROJECT_RULES, Project Info, Vision, Stack, Architecture, Key Decisions, Planning Rules, CODE DOCS, TDD FLOW
+
+**`AGENTS.documents.template.md`** (new):
+- DOCS STRUCTURE & RULES, Hierarchy, Rules, SRS Format, SDS Format, GODS Format, Compressed Style
+
+**`AGENTS.scripts.template.md`** (new):
+- Development Commands, Standard Interface, Detected Commands, Command Scripts
+
+### SKILL.md Workflow Changes
+
+Steps 5-6 replaced with manifest-driven flow:
+- Step 5: Read manifest, inventory existing files, report to user
+- Step 6: `deno run generate_agents.ts render`, show diffs per file, confirm per file, apply confirmed
+- Step 6a: OpenCode compat check (explain purpose → read config → warn if globs missing)
+
+### Implementation Order (TDD)
+
+1. **RED**: Update/write benchmarks
+2. **GREEN**: Create templates, manifest, scripts, update SKILL.md
+3. **REFACTOR**: Split this project's AGENTS.md, update SRS/SDS, run checks

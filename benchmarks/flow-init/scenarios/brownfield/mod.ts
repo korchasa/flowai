@@ -6,7 +6,7 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
   name = "Init Brownfield Project with Architecture Discovery";
   skill = "flow-init";
 
-  async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
     // Files are copied from fixture/
   }
@@ -17,6 +17,18 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
     {
       id: "agents_md_created",
       description: "Was AGENTS.md created?",
+      critical: true,
+    },
+    {
+      id: "documents_agents_md_created",
+      description:
+        "Was documents/AGENTS.md created with documentation structure rules?",
+      critical: true,
+    },
+    {
+      id: "scripts_agents_md_created",
+      description:
+        "Was scripts/AGENTS.md created with development commands?",
       critical: true,
     },
     {
@@ -36,7 +48,7 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
     {
       id: "doc_rules_present",
       description:
-        "Does AGENTS.md contain the new 'Code Documentation Rules' section?",
+        "Does documents/AGENTS.md contain the 'Documentation Rules' or DOCS STRUCTURE section?",
       critical: true,
       type: "semantic" as const,
     },
