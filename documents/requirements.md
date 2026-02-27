@@ -286,19 +286,18 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 - **Acceptance criteria:**
   - [x] **FR-12.1 Multi-file architecture**: `AGENTS.md` split into 3 domain-scoped
         files: `./AGENTS.md` (core rules + project metadata), `./documents/AGENTS.md`
-        (doc system rules), `./scripts/AGENTS.md` (dev commands). Declarative manifest
-        (`manifest.json`) defines target files, templates, vars, and preservation rules.
-  - [x] **FR-12.2 No data loss**: User content between `---` markers (PROJECT_RULES)
-        extracted and re-injected during updates. Per-file diff shown before applying.
-        User confirms each file individually. Declined changes are not applied.
-  - [x] **FR-12.3 Documents preservation**: `generated_by_llm` entries in manifest
-        define `skip_if_lines_gt` threshold. Files exceeding it are not overwritten.
-  - [x] **FR-12.4 Diff-based update**: `generate_agents.ts render` computes unified
-        diffs for each file. Agent shows diff per file, asks "Apply? [y/n]".
+        (doc system rules), `./scripts/AGENTS.md` (dev commands). Agent reads templates
+        from `assets/` and generates files directly (no manifest).
+  - [x] **FR-12.2 No data loss**: In brownfield, agent semantically extracts
+        documentation/script sections from existing `./AGENTS.md` into subdirectory
+        files. Per-file diff shown before applying. User confirms each file individually.
+  - [x] **FR-12.3 Documents preservation**: Existing files exceeding line thresholds
+        (50 for SRS/SDS, 10 for whiteboard) are not overwritten.
+  - [x] **FR-12.4 Diff-based update**: Agent shows diff per file, asks for confirmation.
   - [ ] **FR-12.5 Idempotent re-run**: Running `flow-init` twice in a row with no
         manual changes produces no modifications on the second run.
-  - [x] **FR-12.6 Deno/TS scripts**: `generate_agents.py` and `analyze_project.py`
-        replaced by `generate_agents.ts` (Deno). Partial FR-13 fulfillment.
+  - [x] **FR-12.6 Deno/TS scripts**: `generate_agents.ts` — analyze-only (Deno).
+        Template rendering removed; agent handles generation natively.
   - [x] **FR-12.7 OpenCode compatibility**: Agent checks `opencode.json` for
         subdirectory AGENTS.md glob entries. Warns if missing.
 
@@ -408,13 +407,13 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 - **Acceptance criteria:**
   - [ ] **FR-17.1 Decision**: Explicitly decide whether Codex and Antigravity are
         supported, aspirational, or unsupported.
-  - [ ] **FR-17.2 AGENTS.md alignment**: Root `AGENTS.md` IDE list matches actual
-        infrastructure support.
+  - [x] **FR-17.2 AGENTS.md alignment**: Root `AGENTS.md` IDE list narrowed to
+        3 supported IDEs (Cursor, Claude Code, OpenCode).
   - [ ] **FR-17.3 Skill references**: `flow-engineer-rule`, `flow-engineer-command`,
         `flow-engineer-skill` SKILL.md files and their scripts are updated to
         match the decided IDE scope.
-  - [ ] **FR-17.4 Design doc**: `design.md` lines 211-212 replace "Cursor" with
-        generic "IDE/Agent" terminology.
+  - [x] **FR-17.4 Design doc**: `design.md` replaced "Cursor" with generic
+        "IDE/Agent" terminology in algorithms section.
 
 ## 4. Non-functional requirements
 

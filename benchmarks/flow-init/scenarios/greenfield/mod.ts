@@ -47,8 +47,7 @@ Always confirm when asked to apply diffs.`;
     },
     {
       id: "scripts_agents_md_created",
-      description:
-        "Was scripts/AGENTS.md created with development commands?",
+      description: "Was scripts/AGENTS.md created with development commands?",
       critical: true,
       type: "semantic" as const,
     },

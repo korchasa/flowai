@@ -7,6 +7,7 @@
 2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth. Depends on VISION.
 3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
 4. **Whiteboard** (`documents/whiteboard.md`): Temporary notes.
+5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs FR-14–FR-17.
 
 ## Rules
 - **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.

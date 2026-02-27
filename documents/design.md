@@ -163,22 +163,23 @@
 ### 3.7 flow-init Multi-File Architecture + Diff-Based Updates — FR-12
 
 - **Purpose:** Preserve user edits during re-initialization. Eliminate monolithic
-  AGENTS.md. Enable declarative file structure management.
+  AGENTS.md. Enable agent-driven file generation.
 - **Architecture:** 3 AGENTS.md files:
   - `./AGENTS.md` — core agent rules, project metadata, planning rules, TDD flow.
   - `./documents/AGENTS.md` — documentation system rules (SRS/SDS/GODS formats).
   - `./scripts/AGENTS.md` — development commands (standard interface, detected commands).
-- **Declarative manifest:** `manifest.json` in skill assets defines target files,
-  templates, variable mappings, preservation rules, and LLM-generated file thresholds.
-  Adding a new file (e.g., `tests/AGENTS.md`) requires only manifest + template change.
-- **Preservation:** Content between `---` markers in root AGENTS.md extracted and
-  re-injected via `PROJECT_RULES` variable. `<!-- AF:BEGIN/END -->` markers dropped.
-- **Diff-based update:** `generate_agents.ts render` computes unified diff per file.
-  Agent shows diff, asks user per-file. Apply only confirmed files.
-- **Documents guard:** `generated_by_llm` entries define `skip_if_lines_gt` threshold.
-- **Script:** `generate_agents.ts` (Deno/TS) replaces `generate_agents.py` and
-  `analyze_project.py`. Commands: `analyze`, `render`, `apply`.
-- **IDE compat:** Cursor, Codex, Claude Code support subdir AGENTS.md natively.
+- **Generation approach:** Agent reads template files from `assets/` as reference
+  and writes files directly. No manifest or script-driven rendering.
+- **Brownfield extraction:** Agent semantically identifies documentation and
+  script sections in existing `./AGENTS.md`, extracts them to subdirectory files,
+  and removes duplicates from root. Templates are fallbacks for greenfield only.
+- **Preservation:** User's custom project rules preserved. Extracted content takes
+  priority over template content.
+- **Diff-based update:** Agent shows diff per file, asks user for confirmation.
+- **Documents guard:** Skip existing files exceeding line thresholds (50 for SRS/SDS, 10 for whiteboard).
+- **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
+  Template rendering removed; agent handles generation natively.
+- **IDE compat:** Cursor, Claude Code support subdir AGENTS.md natively.
   OpenCode needs `opencode.json` glob workaround (agent checks and warns).
 - **Deps:** Deno std (`@std/path`, `@std/fs`).
 
@@ -208,8 +209,8 @@
 ## 5. Algorithms and Logic
 
 - **Key algorithms:**
-  - **Skill Matching:** Cursor matches user intent to available skills.
-  - **Agent Selection:** Cursor selects appropriate agents based on task.
+  - **Skill Matching:** IDE/Agent matches user intent to available skills.
+  - **Agent Selection:** IDE/Agent selects appropriate agents based on task.
 - **Business rules:**
   - Documentation must be kept up-to-date with code changes.
   - Code changes must follow defined style rules.
@@ -229,4 +230,4 @@
 
 ## 8. Future Extensions
 
-- Hook format transformation (`.dev/hooks.json` -> Claude Code `settings.json`, OpenCode `plugins/`).
+- Hook format transformation — now tracked as FR-14 in SRS (cross-IDE hook/plugin format transformation).

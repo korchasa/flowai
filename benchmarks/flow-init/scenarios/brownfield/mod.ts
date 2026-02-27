@@ -27,8 +27,7 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "scripts_agents_md_created",
-      description:
-        "Was scripts/AGENTS.md created with development commands?",
+      description: "Was scripts/AGENTS.md created with development commands?",
       critical: true,
     },
     {
