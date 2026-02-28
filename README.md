@@ -147,7 +147,7 @@ Every task follows the same supervised loop:
 - `flow-init` — project initialization
 - `flow-plan` — task planning (GODS format)
 - `flow-commit` — atomic commits with QA
-- `flow-qa` — quality assurance checks
+- `flow-review` — QA + code review of current changes
 - `flow-reflect` — self-analysis of recent work
 - `flow-maintenance` — project health check
 - `flow-investigate` — deep bug investigation

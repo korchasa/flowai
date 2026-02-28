@@ -111,7 +111,7 @@
         `deno.json:12-17`
   - [x] Support for check, test, and dev commands. Evidence: `deno.json:12-14`
   - [x] Automated quality assurance workflows. Evidence:
-        `framework/skills/flow-qa/SKILL.md:37-70`
+        `framework/skills/flow-review/SKILL.md:56-140`
   - [x] Development commands are set up during project initialization (see FR-8).
         Evidence: `framework/skills/flow-init/SKILL.md:150-161`
 
@@ -221,7 +221,7 @@ The benchmarking system must cover all core AssistFlow components to ensure reli
 | `flow-investigate`                         | Code investigation/debugging         |     [ ]     |                          |
 | `flow-maintenance`                         | Periodic project health checks       |     [ ]     |                          |
 | `flow-plan`                                | Task planning (GODS)                 |     [x]     | `flow-plan-*`            |
-| `flow-qa`                                  | Quality assurance session            |     [ ]     |                          |
+| `flow-review`                              | QA + code review of changes          |     [ ]     |                          |
 | `flow-reflect`                             | Self-reflection on task              |     [x]     | `flow-reflect-*`         |
 | `flow-setup-code-style-ts-deno`            | Setup Deno/TS code style             |     [ ]     |                          |
 | `flow-setup-code-style-ts-strict`          | Setup strict TypeScript              |     [ ]     |                          |
