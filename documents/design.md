@@ -146,8 +146,6 @@
   - Replace broken parent directory symlinks with real directories.
   - Remove stale symlinks pointing to non-existent framework items.
   - Skip non-symlink files (warn user).
-- **Bootstrap:** `install.sh` — thin shell script that installs Deno if absent,
-  then delegates to `install.ts` via remote URL.
 - **Managed directory:** `~/.assistflow/` — shallow git clone, source for symlinks.
 - **Deps:** None (Deno std only, git for remote mode).
 

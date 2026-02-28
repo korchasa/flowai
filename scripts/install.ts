@@ -14,6 +14,7 @@
  * Non-destructive: user files are never overwritten.
  */
 
+// deno-lint-ignore no-import-prefix -- inline specifier required for remote execution (deno run -A https://...)
 import { dirname, fromFileUrl, join, resolve } from "jsr:@std/path@^0.224.0";
 
 const REPO_URL = "https://github.com/korchasa/flow.git";
@@ -735,6 +736,10 @@ async function main(): Promise<void> {
   if (replaced) parts.push(`${replaced} replaced`);
   if (skipped) parts.push(`${skipped} skipped`);
   console.log(`Done: ${parts.join(", ")}.`);
+
+  // Explicit exit: StdinReader holds Deno.stdin.readable pipe open,
+  // which prevents the event loop from draining naturally.
+  Deno.exit(0);
 }
 
 // Run main only when executed directly (not imported for tests)

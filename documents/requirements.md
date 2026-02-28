@@ -250,8 +250,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [x] **FR-10.5 No user data loss**: User-created files/directories in IDE config
         dirs are never modified or removed.
   - [x] **FR-10.6 Remote execution**: Supports `deno run -A <url>` for one-liner
-        install from repository. Auto-clones to `~/.assistflow/`. Shell bootstrap
-        (`install.sh`) installs Deno if missing.
+        install from repository. Auto-clones to `~/.assistflow/`. Requires Deno pre-installed.
   - [x] **FR-10.7 Written in Deno/TypeScript**: No Python dependency.
 
 ### 3.11 Conventional Commits — `agent` Type (FR-11)

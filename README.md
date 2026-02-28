@@ -44,19 +44,13 @@ Install AssistFlow skills and agents into your IDE config directories (`~/.curso
 **One-liner (requires [Deno](https://deno.land)):**
 
 ```sh
-deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts
-```
-
-**If you don't have Deno:**
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/korchasa/flow/main/install.sh | sh
+deno run --reload -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts
 ```
 
 **Update to latest version:**
 
 ```sh
-deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts --update
+deno run --reload -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts --update
 ```
 
 **What happens:**
