@@ -61,9 +61,90 @@
 - **Antigravity**: `.agent/workflows/*.md` (project), global via UI → `~/.gemini/antigravity/`.[^20]
 
 ### 2.4 Event Hooks / Plugins
-- **Cursor**: `hooks.json` (scripts/prompts).[^14]
-- **Claude Code**: `settings.json` (commands/LLM calls).[^15]
-- **OpenCode**: Plugin system (`.opencode/plugins/*.ts`). Events: `tool.execute.*`, `file.edited`, etc.[^3]
+
+#### Cursor Hooks [^14]
+
+**Config**: `.cursor/hooks.json` (project), `~/.cursor/hooks.json` (user), enterprise MDM paths.
+
+**Schema**:
+```json
+{ "version": 1, "hooks": { "<event>": [{ "command": "script.sh", "type": "command"|"prompt", "timeout": 30, "matcher": "regex" }] } }
+```
+
+**Hook types** (2):
+- `command` — shell script; receives JSON via stdin, returns JSON via stdout. Exit 0 = ok, exit 2 = block.
+- `prompt` — LLM evaluation; `$ARGUMENTS` placeholder auto-replaced with input JSON. Returns `{ ok, reason }`.
+
+**Events** (20):
+- Agent (18): `sessionStart`, `sessionEnd`, `preToolUse`, `postToolUse`, `postToolUseFailure`, `subagentStart`, `subagentStop`, `beforeShellExecution`, `afterShellExecution`, `beforeMCPExecution` (fail-closed), `afterMCPExecution`, `beforeReadFile` (fail-closed), `afterFileEdit`, `beforeSubmitPrompt`, `preCompact`, `stop`, `afterAgentResponse`, `afterAgentThought`.
+- Tab (2): `beforeTabFileRead`, `afterTabFileEdit`.
+
+**Matcher**: Regex on tool name (`Shell|Read|Write`), subagent type, or command string.
+
+**Env vars**: `CURSOR_PROJECT_DIR`, `CURSOR_VERSION`, `CURSOR_USER_EMAIL`, `CLAUDE_PROJECT_DIR` (compat).
+
+**Fail mode**: Fail-open (action proceeds on hook error), except `beforeMCPExecution` and `beforeReadFile` (fail-closed).
+
+#### Claude Code Hooks [^24]
+
+**Config**: `.claude/settings.json` (`hooks` key), `~/.claude/settings.json` (global), `.claude/settings.local.json`, managed policy, skill/agent frontmatter.
+
+**Schema** (3 levels of nesting):
+```json
+{ "hooks": { "<Event>": [{ "matcher": "regex", "hooks": [{ "type": "command", "command": "script.sh", "timeout": 600, "statusMessage": "...", "async": false }] }] } }
+```
+
+**Hook types** (4):
+- `command` — shell script; stdin JSON, exit 0/2. `async: true` for background.
+- `http` — POST to URL; `headers` with `$VAR` interpolation, `allowedEnvVars`.
+- `prompt` — single-turn LLM evaluation; `$ARGUMENTS` placeholder. Returns `{ ok, reason }`.
+- `agent` — spawns subagent with tools (Read, Grep, Glob); multi-turn verification.
+
+Note: `prompt`/`agent` only on: `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `PreToolUse`, `Stop`, `SubagentStop`, `TaskCompleted`, `UserPromptSubmit`. Others: `command` only.
+
+**Events** (17): `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SubagentStop`, `Stop`, `TeammateIdle`, `TaskCompleted`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `PreCompact`, `SessionEnd`.
+
+**Matcher**: Regex on tool name (`Bash`, `Edit|Write`, `mcp__.*`), session source, notification type, agent type, compaction trigger, config source. Some events have no matcher (`UserPromptSubmit`, `Stop`, etc.).
+
+**Decision control**:
+- `PreToolUse`: `hookSpecificOutput.permissionDecision` (allow/deny/ask), `updatedInput`.
+- `PermissionRequest`: `hookSpecificOutput.decision.behavior` (allow/deny), `updatedInput`.
+- Others: top-level `decision: "block"` + `reason`, or exit 2 + stderr.
+
+**Env vars**: `$CLAUDE_PROJECT_DIR`, `$CLAUDE_PLUGIN_ROOT`, `$CLAUDE_ENV_FILE` (SessionStart only).
+
+**Fail mode**: Fail-open. Exit 2 = blocking error (stderr fed to Claude).
+
+#### OpenCode Plugins [^3]
+
+**Config**: `.opencode/plugins/*.{js,ts}` (project), `~/.config/opencode/plugins/` (global), npm packages in `opencode.json` (`"plugin": ["pkg-name"]`).
+
+**Format**: JS/TS modules exporting async plugin functions. TypeScript: `import type { Plugin } from "@opencode-ai/plugin"`.
+
+```typescript
+export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree }) => {
+  return {
+    "tool.execute.before": async (input, output) => { /* mutate output */ },
+    event: async ({ event }) => { /* handle event.type */ },
+    tool: { mytool: tool({ description: "...", args: { ... }, execute(args, ctx) { ... } }) },
+  }
+}
+```
+
+**Hook types**: Programmatic (code-based). No declarative JSON config — logic in JS/TS.
+- Event handlers: `event: async ({ event }) => {}` — check `event.type`.
+- Tool hooks: `tool.execute.before` / `tool.execute.after` — `(input, output)` signature; mutate `output.args`, `throw` to block.
+- Shell hooks: `shell.env` — inject env vars via `output.env`.
+- Custom tools: `tool` key with `tool()` helper from `@opencode-ai/plugin`.
+- Compaction: `experimental.session.compacting` — inject context or replace prompt.
+
+**Events** (30+): `command.executed`, `file.edited`, `file.watcher.updated`, `installation.updated`, `lsp.client.diagnostics`, `lsp.updated`, `message.part.removed`, `message.part.updated`, `message.removed`, `message.updated`, `permission.asked`, `permission.replied`, `server.connected`, `session.created`, `session.compacted`, `session.deleted`, `session.diff`, `session.error`, `session.idle`, `session.status`, `session.updated`, `todo.updated`, `shell.env`, `tool.execute.after`, `tool.execute.before`, `tui.prompt.append`, `tui.command.execute`, `tui.toast.show`, `experimental.session.compacting`.
+
+**Blocking**: `throw new Error("message")` in `tool.execute.before`.
+
+**Dependencies**: `package.json` in config dir; `bun install` at startup.
+
+**Custom tools**: Override built-in tools by using same name.
 
 ### 2.5 Skills (SKILL.md)
 - **Cursor**: `.cursor/skills/<name>/SKILL.md`; also `.claude/skills/`, `.codex/skills/` (compat).[^10]
@@ -157,11 +238,11 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 **Structure transform:**
 
 ```
-# Cursor
-{ "version": 1, "hooks": { "eventName": [{ "command": "script.sh" }] } }
+# Cursor (flat: event → array of hooks)
+{ "version": 1, "hooks": { "eventName": [{ "command": "script.sh", "matcher": "regex" }] } }
 
-# Claude Code
-{ "hooks": { "EventName": [{ "matcher": "ToolName", "hooks": [{ "type": "command", "command": "script.sh" }] }] } }
+# Claude Code (nested: event → matchers → hooks array)
+{ "hooks": { "EventName": [{ "matcher": "regex", "hooks": [{ "type": "command", "command": "script.sh" }] }] } }
 ```
 
 **Event name mapping:**
@@ -184,6 +265,26 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 | `beforeMCPExecution` | `PreToolUse` | `"mcp__.*"` |
 | `afterMCPExecution` | `PostToolUse` | `"mcp__.*"` |
 | `beforeReadFile` | `PreToolUse` | `"Read"` |
+| `afterAgentResponse` | — | No equivalent |
+| `afterAgentThought` | — | No equivalent |
+| `beforeTabFileRead` | — | Tab-only, no equivalent |
+| `afterTabFileEdit` | — | Tab-only, no equivalent |
+| — | `PermissionRequest` | Cursor lacks equivalent |
+| — | `Notification` | Cursor lacks equivalent |
+| — | `TeammateIdle` | Cursor lacks equivalent |
+| — | `TaskCompleted` | Cursor lacks equivalent |
+| — | `ConfigChange` | Cursor lacks equivalent |
+| — | `WorktreeCreate` | Cursor lacks equivalent |
+| — | `WorktreeRemove` | Cursor lacks equivalent |
+
+**Hook type mapping:**
+
+| Cursor type | Claude Code type | Notes |
+| :--- | :--- | :--- |
+| `command` | `command` | Same semantics; exit 0/2 behavior identical |
+| `prompt` | `prompt` | Both use `$ARGUMENTS` placeholder |
+| — | `http` | Cursor lacks HTTP hooks |
+| — | `agent` | Cursor lacks agent hooks (subagent-based verification) |
 
 **Hook response mapping:**
 
@@ -192,6 +293,17 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 | `{ "decision": "allow" }` | `exit 0` |
 | `{ "decision": "deny" }` | `exit 2` + message to stderr |
 | `{ "decision": "ask" }` | `hookSpecificOutput.permissionDecision: "ask"` |
+| `{ "updated_input": {...} }` | `hookSpecificOutput.updatedInput: {...}` |
+
+**Env var mapping:**
+
+| Cursor | Claude Code |
+| :--- | :--- |
+| `CURSOR_PROJECT_DIR` | `CLAUDE_PROJECT_DIR` |
+| `CURSOR_VERSION` | — |
+| `CURSOR_USER_EMAIL` | — |
+| — | `CLAUDE_PLUGIN_ROOT` |
+| — | `CLAUDE_ENV_FILE` |
 
 Script paths: `.cursor/hooks/` → `.claude/hooks/`.
 
@@ -216,7 +328,7 @@ Claude Code respects `.gitignore` by default (`respectGitignore: true`). Migrati
 | **Global Rules** | - | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` | `~/.gemini/GEMINI.md` | `~/.codex/AGENTS.md` |
 | **Project Rules** | `AGENTS.md` | `CLAUDE.md` | `AGENTS.md` | `.agent/rules/` | `AGENTS.md` |
 | **Folder Rules** | `subdir/AGENTS.md` | `subdir/CLAUDE.md` | - | - | `subdir/AGENTS.md` |
-| **Hooks** | `hooks.json` | `settings.json` | `.opencode/plugins/` | - | - |
+| **Hooks** | `hooks.json` (20 events, 2 types) | `settings.json` (17 events, 4 types) | `.opencode/plugins/` (30+ events, code-based) | - | - |
 | **Skills** | Yes [^10] | Yes [^11] | Yes [^12] | - | Yes [^13] |
 | **Subagents** | `Task` | `Task` | `task` | - | - |
 | **Custom Tools** | MCP | MCP | `.opencode/tools/` | - | - |
