@@ -279,7 +279,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [x] `deno task dev` runs `deno task link` on startup
   - [x] `check-skills.ts` validates `.dev/skills/` (not `.cursor/skills/`)
   - [x] `.gitignore` excludes symlink targets, includes `.dev/` source
-  - [ ] Post-clone setup documented in README
+  - [x] Post-clone setup documented in README
 
 ### 3.10 Global Framework Install/Update (FR-10)
 

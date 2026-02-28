@@ -70,6 +70,34 @@ cd flow
 deno task install
 ```
 
+## Development Setup
+
+For contributors working on AssistFlow itself (not end-user installation):
+
+**Prerequisites:** [Deno](https://deno.land), Git
+
+```sh
+git clone https://github.com/korchasa/flow.git
+cd flow
+deno task link
+```
+
+`deno task link` creates symlinks from `.dev/` (the single source of truth for dev resources) to IDE-specific directories:
+
+- `.dev/skills/` -> `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`
+- `.dev/agents/` -> `.cursor/agents/`, `.claude/agents/`, `.opencode/agents/`
+- `.dev/hooks/`, `.dev/hooks.json` -> `.cursor/hooks/`, `.cursor/hooks.json` (Cursor-only)
+
+The command is idempotent — safe to run multiple times. It will not overwrite existing real files (warns and skips instead).
+
+Alternatively, `deno task dev` runs `link` automatically on startup.
+
+**Verify setup:**
+
+```sh
+deno task check
+```
+
 ## How It Works
 
 AssistFlow is a set of **Skills** and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, etc.) load into context to follow structured workflows.
