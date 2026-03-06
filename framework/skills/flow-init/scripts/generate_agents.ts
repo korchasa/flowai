@@ -1,6 +1,11 @@
 /**
  * generate_agents.ts — Project analysis tool for flow-init.
  *
+ * No external dependencies — uses only Deno built-ins and jsr: imports.
+ *
+ * Run:
+ *   deno run --allow-read generate_agents.ts analyze <dir>
+ *
  * Commands:
  *   analyze <dir>   Analyze project directory, detect stack, output JSON to stdout
  *
@@ -9,8 +14,16 @@
  * structured project metadata.
  */
 
-import { join, resolve } from "@std/path";
-import { existsSync } from "@std/fs";
+import { join, resolve } from "jsr:@std/path";
+
+function existsSync(path: string): boolean {
+  try {
+    Deno.statSync(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types

@@ -23,6 +23,7 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 - Use bare specifiers for dependencies defined in deno.json/imports
 - Avoid direct jsr:/npm:/https: imports in source code
 - Example: `import { assertEquals } from "@std/assert";` instead of `import { assertEquals } from "jsr:@std/assert";`
+- **Exception:** Standalone scripts (e.g., in `framework/skills/*/scripts/`) that run without deno.json MUST use `jsr:` specifiers
 
 ### Dockerfile Optimization
 - Use `deno compile` to create static binaries for production Docker images

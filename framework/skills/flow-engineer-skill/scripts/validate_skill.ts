@@ -3,8 +3,8 @@
  * Quick validation script for skills - minimal version
  */
 
-import { join, resolve } from "@std/path";
-import { parse } from "@std/yaml";
+import { join, resolve } from "jsr:@std/path";
+import { parse } from "jsr:@std/yaml";
 
 export function validateSkill(
   skillPath: string,

@@ -13,8 +13,8 @@
  *     - OpenCode: AGENTS.md, opencode.json "instructions"
  */
 
-import { parse as parseYaml } from "@std/yaml";
-import { join } from "@std/path";
+import { parse as parseYaml } from "jsr:@std/yaml";
+import { join } from "jsr:@std/path";
 
 type Format =
   | "opencode-json"

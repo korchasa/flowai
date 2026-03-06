@@ -10,9 +10,9 @@
  *     deno run -A package_command.ts skills/public/flow-my-command ./dist
  */
 
-import { basename, join, relative, resolve } from "@std/path";
+import { basename, join, relative, resolve } from "jsr:@std/path";
 import { validateCommand } from "./validate_command.ts";
-import { walkSync } from "@std/fs/walk";
+import { walkSync } from "jsr:@std/fs/walk";
 
 function packageCommand(
   commandPathArg: string,

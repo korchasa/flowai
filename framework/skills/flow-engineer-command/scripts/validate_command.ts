@@ -3,8 +3,8 @@
  * Quick validation script for commands - minimal version
  */
 
-import { join } from "@std/path";
-import { parse as parseYaml } from "@std/yaml";
+import { join } from "jsr:@std/path";
+import { parse as parseYaml } from "jsr:@std/yaml";
 
 /** Map JS value to Python's type().__name__ for output parity */
 function pythonTypeName(value: unknown): string {

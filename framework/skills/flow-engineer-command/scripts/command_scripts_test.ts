@@ -1,5 +1,5 @@
-import { assertEquals } from "@std/assert";
-import { join } from "@std/path";
+import { assertEquals } from "jsr:@std/assert";
+import { join } from "jsr:@std/path";
 import { validateCommand } from "./validate_command.ts";
 import { initCommand } from "./init_command.ts";
 

@@ -60,6 +60,10 @@
   - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).
 - **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
+- **Script independence:** Scripts in `framework/skills/*/scripts/` are installed into user projects without a shared `deno.json`. They MUST be runnable standalone:
+  - Use `jsr:` specifiers for Deno std imports (e.g., `jsr:@std/path`), NOT bare specifiers (`@std/path`).
+  - Avoid dependencies requiring import maps or `deno.json` resolution.
+  - Each script header MUST include a `Run:` section with the exact `deno run` command.
 
 ### 3.2 Product Agents (`framework/agents/{ide}/`)
 
@@ -179,7 +183,7 @@
   Template rendering removed; agent handles generation natively.
 - **IDE compat:** Cursor, Claude Code support subdir AGENTS.md natively.
   OpenCode needs `opencode.json` glob workaround (agent checks and warns).
-- **Deps:** Deno std (`@std/path`, `@std/fs`).
+- **Deps:** Deno std via `jsr:` specifiers (`jsr:@std/path`). No bare specifiers.
 
 ### 3.8 Python-to-Deno Migration — FR-13
 

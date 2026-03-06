@@ -15,8 +15,8 @@
  *     deno run -A init_rule.ts project-rules --ide opencode --path .
  */
 
-import { parseArgs } from "@std/cli/parse-args";
-import { join, resolve } from "@std/path";
+import { parseArgs } from "jsr:@std/cli/parse-args";
+import { join, resolve } from "jsr:@std/path";
 
 const CURSOR_TEMPLATE_CONDITIONAL = `---
 description: {description}

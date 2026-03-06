@@ -10,7 +10,7 @@
  *     deno run -A init_skill.ts code-analyzer --path ~/.cursor/skills
  */
 
-import { join, resolve } from "@std/path";
+import { join, resolve } from "jsr:@std/path";
 
 const SKILL_TEMPLATE = `---
 name: {skill_name}

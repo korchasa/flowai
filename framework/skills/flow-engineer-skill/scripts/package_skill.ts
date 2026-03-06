@@ -10,7 +10,7 @@
  *     deno run -A package_skill.ts .cursor/skills/code-review ./dist
  */
 
-import { basename, join, resolve } from "@std/path";
+import { basename, join, resolve } from "jsr:@std/path";
 import { validateSkill } from "./validate_skill.ts";
 
 export async function packageSkill(

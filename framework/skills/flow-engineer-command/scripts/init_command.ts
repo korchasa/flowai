@@ -11,7 +11,7 @@
  *     init_command.ts flow-custom-command --path /custom/location
  */
 
-import { join, resolve } from "@std/path";
+import { join, resolve } from "jsr:@std/path";
 
 const SKILL_TEMPLATE = `---
 name: {command_name}
