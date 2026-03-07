@@ -17,6 +17,8 @@ export interface ScenarioMetadata {
   agentPath: string;
   userQuery: string;
   date: string;
+  scenarioGroup?: string; // Base scenario id (without /run-N), for multi-run grouping
+  runIndex?: number;
   summary?: {
     success: boolean;
     score: number;
@@ -83,25 +85,93 @@ export class TraceLogger {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 
+    // Group scenarios for multi-run aggregation
+    interface ScenarioGroupStats {
+      groupId: string;
+      name: string;
+      runs: ScenarioMetadata[];
+      passRate: number;
+      avgScore: number;
+      avgDurationMs: number;
+      totalTokens: number;
+      totalCost: number;
+      totalErrors: number;
+      totalWarnings: number;
+      allPassed: boolean;
+    }
+
+    const groupMap = new Map<string, ScenarioMetadata[]>();
+    for (const s of scenarios) {
+      const groupId = s.scenarioGroup || s.id;
+      if (!groupMap.has(groupId)) {
+        groupMap.set(groupId, []);
+      }
+      groupMap.get(groupId)!.push(s);
+    }
+
+    const groups: ScenarioGroupStats[] = Array.from(groupMap.entries()).map(
+      ([groupId, runs]) => {
+        const withSummary = runs.filter((r) => r.summary);
+        const passedCount = withSummary.filter((r) => r.summary?.success)
+          .length;
+        const totalRuns = runs.length;
+        return {
+          groupId,
+          name: runs[0].name,
+          runs,
+          passRate: totalRuns > 0 ? (passedCount / totalRuns) * 100 : 0,
+          avgScore: withSummary.length > 0
+            ? withSummary.reduce((a, r) => a + (r.summary?.score || 0), 0) /
+              withSummary.length
+            : 0,
+          avgDurationMs: withSummary.length > 0
+            ? withSummary.reduce(
+              (a, r) => a + (r.summary?.durationMs || 0),
+              0,
+            ) / withSummary.length
+            : 0,
+          totalTokens: withSummary.reduce(
+            (a, r) => a + (r.summary?.tokensUsed || 0),
+            0,
+          ),
+          totalCost: withSummary.reduce(
+            (a, r) => a + (r.summary?.totalCost || 0),
+            0,
+          ),
+          totalErrors: withSummary.reduce(
+            (a, r) => a + (r.summary?.errors || 0),
+            0,
+          ),
+          totalWarnings: withSummary.reduce(
+            (a, r) => a + (r.summary?.warnings || 0),
+            0,
+          ),
+          allPassed: withSummary.length > 0 &&
+            withSummary.every((r) => r.summary?.success),
+        };
+      },
+    );
+
     const dashboardHtml = `
       <section id="overview" class="scenario-section active">
         <h2>BENCHMARK DASHBOARD</h2>
-        
+
         <div class="summary-card global-summary">
           <div class="metric">
             <span class="metric-value" style="color: ${
-      scenarios.every((s) => s.summary?.success)
+      groups.every((g) => g.allPassed)
         ? "var(--success-color)"
         : "var(--error-color)"
-    }">${
-      scenarios.filter((s) => s.summary?.success).length
-    }/${scenarios.length}</span>
+    }">${groups.filter((g) => g.allPassed).length}/${groups.length}</span>
             <span class="metric-label">Passed Scenarios</span>
           </div>
           <div class="metric">
             <span class="metric-value">${
-      (scenarios.reduce((acc, s) => acc + (s.summary?.score || 0), 0) /
-        scenarios.length).toFixed(1)
+      groups.length > 0
+        ? (groups.reduce((a, g) => a + g.avgScore, 0) / groups.length).toFixed(
+          1,
+        )
+        : "0.0"
     }%</span>
             <span class="metric-label">Avg Score</span>
           </div>
@@ -114,8 +184,7 @@ export class TraceLogger {
           </div>
           <div class="metric">
             <span class="metric-value">$${
-      scenarios.reduce((acc, s) => acc + (s.summary?.totalCost || 0), 0)
-        .toFixed(4)
+      groups.reduce((a, g) => a + g.totalCost, 0).toFixed(4)
     }</span>
             <span class="metric-label">Total Cost</span>
           </div>
@@ -135,34 +204,68 @@ export class TraceLogger {
           </thead>
           <tbody>
             ${
-      scenarios.map((s) => {
-        const statusClass = s.summary
-          ? (s.summary.success ? "status-pass" : "status-fail")
-          : "status-pending";
-        const statusText = s.summary
-          ? (s.summary.success ? "PASSED" : "FAILED")
-          : "PENDING";
-        return `
-                <tr onclick="showScenario('${s.id}')" style="cursor: pointer">
-                  <td>${escape(this.formatScenarioName(s.id, s.name))}</td>
+      groups.map((g) => {
+        const isMultiRun = g.runs.length > 1;
+        const statusClass = g.allPassed ? "status-pass" : "status-fail";
+        const statusText = isMultiRun
+          ? `${g.passRate.toFixed(0)}% (${
+            g.runs.filter((r) => r.summary?.success).length
+          }/${g.runs.length})`
+          : (g.allPassed ? "PASSED" : "FAILED");
+
+        const groupRow = `
+                <tr class="group-row" onclick="${
+          isMultiRun
+            ? `toggleRunGroup('${g.groupId}')`
+            : `showScenario('${g.runs[0].id}')`
+        }" style="cursor: pointer">
+                  <td>${isMultiRun ? "&#9654; " : ""}${
+          escape(this.formatScenarioName(g.groupId, g.name))
+        }</td>
                   <td class="${statusClass} text-right">${statusText}</td>
+                  <td class="text-right">${g.avgScore.toFixed(1)}%</td>
+                  <td class="text-right">${g.totalErrors}/${g.totalWarnings}</td>
                   <td class="text-right">${
-          s.summary ? s.summary.score.toFixed(1) + "%" : "-"
+          isMultiRun
+            ? (g.avgDurationMs / 1000).toFixed(1) + "s avg"
+            : (g.avgDurationMs / 1000).toFixed(1) + "s"
         }</td>
+                  <td class="text-right">${g.totalTokens}</td>
+                  <td class="text-right">$${g.totalCost.toFixed(6)}</td>
+                </tr>`;
+
+        if (!isMultiRun) return groupRow;
+
+        const runRows = g.runs.map((s) => {
+          const runStatusClass = s.summary
+            ? (s.summary.success ? "status-pass" : "status-fail")
+            : "status-pending";
+          const runStatusText = s.summary
+            ? (s.summary.success ? "PASSED" : "FAILED")
+            : "PENDING";
+          return `
+                <tr class="run-row run-group-${g.groupId}" style="display: none; cursor: pointer" onclick="showScenario('${s.id}')">
+                  <td style="padding-left: 32px">run-${s.runIndex || "?"}</td>
+                  <td class="${runStatusClass} text-right">${runStatusText}</td>
                   <td class="text-right">${
-          s.summary ? `${s.summary.errors}/${s.summary.warnings}` : "-"
-        }</td>
+            s.summary ? s.summary.score.toFixed(1) + "%" : "-"
+          }</td>
                   <td class="text-right">${
-          s.summary ? (s.summary.durationMs / 1000).toFixed(1) + "s" : "-"
-        }</td>
+            s.summary ? `${s.summary.errors}/${s.summary.warnings}` : "-"
+          }</td>
                   <td class="text-right">${
-          s.summary ? s.summary.tokensUsed : "-"
-        }</td>
+            s.summary ? (s.summary.durationMs / 1000).toFixed(1) + "s" : "-"
+          }</td>
                   <td class="text-right">${
-          s.summary ? "$" + s.summary.totalCost.toFixed(6) : "-"
-        }</td>
-                </tr>
-              `;
+            s.summary ? s.summary.tokensUsed : "-"
+          }</td>
+                  <td class="text-right">${
+            s.summary ? "$" + s.summary.totalCost.toFixed(6) : "-"
+          }</td>
+                </tr>`;
+        }).join("");
+
+        return groupRow + runRows;
       }).join("")
     }
           </tbody>
@@ -170,25 +273,27 @@ export class TraceLogger {
             <tr class="total-row">
               <td>TOTAL</td>
               <td class="text-right">${
-      scenarios.every((s) => s.summary?.success) ? "PASSED" : "FAILED"
+      groups.every((g) => g.allPassed) ? "PASSED" : "FAILED"
     }</td>
               <td class="text-right">${
-      (scenarios.reduce((acc, s) => acc + (s.summary?.score || 0), 0) /
-        scenarios.length).toFixed(1)
+      groups.length > 0
+        ? (groups.reduce((a, g) => a + g.avgScore, 0) / groups.length).toFixed(
+          1,
+        )
+        : "0.0"
     }%</td>
               <td class="text-right">${
-      scenarios.reduce((acc, s) => acc + (s.summary?.errors || 0), 0)
-    }/${scenarios.reduce((acc, s) => acc + (s.summary?.warnings || 0), 0)}</td>
+      groups.reduce((a, g) => a + g.totalErrors, 0)
+    }/${groups.reduce((a, g) => a + g.totalWarnings, 0)}</td>
               <td class="text-right">${
       (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs || 0), 0) /
         1000).toFixed(1)
     }s</td>
               <td class="text-right">${
-      scenarios.reduce((acc, s) => acc + (s.summary?.tokensUsed || 0), 0)
+      groups.reduce((a, g) => a + g.totalTokens, 0)
     }</td>
               <td class="text-right">$${
-      scenarios.reduce((acc, s) => acc + (s.summary?.totalCost || 0), 0)
-        .toFixed(6)
+      groups.reduce((a, g) => a + g.totalCost, 0).toFixed(6)
     }</td>
             </tr>
           </tfoot>
@@ -367,6 +472,11 @@ export class TraceLogger {
               <div class="meta-item"><b>AGENT:</b> <code>${
         escape(meta.agentPath)
       }</code></div>
+              ${
+        meta.scenarioGroup
+          ? `<div class="meta-item"><b>SANDBOX:</b> <a href="./${meta.scenarioGroup}/run-${meta.runIndex}/sandbox/">.../sandbox/</a></div>`
+          : ""
+      }
             </div>
           </header>
 
@@ -388,37 +498,64 @@ export class TraceLogger {
       `;
     }).join("\n");
 
-    // Generate ToC grouped by skills
-    const groupedScenarios: Record<string, ScenarioMetadata[]> = {};
-    scenarios.forEach((s) => {
+    // Generate ToC grouped by skills, with multi-run sub-items
+    const groupedBySkill: Record<string, ScenarioGroupStats[]> = {};
+    for (const g of groups) {
       let skill = "other";
-      if (s.id.startsWith("flow-")) {
-        const parts = s.id.split("-");
+      if (g.groupId.startsWith("flow-")) {
+        const parts = g.groupId.split("-");
         if (parts.length >= 2) {
           skill = `flow-${parts[1]}`;
         }
       }
-      if (!groupedScenarios[skill]) {
-        groupedScenarios[skill] = [];
+      if (!groupedBySkill[skill]) {
+        groupedBySkill[skill] = [];
       }
-      groupedScenarios[skill].push(s);
-    });
+      groupedBySkill[skill].push(g);
+    }
 
-    const tocHtml = Object.entries(groupedScenarios)
-      .map(([skill, skillScenarios]) => {
+    const tocHtml = Object.entries(groupedBySkill)
+      .map(([skill, skillGroups]) => {
         const skillTitle = skill.toUpperCase();
-        const items = skillScenarios
-          .map((s) => {
-            const statusClass = s.summary
-              ? (s.summary.success ? "status-pass" : "status-fail")
-              : "status-pending";
-            const statusIcon = s.summary
-              ? (s.summary.success ? "✓" : "✗")
-              : "○";
-            return `<li data-id="${s.id}" onclick="showScenario('${s.id}')">
-              <span class="toc-status ${statusClass}">${statusIcon}</span>
-              <span class="toc-scenario">${escape(s.name)}</span>
-            </li>`;
+        const items = skillGroups
+          .map((g) => {
+            if (g.runs.length === 1) {
+              const s = g.runs[0];
+              const statusClass = s.summary
+                ? (s.summary.success ? "status-pass" : "status-fail")
+                : "status-pending";
+              const statusIcon = s.summary
+                ? (s.summary.success ? "✓" : "✗")
+                : "○";
+              return `<li data-id="${s.id}" onclick="showScenario('${s.id}')">
+                <span class="toc-status ${statusClass}">${statusIcon}</span>
+                <span class="toc-scenario">${escape(s.name)}</span>
+              </li>`;
+            }
+
+            // Multi-run group
+            const groupStatusClass = g.allPassed
+              ? "status-pass"
+              : "status-fail";
+            const groupStatusIcon = g.allPassed ? "✓" : "✗";
+            const subItems = g.runs.map((s) => {
+              const sc = s.summary
+                ? (s.summary.success ? "status-pass" : "status-fail")
+                : "status-pending";
+              const si = s.summary ? (s.summary.success ? "✓" : "✗") : "○";
+              return `<li data-id="${s.id}" onclick="showScenario('${s.id}')" style="padding-left: 24px; font-size: 0.8em;">
+                <span class="toc-status ${sc}">${si}</span>
+                <span class="toc-scenario">run-${s.runIndex || "?"}</span>
+              </li>`;
+            }).join("");
+
+            return `<li class="toc-group-item" onclick="toggleRunGroup('${g.groupId}')">
+              <span class="toc-status ${groupStatusClass}">${groupStatusIcon}</span>
+              <span class="toc-scenario">${
+              escape(g.name)
+            } (${g.runs.length} runs)</span>
+            </li>
+            ${subItems}`;
           })
           .join("");
         return `
@@ -512,12 +649,12 @@ export class TraceLogger {
     .toc-panel h3 { margin-top: 0; font-size: 1.1em; padding-bottom: 12px; font-weight: bold; cursor: pointer; }
     .toc-panel h3:hover { color: var(--accent-color); }
     .toc-panel ul { list-style: none; padding: 0; margin: 0; }
-    .toc-panel li { 
-      margin-bottom: 4px; 
-      padding: 8px 12px; 
-      cursor: pointer; 
-      display: flex; 
-      align-items: center; 
+    .toc-panel li {
+      margin-bottom: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
       gap: 10px;
       font-size: 0.85em;
       border-radius: 4px;
@@ -526,7 +663,7 @@ export class TraceLogger {
     .toc-panel li.active { background: var(--accent-color); color: var(--text-on-dark); }
     .toc-status { font-weight: bold; width: 1.2em; text-align: center; }
     .toc-scenario { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    
+
     .toc-group { margin-bottom: 20px; }
     .toc-group-title { font-weight: bold; color: var(--text-main); font-size: 0.9em; margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
     .toc-group ul { padding-left: 0; }
@@ -580,7 +717,7 @@ export class TraceLogger {
       color: var(--text-muted);
     }
     .meta-item b { color: var(--text-main); }
-    
+
     .nav-bar {
       height: 50px;
       background: var(--bg-nav);
@@ -616,12 +753,12 @@ export class TraceLogger {
     }
 
     /* Event Styles */
-    .event { 
-      background: var(--bg-panel); 
-      border: 1px solid var(--border-color); 
-      margin-bottom: 8px; 
-      display: flex; 
-      flex-direction: column; 
+    .event {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
     }
     .event-group {
       margin-bottom: 16px;
@@ -666,7 +803,7 @@ export class TraceLogger {
       padding: 16px;
       font-size: 0.9em;
     }
-    
+
     .event-message[data-role="user"] { border-top: 3px solid var(--accent-color); }
     .event-message[data-role="assistant"] { border-top: 3px solid var(--text-muted); }
     .event-interaction { border-top: 3px solid var(--accent-color); }
@@ -707,7 +844,7 @@ export class TraceLogger {
     .expand-btn svg { transition: transform 0.3s ease; }
     .data-content.expanded ~ .expand-btn-container .expand-btn svg { transform: rotate(180deg); }
     .data-content.expanded ~ .expand-btn-container { margin-top: 8px; }
-    
+
     pre {
       background: #f8f8f8;
       padding: 12px;
@@ -718,7 +855,7 @@ export class TraceLogger {
       font-size: 0.95em;
     }
     code { font-family: var(--font-mono); color: var(--text-main); }
-    
+
     .hljs-ln-numbers {
       user-select: none;
       text-align: center;
@@ -742,7 +879,7 @@ export class TraceLogger {
     }
     .metric-value { display: block; font-size: 1.5em; font-weight: bold; color: var(--text-main); }
     .metric-label { font-size: 0.7em; color: var(--text-muted); text-transform: uppercase; font-weight: bold; margin-top: 2px; }
-    
+
     .content h3 { margin-top: 16px; margin-bottom: 8px; font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
     .content blockquote {
       border-left: 4px solid var(--accent-color);
@@ -763,7 +900,7 @@ export class TraceLogger {
 <body>
   <nav class="nav-bar">
     <div class="nav-links">
-      <a href="#" onclick="showScenario('overview'); return false;">TASKS.GURU BENCHMARK TRACE</a>
+      <a href="#" onclick="showScenario('overview'); return false;">ASSISTFLOW BENCHMARK TRACE</a>
     </div>
   </nav>
 
@@ -815,6 +952,12 @@ export class TraceLogger {
         });
         group.style.display = groupVisible ? 'block' : 'none';
       });
+    }
+
+    function toggleRunGroup(groupId) {
+      const rows = document.querySelectorAll('.run-group-' + groupId);
+      const visible = rows.length > 0 && rows[0].style.display !== 'none';
+      rows.forEach(r => r.style.display = visible ? 'none' : 'table-row');
     }
 
     function toggleAll(scenarioId, expand) {
@@ -873,7 +1016,11 @@ export class TraceLogger {
     model: string,
     agentPath: string,
     userQuery: string,
+    scenarioGroup?: string,
   ) {
+    const runIndex = scenarioGroup
+      ? parseInt(scenarioId.split("/run-").pop() || "1")
+      : undefined;
     this.scenarios.set(scenarioId, {
       name: scenarioName,
       id: scenarioId,
@@ -881,6 +1028,8 @@ export class TraceLogger {
       agentPath: agentPath,
       userQuery: userQuery,
       date: new Date().toISOString(),
+      scenarioGroup,
+      runIndex,
     });
     this.currentScenarioId = scenarioId;
     await this.save();

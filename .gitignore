@@ -4,6 +4,7 @@ skeleton.md
 tmp/
 benchmarks/*/runs/
 benchmarks/*/runs/**
+benchmarks/runs/
 benchmarks/benchmarks.lock
 .env
 __pycache__/
@@ -16,5 +17,6 @@ __pycache__/
 .cursor/worktrees.json
 .claude/skills
 .claude/agents
+.claude/settings.local.json
 .opencode/skills
 .opencode/agents

@@ -3,7 +3,12 @@ import { parse } from "@std/flags";
 import { existsSync, walk } from "@std/fs";
 import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
-import { loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
+import { getIdeConfig, loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
+import {
+  createAdapter,
+  SUPPORTED_IDES,
+} from "./benchmarks/lib/adapters/mod.ts";
+import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
@@ -46,14 +51,16 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   return scenarios;
 }
 
-function printHelp(defaultAgentModel: string, defaultJudgePreset: string) {
+function printHelp(defaultAgentModel: string) {
   console.log(`
 Usage: deno task bench [options]
 
 Options:
   -f, --filter <string>        Filter scenarios by ID (substring match)
   -m, --model <string>         Agent model to use (default: ${defaultAgentModel})
-  --judge-preset <string>      Judge preset to use (default: ${defaultJudgePreset})
+  -i, --ide <string>           IDE adapter to use (${
+    SUPPORTED_IDES.join(", ")
+  }) (default: from config)
   -n, --runs <number>          Number of runs per scenario (default: 1)
   --help                       Show this help message
   `);
@@ -94,13 +101,13 @@ async function main() {
   const config = await loadConfig();
 
   const args = parse(Deno.args, {
-    string: ["filter", "runs", "model", "judge-preset"],
+    string: ["filter", "runs", "model", "ide"],
     boolean: ["help"],
-    alias: { f: "filter", n: "runs", h: "help", m: "model" },
+    alias: { f: "filter", n: "runs", h: "help", m: "model", i: "ide" },
     unknown: (arg) => {
       if (arg.startsWith("-")) {
         console.error(`Unknown argument: ${arg}`);
-        printHelp(config.default_agent_model, config.default_judge_preset);
+        printHelp("<per IDE>");
         Deno.exit(1);
       }
       return true;
@@ -108,26 +115,22 @@ async function main() {
   });
 
   if (args.help) {
-    printHelp(config.default_agent_model, config.default_judge_preset);
+    printHelp("<per IDE>");
     Deno.exit(0);
   }
 
   if (args._.length > 0) {
     console.error(`Unexpected positional arguments: ${args._.join(", ")}`);
-    printHelp(config.default_agent_model, config.default_judge_preset);
+    printHelp("<per IDE>");
     Deno.exit(1);
   }
 
-  const agentModel = args.model || config.default_agent_model;
+  const ideName = args.ide || config.default_ides[0];
+  const adapter = createAdapter(ideName);
+  const ideConfig = getIdeConfig(config, ideName);
 
-  const judgePresetName = args["judge-preset"] || config.default_judge_preset;
-  const judgePreset = config.presets[judgePresetName];
-  if (!judgePreset) {
-    console.error(`Unknown judge preset: ${judgePresetName}`);
-    Deno.exit(1);
-  }
-
-  const judgeConfig: ModelConfig = { ...judgePreset };
+  const agentModel = args.model || ideConfig.default_agent_model;
+  const judgeConfig: ModelConfig = { ...ideConfig.judge };
 
   const filter = args.filter;
   const runs = parseInt(args.runs || "1", 10);
@@ -138,41 +141,38 @@ async function main() {
     : allScenarios;
 
   console.log(`Found ${scenariosToRun.length} scenarios.`);
+  console.log(`Using IDE: ${adapter.ide}`);
   console.log(`Using agent model: ${agentModel}`);
-  console.log(`Using judge preset: ${judgePresetName}`);
   console.log(`Using judge model: ${judgeConfig.model}`);
   console.log(`Runs per scenario: ${runs}`);
 
   const results: BenchmarkResult[] = [];
 
-  // Determine work directory based on skill-centric layout
-  const getWorkDir = (scenario: BenchmarkScenario) => {
-    if (scenario.skill) {
-      return join(Deno.cwd(), "benchmarks", scenario.skill, "runs");
-    }
+  // Create single timestamped run directory
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const runDir = join(Deno.cwd(), "benchmarks", "runs", timestamp);
+  await Deno.mkdir(runDir, { recursive: true });
 
-    const scenarioIdParts = scenario.id.split("-");
-    if (scenarioIdParts.length >= 2) {
-      const inferredSkill = `${scenarioIdParts[0]}-${scenarioIdParts[1]}`;
-      return join(Deno.cwd(), "benchmarks", inferredSkill, "runs");
-    }
-
-    return join(Deno.cwd(), "benchmarks", "misc", "runs");
-  };
+  // Create single shared TraceLogger
+  const tracer = new TraceLogger(runDir, "report.html");
 
   let totalCostAll = 0;
 
   for (const scenario of scenariosToRun) {
-    const workDir = getWorkDir(scenario);
     for (let i = 0; i < runs; i++) {
+      const runIndex = i + 1;
       if (runs > 1) {
-        console.log(`\n--- Run ${i + 1}/${runs} for ${scenario.id} ---`);
+        console.log(`\n--- Run ${runIndex}/${runs} for ${scenario.id} ---`);
       }
+      const scenarioWorkDir = join(runDir, scenario.id, `run-${runIndex}`);
       try {
         const result = await runScenario(scenario, {
           agentModel,
           judgeConfig,
-          workDir,
+          workDir: scenarioWorkDir,
+          adapter,
+          tracer,
+          runIndex,
         });
         results.push(result);
         totalCostAll += result.totalCost;
@@ -211,13 +211,9 @@ async function main() {
         }
 
         if (!result.success) {
+          const reportPath = join(runDir, "report.html");
           console.log(
-            `\n  \x1b[31mSee trace for details: ${
-              join(workDir, result.scenarioId, "trace.html").replace(
-                Deno.cwd(),
-                ".",
-              )
-            }\x1b[0m\n`,
+            `\n  \x1b[31mSee trace for details: file://${reportPath}\x1b[0m\n`,
           );
         }
       } catch (e) {
@@ -233,7 +229,6 @@ async function main() {
     console.log("\n--- DETAILED ERRORS & WARNINGS ---");
     for (const r of failedResults) {
       const scenario = allScenarios.find((s) => s.id === r.scenarioId);
-      const workDir = scenario ? getWorkDir(scenario) : "unknown";
       console.log(
         `\nScenario: ${scenario?.name || r.scenarioId} (${r.scenarioId})`,
       );
@@ -249,11 +244,6 @@ async function main() {
           );
         }
       }
-      console.log(
-        `  \x1b[34mTrace: ${
-          join(workDir, r.scenarioId, "trace.html").replace(Deno.cwd(), ".")
-        }\x1b[0m`,
-      );
     }
   }
 
@@ -336,6 +326,19 @@ async function main() {
       );
     }
   }
+
+  // Create latest symlink
+  const latestLink = join(Deno.cwd(), "benchmarks", "runs", "latest");
+  try {
+    await Deno.remove(latestLink);
+  } catch {
+    // ignore if doesn't exist
+  }
+  await Deno.symlink(runDir, latestLink);
+
+  // Print report URL
+  const reportPath = join(runDir, "report.html");
+  console.log(`\nReport: file://${reportPath}`);
 
   const hasFailures = results.some((r) => !r.success);
   if (hasFailures) {

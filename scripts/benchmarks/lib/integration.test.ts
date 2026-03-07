@@ -1,10 +1,9 @@
 /**
- * Integration tests for Runner + SpawnedAgent with real cursor-agent.
+ * Integration tests for Runner + SpawnedAgent.
  *
- * These tests require:
- * - cursor-agent binary in PATH
- * - Valid Cursor authentication
- * - .env file with INTEGRATION_TEST_MODEL (optional, defaults to "auto")
+ * These tests use the default IDE from benchmarks/config.json.
+ * They require the corresponding agent CLI binary in PATH
+ * and valid authentication.
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
@@ -14,12 +13,20 @@ import { SpawnedAgent } from "./spawned_agent.ts";
 import { runScenario } from "./runner.ts";
 import { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
+import { getIdeConfig, loadConfig } from "./llm.ts";
+import { createAdapter } from "./adapters/mod.ts";
 
 // Load environment variables from .env file
 await load({ export: true });
 
-const TEST_MODEL = "gemini-3-flash";
-const JUDGE_CONFIG = { model: "google/gemini-2.0-flash-001", temperature: 0 };
+// Load config and create adapter from default IDE (first key in config)
+const config = await loadConfig();
+const DEFAULT_IDE = config.default_ides[0];
+const ideConfig = getIdeConfig(config, DEFAULT_IDE);
+const adapter = createAdapter(DEFAULT_IDE);
+
+const TEST_MODEL = ideConfig.default_agent_model;
+const JUDGE_CONFIG = { ...ideConfig.judge };
 
 // ============================================================================
 // SpawnedAgent Integration Tests
@@ -41,6 +48,7 @@ Deno.test({
       model: TEST_MODEL,
       prompt: "Say 'Hello World' and nothing else.",
       maxSteps: 1,
+      adapter,
     });
 
     try {
@@ -49,10 +57,7 @@ Deno.test({
       // Agent should complete successfully
       assertEquals(result.code, 0);
 
-      // Should contain result JSON
-      assertStringIncludes(result.logs, '"type":"result"');
-
-      // Should contain some response (the actual text may vary)
+      // Should contain some response
       assertStringIncludes(result.logs, "Hello");
     } finally {
       await agent.kill();
@@ -89,15 +94,18 @@ Deno.test({
       maxSteps: 1,
     };
 
+    const scenarioWorkDir = join(workDir, scenario.id, "run-1");
+
     try {
       const result = await runScenario(scenario, {
         agentModel: TEST_MODEL,
         judgeConfig: JUDGE_CONFIG,
-        workDir,
+        workDir: scenarioWorkDir,
+        adapter,
       });
 
       console.log(
-        `  Trace available at: ${join(workDir, scenario.id, "trace.html")}`,
+        `  Trace available at: ${join(scenarioWorkDir, "trace.html")}`,
       );
 
       // Check that scenario completed
@@ -150,20 +158,21 @@ Deno.test({
 
     const workDir = join(Deno.cwd(), "tmp", "integration-traces");
     await Deno.mkdir(workDir, { recursive: true });
+    const interactiveWorkDir = join(workDir, scenario.id, "run-1");
 
     try {
       const result = await runScenario(scenario, {
         agentModel: TEST_MODEL,
         judgeConfig: JUDGE_CONFIG,
-        workDir,
+        workDir: interactiveWorkDir,
+        adapter,
       });
 
       console.log(
-        `  Trace available at: ${join(workDir, scenario.id, "trace.html")}`,
+        `  Trace available at: ${join(interactiveWorkDir, "trace.html")}`,
       );
 
       // Verification of multi-step interaction
-      // Check for either English "blue" (from user input) or Russian "синий" (from agent response)
       const logsLower = result.logs.toLowerCase();
       const hasBlue = logsLower.includes("blue") ||
         logsLower.includes("синий") || logsLower.includes("цвет");
