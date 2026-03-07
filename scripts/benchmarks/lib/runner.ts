@@ -6,12 +6,15 @@ import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
-import { calculateSessionUsage } from "./usage.ts";
+import { AgentAdapter } from "./adapters/types.ts";
 
 export interface RunnerOptions {
   agentModel: string;
   judgeConfig: ModelConfig;
   workDir: string;
+  adapter: AgentAdapter;
+  tracer?: TraceLogger;
+  runIndex?: number;
   llmClient?: typeof chatCompletion;
   judgeClient?: typeof evaluateChecklist;
 }
@@ -21,15 +24,18 @@ export async function runScenario(
   options: RunnerOptions,
 ): Promise<BenchmarkResult> {
   const judge = options.judgeClient || evaluateChecklist;
+  const adapter = options.adapter;
+  const runIndex = options.runIndex ?? 1;
   console.log(`\nRunning scenario: ${scenario.name} (${scenario.id})...`);
 
   // 1. Setup Sandbox
-  const scenarioDir = join(options.workDir, scenario.id);
-  const sandboxPath = join(scenarioDir, "sandbox");
+  // workDir is already runDir/<scenario-id>/run-N (from task-bench.ts)
+  // or a plain temp dir (from tests)
+  const sandboxPath = join(options.workDir, "sandbox");
 
   // Clean previous run
   try {
-    await Deno.remove(scenarioDir, { recursive: true });
+    await Deno.remove(options.workDir, { recursive: true });
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
       throw e;
@@ -39,14 +45,20 @@ export async function runScenario(
 
   console.log(`  Sandbox created: ${sandboxPath}`);
 
-  const tracer = new TraceLogger(scenarioDir);
+  // Use shared tracer from options, or create a local one for standalone/test usage
+  const tracer = options.tracer ?? new TraceLogger(options.workDir);
+
+  const traceId = options.tracer
+    ? `${scenario.id}/run-${runIndex}`
+    : scenario.id;
 
   await tracer.init(
     scenario.name,
-    scenario.id,
+    traceId,
     options.agentModel,
     scenario.targetAgentPath || "",
     scenario.userQuery,
+    options.tracer ? scenario.id : undefined,
   );
 
   // Log tools if any
@@ -115,9 +127,9 @@ export async function runScenario(
       }
     }
 
-    // 1.6 Copy framework to .cursor
+    // 1.6 Copy framework to IDE config dir
     const frameworkPath = join(Deno.cwd(), "framework");
-    const dotCursorPath = join(sandboxPath, ".cursor");
+    const dotCursorPath = join(sandboxPath, adapter.configDir);
 
     try {
       await Deno.mkdir(dotCursorPath, { recursive: true });
@@ -181,53 +193,13 @@ export async function runScenario(
     console.log("  Starting agent interaction...");
     const start = performance.now();
 
-    // Setup mocks using Cursor Hooks mechanism
+    // Setup mocks using IDE-specific hooks mechanism
     if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-      const hooksDir = join(sandboxPath, ".cursor", "hooks");
-      await Deno.mkdir(hooksDir, { recursive: true });
-
-      const hookDefinitions: Array<{ command: string; matcher: string }> = [];
-
-      for (const [tool, mockOutput] of Object.entries(scenario.mocks)) {
-        const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
-
-        // Create hook script that returns deny + agent_message with mock output
-        const hookScript = `#!/bin/bash
-# Read stdin (JSON with command details)
-read -r input
-
-# Return mock response - deny execution and inject mock output
-cat <<'MOCK_EOF'
-{
-  "permission": "deny",
-  "agent_message": ${JSON.stringify(mockOutput)}
-}
-MOCK_EOF
-`;
-        await Deno.writeTextFile(hookScriptPath, hookScript);
-        await Deno.chmod(hookScriptPath, 0o755);
-
-        hookDefinitions.push({
-          command: `.cursor/hooks/mock-${tool}.sh`,
-          matcher: tool,
-        });
-      }
-
-      // Create hooks.json
-      const hooksConfig = {
-        version: 1,
-        hooks: {
-          beforeShellExecution: hookDefinitions,
-        },
-      };
-
-      await Deno.writeTextFile(
-        join(sandboxPath, ".cursor", "hooks.json"),
-        JSON.stringify(hooksConfig, null, 2),
-      );
-
+      await adapter.setupMocks(sandboxPath, scenario.mocks);
       console.log(
-        `  Created Cursor hooks for: ${Object.keys(scenario.mocks).join(", ")}`,
+        `  Created ${adapter.ide} hooks for: ${
+          Object.keys(scenario.mocks).join(", ")
+        }`,
       );
     }
 
@@ -248,6 +220,7 @@ MOCK_EOF
       prompt: fullPrompt,
       maxSteps: scenario.maxSteps || 10,
       stepTimeout: 60000, // 1 minute timeout per step
+      adapter,
     });
 
     const { code, logs } = await agent.run(userEmulator || undefined);
@@ -261,7 +234,7 @@ MOCK_EOF
     let tokensDetails: BenchmarkResult["tokensDetails"] = undefined;
     const sessionId = agent.getSessionId();
     if (sessionId) {
-      const usage = await calculateSessionUsage(sessionId);
+      const usage = await adapter.calculateUsage(sessionId);
       if (usage) {
         tokensUsed = usage.tokens.total;
         tokensDetails = {

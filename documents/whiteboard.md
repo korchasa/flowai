@@ -1,79 +1,213 @@
-# Deep Research Skill: Playwright-CLI Based Architecture with Iterative Research Loop
+# Unified Benchmark Report
 
 ## Goal
 
-Redesign `flow-skill-deep-research` to implement a full deep research agent architecture: iterative research loop with gap analysis, scratchpad-based state management, selective extraction, self-reflection, and playwright-cli as the primary search/fetch mechanism. Increase research depth (search→fetch→extract→reflect→repeat) while maintaining citation provenance and context budget control.
+Consolidate benchmark output into a single HTML report per run, with all scenario artifacts organized in one run directory. Enable switching between test results and viewing overall statistics from a single file — like Playwright HTML Reporter. Multiple runs of the same scenario (`-n`) are a first-class feature with aggregated statistics.
 
 ## Overview
 
 ### Context
 
-- `@framework/skills/flow-skill-deep-research/SKILL.md` — current skill (5 phases: detect method → plan → sequential workers → escalate → synthesize)
-- `@framework/skills/flow-skill-playwright-cli/SKILL.md` — browser automation skill (open/goto/snapshot/click/fill/type)
-- `@framework/agents/{opencode,cursor,claude}/deep-research-worker.md` — worker sub-agent (3 IDE variants, identical logic)
-- `@framework/skills/flow-skill-deep-research/assets/report_template.md` — output format templates
+- `scripts/task-bench.ts` — benchmark entry point (`deno task bench`)
+- `scripts/benchmarks/lib/runner.ts` — scenario runner, creates per-scenario `TraceLogger` in `benchmarks/<skill>/runs/<scenario-id>/`
+- `scripts/benchmarks/lib/trace.ts` — TraceLogger, already supports multi-scenario rendering (dashboard, ToC, drill-down), but each scenario creates its own instance
+- Current output: 7+ separate `trace.html` files scattered across `benchmarks/<skill>/runs/<id>/`
 
-Current skill has Phase 0 (search method detection) that treats playwright-cli as one of 4 fallback methods. Workers do a single-pass: run all queries → evaluate → extract → save. No iterative loop, no centralized scratchpad, no gap analysis within a direction.
+### Current Flow (per scenario)
 
-### Pain points
+```
+task-bench.ts loop:
+  for each scenario:
+    workDir = benchmarks/<skill>/runs/
+    scenarioDir = workDir/<scenario-id>/
+    tracer = new TraceLogger(scenarioDir)  // <-- separate per scenario
+    tracer.init(...)
+    ... run agent ...
+    tracer.logSummary(...)
+```
 
-- **No iterative research loop**: worker searches once, no "what's still unknown?" cycle → shallow coverage
-- **No scratchpad/state machine**: facts scattered across per-direction temp files, no centralized plan/completed/pending/facts/contradictions tracking
-- **No selective extraction**: workers fetch full pages and extract everything → context waste, irrelevant noise
-- **No outline as research anchor**: planning produces directions but no report outline → synthesis has no structure to fill
-- **No dependency graph**: directions treated as independent → can't sequence "learn X before researching Y"
-- **playwright-cli is a fallback, not primary**: Phase 0 prefers built-in search, playwright-cli is priority 2
-- **No within-direction iteration**: worker does one pass; if coverage insufficient, only orchestrator-level escalation with retry
-- **Citation drift risk**: hierarchical temp files → synthesis → report chain can lose source attribution
-- **No loop termination heuristic**: escalation is binary (score < 6.0 → retry once), no soft signal from gap analysis
+### Current Directory Layout
 
-### Current State
+```
+benchmarks/
+  flow-commit/runs/af-commit-basic/trace.html + sandbox/
+  flow-plan/runs/af-plan-basic/trace.html + sandbox/
+  flow-answer/runs/flow-answer-basic/trace.html + sandbox/
+```
 
-**SKILL.md (235 lines):**
-- Phase 0: detect search method (built-in > playwright-cli > playwright-mcp > other MCP)
-- Phase 1: decompose into 3-6 directions with queries + acceptance criteria
-- Phase 2: launch workers sequentially, post-worker review (4 checks: sources ≥2, coverage, confidence, no fabrication)
-- Phase 3: escalation if direction score < 6.0 (retry once with alternative queries)
-- Phase 4: synthesis (read all temp files, group thematically, merge, label FACT/SYNTHESIS, cite)
-- Phase 5: output (save report, verify integrity, print summary, cleanup)
+### Target Directory Layout
 
-**Worker sub-agent (133 lines, 3 IDE variants):**
-- 7 steps: search → evaluate (authority 0-5) → fetch top 3-5 → extract facts → note contradictions → note gaps → save
-- Single pass, no iteration
-- Saves structured markdown to `_research_tmp/<slug>.md`
+```
+benchmarks/runs/
+  2026-03-07T12-00-00/                    # timestamped run directory
+    report.html                            # single unified report
+    flow-commit-basic/                     # scenario (single run)
+      run-1/sandbox/                       # run artifacts
+    flow-answer-basic/                     # scenario (multiple runs with -n 3)
+      run-1/sandbox/
+      run-2/sandbox/
+      run-3/sandbox/
+  latest -> 2026-03-07T12-00-00/          # symlink to latest
+```
 
-**Playwright-CLI skill:**
-- Commands: open, goto, snapshot, screenshot, click, fill, type, press, eval
-- Snapshot = accessibility tree (preferred over screenshot for AI reasoning)
-- Session management via `-s=name`
+### Multi-Run Data Model
 
-### Constraints
+When `-n 3` is used, each run of the same scenario gets a unique id in TraceLogger:
 
-- Multi-IDE: Cursor, Claude Code, OpenCode. No IDE-specific tool names in skill text.
-- Workers MUST NOT spawn sub-agents (existing invariant, keep it)
-- Max 6 directions (existing invariant, keep it)
-- playwright-cli must be the primary search/fetch engine (user requirement)
-- Other search methods remain as fallbacks (preserve backward compat)
-- Report format (`assets/report_template.md`) stays compatible
-- All changes must be tested through benchmarks
-- Skill must remain a single SKILL.md (no TypeScript code in the skill itself)
+```
+scenario.id = "flow-answer-basic"
+run 1 -> traceId = "flow-answer-basic/run-1"
+run 2 -> traceId = "flow-answer-basic/run-2"
+run 3 -> traceId = "flow-answer-basic/run-3"
+```
+
+TraceLogger groups these by `scenarioId` for aggregated stats in dashboard:
+- Pass rate: 2/3 (66.7%)
+- Avg duration, avg tokens, avg cost
+- Each run expandable in ToC sidebar
 
 ## Definition of Done
 
-- [ ] SKILL.md rewritten with iterative research loop architecture (search → fetch → extract → update scratchpad → gap analysis → repeat)
-- [ ] Scratchpad state machine defined (plan, completed, pending, facts, contradictions, draft_sections)
-- [ ] Selective extraction: worker knows current sub-question before fetching, extracts only relevant content
-- [ ] Self-reflection prompt pattern after each iteration (unanswered questions, contradictions, confidence, stop criteria)
-- [ ] Planning phase produces report outline as research anchor + optional dependency graph between directions
-- [ ] playwright-cli is primary search method (priority 1); other methods demoted to fallbacks
-- [ ] Loop termination: mix of hard limit (max iterations per direction) + soft signal (gap analysis says "sufficient")
-- [ ] Citation provenance: every fact traceable to source URL from extraction through synthesis
-- [ ] Worker sub-agent files (3 IDE variants) updated to match new iterative workflow
-- [ ] `assets/report_template.md` updated if needed (backward-compatible)
-- [ ] Context management strategy documented (selective extraction + scratchpad size limits)
-- [ ] Benchmarks created/updated for deep-research skill
+- [ ] Single `TraceLogger` created in `task-bench.ts`, shared across all scenarios
+- [ ] All scenario sandboxes stored under `benchmarks/runs/<timestamp>/<scenario-id>/run-N/sandbox/`
+- [ ] Single `report.html` generated at `benchmarks/runs/<timestamp>/report.html`
+- [ ] `latest` symlink points to the most recent run directory
+- [ ] Report dashboard shows aggregated stats per scenario (pass rate, avg score, avg duration when `-n > 1`)
+- [ ] Report dashboard shows per-run rows expandable under scenario group
+- [ ] Report allows switching between individual runs via ToC sidebar
+- [ ] Report contains links to sandbox directories for each run (relative paths)
+- [ ] Console output prints `file:///` URL to report.html at the end
+- [ ] Old per-skill `benchmarks/<skill>/runs/` directories deleted; code that creates them removed
+- [ ] Console output still prints summary table (no regression)
 - [ ] `deno task check` passes
+- [ ] Integration test updated if it references old paths
 
 ## Solution
 
-[Awaiting variant selection]
+### Step 1: Change run directory structure in `task-bench.ts`
+
+Replace per-skill `workDir` calculation with a single timestamped run directory:
+
+```typescript
+// Before (per scenario):
+const getWorkDir = (scenario) => join(Deno.cwd(), "benchmarks", scenario.skill, "runs");
+
+// After (single run dir):
+const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+const runDir = join(Deno.cwd(), "benchmarks", "runs", timestamp);
+await Deno.mkdir(runDir, { recursive: true });
+```
+
+For multi-run (`-n`), each run gets its own subdirectory:
+
+```typescript
+for (let i = 0; i < runs; i++) {
+  const runIndex = i + 1;
+  const scenarioWorkDir = join(runDir, scenario.id, `run-${runIndex}`);
+  // scenarioWorkDir passed to runScenario as workDir
+}
+```
+
+Remove `getWorkDir()` helper entirely.
+
+### Step 2: Create single TraceLogger in `task-bench.ts`
+
+Move TraceLogger creation from `runner.ts` to `task-bench.ts`:
+
+```typescript
+// In task-bench.ts, before scenario loop:
+const tracer = new TraceLogger(runDir, "report.html");
+
+// Pass tracer to runScenario() via options
+const result = await runScenario(scenario, { ...options, tracer, runIndex });
+```
+
+Update `RunnerOptions` in `runner.ts` to accept `tracer: TraceLogger` and `runIndex: number`.
+
+### Step 3: Update `runner.ts` to use shared TraceLogger
+
+- Remove `const tracer = new TraceLogger(scenarioDir)` from `runScenario()`
+- Accept `tracer` and `runIndex` from options
+- Use `runIndex` to create unique trace ids: `tracer.init(name, \`${id}/run-${runIndex}\`, ...)`
+- Sandbox path becomes `join(workDir, "sandbox")` where workDir is already `runDir/<scenario-id>/run-N`
+
+### Step 4: Add multi-run aggregation to TraceLogger
+
+Extend `trace.ts`:
+
+- Add `scenarioGroup` field to `ScenarioMetadata` — the base scenario id (without `/run-N`)
+- In `render()`, group scenarios by `scenarioGroup`:
+  - Dashboard table: one row per scenario group with aggregated stats (pass rate, avg score, avg duration, total cost)
+  - Clicking row expands to show individual runs
+  - ToC sidebar: scenarios grouped, with runs as sub-items
+- Individual run pages remain unchanged (full trace with events)
+
+### Step 5: Add sandbox link to report
+
+In `trace.ts`, add a "Sandbox" link in the scenario header section:
+
+```typescript
+<div class="meta-item"><b>SANDBOX:</b> <a href="./${meta.scenarioGroup}/run-${meta.runIndex}/sandbox/">.../sandbox/</a></div>
+```
+
+### Step 6: Print report URL to console
+
+At the end of `task-bench.ts`, after summary table:
+
+```typescript
+const reportPath = join(runDir, "report.html");
+console.log(`\nReport: file://${reportPath}`);
+```
+
+Also print per-scenario trace link on failure using `file:///` format instead of relative path.
+
+### Step 7: Create `latest` symlink
+
+After the scenario loop in `task-bench.ts`:
+
+```typescript
+const latestLink = join(Deno.cwd(), "benchmarks", "runs", "latest");
+try { await Deno.remove(latestLink); } catch { /* ignore */ }
+await Deno.symlink(runDir, latestLink);
+```
+
+### Step 8: Delete old per-skill runs and update .gitignore
+
+- Delete existing `benchmarks/<skill>/runs/` directories
+- Add `benchmarks/runs/` to `.gitignore`
+- Remove any references to old `benchmarks/<skill>/runs/` paths in docs and tests
+
+### Step 9: Update integration tests
+
+Check `runner.test.ts`, `integration.test.ts`, `spawned_agent.test.ts` for old path references. Update to match new structure.
+
+### Step 10: Verify
+
+```bash
+deno task bench -f flow-answer-basic        # single scenario, single run
+deno task bench -f flow-answer-basic -n 3   # single scenario, 3 runs — aggregated stats
+deno task bench                              # all scenarios — full report
+deno task check                              # fmt + lint + test
+```
+
+### Execution Order
+
+```
+Step 1 (run dir) -> Step 2 (shared tracer) -> Step 3 (runner) -> Step 4 (multi-run aggregation)
+                                                                -> Step 5 (sandbox link)
+                                                                -> Step 6 (console URL)
+                                                                -> Step 7 (latest symlink)
+                                                                -> Step 8 (delete old + gitignore)
+                                                                -> Step 9 (tests)
+                                                                -> Step 10 (verify)
+```
+
+Steps 4-9 are independent after Step 3.
+
+### Files Changed
+
+- `scripts/task-bench.ts` — steps 1, 2, 6, 7, 8
+- `scripts/benchmarks/lib/runner.ts` — step 3 (accept shared tracer, use runIndex)
+- `scripts/benchmarks/lib/trace.ts` — steps 4, 5 (multi-run grouping, sandbox link, aggregated dashboard)
+- `scripts/benchmarks/lib/types.ts` — add `runIndex` to RunnerOptions if needed
+- `.gitignore` — step 8
