@@ -59,8 +59,12 @@
       "WebFetch(domain:forum.cursor.com)",
       "Bash(GIT_PAGER=cat git add framework/skills/flow-engineer-command/SKILL.md framework/skills/flow-engineer-rule/SKILL.md framework/skills/flow-engineer-skill/SKILL.md framework/skills/flow-init/SKILL.md framework/skills/flow-skill-analyze-context/SKILL.md framework/skills/flow-skill-draw-mermaid-diagrams/SKILL.md)",
       "Bash(git commit:*)",
-      "Bash(GIT_PAGER=cat git add README.md documents/requirements.md .claude/settings.json)"
+      "Bash(GIT_PAGER=cat git add README.md documents/requirements.md .claude/settings.json)",
+      "Bash(GIT_PAGER=cat git add framework/skills/flow-review-and-commit/SKILL.md benchmarks/flow-review-and-commit/ documents/requirements.md documents/whiteboard.md scripts/benchmarks/lib/runner.ts)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "/Users/korchasa/www/tools/flow/framework/skills"
+    ]
   }
 }
