@@ -223,7 +223,7 @@ The benchmarking system must cover all core AssistFlow components to ensure reli
 | `flow-maintenance`                         | Periodic project health checks       |     [ ]     |                          |
 | `flow-plan`                                | Task planning (GODS)                 |     [x]     | `flow-plan-*`            |
 | `flow-review`                              | QA + code review of changes          |     [ ]     |                          |
-| `flow-review-and-commit`                   | Review quality then commit           |     [ ]     |                          |
+| `flow-review-and-commit`                   | Review quality then commit           |     [x]     | `flow-review-and-commit-approve`, `flow-review-and-commit-reject` |
 | `flow-reflect`                             | Self-reflection on task              |     [x]     | `flow-reflect-*`         |
 | `flow-setup-code-style-ts-deno`            | Setup Deno/TS code style             |     [ ]     |                          |
 | `flow-setup-code-style-ts-strict`          | Setup strict TypeScript              |     [ ]     |                          |
@@ -648,16 +648,21 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   **Request Changes** or **Needs Discussion**, the agent reports findings and stops
   without committing.
 - **Acceptance criteria:**
-  - [ ] **FR-18.1 Review phase**: Executes the full `flow-review` workflow (QA +
-        code review) on current changes.
-  - [ ] **FR-18.2 Gate logic**: Proceeds to commit ONLY if the review verdict is
+  - [x] **FR-18.1 Review phase**: Executes the full `flow-review` workflow (QA +
+        code review) on current changes. Evidence:
+        `framework/skills/flow-review-and-commit/SKILL.md:55-58`
+  - [x] **FR-18.2 Gate logic**: Proceeds to commit ONLY if the review verdict is
         **Approve** (no critical issues). Stops and reports findings otherwise.
-  - [ ] **FR-18.3 Commit phase**: Invokes `flow-commit` workflow (documentation
+        Evidence: `framework/skills/flow-review-and-commit/SKILL.md:60-68`
+  - [x] **FR-18.3 Commit phase**: Invokes `flow-commit` workflow (documentation
         audit, pre-commit verification, atomic grouping, commit execution).
-  - [ ] **FR-18.4 Single command**: Available as `/flow-review-and-commit` chat
+        Evidence: `framework/skills/flow-review-and-commit/SKILL.md:70-73`
+  - [x] **FR-18.4 Single command**: Available as `/flow-review-and-commit` chat
         command. User does not need to run review and commit separately.
-  - [ ] **FR-18.5 Transparency**: Reports both review results and commit results
+        Evidence: `framework/skills/flow-review-and-commit/SKILL.md:1-4`
+  - [x] **FR-18.5 Transparency**: Reports both review results and commit results
         to the user in a single output.
+        Evidence: `framework/skills/flow-review-and-commit/SKILL.md:75-78`
 
 ### 3.19 CLAUDE.md Generation in flow-init (FR-19)
 

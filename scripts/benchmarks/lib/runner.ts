@@ -219,7 +219,7 @@ export async function runScenario(
       model: options.agentModel,
       prompt: fullPrompt,
       maxSteps: scenario.maxSteps || 10,
-      stepTimeout: 60000, // 1 minute timeout per step
+      stepTimeout: scenario.stepTimeoutMs || 60000,
       adapter,
     });
 
