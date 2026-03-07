@@ -354,6 +354,7 @@ Deno.test("isRemoteExecution: bare path returns false", () => {
 Deno.test("parseArgs: no args returns defaults", () => {
   const result = parseArgs([]);
   assertEquals(result.update, false);
+  assertEquals(result.yes, false);
 });
 
 Deno.test("parseArgs: --update flag", () => {
@@ -366,11 +367,29 @@ Deno.test("parseArgs: -u shorthand", () => {
   assertEquals(result.update, true);
 });
 
+Deno.test("parseArgs: --yes flag", () => {
+  const result = parseArgs(["--yes"]);
+  assertEquals(result.yes, true);
+});
+
+Deno.test("parseArgs: -y shorthand", () => {
+  const result = parseArgs(["-y"]);
+  assertEquals(result.yes, true);
+});
+
+Deno.test("parseArgs: no args has yes=false", () => {
+  const result = parseArgs([]);
+  assertEquals(result.yes, false);
+});
+
 // ─── resolveFrameworkDir tests ───
 
 Deno.test("resolveFrameworkDir: local mode resolves relative to script", async () => {
   const scriptUrl = "file:///fake/project/scripts/install.ts";
-  const result = await resolveFrameworkDir(scriptUrl, { update: false });
+  const result = await resolveFrameworkDir(scriptUrl, {
+    update: false,
+    yes: false,
+  });
   assertEquals(result, "/fake/project/framework");
 });
 
@@ -387,7 +406,10 @@ Deno.test({
     // For unit test purposes, we just check that it targets the right directory
     // by catching the error (no network in CI)
     try {
-      const result = await resolveFrameworkDir(scriptUrl, { update: false });
+      const result = await resolveFrameworkDir(scriptUrl, {
+        update: false,
+        yes: false,
+      });
       // If it succeeds (e.g., ~/.assistflow/ already exists from a previous run),
       // verify the path
       assertEquals(result, `${home}/.assistflow/framework`);
@@ -417,7 +439,7 @@ Deno.test({
 
     try {
       await assertRejects(
-        () => resolveFrameworkDir(scriptUrl, { update: true }),
+        () => resolveFrameworkDir(scriptUrl, { update: true, yes: false }),
         Error,
       );
     } finally {
