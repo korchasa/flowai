@@ -49,7 +49,13 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - Follow `User Decision Gate` from AGENTS.md: STOP and wait for variant selection.
 5. **Detail Solution (S)**
    - Complete `Solution` section in `whiteboard.md` with detailed steps for selected variant (follow `### GODS Format` from AGENTS.md).
-6. **TOTAL STOP**
+6. **Critique**
+   - Present the plan to the user in chat and offer to critique it before finalizing.
+   - If user agrees: critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat.
+7. **Refine**
+   - Ask the user which critique points to address.
+   - Update `whiteboard.md` with accepted improvements.
+8. **TOTAL STOP**
    </step_by_step>
 
 ## Output Format (GODS)

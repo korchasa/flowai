@@ -1,9 +1,13 @@
+import { AgentAdapter } from "./adapters/types.ts";
+
 export interface AgentOptions {
   workspace: string;
   model: string;
   prompt?: string;
   env?: Record<string, string>;
-  /** Optional path to cursor-agent binary. Defaults to "cursor-agent" */
+  /** Agent adapter for IDE-specific behavior. */
+  adapter: AgentAdapter;
+  /** @deprecated Use adapter instead. Optional path to cursor-agent binary. */
   commandPath?: string;
   /** Maximum number of resume steps. Defaults to 10. */
   maxSteps?: number;
@@ -16,18 +20,10 @@ export interface AgentResult {
   logs: string;
 }
 
-interface AgentOutput {
-  session_id?: string;
-  result?: string | {
-    subtype: string;
-    result: string;
-  };
-  subtype?: string;
-}
-
 /**
- * Encapsulates the execution of a cursor-agent process using Deno.Command.
- * Handles automatic flag generation, output monitoring, and lifecycle management (resume).
+ * Encapsulates the execution of an IDE agent process using Deno.Command.
+ * Delegates CLI-specific logic (args, output parsing) to an AgentAdapter.
+ * Handles lifecycle management: start, monitor, resume loop.
  */
 export class SpawnedAgent {
   private process: Deno.ChildProcess | null = null;
@@ -35,13 +31,17 @@ export class SpawnedAgent {
   private outputBuffer: string = "";
   private isFinished: boolean = false;
   private sessionId: string | null = null;
-  private parsedResult: AgentOutput | null = null;
+  private parsedSubtype: string | null = null;
+  private parsedResultText: string | null = null;
   private messages: Array<{ role: string; content: string }> = [];
+  private adapter: AgentAdapter;
 
   private exitPromise: Promise<AgentResult> | null = null;
   private resolveExit!: (res: AgentResult) => void;
 
-  constructor(private options: AgentOptions) {}
+  constructor(private options: AgentOptions) {
+    this.adapter = options.adapter;
+  }
 
   public getSessionId(): string | null {
     return this.sessionId;
@@ -165,13 +165,18 @@ export class SpawnedAgent {
       }
     }
 
-    const command = this.options.commandPath || "cursor-agent";
-    const args = this.buildArgs(prompt);
+    const command = this.options.commandPath || this.adapter.command;
+    const args = this.adapter.buildArgs({
+      model: this.options.model,
+      workspace: this.options.workspace,
+      prompt,
+      sessionId: this.sessionId || undefined,
+    });
 
     const cmd = new Deno.Command(command, {
       args,
       cwd: this.options.workspace,
-      env: this.options.env || {},
+      env: { ...this.adapter.getEnv(), ...this.options.env },
       stdin: "piped",
       stdout: "piped",
       stderr: "piped",
@@ -189,30 +194,6 @@ export class SpawnedAgent {
       this.fullLog.push(`Error starting process: ${e}\n`);
       this.cleanup(1);
     }
-  }
-
-  private buildArgs(prompt: string): string[] {
-    const args = [
-      "--model",
-      this.options.model,
-      "--workspace",
-      this.options.workspace,
-      "--force",
-      "--approve-mcps",
-      "--print",
-      "--output-format",
-      "json",
-    ];
-
-    if (this.sessionId) {
-      args.push("--resume", this.sessionId);
-    }
-
-    if (prompt) {
-      args.push(prompt);
-    }
-
-    return args;
   }
 
   private async monitorProcess() {
@@ -271,19 +252,11 @@ export class SpawnedAgent {
   }
 
   private async printFormattedOutput() {
-    if (!this.parsedResult) return;
+    if (!this.parsedResultText) return;
 
     const gray = "\x1b[90m";
     const reset = "\x1b[0m";
-
-    let firstLine = "";
-
-    const result = this.parsedResult.result;
-    if (result && typeof result === "object" && result.result) {
-      firstLine = this.getFirstChars(String(result.result));
-    } else if (typeof this.parsedResult.result === "string") {
-      firstLine = this.getFirstChars(this.parsedResult.result);
-    }
+    const firstLine = this.getFirstChars(this.parsedResultText);
 
     if (firstLine) {
       const output = `${gray}<- ${firstLine}${reset}\n`;
@@ -298,84 +271,23 @@ export class SpawnedAgent {
   }
 
   private parseOutput(output: string) {
-    // Find all JSON objects in the output.
-    let searchIndex = 0;
-    while (true) {
-      const start = output.indexOf("{", searchIndex);
-      if (start === -1) break;
+    const parsed = this.adapter.parseOutput(output);
 
-      let depth = 0;
-      let end = -1;
-      for (let i = start; i < output.length; i++) {
-        if (output[i] === "{") depth++;
-        else if (output[i] === "}") {
-          depth--;
-          if (depth === 0) {
-            end = i;
-            break;
-          }
-        }
-      }
+    if (parsed.sessionId) {
+      this.sessionId = parsed.sessionId;
+    }
+    this.parsedSubtype = parsed.subtype;
+    this.parsedResultText = parsed.result;
 
-      if (end === -1) break;
-
-      const potentialJson = output.slice(start, end + 1);
-      try {
-        const obj = JSON.parse(potentialJson) as AgentOutput;
-        this.processJsonObject(obj);
-        searchIndex = end + 1;
-      } catch (_) {
-        searchIndex = start + 1;
+    if (parsed.result) {
+      const lastMsg = this.messages[this.messages.length - 1];
+      if (
+        !lastMsg || lastMsg.role !== "assistant" ||
+        lastMsg.content !== parsed.result
+      ) {
+        this.messages.push({ role: "assistant", content: parsed.result });
       }
     }
-  }
-
-  private processJsonObject(obj: AgentOutput) {
-    if (obj.session_id) {
-      this.sessionId = obj.session_id;
-    }
-    this.parsedResult = obj;
-
-    // Since cursor-agent doesn't return messages in JSON,
-    // we rely on the fact that we added the user prompt in start()
-    // and now we just add the assistant's result.
-    if (obj.result) {
-      const content = typeof obj.result === "string"
-        ? obj.result
-        : obj.result.result;
-      if (content) {
-        // Avoid adding the same result multiple times if processJsonObject is called multiple times
-        const lastMsg = this.messages[this.messages.length - 1];
-        if (
-          !lastMsg || lastMsg.role !== "assistant" ||
-          lastMsg.content !== content
-        ) {
-          this.messages.push({ role: "assistant", content });
-        }
-      }
-    }
-  }
-
-  private isTaskFinished(_logs: string): boolean {
-    // In JSON mode, cursor-agent returns a "result" field.
-    // We check the subtype to see if it's actually finished.
-    // "input_required" means the agent is waiting for user input.
-    if (this.parsedResult && this.parsedResult.subtype === "input_required") {
-      return false;
-    }
-    if (this.parsedResult && this.parsedResult.subtype === "success") {
-      return true;
-    }
-    // If subtype is missing but result is present, we assume success for now
-    // to maintain compatibility with older versions or different mocks.
-    if (
-      this.parsedResult && !this.parsedResult.subtype &&
-      this.parsedResult.result !== undefined &&
-      this.parsedResult.result !== null
-    ) {
-      return true;
-    }
-    return false;
   }
 
   /**

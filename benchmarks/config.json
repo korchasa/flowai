@@ -1,25 +1,21 @@
 {
-  "presets": {
-    "gemini-2.5-flash": {
-      "model": "google/gemini-2.5-flash",
-      "temperature": 0
+  "default_ides": ["claude"],
+  "ides": {
+    "cursor": {
+      "agent_models": ["gemini-3-flash"],
+      "default_agent_model": "gemini-3-flash",
+      "judge": {
+        "model": "google/gemini-3.1-flash-lite-preview",
+        "temperature": 0
+      }
     },
-    "glm-4.7-flash": {
-      "model": "z-ai/glm-4.7-flash",
-      "temperature": 0,
-      "provider": { "order": ["phala"] }
-    },
-    "glm-4.7": {
-      "model": "z-ai/glm-4.7",
-      "temperature": 0,
-      "provider": {
-        "order": ["siliconflow/fp8", "deepinfra/fp4", "parasail/fp8"]
+    "claude": {
+      "agent_models": ["claude-sonnet-4-6"],
+      "default_agent_model": "claude-sonnet-4-6",
+      "judge": {
+        "model": "google/gemini-3.1-flash-lite-preview",
+        "temperature": 0
       }
     }
-  },
-  "agent_models": [
-    "gemini-3-flash"
-  ],
-  "default_agent_model": "gemini-3-flash",
-  "default_judge_preset": "gemini-2.5-flash"
+  }
 }

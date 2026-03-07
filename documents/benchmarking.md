@@ -6,25 +6,36 @@ The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by
 
 ## 2. Directory Structure
 
-Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios and
-runs are organized by skill.
+Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios are organized by skill; runs stored centrally.
 
 ```text
 benchmarks/
 ├── <skill>/
-│   ├── scenarios/
-│   │   └── <scenario>/
-│   │       └── mod.ts          # Scenario definition
-│   └── runs/
-│       └── <scenario-id>/      # e.g., flow-commit-basic
-│           ├── sandbox/        # Isolated execution environment
-│           │   ├── .git/
-│           │   ├── README.md
-│           │   └── ... (project files)
-│           └── trace.html      # Execution log and report
+│   └── scenarios/
+│       └── <scenario>/
+│           └── mod.ts          # Scenario definition
+├── runs/                       # All run artifacts (git-ignored)
+│   └── <scenario-id>/
+│       ├── sandbox/            # Isolated execution environment
+│       └── trace.html          # Execution log and report
 ├── benchmarks.lock
-└── config.json
+└── config.json                 # Multi-IDE benchmark configuration
 ```
+
+## 2.1 Multi-IDE Architecture
+
+Benchmarks support multiple IDEs (Cursor, Claude Code) via an adapter pattern.
+
+- **Config** (`benchmarks/config.json`): IDE-keyed structure with per-IDE agent models and judge settings
+  - `default_ides`: array of IDE ids to run by default
+  - `ides.<ide>.agent_models`: available models for the IDE
+  - `ides.<ide>.default_agent_model`: default model
+  - `ides.<ide>.judge`: LLM judge config (model, temperature)
+- **Adapters** (`scripts/benchmarks/lib/adapters/`):
+  - `types.ts`: `AgentAdapter` interface (CLI args, output parsing, mock setup, env, usage)
+  - `cursor.ts`: `CursorAdapter` — wraps `cursor-agent` CLI
+  - `claude.ts`: `ClaudeAdapter` — wraps `claude` CLI with streaming JSON
+  - `mod.ts`: factory `createAdapter(ide)` and `SUPPORTED_IDES` constant
 
 ## 3. Trace Log (`trace.html`)
 

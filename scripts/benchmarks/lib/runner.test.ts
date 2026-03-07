@@ -1,6 +1,6 @@
 /**
- * Integration tests for Runner with real cursor-agent.
- * These tests use the real cursor-agent binary and require valid authentication.
+ * Integration tests for Runner.
+ * These tests use the default IDE from benchmarks/config.json.
  */
 
 import { assertEquals, assertStringIncludes } from "@std/assert";
@@ -10,15 +10,19 @@ import { runScenario } from "./runner.ts";
 import { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
 import { evaluateChecklist } from "./judge.ts";
+import { getIdeConfig, loadConfig } from "./llm.ts";
+import { createAdapter } from "./adapters/mod.ts";
 
 // Load environment variables from .env file
 await load({ export: true });
 
-const AGENT_MODEL = Deno.env.get("INTEGRATION_TEST_MODEL") || "auto";
-const JUDGE_CONFIG = {
-  model: Deno.env.get("BENCH_JUDGE_MODEL") || "google/gemini-2.0-flash-001",
-  temperature: 0,
-};
+const config = await loadConfig();
+const DEFAULT_IDE = config.default_ides[0];
+const ideConfig = getIdeConfig(config, DEFAULT_IDE);
+const adapter = createAdapter(DEFAULT_IDE);
+
+const AGENT_MODEL = ideConfig.default_agent_model;
+const JUDGE_CONFIG = { ...ideConfig.judge };
 
 Deno.test("Runner - Basic Scenario Execution", async () => {
   const tempDir = await createTempDir("runner");
@@ -52,12 +56,14 @@ Deno.test("Runner - Basic Scenario Execution", async () => {
     });
   };
 
+  const scenarioWorkDir = join(tempDir, "test-scenario", "run-1");
   try {
     const result = await runScenario(scenario, {
       agentModel: AGENT_MODEL,
       judgeConfig: JUDGE_CONFIG,
-      workDir: tempDir,
+      workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+      adapter,
     });
 
     // Basic assertions - scenario completed
@@ -97,15 +103,17 @@ Deno.test("Runner - Fixture Copying", async () => {
     });
   };
 
+  const scenarioWorkDir = join(tempDir, "flow-test-fixture", "run-1");
   try {
     await runScenario(scenario, {
       agentModel: AGENT_MODEL,
       judgeConfig: JUDGE_CONFIG,
-      workDir: tempDir,
+      workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+      adapter,
     });
 
-    const sandboxPath = join(tempDir, "flow-test-fixture", "sandbox");
+    const sandboxPath = join(scenarioWorkDir, "sandbox");
     assertEquals(
       await Deno.readTextFile(join(sandboxPath, "file1.txt")),
       "content1",
@@ -142,15 +150,17 @@ Deno.test("Runner - AGENTS.md Fallback", async () => {
     });
   };
 
+  const scenarioWorkDir = join(tempDir, "test-no-agents-md", "run-1");
   try {
     await runScenario(scenario, {
       agentModel: AGENT_MODEL,
       judgeConfig: JUDGE_CONFIG,
-      workDir: tempDir,
+      workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+      adapter,
     });
 
-    const sandboxPath = join(tempDir, "test-no-agents-md", "sandbox");
+    const sandboxPath = join(scenarioWorkDir, "sandbox");
     const agentsContent = await Deno.readTextFile(
       join(sandboxPath, "AGENTS.md"),
     );

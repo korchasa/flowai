@@ -51,6 +51,9 @@ RULES:
     ];
 
     const response = await this.llm(llmMessages, this.config);
+    if (!response.content) {
+      return null;
+    }
     const content = response.content.trim();
 
     if (content === "<NO_RESPONSE>") {

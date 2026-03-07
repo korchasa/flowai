@@ -13,13 +13,32 @@ export interface ModelConfig {
   [key: string]: unknown;
 }
 
-export interface BenchmarkConfig {
-  presets: Record<string, ModelConfig>;
+export interface IdeConfig {
+  agent_models: string[];
   default_agent_model: string;
-  default_judge_preset: string;
+  judge: ModelConfig;
 }
 
-export const DEFAULT_CONFIG: BenchmarkConfig | null = null;
+export interface BenchmarkConfig {
+  default_ides: string[];
+  ides: Record<string, IdeConfig>;
+}
+
+/** Get IDE-specific config */
+export function getIdeConfig(
+  config: BenchmarkConfig,
+  ide: string,
+): IdeConfig {
+  const ideSection = config.ides[ide];
+  if (!ideSection) {
+    throw new Error(
+      `No configuration found for IDE "${ide}". Available: ${
+        Object.keys(config.ides).join(", ")
+      }`,
+    );
+  }
+  return ideSection;
+}
 
 export async function loadConfig(
   path = "benchmarks/config.json",

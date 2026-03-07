@@ -2,6 +2,10 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { createTempDir } from "./utils.ts";
+import { CursorAdapter } from "./adapters/cursor.ts";
+
+// Unit tests use mock shell scripts that output cursor-format JSON
+const adapter = new CursorAdapter();
 
 Deno.test("SpawnedAgent - Basic Execution", async () => {
   const tempDir = await createTempDir("agent");
@@ -26,6 +30,7 @@ exit 0
     commandPath: mockAgentBin,
     workspace: tempDir,
     model: "test-model",
+    adapter,
   });
 
   try {
@@ -79,6 +84,7 @@ fi
     commandPath: mockAgentBin,
     workspace: tempDir,
     model: "test-model",
+    adapter,
   });
 
   try {
@@ -126,6 +132,7 @@ exit 0
     commandPath: mockAgentBin,
     workspace: tempDir,
     model: "test-model",
+    adapter,
   });
 
   try {
@@ -163,6 +170,7 @@ exit 0
     workspace: tempDir,
     model: "test-model",
     maxSteps: 3,
+    adapter,
   });
 
   try {
@@ -212,6 +220,7 @@ exit 0
     workspace: tempDir,
     model: "test-model",
     env: { "MY_CUSTOM_VAR": "hello-world" },
+    adapter,
   });
 
   try {
@@ -229,6 +238,7 @@ Deno.test("SpawnedAgent - Error Handling (Invalid Command)", async () => {
     commandPath: "/non/existent/path/to/agent",
     workspace: tempDir,
     model: "test-model",
+    adapter,
   });
 
   // In the current implementation, monitorPty simply logs the error to the console and performs cleanup(0)
@@ -282,6 +292,7 @@ exit 0
     workspace: tempDir,
     model: "test-model",
     prompt: "initial prompt",
+    adapter,
   });
 
   try {

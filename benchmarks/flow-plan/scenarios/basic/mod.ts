@@ -26,5 +26,12 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
       critical: true,
       type: "semantic" as const,
     },
+    {
+      id: "critique_offered",
+      description:
+        "Did the agent offer to critique the plan after detailing the solution?",
+      critical: true,
+      type: "semantic" as const,
+    },
   ];
 }();
