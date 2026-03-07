@@ -55,22 +55,30 @@ Input sources:
 
 <step_by_step>
 
-1. **Gather Context**
+1. **Empty Diff Guard**
+   - Run `git diff --stat`, `git diff --cached --stat`, and
+     `git status --short`.
+   - If there are NO changes (no diff, no staged files, no untracked files),
+     report "No changes to review" and STOP.
+
+2. **Gather Context**
    - Create a review plan in the task management tool.
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
      branch-based changes.
    - Read the original user request and the plan (whiteboard / task list).
-   - Identify project conventions from `AGENTS.md` and config files.
+   - Look for project conventions in `AGENTS.md` and config files.
+     If these files do not exist, rely on conventions visible in the diff
+     and surrounding code.
 
-2. **QA: Task Completion**
+3. **QA: Task Completion**
    - Map each requirement/plan item to concrete changes in the diff.
    - Flag requirements with no corresponding changes as `[critical] Missing`.
    - Flag plan items marked "done" but not present in diff as
      `[critical] Phantom completion`.
    - Check for regressions: do changed files break existing functionality?
 
-3. **QA: Hygiene**
+4. **QA: Hygiene**
    - **Temp artifacts**: New `temp_*`, `*.tmp`, `*.bak`, debug `console.log`/
      `print` statements, hardcoded secrets or localhost URLs.
    - **Unfinished markers**: New `TODO`, `FIXME`, `HACK`, `XXX` introduced in
@@ -78,7 +86,7 @@ Input sources:
    - **Dead code**: Commented-out blocks, unused imports/variables/functions
      added in this diff.
 
-4. **Code Review: Design & Architecture**
+5. **Code Review: Design & Architecture**
    - **Responsibility**: Does each changed file/module stay within its stated
      responsibility? Flag scope creep.
    - **Coupling**: Are new dependencies (imports, API calls) justified?
@@ -87,7 +95,7 @@ Input sources:
      over-engineering (unnecessary interfaces, premature generalization) and
      under-engineering (god-functions, duplicated logic).
 
-5. **Code Review: Implementation Quality**
+6. **Code Review: Implementation Quality**
    - **Naming**: Are new identifiers (vars, funcs, types) clear and consistent
      with project conventions?
    - **Error handling**: Are errors handled explicitly? Flag swallowed
@@ -99,7 +107,7 @@ Input sources:
    - **Tests**: Do new/changed behaviors have corresponding tests? Are existing
      tests updated for changed behavior?
 
-6. **Code Review: Readability & Style**
+7. **Code Review: Readability & Style**
    - **Consistency**: Do changes follow the project's established patterns
      (file structure, naming, formatting)?
    - **Comments**: Are non-obvious decisions explained? Flag misleading or
@@ -107,13 +115,15 @@ Input sources:
    - **Complexity**: Flag functions > 40 lines or cyclomatic complexity spikes
      introduced in this diff.
 
-7. **Run Automated Checks**
+8. **Run Automated Checks**
    - If the project has a check command (`deno task check`, `npm run lint`,
      `make check`, etc.), run it and include results.
+   - If no check command is found, explicitly note "No automated checks
+     configured" in the report — do not silently skip.
    - If tests exist, run them and report failures.
 
-8. **Final Report**
-   Output a structured report:
+9. **Final Report**
+   Output a structured report with the verdict on the FIRST line:
 
    ```
    ## Review: [Approve | Request Changes | Needs Discussion]
@@ -125,7 +135,7 @@ Input sources:
    - [severity] file:line — description
 
    ### Automated Checks
-   - [pass|fail] command — summary
+   - [pass|fail|skipped] command — summary
 
    ### Summary
    - Requirements covered: X/Y
@@ -142,12 +152,14 @@ Input sources:
 ## Verification
 
 <verification>
+[ ] Empty diff guard checked before starting.
 [ ] Diff collected and reviewed (not the whole project).
 [ ] Each requirement/plan item mapped to changes.
 [ ] Hygiene check: no temp files, debug output, unfinished markers in diff.
 [ ] Design review: responsibility, coupling, abstraction checked.
 [ ] Implementation review: naming, errors, edge cases, types, tests checked.
 [ ] Readability: consistency, comments, complexity checked.
-[ ] Automated checks executed (if available).
+[ ] Automated checks executed (or explicitly noted as missing).
 [ ] Structured report produced with severity-tagged findings.
+[ ] Verdict on the first line of the report.
 </verification>
