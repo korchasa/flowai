@@ -8,8 +8,9 @@
  *   Local:  deno task install
  *   Remote: deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts
  *   Update: deno run -A <url> --update
+ *   Non-interactive: deno task install --yes (or -y)
  *
- * Fully interactive: no changes without user confirmation.
+ * Fully interactive by default: no changes without user confirmation.
  * Idempotent: safe to run multiple times.
  * Non-destructive: user files are never overwritten.
  */
@@ -322,6 +323,7 @@ export function computeRelativePath(from: string, to: string): string {
 
 export interface ParsedArgs {
   update: boolean;
+  yes: boolean;
 }
 
 /**
@@ -335,16 +337,20 @@ export function isRemoteExecution(importMetaUrl: string): boolean {
 
 /**
  * Parse CLI arguments.
- * Supported flags: --update / -u
+ * Supported flags: --update / -u, --yes / -y
  */
 export function parseArgs(args: string[]): ParsedArgs {
   let update = false;
+  let yes = false;
   for (const arg of args) {
     if (arg === "--update" || arg === "-u") {
       update = true;
     }
+    if (arg === "--yes" || arg === "-y") {
+      yes = true;
+    }
   }
-  return { update };
+  return { update, yes };
 }
 
 /**
@@ -612,8 +618,8 @@ async function executePlan(items: PlanItem[]): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const stdin = new StdinReader();
   const args = parseArgs(Deno.args);
+  const stdin = args.yes ? null : new StdinReader();
 
   // Phase 0: Resolve framework directory (local or remote clone)
   const frameworkDir = await resolveFrameworkDir(import.meta.url, args);
@@ -649,25 +655,29 @@ async function main(): Promise<void> {
   }
   console.log("");
 
-  const ideInput = await stdin.readLine(
-    `Install to (comma-separated numbers, Enter=all): `,
-  );
-
   let selectedIDEs: IDEConfig[];
-  if (ideInput === null || ideInput === "") {
+  if (args.yes) {
     selectedIDEs = foundIDEs;
   } else {
-    const indices = ideInput.split(",").map((s: string) =>
-      parseInt(s.trim(), 10) - 1
+    const ideInput = await stdin!.readLine(
+      `Install to (comma-separated numbers, Enter=all): `,
     );
-    const invalid = indices.filter((i: number) =>
-      i < 0 || i >= foundIDEs.length || isNaN(i)
-    );
-    if (invalid.length > 0) {
-      console.error(`Invalid selection. Exiting.`);
-      Deno.exit(1);
+
+    if (ideInput === null || ideInput === "") {
+      selectedIDEs = foundIDEs;
+    } else {
+      const indices = ideInput.split(",").map((s: string) =>
+        parseInt(s.trim(), 10) - 1
+      );
+      const invalid = indices.filter((i: number) =>
+        i < 0 || i >= foundIDEs.length || isNaN(i)
+      );
+      if (invalid.length > 0) {
+        console.error(`Invalid selection. Exiting.`);
+        Deno.exit(1);
+      }
+      selectedIDEs = indices.map((i: number) => foundIDEs[i]);
     }
-    selectedIDEs = indices.map((i: number) => foundIDEs[i]);
   }
   console.log("");
 
@@ -692,12 +702,14 @@ async function main(): Promise<void> {
 
   console.log(formatPlan(idePlans));
 
-  const confirm = await stdin.readLine("Apply changes? [y/N]: ");
-  if (confirm !== "y" && confirm !== "Y") {
-    console.log("Cancelled.");
-    Deno.exit(0);
+  if (!args.yes) {
+    const confirm = await stdin!.readLine("Apply changes? [y/N]: ");
+    if (confirm !== "y" && confirm !== "Y") {
+      console.log("Cancelled.");
+      Deno.exit(0);
+    }
+    console.log("");
   }
-  console.log("");
 
   // Phase 5: Execute
   let created = 0,
