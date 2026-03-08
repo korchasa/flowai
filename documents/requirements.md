@@ -545,31 +545,41 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 
 ### 3.14 Cross-IDE Hook/Plugin Format Transformation (FR-14)
 
-- **Description:** All three supported IDEs now have hook/plugin systems with
-  different formats: Cursor hooks (`.cursor/hooks/`), Claude Code hooks
-  (`settings.json`, 17+ event types including `PreToolUse`, `PostToolUse`,
-  `SubagentStart`, `SessionStart`, etc.), and OpenCode plugins
-  (`.opencode/plugins/*.ts` with `tool()` helper and rich event API). The
-  framework must support authoring hooks once and transforming them to
-  IDE-native formats.
-- **Use case scenario:** Developer defines a hook in `.dev/hooks/` (IDE-agnostic
-  format). `deno task link` generates the correct format for each IDE:
-  Cursor hook file, Claude Code `settings.json` entry, OpenCode plugin `.ts` file.
+- **Description:** All three supported IDEs have hook/plugin systems with
+  different formats: Cursor hooks (`.cursor/hooks.json`), Claude Code hooks
+  (`settings.json`, 18 event types), and OpenCode plugins
+  (`.opencode/plugins/*.ts` with `plugin()` API). The framework provides
+  comprehensive cross-IDE documentation in `flow-engineer-hook` SKILL.md
+  with IDE-specific reference files, enabling AI agents to generate correct
+  hook configurations from natural language requests.
+- **Use case scenario:** Developer asks the agent to create a hook. The agent
+  detects the IDE, reads the corresponding reference file, and generates
+  the correct IDE-native configuration using documented templates and examples.
+- **Design decision:** Canonical format = documented templates in SKILL.md with
+  IDE-specific reference files, not a separate schema. Rationale: LLMs reliably
+  follow template patterns; a separate canonical schema adds maintenance burden
+  without benefit and cannot capture the fundamental architectural differences
+  (declarative JSON vs programmatic TS modules).
 - **Acceptance criteria:**
-  - [ ] **FR-14.1 Canonical format**: Define an IDE-agnostic hook/plugin format
-        in `.dev/hooks/` (e.g., JSON or YAML).
-  - [ ] **FR-14.2 Cursor output**: Transform to Cursor hook format.
-  - [ ] **FR-14.3 Claude Code output**: Transform to Claude Code `settings.json`
-        hooks section. Support all 17+ event types: `PreToolUse`, `PostToolUse`,
-        `UserPromptSubmit`, `Stop`, `SubagentStart`, `SubagentStop`,
-        `SessionStart`, `SessionEnd`, `PreCompact`, `WorktreeCreate`,
-        `WorktreeRemove`, `TeammateIdle`, `TaskCompleted`, `ConfigChange`,
-        `Notification`, `PermissionRequest`.
-  - [ ] **FR-14.4 OpenCode output**: Transform to OpenCode plugin `.ts` format
-        using `tool()` helper and event subscriptions.
-  - [ ] **FR-14.5 Hook types**: Support `command` (script-based), `prompt`
-        (LLM-based), and `agent` (subagent-based) hook types where the target
-        IDE supports them.
+  - [ ] **FR-14.1 Canonical format**: IDE-agnostic hook documentation with
+        cross-IDE mapping tables, type availability matrix, and per-IDE
+        reference files in `flow-engineer-hook/references/`.
+  - [ ] **FR-14.2 Cursor output**: SKILL.md + reference provide templates for
+        generating correct Cursor `hooks.json` configuration.
+  - [ ] **FR-14.3 Claude Code output**: SKILL.md + reference provide templates
+        for generating correct Claude Code `settings.json` hooks section.
+        Cover all 18 event types: `PreToolUse`, `PostToolUse`,
+        `PostToolUseFailure`, `UserPromptSubmit`, `Stop`, `SubagentStart`,
+        `SubagentStop`, `SessionStart`, `SessionEnd`, `PreCompact`,
+        `WorktreeCreate`, `WorktreeRemove`, `TeammateIdle`, `TaskCompleted`,
+        `ConfigChange`, `Notification`, `PermissionRequest`,
+        `InstructionsLoaded`.
+  - [ ] **FR-14.4 OpenCode output**: SKILL.md + reference provide templates
+        for generating correct OpenCode plugin `.ts` files using `Plugin` type
+        and `tool()` helper.
+  - [ ] **FR-14.5 Hook types**: Documentation covers `command` (script-based),
+        `prompt` (LLM-based), `agent` (subagent-based), `http` (webhook), and
+        programmatic (OpenCode) hook types with availability matrix per IDE.
 
 ### 3.15 Update `flow-engineer-hook` for Cross-IDE Support (FR-15)
 
