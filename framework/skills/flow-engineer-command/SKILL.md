@@ -1,6 +1,6 @@
 ---
 name: flow-engineer-command
-description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
 disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
@@ -32,21 +32,19 @@ Commands work across multiple IDEs. Before creating a command, determine the cur
 |-----|--------------|-----------------|--------|
 | **Cursor** | `~/.cursor/commands/*.md` | `.cursor/commands/*.md` | Markdown (free-form args) |
 | **Claude Code** | `~/.claude/commands/*.md` | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | Markdown + YAML frontmatter (`allowed-tools`, `argument-hint`, `description`, `model`) |
-| **Antigravity** | `~/.gemini/antigravity/global_workflows/*.md` | `.agent/workflows/*.md` | Markdown |
-| **OpenAI Codex** | `~/.codex/prompts/*.md` | - | Markdown + YAML frontmatter (`description`, `argument-hint`) |
 | **OpenCode** | `~/.config/opencode/commands/*.md` | `.opencode/commands/*.md` | Markdown + YAML frontmatter (`description`, `agent`, `model`, `subtask`) |
+
+> **Note**: Claude Code unifies commands and skills. `.claude/commands/` is the legacy path; `.claude/skills/` (SKILL.md format) is recommended for new commands.
 
 OpenCode supports `$ARGUMENTS`, `$1`-`$N`, `` !`shell command` ``, `@filepath` in command templates.
 
 ### Detection Strategy
 
 1. Check for IDE-specific markers in the project:
-   - `.cursor/` directory -> Cursor
-   - `.claude/` directory -> Claude Code
-   - `.opencode/` directory or `opencode.json` -> OpenCode
-   - `.agent/` directory -> Antigravity
-   - `.codex/` directory or `AGENTS.md` without `.cursor/` -> OpenAI Codex
-2. If multiple detected or none -> ask the user
+   - `.cursor/` directory → Cursor
+   - `.claude/` directory → Claude Code
+   - `.opencode/` directory or `opencode.json` → OpenCode
+2. If multiple detected or none → ask the user
 3. Ask: personal command (user-level) or project command (shared via repo)?
 
 ## Core Principles
