@@ -11,7 +11,8 @@ disable-model-invocation: true
 ## Overview
 
 Analyze the project, conduct an interview (for Greenfield projects), and
-generate 3 AGENTS.md files (root, documents/, scripts/), rules, and scaffolding.
+generate 3 AGENTS.md files (root, documents/, scripts/), a `CLAUDE.md` symlink
+(for Claude Code compatibility), rules, and scaffolding.
 The agent uses template files from `assets/` as reference and writes files directly.
 
 ## Context
@@ -109,6 +110,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 5. **Component Inventory**
    - Check which target files already exist:
      - `./AGENTS.md`
+     - `./CLAUDE.md` (symlink to `./AGENTS.md`)
      - `./documents/AGENTS.md`
      - `./scripts/AGENTS.md`
      - `documents/` directory and its contents
@@ -134,13 +136,19 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      - If file does not exist: create it, report to user.
      - If file exists: show diff to user, ask for confirmation before writing.
 
-7. **OpenCode Compatibility Check**
+7. **Claude Code Compatibility (CLAUDE.md Symlink)**
+   - Create a relative symlink `./CLAUDE.md` -> `./AGENTS.md` so Claude Code picks up project rules natively.
+   - **If `./CLAUDE.md` does not exist**: create the symlink, report to user.
+   - **If `./CLAUDE.md` exists and is already a correct symlink to `./AGENTS.md`**: skip silently.
+   - **If `./CLAUDE.md` exists as a regular file or wrong symlink**: warn the user, show the current content/target, and ask for confirmation before replacing with the symlink.
+
+8. **OpenCode Compatibility Check**
    - If `.opencode/` directory or `opencode.json` file exists:
      - Read `opencode.json`.
      - Check if `instructions` field includes globs for `documents/AGENTS.md` and `scripts/AGENTS.md`.
      - If missing: warn user and propose adding them (subdirectory AGENTS.md files won't be loaded by OpenCode without explicit config).
 
-8. **Generate Documentation**
+9. **Generate Documentation**
    - Generate core documentation files in `documents/`:
      - `documents/requirements.md` (SRS): Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
      - `documents/design.md` (SDS): Create initial structure. Skip if file exists and has more than 50 lines.
@@ -149,7 +157,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        - For **Greenfield**: Initialize with empty notes.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
 
-9. **Configure Development Commands**
+10. **Configure Development Commands**
    - Read analysis output to get detected stack.
    - **Check Interview Data**: If `use_deno_tooling: true`, FORCE usage of `flow-skill-configure-deno-commands`.
    - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flow-skill-configure-deno-commands`).
@@ -162,9 +170,10 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
    - **Verify**: Run `check` command to ensure it works.
 
-10. **Cleanup & Verify**
+11. **Cleanup & Verify**
     - Remove temporary files: `project_info.json`, `interview_data.json` (if created).
     - Verify all 3 AGENTS.md files exist (root, documents/, scripts/).
+    - Verify `./CLAUDE.md` symlink exists and points to `./AGENTS.md`.
     - Verify `documents/` folder exists with generated content.
     - Verify development commands are configured and the `check` command runs successfully.
     - **Verify no duplication**: Confirm that documentation/script sections are NOT present in both `./AGENTS.md` and their respective subdirectory files.
@@ -181,6 +190,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 [ ] For existing files: diffs shown and per-file confirmation requested.
 [ ] Existing user content preserved (custom rules, extracted sections used as-is).
 [ ] 3 AGENTS.md files generated: root, documents/, scripts/.
+[ ] `./CLAUDE.md` symlink created, pointing to `./AGENTS.md`.
 [ ] No duplication: sections moved to subdirectories are removed from root AGENTS.md.
 [ ] `documents/` folder populated with generated content from actual project data.
 [ ] Development commands configured (scripts created + config updated).

@@ -50,7 +50,7 @@
         `framework/skills/flow-plan/SKILL.md:36-63`,
         `framework/skills/flow-commit/SKILL.md:54-97`
   - [x] flow-init configures development commands via specialized skills (see FR-8).
-        Evidence: `framework/skills/flow-init/SKILL.md:150-161`
+        Evidence: `framework/skills/flow-init/SKILL.md` step 10 "Configure Development Commands"
 
 ### 3.2 Rule Enforcement (FR-2)
 
@@ -114,7 +114,7 @@
   - [x] Automated quality assurance workflows. Evidence:
         `framework/skills/flow-review/SKILL.md:56-140`
   - [x] Development commands are set up during project initialization (see FR-8).
-        Evidence: `framework/skills/flow-init/SKILL.md:150-161`
+        Evidence: `framework/skills/flow-init/SKILL.md` step 10 "Configure Development Commands"
 
 ### 3.6 Developer Onboarding & Workflow Clarity (FR-6)
 
@@ -277,32 +277,32 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         instructs the agent to NOT rely on it. Agent determines project type
         based on file count, stack, file tree, and presence of config files.
         Evidence: `framework/skills/flow-init/scripts/generate_agents.ts:93-96`,
-        `framework/skills/flow-init/SKILL.md:34`, `framework/skills/flow-init/SKILL.md:56-59`
+        `framework/skills/flow-init/SKILL.md` rule 4 "Greenfield/Brownfield Detection", step 2 "Analyze Project"
   - [x] **FR-8.2 Scripts are read-only (Deno/TS)**: Single script
         `generate_agents.ts` (command: `analyze`) only reads filesystem and
         outputs JSON to stdout. No file creation/modification. Evidence:
         `framework/skills/flow-init/scripts/generate_agents.ts:5-9`,
         `framework/skills/flow-init/scripts/generate_agents.ts:110`,
-        `framework/skills/flow-init/SKILL.md:35`
+        `framework/skills/flow-init/SKILL.md` rule 5 "Scripts are read-only"
   - [x] **FR-8.3 No rule copying**: SKILL.md rule 6 explicitly prohibits
         copying rules to IDE-specific directories. Rule management outside
-        flow-init scope. Evidence: `framework/skills/flow-init/SKILL.md:36`
+        flow-init scope. Evidence: `framework/skills/flow-init/SKILL.md` rule 6 "No rule copying"
   - [x] **FR-8.4 Auto-generation of missing documentation**: SKILL.md step 8
         generates `documents/requirements.md` (SRS), `documents/design.md`
         (SDS), `documents/whiteboard.md` from actual project data using LLM
         capabilities. Skips existing files exceeding line thresholds (50 for
         SRS/SDS, 10 for whiteboard). Evidence:
-        `framework/skills/flow-init/SKILL.md:141-148`
+        `framework/skills/flow-init/SKILL.md` step 9 "Generate Documentation"
   - [x] **FR-8.5 Greenfield workflow**: SKILL.md step 3 defines structured
         interview collecting 10 data points (project name, vision, audience,
         problem, solution, risks, stack, architecture, key decisions, Deno
         tooling preference). Returns JSON for template filling. Evidence:
-        `framework/skills/flow-init/SKILL.md:61-89`
+        `framework/skills/flow-init/SKILL.md` step 3 "Greenfield Workflow (Interview)"
   - [x] **FR-8.6 Brownfield workflow**: SKILL.md step 4 defines discovery
         (read config files, infer architecture/decisions) and extraction
         (semantically identify doc/script sections in existing `./AGENTS.md`,
         move to subdirectory files, remove from root). Evidence:
-        `framework/skills/flow-init/SKILL.md:91-105`
+        `framework/skills/flow-init/SKILL.md` step 4 "Brownfield Workflow (Discovery & Extraction)"
   - [x] **FR-8.7 Multi-file architecture**: Produces 3 AGENTS.md files:
         `./AGENTS.md` (core rules, project metadata), `./documents/AGENTS.md`
         (documentation system rules), `./scripts/AGENTS.md` (development
@@ -311,34 +311,35 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         `framework/skills/flow-init/assets/AGENTS.template.md`,
         `framework/skills/flow-init/assets/AGENTS.documents.template.md`,
         `framework/skills/flow-init/assets/AGENTS.scripts.template.md`,
-        `framework/skills/flow-init/SKILL.md:119-122`
+        `framework/skills/flow-init/SKILL.md` step 6 "Generate AGENTS.md Files"
   - [x] **FR-8.8 Per-file diff confirmation**: SKILL.md rules 3 and 8 require
         showing diffs and asking per-file confirmation before applying changes
         to existing files. Never silently overwrite. Evidence:
-        `framework/skills/flow-init/SKILL.md:33`,
-        `framework/skills/flow-init/SKILL.md:38`,
-        `framework/skills/flow-init/SKILL.md:131-133`
+        `framework/skills/flow-init/SKILL.md` rule 3 "Idempotency",
+        rule 8 "Per-File Diff Confirmation",
+        step 6 "For each file"
   - [x] **FR-8.9 User content preservation**: SKILL.md rule 9 requires
         preserving user's existing instructions in brownfield. Extracted
         content takes priority over template content. Templates are fallbacks
         for greenfield only. Evidence:
-        `framework/skills/flow-init/SKILL.md:39-40`,
-        `framework/skills/flow-init/SKILL.md:105`
-  - [x] **FR-8.10 Configure development commands**: SKILL.md step 9 detects
+        `framework/skills/flow-init/SKILL.md` rule 9 "Preserve User Content",
+        step 4 "Important: extracted content...takes priority"
+  - [x] **FR-8.10 Configure development commands**: SKILL.md step 10 detects
         stack, looks up specialized skills (e.g., `flow-skill-configure-deno-commands`),
         creates standard command interface (`check`, `test`, `dev`, `prod`).
         Verifies `check` command works. Evidence:
-        `framework/skills/flow-init/SKILL.md:150-161`
-  - [x] **FR-8.11 Cleanup**: SKILL.md step 10 removes temporary files
+        `framework/skills/flow-init/SKILL.md` step 10 "Configure Development Commands"
+  - [x] **FR-8.11 Cleanup**: SKILL.md step 11 removes temporary files
         (`project_info.json`, `interview_data.json`), verifies all 3
         AGENTS.md files exist, verifies no duplication between root and
         subdirectory files. Evidence:
-        `framework/skills/flow-init/SKILL.md:163-168`
-  - [ ] **FR-8.16 CLAUDE.md generation**: Generate `./CLAUDE.md` for Claude Code
-        compatibility (see FR-19 for detailed requirements).
-  - [x] **FR-8.12 OpenCode compatibility check**: SKILL.md step 7 checks
+        `framework/skills/flow-init/SKILL.md` step 11 "Cleanup & Verify"
+  - [x] **FR-8.16 CLAUDE.md symlink**: Create `./CLAUDE.md` symlink to
+        `./AGENTS.md` for Claude Code compatibility (see FR-19).
+        Evidence: `framework/skills/flow-init/SKILL.md` step 7 "Claude Code Compatibility"
+  - [x] **FR-8.12 OpenCode compatibility check**: SKILL.md step 8 checks
         `opencode.json` for subdirectory AGENTS.md glob entries, warns if
-        missing. Evidence: `framework/skills/flow-init/SKILL.md:135-139`
+        missing. Evidence: `framework/skills/flow-init/SKILL.md` step 8 "OpenCode Compatibility Check"
   - [x] **FR-8.13 Stack detection**: `generate_agents.ts` detects 6 stacks
         (Node.js, Deno, Go, Rust, Python, Swift) via marker files. Skips 11
         directories (`.git`, `node_modules`, `.cursor`, `.claude`, `.opencode`,
@@ -469,22 +470,22 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         files: `./AGENTS.md` (core rules + project metadata), `./documents/AGENTS.md`
         (doc system rules), `./scripts/AGENTS.md` (dev commands). Agent reads templates
         from `assets/` and generates files directly (no manifest). Evidence:
-        `framework/skills/flow-init/SKILL.md:22-26`,
+        `framework/skills/flow-init/SKILL.md` Context "File Structure",
         `framework/skills/flow-init/assets/AGENTS.template.md`,
         `framework/skills/flow-init/assets/AGENTS.documents.template.md`,
         `framework/skills/flow-init/assets/AGENTS.scripts.template.md`
   - [x] **FR-12.2 No data loss**: In brownfield, agent semantically extracts
         documentation/script sections from existing `./AGENTS.md` into subdirectory
         files. Per-file diff shown before applying. User confirms each file
-        individually. Evidence: `framework/skills/flow-init/SKILL.md:33`,
-        `framework/skills/flow-init/SKILL.md:38-39`,
-        `framework/skills/flow-init/SKILL.md:131-133`
+        individually. Evidence: `framework/skills/flow-init/SKILL.md`
+        rule 3 "Idempotency", rule 8 "Per-File Diff Confirmation",
+        step 6 "For each file"
   - [x] **FR-12.3 Documents preservation**: Existing files exceeding line thresholds
         (50 for SRS/SDS, 10 for whiteboard) are not overwritten. Evidence:
-        `framework/skills/flow-init/SKILL.md:143-146`
+        `framework/skills/flow-init/SKILL.md` step 9 "Generate Documentation"
   - [x] **FR-12.4 Diff-based update**: Agent shows diff per file, asks for
-        confirmation. Evidence: `framework/skills/flow-init/SKILL.md:131-133`,
-        `framework/skills/flow-init/SKILL.md:116`
+        confirmation. Evidence: `framework/skills/flow-init/SKILL.md`
+        step 6 "For each file", step 5 "Report findings to user"
   - [ ] **FR-12.5 Idempotent re-run**: Running `flow-init` twice in a row with no
         manual changes produces no modifications on the second run.
   - [x] **FR-12.6 Deno/TS scripts**: `generate_agents.ts` — analyze-only (Deno).
@@ -493,7 +494,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         `framework/skills/flow-init/scripts/generate_agents.ts:126-138`
   - [x] **FR-12.7 OpenCode compatibility**: Agent checks `opencode.json` for
         subdirectory AGENTS.md glob entries. Warns if missing. Evidence:
-        `framework/skills/flow-init/SKILL.md:135-139`
+        `framework/skills/flow-init/SKILL.md` step 8 "OpenCode Compatibility Check"
 
 ### 3.13 Migrate Framework-Specific Python Scripts to Deno/TypeScript (FR-13)
 
@@ -664,26 +665,26 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         to the user in a single output.
         Evidence: `framework/skills/flow-review-and-commit/SKILL.md:75-78`
 
-### 3.19 CLAUDE.md Generation in flow-init (FR-19)
+### 3.19 CLAUDE.md Symlink in flow-init (FR-19)
 
-- **Description:** `flow-init` must generate a `CLAUDE.md` file in the project root
-  during initialization. `CLAUDE.md` is the Claude Code-specific project instruction
-  file (equivalent to `AGENTS.md` but read natively by Claude Code). The generated
-  file should reference or include the core project rules from `AGENTS.md`.
+- **Description:** `flow-init` must create a `CLAUDE.md` symlink pointing to
+  `./AGENTS.md` in the project root. This ensures Claude Code reads the same
+  rules as other IDEs (SPOT — single point of truth). The project itself uses
+  this pattern: `CLAUDE.md -> ./AGENTS.md`.
 - **Use case scenario:** User runs `/flow-init` on a project that uses Claude Code.
-  In addition to the 3 `AGENTS.md` files, the agent generates `./CLAUDE.md` with
-  project-specific instructions for Claude Code.
+  In addition to the 3 `AGENTS.md` files, the agent creates a `./CLAUDE.md`
+  symlink to `./AGENTS.md` so Claude Code picks up the project rules natively.
 - **Acceptance criteria:**
-  - [ ] **FR-19.1 Generation**: `flow-init` generates `./CLAUDE.md` during
-        initialization (both Greenfield and Brownfield).
-  - [ ] **FR-19.2 Content**: Generated `CLAUDE.md` includes core project rules,
-        project metadata, and references to `AGENTS.md` for detailed context.
-  - [ ] **FR-19.3 Idempotency**: If `CLAUDE.md` already exists, show diff and
-        ask for per-file confirmation before applying (same as `AGENTS.md` handling).
-  - [ ] **FR-19.4 User content preservation**: In Brownfield, preserve user's
-        existing custom instructions in `CLAUDE.md`.
-  - [ ] **FR-19.5 Template**: Add `CLAUDE.template.md` to
-        `framework/skills/flow-init/assets/` as reference template.
+  - [x] **FR-19.1 Symlink creation**: `flow-init` creates `./CLAUDE.md` as a
+        relative symlink to `./AGENTS.md` (both Greenfield and Brownfield).
+        Evidence: `framework/skills/flow-init/SKILL.md` step 7 "Claude Code Compatibility"
+  - [x] **FR-19.2 Idempotency**: If `./CLAUDE.md` already exists as a correct
+        symlink, skip silently. If it exists as a regular file or wrong symlink,
+        warn the user and ask for confirmation before replacing.
+        Evidence: `framework/skills/flow-init/SKILL.md` step 7 "If CLAUDE.md exists..."
+  - [x] **FR-19.3 Verification**: Cleanup step verifies `./CLAUDE.md` symlink
+        exists and points to `./AGENTS.md`.
+        Evidence: `framework/skills/flow-init/SKILL.md` step 11 "Cleanup & Verify"
 
 ## 4. Non-functional requirements
 
