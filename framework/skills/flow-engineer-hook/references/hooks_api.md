@@ -1,50 +1,52 @@
 # Cursor Hooks Reference
 
 ## Overview
+
 Hooks let you observe, control, and extend the agent loop using custom scripts. They run before or after defined stages of the agent loop and can observe, block, or modify behavior.
 
-## Hook Events Detailed Reference
+## Hook Events (20 total)
 
 ### Session Lifecycle
-- **`sessionStart`**: Called when a new composer conversation is created. Use to set environment variables, inject context, or block session creation.
-- **`sessionEnd`**: Called when a composer conversation ends (completed, aborted, error, window_close, user_close). Fire-and-forget.
+- **`sessionStart`**: New composer conversation created. Use to set env vars, inject context. Output: `env`, `additional_context`, `continue`.
+- **`sessionEnd`**: Conversation ends. Reason: `completed`, `aborted`, `error`, `window_close`, `user_close`. Fire-and-forget.
 
 ### Tool Execution
-- **`preToolUse`**: Called before ANY tool execution (Shell, Read, Write, MCP, Task, etc.). Can allow/deny or modify input.
-- **`postToolUse`**: Called after successful tool execution. Useful for auditing.
-- **`postToolUseFailure`**: Called when a tool fails, times out, or is denied.
+- **`preToolUse`**: Before ANY tool execution. Matcher: tool type (`Shell`, `Read`, `Write`, `Grep`, `Delete`, `Task`, `MCP:<name>`). Can allow/deny or modify input.
+- **`postToolUse`**: After successful tool execution. Output: `updated_mcp_tool_output`, `additional_context`.
+- **`postToolUseFailure`**: Tool fails, times out, or is denied. Fire-and-forget.
 
 ### Shell & MCP Commands
-- **`beforeShellExecution`**: Specifically for terminal commands. Supports `allow`, `deny`, or `ask` (manual user approval).
-- **`afterShellExecution`**: Fires after a shell command completes. Includes output and duration.
-- **`beforeMCPExecution`**: Specifically for MCP tool calls. Fail-closed behavior.
-- **`afterMCPExecution`**: Fires after an MCP tool call completes. Includes result JSON.
+- **`beforeShellExecution`**: Terminal commands. Matcher: regex on command text. Supports `allow`, `deny`, `ask`. Output: `permission`, `user_message`, `agent_message`.
+- **`afterShellExecution`**: After shell command completes. Input includes output and duration. Fire-and-forget.
+- **`beforeMCPExecution`**: MCP tool calls. Fail-closed. Supports `allow`, `deny`, `ask`.
+- **`afterMCPExecution`**: After MCP tool completes. Input includes result JSON. Fire-and-forget.
 
 ### File Operations (Agent)
-- **`beforeReadFile`**: Called before the Agent reads a file. Can block access to sensitive files. Fail-closed.
-- **`afterFileEdit`**: Fires after the Agent successfully edits a file. Useful for formatters.
+- **`beforeReadFile`**: Before file read. Can block access. Fail-closed. Matcher: `TabRead` or `Read`.
+- **`afterFileEdit`**: After file edit. Matcher: `TabWrite` or `Write`. Fire-and-forget.
 
 ### Subagent (Task Tool) Lifecycle
-- **`subagentStart`**: Called before spawning a subagent. Can allow/deny.
-- **`subagentStop`**: Called when a subagent completes or errors. Can trigger a `followup_message`.
+- **`subagentStart`**: Before spawning subagent. Matcher: `generalPurpose`, `explore`, `shell`. Input: `subagent_type`, `is_parallel_worker`, `git_branch`. Can allow/deny.
+- **`subagentStop`**: Subagent completes or errors. Input: `modified_files`, `agent_transcript_path`, `loop_count`, `tool_call_count`, `message_count`. Output: `followup_message`.
 
 ### Agent Loop & UI
-- **`beforeSubmitPrompt`**: Called after user hits send but before backend request. Can prevent submission.
-- **`afterAgentResponse`**: Called after the agent completes an assistant message.
-- **`afterAgentThought`**: Called after the agent completes a thinking block.
-- **`preCompact`**: Called before context window compaction/summarization. Observational only.
-- **`stop`**: Called when the agent loop ends. Can trigger an automatic `followup_message` to continue the loop.
+- **`beforeSubmitPrompt`**: After user sends, before backend. Matcher: `UserPromptSubmit`. Can prevent submission via `continue: false`.
+- **`afterAgentResponse`**: After assistant message. Matcher: `AgentResponse`. Fire-and-forget.
+- **`afterAgentThought`**: After thinking block. Matcher: `AgentThought`. Fire-and-forget.
+- **`preCompact`**: Before context compaction. Input: `trigger` (auto/manual), `context_usage_percent`, `context_tokens`, `context_window_size`, `message_count`, `messages_to_compact`, `is_first_compaction`. Observational only.
+- **`stop`**: Agent loop ends. Input: `stop_hook_active`. Output: `followup_message` to continue loop.
 
 ### Cursor Tab (Inline Completions)
-- **`beforeTabFileRead`**: Control file access specifically for Tab completions.
-- **`afterTabFileEdit`**: Fires after Tab edits a file. Includes detailed range and line info.
+- **`beforeTabFileRead`**: Control file access for Tab completions. Can allow/deny.
+- **`afterTabFileEdit`**: After Tab edit. Input includes `range` (start/end line/column), `old_line`, `new_line`.
 
 ## Configuration
-Hooks are defined in `hooks.json`.
-- Project: `.cursor/hooks.json` (relative to project root).
-- User: `~/.cursor/hooks.json` (relative to `~/.cursor/`).
 
-### hooks.json Example
+Hooks defined in `hooks.json`. Priority (highest to lowest): Enterprise > Team (cloud) > Project > User.
+
+- Project: `.cursor/hooks.json`
+- User: `~/.cursor/hooks.json`
+
 ```json
 {
   "version": 1,
@@ -53,37 +55,76 @@ Hooks are defined in `hooks.json`.
     "beforeShellExecution": [
       {
         "command": ".cursor/hooks/approve.sh",
-        "matcher": "curl|wget"
+        "matcher": "curl|wget",
+        "failClosed": true
       }
     ]
   }
 }
 ```
 
+### Hook Object Fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `command` | string | required | Shell command or script path |
+| `type` | `"command"` \| `"prompt"` | `"command"` | Execution type |
+| `timeout` | number (seconds) | — | Max execution time |
+| `matcher` | string/object | — | Regex filter for when hook fires |
+| `failClosed` | boolean | `false` | Block action if hook fails |
+| `loop_limit` | number \| null | `5` | Max auto-followups (stop/subagentStop only). null = unlimited |
+
 ## Execution Types
-1. **Command-Based**: Shell scripts receiving JSON via stdin and returning JSON via stdout.
-   - Exit code `0`: Success.
-   - Exit code `2`: Block action (deny).
-2. **Prompt-Based**: LLM-evaluated condition.
+
+1. **Command-based**: Shell script receives JSON via stdin, returns JSON via stdout.
+   - Exit `0`: Success (parse stdout JSON).
+   - Exit `2`: Block/deny action.
+   - Other: Failure (fail-open unless `failClosed: true`).
+
+2. **Prompt-based**: LLM-evaluated condition. Returns `{ok, reason?}`.
    ```json
-   {
-     "type": "prompt",
-     "prompt": "Is this command safe?",
-     "timeout": 10
-   }
+   { "type": "prompt", "prompt": "Is this command safe?", "timeout": 10, "model": "gpt-4o-mini" }
    ```
+   Supports `$ARGUMENTS` placeholder for hook input JSON.
 
-## Common Input Fields (JSON)
-- `conversation_id`, `generation_id`, `model`, `hook_event_name`, `cursor_version`, `workspace_roots`.
-- Hook-specific fields (e.g., `command`, `file_path`, `tool_name`, `tool_input`, `status`, `duration`).
+## Environment Variables
 
-## Common Output Fields (JSON)
-- `decision`: "allow" | "deny"
-- `reason`: string
-- `updated_input`: object (for `preToolUse`)
-- `permission`: "allow" | "deny" | "ask" (for `beforeShellExecution`)
-- `user_message`, `agent_message`: string
-- `followup_message`: string (for `stop` or `subagentStop`)
-- `continue`: boolean (for `sessionStart` or `beforeSubmitPrompt`)
-- `env`: object (for `sessionStart`)
-- `additional_context`: string (for `sessionStart`)
+| Variable | Description |
+|----------|-------------|
+| `CURSOR_PROJECT_DIR` | Project root directory |
+| `CURSOR_VERSION` | Cursor version |
+| `CURSOR_USER_EMAIL` | User email (nullable) |
+| `CURSOR_TRANSCRIPT_PATH` | Conversation transcript path (nullable) |
+| `CURSOR_CODE_REMOTE` | Set in remote environments |
+| `CLAUDE_PROJECT_DIR` | Compatibility alias for CURSOR_PROJECT_DIR |
+
+Session-scoped env vars set via `sessionStart` output `env` field persist for all subsequent hooks in that session.
+
+## Common Input Fields (JSON via stdin)
+
+All hooks receive: `conversation_id`, `generation_id`, `model`, `hook_event_name`, `cursor_version`, `workspace_roots`, `user_email` (nullable), `transcript_path` (nullable).
+
+## Common Output Fields (JSON via stdout)
+
+| Field | Used By | Description |
+|-------|---------|-------------|
+| `permission` | beforeShellExecution, beforeMCPExecution | `"allow"` \| `"deny"` \| `"ask"` |
+| `decision` | preToolUse | `"allow"` \| `"deny"` |
+| `updated_input` | preToolUse | Modified tool input object |
+| `user_message` | blocking events | Shown to user |
+| `agent_message` | blocking events | Fed to agent |
+| `followup_message` | stop, subagentStop | Auto-continue message |
+| `continue` | sessionStart, beforeSubmitPrompt | `false` to prevent action |
+| `env` | sessionStart | Env vars for session |
+| `additional_context` | sessionStart, postToolUse | Extra context for agent |
+| `updated_mcp_tool_output` | postToolUse | Modified MCP result |
+
+## Claude Code Compatibility
+
+Cursor supports loading Claude Code hooks from `.claude/settings.json` (requires "Third-party skills" enabled in Settings > Features).
+
+Event mapping: `PreToolUse` → `preToolUse`, `PostToolUse` → `postToolUse`, `UserPromptSubmit` → `beforeSubmitPrompt`, `Stop` → `stop`, `SubagentStop` → `subagentStop`, `SessionStart` → `sessionStart`, `SessionEnd` → `sessionEnd`, `PreCompact` → `preCompact`.
+
+Tool name mapping: `Bash` → `Shell`, `Read` → `Read`, `Write` → `Write/Edit`, `Grep` → `Grep`, `Task` → `Task`. No Cursor equivalent for `Glob`, `WebFetch`, `WebSearch`.
+
+Unsupported Claude Code features: `Notification`, `PermissionRequest` events.
