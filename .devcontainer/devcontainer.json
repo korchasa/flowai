@@ -1,0 +1,71 @@
+{
+  "name": "AssistFlow",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers-extra/features/deno:latest": {},
+    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "denoland.vscode-deno",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "anthropic.claude-code",
+        "eamodio.gitlens",
+        "editorconfig.editorconfig"
+      ],
+      "settings": {
+        "deno.enable": true,
+        "deno.lint": true,
+        "editor.defaultFormatter": "denoland.vscode-deno",
+        "editor.formatOnSave": true
+      }
+    }
+  },
+
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  },
+
+  "secrets": {
+    "ANTHROPIC_API_KEY": {
+      "description": "API key for AI CLI tools (console.anthropic.com)"
+    },
+    "GITHUB_TOKEN": {
+      "description": "GitHub PAT for gh CLI"
+    }
+  },
+
+  "mounts": [
+    "source=claude-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=opencode-config-${devcontainerId},target=/home/vscode/.config/opencode,type=volume",
+    "source=${localEnv:HOME}/.claude,target=/home/vscode/.claude-host,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/opencode,target=/home/vscode/.config/opencode-host,type=bind,readonly",
+    "source=bashhistory-${devcontainerId},target=/commandhistory,type=volume"
+  ],
+
+  "postCreateCommand": {
+    "deps": "deno install",
+    "claude-cli": "sudo chown vscode:vscode ~/.claude && curl -fsSL https://claude.ai/install.sh | bash",
+    "opencode-cli": "sudo chown vscode:vscode ~/.config/opencode && curl -fsSL https://opencode.ai/install | bash",
+    "fix-history": "sudo chown vscode:vscode /commandhistory 2>/dev/null || true"
+  },
+
+  "postStartCommand": {
+    "git-safe": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+    "claude-sync": "rm -rf ~/.claude/skills ~/.claude/commands && cp -rL ~/.claude-host/skills ~/.claude/skills 2>/dev/null || true && cp -rL ~/.claude-host/commands ~/.claude/commands 2>/dev/null || true",
+    "opencode-sync": "rm -rf ~/.config/opencode/skills && cp -rL ~/.config/opencode-host/skills ~/.config/opencode/skills 2>/dev/null || true"
+  },
+
+  "remoteUser": "vscode"
+}

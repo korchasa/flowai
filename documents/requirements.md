@@ -29,6 +29,22 @@
 
 ## 3. Functional requirements
 
+### Implementation Order (open requirements)
+
+Dependencies between unclosed requirements define execution order:
+
+1. **FR-17** Resolve IDE Support Scope — prerequisite for all below
+2. **FR-21** Universal Skill & Script Requirements — standardize before distribution
+3. **FR-12.5** flow-init idempotent re-run — independent, can run in parallel with 2
+4. **FR-10** Homebrew Distribution — requires FR-17, FR-21
+5. **FR-20** AI Devcontainer Setup — requires FR-10 (host has real files, not symlinks)
+
+```
+FR-17 ──→ FR-21 ──→ FR-10 ──→ FR-20
+              ↑
+FR-12.5 (parallel)
+```
+
 ### 3.1 Command Execution (FR-1)
 
 - **Description:** The system must provide executable workflows for common
@@ -388,47 +404,41 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 
 ### 3.10 Global Framework Install/Update (FR-10)
 
-- **Description:** A script that installs or updates AssistFlow framework globally
-  for supported IDEs. Each agent and skill is installed as an individual symlink,
-  so framework updates do not overwrite user's own agents/skills in IDE config dirs.
-- **Use case scenario:** Developer runs `deno run -A install.ts` (or a remote URL
-  equivalent). The script detects installed IDEs, creates per-item symlinks for each
-  framework agent and skill into the IDE config directories (`~/.cursor/`, `~/.claude/`,
-  `~/.opencode/`). On re-run, it updates only framework-managed symlinks without
-  touching user-created files.
+- **Description:** Framework is distributed globally via Homebrew. Skills and agents
+  are installed as real files (not symlinks) into IDE config directories, so they
+  work in any environment including devcontainers and Codespaces.
+- **Use case scenario:** Developer runs `brew install assist-flow`. The formula
+  copies skills and agents into `~/.claude/skills/`, `~/.cursor/skills/`,
+  `~/.config/opencode/skills/`. On `brew upgrade assist-flow`, files are updated
+  and stale items removed. User-created files are never touched.
+- **Note:** The project's own dev workflow (FR-9) uses symlinks via `deno task link`
+  to see live changes during development. This is distinct from the user-facing
+  Homebrew distribution which copies files.
 - **Acceptance criteria:**
-  - [x] **FR-10.1 Per-item symlinks**: Each agent file and each skill directory is
-        symlinked individually (not a single directory symlink). This prevents
-        overwriting user's custom agents/skills. Evidence:
-        `scripts/install.ts:181-192`, `scripts/install.ts:593`
-  - [x] **FR-10.2 Multi-IDE support**: Script detects and supports Cursor
-        (`~/.cursor/`), Claude Code (`~/.claude/`), OpenCode (`~/.config/opencode/`).
-        Agents are per-IDE: reads from `framework/agents/{claude,cursor,opencode}/`
-        with IDE-native frontmatter format. Evidence:
-        `scripts/install.ts:109-143`
-  - [x] **FR-10.3 Idempotent**: Safe to run multiple times. Existing symlinks are
-        updated, non-symlink files are never overwritten (warn and skip). Evidence:
-        `scripts/install.ts:13`, `scripts/install.ts:266-292`
-  - [x] **FR-10.4 Install & update**: Same script handles both fresh install and
-        update. Stale framework symlinks (pointing to removed framework items) are
-        cleaned up. `--update` flag triggers `git pull` on existing clone. Evidence:
-        `scripts/install.ts:340-348`, `scripts/install.ts:377-390`
-  - [x] **FR-10.5 No user data loss**: User-created files/directories in IDE config
-        dirs are never modified or removed. Evidence:
-        `scripts/install.ts:14`, `scripts/install.ts:281-285`
-  - [x] **FR-10.6 Remote execution**: Supports `deno run -A <url>` for one-liner
-        install from repository. Auto-clones to `~/.assistflow/`. Requires Deno
-        pre-installed. Evidence: `scripts/install.ts:331-334`,
-        `scripts/install.ts:399-424`
-  - [x] **FR-10.8 Agent per-item symlinks**: Agents MUST be installed as individual
-        per-file symlinks (one symlink per agent `.md` file), same as skills are
-        installed as per-directory symlinks. Verified in `install.ts` lines 195-213:
-        each agent `.md` file gets its own symlink to `<ide-config>/agents/<name>.md`.
-        Note: local `task-link.ts` uses directory-level symlinks for `.dev/agents/`
-        (by design — dev resources vs product distribution are different). Evidence:
-        `scripts/install.ts:194-213`
-  - [x] **FR-10.7 Written in Deno/TypeScript**: No Python dependency. Evidence:
-        `scripts/install.ts` (748 lines, Deno APIs throughout)
+  - [ ] **FR-10.1 Homebrew distribution**: Framework is distributed via Homebrew
+        formula (`brew install assist-flow`). No Deno dependency required for
+        end users. `scripts/install.ts` is replaced by Homebrew as the primary
+        install/update mechanism.
+  - [ ] **FR-10.2 File copy, not symlinks**: Homebrew formula copies skill and
+        agent files into IDE config directories (`~/.claude/skills/`,
+        `~/.cursor/skills/`, `~/.config/opencode/skills/`). Real files, not
+        symlinks. This ensures compatibility with devcontainers, Codespaces,
+        and environments where symlink targets are unavailable.
+  - [ ] **FR-10.3 Multi-IDE support**: Installs into Cursor (`~/.cursor/`),
+        Claude Code (`~/.claude/`), OpenCode (`~/.config/opencode/`). Agents
+        are per-IDE: reads from `framework/agents/{claude,cursor,opencode}/`.
+  - [ ] **FR-10.4 Idempotent**: Safe to run multiple times (`brew upgrade`).
+        Framework-managed files are updated. User-created files are never
+        overwritten (skip with warning).
+  - [ ] **FR-10.5 No user data loss**: User-created files/directories in IDE
+        config dirs are never modified or removed. The `flow-*` namespace is
+        reserved for the framework; user skills MUST NOT use this prefix.
+  - [ ] **FR-10.6 Update via brew**: `brew upgrade assist-flow` pulls latest
+        version and re-copies files. No manual `--update` flag needed.
+  - [ ] **FR-10.7 Clean-and-copy strategy**: On install/upgrade, formula
+        removes all `flow-*` items from IDE config dirs, then copies fresh
+        files from the formula. No manifest needed — the `flow-*` prefix
+        namespace belongs to the framework exclusively.
 
 ### 3.11 Conventional Commits — `agent` Type (FR-11)
 
@@ -716,31 +726,51 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         exists and points to `./AGENTS.md`.
         Evidence: `framework/skills/flow-init/SKILL.md` step 11 "Cleanup & Verify"
 
-### 3.20 Devcontainer Setup in flow-init (FR-20)
+### 3.20 AI Devcontainer Setup — flow-skill-setup-ai-ide-devcontainer (FR-20)
 
-- **Description:** `flow-init` must offer to create a `.devcontainer/` configuration
-  for the project. The agent asks the user whether they want a devcontainer; if the
-  user agrees, the agent generates `devcontainer.json` (and optionally a `Dockerfile`)
-  based on the detected or declared tech stack.
-- **Use case scenario:** User runs `/flow-init` on a project. After the main setup,
-  the agent asks "Would you like to set up a devcontainer for reproducible development
-  environments?" If the user agrees, the agent creates `.devcontainer/devcontainer.json`
-  with appropriate base image, extensions, and post-create commands derived from the
-  project stack.
+- **Description:** `flow-skill-setup-ai-ide-devcontainer` skill creates a `.devcontainer/`
+  configuration optimized for AI IDE development. Can be invoked by the agent
+  or delegated from `flow-init` step 11. Generates `devcontainer.json` (and optionally
+  `Dockerfile` + `init-firewall.sh`) based on detected tech stack, with Claude Code CLI
+  integration, secrets handling, and optional global skills mounting.
+- **Use case scenario:** User runs `/flow-skill-setup-ai-ide-devcontainer` on any project. The agent
+  detects the stack, asks about AI CLI, global skills, and security hardening, then
+  generates `.devcontainer/` configuration. Also invoked from `flow-init` when user
+  agrees to devcontainer setup.
 - **Acceptance criteria:**
   - [ ] **FR-20.1 User consent**: Agent asks the user before creating devcontainer
         files. Devcontainer is NOT created without explicit user agreement.
   - [ ] **FR-20.2 Stack-aware generation**: `devcontainer.json` references a base
         image matching the detected stack (e.g., `mcr.microsoft.com/devcontainers/typescript-node`
-        for Node/TS, `denoland/deno` for Deno). Extensions list includes relevant
-        IDE extensions for the stack.
+        for Node/TS, community Deno feature for Deno). Extensions list includes
+        relevant IDE extensions for the stack.
   - [ ] **FR-20.3 Idempotency**: If `.devcontainer/` already exists, the agent shows
         diff and asks for per-file confirmation before overwriting (same pattern as
         other brownfield files).
-  - [ ] **FR-20.4 Greenfield interview integration**: For greenfield projects, the
-        devcontainer question is included in the interview (step 3).
-  - [ ] **FR-20.5 Verification**: Cleanup step verifies `.devcontainer/devcontainer.json`
-        exists (if user agreed) and is valid JSON.
+  - [ ] **FR-20.4 Greenfield interview integration**: For greenfield projects via
+        flow-init, the devcontainer question is included in the interview (step 3).
+        flow-init delegates to flow-skill-setup-ai-ide-devcontainer when user agrees.
+  - [ ] **FR-20.5 Verification**: Generated `.devcontainer/devcontainer.json` is
+        valid JSON. Dockerfile (if generated) has valid `FROM` line. No hardcoded
+        secrets in any generated file.
+  - [ ] **FR-20.6 AI CLI integration**: When Claude Code selected, configures native
+        installer or npm install, config persistence volume, and `ANTHROPIC_API_KEY`
+        via `remoteEnv` with `${localEnv:}` (no hardcoded values).
+  - [ ] **FR-20.7 Global skills mounting**: Host `~/.claude/` is bind-mounted
+        read-only to `~/.claude-host`. `~/.claude` itself is a Docker volume
+        (isolates container state from host). `postStartCommand` syncs global
+        user skills/commands from host into container on every start:
+        `cp -rL ~/.claude-host/skills ~/.claude/skills` (dereferences symlinks
+        into real files). Skills update on container restart, not real-time.
+        Documents that bind mounts do not work in Codespaces.
+  - [ ] **FR-20.8 Security hardening**: Optional firewall (`init-firewall.sh`) with
+        default-deny policy, stack-aware domain allowlist, and verification tests.
+  - [ ] **FR-20.9 Sync timing**: Global skill/command sync MUST happen in
+        `postStartCommand` (not `postCreateCommand`), so updates from host
+        are picked up on every container restart without rebuild.
+  - [ ] **FR-20.10 Symlink dereferencing**: `cp -rL` MUST be used (not `cp -r`)
+        because host skills may be symlinks with host-relative paths that are
+        unresolvable inside the container.
 
 ### 3.21 Universal Skill & Script Requirements (FR-21)
 

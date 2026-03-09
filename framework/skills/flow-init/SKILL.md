@@ -171,17 +171,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **For Greenfield**: Check `use_devcontainer` from interview data.
    - **For Brownfield**: Ask the user: "Would you like to set up a devcontainer for reproducible development environments?"
    - **If user declines**: Skip this step entirely.
-   - **If user agrees**:
-     1. Check if `.devcontainer/` directory already exists.
-        - If exists: show diff for `devcontainer.json` and ask for per-file confirmation before overwriting.
-        - If not exists: create `.devcontainer/` directory.
-     2. Generate `.devcontainer/devcontainer.json` based on the detected/declared stack:
-        - Select appropriate base image (e.g., `mcr.microsoft.com/devcontainers/typescript-node` for Node/TS, `denoland/deno` for Deno, `mcr.microsoft.com/devcontainers/python` for Python, etc.).
-        - Add relevant VS Code extensions for the stack.
-        - Add `postCreateCommand` matching the project's dependency install command (e.g., `npm install`, `deno cache`).
-        - Include `customizations.vscode.settings` if the project has specific formatter/linter configs.
-     3. Optionally generate a `Dockerfile` if the project requires a non-standard base image or additional system dependencies.
-   - **Verify**: If created, validate that `devcontainer.json` is valid JSON.
+   - **If user agrees**: Delegate to the `flow-skill-setup-ai-ide-devcontainer` skill. Read and follow its `SKILL.md`.
 
 12. **Cleanup & Verify**
     - Remove temporary files: `project_info.json`, `interview_data.json` (if created).

@@ -1,0 +1,272 @@
+---
+name: flow-skill-setup-ai-ide-devcontainer
+description: >
+  Set up a .devcontainer/ configuration optimized for AI IDE development.
+  Generates devcontainer.json (and optionally Dockerfile) tailored to the project's
+  tech stack, with AI CLI integration (Claude Code, OpenCode, or both), secrets
+  handling, global skill mounting, and optional security hardening. Use when setting
+  up devcontainer for AI-assisted development, or when flow-init delegates devcontainer
+  creation. Container is opened by VS Code/Cursor; AI CLIs run inside it.
+---
+
+# AI Devcontainer Setup
+
+Creates a `.devcontainer/` configuration for AI-agent-driven development.
+
+**Architecture**: VS Code or Cursor **opens** the devcontainer (they support the devcontainer spec natively). AI tools work **inside** the container in two modes:
+- **VS Code extensions** (e.g., `anthropic.claude-code`, `github.copilot`) — installed automatically via `customizations.vscode.extensions`, share the same container config and env vars
+- **CLI/TUI tools** (e.g., `claude` CLI, `opencode` CLI) — run in the container terminal, use the same `~/.claude/` or `~/.config/opencode/` config
+
+Both modes share config directories, env vars, and global skills. This skill configures all layers.
+
+## Prerequisites
+
+- Project root is identifiable (has `package.json`, `deno.json`, `go.mod`, `Cargo.toml`, `pyproject.toml`, or similar)
+- User has confirmed they want a devcontainer
+
+## Workflow
+
+### Step 1: Detect Project Stack
+
+Scan the project root for stack indicators:
+
+| Indicator File | Stack | Base Image |
+|---|---|---|
+| `deno.json` / `deno.jsonc` | Deno | `mcr.microsoft.com/devcontainers/base:ubuntu` + Deno feature |
+| `package.json` / `tsconfig.json` | Node/TS | `mcr.microsoft.com/devcontainers/typescript-node` |
+| `pyproject.toml` / `requirements.txt` / `setup.py` | Python | `mcr.microsoft.com/devcontainers/python` |
+| `go.mod` | Go | `mcr.microsoft.com/devcontainers/go` |
+| `Cargo.toml` | Rust | `mcr.microsoft.com/devcontainers/rust` |
+| None / mixed | Generic | `mcr.microsoft.com/devcontainers/base:ubuntu` |
+
+If multiple stacks detected, ask user which is primary. Secondary stacks will be added as features.
+
+### Step 2: Detect Existing Configuration
+
+Check if `.devcontainer/` exists:
+- **If exists**: read current `devcontainer.json`, show diff after generating new version, ask for per-file confirmation before overwriting.
+- **If not exists**: proceed to generation.
+
+### Step 3: Determine Capabilities
+
+Ask the user (skip items already answered in prior context):
+
+1. **AI CLI tools** (multi-select): "Which AI CLI tools to install in the container?"
+   - Claude Code — native installer + config volume + `ANTHROPIC_API_KEY`
+   - OpenCode — binary install + config volume + `ANTHROPIC_API_KEY` (or other provider key)
+   - Both — installs and configures both
+   - None — skip AI CLI setup
+2. **Global skills**: "Mount host AI config directories into the container for access to global skills/settings? (read-only)"
+   - Yes (default for local dev) — adds bind mounts for selected AI CLIs' config dirs
+   - No — skip
+3. **Security hardening**: "Add network firewall (default-deny + allowlist)? Recommended for autonomous agent mode."
+   - Yes — generates `init-firewall.sh`, adds `NET_ADMIN`/`NET_RAW` capabilities
+   - No (default) — skip
+4. **Custom Dockerfile**: "Need additional system packages or non-standard setup?"
+   - Yes — generates Dockerfile (required if firewall is enabled)
+   - No (default) — use image + features only
+
+### Step 4: Generate Configuration
+
+#### 4.1 devcontainer.json
+
+Generate using the template logic in [references/devcontainer-template.md](references/devcontainer-template.md).
+
+Key structure:
+```jsonc
+{
+  "name": "<project-name>",
+  // Image-based OR Dockerfile-based (see step 3.4)
+  "image": "<base-image>",  // OR "build": { "dockerfile": "Dockerfile" }
+  "features": { /* stack features + common-utils + github-cli */ },
+  "customizations": {
+    "vscode": {
+      "extensions": [ /* stack extensions + AI extensions */ ],
+      "settings": { /* stack-specific settings */ }
+    }
+  },
+  "remoteEnv": {
+    // Only for selected AI CLIs — see "AI CLI Setup Reference"
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  },
+  "secrets": {
+    // Codespaces prompts — add only for selected AI CLIs
+    "ANTHROPIC_API_KEY": {
+      "description": "API key for AI CLI tools (console.anthropic.com)"
+    },
+    "GITHUB_TOKEN": {
+      "description": "GitHub PAT for gh CLI"
+    }
+  },
+  "mounts": [ /* global config mount if enabled */ ],
+  "postCreateCommand": "<dependency-install-command>",
+  "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "remoteUser": "<non-root-user>"
+}
+```
+
+#### 4.2 Dockerfile (if custom)
+
+Generate only when user chose custom Dockerfile in step 3.4. See [references/dockerfile-patterns.md](references/dockerfile-patterns.md).
+
+#### 4.3 init-firewall.sh (if security hardening)
+
+Generate only when user chose firewall in step 3.3. See [references/firewall-template.md](references/firewall-template.md).
+
+### Step 5: Write Files
+
+1. Create `.devcontainer/` directory if missing
+2. Write `.devcontainer/devcontainer.json`
+3. Write `.devcontainer/Dockerfile` (if custom)
+4. Write `.devcontainer/init-firewall.sh` (if firewall), make executable
+
+### Step 6: Verify
+
+- [ ] `.devcontainer/devcontainer.json` is valid JSON (parse it)
+- [ ] If Dockerfile exists: no syntax errors (check `FROM` line present)
+- [ ] If `init-firewall.sh` exists: has shebang and `set -euo pipefail`
+- [ ] `remoteUser` matches the user in the base image (e.g., `node` for Node images, `vscode` for mcr base images)
+- [ ] No secrets/API keys hardcoded in any generated file
+
+---
+
+## Stack Reference
+
+### Features by Stack
+
+| Stack | Features to Add |
+|---|---|
+| Deno | `ghcr.io/devcontainers-extra/features/deno:latest` |
+| Node/TS | (included in base image) |
+| Python | (included in base image) |
+| Go | (included in base image) |
+| Rust | (included in base image) |
+| Common (always) | `ghcr.io/devcontainers/features/common-utils:2`, `ghcr.io/devcontainers/features/github-cli:1` |
+| Secondary Node | `ghcr.io/devcontainers/features/node:1` (when Node needed alongside non-Node primary) |
+
+### Extensions by Stack
+
+| Stack | Extensions |
+|---|---|
+| Deno | `denoland.vscode-deno` |
+| Node/TS | `dbaeumer.vscode-eslint`, `esbenp.prettier-vscode` |
+| Python | `ms-python.python`, `ms-python.vscode-pylance` |
+| Go | `golang.go` |
+| Rust | `rust-lang.rust-analyzer` |
+| Common (always) | `eamodio.gitlens`, `editorconfig.editorconfig` |
+
+### AI CLI Extensions (VS Code/Cursor)
+
+| Tool | Extension ID | Notes |
+|---|---|---|
+| Claude Code | `anthropic.claude-code` | IDE extension + CLI inside container |
+| GitHub Copilot | `github.copilot`, `github.copilot-chat` | IDE extension only |
+
+> OpenCode is a standalone TUI/CLI — no VS Code extension. It runs in the container terminal.
+
+### postCreateCommand by Stack
+
+| Stack | Command |
+|---|---|
+| Deno | `deno install` or `deno cache` (check deno.json for deps) |
+| Node/TS | `npm install` or `yarn install` or `pnpm install` (match lockfile) |
+| Python | `pip install -r requirements.txt` or `pip install -e .` (match project) |
+| Go | `go mod download` |
+| Rust | `cargo fetch` |
+
+### remoteUser by Base Image
+
+| Base Image Pattern | remoteUser |
+|---|---|
+| `mcr.microsoft.com/devcontainers/*` | `vscode` |
+| `node:*` | `node` |
+| `denoland/deno:*` | `deno` |
+| `debian:*` / `ubuntu:*` | Create non-root user in Dockerfile |
+
+---
+
+## AI CLI Setup Reference
+
+Each AI CLI has its own installation, config persistence, and global skills pattern. Apply only for selected tools.
+
+### Claude Code
+
+| Aspect | Details |
+|---|---|
+| **Install (postCreateCommand)** | `curl -fsSL https://claude.ai/install.sh \| bash` |
+| **Install (Dockerfile)** | `RUN curl -fsSL https://claude.ai/install.sh \| bash` or `RUN npm install -g @anthropic-ai/claude-code@latest` (pinned) |
+| **Config dir** | `~/.claude/` (user settings, skills), `~/.claude.json` (preferences, tokens) |
+| **Config volume** | `source=claude-config-${devcontainerId},target=/home/<user>/.claude,type=volume` |
+| **Global skills mount** | `source=${localEnv:HOME}/.claude,target=/home/<user>/.claude-host,type=bind,readonly` |
+| **Skills sync** | `rm -rf ~/.claude/skills ~/.claude/commands && cp -rL ~/.claude-host/skills ~/.claude/skills 2>/dev/null \|\| true && cp -rL ~/.claude-host/commands ~/.claude/commands 2>/dev/null \|\| true` |
+| **Env vars** | `ANTHROPIC_API_KEY` (auth), `CLAUDE_CONFIG_DIR` (override config path), `DISABLE_AUTOUPDATER=1` (pin version) |
+| **Extension** | `anthropic.claude-code` |
+
+### OpenCode
+
+| Aspect | Details |
+|---|---|
+| **Install (postCreateCommand)** | `curl -fsSL https://opencode.ai/install \| bash` (check latest docs) |
+| **Install (Dockerfile)** | `RUN curl -fsSL https://opencode.ai/install \| bash` |
+| **Config dir** | `~/.config/opencode/` (settings, skills, commands, plugins) |
+| **Config volume** | `source=opencode-config-${devcontainerId},target=/home/<user>/.config/opencode,type=volume` |
+| **Global skills mount** | `source=${localEnv:HOME}/.config/opencode,target=/home/<user>/.config/opencode-host,type=bind,readonly` |
+| **Skills sync** | `rm -rf ~/.config/opencode/skills && cp -rL ~/.config/opencode-host/skills ~/.config/opencode/skills 2>/dev/null \|\| true` |
+| **Env vars** | `ANTHROPIC_API_KEY` (if using Anthropic provider) |
+| **Extension** | None (standalone TUI/CLI, runs in terminal) |
+
+### Global Skills Mount Rules
+
+- Mount to a **separate path** (`*-host`) to avoid overwriting container-local config
+- Use `readonly` — container should never write back to host config
+- Sync `skills/` and `commands/` via `postStartCommand` (runs on every start, picks up host updates on restart). Use `cp -rL` to dereference symlinks — host skills may be symlinks with host-relative paths unresolvable inside the container
+- Bind mounts do **NOT** work in GitHub Codespaces — for Codespaces, bake skills into the image or clone from a git repo in `postCreateCommand`
+
+### Environment Variables (remoteEnv)
+
+Add only for selected AI CLIs:
+```jsonc
+{
+  // Claude Code (when selected)
+  "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+  "CLAUDE_CONFIG_DIR": "/home/<user>/.claude",
+  // OpenCode (when selected, if using Anthropic)
+  // Uses same ANTHROPIC_API_KEY
+  // GitHub (always)
+  "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+}
+```
+
+### Secrets (Codespaces metadata)
+
+Add only for selected AI CLIs:
+```jsonc
+{
+  "ANTHROPIC_API_KEY": {
+    "description": "API key for AI CLI tools (console.anthropic.com)"
+  },
+  "GITHUB_TOKEN": {
+    "description": "GitHub PAT for gh CLI"
+  }
+}
+```
+
+---
+
+## Lifecycle Hooks Reference
+
+| Hook | When | Use For |
+|---|---|---|
+| `postCreateCommand` | Once after container creation | Dependency install, CLI install |
+| `postStartCommand` | Every container start | `git safe.directory`, global skills sync |
+| `postAttachCommand` | Every IDE attach | Shell customization |
+
+All hooks accept string, array, or object (parallel execution) format:
+```jsonc
+// Object form for parallel execution
+"postCreateCommand": {
+  "deps": "npm install",
+  "cli": "curl -fsSL https://claude.ai/install.sh | bash"
+}
+```
