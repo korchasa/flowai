@@ -1,3 +1,7 @@
+// FR-20.4 (greenfield interview integration) is NOT tested here.
+// That path (flow-init → devcontainer delegation) belongs to flow-init benchmarks,
+// not to devcontainer skill benchmarks. The skill itself is tested standalone.
+
 import { BenchmarkSkillScenario } from "../../../../scripts/benchmarks/lib/types.ts";
 
 export const SetupDevcontainerDenoWithClaude = new class
@@ -85,6 +89,20 @@ Confirm any file creation prompts.`;
       description:
         "Are there no hardcoded API keys or tokens in any generated file?",
       critical: true,
+    },
+    {
+      id: "global_skills_sync_in_post_start",
+      description:
+        "Is the global skills sync command (cp -rL from ~/.claude-host) placed in postStartCommand (NOT postCreateCommand), so it runs on every container restart?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
+      id: "symlink_dereference",
+      description:
+        "Does the skills sync command use `cp -rL` (with -L flag to dereference symlinks) rather than plain `cp -r`?",
+      critical: true,
+      type: "semantic" as const,
     },
     {
       id: "feature_discovery_performed",

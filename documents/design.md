@@ -200,6 +200,29 @@
 - **SKILL.md updates:** All `python3 scripts/*.py` invocations replaced with
   `deno run -A scripts/*.ts`.
 
+### 3.9 AI Devcontainer Setup — FR-20
+
+- **Purpose:** Generate `.devcontainer/` config optimized for AI IDE development.
+- **Architecture:** 7-step skill workflow (detect stack → discover features → detect
+  existing → determine capabilities → generate → write → verify). 4 reference docs
+  (`devcontainer-template`, `features-catalog`, `dockerfile-patterns`, `firewall-template`).
+- **Stack detection:** Scans project root for indicator files (`deno.json`,
+  `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`). Maps to MCR base images.
+  Multi-stack → user picks primary, secondary added as features.
+- **Feature discovery:** Indicator→need mapping in `references/features-catalog.md`.
+  Categories: secondary runtimes (auto), build tools (auto), infra/cloud (suggest),
+  databases (suggest), testing (suggest). Always includes `common-utils` + `github-cli`.
+- **AI CLI support:** 4 CLIs via registry features (Claude Code, OpenCode, Cursor CLI,
+  Gemini CLI). Config persistence via Docker volumes. Global skills via read-only bind
+  mount to `*-host` path + `postStartCommand` sync with `cp -rL` (dereferences symlinks).
+- **Security hardening:** Optional `init-firewall.sh` with default-deny iptables +
+  stack-aware domain allowlist. Requires `NET_ADMIN`/`NET_RAW` capabilities + custom
+  Dockerfile.
+- **Idempotency:** Detects existing `.devcontainer/`, shows diff, asks per-file
+  confirmation.
+- **Integration:** Invoked standalone or delegated from `flow-init` step 11.
+- **Deps:** None (pure SKILL.md, agent-driven generation).
+
 ## 4. Data and Storage
 
 - **Entities and attributes:**

@@ -737,7 +737,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 ### 3.20 AI Devcontainer Setup — flow-skill-setup-ai-ide-devcontainer (FR-20)
 
 - **Description:** `flow-skill-setup-ai-ide-devcontainer` skill creates a `.devcontainer/`
-  configuration optimized for AI IDE development. Can be invoked by the agent
+configuration optimized for AI IDE development. Can be invoked by the agent
   or delegated from `flow-init` step 11. Generates `devcontainer.json` (and optionally
   `Dockerfile` + `init-firewall.sh`) based on detected tech stack, with Claude Code CLI
   integration, secrets handling, and optional global skills mounting.
