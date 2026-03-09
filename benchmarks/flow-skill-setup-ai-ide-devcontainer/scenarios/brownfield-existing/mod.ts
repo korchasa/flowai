@@ -61,5 +61,12 @@ When shown diffs of existing files, confirm the overwrite.`;
         "Does remoteEnv reference ANTHROPIC_API_KEY via ${localEnv:ANTHROPIC_API_KEY}?",
       critical: true,
     },
+    {
+      id: "feature_discovery_performed",
+      description:
+        "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
+      critical: false,
+      type: "semantic" as const,
+    },
   ];
 }();

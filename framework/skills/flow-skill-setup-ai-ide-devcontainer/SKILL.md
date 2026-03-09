@@ -41,20 +41,37 @@ Scan the project root for stack indicators:
 
 If multiple stacks detected, ask user which is primary. Secondary stacks will be added as features.
 
-### Step 2: Detect Existing Configuration
+### Step 2: Discover Relevant Features
+
+Scan the project for indicators that map to devcontainer features beyond the base stack. Use the indicator→need mapping in [references/features-catalog.md](references/features-catalog.md), then search https://containers.dev/features for matching feature IDs.
+
+1. **Scan** project root and common subdirs for indicator files/patterns (see catalog for full mapping)
+2. **Map** indicators to needs (e.g., `pnpm-lock.yaml` → need pnpm, `*.tf` → need Terraform)
+3. **Search** https://containers.dev/features for features matching each identified need. Use latest versions
+4. **Filter** out features already covered by the primary stack's base image (e.g., skip Node feature if Node is primary)
+5. **Classify** matches:
+   - **auto**: high-confidence matches (secondary runtimes, build tools detected by lockfiles) — add without asking
+   - **suggest**: optional/heavy features (databases, Docker-in-Docker, cloud CLIs) — present to user for confirmation
+6. **Present** grouped list to user (see catalog for format). Show what was detected and why (which indicator file triggered each suggestion)
+7. **User confirms** or customizes the list. Confirmed features are merged into the `features` block in step 5 (Generate Configuration)
+
+Skip this step only if user explicitly provided a complete feature list in their request.
+
+### Step 3: Detect Existing Configuration
 
 Check if `.devcontainer/` exists:
 - **If exists**: read current `devcontainer.json`, show diff after generating new version, ask for per-file confirmation before overwriting.
 - **If not exists**: proceed to generation.
 
-### Step 3: Determine Capabilities
+### Step 4: Determine Capabilities
 
 Ask the user (skip items already answered in prior context):
 
 1. **AI CLI tools** (multi-select): "Which AI CLI tools to install in the container?"
-   - Claude Code — native installer + config volume + `ANTHROPIC_API_KEY`
-   - OpenCode — binary install + config volume + `ANTHROPIC_API_KEY` (or other provider key)
-   - Both — installs and configures both
+   - Claude Code — via registry feature (see [references/features-catalog.md](references/features-catalog.md) § AI IDE Features) + config volume + `ANTHROPIC_API_KEY`
+   - OpenCode — via registry feature + config volume + `ANTHROPIC_API_KEY` (or other provider key)
+   - Cursor CLI, Gemini CLI — via registry features
+   - Both/multiple — installs and configures all selected
    - None — skip AI CLI setup
 2. **Global skills**: "Mount host AI config directories into the container for access to global skills/settings? (read-only)"
    - Yes (default for local dev) — adds bind mounts for selected AI CLIs' config dirs
@@ -66,7 +83,7 @@ Ask the user (skip items already answered in prior context):
    - Yes — generates Dockerfile (required if firewall is enabled)
    - No (default) — use image + features only
 
-### Step 4: Generate Configuration
+### Step 5: Generate Configuration
 
 #### 4.1 devcontainer.json
 
@@ -76,7 +93,7 @@ Key structure:
 ```jsonc
 {
   "name": "<project-name>",
-  // Image-based OR Dockerfile-based (see step 3.4)
+  // Image-based OR Dockerfile-based (see step 4.4)
   "image": "<base-image>",  // OR "build": { "dockerfile": "Dockerfile" }
   "features": { /* stack features + common-utils + github-cli */ },
   "customizations": {
@@ -108,20 +125,20 @@ Key structure:
 
 #### 4.2 Dockerfile (if custom)
 
-Generate only when user chose custom Dockerfile in step 3.4. See [references/dockerfile-patterns.md](references/dockerfile-patterns.md).
+Generate only when user chose custom Dockerfile in step 4.4. See [references/dockerfile-patterns.md](references/dockerfile-patterns.md).
 
 #### 4.3 init-firewall.sh (if security hardening)
 
-Generate only when user chose firewall in step 3.3. See [references/firewall-template.md](references/firewall-template.md).
+Generate only when user chose firewall in step 4.3. See [references/firewall-template.md](references/firewall-template.md).
 
-### Step 5: Write Files
+### Step 6: Write Files
 
 1. Create `.devcontainer/` directory if missing
 2. Write `.devcontainer/devcontainer.json`
 3. Write `.devcontainer/Dockerfile` (if custom)
 4. Write `.devcontainer/init-firewall.sh` (if firewall), make executable
 
-### Step 6: Verify
+### Step 7: Verify
 
 - [ ] `.devcontainer/devcontainer.json` is valid JSON (parse it)
 - [ ] If Dockerfile exists: no syntax errors (check `FROM` line present)
@@ -144,6 +161,7 @@ Generate only when user chose firewall in step 3.3. See [references/firewall-tem
 | Rust | (included in base image) |
 | Common (always) | `ghcr.io/devcontainers/features/common-utils:2`, `ghcr.io/devcontainers/features/github-cli:1` |
 | Secondary Node | `ghcr.io/devcontainers/features/node:1` (when Node needed alongside non-Node primary) |
+| Discovered | Additional features from [references/features-catalog.md](references/features-catalog.md) based on project scan (Step 2) |
 
 ### Extensions by Stack
 
@@ -190,12 +208,16 @@ Generate only when user chose firewall in step 3.3. See [references/firewall-tem
 
 Each AI CLI has its own installation, config persistence, and global skills pattern. Apply only for selected tools.
 
+**Preferred method**: Use devcontainer registry features (handle install, PATH, updates automatically).
+See [references/features-catalog.md](references/features-catalog.md) § AI IDE Features for feature IDs.
+Fall back to manual install only if registry feature is unavailable or user requests pinned version.
+
 ### Claude Code
 
 | Aspect | Details |
 |---|---|
-| **Install (postCreateCommand)** | `curl -fsSL https://claude.ai/install.sh \| bash` |
-| **Install (Dockerfile)** | `RUN curl -fsSL https://claude.ai/install.sh \| bash` or `RUN npm install -g @anthropic-ai/claude-code@latest` (pinned) |
+| **Install (feature, preferred)** | `ghcr.io/devcontainers-extra/features/claude-code:1` (npm) or `ghcr.io/stu-bell/devcontainer-features/claude-code:0` (native installer) |
+| **Install (manual fallback)** | `postCreateCommand`: `curl -fsSL https://claude.ai/install.sh \| bash` or `npm install -g @anthropic-ai/claude-code@latest` |
 | **Config dir** | `~/.claude/` (user settings, skills), `~/.claude.json` (preferences, tokens) |
 | **Config volume** | `source=claude-config-${devcontainerId},target=/home/<user>/.claude,type=volume` |
 | **Global skills mount** | `source=${localEnv:HOME}/.claude,target=/home/<user>/.claude-host,type=bind,readonly` |
@@ -207,14 +229,21 @@ Each AI CLI has its own installation, config persistence, and global skills patt
 
 | Aspect | Details |
 |---|---|
-| **Install (postCreateCommand)** | `curl -fsSL https://opencode.ai/install \| bash` (check latest docs) |
-| **Install (Dockerfile)** | `RUN curl -fsSL https://opencode.ai/install \| bash` |
+| **Install (feature, preferred)** | `ghcr.io/jsburckhardt/devcontainer-features/opencode:1` |
+| **Install (manual fallback)** | `postCreateCommand`: `curl -fsSL https://opencode.ai/install \| bash` |
 | **Config dir** | `~/.config/opencode/` (settings, skills, commands, plugins) |
 | **Config volume** | `source=opencode-config-${devcontainerId},target=/home/<user>/.config/opencode,type=volume` |
 | **Global skills mount** | `source=${localEnv:HOME}/.config/opencode,target=/home/<user>/.config/opencode-host,type=bind,readonly` |
 | **Skills sync** | `rm -rf ~/.config/opencode/skills && cp -rL ~/.config/opencode-host/skills ~/.config/opencode/skills 2>/dev/null \|\| true` |
 | **Env vars** | `ANTHROPIC_API_KEY` (if using Anthropic provider) |
 | **Extension** | None (standalone TUI/CLI, runs in terminal) |
+
+### Cursor CLI
+
+| Aspect | Details |
+|---|---|
+| **Install (feature)** | `ghcr.io/stu-bell/devcontainer-features/cursor-cli:0` |
+| **Extension** | N/A (Cursor is the IDE host itself) |
 
 ### Global Skills Mount Rules
 

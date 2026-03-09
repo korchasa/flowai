@@ -16,6 +16,8 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
     // Stack-specific features added here (e.g., Deno feature)
     // Secondary stack features added here (e.g., Node feature for Deno+Node projects)
+    // AI CLI features added here (e.g., claude-code, opencode — from registry)
+    // Discovered features from project scan (Step 2) added here
   },
 
   "customizations": {

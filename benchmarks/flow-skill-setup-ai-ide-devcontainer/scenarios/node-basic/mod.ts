@@ -64,5 +64,12 @@ Confirm any file creation prompts.`;
         "Was NO Dockerfile generated (user declined custom Dockerfile)?",
       critical: false,
     },
+    {
+      id: "feature_discovery_performed",
+      description:
+        "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
+      critical: false,
+      type: "semantic" as const,
+    },
   ];
 }();

@@ -779,6 +779,14 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [ ] **FR-20.10 Symlink dereferencing**: `cp -rL` MUST be used (not `cp -r`)
         because host skills may be symlinks with host-relative paths that are
         unresolvable inside the container.
+  - [ ] **FR-20.11 Feature discovery**: Agent scans project files for indicators
+        (lockfiles, config files, dependency manifests) and suggests relevant
+        devcontainer features from the catalog (`references/features-catalog.md`).
+        High-confidence matches (secondary runtimes, build tools) are auto-added;
+        optional/heavy features (databases, Docker-in-Docker, cloud CLIs) are
+        presented to the user for confirmation. Features already covered by the
+        base image are excluded. The user sees a grouped list with detection
+        rationale before generation.
 
 ### 3.21 Universal Skill & Script Requirements (FR-21)
 
