@@ -329,7 +329,7 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         creates standard command interface (`check`, `test`, `dev`, `prod`).
         Verifies `check` command works. Evidence:
         `framework/skills/flow-init/SKILL.md` step 10 "Configure Development Commands"
-  - [x] **FR-8.11 Cleanup**: SKILL.md step 11 removes temporary files
+  - [x] **FR-8.11 Cleanup**: SKILL.md step 12 removes temporary files
         (`project_info.json`, `interview_data.json`), verifies all 3
         AGENTS.md files exist, verifies no duplication between root and
         subdirectory files. Evidence:
@@ -715,6 +715,146 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [x] **FR-19.3 Verification**: Cleanup step verifies `./CLAUDE.md` symlink
         exists and points to `./AGENTS.md`.
         Evidence: `framework/skills/flow-init/SKILL.md` step 11 "Cleanup & Verify"
+
+### 3.20 Devcontainer Setup in flow-init (FR-20)
+
+- **Description:** `flow-init` must offer to create a `.devcontainer/` configuration
+  for the project. The agent asks the user whether they want a devcontainer; if the
+  user agrees, the agent generates `devcontainer.json` (and optionally a `Dockerfile`)
+  based on the detected or declared tech stack.
+- **Use case scenario:** User runs `/flow-init` on a project. After the main setup,
+  the agent asks "Would you like to set up a devcontainer for reproducible development
+  environments?" If the user agrees, the agent creates `.devcontainer/devcontainer.json`
+  with appropriate base image, extensions, and post-create commands derived from the
+  project stack.
+- **Acceptance criteria:**
+  - [ ] **FR-20.1 User consent**: Agent asks the user before creating devcontainer
+        files. Devcontainer is NOT created without explicit user agreement.
+  - [ ] **FR-20.2 Stack-aware generation**: `devcontainer.json` references a base
+        image matching the detected stack (e.g., `mcr.microsoft.com/devcontainers/typescript-node`
+        for Node/TS, `denoland/deno` for Deno). Extensions list includes relevant
+        IDE extensions for the stack.
+  - [ ] **FR-20.3 Idempotency**: If `.devcontainer/` already exists, the agent shows
+        diff and asks for per-file confirmation before overwriting (same pattern as
+        other brownfield files).
+  - [ ] **FR-20.4 Greenfield interview integration**: For greenfield projects, the
+        devcontainer question is included in the interview (step 3).
+  - [ ] **FR-20.5 Verification**: Cleanup step verifies `.devcontainer/devcontainer.json`
+        exists (if user agreed) and is valid JSON.
+
+### 3.21 Universal Skill & Script Requirements (FR-21)
+
+- **Description:** All framework skills MUST conform to the agentskills.io
+  standard and work identically across supported IDEs (Cursor, Claude Code,
+  OpenCode). Scripts bundled with skills MUST be cross-IDE compatible.
+- **Use case scenario:** A developer installs AssistFlow skills via
+  `deno task link`. Skills with bundled scripts work in any of the three
+  supported IDEs without modification.
+- **Priority:** High (foundational for multi-IDE support).
+
+#### FR-21.1 agentskills.io Compliance
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.1.1 Directory structure**: Every skill is a directory with
+        `SKILL.md` (required) and optional `scripts/`, `references/`, `assets/`
+        subdirectories. No other top-level conventions (README.md, CHANGELOG.md).
+  - [ ] **FR-21.1.2 Frontmatter**: `name` (required, max 64 chars, `[a-z0-9-]`,
+        must match parent directory name) and `description` (required, max 1024
+        chars). Optional: `license`, `compatibility`, `metadata`,
+        `allowed-tools` (experimental), `disable-model-invocation`.
+  - [ ] **FR-21.1.3 Progressive disclosure**: Metadata (~100 tokens) loaded at
+        startup; full SKILL.md (<5000 tokens, <500 lines) on activation;
+        scripts/references/assets loaded only when required.
+  - [ ] **FR-21.1.4 File references**: One level deep from SKILL.md. No nested
+        reference chains.
+
+#### FR-21.2 Cross-IDE Script Path Resolution
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.2.1 Relative paths**: SKILL.md MUST reference scripts using
+        relative paths from the skill root (e.g., `scripts/validate.ts`,
+        `python3 scripts/process.py`). Per agentskills.io client
+        implementation guide, the IDE resolves relative paths against the
+        skill's directory and converts to absolute paths in tool calls.
+  - [ ] **FR-21.2.2 No custom path placeholders**: Do NOT use custom
+        placeholders like `<this-skill-dir>` in framework skills. The
+        agentskills.io standard defines relative paths as the canonical
+        mechanism; IDEs are responsible for resolution. Existing skills
+        using `<this-skill-dir>` MUST be migrated to plain relative paths.
+  - [ ] **FR-21.2.3 No IDE-specific path variables**: Do NOT use
+        `${CLAUDE_SKILL_DIR}` or other IDE-specific variables in framework
+        skills. These are IDE extensions, not part of the agentskills.io
+        standard, and break portability.
+
+#### FR-21.3 Script Requirements
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.3.1 Non-interactive**: Scripts MUST NOT use interactive prompts
+        (stdin confirmation, interactive menus). All input via CLI flags, env
+        vars, or stdin piping. Agents run in non-interactive shells.
+  - [ ] **FR-21.3.2 Structured output**: Scripts MUST output structured data
+        (JSON preferred) to stdout. Diagnostics/progress to stderr. This
+        enables reliable parsing by any agent implementation.
+  - [ ] **FR-21.3.3 Self-contained dependencies**: Scripts MUST declare
+        dependencies inline (PEP 723 for Python, `npm:`/`jsr:` imports for
+        Deno/TS). No implicit global installs required.
+  - [ ] **FR-21.3.4 Help output**: Scripts SHOULD implement `--help` flag as
+        the primary way agents learn the script interface.
+  - [ ] **FR-21.3.5 Meaningful exit codes**: Exit 0 on success, non-zero on
+        failure. Scripts SHOULD use distinct codes for different error types.
+  - [ ] **FR-21.3.6 Read-only by default**: Analysis/validation scripts MUST
+        NOT create, write, or modify project files. File creation is the
+        agent's responsibility unless the script's explicit purpose is
+        generation.
+  - [ ] **FR-21.3.7 Idempotent**: Scripts MUST be safe to run multiple times
+        with the same input producing the same output.
+  - [ ] **FR-21.3.8 Error messages**: Scripts MUST provide clear, actionable
+        error messages to stderr. Include what failed, why, and how to fix.
+  - [ ] **FR-21.3.9 Dry-run support**: Scripts performing destructive
+        operations SHOULD support `--dry-run` flag.
+
+#### FR-21.4 Script Language Policy
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.4.1 Framework scripts in Deno/TS**: All framework product
+        scripts (`framework/skills/*/scripts/`) MUST be written in
+        Deno/TypeScript. Consistent with FR-13.
+  - [ ] **FR-21.4.2 General-purpose utilities in Python**: Utility scripts
+        not part of the framework product (token counting, diagram validation)
+        MAY use Python. Consistent with FR-13.2.
+  - [ ] **FR-21.4.3 User-facing skills are language-agnostic**: The
+        agentskills.io standard allows any language. Framework documentation
+        (e.g., `flow-engineer-skill`) MUST NOT restrict users to a single
+        language. Common options: Python, Bash, JavaScript/TypeScript.
+
+#### FR-21.5 Script Execution Model
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.5.1 Agent-driven execution**: Scripts are NOT auto-executed.
+        The agent reads SKILL.md instructions and decides when to run scripts
+        using its standard code execution tool (Bash/terminal). This is
+        consistent across all three IDEs.
+  - [ ] **FR-21.5.2 No dedicated script runner**: There is no special "script
+        runner" tool in any supported IDE. All script execution goes through
+        the generic Bash/terminal tool.
+  - [ ] **FR-21.5.3 allowed-tools hint**: Skills MAY use the `allowed-tools`
+        frontmatter field (experimental) to pre-approve tools needed for
+        script execution (e.g., `Bash(deno:*)`). This reduces permission
+        prompts but is not guaranteed across all IDEs.
+
+#### FR-21.6 Skill Discovery Paths
+
+- **Acceptance criteria:**
+  - [ ] **FR-21.6.1 Framework distribution**: Framework skills are distributed
+        from `framework/skills/` to IDE directories via `deno task link`
+        (symlinks). See FR-9, FR-10.
+  - [ ] **FR-21.6.2 Cross-IDE discovery**: Skills MUST be discoverable by all
+        three IDEs. The `.agents/skills/` convention is the cross-IDE standard
+        path. IDE-specific paths: `.cursor/skills/`, `.claude/skills/`,
+        `.opencode/skills/`.
+  - [ ] **FR-21.6.3 Name collision**: Project-level skills override user-level
+        skills when names collide (per agentskills.io client implementation
+        guide).
 
 ## 4. Non-functional requirements
 
