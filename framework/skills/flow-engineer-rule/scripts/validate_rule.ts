@@ -8,8 +8,6 @@
  * Supports:
  *     - Cursor: .cursor/rules/<name>/RULE.md or .cursor/rules/*.mdc
  *     - Claude Code: .claude/rules/*.md or CLAUDE.md
- *     - Antigravity: .agent/rules/*.md
- *     - OpenAI Codex: AGENTS.md
  *     - OpenCode: AGENTS.md, opencode.json "instructions"
  */
 
@@ -26,8 +24,6 @@ type Format =
   | "cursor-dir"
   | "cursor-legacy"
   | "claude-root"
-  | "antigravity"
-  | "codex"
   | "unknown"
   | null;
 
@@ -126,14 +122,6 @@ function detectFormat(rulePath: string): [Format, string | null] {
 
   if (parts.includes(".claude") && name.endsWith(".md")) {
     return ["claude-rule", rulePath];
-  }
-
-  if (parts.includes(".agent") && name.endsWith(".md")) {
-    return ["antigravity", rulePath];
-  }
-
-  if (name === "AGENTS.md" || name === "AGENTS.override.md") {
-    return ["codex", rulePath];
   }
 
   return ["unknown", rulePath];
@@ -352,17 +340,6 @@ export function validateRule(path: string): [boolean, string] {
     fmt === "agents-agents"
   ) {
     errors = validateOpencodeRule(content);
-  } else if (fmt === "antigravity" || fmt === "codex") {
-    errors = [];
-    if (!content.trim()) {
-      errors.push("Rule file is empty");
-    }
-    const lineCount = content.split("\n").length;
-    if (lineCount > 500) {
-      errors.push(
-        `Rule is too long (${lineCount} lines). Maximum is 500 lines.`,
-      );
-    }
   } else {
     errors = ["Unknown format"];
   }
@@ -379,7 +356,7 @@ export function validateRule(path: string): [boolean, string] {
 
 function main(): void {
   if (Deno.args.length !== 1) {
-    console.log("Usage: python validate_rule.py <rule-path>");
+    console.log("Usage: deno run -A validate_rule.ts <rule-path>");
     console.log("");
     console.log("Supported paths:");
     console.log("  .cursor/rules/my-rule/          (Cursor directory)");
@@ -387,8 +364,6 @@ function main(): void {
     console.log("  .cursor/rules/my-rule.mdc       (Cursor legacy)");
     console.log("  .claude/rules/my-rule.md        (Claude Code)");
     console.log("  CLAUDE.md                       (Claude Code root)");
-    console.log("  .agent/rules/my-rule.md         (Antigravity)");
-    console.log("  AGENTS.md                       (OpenAI Codex)");
     console.log("");
     console.log("OpenCode paths:");
     console.log("  .opencode/AGENTS.md              (OpenCode rules)");

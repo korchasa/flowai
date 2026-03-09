@@ -1,6 +1,6 @@
 ---
 name: flow-engineer-skill
-description: Guide for creating effective Agent Skills (SKILL.md packages). Use when users want to create a new skill, write a skill, author a SKILL.md, or ask about skill structure, best practices, or skill file format. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+description: Guide for creating effective Agent Skills (SKILL.md packages). Use when users want to create a new skill, write a skill, author a SKILL.md, or ask about skill structure, best practices, or skill file format. Works across IDEs (Cursor, Claude Code, OpenCode).
 disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
@@ -26,31 +26,29 @@ Skills work across multiple IDEs. Before creating a skill, determine the current
 
 ### Control Primitives Map by IDE
 
-| Primitive | Scope | Claude Code | Antigravity | Cursor | OpenAI Codex | OpenCode |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | `~/.gemini/GEMINI.md` | - | `~/.codex/AGENTS.md`<br>`~/.codex/AGENTS.override.md` | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
-| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `.agent/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`AGENTS.override.md` | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
-| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | - | `subdir/AGENTS.md` | `subdir/AGENTS.md`<br>`subdir/AGENTS.override.md` | - |
-| **Conditional Instructions** | Project | `.claude/rules/*.md` | - | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | - | `opencode.json` `instructions` (globs) |
-| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.gemini/antigravity/global_workflows/global-workflow.md` | `~/.cursor/commands/*.md` | `~/.codex/prompts/*.md` | `~/.config/opencode/commands/*.md` |
-| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.agent/workflows/*.md` | `.cursor/commands/*.md` | - | `.opencode/commands/*.md` |
-| **Skills** | User | - | - | `~/.cursor/skills/<name>/` | - | `~/.config/opencode/skills/<name>/`<br>`~/.claude/skills/<name>/` (fallback) |
-| | Project | - | - | `.cursor/skills/<name>/` | - | `.opencode/skills/<name>/`<br>`.claude/skills/<name>/` (fallback) |
-| **Event Hooks** | User | `~/.claude/settings.json` | - | `~/.cursor/hooks.json` | - | `~/.config/opencode/plugins/*.{js,ts}` |
-| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | - | `.cursor/hooks.json` | - | `.opencode/plugins/*.{js,ts}` |
-| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | - | `~/.cursor/mcp.json` | `~/.codex/config.toml` | `opencode.json` `mcp` |
-| | Project | `.mcp.json` | - | `.cursor/mcp.json` | - | `opencode.json` `mcp` |
-| **Context Ignoring** | User | `.claude/settings.json` | - | - | - | - |
-| | Project | - | `.gitignore` | `.cursorignore` | `.gitignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
+| Primitive | Scope | Claude Code | Cursor | OpenCode |
+| :--- | :--- | :--- | :--- | :--- |
+| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | - | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
+| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
+| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | `subdir/AGENTS.md` | - |
+| **Conditional Instructions** | Project | `.claude/rules/*.md` | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `opencode.json` `instructions` (globs) |
+| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.cursor/commands/*.md` | `~/.config/opencode/commands/*.md` |
+| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md` | `.opencode/commands/*.md` |
+| **Skills** | User | `~/.claude/skills/<name>/` | `~/.cursor/skills/<name>/` | `~/.config/opencode/skills/<name>/`<br>`~/.claude/skills/<name>/` (fallback) |
+| | Project | `.claude/skills/<name>/` | `.cursor/skills/<name>/` | `.opencode/skills/<name>/`<br>`.claude/skills/<name>/` (fallback) |
+| **Event Hooks** | User | `~/.claude/settings.json` | `~/.cursor/hooks.json` | `~/.config/opencode/plugins/*.{js,ts}` |
+| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | `.cursor/hooks.json` | `.opencode/plugins/*.{js,ts}` |
+| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | `~/.cursor/mcp.json` | `opencode.json` `mcp` |
+| | Project | `.mcp.json` | `.cursor/mcp.json` | `opencode.json` `mcp` |
+| **Context Ignoring** | User | `.claude/settings.json` | - | - |
+| | Project | - | `.cursorignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
 
 ### Skill-Specific Paths
 
 | IDE | Personal Skills | Project Skills |
 |-----|----------------|----------------|
 | **Cursor** | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
-| **Claude Code** | `~/.claude/commands/<name>.md` | `.claude/commands/<name>.md` |
-| **Antigravity** | `~/.gemini/antigravity/global_workflows/` | `.agent/workflows/` |
-| **OpenAI Codex** | `~/.codex/prompts/` | - |
+| **Claude Code** | `~/.claude/skills/<name>/` | `.claude/skills/<name>/` |
 | **OpenCode** | `~/.config/opencode/skills/<name>/` | `.opencode/skills/<name>/` |
 
 OpenCode also reads skills from fallback locations: `.claude/skills/`, `.agents/skills/`, `~/.claude/skills/`, `~/.agents/skills/`.
@@ -61,8 +59,6 @@ OpenCode also reads skills from fallback locations: `.claude/skills/`, `.agents/
    - `.cursor/` directory → Cursor
    - `.claude/` directory → Claude Code
    - `.opencode/` directory or `opencode.json` → OpenCode
-   - `.agent/` directory → Antigravity
-   - `.codex/` directory or `AGENTS.md` without `.cursor/` → OpenAI Codex
 2. If multiple detected or none → ask the user
 3. Ask: personal skill (user-level) or project skill (shared via repo)?
 

@@ -1,6 +1,6 @@
 ---
 name: flow-engineer-rule
-description: Guide for creating persistent AI rules (coding standards, project conventions, file-specific patterns). Use when users want to create a rule, add coding standards, set up project conventions, configure file-specific patterns, or ask about rules placement. Works across IDEs (Cursor, Claude Code, Antigravity, OpenAI Codex, OpenCode).
+description: Guide for creating persistent AI rules (coding standards, project conventions, file-specific patterns). Use when users want to create a rule, add coding standards, set up project conventions, configure file-specific patterns, or ask about rules placement. Works across IDEs (Cursor, Claude Code, OpenCode).
 disable-model-invocation: true
 license: Based on https://github.com/anthropics/skills
 ---
@@ -25,20 +25,20 @@ Rules work across multiple IDEs but use different file formats and locations. Be
 
 ### Control Primitives Map by IDE
 
-| Primitive | Scope | Claude Code | Antigravity | Cursor | OpenAI Codex | OpenCode |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | `~/.gemini/GEMINI.md` | - | `~/.codex/AGENTS.md`<br>`~/.codex/AGENTS.override.md` | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
-| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `.agent/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`AGENTS.override.md` | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
-| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | - | `subdir/AGENTS.md` | `subdir/AGENTS.md`<br>`subdir/AGENTS.override.md` | - |
-| **Conditional Instructions** | Project | `.claude/rules/*.md` | - | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | - | `opencode.json` `instructions` (globs) |
-| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.gemini/antigravity/global_workflows/global-workflow.md` | `~/.cursor/commands/*.md` | `~/.codex/prompts/*.md` | `~/.config/opencode/commands/*.md` |
-| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.agent/workflows/*.md` | `.cursor/commands/*.md` | - | `.opencode/commands/*.md` |
-| **Event Hooks** | User | `~/.claude/settings.json` | - | `~/.cursor/hooks.json` | - | `~/.config/opencode/plugins/*.{js,ts}` |
-| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | - | `.cursor/hooks.json` | - | `.opencode/plugins/*.{js,ts}` |
-| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | - | `~/.cursor/mcp.json` | `~/.codex/config.toml` | `opencode.json` `mcp` |
-| | Project | `.mcp.json` | - | `.cursor/mcp.json` | - | `opencode.json` `mcp` |
-| **Context Ignoring** | User | `.claude/settings.json` | - | - | - | - |
-| | Project | - | `.gitignore` | `.cursorignore` | `.gitignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
+| Primitive | Scope | Claude Code | Cursor | OpenCode |
+| :--- | :--- | :--- | :--- | :--- |
+| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | - | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
+| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
+| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | `subdir/AGENTS.md` | - |
+| **Conditional Instructions** | Project | `.claude/rules/*.md` | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `opencode.json` `instructions` (globs) |
+| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.cursor/commands/*.md` | `~/.config/opencode/commands/*.md` |
+| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md` | `.opencode/commands/*.md` |
+| **Event Hooks** | User | `~/.claude/settings.json` | `~/.cursor/hooks.json` | `~/.config/opencode/plugins/*.{js,ts}` |
+| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | `.cursor/hooks.json` | `.opencode/plugins/*.{js,ts}` |
+| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | `~/.cursor/mcp.json` | `opencode.json` `mcp` |
+| | Project | `.mcp.json` | `.cursor/mcp.json` | `opencode.json` `mcp` |
+| **Context Ignoring** | User | `.claude/settings.json` | - | - |
+| | Project | - | `.cursorignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
 
 ### Rule-Specific Paths
 
@@ -46,8 +46,6 @@ Rules work across multiple IDEs but use different file formats and locations. Be
 |-----|-------------------|-------------------|--------|
 | **Cursor** | `.cursor/rules/*/RULE.md` with `alwaysApply: true` | `.cursor/rules/*/RULE.md` with `globs:` | YAML frontmatter + Markdown |
 | **Claude Code** | `CLAUDE.md`, `.claude/rules/*.md` | `.claude/rules/*.md` with `paths:` | YAML frontmatter + Markdown |
-| **Antigravity** | `.agent/rules/*.md` | Not supported | Plain Markdown |
-| **OpenAI Codex** | `AGENTS.md`, `AGENTS.override.md` | Not supported | Plain Markdown |
 | **OpenCode** | `AGENTS.md`, `opencode.json` `instructions` | `opencode.json` `instructions` (globs) | `AGENTS.md`: Plain Markdown; `opencode.json`: JSON array of paths/globs/URLs |
 
 ### Detection Strategy
@@ -56,8 +54,6 @@ Rules work across multiple IDEs but use different file formats and locations. Be
    - `.cursor/` directory -> Cursor
    - `.claude/` directory -> Claude Code
    - `.opencode/` directory or `opencode.json` -> OpenCode
-   - `.agent/` directory -> Antigravity
-   - `.codex/` directory or `AGENTS.md` without `.cursor/` -> OpenAI Codex
 2. If multiple detected or none -> ask the user
 3. Ask: always-apply or conditional (file-specific)?
 
@@ -123,28 +119,6 @@ Rule content here...
 ```
 
 Or project-wide in `CLAUDE.md` (no frontmatter, always applies).
-
-### Antigravity
-
-Rules in `.agent/rules/*.md` (plain markdown, always apply):
-
-```markdown
-# Rule Title
-
-Rule content here...
-```
-
-### OpenAI Codex
-
-Rules in `AGENTS.md` or `AGENTS.override.md` (plain markdown, always apply):
-
-```markdown
-# Rule Title
-
-Rule content here...
-```
-
-Subdirectory rules: `subdir/AGENTS.md` applies when working in that directory.
 
 ### OpenCode
 

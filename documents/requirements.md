@@ -664,14 +664,22 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 - **Use case scenario:** A contributor reads AGENTS.md, expects Codex/Antigravity
   support, but finds no corresponding agent directories or install logic.
 - **Acceptance criteria:**
-  - [ ] **FR-17.1 Decision**: Explicitly decide whether Codex and Antigravity are
-        supported, aspirational, or unsupported.
+  - [x] **FR-17.1 Decision**: Codex and Antigravity are **unsupported**. Supported
+        IDEs: Cursor, Claude Code, OpenCode. Evidence: removed from all SKILL.md
+        files, scripts, and detection logic in `flow-engineer-rule/`,
+        `flow-engineer-skill/`.
   - [x] **FR-17.2 AGENTS.md alignment**: Root `AGENTS.md` IDE list narrowed to
         3 supported IDEs (Cursor, Claude Code, OpenCode). Evidence:
         `AGENTS.md:25`, `AGENTS.md:37`, `AGENTS.md:73`
-  - [ ] **FR-17.3 Skill references**: `flow-engineer-rule`, `flow-engineer-command`,
-        `flow-engineer-skill` SKILL.md files and their scripts are updated to
-        match the decided IDE scope.
+  - [x] **FR-17.3 Skill references**: `flow-engineer-rule`, `flow-engineer-skill`
+        SKILL.md files and their scripts updated to 3-IDE scope. Antigravity/Codex
+        columns, sections, detection logic, and IDE options removed.
+        `flow-engineer-command` had no Codex/Antigravity references.
+        Legacy Python scripts (`init_rule.py`, `validate_rule.py`) deleted.
+        Evidence: `flow-engineer-rule/SKILL.md`, `flow-engineer-rule/scripts/init_rule.ts`,
+        `flow-engineer-rule/scripts/validate_rule.ts`,
+        `flow-engineer-rule/references/examples.md`,
+        `flow-engineer-skill/SKILL.md`
   - [x] **FR-17.4 Design doc**: `design.md` replaced "Cursor" with generic
         "IDE/Agent" terminology in algorithms section. Evidence:
         `documents/design.md:14-23`, `documents/design.md:26`,

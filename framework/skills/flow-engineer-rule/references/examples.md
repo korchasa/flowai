@@ -126,15 +126,3 @@ paths: src/**/*.ts
 - Use `readonly` for immutable properties
 ```
 
-## Antigravity / Codex Examples
-
-### Plain Markdown (.agent/rules/standards.md or AGENTS.md)
-
-```markdown
-# Coding Standards
-
-- Use TypeScript strict mode
-- Prefer functional patterns
-- All public functions must have JSDoc
-- Error messages must include context
-```

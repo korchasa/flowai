@@ -3,15 +3,13 @@
  * Rule Initializer - Creates a new rule from template for the target IDE.
  *
  * Usage:
- *     deno run -A init_rule.ts <rule-name> --ide <cursor|claude|antigravity|codex|opencode> --path <path> [--always-apply] [--globs PATTERN]
+ *     deno run -A init_rule.ts <rule-name> --ide <cursor|claude|opencode> --path <path> [--always-apply] [--globs PATTERN]
  *
  * Examples:
  *     deno run -A init_rule.ts typescript-standards --ide cursor --path .cursor/rules --globs "**\/*.ts"
  *     deno run -A init_rule.ts coding-standards --ide cursor --path .cursor/rules --always-apply
  *     deno run -A init_rule.ts typescript-standards --ide claude --path .claude/rules --globs "src/**\/*.ts"
- *     deno run -A init_rule.ts project-rules --ide antigravity --path .agent/rules
  *     deno run -A init_rule.ts project-rules --ide opencode --path .opencode
- *     deno run -A init_rule.ts project-rules --ide codex --path .
  *     deno run -A init_rule.ts project-rules --ide opencode --path .
  */
 
@@ -56,11 +54,6 @@ const CLAUDE_TEMPLATE_ALWAYS = `# {title}
 
 [TODO: Add rule content here. Include concrete code examples.]
 
-`;
-
-const PLAIN_TEMPLATE = `# {title}
-
-[TODO: Add rule content here. Include concrete code examples.]
 `;
 
 const OPENCODE_AGENTS_TEMPLATE = `# {title}
@@ -151,22 +144,6 @@ export function initRule(
     Deno.writeTextFileSync(ruleFile, content);
     console.log(`Created ${ruleFile}`);
     return ruleFile;
-  } else if (ide === "antigravity" || ide === "codex") {
-    Deno.mkdirSync(resolvedPath, { recursive: true });
-    const content = formatTemplate(PLAIN_TEMPLATE, { title });
-
-    const ruleFile = join(resolvedPath, `${ruleName}.md`);
-    try {
-      Deno.statSync(ruleFile);
-      console.log(`Error: Rule file already exists: ${ruleFile}`);
-      return null;
-    } catch {
-      // Does not exist, proceed
-    }
-
-    Deno.writeTextFileSync(ruleFile, content);
-    console.log(`Created ${ruleFile}`);
-    return ruleFile;
   } else if (ide === "opencode") {
     Deno.mkdirSync(resolvedPath, { recursive: true });
     const content = formatTemplate(OPENCODE_AGENTS_TEMPLATE, { title });
@@ -207,10 +184,10 @@ function main(): void {
   const ide = args.ide;
   if (
     !ide ||
-    !["cursor", "claude", "antigravity", "codex", "opencode"].includes(ide)
+    !["cursor", "claude", "opencode"].includes(ide)
   ) {
     console.error(
-      "Error: --ide is required and must be one of: cursor, claude, antigravity, codex, opencode",
+      "Error: --ide is required and must be one of: cursor, claude, opencode",
     );
     Deno.exit(1);
   }
