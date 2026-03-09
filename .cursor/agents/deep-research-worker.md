@@ -1,0 +1,1 @@
+../../framework/agents/cursor/deep-research-worker.md

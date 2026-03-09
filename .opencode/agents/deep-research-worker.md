@@ -1,0 +1,1 @@
+../../framework/agents/opencode/deep-research-worker.md
