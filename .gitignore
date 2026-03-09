@@ -9,14 +9,5 @@ benchmarks/benchmarks.lock
 .env
 __pycache__/
 
-# IDE symlinks (created by `deno task link` from .dev/ SPOT)
-.cursor/skills
-.cursor/agents
-.cursor/hooks
-.cursor/hooks.json
-.cursor/worktrees.json
-.claude/skills
-.claude/agents
+# IDE local settings (not shared)
 .claude/settings.local.json
-.opencode/skills
-.opencode/agents

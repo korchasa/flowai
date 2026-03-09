@@ -8,6 +8,10 @@ export function buildCheckCommands(): CommandSpec[] {
   return [
     {
       cmd: "deno",
+      args: ["run", "-A", "scripts/task-link.ts"],
+    },
+    {
+      cmd: "deno",
       args: ["fmt", "--check", "scripts", "deno.json"],
     },
     {

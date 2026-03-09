@@ -1,0 +1,1 @@
+../../framework/agents/opencode/flow-skill-executor.md
