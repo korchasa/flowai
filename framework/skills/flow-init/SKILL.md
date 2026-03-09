@@ -51,11 +51,11 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - Use a task management tool (e.g., todo write) to create a plan based on these steps.
 
 2. **Analyze Project**
-   - Run the analysis script to detect stack and project state.
+   - Run the analysis script to detect stack, inventory components, and verify setup:
      ```bash
-     deno run --allow-read <this-skill-dir>/scripts/generate_agents.ts analyze .
+     deno run --allow-read <this-skill-dir>/scripts/generate_agents.ts .
      ```
-   - Read the JSON output.
+   - Read the JSON output. It contains: project metadata (`is_new`, `stack`, `file_tree`, `readme_content`), component `inventory`, and `verification` checks.
    - **Decision Point** (agent judgment, NOT a script flag):
      - Analyze file count, presence of source files, config files and existing documentation.
      - If project appears empty or minimal (no source files, no meaningful configs) -> treat as **Greenfield**.
@@ -76,6 +76,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        8. **Architecture**: Patterns?
        9. **Key Decisions**: Tools/Methodologies?
        10. **Deno Tooling**: Do you want to build tooling around the project on Deno? (yes/no)
+       11. **Devcontainer**: Would you like to set up a devcontainer for reproducible development environments? (yes/no)
 
        Return a SINGLE JSON object: {
        "project_name": "...",
@@ -88,7 +89,8 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        "architecture": "...",
        "key_decisions": "...",
        "preferences": ["tdd", "strict-mode", ...],
-       "use_deno_tooling": boolean
+       "use_deno_tooling": boolean,
+       "use_devcontainer": boolean
        }"
 
 4. **Brownfield Workflow (Discovery & Extraction)**
@@ -108,14 +110,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      - **Important**: The extracted content from the user's existing file takes priority over template content. Templates are fallbacks only.
 
 5. **Component Inventory**
-   - Check which target files already exist:
-     - `./AGENTS.md`
-     - `./CLAUDE.md` (symlink to `./AGENTS.md`)
-     - `./documents/AGENTS.md`
-     - `./scripts/AGENTS.md`
-     - `documents/` directory and its contents
-     - IDE rules directory (e.g., `.cursor/rules/`, `.claude/rules/`, etc.)
-     - `scripts/` or dev command config
+   - Use the `inventory` section from the analysis output (step 2) to check which components exist.
    - Report findings to user as a checklist.
    - For **Brownfield**: ask "Create missing components? Update existing via diff? [create missing / update all / select]"
 
@@ -136,17 +131,19 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      - If file does not exist: create it, report to user.
      - If file exists: show diff to user, ask for confirmation before writing.
 
-7. **Claude Code Compatibility (CLAUDE.md Symlink)**
-   - Create a relative symlink `./CLAUDE.md` -> `./AGENTS.md` so Claude Code picks up project rules natively.
-   - **If `./CLAUDE.md` does not exist**: create the symlink, report to user.
-   - **If `./CLAUDE.md` exists and is already a correct symlink to `./AGENTS.md`**: skip silently.
-   - **If `./CLAUDE.md` exists as a regular file or wrong symlink**: warn the user, show the current content/target, and ask for confirmation before replacing with the symlink.
+7. **Claude Code Compatibility (CLAUDE.md Symlinks)**
+   - Create relative symlinks `CLAUDE.md` -> `AGENTS.md` in **every directory** that has an `AGENTS.md`:
+     - `./CLAUDE.md` -> `./AGENTS.md`
+     - `./documents/CLAUDE.md` -> `./AGENTS.md`
+     - `./scripts/CLAUDE.md` -> `./AGENTS.md`
+   - For each symlink:
+     - **If `CLAUDE.md` does not exist**: create the symlink, report to user.
+     - **If `CLAUDE.md` exists and is already a correct symlink to `AGENTS.md`**: skip silently.
+     - **If `CLAUDE.md` exists as a regular file or wrong symlink**: warn the user, show the current content/target, and ask for confirmation before replacing with the symlink.
 
 8. **OpenCode Compatibility Check**
-   - If `.opencode/` directory or `opencode.json` file exists:
-     - Read `opencode.json`.
-     - Check if `instructions` field includes globs for `documents/AGENTS.md` and `scripts/AGENTS.md`.
-     - If missing: warn user and propose adding them (subdirectory AGENTS.md files won't be loaded by OpenCode without explicit config).
+   - The `inventory` section from the analysis output (step 2) includes `opencode_json.exists` and `opencode_json.has_subdirectory_globs`.
+   - If `opencode_json.exists` is `true` and `has_subdirectory_globs` is `false`: warn user and propose adding `documents/AGENTS.md` and `scripts/AGENTS.md` to the `instructions` array in `opencode.json`.
 
 9. **Generate Documentation**
    - Generate core documentation files in `documents/`:
@@ -170,12 +167,30 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
    - **Verify**: Run `check` command to ensure it works.
 
-11. **Cleanup & Verify**
+11. **Devcontainer Setup (Optional)**
+   - **For Greenfield**: Check `use_devcontainer` from interview data.
+   - **For Brownfield**: Ask the user: "Would you like to set up a devcontainer for reproducible development environments?"
+   - **If user declines**: Skip this step entirely.
+   - **If user agrees**:
+     1. Check if `.devcontainer/` directory already exists.
+        - If exists: show diff for `devcontainer.json` and ask for per-file confirmation before overwriting.
+        - If not exists: create `.devcontainer/` directory.
+     2. Generate `.devcontainer/devcontainer.json` based on the detected/declared stack:
+        - Select appropriate base image (e.g., `mcr.microsoft.com/devcontainers/typescript-node` for Node/TS, `denoland/deno` for Deno, `mcr.microsoft.com/devcontainers/python` for Python, etc.).
+        - Add relevant VS Code extensions for the stack.
+        - Add `postCreateCommand` matching the project's dependency install command (e.g., `npm install`, `deno cache`).
+        - Include `customizations.vscode.settings` if the project has specific formatter/linter configs.
+     3. Optionally generate a `Dockerfile` if the project requires a non-standard base image or additional system dependencies.
+   - **Verify**: If created, validate that `devcontainer.json` is valid JSON.
+
+12. **Cleanup & Verify**
     - Remove temporary files: `project_info.json`, `interview_data.json` (if created).
-    - Verify all 3 AGENTS.md files exist (root, documents/, scripts/).
-    - Verify `./CLAUDE.md` symlink exists and points to `./AGENTS.md`.
-    - Verify `documents/` folder exists with generated content.
-    - Verify development commands are configured and the `check` command runs successfully.
+    - Re-run the analysis script to verify all components are in place:
+      ```bash
+      deno run --allow-read <this-skill-dir>/scripts/generate_agents.ts .
+      ```
+    - Check the `verification` section. If `passed` is false (exit code 1), fix the issues before proceeding.
+    - Additionally verify: development commands are configured and the `check` command runs successfully.
     - **Verify no duplication**: Confirm that documentation/script sections are NOT present in both `./AGENTS.md` and their respective subdirectory files.
 
 </step_by_step>
@@ -190,11 +205,13 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 [ ] For existing files: diffs shown and per-file confirmation requested.
 [ ] Existing user content preserved (custom rules, extracted sections used as-is).
 [ ] 3 AGENTS.md files generated: root, documents/, scripts/.
-[ ] `./CLAUDE.md` symlink created, pointing to `./AGENTS.md`.
+[ ] `CLAUDE.md` symlinks created in all directories with `AGENTS.md` (root, documents/, scripts/).
 [ ] No duplication: sections moved to subdirectories are removed from root AGENTS.md.
 [ ] `documents/` folder populated with generated content from actual project data.
 [ ] Development commands configured (scripts created + config updated).
-[ ] OpenCode compatibility checked (if applicable).
+[ ] OpenCode compatibility checked (if applicable) via `inventory` output.
+[ ] Analysis script re-run passes (exit code 0, `verification.passed: true`).
 [ ] Check command runs successfully.
+[ ] Devcontainer: user asked; if agreed, `.devcontainer/devcontainer.json` exists and is valid JSON.
 [ ] Temporary files cleaned up.
 </verification>
