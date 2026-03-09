@@ -31,8 +31,7 @@ export const CatchesIssuesBench = new class extends BenchmarkSkillScenario {
     // - no error handling for invalid credentials
   }
 
-  userQuery =
-    "/flow-review The login function is implemented, please review";
+  userQuery = "/flow-review The login function is implemented, please review";
 
   checklist = [
     {
@@ -55,8 +54,7 @@ export const CatchesIssuesBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "found_console_log",
-      description:
-        "Did the agent flag the console.log that leaks credentials?",
+      description: "Did the agent flag the console.log that leaks credentials?",
       critical: true,
     },
     {
@@ -67,8 +65,7 @@ export const CatchesIssuesBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "found_any_types",
-      description:
-        "Did the agent flag the use of `any` types?",
+      description: "Did the agent flag the use of `any` types?",
       critical: false,
     },
     {
