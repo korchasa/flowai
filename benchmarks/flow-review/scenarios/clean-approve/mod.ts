@@ -21,8 +21,7 @@ export const CleanApproveBench = new class extends BenchmarkSkillScenario {
     // strings.ts is untracked — the agent should review it
   }
 
-  userQuery =
-    "/flow-review Review the added capitalize function";
+  userQuery = "/flow-review Review the added capitalize function";
 
   checklist = [
     {

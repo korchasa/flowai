@@ -32,7 +32,8 @@ export const ApproveAndCommitBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "review_approved",
-      description: "Did the review verdict indicate Approve (no critical issues)?",
+      description:
+        "Did the review verdict indicate Approve (no critical issues)?",
       critical: true,
     },
     {
@@ -48,7 +49,8 @@ export const ApproveAndCommitBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "clean_status",
-      description: "Is the final git status clean (no untracked or modified files)?",
+      description:
+        "Is the final git status clean (no untracked or modified files)?",
       critical: true,
     },
   ];
