@@ -7,8 +7,6 @@ license: Based on https://github.com/anthropics/skills
 
 # Command Creator
 
-> **Script paths**: `<this-skill-dir>` in commands below refers to the directory containing this SKILL.md. Before running any bundled script, locate this file's absolute path and use it as the base.
-
 This skill provides guidance for creating effective AssistFlow commands.
 
 ## About AssistFlow Commands
@@ -289,7 +287,7 @@ When creating a new command from scratch, always run the `init_command.ts` scrip
 Usage:
 
 ```bash
-deno run -A <this-skill-dir>/scripts/init_command.ts <command-name> --path <output-directory>
+deno run -A scripts/init_command.ts <command-name> --path <output-directory>
 ```
 
 The script:
@@ -347,13 +345,13 @@ Write instructions for using the command and its bundled resources.
 Once development of the command is complete, it must be packaged into a distributable .skill file that gets shared with the user. The packaging process automatically validates the command first to ensure it meets all requirements:
 
 ```bash
-deno run -A <this-skill-dir>/scripts/package_command.ts <path/to/command-folder>
+deno run -A scripts/package_command.ts <path/to/command-folder>
 ```
 
 Optional output directory specification:
 
 ```bash
-deno run -A <this-skill-dir>/scripts/package_command.ts <path/to/command-folder> ./dist
+deno run -A scripts/package_command.ts <path/to/command-folder> ./dist
 ```
 
 The packaging script will:

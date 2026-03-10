@@ -3,6 +3,7 @@ import {
   ALLOWED_SUBDIRS,
   parseFrontmatter,
   validateFrontmatter,
+  validatePathResolution,
   validateProgressiveDisclosure,
   validateStructure,
 } from "./check-skills.ts";
@@ -172,6 +173,63 @@ Deno.test("FR-21.1.3: catalog metadata exceeding 100 tokens is error", () => {
     errors.some((e) => e.message.includes("Catalog metadata")),
     true,
   );
+});
+
+// --- validatePathResolution (FR-21.2) ---
+
+Deno.test("FR-21.2.2: content with <this-skill-dir> is error", () => {
+  const content = "Run `deno run -A <this-skill-dir>/scripts/validate.ts`";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-21.2.2");
+  assertEquals(
+    errors[0].message.includes("<this-skill-dir>"),
+    true,
+  );
+});
+
+Deno.test("FR-21.2.3: content with ${CLAUDE_SKILL_DIR} is error", () => {
+  const content = "Run `deno run -A ${CLAUDE_SKILL_DIR}/scripts/validate.ts`";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-21.2.3");
+});
+
+Deno.test("FR-21.2.3: content with ${CURSOR_SKILL_DIR} is error", () => {
+  const content = "Run `${CURSOR_SKILL_DIR}/scripts/run.sh`";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-21.2.3");
+});
+
+Deno.test("FR-21.2.3: content with ${SKILL_DIR} is error", () => {
+  const content = "Run `${SKILL_DIR}/scripts/run.sh`";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-21.2.3");
+});
+
+Deno.test("FR-21.2.1: content with relative paths passes", () => {
+  const content = "Run `deno run -A scripts/validate.ts path/to/dir`";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors, []);
+});
+
+Deno.test("FR-21.2: content with no script references passes", () => {
+  const content = "# My Skill\n\nThis skill does things.";
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors, []);
+});
+
+Deno.test("FR-21.2: multiple violations reported separately", () => {
+  const content = [
+    "Run `<this-skill-dir>/scripts/a.ts`",
+    "Also `${CLAUDE_SKILL_DIR}/scripts/b.ts`",
+  ].join("\n");
+  const errors = validatePathResolution("my-skill", content);
+  assertEquals(errors.length, 2);
+  assertEquals(errors[0].criterion, "FR-21.2.2");
+  assertEquals(errors[1].criterion, "FR-21.2.3");
 });
 
 // --- ALLOWED_SUBDIRS ---

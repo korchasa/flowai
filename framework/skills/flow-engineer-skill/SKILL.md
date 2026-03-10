@@ -7,8 +7,6 @@ license: Based on https://github.com/anthropics/skills
 
 # Skill Creator
 
-> **Script paths**: `<this-skill-dir>` in commands below refers to the directory containing this SKILL.md. Before running any bundled script, locate this file's absolute path and use it as the base.
-
 This skill guides through creating effective Agent Skills — markdown-based packages that teach AI agents specialized workflows, domain knowledge, and procedural capabilities.
 
 ## About Skills
@@ -254,14 +252,14 @@ If context from prior conversation exists, infer the skill from discussed workfl
 2. Write SKILL.md with frontmatter
 3. Create supporting reference files
 4. Create utility scripts if needed
-5. Run `deno run -A <this-skill-dir>/scripts/init_skill.ts` for scaffolding if starting from scratch
+5. Run `deno run -A scripts/init_skill.ts` for scaffolding if starting from scratch
 
 ### Phase 4: Verification
 
-Run validation (locate this skill's directory first, then use its absolute path):
+Run validation:
 
 ```bash
-deno run -A <this-skill-dir>/scripts/validate_skill.ts <path/to/skill-directory>
+deno run -A scripts/validate_skill.ts <path/to/skill-directory>
 ```
 
 Checklist:
@@ -277,7 +275,7 @@ Checklist:
 ### Phase 5: Packaging
 
 ```bash
-deno run -A <this-skill-dir>/scripts/package_skill.ts <path/to/skill-directory> [output-directory]
+deno run -A scripts/package_skill.ts <path/to/skill-directory> [output-directory]
 ```
 
 Creates a `.skill` zip file for distribution.

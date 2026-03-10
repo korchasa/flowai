@@ -1,11 +1,13 @@
 /**
- * Validates all skill directories against FR-21.1 (agentskills.io compliance).
+ * Validates all skill directories against FR-21.1 and FR-21.2 (agentskills.io compliance).
  *
  * Checks:
  * - FR-21.1.1: Directory structure (only SKILL.md + allowed subdirs)
  * - FR-21.1.2: Frontmatter (name, description validation)
  * - FR-21.1.3: Progressive disclosure (line/token limits)
  * - FR-21.1.4: File references (no nested subdirs in allowed dirs)
+ * - FR-21.2.2: No custom path placeholders (<this-skill-dir>)
+ * - FR-21.2.3: No IDE-specific path variables (${...SKILL_DIR})
  *
  * Exits with code 1 if any violation is found.
  */
@@ -191,6 +193,44 @@ export function validateProgressiveDisclosure(
   return errors;
 }
 
+/** FR-21.2.2: Custom path placeholder pattern. */
+const CUSTOM_PLACEHOLDER_PATTERN = /<this-skill-dir>/;
+/** FR-21.2.3: IDE-specific path variable pattern (e.g. ${CLAUDE_SKILL_DIR}, ${CURSOR_SKILL_DIR}). */
+const IDE_PATH_VAR_PATTERN = /\$\{[A-Z_]*SKILL_DIR\}/;
+
+/**
+ * FR-21.2: Validates cross-IDE script path resolution.
+ * - FR-21.2.2: No custom placeholders like <this-skill-dir>
+ * - FR-21.2.3: No IDE-specific path variables like ${CLAUDE_SKILL_DIR}
+ * (FR-21.2.1 relative paths are ensured implicitly by absence of placeholders/variables.)
+ */
+export function validatePathResolution(
+  dirName: string,
+  content: string,
+): SkillError[] {
+  const errors: SkillError[] = [];
+
+  if (CUSTOM_PLACEHOLDER_PATTERN.test(content)) {
+    errors.push({
+      skill: dirName,
+      criterion: "FR-21.2.2",
+      message:
+        "Uses <this-skill-dir> placeholder. Migrate to relative paths (e.g., scripts/validate.ts)",
+    });
+  }
+
+  if (IDE_PATH_VAR_PATTERN.test(content)) {
+    errors.push({
+      skill: dirName,
+      criterion: "FR-21.2.3",
+      message:
+        "Uses IDE-specific path variable (${...SKILL_DIR}). Use relative paths instead",
+    });
+  }
+
+  return errors;
+}
+
 /**
  * FR-21.1.4: Validates file reference depth.
  * No subdirectories inside allowed dirs (one level deep only).
@@ -272,6 +312,9 @@ export async function validateSkill(
   // FR-21.1.3: Progressive disclosure
   errors.push(...validateProgressiveDisclosure(dirName, content, fm.data));
 
+  // FR-21.2: Cross-IDE script path resolution
+  errors.push(...validatePathResolution(dirName, content));
+
   // FR-21.1.4: Reference depth
   errors.push(...await validateReferenceDepth(skillPath, dirName));
 
@@ -309,7 +352,9 @@ export async function validateAllSkills(
 }
 
 if (import.meta.main) {
-  console.log("Checking skills (FR-21.1 agentskills.io compliance)...");
+  console.log(
+    "Checking skills (FR-21.1, FR-21.2 agentskills.io compliance)...",
+  );
 
   const errors = await validateAllSkills([
     "framework/skills",
@@ -323,6 +368,6 @@ if (import.meta.main) {
     console.error(`\n${errors.length} violation(s) found.`);
     Deno.exit(1);
   } else {
-    console.log("✅ All skills pass FR-21.1 compliance checks.");
+    console.log("✅ All skills pass FR-21.1, FR-21.2 compliance checks.");
   }
 }

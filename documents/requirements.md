@@ -844,20 +844,23 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 #### FR-21.2 Cross-IDE Script Path Resolution
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.2.1 Relative paths**: SKILL.md MUST reference scripts using
+  - [x] **FR-21.2.1 Relative paths**: SKILL.md MUST reference scripts using
         relative paths from the skill root (e.g., `scripts/validate.ts`,
         `python3 scripts/process.py`). Per agentskills.io client
         implementation guide, the IDE resolves relative paths against the
         skill's directory and converts to absolute paths in tool calls.
-  - [ ] **FR-21.2.2 No custom path placeholders**: Do NOT use custom
+        All framework SKILL.md files migrated to relative paths.
+  - [x] **FR-21.2.2 No custom path placeholders**: Do NOT use custom
         placeholders like `<this-skill-dir>` in framework skills. The
         agentskills.io standard defines relative paths as the canonical
         mechanism; IDEs are responsible for resolution. Existing skills
         using `<this-skill-dir>` MUST be migrated to plain relative paths.
-  - [ ] **FR-21.2.3 No IDE-specific path variables**: Do NOT use
+        Enforced by `scripts/check-skills.ts`.
+  - [x] **FR-21.2.3 No IDE-specific path variables**: Do NOT use
         `${CLAUDE_SKILL_DIR}` or other IDE-specific variables in framework
         skills. These are IDE extensions, not part of the agentskills.io
         standard, and break portability.
+        Enforced by `scripts/check-skills.ts`.
 
 #### FR-21.3 Script Requirements
 

@@ -28,9 +28,9 @@ description: Analyze total token usage including conversation history, system pr
     5.  **Report**: Provide a breakdown of the estimated usage.
 
 4.  **Tools**:
-    - Use the script for calculation (locate this skill's directory first):
+    - Use the script for calculation:
       ```bash
-      python3 <this-skill-dir>/scripts/count_tokens.py "TEXT_snippet"
+      python3 scripts/count_tokens.py "TEXT_snippet"
       ```
     - Or manual calculation: `Total Chars * 0.3`.
 

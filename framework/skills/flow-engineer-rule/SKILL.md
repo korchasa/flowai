@@ -7,8 +7,6 @@ license: Based on https://github.com/anthropics/skills
 
 # Rule Creator
 
-> **Script paths**: `<this-skill-dir>` in commands below refers to the directory containing this SKILL.md. Before running any bundled script, locate this file's absolute path and use it as the base.
-
 This skill guides through creating persistent rules — instructions that automatically apply to AI agent sessions, enforcing coding standards, project conventions, and file-specific patterns.
 
 ## About Rules
@@ -185,10 +183,10 @@ Every rule should contain:
 
 ### Phase 3: Verification
 
-Run validation (locate this skill's directory first, then use its absolute path):
+Run validation:
 
 ```bash
-deno run -A <this-skill-dir>/scripts/validate_rule.ts <path/to/rule-file-or-directory>
+deno run -A scripts/validate_rule.ts <path/to/rule-file-or-directory>
 ```
 
 Checklist:
