@@ -14,7 +14,7 @@
  * structured project metadata and verification.
  */
 
-import { join, resolve } from "@std/path";
+import { join, resolve } from "jsr:@std/path";
 
 function existsSync(path: string): boolean {
   try {

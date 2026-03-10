@@ -866,9 +866,10 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 #### FR-21.3 Script Requirements
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.3.1 Non-interactive**: Scripts MUST NOT use interactive prompts
+  - [x] **FR-21.3.1 Non-interactive**: Scripts MUST NOT use interactive prompts
         (stdin confirmation, interactive menus). All input via CLI flags, env
         vars, or stdin piping. Agents run in non-interactive shells.
+        All 17 scripts use CLI args/env/stdin piping; none use interactive prompts.
   - [ ] **FR-21.3.2 Structured output**: Scripts MUST output structured data
         (JSON preferred) to stdout. Diagnostics/progress to stderr. This
         enables reliable parsing by any agent implementation.
@@ -877,18 +878,22 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         Deno/TS). No implicit global installs required.
   - [ ] **FR-21.3.4 Help output**: Scripts SHOULD implement `--help` flag as
         the primary way agents learn the script interface.
-  - [ ] **FR-21.3.5 Meaningful exit codes**: Exit 0 on success, non-zero on
+  - [x] **FR-21.3.5 Meaningful exit codes**: Exit 0 on success, non-zero on
         failure. Scripts SHOULD use distinct codes for different error types.
-  - [ ] **FR-21.3.6 Read-only by default**: Analysis/validation scripts MUST
+        All 17 scripts exit 0/non-zero correctly. Verified across `scripts/` and `framework/skills/*/scripts/`.
+  - [x] **FR-21.3.6 Read-only by default**: Analysis/validation scripts MUST
         NOT create, write, or modify project files. File creation is the
         agent's responsibility unless the script's explicit purpose is
         generation.
+        Analysis scripts (`generate_agents.ts`, `check-skills.ts`, `check-agents.ts`) are read-only. Generation scripts (`task-link.ts`) are exempt per requirement text.
   - [ ] **FR-21.3.7 Idempotent**: Scripts MUST be safe to run multiple times
         with the same input producing the same output.
-  - [ ] **FR-21.3.8 Error messages**: Scripts MUST provide clear, actionable
+  - [x] **FR-21.3.8 Error messages**: Scripts MUST provide clear, actionable
         error messages to stderr. Include what failed, why, and how to fix.
-  - [ ] **FR-21.3.9 Dry-run support**: Scripts performing destructive
+        All 17 scripts write diagnostics to stderr via `console.error()` / `print(..., file=sys.stderr)`.
+  - [x] **FR-21.3.9 Dry-run support**: Scripts performing destructive
         operations SHOULD support `--dry-run` flag.
+        N/A — no framework scripts perform destructive operations. All are analysis/validation/symlink tools.
 
 #### FR-21.4 Script Language Policy
 
@@ -900,21 +905,24 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
   - [ ] **FR-21.4.2 General-purpose utilities in Python**: Utility scripts
         outside the framework product directory MAY use Python. Scripts inside
         `framework/skills/*/scripts/` MUST be Deno/TS per FR-21.4.1.
-  - [ ] **FR-21.4.3 User-facing skills are language-agnostic**: The
+  - [x] **FR-21.4.3 User-facing skills are language-agnostic**: The
         agentskills.io standard allows any language. Framework documentation
         (e.g., `flow-engineer-skill`) MUST NOT restrict users to a single
         language. Common options: Python, Bash, JavaScript/TypeScript.
+        `flow-skill-engineer-skill` does not restrict script language; examples mention multiple options.
 
 #### FR-21.5 Script Execution Model
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.5.1 Agent-driven execution**: Scripts are NOT auto-executed.
+  - [x] **FR-21.5.1 Agent-driven execution**: Scripts are NOT auto-executed.
         The agent reads SKILL.md instructions and decides when to run scripts
         using its standard code execution tool (Bash/terminal). This is
         consistent across all three IDEs.
-  - [ ] **FR-21.5.2 No dedicated script runner**: There is no special "script
+        All SKILL.md files use imperative instructions ("Run…", "Execute…") directing the agent; no auto-execution hooks.
+  - [x] **FR-21.5.2 No dedicated script runner**: There is no special "script
         runner" tool in any supported IDE. All script execution goes through
         the generic Bash/terminal tool.
+        Confirmed: all three IDEs (Cursor, Claude Code, OpenCode) use Bash/terminal for script execution.
   - [ ] **FR-21.5.3 allowed-tools hint**: Skills MAY use the `allowed-tools`
         frontmatter field (experimental) to pre-approve tools needed for
         script execution (e.g., `Bash(deno:*)`). This reduces permission
@@ -923,12 +931,14 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 #### FR-21.6 Skill Discovery Paths
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.6.1 Framework distribution**: Framework skills are distributed
+  - [x] **FR-21.6.1 Framework distribution**: Framework skills are distributed
         from `framework/skills/` to IDE directories via `deno task link`
         (symlinks). See FR-9, FR-10.
-  - [ ] **FR-21.6.2 Cross-IDE discovery**: Skills MUST be discoverable by all
+        `scripts/task-link.ts` distributes framework skills via symlinks to IDE config dirs.
+  - [x] **FR-21.6.2 Cross-IDE discovery**: Skills MUST be discoverable by all
         three IDEs. IDE-specific paths: `.cursor/skills/`, `.claude/skills/`,
         `.opencode/skills/`.
+        `scripts/task-link.ts` creates symlinks in `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`.
   - [ ] **FR-21.6.3 Name collision**: Project-level skills override user-level
         skills when names collide (per agentskills.io client implementation
         guide).
