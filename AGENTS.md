@@ -68,7 +68,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - **Skills** (`flow-skill-*`): Procedural knowledge and specialized capabilities (e.g., `flow-skill-draw-mermaid`). Can be discovered and used by agents to perform specific sub-tasks.
 
 ## Key Decisions
-- Use Cursor skills and commands as the primary workflow system
+- Use agentskills.io skills as the primary workflow system
 - Store project knowledge in `documents/` using SRS/SDS schema
 - Centralize verification through `deno task check`
 - Dev resources in `.dev/` (SPOT), symlinked to `.cursor/`, `.claude/`, `.opencode/` for multi-IDE support

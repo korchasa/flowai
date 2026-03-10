@@ -57,7 +57,6 @@
 - **Categories:**
   - `flow-*`: Command-like skills (e.g., `flow-maintenance`, `flow-commit`).
   - `flow-skill-*`: Practical guides (e.g., `flow-skill-fix-tests`).
-  - `rules-*`: Behavioral frameworks (e.g., `rules-tdd`).
   - `flow-skill-deno-*`: Deno-specific tools (`flow-skill-deno-cli`, `flow-skill-deno-deploy`).
 - **Composition**: Skills can delegate to other skills (e.g., `flow-init` delegates development command configuration to `flow-skill-configure-*-commands`).
 - **Script independence:** Scripts in `framework/skills/*/scripts/` are installed into user projects without a shared `deno.json`. They MUST be runnable standalone:
@@ -123,29 +122,25 @@
   - **Interactive Flows**: `SimulatedUser` component handles multi-turn interactions by simulating user responses via LLM.
   - **Multi-Turn Benchmarking**: `SpawnedAgent` and `runner.ts` support automatic session resumption (`--resume`) when `SimulatedUser` provides input, enabling testing of complex interactive workflows.
 
-### 3.5 Global Installer (`scripts/install.ts`) — FR-10
+### 3.5 Global Framework Distribution — FR-10
 
 - **Purpose:** Install/update AssistFlow framework globally into IDE config dirs.
-- **Strategy:** Per-item symlinks (each agent file, each skill dir) instead of
-  single directory symlink. Preserves user's custom agents/skills.
-- **IDE Detection:** Checks existence of `~/.cursor/`, `~/.claude/`, `~/.config/opencode/`.
-- **Agent Discovery:** Per-IDE — reads from `framework/agents/{agentSubdir}/` (claude/cursor/opencode).
+- **Strategy:** File copy (not symlinks). Copies skill directories and agent files
+  into IDE config directories. Real files ensure compatibility with devcontainers,
+  Codespaces, and environments where symlink targets are unavailable.
+- **Distribution:** Via package manager or CLI tool (e.g., Homebrew, npm global,
+  standalone binary). No Deno dependency for end users. Legacy `scripts/install.ts`
+  to be removed.
+- **IDE targets:** `~/.cursor/`, `~/.claude/`, `~/.config/opencode/`.
+- **Agent discovery:** Per-IDE — reads from `framework/agents/{claude,cursor,opencode}/`.
   Each IDE gets agent files with IDE-native frontmatter format.
-- **Execution modes:**
-  - **Local:** `deno task install` — uses `framework/` relative to script location.
-  - **Remote:** `deno run -A https://raw.githubusercontent.com/korchasa/flow/main/scripts/install.ts`
-    — auto-detects remote context via `import.meta.url`, clones repo to `~/.assistflow/`
-    (`git clone --depth=1`), uses `~/.assistflow/framework/` as source.
-  - **Update:** `--update` / `-u` flag — runs `git pull --rebase` in `~/.assistflow/`,
-    then re-plans symlinks.
 - **Operations:**
-  - Create `<ide-config>/agents/<name>.md` -> `<framework>/agents/<ide>/<name>.md`
-  - Create `<ide-config>/skills/<name>/` -> `<framework>/skills/<name>/`
-  - Replace broken parent directory symlinks with real directories.
-  - Remove stale symlinks pointing to non-existent framework items.
-  - Skip non-symlink files (warn user).
-- **Managed directory:** `~/.assistflow/` — shallow git clone, source for symlinks.
-- **Deps:** None (Deno std only, git for remote mode).
+  - Remove all `flow-*` items from IDE config dirs (clean-and-copy).
+  - Copy `framework/skills/flow-*/` -> `<ide-config>/skills/flow-*/`
+  - Copy `framework/agents/<ide>/*.md` -> `<ide-config>/agents/*.md`
+  - Skip non-framework files (user-created). The `flow-*` namespace is reserved.
+- **Idempotent:** Safe to run multiple times. User files never touched.
+- **Status:** Not yet implemented. Design TBD (distribution mechanism selection).
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11
 
