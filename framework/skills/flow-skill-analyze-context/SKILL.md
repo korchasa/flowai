@@ -30,7 +30,7 @@ description: Analyze total token usage including conversation history, system pr
 4.  **Tools**:
     - Use the script for calculation:
       ```bash
-      python3 scripts/count_tokens.py "TEXT_snippet"
+      deno run scripts/count_tokens.ts "TEXT_snippet"
       ```
     - Or manual calculation: `Total Chars * 0.3`.
 

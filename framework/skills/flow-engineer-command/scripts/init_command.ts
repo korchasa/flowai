@@ -189,17 +189,28 @@ function titleCaseCommandName(commandName: string): string {
   ).join(" ");
 }
 
-export function initCommand(commandName: string, path: string): string | null {
+export function initCommand(
+  commandName: string,
+  path: string,
+  options?: { skipExisting?: boolean },
+): string | null {
   const commandDir = resolve(path, commandName);
 
   // Check if directory already exists
   try {
     Deno.statSync(commandDir);
-    console.log(`❌ Error: Command directory already exists: ${commandDir}`);
+    if (options?.skipExisting) {
+      console.error(
+        `Warning: Command directory already exists, skipping: ${commandDir}`,
+      );
+      return commandDir;
+    }
+    console.error(`Error: Command directory already exists: ${commandDir}`);
+    console.error("Use --skip-existing to skip existing directories.");
     return null;
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
-      console.log(`❌ Error creating directory: ${e}`);
+      console.error(`Error creating directory: ${e}`);
       return null;
     }
   }
@@ -207,9 +218,9 @@ export function initCommand(commandName: string, path: string): string | null {
   // Create command directory
   try {
     Deno.mkdirSync(commandDir, { recursive: true });
-    console.log(`✅ Created command directory: ${commandDir}`);
+    console.error(`Created command directory: ${commandDir}`);
   } catch (e) {
-    console.log(`❌ Error creating directory: ${e}`);
+    console.error(`Error creating directory: ${e}`);
     return null;
   }
 
@@ -222,9 +233,9 @@ export function initCommand(commandName: string, path: string): string | null {
   const skillMdPath = join(commandDir, "SKILL.md");
   try {
     Deno.writeTextFileSync(skillMdPath, commandContent);
-    console.log("✅ Created SKILL.md");
+    console.error("Created SKILL.md");
   } catch (e) {
-    console.log(`❌ Error creating SKILL.md: ${e}`);
+    console.error(`Error creating SKILL.md: ${e}`);
     return null;
   }
 
@@ -239,7 +250,7 @@ export function initCommand(commandName: string, path: string): string | null {
       EXAMPLE_SCRIPT.replaceAll("{command_name}", commandName),
     );
     Deno.chmodSync(exampleScriptPath, 0o755);
-    console.log("✅ Created scripts/example.py");
+    console.error("Created scripts/example.py");
 
     // Create references/ directory with example reference doc
     const referencesDir = join(commandDir, "references");
@@ -249,64 +260,75 @@ export function initCommand(commandName: string, path: string): string | null {
       exampleReferencePath,
       EXAMPLE_REFERENCE.replaceAll("{command_title}", commandTitle),
     );
-    console.log("✅ Created references/api_reference.md");
+    console.error("Created references/api_reference.md");
 
     // Create assets/ directory with example asset placeholder
     const assetsDir = join(commandDir, "assets");
     Deno.mkdirSync(assetsDir, { recursive: true });
     const exampleAssetPath = join(assetsDir, "example_asset.txt");
     Deno.writeTextFileSync(exampleAssetPath, EXAMPLE_ASSET);
-    console.log("✅ Created assets/example_asset.txt");
+    console.error("Created assets/example_asset.txt");
   } catch (e) {
-    console.log(`❌ Error creating resource directories: ${e}`);
+    console.error(`Error creating resource directories: ${e}`);
     return null;
   }
 
   // Print next steps
-  console.log(
-    `\n✅ Command '${commandName}' initialized successfully at ${commandDir}`,
+  console.error(
+    `\nCommand '${commandName}' initialized successfully at ${commandDir}`,
   );
-  console.log("\nNext steps:");
-  console.log(
+  console.error("\nNext steps:");
+  console.error(
     "1. Edit SKILL.md to complete the TODO items and update the description",
   );
-  console.log(
+  console.error(
     "2. Customize or delete the example files in scripts/, references/, and assets/",
   );
-  console.log("3. Run the validator when ready to check the command structure");
+  console.error(
+    "3. Run the validator when ready to check the command structure",
+  );
 
   return commandDir;
 }
 
 function main(): void {
-  if (Deno.args.length < 3 || Deno.args[1] !== "--path") {
-    console.log("Usage: init_command.ts <command-name> --path <path>");
-    console.log("\nCommand name requirements:");
-    console.log("  - Hyphen-case identifier (e.g., 'flow-data-analyzer')");
-    console.log("  - Lowercase letters, digits, and hyphens only");
-    console.log("  - Max 40 characters");
-    console.log("  - Must match directory name exactly");
-    console.log("\nExamples:");
-    console.log("  init_command.ts flow-new-command --path skills/public");
-    console.log("  init_command.ts flow-api-helper --path skills/private");
-    console.log(
-      "  init_command.ts flow-custom-command --path /custom/location",
+  const skipExisting = Deno.args.includes("--skip-existing");
+  const filteredArgs = Deno.args.filter((a) => a !== "--skip-existing");
+
+  if (filteredArgs.length < 3 || filteredArgs[1] !== "--path") {
+    console.error(
+      "Usage: init_command.ts <command-name> --path <path> [--skip-existing]",
+    );
+    console.error("\nCommand name requirements:");
+    console.error("  - Hyphen-case identifier (e.g., 'flow-data-analyzer')");
+    console.error("  - Lowercase letters, digits, and hyphens only");
+    console.error("  - Max 40 characters");
+    console.error("  - Must match directory name exactly");
+    console.error("\nOptions:");
+    console.error("  --skip-existing  Skip if directory already exists (exit 0)");
+    console.error("\nExamples:");
+    console.error("  init_command.ts flow-new-command --path skills/public");
+    console.error(
+      "  init_command.ts flow-custom-command --path /custom/location --skip-existing",
     );
     Deno.exit(1);
   }
 
-  const commandName = Deno.args[0];
-  const path = Deno.args[2];
+  const commandName = filteredArgs[0];
+  const path = filteredArgs[2];
 
-  console.log(`🚀 Initializing command: ${commandName}`);
-  console.log(`   Location: ${path}`);
-  console.log();
+  console.error(`Initializing command: ${commandName}`);
+  console.error(`   Location: ${path}\n`);
 
-  const result = initCommand(commandName, path);
+  const result = initCommand(commandName, path, { skipExisting });
 
   if (result) {
+    console.log(JSON.stringify({ ok: true, result: { path: result } }));
     Deno.exit(0);
   } else {
+    console.log(
+      JSON.stringify({ ok: false, error: "Command initialization failed" }),
+    );
     Deno.exit(1);
   }
 }

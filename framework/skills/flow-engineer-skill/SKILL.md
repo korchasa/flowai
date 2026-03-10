@@ -212,7 +212,7 @@ For quality-critical tasks:
 
 ```markdown
 1. Make edits
-2. Validate: `python scripts/validate.py output/`
+2. Validate: `deno run scripts/validate_skill.ts output/`
 3. If fails -> fix -> validate again
 4. Only proceed when validation passes
 ```

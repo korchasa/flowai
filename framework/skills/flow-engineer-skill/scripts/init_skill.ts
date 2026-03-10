@@ -109,18 +109,26 @@ function templateReplace(
 export async function initSkill(
   skillName: string,
   path: string,
+  options?: { skipExisting?: boolean },
 ): Promise<string | null> {
   const skillDir = resolve(join(path, skillName));
 
   try {
     const stat = await Deno.stat(skillDir);
     if (stat) {
-      console.log(`Error: Skill directory already exists: ${skillDir}`);
+      if (options?.skipExisting) {
+        console.error(
+          `Warning: Skill directory already exists, skipping: ${skillDir}`,
+        );
+        return skillDir;
+      }
+      console.error(`Error: Skill directory already exists: ${skillDir}`);
+      console.error("Use --skip-existing to skip existing directories.");
       return null;
     }
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) {
-      console.log(`Error creating directory: ${e}`);
+      console.error(`Error creating directory: ${e}`);
       return null;
     }
     // NotFound is expected — directory doesn't exist yet
@@ -128,9 +136,9 @@ export async function initSkill(
 
   try {
     await Deno.mkdir(skillDir, { recursive: true });
-    console.log(`Created skill directory: ${skillDir}`);
+    console.error(`Created skill directory: ${skillDir}`);
   } catch (e) {
-    console.log(`Error creating directory: ${e}`);
+    console.error(`Error creating directory: ${e}`);
     return null;
   }
 
@@ -143,9 +151,9 @@ export async function initSkill(
 
   try {
     await Deno.writeTextFile(join(skillDir, "SKILL.md"), content);
-    console.log("Created SKILL.md");
+    console.error("Created SKILL.md");
   } catch (e) {
-    console.log(`Error creating SKILL.md: ${e}`);
+    console.error(`Error creating SKILL.md: ${e}`);
     return null;
   }
 
@@ -159,7 +167,7 @@ export async function initSkill(
       templateReplace(EXAMPLE_SCRIPT, { skill_name: skillName }),
     );
     await Deno.chmod(exampleScriptPath, 0o755);
-    console.log("Created scripts/example.py");
+    console.error("Created scripts/example.py");
 
     const referencesDir = join(skillDir, "references");
     await Deno.mkdir(referencesDir, { recursive: true });
@@ -167,7 +175,7 @@ export async function initSkill(
       join(referencesDir, "reference.md"),
       templateReplace(EXAMPLE_REFERENCE, { skill_title: skillTitle }),
     );
-    console.log("Created references/reference.md");
+    console.error("Created references/reference.md");
 
     const assetsDir = join(skillDir, "assets");
     await Deno.mkdir(assetsDir, { recursive: true });
@@ -175,46 +183,63 @@ export async function initSkill(
       join(assetsDir, "example_asset.txt"),
       EXAMPLE_ASSET,
     );
-    console.log("Created assets/example_asset.txt");
+    console.error("Created assets/example_asset.txt");
   } catch (e) {
-    console.log(`Error creating resource directories: ${e}`);
+    console.error(`Error creating resource directories: ${e}`);
     return null;
   }
 
-  console.log(`\nSkill '${skillName}' initialized at ${skillDir}`);
-  console.log("\nNext steps:");
-  console.log("1. Edit SKILL.md — complete TODO items, update description");
-  console.log(
+  console.error(`\nSkill '${skillName}' initialized at ${skillDir}`);
+  console.error("\nNext steps:");
+  console.error("1. Edit SKILL.md — complete TODO items, update description");
+  console.error(
     "2. Customize or delete example files in scripts/, references/, assets/",
   );
-  console.log("3. Run validate_skill.py to check structure");
+  console.error("3. Run validate_skill.ts to check structure");
 
   return skillDir;
 }
 
 async function main(): Promise<void> {
-  const args = Deno.args;
+  const skipExisting = Deno.args.includes("--skip-existing");
+  const args = Deno.args.filter((a) => a !== "--skip-existing");
 
   if (args.length < 3 || args[1] !== "--path") {
-    console.log("Usage: init_skill.py <skill-name> --path <path>");
-    console.log("\nSkill name requirements:");
-    console.log("  - Hyphen-case (e.g., 'code-review')");
-    console.log("  - Lowercase letters, digits, hyphens only");
-    console.log("  - Max 64 characters");
-    console.log("\nExamples:");
-    console.log("  init_skill.py code-review --path .cursor/skills");
-    console.log("  init_skill.py pr-analyzer --path ~/.cursor/skills");
+    console.error(
+      "Usage: init_skill.ts <skill-name> --path <path> [--skip-existing]",
+    );
+    console.error("\nSkill name requirements:");
+    console.error("  - Hyphen-case (e.g., 'code-review')");
+    console.error("  - Lowercase letters, digits, hyphens only");
+    console.error("  - Max 64 characters");
+    console.error("\nOptions:");
+    console.error(
+      "  --skip-existing  Skip if directory already exists (exit 0)",
+    );
+    console.error("\nExamples:");
+    console.error("  init_skill.ts code-review --path .cursor/skills");
+    console.error(
+      "  init_skill.ts pr-analyzer --path ~/.cursor/skills --skip-existing",
+    );
     Deno.exit(1);
   }
 
   const skillName = args[0];
   const path = args[2];
 
-  console.log(`Initializing skill: ${skillName}`);
-  console.log(`   Location: ${path}\n`);
+  console.error(`Initializing skill: ${skillName}`);
+  console.error(`   Location: ${path}\n`);
 
-  const result = await initSkill(skillName, path);
-  Deno.exit(result ? 0 : 1);
+  const result = await initSkill(skillName, path, { skipExisting });
+  if (result) {
+    console.log(JSON.stringify({ ok: true, result: { path: result } }));
+    Deno.exit(0);
+  } else {
+    console.log(
+      JSON.stringify({ ok: false, error: "Skill initialization failed" }),
+    );
+    Deno.exit(1);
+  }
 }
 
 if (import.meta.main) {

@@ -250,6 +250,21 @@ Deno.test("init: fails if directory already exists", async () => {
   }
 });
 
+Deno.test("init: --skip-existing returns path when directory exists", async () => {
+  const parent = await Deno.makeTempDir({ prefix: "skill_init_" });
+  try {
+    await Deno.mkdir(join(parent, "existing-skill"));
+
+    const result = await initSkill("existing-skill", parent, {
+      skipExisting: true,
+    });
+    assertEquals(typeof result, "string");
+    assertEquals(result !== null, true);
+  } finally {
+    await Deno.remove(parent, { recursive: true });
+  }
+});
+
 Deno.test("init: SKILL.md contains correct name in frontmatter", async () => {
   const parent = await Deno.makeTempDir({ prefix: "skill_init_" });
   try {

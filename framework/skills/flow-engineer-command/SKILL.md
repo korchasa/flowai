@@ -228,9 +228,9 @@ Command creation involves these steps:
 
 1. Understand the command with concrete examples
 2. Plan reusable command contents (scripts, references, assets)
-3. Initialize the command (run init_command.py)
+3. Initialize the command (run init_command.ts)
 4. Edit the command (implement resources and write SKILL.md)
-5. Package the command (run package_command.py)
+5. Package the command (run package_command.ts)
 6. Iterate based on real usage
 
 Follow these steps in order, skipping only if there is a clear reason why they are not applicable.

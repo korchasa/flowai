@@ -235,6 +235,18 @@ Deno.test("init: template description is a YAML list placeholder requiring user 
   });
 });
 
+Deno.test("init: --skip-existing returns path when directory exists", async () => {
+  await withTempDir(async (parentDir) => {
+    await Deno.mkdir(join(parentDir, "flow-existing"), { recursive: true });
+
+    const result = initCommand("flow-existing", parentDir, {
+      skipExisting: true,
+    });
+    assertEquals(typeof result, "string");
+    assertEquals(result !== null, true);
+  });
+});
+
 // ===========================================================================
 // packageCommand — minimal (not exported, depends on `zip` CLI)
 // ===========================================================================

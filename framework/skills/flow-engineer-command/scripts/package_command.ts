@@ -24,11 +24,11 @@ function packageCommand(
   try {
     const stat = Deno.statSync(commandPath);
     if (!stat.isDirectory) {
-      console.log(`❌ Error: Path is not a directory: ${commandPath}`);
+      console.error(`❌ Error: Path is not a directory: ${commandPath}`);
       return null;
     }
   } catch {
-    console.log(`❌ Error: Command folder not found: ${commandPath}`);
+    console.error(`❌ Error: Command folder not found: ${commandPath}`);
     return null;
   }
 
@@ -37,19 +37,19 @@ function packageCommand(
   try {
     Deno.statSync(skillMd);
   } catch {
-    console.log(`❌ Error: SKILL.md not found in ${commandPath}`);
+    console.error(`❌ Error: SKILL.md not found in ${commandPath}`);
     return null;
   }
 
   // Run validation before packaging
-  console.log("🔍 Validating command...");
+  console.error("🔍 Validating command...");
   const [valid, message] = validateCommand(commandPath);
   if (!valid) {
-    console.log(`❌ Validation failed: ${message}`);
-    console.log("   Please fix the validation errors before packaging.");
+    console.error(`❌ Validation failed: ${message}`);
+    console.error("   Please fix the validation errors before packaging.");
     return null;
   }
-  console.log(`✅ ${message}\n`);
+  console.error(`✅ ${message}\n`);
 
   // Determine output location
   const commandName = basename(commandPath);
@@ -97,7 +97,7 @@ function packageCommand(
     const zipResult = zipCmd.outputSync();
     if (!zipResult.success) {
       const stderr = new TextDecoder().decode(zipResult.stderr);
-      console.log(
+      console.error(
         `❌ Error creating .skill file: zip command failed: ${stderr}`,
       );
       return null;
@@ -105,27 +105,27 @@ function packageCommand(
 
     // Print added files (matching Python output format: relative to parent)
     for (const arcname of entries) {
-      console.log(`  Added: ${arcname}`);
+      console.error(`  Added: ${arcname}`);
     }
 
-    console.log(`\n✅ Successfully packaged command to: ${commandFilename}`);
+    console.error(`\n✅ Successfully packaged command to: ${commandFilename}`);
     return commandFilename;
   } catch (e) {
-    console.log(`❌ Error creating .skill file: ${e}`);
+    console.error(`❌ Error creating .skill file: ${e}`);
     return null;
   }
 }
 
 function main(): void {
   if (Deno.args.length < 1) {
-    console.log(
+    console.error(
       "Usage: deno run -A package_command.ts <path/to/command-folder> [output-directory]",
     );
-    console.log("\nExample:");
-    console.log(
+    console.error("\nExample:");
+    console.error(
       "  deno run -A package_command.ts skills/public/flow-my-command",
     );
-    console.log(
+    console.error(
       "  deno run -A package_command.ts skills/public/flow-my-command ./dist",
     );
     Deno.exit(1);
@@ -134,17 +134,21 @@ function main(): void {
   const commandPath = Deno.args[0];
   const outputDir = Deno.args.length > 1 ? Deno.args[1] : null;
 
-  console.log(`📦 Packaging command: ${commandPath}`);
+  console.error(`📦 Packaging command: ${commandPath}`);
   if (outputDir) {
-    console.log(`   Output directory: ${outputDir}`);
+    console.error(`   Output directory: ${outputDir}`);
   }
-  console.log();
+  console.error();
 
   const result = packageCommand(commandPath, outputDir);
 
   if (result) {
+    console.log(JSON.stringify({ ok: true, result: { archive: result } }));
     Deno.exit(0);
   } else {
+    console.log(
+      JSON.stringify({ ok: false, error: "Command packaging failed" }),
+    );
     Deno.exit(1);
   }
 }

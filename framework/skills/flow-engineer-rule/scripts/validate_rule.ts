@@ -390,7 +390,12 @@ function main(): void {
   }
 
   const [valid, message] = validateRule(Deno.args[0]);
-  console.log(message);
+  if (valid) {
+    console.log(JSON.stringify({ ok: true, result: { valid: true, message } }));
+  } else {
+    console.error(message);
+    console.log(JSON.stringify({ ok: false, error: message }));
+  }
   Deno.exit(valid ? 0 : 1);
 }
 
