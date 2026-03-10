@@ -64,6 +64,30 @@
   - Avoid dependencies requiring import maps or `deno.json` resolution.
   - Each script header MUST include a `Run:` section with the exact `deno run` command.
 
+#### 3.1.2 Script Language Policy
+
+All project scripts (both `framework/skills/*/scripts/` and root `scripts/`) use Deno/TypeScript exclusively. Python is not used in the project.
+
+#### 3.1.3 Skill Tool Hints (`allowed-tools`)
+
+Skills MAY use the `allowed-tools` frontmatter field (experimental, per agentskills.io spec) to pre-approve tools needed for script execution. Example:
+
+```yaml
+---
+name: my-skill
+description: Does something
+allowed-tools: Bash(deno:*)
+---
+```
+
+Adoption is optional. IDEs that support `allowed-tools` will auto-approve matching tool calls; IDEs that don't will ignore the field.
+
+#### 3.1.4 Skill Name Collision Resolution
+
+When the same skill name exists in both `.dev/skills/` and `framework/skills/`, the `.dev/` version takes precedence (project-level overrides framework-level). This follows the agentskills.io client implementation guide for project-level vs user-level skill precedence.
+
+`scripts/task-link.ts` implements this override logic during symlink creation and emits a warning to stderr when a collision is detected.
+
 ### 3.2 Product Agents (`framework/agents/{ide}/`)
 
 - **Purpose:** Define specialized AI subagent personas and roles for end users.

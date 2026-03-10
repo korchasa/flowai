@@ -870,14 +870,17 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         (stdin confirmation, interactive menus). All input via CLI flags, env
         vars, or stdin piping. Agents run in non-interactive shells.
         All 17 scripts use CLI args/env/stdin piping; none use interactive prompts.
-  - [ ] **FR-21.3.2 Structured output**: Scripts MUST output structured data
+  - [x] **FR-21.3.2 Structured output**: Scripts MUST output structured data
         (JSON preferred) to stdout. Diagnostics/progress to stderr. This
         enables reliable parsing by any agent implementation.
-  - [ ] **FR-21.3.3 Self-contained dependencies**: Scripts MUST declare
+        All framework scripts output `{ "ok": bool, "result": {...} }` JSON to stdout. Diagnostics go to stderr via `console.error()`.
+  - [x] **FR-21.3.3 Self-contained dependencies**: Scripts MUST declare
         dependencies inline (PEP 723 for Python, `npm:`/`jsr:` imports for
         Deno/TS). No implicit global installs required.
-  - [ ] **FR-21.3.4 Help output**: Scripts SHOULD implement `--help` flag as
+        All framework scripts use `jsr:` specifiers. No bare `@std/` imports remain in `framework/skills/`.
+  - [N/A] **FR-21.3.4 Help output**: Scripts SHOULD implement `--help` flag as
         the primary way agents learn the script interface.
+        Dropped: agents read SKILL.md for script interface; `--help` duplicates SKILL.md and adds maintenance burden.
   - [x] **FR-21.3.5 Meaningful exit codes**: Exit 0 on success, non-zero on
         failure. Scripts SHOULD use distinct codes for different error types.
         All 17 scripts exit 0/non-zero correctly. Verified across `scripts/` and `framework/skills/*/scripts/`.
@@ -886,11 +889,12 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         agent's responsibility unless the script's explicit purpose is
         generation.
         Analysis scripts (`generate_agents.ts`, `check-skills.ts`, `check-agents.ts`) are read-only. Generation scripts (`task-link.ts`) are exempt per requirement text.
-  - [ ] **FR-21.3.7 Idempotent**: Scripts MUST be safe to run multiple times
+  - [x] **FR-21.3.7 Idempotent**: Scripts MUST be safe to run multiple times
         with the same input producing the same output.
+        Validation/check scripts are inherently idempotent (read-only). Init scripts support `--skip-existing` flag for idempotent mode; default is fail-fast on conflict.
   - [x] **FR-21.3.8 Error messages**: Scripts MUST provide clear, actionable
         error messages to stderr. Include what failed, why, and how to fix.
-        All 17 scripts write diagnostics to stderr via `console.error()` / `print(..., file=sys.stderr)`.
+        All 17 scripts write diagnostics to stderr via `console.error()`.
   - [x] **FR-21.3.9 Dry-run support**: Scripts performing destructive
         operations SHOULD support `--dry-run` flag.
         N/A — no framework scripts perform destructive operations. All are analysis/validation/symlink tools.
@@ -898,13 +902,15 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 #### FR-21.4 Script Language Policy
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.4.1 Framework scripts in Deno/TS**: All framework product
+  - [x] **FR-21.4.1 Framework scripts in Deno/TS**: All framework product
         scripts (`framework/skills/*/scripts/`) MUST be written in
         Deno/TypeScript. Supersedes FR-13.2: the two remaining Python scripts
         (`count_tokens.py`, `validate.py`) must be migrated to Deno/TS.
-  - [ ] **FR-21.4.2 General-purpose utilities in Python**: Utility scripts
+        All 8 Python scripts removed. `count_tokens.ts` and `validate.ts` (Mermaid) written as replacements. Zero `.py` files in `framework/skills/`.
+  - [x] **FR-21.4.2 General-purpose utilities in Python**: Utility scripts
         outside the framework product directory MAY use Python. Scripts inside
         `framework/skills/*/scripts/` MUST be Deno/TS per FR-21.4.1.
+        Policy documented in SDS (section 3.1.2 "Script Language Policy"). Project uses Deno/TS exclusively — no Python.
   - [x] **FR-21.4.3 User-facing skills are language-agnostic**: The
         agentskills.io standard allows any language. Framework documentation
         (e.g., `flow-engineer-skill`) MUST NOT restrict users to a single
@@ -923,10 +929,11 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         runner" tool in any supported IDE. All script execution goes through
         the generic Bash/terminal tool.
         Confirmed: all three IDEs (Cursor, Claude Code, OpenCode) use Bash/terminal for script execution.
-  - [ ] **FR-21.5.3 allowed-tools hint**: Skills MAY use the `allowed-tools`
+  - [x] **FR-21.5.3 allowed-tools hint**: Skills MAY use the `allowed-tools`
         frontmatter field (experimental) to pre-approve tools needed for
         script execution (e.g., `Bash(deno:*)`). This reduces permission
         prompts but is not guaranteed across all IDEs.
+        Documented in SDS (section 3.1.3 "Skill Tool Hints"). Adoption is optional per agentskills.io spec.
 
 #### FR-21.6 Skill Discovery Paths
 
@@ -939,9 +946,10 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
         three IDEs. IDE-specific paths: `.cursor/skills/`, `.claude/skills/`,
         `.opencode/skills/`.
         `scripts/task-link.ts` creates symlinks in `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`.
-  - [ ] **FR-21.6.3 Name collision**: Project-level skills override user-level
+  - [x] **FR-21.6.3 Name collision**: Project-level skills override user-level
         skills when names collide (per agentskills.io client implementation
         guide).
+        Implemented in `task-link.ts` (`.dev/` overrides `framework/`). Documented in SDS (section 3.1.4). Collision warning emitted to stderr.
 
 ## 4. Non-functional requirements
 

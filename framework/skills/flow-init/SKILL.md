@@ -53,7 +53,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      ```bash
      deno run --allow-read scripts/generate_agents.ts .
      ```
-   - Read the JSON output. It contains: project metadata (`is_new`, `stack`, `file_tree`, `readme_content`), component `inventory`, and `verification` checks.
+   - Read the JSON output. It wraps in `{ "ok": bool, "result": {...} }`. The `result` field contains: project metadata (`is_new`, `stack`, `file_tree`, `readme_content`), component `inventory`, and `verification` checks.
    - **Decision Point** (agent judgment, NOT a script flag):
      - Analyze file count, presence of source files, config files and existing documentation.
      - If project appears empty or minimal (no source files, no meaningful configs) -> treat as **Greenfield**.

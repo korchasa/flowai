@@ -84,6 +84,7 @@ export function initRule(
   path: string,
   alwaysApply = false,
   globs?: string,
+  options?: { skipExisting?: boolean },
 ): string | null {
   const resolvedPath = resolve(path);
   const title = titleCase(ruleName);
@@ -94,7 +95,14 @@ export function initRule(
     try {
       const stat = Deno.statSync(ruleDir);
       if (stat.isDirectory || stat.isFile) {
-        console.log(`Error: Rule directory already exists: ${ruleDir}`);
+        if (options?.skipExisting) {
+          console.error(
+            `Warning: Rule directory already exists, skipping: ${ruleDir}`,
+          );
+          return join(ruleDir, "RULE.md");
+        }
+        console.error(`Error: Rule directory already exists: ${ruleDir}`);
+        console.error("Use --skip-existing to skip existing targets.");
         return null;
       }
     } catch {
@@ -116,7 +124,7 @@ export function initRule(
 
     const ruleFile = join(ruleDir, "RULE.md");
     Deno.writeTextFileSync(ruleFile, content);
-    console.log(`Created ${ruleFile}`);
+    console.error(`Created ${ruleFile}`);
     return ruleFile;
   } else if (ide === "claude") {
     Deno.mkdirSync(resolvedPath, { recursive: true });
@@ -135,14 +143,21 @@ export function initRule(
     const ruleFile = join(resolvedPath, `${ruleName}.md`);
     try {
       Deno.statSync(ruleFile);
-      console.log(`Error: Rule file already exists: ${ruleFile}`);
+      if (options?.skipExisting) {
+        console.error(
+          `Warning: Rule file already exists, skipping: ${ruleFile}`,
+        );
+        return ruleFile;
+      }
+      console.error(`Error: Rule file already exists: ${ruleFile}`);
+      console.error("Use --skip-existing to skip existing targets.");
       return null;
     } catch {
       // Does not exist, proceed
     }
 
     Deno.writeTextFileSync(ruleFile, content);
-    console.log(`Created ${ruleFile}`);
+    console.error(`Created ${ruleFile}`);
     return ruleFile;
   } else if (ide === "opencode") {
     Deno.mkdirSync(resolvedPath, { recursive: true });
@@ -151,17 +166,24 @@ export function initRule(
     const ruleFile = join(resolvedPath, "AGENTS.md");
     try {
       Deno.statSync(ruleFile);
-      console.log(`Error: AGENTS.md already exists: ${ruleFile}`);
+      if (options?.skipExisting) {
+        console.error(
+          `Warning: AGENTS.md already exists, skipping: ${ruleFile}`,
+        );
+        return ruleFile;
+      }
+      console.error(`Error: AGENTS.md already exists: ${ruleFile}`);
+      console.error("Use --skip-existing to skip existing targets.");
       return null;
     } catch {
       // Does not exist, proceed
     }
 
     Deno.writeTextFileSync(ruleFile, content);
-    console.log(`Created ${ruleFile}`);
+    console.error(`Created ${ruleFile}`);
     return ruleFile;
   } else {
-    console.log(`Error: Unknown IDE '${ide}'`);
+    console.error(`Error: Unknown IDE '${ide}'`);
     return null;
   }
 }
@@ -169,9 +191,10 @@ export function initRule(
 function main(): void {
   const args = parseArgs(Deno.args, {
     string: ["ide", "path", "globs"],
-    boolean: ["always-apply"],
+    boolean: ["always-apply", "skip-existing"],
     default: {
       "always-apply": false,
+      "skip-existing": false,
     },
   });
 
@@ -199,24 +222,31 @@ function main(): void {
   }
 
   const alwaysApply = args["always-apply"];
+  const skipExisting = args["skip-existing"];
   const globs = args.globs;
 
-  console.log(`Initializing rule: ${ruleName}`);
-  console.log(`   IDE: ${ide}`);
-  console.log(`   Location: ${path}`);
+  console.error(`Initializing rule: ${ruleName}`);
+  console.error(`   IDE: ${ide}`);
+  console.error(`   Location: ${path}`);
   if (alwaysApply) {
-    console.log("   Scope: always apply");
+    console.error("   Scope: always apply");
   } else if (globs) {
-    console.log(`   Scope: ${globs}`);
+    console.error(`   Scope: ${globs}`);
   }
-  console.log();
+  console.error();
 
-  const result = initRule(ruleName, ide, path, alwaysApply, globs);
+  const result = initRule(ruleName, ide, path, alwaysApply, globs, {
+    skipExisting,
+  });
 
   if (result) {
-    console.log(`\nRule initialized. Edit the file to complete TODO items.`);
+    console.error(`\nRule initialized. Edit the file to complete TODO items.`);
+    console.log(JSON.stringify({ ok: true, result: { path: result } }));
     Deno.exit(0);
   } else {
+    console.log(
+      JSON.stringify({ ok: false, error: "Rule initialization failed" }),
+    );
     Deno.exit(1);
   }
 }

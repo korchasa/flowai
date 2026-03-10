@@ -162,11 +162,16 @@ export function validateSkill(
 
 if (import.meta.main) {
   if (Deno.args.length !== 1) {
-    console.log("Usage: python validate_skill.py <skill_directory>");
+    console.error("Usage: deno run -A validate_skill.ts <skill_directory>");
     Deno.exit(1);
   }
 
   const [valid, message] = validateSkill(Deno.args[0]);
-  console.log(message);
+  if (valid) {
+    console.log(JSON.stringify({ ok: true, result: { valid: true, message } }));
+  } else {
+    console.error(message);
+    console.log(JSON.stringify({ ok: false, error: message }));
+  }
   Deno.exit(valid ? 0 : 1);
 }

@@ -462,3 +462,49 @@ Deno.test("init: fails if target already exists", () => {
     Deno.removeSync(tmpDir, { recursive: true });
   }
 });
+
+Deno.test("init: --skip-existing returns path when target exists (cursor)", () => {
+  const tmpDir = Deno.makeTempDirSync();
+  try {
+    const first = initRule("existing-rule", "cursor", tmpDir, true);
+    assertEquals(first !== null, true, "First init should succeed");
+
+    const second = initRule(
+      "existing-rule",
+      "cursor",
+      tmpDir,
+      true,
+      undefined,
+      {
+        skipExisting: true,
+      },
+    );
+    assertEquals(typeof second, "string");
+    assertEquals(second !== null, true, "--skip-existing should return path");
+  } finally {
+    Deno.removeSync(tmpDir, { recursive: true });
+  }
+});
+
+Deno.test("init: --skip-existing returns path when target exists (claude)", () => {
+  const tmpDir = Deno.makeTempDirSync();
+  try {
+    const first = initRule("existing-rule", "claude", tmpDir, true);
+    assertEquals(first !== null, true, "First init should succeed");
+
+    const second = initRule(
+      "existing-rule",
+      "claude",
+      tmpDir,
+      true,
+      undefined,
+      {
+        skipExisting: true,
+      },
+    );
+    assertEquals(typeof second, "string");
+    assertEquals(second !== null, true, "--skip-existing should return path");
+  } finally {
+    Deno.removeSync(tmpDir, { recursive: true });
+  }
+});

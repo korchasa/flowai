@@ -308,9 +308,10 @@ async function analyzeProject(rootDir: string): Promise<AnalysisResult> {
 
 async function main(): Promise<void> {
   const dir = resolve(Deno.args[0] ?? Deno.cwd());
-  const result = await analyzeProject(dir);
-  console.log(JSON.stringify(result, null, 2));
-  if (!result.verification.passed) Deno.exit(1);
+  const analysis = await analyzeProject(dir);
+  const ok = analysis.verification.passed;
+  console.log(JSON.stringify({ ok, result: analysis }, null, 2));
+  if (!ok) Deno.exit(1);
 }
 
 // Export for testing

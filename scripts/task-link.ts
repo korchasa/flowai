@@ -216,8 +216,13 @@ async function linkSkills(projectRoot: string): Promise<LinkResult[]> {
       const absSource = resolve(projectRoot, "framework/skills", name);
       validSources.add(absSource);
       const absTarget = resolve(targetDir, name);
-      // Skip if .dev already provided this name
-      if (devSkills.includes(name)) continue;
+      // Skip if .dev already provided this name (project-level overrides framework)
+      if (devSkills.includes(name)) {
+        console.error(
+          `  Warning: .dev/skills/${name} overrides framework/skills/${name}`,
+        );
+        continue;
+      }
       results.push(
         await ensureSymlink(absSource, absTarget, `${ideDir}/skills/${name}`),
       );
@@ -265,7 +270,12 @@ async function linkAgents(projectRoot: string): Promise<LinkResult[]> {
       );
       validSources.add(absSource);
       const absTarget = resolve(targetDir, name);
-      if (devAgents.includes(name)) continue;
+      if (devAgents.includes(name)) {
+        console.error(
+          `  Warning: .dev/agents/${name} overrides framework/agents/${fwAgentSubdir}/${name}`,
+        );
+        continue;
+      }
       results.push(
         await ensureSymlink(absSource, absTarget, `${ideDir}/agents/${name}`),
       );

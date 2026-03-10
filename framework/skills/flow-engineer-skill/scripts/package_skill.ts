@@ -23,11 +23,11 @@ export async function packageSkill(
   try {
     const stat = await Deno.stat(resolvedSkillPath);
     if (!stat.isDirectory) {
-      console.log(`Error: Path is not a directory: ${resolvedSkillPath}`);
+      console.error(`Error: Path is not a directory: ${resolvedSkillPath}`);
       return null;
     }
   } catch {
-    console.log(`Error: Skill folder not found: ${resolvedSkillPath}`);
+    console.error(`Error: Skill folder not found: ${resolvedSkillPath}`);
     return null;
   }
 
@@ -35,19 +35,19 @@ export async function packageSkill(
   try {
     await Deno.stat(join(resolvedSkillPath, "SKILL.md"));
   } catch {
-    console.log(`Error: SKILL.md not found in ${resolvedSkillPath}`);
+    console.error(`Error: SKILL.md not found in ${resolvedSkillPath}`);
     return null;
   }
 
   // Validate before packaging
-  console.log("Validating skill...");
+  console.error("Validating skill...");
   const [valid, message] = validateSkill(resolvedSkillPath);
   if (!valid) {
-    console.log(`Validation failed: ${message}`);
-    console.log("   Fix validation errors before packaging.");
+    console.error(`Validation failed: ${message}`);
+    console.error("   Fix validation errors before packaging.");
     return null;
   }
-  console.log(`${message}\n`);
+  console.error(`${message}\n`);
 
   // Determine output location
   const skillName = basename(resolvedSkillPath);
@@ -79,7 +79,9 @@ export async function packageSkill(
 
     if (!output.success) {
       const stderr = new TextDecoder().decode(output.stderr);
-      console.log(`Error creating .skill file: zip command failed: ${stderr}`);
+      console.error(
+        `Error creating .skill file: zip command failed: ${stderr}`,
+      );
       return null;
     }
 
@@ -93,41 +95,51 @@ export async function packageSkill(
         const arcname = addMatch[1];
         // Only print files, not directories (directories end with /)
         if (!arcname.endsWith("/")) {
-          console.log(`  Added: ${arcname}`);
+          console.error(`  Added: ${arcname}`);
         }
       }
     }
 
-    console.log(`\nPackaged skill to: ${skillFilename}`);
+    console.error(`\nPackaged skill to: ${skillFilename}`);
     return skillFilename;
   } catch (e) {
-    console.log(`Error creating .skill file: ${e}`);
+    console.error(`Error creating .skill file: ${e}`);
     return null;
   }
 }
 
 async function main(): Promise<void> {
   if (Deno.args.length < 1) {
-    console.log(
-      "Usage: python package_skill.py <path/to/skill-folder> [output-directory]",
+    console.error(
+      "Usage: deno run --allow-read --allow-write scripts/package_skill.ts <path/to/skill-folder> [output-directory]",
     );
-    console.log("\nExample:");
-    console.log("  python package_skill.py .cursor/skills/code-review");
-    console.log("  python package_skill.py .cursor/skills/code-review ./dist");
+    console.error("\nExample:");
+    console.error("  deno run --allow-read --allow-write scripts/package_skill.ts .cursor/skills/code-review");
+    console.error(
+      "  deno run --allow-read --allow-write scripts/package_skill.ts .cursor/skills/code-review ./dist",
+    );
     Deno.exit(1);
   }
 
   const skillPath = Deno.args[0];
   const outputDir = Deno.args.length > 1 ? Deno.args[1] : null;
 
-  console.log(`Packaging skill: ${skillPath}`);
+  console.error(`Packaging skill: ${skillPath}`);
   if (outputDir) {
-    console.log(`   Output directory: ${outputDir}`);
+    console.error(`   Output directory: ${outputDir}`);
   }
-  console.log();
+  console.error();
 
   const result = await packageSkill(skillPath, outputDir);
-  Deno.exit(result ? 0 : 1);
+  if (result) {
+    console.log(JSON.stringify({ ok: true, result: { archive: result } }));
+    Deno.exit(0);
+  } else {
+    console.log(
+      JSON.stringify({ ok: false, error: "Skill packaging failed" }),
+    );
+    Deno.exit(1);
+  }
 }
 
 if (import.meta.main) {
