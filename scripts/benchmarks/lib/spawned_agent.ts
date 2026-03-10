@@ -43,10 +43,12 @@ export class SpawnedAgent {
     this.adapter = options.adapter;
   }
 
+  /** Returns the session ID assigned by the agent process (used for resume). */
   public getSessionId(): string | null {
     return this.sessionId;
   }
 
+  /** Returns the accumulated conversation history (user + assistant turns). */
   public getMessages(): Array<{ role: string; content: string }> {
     return this.messages;
   }

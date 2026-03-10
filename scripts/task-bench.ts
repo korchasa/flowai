@@ -1,3 +1,12 @@
+/**
+ * task-bench.ts — Discovers and runs agent benchmark scenarios.
+ *
+ * Walks `benchmarks/` for scenario mod.ts files, runs each through the
+ * benchmark runner with LLM-Judge evaluation, and outputs results as
+ * console summary + HTML report.
+ *
+ * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
+ */
 import { dirname, join } from "@std/path";
 import { parse } from "@std/flags";
 import { existsSync, walk } from "@std/fs";

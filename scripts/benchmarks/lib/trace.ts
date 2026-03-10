@@ -1,3 +1,10 @@
+/**
+ * trace.ts — Generates an interactive HTML report for benchmark runs.
+ *
+ * Provides TraceLogger class that collects events during benchmark execution
+ * and renders them as a single-page HTML report with dashboard, per-scenario
+ * detail views, and a navigable table of contents.
+ */
 import { join } from "@std/path";
 
 export type TraceSource = "agent" | "judge" | "user_emulation" | "system";
@@ -30,6 +37,25 @@ export interface ScenarioMetadata {
   };
 }
 
+/** Aggregated stats for a group of scenario runs (single or multi-run). */
+interface ScenarioGroupStats {
+  groupId: string;
+  name: string;
+  runs: ScenarioMetadata[];
+  passRate: number;
+  avgScore: number;
+  avgDurationMs: number;
+  totalTokens: number;
+  totalCost: number;
+  totalErrors: number;
+  totalWarnings: number;
+  allPassed: boolean;
+}
+
+/**
+ * Collects trace events during benchmark execution and renders an HTML report.
+ * Each scenario gets its own detail view; a dashboard aggregates all results.
+ */
 export class TraceLogger {
   private tracePath: string;
   private events: TraceEvent[] = [];
@@ -40,6 +66,7 @@ export class TraceLogger {
     this.tracePath = join(workDir, filename);
   }
 
+  /** Persists the current report to disk. */
   private async save() {
     if (this.scenarios.size === 0) return;
 
@@ -47,6 +74,7 @@ export class TraceLogger {
     await Deno.writeTextFile(this.tracePath, html);
   }
 
+  /** Wraps content in a collapsible data-block container. */
   private wrapCollapsible(content: string, style = ""): string {
     return `
       <div class="data-block" ${style ? `style="${style}"` : ""}>
@@ -62,6 +90,7 @@ export class TraceLogger {
     `;
   }
 
+  /** Formats scenario name with skill prefix for display. */
   private formatScenarioName(id: string, name: string): string {
     if (id.startsWith("flow-")) {
       const parts = id.split("-");
@@ -73,33 +102,10 @@ export class TraceLogger {
     return name;
   }
 
-  private render(): string {
-    const scenarios = Array.from(this.scenarios.values());
-
-    // Simple HTML escaping
-    const escape = (str: string) =>
-      str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-    // Group scenarios for multi-run aggregation
-    interface ScenarioGroupStats {
-      groupId: string;
-      name: string;
-      runs: ScenarioMetadata[];
-      passRate: number;
-      avgScore: number;
-      avgDurationMs: number;
-      totalTokens: number;
-      totalCost: number;
-      totalErrors: number;
-      totalWarnings: number;
-      allPassed: boolean;
-    }
-
+  /** Groups scenarios by scenarioGroup (or id) and computes aggregate stats. */
+  private computeGroups(
+    scenarios: ScenarioMetadata[],
+  ): ScenarioGroupStats[] {
     const groupMap = new Map<string, ScenarioMetadata[]>();
     for (const s of scenarios) {
       const groupId = s.scenarioGroup || s.id;
@@ -109,7 +115,7 @@ export class TraceLogger {
       groupMap.get(groupId)!.push(s);
     }
 
-    const groups: ScenarioGroupStats[] = Array.from(groupMap.entries()).map(
+    return Array.from(groupMap.entries()).map(
       ([groupId, runs]) => {
         const withSummary = runs.filter((r) => r.summary);
         const passedCount = withSummary.filter((r) => r.summary?.success)
@@ -151,8 +157,14 @@ export class TraceLogger {
         };
       },
     );
+  }
 
-    const dashboardHtml = `
+  /** Renders the overview dashboard section with summary metrics and scenario table. */
+  private renderDashboard(
+    groups: ScenarioGroupStats[],
+    scenarios: ScenarioMetadata[],
+  ): string {
+    return `
       <section id="overview" class="scenario-section active">
         <h2>BENCHMARK DASHBOARD</h2>
 
@@ -203,71 +215,7 @@ export class TraceLogger {
             </tr>
           </thead>
           <tbody>
-            ${
-      groups.map((g) => {
-        const isMultiRun = g.runs.length > 1;
-        const statusClass = g.allPassed ? "status-pass" : "status-fail";
-        const statusText = isMultiRun
-          ? `${g.passRate.toFixed(0)}% (${
-            g.runs.filter((r) => r.summary?.success).length
-          }/${g.runs.length})`
-          : (g.allPassed ? "PASSED" : "FAILED");
-
-        const groupRow = `
-                <tr class="group-row" onclick="${
-          isMultiRun
-            ? `toggleRunGroup('${g.groupId}')`
-            : `showScenario('${g.runs[0].id}')`
-        }" style="cursor: pointer">
-                  <td>${isMultiRun ? "&#9654; " : ""}${
-          escape(this.formatScenarioName(g.groupId, g.name))
-        }</td>
-                  <td class="${statusClass} text-right">${statusText}</td>
-                  <td class="text-right">${g.avgScore.toFixed(1)}%</td>
-                  <td class="text-right">${g.totalErrors}/${g.totalWarnings}</td>
-                  <td class="text-right">${
-          isMultiRun
-            ? (g.avgDurationMs / 1000).toFixed(1) + "s avg"
-            : (g.avgDurationMs / 1000).toFixed(1) + "s"
-        }</td>
-                  <td class="text-right">${g.totalTokens}</td>
-                  <td class="text-right">$${g.totalCost.toFixed(6)}</td>
-                </tr>`;
-
-        if (!isMultiRun) return groupRow;
-
-        const runRows = g.runs.map((s) => {
-          const runStatusClass = s.summary
-            ? (s.summary.success ? "status-pass" : "status-fail")
-            : "status-pending";
-          const runStatusText = s.summary
-            ? (s.summary.success ? "PASSED" : "FAILED")
-            : "PENDING";
-          return `
-                <tr class="run-row run-group-${g.groupId}" style="display: none; cursor: pointer" onclick="showScenario('${s.id}')">
-                  <td style="padding-left: 32px">run-${s.runIndex || "?"}</td>
-                  <td class="${runStatusClass} text-right">${runStatusText}</td>
-                  <td class="text-right">${
-            s.summary ? s.summary.score.toFixed(1) + "%" : "-"
-          }</td>
-                  <td class="text-right">${
-            s.summary ? `${s.summary.errors}/${s.summary.warnings}` : "-"
-          }</td>
-                  <td class="text-right">${
-            s.summary ? (s.summary.durationMs / 1000).toFixed(1) + "s" : "-"
-          }</td>
-                  <td class="text-right">${
-            s.summary ? s.summary.tokensUsed : "-"
-          }</td>
-                  <td class="text-right">${
-            s.summary ? "$" + s.summary.totalCost.toFixed(6) : "-"
-          }</td>
-                </tr>`;
-        }).join("");
-
-        return groupRow + runRows;
-      }).join("")
-    }
+            ${this.renderDashboardRows(groups)}
           </tbody>
           <tfoot>
             <tr class="total-row">
@@ -300,125 +248,192 @@ export class TraceLogger {
         </table>
       </section>
     `;
+  }
 
-    const scenariosHtml = scenarios.map((meta) => {
-      let currentStep = -1;
-      const scenarioEvents = this.events.filter((e) =>
-        e.scenarioId === meta.id
-      );
+  /** Renders table body rows for the dashboard (group rows + optional run sub-rows). */
+  private renderDashboardRows(groups: ScenarioGroupStats[]): string {
+    return groups.map((g) => {
+      const isMultiRun = g.runs.length > 1;
+      const statusClass = g.allPassed ? "status-pass" : "status-fail";
+      const statusText = isMultiRun
+        ? `${g.passRate.toFixed(0)}% (${
+          g.runs.filter((r) => r.summary?.success).length
+        }/${g.runs.length})`
+        : (g.allPassed ? "PASSED" : "FAILED");
 
-      const eventsHtml: string[] = [];
-      let currentInteractionId: string | null = null;
-      let interactionGroup: string[] = [];
+      const groupRow = `
+                <tr class="group-row" onclick="${
+        isMultiRun
+          ? `toggleRunGroup('${g.groupId}')`
+          : `showScenario('${g.runs[0].id}')`
+      }" style="cursor: pointer">
+                  <td>${isMultiRun ? "&#9654; " : ""}${
+        escape(this.formatScenarioName(g.groupId, g.name))
+      }</td>
+                  <td class="${statusClass} text-right">${statusText}</td>
+                  <td class="text-right">${g.avgScore.toFixed(1)}%</td>
+                  <td class="text-right">${g.totalErrors}/${g.totalWarnings}</td>
+                  <td class="text-right">${
+        isMultiRun
+          ? (g.avgDurationMs / 1000).toFixed(1) + "s avg"
+          : (g.avgDurationMs / 1000).toFixed(1) + "s"
+      }</td>
+                  <td class="text-right">${g.totalTokens}</td>
+                  <td class="text-right">$${g.totalCost.toFixed(6)}</td>
+                </tr>`;
 
-      const flushInteraction = () => {
-        if (interactionGroup.length > 0) {
-          eventsHtml.push(
-            `<div class="event-group">${interactionGroup.join("")}</div>`,
-          );
-          interactionGroup = [];
-        }
-      };
+      if (!isMultiRun) return groupRow;
 
-      scenarioEvents.forEach((event, index) => {
-        const title = event.metadata.description || event.type;
-        const eventId = `event-${meta.id}-${index}`;
-        let stepHeader = "";
+      const runRows = g.runs.map((s) => {
+        const runStatusClass = s.summary
+          ? (s.summary.success ? "status-pass" : "status-fail")
+          : "status-pending";
+        const runStatusText = s.summary
+          ? (s.summary.success ? "PASSED" : "FAILED")
+          : "PENDING";
+        return `
+                <tr class="run-row run-group-${g.groupId}" style="display: none; cursor: pointer" onclick="showScenario('${s.id}')">
+                  <td style="padding-left: 32px">run-${s.runIndex || "?"}</td>
+                  <td class="${runStatusClass} text-right">${runStatusText}</td>
+                  <td class="text-right">${
+          s.summary ? s.summary.score.toFixed(1) + "%" : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? `${s.summary.errors}/${s.summary.warnings}` : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? (s.summary.durationMs / 1000).toFixed(1) + "s" : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? s.summary.tokensUsed : "-"
+        }</td>
+                  <td class="text-right">${
+          s.summary ? "$" + s.summary.totalCost.toFixed(6) : "-"
+        }</td>
+                </tr>`;
+      }).join("");
 
-        if (
-          event.metadata.step !== undefined &&
-          event.metadata.step !== currentStep
-        ) {
-          flushInteraction();
-          currentStep = event.metadata.step as number;
-          stepHeader = `
+      return groupRow + runRows;
+    }).join("");
+  }
+
+  /** Renders a single scenario detail view (header, summary, events timeline). */
+  private renderScenarioDetail(meta: ScenarioMetadata): string {
+    let currentStep = -1;
+    const scenarioEvents = this.events.filter((e) => e.scenarioId === meta.id);
+
+    const eventsHtml: string[] = [];
+    let currentInteractionId: string | null = null;
+    let interactionGroup: string[] = [];
+
+    const flushInteraction = () => {
+      if (interactionGroup.length > 0) {
+        eventsHtml.push(
+          `<div class="event-group">${interactionGroup.join("")}</div>`,
+        );
+        interactionGroup = [];
+      }
+    };
+
+    scenarioEvents.forEach((event, index) => {
+      const title = event.metadata.description || event.type;
+      const eventId = `event-${meta.id}-${index}`;
+      let stepHeader = "";
+
+      if (
+        event.metadata.step !== undefined &&
+        event.metadata.step !== currentStep
+      ) {
+        flushInteraction();
+        currentStep = event.metadata.step as number;
+        stepHeader = `
                 <div class="step-separator">
                   <h2>Step ${currentStep}</h2>
                   <div class="line"></div>
                 </div>
               `;
-          eventsHtml.push(stepHeader);
+        eventsHtml.push(stepHeader);
+      }
+
+      const interactionId = event.metadata.interactionId as string | null;
+      if (interactionId !== currentInteractionId) {
+        flushInteraction();
+        currentInteractionId = interactionId;
+      }
+
+      let content = event.content;
+      if (content.includes("%")) {
+        try {
+          content = decodeURIComponent(content);
+        } catch {
+          // If decoding fails, keep original content
         }
+      }
 
-        const interactionId = event.metadata.interactionId as string | null;
-        if (interactionId !== currentInteractionId) {
-          flushInteraction();
-          currentInteractionId = interactionId;
-        }
+      const eventClass = `event event-${event.type}`;
+      const roleAttr = event.metadata.role_attr
+        ? `data-role="${event.metadata.role_attr}"`
+        : "";
+      const sourceAttr = event.metadata.source
+        ? `data-source="${event.metadata.source}"`
+        : "";
+      const stepAttr = event.metadata.step !== undefined
+        ? `data-step="${event.metadata.step}"`
+        : "";
+      const dataAttrs =
+        `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
 
-        let content = event.content;
-        if (content.includes("%")) {
-          try {
-            content = decodeURIComponent(content);
-          } catch {
-            // If decoding fails, keep original content
-          }
-        }
+      const iconMap: Record<string, string> = {
+        message: "\u{1F4AC}",
+        interaction: "\u{1F916}",
+        command: "\u{1F41A}",
+        evidence: "\u{1F4C2}",
+        evaluation: "\u2696\uFE0F",
+        summary: "\u{1F4CA}",
+        tools_definition: "\u{1F6E0}\uFE0F",
+        context: "\u{1F4DD}",
+      };
+      const icon = iconMap[event.type] || "\u{1F539}";
 
-        const eventClass = `event event-${event.type}`;
-        const roleAttr = event.metadata.role_attr
-          ? `data-role="${event.metadata.role_attr}"`
-          : "";
-        const sourceAttr = event.metadata.source
-          ? `data-source="${event.metadata.source}"`
-          : "";
-        const stepAttr = event.metadata.step !== undefined
-          ? `data-step="${event.metadata.step}"`
-          : "";
-        const dataAttrs =
-          `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
-
-        const iconMap: Record<string, string> = {
-          message: "💬",
-          interaction: "🤖",
-          command: "🐚",
-          evidence: "📂",
-          evaluation: "⚖️",
-          summary: "📊",
-          tools_definition: "🛠️",
-          context: "📝",
-        };
-        const icon = iconMap[event.type] || "🔹";
-
-        const headerContent = `
+      const headerContent = `
               <span class="timestamp">${
-          new Date(event.timestamp).toLocaleTimeString()
-        }</span>
+        new Date(event.timestamp).toLocaleTimeString()
+      }</span>
               <span class="type-icon">${icon}</span>
               <span class="type">${event.type}</span>
               <span class="title">${escape(String(title))}</span>
               ${
-          event.metadata.step !== undefined
-            ? `<span class="step-badge">Step ${event.metadata.step}</span>`
-            : ""
-        }
+        event.metadata.step !== undefined
+          ? `<span class="step-badge">Step ${event.metadata.step}</span>`
+          : ""
+      }
             `;
 
-        const eventHtml = `
+      const eventHtml = `
               <div class="${eventClass}" ${dataAttrs}>
                 <div class="event-header">${headerContent}</div>
                 <div class="content">${content}</div>
               </div>
             `;
 
-        if (interactionId) {
-          interactionGroup.push(eventHtml);
-        } else {
-          eventsHtml.push(eventHtml);
-        }
-      });
+      if (interactionId) {
+        interactionGroup.push(eventHtml);
+      } else {
+        eventsHtml.push(eventHtml);
+      }
+    });
 
-      flushInteraction();
+    flushInteraction();
 
-      const finalEventsHtml = eventsHtml.join("\n");
+    const finalEventsHtml = eventsHtml.join("\n");
 
-      const summaryHtml = meta.summary
-        ? `
+    const summaryHtml = meta.summary
+      ? `
         <div class="summary-card">
           <div class="metric">
             <span class="metric-value" style="color: ${
-          meta.summary.success ? "var(--success-color)" : "var(--error-color)"
-        }">${meta.summary.success ? "PASSED" : "FAILED"}</span>
+        meta.summary.success ? "var(--success-color)" : "var(--error-color)"
+      }">${meta.summary.success ? "PASSED" : "FAILED"}</span>
             <span class="metric-label">Result</span>
           </div>
           <div class="metric">
@@ -431,8 +446,8 @@ export class TraceLogger {
           </div>
           <div class="metric">
             <span class="metric-value">${
-          (meta.summary.durationMs / 1000).toFixed(1)
-        }s</span>
+        (meta.summary.durationMs / 1000).toFixed(1)
+      }s</span>
             <span class="metric-label">Duration</span>
           </div>
           <div class="metric">
@@ -441,42 +456,42 @@ export class TraceLogger {
           </div>
           <div class="metric">
             <span class="metric-value">$${
-          meta.summary.totalCost.toFixed(6)
-        }</span>
+        meta.summary.totalCost.toFixed(6)
+      }</span>
             <span class="metric-label">Cost</span>
           </div>
         </div>`
-        : "";
+      : "";
 
-      return `
+    return `
         <article id="scenario-${meta.id}" class="scenario-section">
           <header class="scenario-header">
             <div class="scenario-title-row">
               <h1>Trace: ${
-        escape(this.formatScenarioName(meta.id, meta.name))
-      }</h1>
+      escape(this.formatScenarioName(meta.id, meta.name))
+    }</h1>
               <div class="header-actions">
                 <!-- Actions removed as clipping is gone -->
               </div>
             </div>
             <div class="meta-grid">
               <div class="meta-item"><b>ID:</b> <code>${
-        escape(meta.id)
-      }</code></div>
+      escape(meta.id)
+    }</code></div>
               <div class="meta-item"><b>MODEL:</b> <code>${
-        escape(meta.model)
-      }</code></div>
+      escape(meta.model)
+    }</code></div>
               <div class="meta-item"><b>DATE:</b> ${
-        new Date(meta.date).toLocaleString()
-      }</div>
+      new Date(meta.date).toLocaleString()
+    }</div>
               <div class="meta-item"><b>AGENT:</b> <code>${
-        escape(meta.agentPath)
-      }</code></div>
+      escape(meta.agentPath)
+    }</code></div>
               ${
-        meta.scenarioGroup
-          ? `<div class="meta-item"><b>SANDBOX:</b> <a href="./${meta.scenarioGroup}/run-${meta.runIndex}/sandbox/">.../sandbox/</a></div>`
-          : ""
-      }
+      meta.scenarioGroup
+        ? `<div class="meta-item"><b>SANDBOX:</b> <a href="./${meta.scenarioGroup}/run-${meta.runIndex}/sandbox/">.../sandbox/</a></div>`
+        : ""
+    }
             </div>
           </header>
 
@@ -486,8 +501,8 @@ export class TraceLogger {
             <div class="event-header"><span class="title">INITIAL QUERY</span></div>
             <div class="content">
               <blockquote>${
-        escape(meta.userQuery).replace(/\n/g, "<br>")
-      }</blockquote>
+      escape(meta.userQuery).replace(/\n/g, "<br>")
+    }</blockquote>
             </div>
           </div>
 
@@ -496,9 +511,10 @@ export class TraceLogger {
           </div>
         </article>
       `;
-    }).join("\n");
+  }
 
-    // Generate ToC grouped by skills, with multi-run sub-items
+  /** Renders the sidebar table of contents, grouped by skill. */
+  private renderToC(groups: ScenarioGroupStats[]): string {
     const groupedBySkill: Record<string, ScenarioGroupStats[]> = {};
     for (const g of groups) {
       let skill = "other";
@@ -514,7 +530,7 @@ export class TraceLogger {
       groupedBySkill[skill].push(g);
     }
 
-    const tocHtml = Object.entries(groupedBySkill)
+    return Object.entries(groupedBySkill)
       .map(([skill, skillGroups]) => {
         const skillTitle = skill.toUpperCase();
         const items = skillGroups
@@ -525,8 +541,8 @@ export class TraceLogger {
                 ? (s.summary.success ? "status-pass" : "status-fail")
                 : "status-pending";
               const statusIcon = s.summary
-                ? (s.summary.success ? "✓" : "✗")
-                : "○";
+                ? (s.summary.success ? "\u2713" : "\u2717")
+                : "\u25CB";
               return `<li data-id="${s.id}" onclick="showScenario('${s.id}')">
                 <span class="toc-status ${statusClass}">${statusIcon}</span>
                 <span class="toc-scenario">${escape(s.name)}</span>
@@ -537,12 +553,14 @@ export class TraceLogger {
             const groupStatusClass = g.allPassed
               ? "status-pass"
               : "status-fail";
-            const groupStatusIcon = g.allPassed ? "✓" : "✗";
+            const groupStatusIcon = g.allPassed ? "\u2713" : "\u2717";
             const subItems = g.runs.map((s) => {
               const sc = s.summary
                 ? (s.summary.success ? "status-pass" : "status-fail")
                 : "status-pending";
-              const si = s.summary ? (s.summary.success ? "✓" : "✗") : "○";
+              const si = s.summary
+                ? (s.summary.success ? "\u2713" : "\u2717")
+                : "\u25CB";
               return `<li data-id="${s.id}" onclick="showScenario('${s.id}')" style="padding-left: 24px; font-size: 0.8em;">
                 <span class="toc-status ${sc}">${si}</span>
                 <span class="toc-scenario">run-${s.runIndex || "?"}</span>
@@ -566,20 +584,11 @@ export class TraceLogger {
       `;
       })
       .join("\n");
+  }
 
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Benchmark Trace</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/markdown.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
-  <style>
+  /** Returns the full CSS stylesheet for the HTML report. */
+  private renderCSS(): string {
+    return `
     :root {
       --bg-main: #f5f5f5;
       --bg-panel: #ffffff;
@@ -895,48 +904,20 @@ export class TraceLogger {
     .hljs-keyword { color: #0000ff; }
     .hljs-string { color: #a31515; }
     .hljs-comment { color: #008000; }
-  </style>
-</head>
-<body>
-  <nav class="nav-bar">
-    <div class="nav-links">
-      <a href="#" onclick="showScenario('overview'); return false;">ASSISTFLOW BENCHMARK TRACE</a>
-    </div>
-  </nav>
+    `;
+  }
 
-  <div class="main-layout">
-    <aside class="toc-panel">
-      <div class="toc-header">
-        <h3 onclick="showScenario('overview')">OVERVIEW</h3>
-        <input type="text" class="toc-search" placeholder="Search scenarios..." oninput="filterScenarios(this.value)">
-      </div>
-      <div class="toc-content">
-        ${tocHtml}
-      </div>
-    </aside>
-
-    <div class="scenarios-container">
-      ${dashboardHtml}
-      ${scenariosHtml}
-    </div>
-  </div>
-
-  <script>
+  /** Returns the JavaScript for the HTML report (navigation, search, collapsibles). */
+  private renderJS(): string {
+    return `
     function showScenario(id) {
-      // Update active state in sidebar
       document.querySelectorAll('.toc-panel li').forEach(li => {
         li.classList.toggle('active', li.getAttribute('data-id') === id);
       });
-
-      // Update active scenario in main container
       document.querySelectorAll('.scenario-section').forEach(sec => {
         sec.classList.toggle('active', sec.id === (id === 'overview' ? 'overview' : 'scenario-' + id));
       });
-
-      // Scroll to top of container
       document.querySelector('.scenarios-container').scrollTop = 0;
-
-      // Update hash without scrolling
       history.replaceState(null, null, id === 'overview' ? ' ' : '#scenario-' + id);
     }
 
@@ -989,8 +970,6 @@ export class TraceLogger {
         hljs.lineNumbersBlock(el);
       });
       initCollapsibles();
-
-      // Handle initial hash
       const hash = window.location.hash;
       if (hash && hash.startsWith('#scenario-')) {
         showScenario(hash.replace('#scenario-', ''));
@@ -1005,11 +984,63 @@ export class TraceLogger {
         showScenario(hash.replace('#scenario-', ''));
       }
     });
-  </script>
+    `;
+  }
+
+  /** Assembles the full HTML report from sub-components. */
+  private render(): string {
+    const scenarios = Array.from(this.scenarios.values());
+    const groups = this.computeGroups(scenarios);
+    const dashboardHtml = this.renderDashboard(groups, scenarios);
+    const scenariosHtml = scenarios.map((meta) =>
+      this.renderScenarioDetail(meta)
+    ).join("\n");
+    const tocHtml = this.renderToC(groups);
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Benchmark Trace</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.8.0/highlightjs-line-numbers.min.js"></script>
+  <style>${this.renderCSS()}</style>
+</head>
+<body>
+  <nav class="nav-bar">
+    <div class="nav-links">
+      <a href="#" onclick="showScenario('overview'); return false;">ASSISTFLOW BENCHMARK TRACE</a>
+    </div>
+  </nav>
+
+  <div class="main-layout">
+    <aside class="toc-panel">
+      <div class="toc-header">
+        <h3 onclick="showScenario('overview')">OVERVIEW</h3>
+        <input type="text" class="toc-search" placeholder="Search scenarios..." oninput="filterScenarios(this.value)">
+      </div>
+      <div class="toc-content">
+        ${tocHtml}
+      </div>
+    </aside>
+
+    <div class="scenarios-container">
+      ${dashboardHtml}
+      ${scenariosHtml}
+    </div>
+  </div>
+
+  <script>${this.renderJS()}</script>
 </body>
 </html>`;
   }
 
+  /** Initializes a new scenario in the trace. */
   async init(
     scenarioName: string,
     scenarioId: string,
@@ -1035,6 +1066,7 @@ export class TraceLogger {
     await this.save();
   }
 
+  /** Appends a trace event for the current scenario. */
   private addEvent(
     type: string,
     metadata: Record<string, unknown>,
@@ -1050,6 +1082,7 @@ export class TraceLogger {
     });
   }
 
+  /** Logs an LLM interaction (messages + response) with trace events. */
   async logLLMInteraction(
     messages: { role: string; content: string }[],
     response: string,
@@ -1095,6 +1128,7 @@ export class TraceLogger {
     // No-op in HTML version as we use timeline
   }
 
+  /** Logs a command execution with output. */
   async logCommand(
     command: string,
     exitCode: number,
@@ -1130,6 +1164,7 @@ export class TraceLogger {
     await this.save();
   }
 
+  /** Logs git evidence (status + log) for the sandbox. */
   async logEvidence(gitStatus: string, gitLog: string) {
     let content =
       `<h3>Git Status</h3><pre><code class="language-bash">${gitStatus.trim()}</code></pre>`;
@@ -1144,6 +1179,7 @@ export class TraceLogger {
     await this.save();
   }
 
+  /** Logs the LLM Judge evaluation results (checklist + optional judge interaction). */
   async logEvaluation(
     checklistResults: Record<string, { pass: boolean; reason?: string }>,
     checklist: { id: string; description: string; critical: boolean }[],
@@ -1200,7 +1236,7 @@ export class TraceLogger {
       const color = passed
         ? "var(--success-color)"
         : (item.critical ? "var(--error-color)" : "#ff9800");
-      const icon = passed ? "✓" : "✗";
+      const icon = passed ? "\u2713" : "\u2717";
 
       content +=
         `<li style="margin-bottom: 12px; padding: 16px; background: var(--bg-main); border-left: 4px solid ${color}">
@@ -1222,6 +1258,7 @@ export class TraceLogger {
     await this.save();
   }
 
+  /** Logs the execution summary for a scenario. */
   async logSummary(
     result: {
       success: boolean;
@@ -1284,6 +1321,7 @@ export class TraceLogger {
     await this.save();
   }
 
+  /** Logs available tools definition. */
   async logTools(toolsDescription: string) {
     this.addEvent(
       "tools_definition",
@@ -1300,7 +1338,7 @@ export class TraceLogger {
   }
 }
 
-// Simple HTML escaping helper for use outside the class if needed
+/** HTML-escapes a string for safe embedding in HTML content. */
 function escape(str: string) {
   return str
     .replace(/&/g, "&amp;")

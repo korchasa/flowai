@@ -67,12 +67,6 @@ export interface BenchmarkScenario {
   interactive?: boolean;
 
   /**
-   * Custom system instructions template.
-   * @deprecated Context is now discovered natively by cursor-agent.
-   */
-  systemInstructionsTemplate?: string;
-
-  /**
    * AGENTS.md content.
    * If provided as string, it will be used.
    * If not provided, the runner will try to load it from the scenario's fixture directory.

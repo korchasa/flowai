@@ -87,30 +87,24 @@
 
 ### 3.3 Project Documentation (`documents/`)
 
-...
+- **Purpose:** Persistent project memory across AI sessions. Single source of truth for requirements, architecture, and current plans.
+- **Hierarchy:**
+  1. `AGENTS.md` — project vision, constraints, mandatory rules (root-level, read-only reference).
+  2. `documents/requirements.md` (SRS) — functional and non-functional requirements. Source of truth for "what" and "why".
+  3. `documents/design.md` (SDS) — architecture and implementation details. Depends on SRS.
+  4. `documents/whiteboard.md` — temporary plans and notes in GODS format. Cleaned up after task completion.
+  5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-14–FR-17.
+  6. `documents/benchmarking.md` — benchmark results and analysis.
+- **Rules:**
+  - Every `[x]` acceptance criterion in SRS must include file-path evidence.
+  - English only (except whiteboard). Compressed style (no fluff, high-info words).
+  - Agent reads docs at session start; outdated docs = wrong assumptions.
+- **Deps:** None (plain Markdown files).
 
-### 3.4 User Management System (Refactored)
+### 3.4 Benchmark System (`benchmarks/`, `scripts/benchmarks/`)
 
-- **Purpose:** Manage user lifecycle with separated concerns.
-- **Components:**
-  - `UserManager`: Orchestrates the user creation/deletion process.
-  - `UserRepository`: Handles JSON file persistence.
-  - `EmailService`: Handles sending notifications.
-  - `Logger`: Handles application logging.
-  - `UserValidator`: Handles input validation.
-
-- **Interfaces:**
-  - `User`: `{ id: number, name: string, email: string }`
-
-- **Proposed Structure:**
-  - `src/UserManager.ts` (Orchestrator)
-  - `src/UserRepository.ts` (Data Access)
-  - `src/EmailService.ts` (Notifications)
-  - `src/Logger.ts` (Logging)
-  - `src/UserValidator.ts` (Validation)
-  - `src/types.ts` (Common types)
-
-- **Maintenance & Benchmarking**:
+- **Purpose:** Evidence-based evaluation of AI agent skill execution quality.
+- **Architecture:**
   - `deno task bench`: Evaluates agents via evidence-based scenarios. Supports direct model selection via `-m, --model` flag.
   - **Parallel Execution Protection**: Uses `benchmarks/benchmarks.lock` file containing the PID to prevent concurrent runs. Implements signal listeners (`SIGINT`, `SIGTERM`) and `unload` events for reliable cleanup.
   - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based).

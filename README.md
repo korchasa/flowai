@@ -187,6 +187,8 @@ Every task follows the same supervised loop:
 - `flow-skill-engineer-prompts-for-reasoning` — prompts for reasoning models
 - `flow-skill-deno-cli` — Deno CLI operations
 - `flow-skill-deno-deploy` — Deno Deploy management
+- `flow-skill-cursor-agent-integration` — cursor-agent CLI integration
+- `flow-skill-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
 
 ## Key Principles
 
