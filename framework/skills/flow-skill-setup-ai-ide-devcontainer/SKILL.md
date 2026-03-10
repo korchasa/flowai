@@ -1,12 +1,6 @@
 ---
 name: flow-skill-setup-ai-ide-devcontainer
-description: >
-  Set up a .devcontainer/ configuration optimized for AI IDE development.
-  Generates devcontainer.json (and optionally Dockerfile) tailored to the project's
-  tech stack, with AI CLI integration (Claude Code, OpenCode, or both), secrets
-  handling, global skill mounting, and optional security hardening. Use when setting
-  up devcontainer for AI-assisted development, or when flow-init delegates devcontainer
-  creation. Container is opened by VS Code/Cursor; AI CLIs run inside it.
+description: Set up .devcontainer for AI IDE development. Generates devcontainer.json and optional Dockerfile for project tech stack, AI CLI integration (Claude Code, OpenCode), secrets, skill mounting, and security hardening. Use for AI-assisted devcontainer setup or flow-init delegation.
 ---
 
 # AI Devcontainer Setup

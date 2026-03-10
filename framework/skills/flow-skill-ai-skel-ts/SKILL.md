@@ -95,7 +95,7 @@ Each module below includes: purpose, key interfaces, algorithm, and critical imp
 
 **Key detail**: Error objects need special serialization (JSON.stringify(Error) returns "{}"). Extract name, message, stack explicitly.
 
-Reference: [reference-observability.md](reference-observability.md)
+Reference: [reference-observability.md](references/reference-observability.md)
 
 ---
 
@@ -112,7 +112,7 @@ Reference: [reference-observability.md](reference-observability.md)
 
 **Pattern**: Singleton (for global tracking) OR instance (for per-run tracking). Provide both options.
 
-Reference: [reference-observability.md](reference-observability.md)
+Reference: [reference-observability.md](references/reference-observability.md)
 
 ---
 
@@ -134,7 +134,7 @@ runId = toISO(reversedMs) + microSequence
 ```
 This makes newest runs sort first in file listings.
 
-Reference: [reference-core.md](reference-core.md)
+Reference: [reference-core.md](references/reference-core.md)
 
 ---
 
@@ -142,7 +142,7 @@ Reference: [reference-core.md](reference-core.md)
 
 **Purpose**: Provider-agnostic LLM interface with retry, validation, self-correction, and observability.
 
-**This is the most complex module.** Read [reference-core.md](reference-core.md) carefully.
+**This is the most complex module.** Read [reference-core.md](references/reference-core.md) carefully.
 
 **Interface**:
 - `ModelURI` — parses `protocol://provider/model?params` (e.g., `chat://openai/gpt-4o?timeout=60000`)
@@ -186,7 +186,7 @@ requester(messages, schema, tools, ...):
 - Mask apiKey in URI toString() for logging
 - Settings from URI are defaults; per-request settings override them
 
-Reference: [reference-core.md](reference-core.md)
+Reference: [reference-core.md](references/reference-core.md)
 
 ---
 
@@ -225,7 +225,7 @@ if over threshold:
 on error → fallback to SimpleHistoryCompactor
 ```
 
-Reference: [reference-session.md](reference-session.md)
+Reference: [reference-session.md](references/reference-session.md)
 
 ---
 
@@ -243,7 +243,7 @@ Reference: [reference-session.md](reference-session.md)
 - Tool conversion: MCP JSON Schema → LLM SDK Tool format (use `jsonSchema()` helper if available)
 - Execute: call MCP `tools/call`, extract text content from response parts
 
-Reference: [reference-session.md](reference-session.md)
+Reference: [reference-session.md](references/reference-session.md)
 
 ---
 
@@ -281,7 +281,7 @@ chat(input):
   return run(input).text
 ```
 
-Reference: [reference-core.md](reference-core.md)
+Reference: [reference-core.md](references/reference-core.md)
 
 ---
 
@@ -293,7 +293,7 @@ Three content acquisition strategies. Add only what the project needs.
 **Brave Search**: REST API client with 429 retry and rate-limited batch search
 **Jina Scraper**: Dual-endpoint (search + reader) API client with rich options
 
-Reference: [reference-fetchers.md](reference-fetchers.md)
+Reference: [reference-fetchers.md](references/reference-fetchers.md)
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: flow-skill-deep-research
-description: Conducts multi-directional web-based deep research with sequential sub-agents, per-direction scoring, source verification, and cited synthesis. Use when the user asks for comprehensive research, deep analysis, "research X", or needs evidence-backed answers requiring multiple sources. Produces executive summary in chat + full markdown report saved to file. Supports built-in search tools, playwright-cli, playwright MCP, and other MCP search tools.
+description: Multi-directional deep research with sub-agents, scoring, source verification, and cited synthesis. Use for comprehensive research, deep analysis, or evidence-backed answers. Produces executive summary + markdown report. Supports search tools, playwright-cli, and MCP.
 ---
 
 # Deep Research Skill

@@ -62,4 +62,4 @@ sequenceDiagram
 
 ## Resources
 
-- [Mermaid Specification](SPEC.md)
+- [Mermaid Specification](references/SPEC.md)

@@ -195,5 +195,5 @@ To ensure cross-platform compatibility, benchmark results must follow a standard
 
 ## 9. Assets & References
 
-- **[examples/scenario-example.md](examples/scenario-example.md)**: Template for defining scenarios.
+- **[examples/scenario-example.md](assets/scenario-example.md)**: Template for defining scenarios.
 - **[benchmarks/config.json](benchmarks/config.json)**: Main configuration file for models and presets.

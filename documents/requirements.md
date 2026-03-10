@@ -824,18 +824,22 @@ Per-IDE subdirectories with IDE-native frontmatter. Body (system prompt) shared.
 #### FR-21.1 agentskills.io Compliance
 
 - **Acceptance criteria:**
-  - [ ] **FR-21.1.1 Directory structure**: Every skill is a directory with
-        `SKILL.md` (required) and optional `scripts/`, `references/`, `assets/`
-        subdirectories. No other top-level conventions (README.md, CHANGELOG.md).
-  - [ ] **FR-21.1.2 Frontmatter**: `name` (required, max 64 chars, `[a-z0-9-]`,
+  - [x] **FR-21.1.1 Directory structure**: Every skill is a directory with
+        `SKILL.md` (required) and optional `scripts/`, `references/`, `assets/`,
+        `evals/` subdirectories. No other top-level conventions (README.md, CHANGELOG.md).
+        Enforced by `scripts/check-skills.ts`.
+  - [x] **FR-21.1.2 Frontmatter**: `name` (required, max 64 chars, `[a-z0-9-]`,
         must match parent directory name) and `description` (required, max 1024
         chars). Optional: `license`, `compatibility`, `metadata`,
         `allowed-tools` (experimental), `disable-model-invocation`.
-  - [ ] **FR-21.1.3 Progressive disclosure**: Metadata (~100 tokens) loaded at
+        Enforced by `scripts/check-skills.ts`.
+  - [x] **FR-21.1.3 Progressive disclosure**: Metadata (~100 tokens) loaded at
         startup; full SKILL.md (<5000 tokens, <500 lines) on activation;
         scripts/references/assets loaded only when required.
-  - [ ] **FR-21.1.4 File references**: One level deep from SKILL.md. No nested
+        Enforced by `scripts/check-skills.ts`.
+  - [x] **FR-21.1.4 File references**: One level deep from SKILL.md. No nested
         reference chains.
+        Enforced by `scripts/check-skills.ts`.
 
 #### FR-21.2 Cross-IDE Script Path Resolution
 
