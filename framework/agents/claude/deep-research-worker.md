@@ -30,25 +30,26 @@ For every result, score it using the authority table below. Apply direction-spec
 
 **Authority scores:**
 
-| Tier | Score | Examples |
-|---|---|---|
-| Primary data / official reports | 5 | Government stats, company IR filings, peer-reviewed papers |
-| Reputable journalism / analysis | 4 | Reuters, Bloomberg, established tech publications |
-| Expert blogs / documentation | 3 | Official docs, recognized practitioners |
-| Aggregator / secondary summary | 2 | Wikipedia, listicles — use only to find primary sources |
-| Anonymous forums / social media | 1 | Reddit, X/Twitter — sentiment only, never for facts |
-| Marketing / PR content | 0 | Press releases, product pages — REJECT |
+| Tier                            | Score | Examples                                                   |
+| ------------------------------- | ----- | ---------------------------------------------------------- |
+| Primary data / official reports | 5     | Government stats, company IR filings, peer-reviewed papers |
+| Reputable journalism / analysis | 4     | Reuters, Bloomberg, established tech publications          |
+| Expert blogs / documentation    | 3     | Official docs, recognized practitioners                    |
+| Aggregator / secondary summary  | 2     | Wikipedia, listicles — use only to find primary sources    |
+| Anonymous forums / social media | 1     | Reddit, X/Twitter — sentiment only, never for facts        |
+| Marketing / PR content          | 0     | Press releases, product pages — REJECT                     |
 
 **Recency defaults (adjust per `{acceptance_criteria}`):**
 
-| Topic type | Accept if published |
-|---|---|
-| Fast-moving (AI, markets, regulation) | 2022 or later |
-| Technology implementation | 2020 or later |
-| Scientific/academic | No strict cutoff; flag if >5 years |
-| Historical / definitional | Any date |
+| Topic type                            | Accept if published                |
+| ------------------------------------- | ---------------------------------- |
+| Fast-moving (AI, markets, regulation) | 2022 or later                      |
+| Technology implementation             | 2020 or later                      |
+| Scientific/academic                   | No strict cutoff; flag if >5 years |
+| Historical / definitional             | Any date                           |
 
 **Decision rules:**
+
 - Accept: score ≥ 3 AND relevance ≥ medium AND not outdated
 - Accept with flag: score ≤ 2 AND relevance high → append `[unverified — low-authority source]`
 - Reject: score = 0 OR off-topic OR outdated for fast-moving topic
@@ -56,6 +57,7 @@ For every result, score it using the authority table below. Apply direction-spec
 - Never fabricate: no accepted source → record in Gaps, do NOT state as fact
 
 **Red flags (reject or heavily caveat):**
+
 - Source contradicts itself internally
 - Same statistic on many sites with no traceable origin
 - Publication date missing or clearly incorrect
@@ -68,6 +70,7 @@ For the top 3–5 accepted sources, fetch full page content using `{search_instr
 ### Step 4: Extract facts
 
 For each accepted source, extract key facts. Record per fact:
+
 - Claim: exact quote or close paraphrase
 - Source: title, URL, publication date, authority score (1–5)
 - Confidence:
@@ -95,6 +98,7 @@ Save to `{output_file}` using the structure below.
 ## Accepted Sources
 
 ### [1] {Source Title}
+
 - URL: {url}
 - Date: {YYYY-MM-DD or "unknown"}
 - Authority score: {1–5}
@@ -104,6 +108,7 @@ Save to `{output_file}` using the structure below.
   - {Fact 2}
 
 ### [2] {Source Title}
+
 ...
 
 ## Rejected Sources
