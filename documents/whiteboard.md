@@ -1,204 +1,282 @@
-# FR-21.3–21.6: Universal Skill & Script Requirements — Close Remaining Criteria
+# Create `flow-spec` Skill for Specification-Driven Development of Large Features
 
 ## Goal
 
-Close all open FR-21.3–21.6 acceptance criteria to unblock FR-10 (Global Framework Distribution). FR-10 is the project's core value proposition — distributing AssistFlow to end users — and cannot proceed until scripts are standardized.
+Enable developers to create structured, decomposed specifications for features that exceed a single AI agent context window (~200K tokens for Claude Opus 4.6 / OpenAI o3, ~1M for Gemini 2.5 Pro). The spec must serve as a persistent, executable artifact that guides multi-session implementation while maintaining architectural coherence.
+
+Dependency: `flow-plan` handles tasks that fit in one context window. `flow-spec` fills the gap for larger features requiring phased, multi-session execution.
 
 ## Overview
 
 ### Context
 
-FR-21 defines 6 sub-requirements (FR-21.1–FR-21.6) for universal skill/script compliance. FR-21.1 and FR-21.2 are already closed (all `[x]`). 7 criteria remain open across FR-21.3–FR-21.6 (FR-21.3.4 excluded — `--help` requirement dropped).
+Current `flow-plan` produces a single whiteboard.md using GODS framework — sufficient for tasks completable within one agent session. For large features (new subsystems, cross-cutting refactors, multi-component integrations), the plan either becomes too large for context or loses critical details between sessions.
 
-Dependency chain from SRS: `FR-21.3–21.6 → FR-10 → end-user distribution`.
+### Industry State (2025-2026)
 
-Scripts affected (framework scope only — root `scripts/` excluded per SRS scoping):
-- Framework TS: `framework/skills/*/scripts/*.ts` — 10 CLI scripts + 3 test files
-- Framework PY: `framework/skills/*/scripts/*.py` — 8 legacy files (6 with TS equivalents, 2 without)
+Spec-driven development (SDD) emerged as a dominant practice:
+- **GitHub Spec Kit** (2025): 4-phase model — Specify → Plan → Tasks → Implement
+- **Pimzino/claude-code-spec-workflow**: Requirements → Design → Tasks → Implementation with auto-generated per-task commands
+- **Thoughtworks analysis**: SDD separates design from implementation, reducing "vibe coding" failures
+- **Addy Osmani (O'Reilly)**: Specs must cover 6 areas — Commands, Testing, Project structure, Code style, Git workflow, Boundaries
 
-### Current State
+### What Works for AI Agents
 
-**FR-21.3.2 Structured output** — 1/10 framework TS scripts outputs JSON (`generate_agents.ts`). 9 output unstructured text (emoji + human-readable).
+- **Dependency-ordered, testable phases** with bounded scope per phase
+- **Atomic task decomposition** — each task implementable and testable in isolation
+- **Modular context delivery** — feed only relevant spec sections per task, not entire document
+- **Three-tier boundaries** (always/ask-first/never) for agent autonomy control
+- **Living document** approach — spec evolves as implementation reveals new information
+- **Explicit non-goals** — AI cannot infer from omission; must state what NOT to do
+- **~150-200 instruction limit** — frontier LLMs degrade beyond this threshold per session
 
-**FR-21.3.3 Self-contained dependencies** — 1 framework file uses bare `@std/` imports: `generate_agents.test.ts` (2 imports). All other framework scripts use `jsr:@std/`.
+### What Doesn't Work
 
-**FR-21.3.7 Idempotent** — 3 init scripts (`init_command.ts`, `init_skill.ts`, `init_rule.ts`) fail on re-run when target directory exists.
+- **Monolithic specs** overloading context window → performance degradation, instruction following drops
+- **Vague requirements** without concrete inputs/outputs/constraints → hallucination
+- **Implementation details in spec phase** → premature coupling, wasted context tokens
+- **No validation checkpoints** → spec drift accumulates silently across sessions
+- **Over-specification of trivial parts** → wastes context budget on unnecessary instructions
 
-**FR-21.4.1 Framework scripts in Deno/TS** — 8 Python scripts remain. 6 have verified-complete TS equivalents. 2 need new TS scripts: `count_tokens.py` (token estimation), `validate.py` (Mermaid syntax validation via mmdc).
+### Risks & Limitations
 
-**FR-21.4.2 Deno/TS-only policy** — Project uses Deno/TS exclusively. Python not needed. Policy not documented in SDS.
+- **Spec drift**: Non-deterministic code generation means spec and implementation can diverge. Mitigation: validation checkpoints after each phase
+- **Multi-file context degradation**: Research shows Pass@1 drops to ~20% for infrastructure code spanning many files. Mitigation: atomic tasks targeting 1-3 files
+- **Session boundary loss**: Agent loses context between sessions. Mitigation: persistent spec files with status tracking
+- **Hallucination in edge cases**: LLMs generate vulnerable code at 9.8-42.1% rates across benchmarks. Mitigation: explicit security constraints in spec
+- **Waterfall trap**: Over-specifying upfront defeats agile feedback. Mitigation: iterative spec refinement, not "freeze and execute"
 
-**FR-21.5.3 allowed-tools hint** — 1/36 skills uses `allowed-tools` frontmatter. Requirement says "MAY" — optional adoption.
+### Model Capabilities (2026)
 
-**FR-21.6.3 Name collision** — `task-link.ts` implements `.dev/` overrides `framework/` but behavior is undocumented in SDS.
+- **Claude Opus 4.6**: 200K context, strongest coding (SWE-bench 72.5%), 14.5h autonomous task horizon (METR record), sub-agent spawning
+- **Gemini 2.5 Pro**: 1M context (91.5% accuracy at 128K, 83.1% at 1M), WebDev Arena leader, native multimodal
+- **OpenAI o3**: 200K context, 100K output tokens, strong reasoning (69.1% SWE-bench)
+
+Implication: Even with 1M context (Gemini), modular spec delivery outperforms monolithic loading due to attention degradation at scale.
 
 ### Constraints
 
-- All changes must pass `deno task check` (fmt + lint + test + skill/agent validation)
-- TDD: write/update tests before code changes
-- Scripts in `framework/skills/*/scripts/` must use `jsr:` specifiers (standalone, no `deno.json`)
-- Root scripts (`scripts/`) may use bare imports (they run with project `deno.json`)
-- Must not break existing benchmarks (11 PASSED)
-- Python removal: only delete `.py` when `.ts` equivalent is verified feature-complete
+- Must follow agentskills.io SKILL.md format
+- Must be IDE-agnostic (Cursor, Claude Code, OpenCode)
+- Output files only in `documents/` directory (spec files)
+- Must integrate with existing `flow-plan` and GODS framework
+- Skill is a Command (`flow-spec`), not a sub-skill
 
 ## Definition of Done
 
-- [x] FR-21.3.2: All framework scripts output structured JSON (`{ "ok": bool, ... }`) to stdout; diagnostics to stderr. Including `generate_agents.ts` adapted to common schema.
-- [x] FR-21.3.3: All framework scripts use `jsr:` specifiers (no bare `@std/`)
-- [x] FR-21.3.4: Marked N/A in SRS (agents read SKILL.md for script interface, `--help` is redundant)
-- [x] FR-21.3.7: Init scripts support `--skip-existing` flag; default: fail fast on conflict (exit 1 + clear error)
-- [x] FR-21.4.1: No `.py` files in `framework/skills/`; all replaced by verified `.ts`
-- [x] FR-21.4.2: Deno/TS-only policy documented in SDS (section 3.1.2)
-- [x] FR-21.5.3: `allowed-tools` pattern documented in SDS (section 3.1.3)
-- [x] FR-21.6.3: Name collision resolution documented in SDS (section 3.1.4); `task-link.ts` warns on collisions
-- [x] All existing tests pass (`deno task check`) — 91 tests passed
-- [x] SRS criteria updated with `[x]` / `[N/A]` and evidence paths
+- [ ] `framework/skills/flow-spec/SKILL.md` created following agentskills.io format
+- [ ] Skill produces structured spec document(s) in `documents/` directory
+- [ ] Spec format supports decomposition into phases/tasks that fit individual context windows
+- [ ] Each phase/task is self-contained with: goal, inputs, outputs, constraints, verification criteria
+- [ ] Spec includes explicit non-goals, boundaries, and security constraints
+- [ ] Spec tracks status per phase (not-started / in-progress / done)
+- [ ] Workflow includes validation checkpoints between phases
+- [ ] Skill references existing project skills where appropriate (flow-skill-write-prd, flow-skill-write-dep)
+- [ ] Benchmark scenario created for the skill
+- [ ] `deno task check` passes
+- [ ] Skill tested through benchmark (TDD for skills)
 
 ## Solution
 
-**Strategy: Bottom-Up by Dependency (Variant A), refined by critique**
+**Selected Variant: A — Single-File Phased Spec**
 
-Each phase follows TDD: write/update test → implement → verify → `deno task check`.
-
----
-
-### Phase 1: Python → TypeScript Migration (FR-21.4.1)
-
-**Goal:** Remove all `.py` files from `framework/skills/`. Unblocks all subsequent phases.
-
-**1.1 Delete 6 Python scripts with verified TS equivalents**
-- Files: `init_command.py`, `validate_command.py`, `package_command.py`, `init_skill.py`, `validate_skill.py`, `package_skill.py`
-- Pre-condition: Run each `.py` and `.ts` side-by-side on same input; diff outputs
-- Action: Delete `.py` files; update any SKILL.md references from `.py` to `.ts`
-- Verify: `deno task check`; existing tests in `command_scripts_test.ts`, `skill_scripts_test.ts`
-
-**1.2 Write `count_tokens.ts`** (replaces `count_tokens.py`)
-- Location: `framework/skills/flow-skill-analyze-context/scripts/count_tokens.ts`
-- Logic: Simple char-based estimation (1 token ≈ 3.3 chars). Accept args or stdin.
-- Output: JSON `{ "ok": true, "result": { "characters": N, "estimated_tokens": N } }` (already FR-21.3.2 compliant)
-- Dependencies: None (pure Deno, no external imports needed)
-- Test: New test file `count_tokens_test.ts`
-- Delete `count_tokens.py` after verification
-
-**1.3 Write `validate.ts`** (replaces `validate.py` for Mermaid)
-- Location: `framework/skills/flow-skill-draw-mermaid-diagrams/scripts/validate.ts`
-- Logic: Run `mmdc` via `Deno.Command` using `npm:@mermaid-js/mermaid-cli` (jsr-compatible, no npx dependency)
-- Output: JSON `{ "ok": true, "result": { "valid": bool, "errors": [...] } }`
-- Dependencies: `npm:@mermaid-js/mermaid-cli` via jsr import specifier
-- Test: New test file `validate_test.ts`. Test strategy: mock `Deno.Command` to avoid runtime mmdc dependency in CI
-- Delete `validate.py` after verification
-
-**1.4 Update SKILL.md references**
-- Grep all SKILL.md files for `.py` references; update to `.ts`
-- Verify: `deno task check` (check-skills.ts validates references)
+One file `documents/spec-{name}.md` containing all phases. Agent reads header + relevant phase per session.
 
 ---
 
-### Phase 2: Self-Contained Dependencies (FR-21.3.3)
+### Phase 1: Design SKILL.md for `flow-spec`
 
-**Goal:** All framework scripts use `jsr:` specifiers.
+**Goal:** Create `framework/skills/flow-spec/SKILL.md` — the skill definition.
 
-**2.1 Fix `generate_agents.test.ts`**
-- Change `@std/assert` → `jsr:@std/assert`, `@std/path` → `jsr:@std/path`
-- This is the only remaining file with bare imports in `framework/`
-- Verify: `deno test framework/skills/flow-init/scripts/generate_agents.test.ts`
-
----
-
-### Phase 3: Idempotency (FR-21.3.7)
-
-**Goal:** Init scripts are safe to re-run with explicit opt-in.
-
-**3.1 Update 3 init scripts**
-- Files: `init_command.ts`, `init_skill.ts`, `init_rule.ts`
-- Default behavior (fail fast): If target directory exists → exit 1 + clear error message to stderr: `"Error: directory '<path>' already exists. Use --skip-existing to skip."`
-- `--skip-existing` flag: If target exists → print warning to stderr, exit 0 (idempotent mode)
-- Test: Add 2 test cases per script:
-  - "fails with exit 1 when target exists (default)"
-  - "exits 0 with warning when target exists and --skip-existing passed"
-- Verify: `deno task check`
-
----
-
-### Phase 4: Structured JSON Output (FR-21.3.2)
-
-**Goal:** All framework scripts output JSON to stdout, diagnostics to stderr.
-
-**4.1 Define output schema convention**
-- Success: `{ "ok": true, "result": { ... } }` to stdout
-- Failure: `{ "ok": false, "error": "message", "details": [...] }` to stdout; human message to stderr
-- Exit code: 0 on `ok: true`, non-zero on `ok: false`
-
-**4.2 Adapt `generate_agents.ts`**
-- Current: outputs raw analysis object directly
-- Change: wrap in `{ "ok": true, "result": <current_output> }`
-- Update SKILL.md for `flow-init` to parse new schema (access `.result` field)
-- Update `generate_agents.test.ts` to expect new wrapper
-- Verify: `deno task check`
-
-**4.3 Migrate remaining scripts** (9 scripts)
-- `init_*.ts`: Output `{ "ok": true, "result": { "path": "...", "files_created": [...] } }`
-- `validate_*.ts`: Output `{ "ok": true, "result": { "valid": true } }` or `{ "ok": false, "error": "...", "details": [...] }`
-- `package_*.ts`: Output `{ "ok": true, "result": { "archive": "path", "files": [...] } }`
-- Move all `console.log` diagnostic messages to `console.error`
-- Test: Update all existing tests to parse JSON output; verify stderr for diagnostics
-- Verify: `deno task check`
-
----
-
-### Phase 5: Documentation (FR-21.3.4, FR-21.4.2, FR-21.5.3, FR-21.6.3)
-
-**Goal:** Close documentation-only criteria + mark FR-21.3.4 as N/A.
-
-**5.1 FR-21.3.4 — Mark as N/A in SRS**
-- Rationale: Agents read SKILL.md for script interface descriptions. `--help` duplicates SKILL.md content and adds maintenance burden. Not needed for agent-driven execution model.
-
-**5.2 FR-21.4.2 — Document Deno/TS-only policy in SDS**
-- Add section to `documents/design.md`: "Script Language Policy"
-- Content: All project scripts (framework and root) use Deno/TypeScript exclusively. No Python dependencies.
-
-**5.3 FR-21.5.3 — Document allowed-tools pattern in SDS**
-- Add section to `documents/design.md`: "Skill Tool Hints"
-- Content: Skills MAY use `allowed-tools` frontmatter to pre-approve tools. Example pattern. Adoption is optional per agentskills.io spec.
-
-**5.4 FR-21.6.3 — Document name collision + add warning**
-- Add section to `documents/design.md`: "Skill Name Collision Resolution"
-- Content: `.dev/` skills override `framework/` skills. Project-level overrides user-level per agentskills.io.
-- Code: Add collision detection to `task-link.ts` — warn to stderr when same skill name exists in both `.dev/` and `framework/`
-
-**5.5 Update SRS**
-- Mark completed criteria as `[x]` with evidence paths
-- Mark FR-21.3.4 as `[N/A]` with rationale
-
----
-
-### Phase 6: Final Verification
-
-- Run `deno task check` — all tests, lint, format pass
-- Run existing benchmarks (spot-check 2-3 passing scenarios)
-- Review: no `.py` files in `framework/skills/`, all JSON output, `--skip-existing` works
-- Commit with evidence summary
-
----
-
-### Execution Order & Dependencies
+**1.1 Skill Structure**
 
 ```
-Phase 1 (Python→TS) ──→ Phase 2 (deps) ──→ Phase 3 (idempotency)
-                                                    │
-                                                    ▼
-                                            Phase 4 (JSON output)
-                                                    │
-                                                    ▼
-                                            Phase 5 (docs)
-                                                    │
-                                                    ▼
-                                            Phase 6 (verify)
+framework/skills/flow-spec/
+└── SKILL.md
+```
+
+Frontmatter:
+```yaml
+---
+name: flow-spec
+description: >-
+  Create structured specification for large features using phased decomposition.
+  Produces documents/spec-{name}.md with dependency-ordered phases, atomic tasks,
+  explicit boundaries, and per-phase status tracking.
+disable-model-invocation: true
+---
+```
+
+**1.1a When to Use**
+
+Add a "When to Use" section at the top of SKILL.md:
+- Use `flow-spec` when feature spans >3 files AND requires >2 sessions, OR has >5 phases
+- Use `flow-plan` for tasks completable within one agent session
+- When unsure: start with `flow-plan`; if it outgrows whiteboard.md → upgrade to `flow-spec`
+
+**1.2 Workflow Steps (in SKILL.md)**
+
+The skill follows a 7-step workflow, extending flow-plan's pattern:
+
+1. **Initialize** — Create todo list, read AGENTS.md rules.
+2. **Deep Context & Research** — Analyze prompt, codebase, docs, web. Resolve uncertainties proactively. If gaps remain → ask user, STOP.
+3. **Draft Spec Header** — Write to `documents/spec-{name}.md`:
+   - Title, Status (Draft), Date
+   - Goal (business/user value)
+   - Overview (current state, why now, constraints)
+   - Non-Goals (explicit exclusions — critical for AI agents)
+   - Architecture & Boundaries (three-tier: always/ask-first/never)
+   - Definition of Done (measurable acceptance criteria)
+   - **DO NOT fill Phases yet.**
+4. **Decompose into Phases (Chat Only)** — Present phase breakdown in chat:
+   - Each phase: goal, scope (files/components), dependencies, estimated task count
+   - Phases ordered by dependency (foundations first)
+   - Target: ≤30-50 requirements per phase (within 150-200 instruction limit)
+   - Present to user. STOP and wait for approval/adjustments.
+5. **Detail Phases** — Write approved phases into spec file. Each phase contains:
+   - Phase N: {Name}
+     - Status: not-started | in-progress | done
+     - Goal: what this phase achieves
+     - Prerequisites: which phases must be done first
+     - Scope: files/components affected (target 1-5 files per task)
+     - Tasks: numbered list of atomic, testable tasks
+     - Verification: specific commands/checks to confirm phase completion
+     - Notes: implementation hints, gotchas, references
+6. **Critique** — Present spec to user in chat. Offer critique for:
+   - Missing phases or hidden dependencies
+   - Tasks too large (should be split) or too small (should be merged)
+   - Vague verification criteria
+   - Missing non-goals or boundary gaps
+   - Over-specification of trivial parts
+7. **Refine & Finalize** — Apply accepted critique points. Update status to "Ready".
+
+**1.3 Rules & Constraints (in SKILL.md)**
+
+- Pure Specification: MUST NOT write code. Only `documents/spec-{name}.md`.
+- Chat-First Reasoning: Phase decomposition presented in chat before writing.
+- Proactive Resolution: Exhaust codebase/docs/web before asking user.
+- Stop-Analysis Protocol: If stuck after 2 attempts → STOP-ANALYSIS REPORT.
+- Living Document: Spec status fields are updated during implementation. Implementer MUST update Phase Status (`not-started` → `in-progress` → `done`) when starting/completing a phase.
+- Phase Size Guard: Each phase SHOULD contain ≤50 requirements and target ≤5 files per task. If exceeded → split.
+- Implementation Hints Only in Notes: Spec describes WHAT and WHY. HOW — only in Notes section as implementation hints (patterns, gotchas, references), not as code.
+
+**1.4 Output Format Template**
+
+```markdown
+# Spec: {Feature Name}
+
+| Field   | Value        |
+|---------|--------------|
+| Status  | Draft/Ready/In-Progress/Done |
+| Created | YYYY-MM-DD   |
+| Updated | YYYY-MM-DD   |
+
+## Goal
+{Why are we building this? Business/user value.}
+
+## Overview
+{Current state, why now, relevant context.}
+
+## Non-Goals
+<!-- Examples: "No backward compatibility with v1 API", "No UI changes in this phase", "No performance optimization", "No migration of existing data" -->
+- {Explicit exclusion 1}
+- {Explicit exclusion 2}
+
+## Architecture & Boundaries
+
+### Always (agent autonomy)
+- {Things agent can always do}
+
+### Ask First
+- {Things requiring user confirmation}
+
+### Never
+- {Things agent must never do}
+
+## Definition of Done
+- [ ] {Measurable criterion 1}
+- [ ] {Measurable criterion 2}
+
+---
+
+## Phase 1: {Name}
+
+**Status:** not-started | **Prerequisites:** none
+
+### Goal
+{What this phase achieves.}
+
+### Scope
+- {file/component 1}
+- {file/component 2}
+
+### Tasks
+1. {Atomic, testable task}
+2. {Atomic, testable task}
+
+### Verification
+- [ ] {Specific check or command}
+
+### Notes
+- {Implementation hints, gotchas}
+
+---
+
+## Phase 2: {Name}
+...
+```
+
+**1.5 Verification (in SKILL.md)**
+
+```
+- [ ] ONLY `documents/spec-{name}.md` modified
+- [ ] Each phase has: Goal, Prerequisites, Scope, Tasks, Verification
+- [ ] Non-Goals section is non-empty
+- [ ] Boundaries (always/ask-first/never) are specified
+- [ ] No phase exceeds 50 requirements
+- [ ] Tasks target ≤5 files each
+- [ ] All phases have dependency ordering (no circular deps)
+```
+
+---
+
+### Phase 2: Create Benchmark Scenario
+
+**Goal:** TDD for skills — benchmark validates that flow-spec produces correct output.
+
+**2.1 Create scenario file**
+- Location: `.dev/benchmarks/scenarios/flow-spec-basic.md` (following existing benchmark patterns)
+- Scenario: "Create spec for adding skill versioning to AssistFlow" (uses real project codebase as context)
+- Expected: spec file created in documents/, contains all required sections (Goal, Non-Goals, Phases, etc.)
+- Validation criteria: file exists, has correct structure, phases are dependency-ordered, non-goals present, references real project files
+
+**2.2 Run benchmark**
+- Execute via `deno task benchmark` or equivalent
+- Verify scenario passes
+- Fix any issues in SKILL.md
+
+---
+
+### Phase 3: Integration & Verification
+
+**3.1 Validate skill format**
+- Run `deno task check` — ensures SKILL.md passes skill validation
+- Verify no lint/format errors
+
+**3.2 Update project documentation**
+- Add flow-spec to skill registry if one exists
+- Ensure `deno task link` picks up the new skill
+
+---
+
+### Execution Order
+
+```
+Phase 1 (SKILL.md) ──→ Phase 2 (Benchmark) ──→ Phase 3 (Integration)
 ```
 
 ### Estimated Scope
 
-- **New files:** 4 (count_tokens.ts, count_tokens_test.ts, validate.ts, validate_test.ts)
-- **Deleted files:** 8 (.py files)
-- **Modified files:** ~15 (10 scripts + 3 test files + SRS + SDS)
-- **Net file delta:** -4
+- **New files:** 2 (SKILL.md, benchmark scenario)
+- **Modified files:** 0-1 (skill registry if exists)
+- **Net file delta:** +2-3
