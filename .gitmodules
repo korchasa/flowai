@@ -1,0 +1,3 @@
+[submodule "flow-cli"]
+	path = flow-cli
+	url = https://github.com/korchasa/flow-cli

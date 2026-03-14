@@ -1,204 +1,227 @@
-# FR-21.3–21.6: Universal Skill & Script Requirements — Close Remaining Criteria
+# flow-cli: Universal Agent Format Support
 
 ## Goal
 
-Close all open FR-21.3–21.6 acceptance criteria to unblock FR-10 (Global Framework Distribution). FR-10 is the project's core value proposition — distributing AssistFlow to end users — and cannot proceed until scripts are standardized.
+Adapt flow-cli to read agents from flat `framework/agents/` (universal format containing data for all IDEs) instead of per-IDE subdirectories (`framework/agents/{claude,cursor,opencode}/`). Add IDE-specific frontmatter extraction at sync time.
+
+**Why:** The flow repo now stores one universal definition per agent. flow-cli extracts IDE-relevant fields from it during sync, rather than expecting pre-formatted per-IDE variants.
 
 ## Overview
 
 ### Context
 
-FR-21 defines 6 sub-requirements (FR-21.1–FR-21.6) for universal skill/script compliance. FR-21.1 and FR-21.2 are already closed (all `[x]`). 7 criteria remain open across FR-21.3–FR-21.6 (FR-21.3.4 excluded — `--help` requirement dropped).
+The flow repo has been restructured (spec-flow-cli-integration.md):
+- `framework/agents/` is now flat — 4 `.md` files with universal frontmatter (superset of all IDE fields)
+- Per-IDE subdirectories (`claude/`, `cursor/`, `opencode/`) are deleted
+- flow-cli (v0.1.4) still expects `framework/agents/{ide}/*.md` — this is now broken
 
-Dependency chain from SRS: `FR-21.3–21.6 → FR-10 → end-user distribution`.
-
-Scripts affected (framework scope only — root `scripts/` excluded per SRS scoping):
-- Framework TS: `framework/skills/*/scripts/*.ts` — 10 CLI scripts + 3 test files
-- Framework PY: `framework/skills/*/scripts/*.py` — 8 legacy files (6 with TS equivalents, 2 without)
+flow-cli is a git submodule at `flow-cli/` in the flow repo. Changes here affect flow-cli's own repo.
 
 ### Current State
 
-**FR-21.3.2 Structured output** — 1/10 framework TS scripts outputs JSON (`generate_agents.ts`). 9 output unstructured text (emoji + human-readable).
+**flow-cli agent pipeline:**
+1. `extractAgentNames(paths, ide.agentSubdir)` — regex matches `framework/agents/{ide}/name.md`
+2. `readAgentFiles(names, ide, paths, source)` — reads from `framework/agents/{ide.agentSubdir}/{name}.md`
+3. Writes agent content as-is to `{ide_configDir}/agents/{name}.md`
 
-**FR-21.3.3 Self-contained dependencies** — 1 framework file uses bare `@std/` imports: `generate_agents.test.ts` (2 imports). All other framework scripts use `jsr:@std/`.
+**Affected files:**
+- `src/types.ts` — `IDE.agentSubdir` field, `KNOWN_IDES` definitions
+- `src/source.ts` — `extractAgentNames()` function
+- `src/sync.ts` — `readAgentFiles()` function, agent sync loop
+- `src/config_generator.ts` — agent discovery via `extractAgentNames()`
+- `src/source_test.ts` — test for `extractAgentNames()`
+- `src/main_test.ts` — mock source with per-IDE agents
 
-**FR-21.3.7 Idempotent** — 3 init scripts (`init_command.ts`, `init_skill.ts`, `init_rule.ts`) fail on re-run when target directory exists.
+**IDE frontmatter transformation rules** (from `documents/ides-difference.md`):
+- Claude Code: `name` (keep), `description` (keep), `tools` (list), `disallowedTools`
+- Cursor: `name` (keep), `description` (keep), `readonly` (bool)
+- OpenCode: remove `name`, add `mode: subagent`, `tools` (map: write/edit→bool)
 
-**FR-21.4.1 Framework scripts in Deno/TS** — 8 Python scripts remain. 6 have verified-complete TS equivalents. 2 need new TS scripts: `count_tokens.py` (token estimation), `validate.py` (Mermaid syntax validation via mmdc).
-
-**FR-21.4.2 Deno/TS-only policy** — Project uses Deno/TS exclusively. Python not needed. Policy not documented in SDS.
-
-**FR-21.5.3 allowed-tools hint** — 1/36 skills uses `allowed-tools` frontmatter. Requirement says "MAY" — optional adoption.
-
-**FR-21.6.3 Name collision** — `task-link.ts` implements `.dev/` overrides `framework/` but behavior is undocumented in SDS.
+However, not all agents need the same frontmatter additions. The transformation rules depend on the agent itself (e.g., `flow-diff-specialist` is read-only, `flow-skill-executor` is not).
 
 ### Constraints
 
-- All changes must pass `deno task check` (fmt + lint + test + skill/agent validation)
-- TDD: write/update tests before code changes
-- Scripts in `framework/skills/*/scripts/` must use `jsr:` specifiers (standalone, no `deno.json`)
-- Root scripts (`scripts/`) may use bare imports (they run with project `deno.json`)
-- Must not break existing benchmarks (11 PASSED)
-- Python removal: only delete `.py` when `.ts` equivalent is verified feature-complete
+- flow-cli is a separate repo (git submodule). Changes must be valid in isolation.
+- `deno task check` must pass in flow-cli.
+- TDD: tests first.
+- No stubs.
+- The transformation must produce output equivalent to the previous per-IDE variants.
 
 ## Definition of Done
 
-- [x] FR-21.3.2: All framework scripts output structured JSON (`{ "ok": bool, ... }`) to stdout; diagnostics to stderr. Including `generate_agents.ts` adapted to common schema.
-- [x] FR-21.3.3: All framework scripts use `jsr:` specifiers (no bare `@std/`)
-- [x] FR-21.3.4: Marked N/A in SRS (agents read SKILL.md for script interface, `--help` is redundant)
-- [x] FR-21.3.7: Init scripts support `--skip-existing` flag; default: fail fast on conflict (exit 1 + clear error)
-- [x] FR-21.4.1: No `.py` files in `framework/skills/`; all replaced by verified `.ts`
-- [x] FR-21.4.2: Deno/TS-only policy documented in SDS (section 3.1.2)
-- [x] FR-21.5.3: `allowed-tools` pattern documented in SDS (section 3.1.3)
-- [x] FR-21.6.3: Name collision resolution documented in SDS (section 3.1.4); `task-link.ts` warns on collisions
-- [x] All existing tests pass (`deno task check`) — 91 tests passed
-- [x] SRS criteria updated with `[x]` / `[N/A]` and evidence paths
+- [x] Universal agent format in flow repo: superset frontmatter with all IDE fields (`name`, `description`, `tools`, `disallowedTools`, `readonly`, `mode`). Evidence: `framework/agents/*.md`
+- [x] `extractAgentNames()` reads from flat `framework/agents/` (no IDE subdir). Evidence: `flow-cli/src/source.ts:146-160`
+- [x] `readAgentFiles()` reads from flat path, applies IDE-specific frontmatter extraction. Evidence: `flow-cli/src/sync.ts:247-262`
+- [x] `IDE.agentSubdir` field removed from types and KNOWN_IDES. Evidence: `flow-cli/src/types.ts:1-6,47-55`
+- [x] New `transformAgent(content, ideName)` function: extracts IDE-relevant fields, unknown fields pass-through. Evidence: `flow-cli/src/transform.ts:31-60`
+- [x] `config_generator.ts` agent discovery works with flat structure. Evidence: `flow-cli/src/config_generator.ts:59-61`
+- [x] All tests updated and passing (`source_test.ts`, `main_test.ts`, new transform tests). Evidence: 141 passed, 0 failed
+- [x] Tests cover YAML edge cases (multiline description, colons, quotes). Evidence: `flow-cli/src/transform_test.ts:125-134`
+- [x] `main_test.ts` assertions verify IDE-specific frontmatter in output. Evidence: `flow-cli/src/main_test.ts:71-97`
+- [x] Integration test (`GitCloneSource`) marked skip until flow repo pushed with new format. Evidence: `flow-cli/src/source_test.ts:86-104`
+- [x] `deno task check` passes in flow-cli. Evidence: "All checks passed!"
+- [x] flow-cli SRS updated (FR-1 acceptance criteria for agents). Evidence: `flow-cli/documents/requirements.md:30`
+- [x] flow repo `documents/design.md` §3.2 updated to describe universal format. Evidence: `documents/design.md:93-97`
+- [x] Universal agents in flow repo contain all IDE fields. Evidence: `framework/agents/*.md`
 
 ## Solution
 
-**Strategy: Bottom-Up by Dependency (Variant A), refined by critique**
+**Selected Variant: C — Flat Read + Universal Frontmatter + IDE Extraction**
 
-Each phase follows TDD: write/update test → implement → verify → `deno task check`.
-
----
-
-### Phase 1: Python → TypeScript Migration (FR-21.4.1)
-
-**Goal:** Remove all `.py` files from `framework/skills/`. Unblocks all subsequent phases.
-
-**1.1 Delete 6 Python scripts with verified TS equivalents**
-- Files: `init_command.py`, `validate_command.py`, `package_command.py`, `init_skill.py`, `validate_skill.py`, `package_skill.py`
-- Pre-condition: Run each `.py` and `.ts` side-by-side on same input; diff outputs
-- Action: Delete `.py` files; update any SKILL.md references from `.py` to `.ts`
-- Verify: `deno task check`; existing tests in `command_scripts_test.ts`, `skill_scripts_test.ts`
-
-**1.2 Write `count_tokens.ts`** (replaces `count_tokens.py`)
-- Location: `framework/skills/flow-skill-analyze-context/scripts/count_tokens.ts`
-- Logic: Simple char-based estimation (1 token ≈ 3.3 chars). Accept args or stdin.
-- Output: JSON `{ "ok": true, "result": { "characters": N, "estimated_tokens": N } }` (already FR-21.3.2 compliant)
-- Dependencies: None (pure Deno, no external imports needed)
-- Test: New test file `count_tokens_test.ts`
-- Delete `count_tokens.py` after verification
-
-**1.3 Write `validate.ts`** (replaces `validate.py` for Mermaid)
-- Location: `framework/skills/flow-skill-draw-mermaid-diagrams/scripts/validate.ts`
-- Logic: Run `mmdc` via `Deno.Command` using `npm:@mermaid-js/mermaid-cli` (jsr-compatible, no npx dependency)
-- Output: JSON `{ "ok": true, "result": { "valid": bool, "errors": [...] } }`
-- Dependencies: `npm:@mermaid-js/mermaid-cli` via jsr import specifier
-- Test: New test file `validate_test.ts`. Test strategy: mock `Deno.Command` to avoid runtime mmdc dependency in CI
-- Delete `validate.py` after verification
-
-**1.4 Update SKILL.md references**
-- Grep all SKILL.md files for `.py` references; update to `.ts`
-- Verify: `deno task check` (check-skills.ts validates references)
+Two repos affected: flow (universal source) and flow-cli (extraction + delivery).
 
 ---
 
-### Phase 2: Self-Contained Dependencies (FR-21.3.3)
+### Part 1: Universal Agent Format (flow repo)
 
-**Goal:** All framework scripts use `jsr:` specifiers.
+Update `framework/agents/*.md` to contain **superset of all IDE fields**. Each agent file holds all data needed by every IDE. flow-cli extracts what each IDE needs.
 
-**2.1 Fix `generate_agents.test.ts`**
-- Change `@std/assert` → `jsr:@std/assert`, `@std/path` → `jsr:@std/path`
-- This is the only remaining file with bare imports in `framework/`
-- Verify: `deno test framework/skills/flow-init/scripts/generate_agents.test.ts`
+**Universal frontmatter fields (superset):**
+- `name` (required) — agent identifier (Claude, Cursor use; OpenCode ignores — uses filename)
+- `description` (required) — agent purpose (all IDEs)
+- `tools` (optional, string) — allowed tools as comma-separated list (Claude)
+- `disallowedTools` (optional, string) — disallowed tools (Claude)
+- `readonly` (optional, bool) — read-only mode (Cursor)
+- `mode` (optional, string) — agent mode, e.g., `subagent` (OpenCode)
+- `opencode_tools` (optional, map) — tool permissions map (OpenCode), e.g., `{write: false, edit: false}`
 
----
+**Agent updates:**
 
-### Phase 3: Idempotency (FR-21.3.7)
+1. `flow-diff-specialist.md`:
+   ```yaml
+   name: flow-diff-specialist
+   description: ...
+   tools: Read, Grep, Glob, Bash
+   disallowedTools: Write, Edit
+   readonly: true
+   mode: subagent
+   opencode_tools:
+     write: false
+     edit: false
+   ```
+2. `deep-research-worker.md` — same pattern, `tools: Read, Grep, Glob, Bash, WebFetch`
+3. `flow-console-expert.md` — same pattern as flow-diff-specialist
+4. `flow-skill-executor.md` — only `name`, `description`, `mode: subagent` (no restrictions)
 
-**Goal:** Init scripts are safe to re-run with explicit opt-in.
+**Update `documents/design.md` §3.2:** Change "Frontmatter contains only IDE-agnostic metadata (`name`, `description`)" → describe universal format with all IDE fields.
 
-**3.1 Update 3 init scripts**
-- Files: `init_command.ts`, `init_skill.ts`, `init_rule.ts`
-- Default behavior (fail fast): If target directory exists → exit 1 + clear error message to stderr: `"Error: directory '<path>' already exists. Use --skip-existing to skip."`
-- `--skip-existing` flag: If target exists → print warning to stderr, exit 0 (idempotent mode)
-- Test: Add 2 test cases per script:
-  - "fails with exit 1 when target exists (default)"
-  - "exits 0 with warning when target exists and --skip-existing passed"
-- Verify: `deno task check`
-
----
-
-### Phase 4: Structured JSON Output (FR-21.3.2)
-
-**Goal:** All framework scripts output JSON to stdout, diagnostics to stderr.
-
-**4.1 Define output schema convention**
-- Success: `{ "ok": true, "result": { ... } }` to stdout
-- Failure: `{ "ok": false, "error": "message", "details": [...] }` to stdout; human message to stderr
-- Exit code: 0 on `ok: true`, non-zero on `ok: false`
-
-**4.2 Adapt `generate_agents.ts`**
-- Current: outputs raw analysis object directly
-- Change: wrap in `{ "ok": true, "result": <current_output> }`
-- Update SKILL.md for `flow-init` to parse new schema (access `.result` field)
-- Update `generate_agents.test.ts` to expect new wrapper
-- Verify: `deno task check`
-
-**4.3 Migrate remaining scripts** (9 scripts)
-- `init_*.ts`: Output `{ "ok": true, "result": { "path": "...", "files_created": [...] } }`
-- `validate_*.ts`: Output `{ "ok": true, "result": { "valid": true } }` or `{ "ok": false, "error": "...", "details": [...] }`
-- `package_*.ts`: Output `{ "ok": true, "result": { "archive": "path", "files": [...] } }`
-- Move all `console.log` diagnostic messages to `console.error`
-- Test: Update all existing tests to parse JSON output; verify stderr for diagnostics
-- Verify: `deno task check`
+**Verification:** `deno task check` passes in flow repo.
 
 ---
 
-### Phase 5: Documentation (FR-21.3.4, FR-21.4.2, FR-21.5.3, FR-21.6.3)
+### Part 2: flow-cli Changes
 
-**Goal:** Close documentation-only criteria + mark FR-21.3.4 as N/A.
+#### Step 1: Remove `agentSubdir` from types
 
-**5.1 FR-21.3.4 — Mark as N/A in SRS**
-- Rationale: Agents read SKILL.md for script interface descriptions. `--help` duplicates SKILL.md content and adds maintenance burden. Not needed for agent-driven execution model.
+**File: `src/types.ts`**
+- Remove `agentSubdir` field from `IDE` interface
+- Remove `agentSubdir` values from `KNOWN_IDES`
 
-**5.2 FR-21.4.2 — Document Deno/TS-only policy in SDS**
-- Add section to `documents/design.md`: "Script Language Policy"
-- Content: All project scripts (framework and root) use Deno/TypeScript exclusively. No Python dependencies.
+#### Step 2: Update `extractAgentNames()` to flat structure
 
-**5.3 FR-21.5.3 — Document allowed-tools pattern in SDS**
-- Add section to `documents/design.md`: "Skill Tool Hints"
-- Content: Skills MAY use `allowed-tools` frontmatter to pre-approve tools. Example pattern. Adoption is optional per agentskills.io spec.
+**File: `src/source.ts`**
+- Change signature: `extractAgentNames(paths: string[])` — remove `ideSubdir` parameter
+- Change regex: `^framework/agents/([^/]+)\.md$` (flat, no IDE subdir)
 
-**5.4 FR-21.6.3 — Document name collision + add warning**
-- Add section to `documents/design.md`: "Skill Name Collision Resolution"
-- Content: `.dev/` skills override `framework/` skills. Project-level overrides user-level per agentskills.io.
-- Code: Add collision detection to `task-link.ts` — warn to stderr when same skill name exists in both `.dev/` and `framework/`
+#### Step 3: Create `transformAgent()` function
 
-**5.5 Update SRS**
-- Mark completed criteria as `[x]` with evidence paths
-- Mark FR-21.3.4 as `[N/A]` with rationale
-
----
-
-### Phase 6: Final Verification
-
-- Run `deno task check` — all tests, lint, format pass
-- Run existing benchmarks (spot-check 2-3 passing scenarios)
-- Review: no `.py` files in `framework/skills/`, all JSON output, `--skip-existing` works
-- Commit with evidence summary
-
----
-
-### Execution Order & Dependencies
+**New file: `src/transform.ts`**
 
 ```
-Phase 1 (Python→TS) ──→ Phase 2 (deps) ──→ Phase 3 (idempotency)
-                                                    │
-                                                    ▼
-                                            Phase 4 (JSON output)
-                                                    │
-                                                    ▼
-                                            Phase 5 (docs)
-                                                    │
-                                                    ▼
-                                            Phase 6 (verify)
+transformAgent(content: string, ideName: string): string
+```
+
+Parses YAML frontmatter from universal agent, extracts IDE-relevant fields, returns transformed content with IDE-native frontmatter.
+
+**Extraction rules (from universal → IDE-specific):**
+
+| Universal field | Claude Code | Cursor | OpenCode |
+|:---|:---|:---|:---|
+| `name` | keep | keep | **drop** (filename = ID) |
+| `description` | keep | keep | keep |
+| `tools` (string) | keep | **drop** | **drop** |
+| `disallowedTools` (string) | keep | **drop** | **drop** |
+| `readonly` (bool) | **drop** | keep | **drop** |
+| `mode` (string) | **drop** | **drop** | keep |
+| `opencode_tools` (map) | **drop** | **drop** | rename to `tools` |
+| unknown fields | **pass-through** | **pass-through** | **pass-through** |
+
+Body (system prompt) passed through unchanged for all IDEs.
+
+**YAML edge case handling:** Test multiline descriptions (with colons, quotes, special chars). Use `@std/yaml` (already a dependency via `src/config.ts`).
+
+#### Step 4: Update `readAgentFiles()` in sync.ts
+
+**File: `src/sync.ts`**
+- Remove `ide` parameter from `readAgentFiles()` (no longer needed for path)
+- Read from `framework/agents/{name}.md` (flat)
+- After reading content, call `transformAgent(content, ide.name)` before returning
+
+#### Step 5: Update agent sync loop in sync.ts
+
+**File: `src/sync.ts` (lines 108-138)**
+- Change `extractAgentNames(allPaths, ide.agentSubdir)` → `extractAgentNames(allPaths)`
+- Move agent name extraction outside the IDE loop (names are the same for all IDEs now)
+- Pass `ide.name` to `readAgentFiles()` for transformation
+
+#### Step 6: Update config_generator.ts
+
+**File: `src/config_generator.ts` (lines 61-70)**
+- Simplify: single `extractAgentNames(allPaths)` call instead of per-IDE loop
+- Remove `agentSubdir` usage
+
+#### Step 7: Update tests (TDD)
+
+**File: `src/source_test.ts`**
+- Update `extractAgentNames` test: flat paths instead of per-IDE
+  - Input: `["framework/agents/agent1.md", "framework/agents/agent2.md"]`
+  - Expected: `["agent1", "agent2"]`
+
+**File: `src/main_test.ts`**
+- Update `createMockSource()`: flat agent paths with universal frontmatter
+  - Single `"framework/agents/test-agent.md"` with all fields
+- Update assertions: verify IDE-specific frontmatter in written content (not just file existence)
+  - Claude output has `tools`, `disallowedTools`, no `readonly`, no `mode`
+  - Cursor output has `readonly`, no `tools`, no `mode`
+
+**File: `src/source_test.ts`**
+- `GitCloneSource` integration test: mark as `ignore: true` until flow repo pushed with universal format
+- Update after coordinated push
+
+**New file: `src/transform_test.ts`**
+- Test Claude extraction: universal → keeps `name`, `description`, `tools`, `disallowedTools`; drops `readonly`, `mode`, `opencode_tools`
+- Test Cursor extraction: universal → keeps `name`, `description`, `readonly`; drops `tools`, `disallowedTools`, `mode`, `opencode_tools`
+- Test OpenCode extraction: universal → keeps `description`, `mode`; renames `opencode_tools` → `tools`; drops `name`, `tools` (string), `disallowedTools`
+- Test no-restriction agent (only `name` + `description` + `mode`) → minimal extraction per IDE
+- Test body preservation: system prompt unchanged across all IDEs
+- Test unknown fields: pass-through for all IDEs
+- Test YAML edge cases: multiline description with colons and quotes
+
+#### Step 8: Update documentation
+
+**File: `documents/requirements.md`**
+- FR-1 acceptance criterion: "Agents written to `{ide_dir}/agents/{name}.md` (single file, per-IDE variant)" → update to describe canonical source + transformation
+
+**File: `documents/design.md`**
+- Update agent architecture section to describe canonical format + transformation pipeline
+
+---
+
+### Execution Order
+
+```
+Part 1 (flow repo: extend canonical agents)
+  ↓
+Part 2, Step 7 (TDD: write tests first)
+  ↓
+Part 2, Steps 1-6 (implement: types → source → transform → sync → config_generator)
+  ↓
+Part 2, Step 8 (documentation)
+  ↓
+Verify: deno task check in both repos
 ```
 
 ### Estimated Scope
 
-- **New files:** 4 (count_tokens.ts, count_tokens_test.ts, validate.ts, validate_test.ts)
-- **Deleted files:** 8 (.py files)
-- **Modified files:** ~15 (10 scripts + 3 test files + SRS + SDS)
-- **Net file delta:** -4
+- **flow repo:** 4 files modified (3 universal agents + `documents/design.md` §3.2)
+- **flow-cli:** 6 files modified, 2 new files (`transform.ts`, `transform_test.ts`), ~150 lines net new code

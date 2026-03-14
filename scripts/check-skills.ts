@@ -3,7 +3,7 @@
  *
  * Checks:
  * - FR-21.1.1: Directory structure (only SKILL.md + allowed subdirs)
- * - FR-21.1.2: Frontmatter (name, description validation)
+ * - FR-21.1.2: Frontmatter (Zod schema validation via resource-types.ts)
  * - FR-21.1.3: Progressive disclosure (line/token limits)
  * - FR-21.1.4: File references (no nested subdirs in allowed dirs)
  * - FR-21.2.2: No custom path placeholders (<this-skill-dir>)
@@ -11,8 +11,27 @@
  *
  * Exits with code 1 if any violation is found.
  */
-import { parse } from "@std/yaml";
 import { join } from "@std/path";
+import {
+  parseFrontmatter,
+  type ResourceError,
+  SkillFrontmatterSchema,
+  validateFrontmatter,
+} from "./resource-types.ts";
+
+/** Re-export for backward compatibility with tests. */
+export { parseFrontmatter } from "./resource-types.ts";
+
+export type SkillError = {
+  skill: string;
+  criterion: string;
+  message: string;
+};
+
+/** Convert ResourceError → SkillError. */
+function toSkillError(e: ResourceError): SkillError {
+  return { skill: e.resource, criterion: e.criterion, message: e.message };
+}
 
 /** Allowed entries at skill root besides SKILL.md. */
 export const ALLOWED_SUBDIRS = new Set([
@@ -22,34 +41,10 @@ export const ALLOWED_SUBDIRS = new Set([
   "evals",
 ]);
 
-/** Valid name pattern: lowercase alphanumeric + hyphens, no leading/trailing/consecutive hyphens. */
-const NAME_PATTERN = /^[a-z0-9]([a-z0-9]*(-[a-z0-9]+)*)?$/;
-const NAME_MAX_LENGTH = 64;
-const DESCRIPTION_MAX_LENGTH = 1024;
 const SKILL_MAX_LINES = 500;
 /** Token budget approximation: chars/4. Documented as adequate guardrail. */
 const SKILL_MAX_TOKENS = 5000;
 const FRONTMATTER_MAX_TOKENS = 100;
-
-export type SkillError = {
-  skill: string;
-  criterion: string;
-  message: string;
-};
-
-/**
- * Parses SKILL.md frontmatter from file content.
- * Returns the raw YAML string and parsed object, or null if invalid.
- */
-export function parseFrontmatter(
-  content: string,
-): { raw: string; data: Record<string, unknown> } | null {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return null;
-  const raw = match[1];
-  const data = parse(raw) as Record<string, unknown>;
-  return { raw, data };
-}
 
 /**
  * FR-21.1.1: Validates directory structure.
@@ -84,65 +79,19 @@ export function validateStructure(
 }
 
 /**
- * FR-21.1.2: Validates frontmatter fields.
+ * FR-21.1.2: Validates frontmatter fields via Zod schema.
  */
-export function validateFrontmatter(
+export function validateSkillFrontmatter(
   dirName: string,
   frontmatter: Record<string, unknown>,
 ): SkillError[] {
-  const errors: SkillError[] = [];
-  const name = frontmatter.name;
-  const description = frontmatter.description;
-
-  // Required: name
-  if (typeof name !== "string" || name.length === 0) {
-    errors.push({
-      skill: dirName,
-      criterion: "FR-21.1.2",
-      message: "Missing or empty 'name' field",
-    });
-  } else {
-    if (name !== dirName) {
-      errors.push({
-        skill: dirName,
-        criterion: "FR-21.1.2",
-        message: `Name '${name}' does not match directory '${dirName}'`,
-      });
-    }
-    if (name.length > NAME_MAX_LENGTH) {
-      errors.push({
-        skill: dirName,
-        criterion: "FR-21.1.2",
-        message: `Name exceeds ${NAME_MAX_LENGTH} chars: ${name.length}`,
-      });
-    }
-    if (!NAME_PATTERN.test(name)) {
-      errors.push({
-        skill: dirName,
-        criterion: "FR-21.1.2",
-        message:
-          `Name '${name}' violates charset [a-z0-9-] or has leading/trailing/consecutive hyphens`,
-      });
-    }
-  }
-
-  // Required: description
-  if (typeof description !== "string" || description.length === 0) {
-    errors.push({
-      skill: dirName,
-      criterion: "FR-21.1.2",
-      message: "Missing or empty 'description' field",
-    });
-  } else if (description.length > DESCRIPTION_MAX_LENGTH) {
-    errors.push({
-      skill: dirName,
-      criterion: "FR-21.1.2",
-      message:
-        `Description exceeds ${DESCRIPTION_MAX_LENGTH} chars: ${description.length}`,
-    });
-  }
-
-  return errors;
+  return validateFrontmatter(
+    dirName,
+    "FR-21.1.2",
+    frontmatter,
+    SkillFrontmatterSchema,
+    dirName,
+  ).map(toSkillError);
 }
 
 /**
@@ -306,8 +255,8 @@ export async function validateSkill(
     return errors;
   }
 
-  // FR-21.1.2: Frontmatter
-  errors.push(...validateFrontmatter(dirName, fm.data));
+  // FR-21.1.2: Frontmatter (Zod schema)
+  errors.push(...validateSkillFrontmatter(dirName, fm.data));
 
   // FR-21.1.3: Progressive disclosure
   errors.push(...validateProgressiveDisclosure(dirName, content, fm.data));
@@ -358,7 +307,7 @@ if (import.meta.main) {
 
   const errors = await validateAllSkills([
     "framework/skills",
-    ".dev/skills",
+    ".claude/skills",
   ]);
 
   if (errors.length > 0) {

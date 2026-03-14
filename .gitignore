@@ -9,5 +9,9 @@ benchmarks/benchmarks.lock
 .env
 __pycache__/
 
+# IDE directories no longer used (removed in favor of flow-cli + claude only)
+.cursor/
+.opencode/
+
 # IDE local settings (not shared)
 .claude/settings.local.json
