@@ -1,12 +1,12 @@
 import { assertEquals } from "@std/assert";
 import {
   ALLOWED_SUBDIRS,
-  parseFrontmatter,
-  validateFrontmatter,
   validatePathResolution,
   validateProgressiveDisclosure,
+  validateSkillFrontmatter,
   validateStructure,
 } from "./check-skills.ts";
+import { parseFrontmatter } from "./resource-types.ts";
 
 // --- parseFrontmatter ---
 
@@ -78,68 +78,96 @@ Deno.test("FR-21.1.1: non-standard directory at root is error", () => {
   );
 });
 
-// --- validateFrontmatter (FR-21.1.2) ---
+// --- validateSkillFrontmatter (FR-21.1.2) ---
 
 Deno.test("FR-21.1.2: valid frontmatter passes", () => {
   const fm = { name: "my-skill", description: "Does things" };
-  assertEquals(validateFrontmatter("my-skill", fm), []);
+  assertEquals(validateSkillFrontmatter("my-skill", fm), []);
 });
 
 Deno.test("FR-21.1.2: name mismatch is error", () => {
   const fm = { name: "other-name", description: "Does things" };
-  const errors = validateFrontmatter("my-skill", fm);
+  const errors = validateSkillFrontmatter("my-skill", fm);
   assertEquals(errors.some((e) => e.message.includes("does not match")), true);
 });
 
 Deno.test("FR-21.1.2: name with leading hyphen is error", () => {
-  const errors = validateFrontmatter("-bad", {
+  const errors = validateSkillFrontmatter("-bad", {
     name: "-bad",
     description: "x",
   });
-  assertEquals(errors.some((e) => e.message.includes("charset")), true);
+  assertEquals(
+    errors.some((e) => e.message.includes("leading/trailing/consecutive")),
+    true,
+  );
 });
 
 Deno.test("FR-21.1.2: name with consecutive hyphens is error", () => {
-  const errors = validateFrontmatter("my--skill", {
+  const errors = validateSkillFrontmatter("my--skill", {
     name: "my--skill",
     description: "x",
   });
-  assertEquals(errors.some((e) => e.message.includes("charset")), true);
+  assertEquals(
+    errors.some((e) => e.message.includes("leading/trailing/consecutive")),
+    true,
+  );
 });
 
 Deno.test("FR-21.1.2: name exceeding 64 chars is error", () => {
   const longName = "a".repeat(65);
-  const errors = validateFrontmatter(longName, {
+  const errors = validateSkillFrontmatter(longName, {
     name: longName,
     description: "x",
   });
-  assertEquals(errors.some((e) => e.message.includes("exceeds 64")), true);
+  assertEquals(errors.some((e) => e.message.includes("≤64")), true);
 });
 
 Deno.test("FR-21.1.2: description exceeding 1024 chars is error", () => {
   const longDesc = "x".repeat(1025);
-  const errors = validateFrontmatter("my-skill", {
+  const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
     description: longDesc,
   });
-  assertEquals(errors.some((e) => e.message.includes("exceeds 1024")), true);
+  assertEquals(errors.some((e) => e.message.includes("≤1024")), true);
 });
 
 Deno.test("FR-21.1.2: missing description is error", () => {
-  const errors = validateFrontmatter("my-skill", { name: "my-skill" });
+  const errors = validateSkillFrontmatter("my-skill", { name: "my-skill" });
   assertEquals(
-    errors.some((e) => e.message.includes("Missing or empty 'description'")),
+    errors.some((e) => e.message.includes("Required")),
     true,
   );
 });
 
 Deno.test("FR-21.1.2: description at exactly 1024 chars passes", () => {
   const desc = "x".repeat(1024);
-  const errors = validateFrontmatter("my-skill", {
+  const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
     description: desc,
   });
   assertEquals(errors.length, 0);
+});
+
+Deno.test("FR-21.1.2: unknown field is error", () => {
+  const errors = validateSkillFrontmatter("my-skill", {
+    name: "my-skill",
+    description: "desc",
+    unknown: "value",
+  });
+  assertEquals(
+    errors.some((e) => e.message.includes("Unrecognized key")),
+    true,
+  );
+});
+
+Deno.test("FR-21.1.2: valid optional fields pass", () => {
+  const errors = validateSkillFrontmatter("my-skill", {
+    name: "my-skill",
+    description: "desc",
+    "disable-model-invocation": true,
+    license: "MIT",
+  });
+  assertEquals(errors, []);
 });
 
 // --- validateProgressiveDisclosure (FR-21.1.3) ---

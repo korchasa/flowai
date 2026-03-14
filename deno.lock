@@ -18,7 +18,10 @@
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@std/streams@*": "1.0.16",
     "jsr:@std/yaml@*": "1.0.10",
-    "jsr:@std/yaml@0.224": "0.224.3"
+    "jsr:@std/yaml@0.224": "0.224.3",
+    "npm:zod@*": "3.25.76",
+    "npm:zod@3": "3.25.76",
+    "npm:zod@^3.25.76": "3.25.76"
   },
   "jsr": {
     "@std/assert@0.224.0": {
@@ -93,6 +96,11 @@
     },
     "@std/yaml@1.0.10": {
       "integrity": "245706ea3511cc50c8c6d00339c23ea2ffa27bd2c7ea5445338f8feff31fa58e"
+    }
+  },
+  "npm": {
+    "zod@3.25.76": {
+      "integrity": "sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ=="
     }
   },
   "redirects": {
@@ -393,7 +401,8 @@
       "jsr:@std/flags@0.224",
       "jsr:@std/fs@0.224",
       "jsr:@std/path@0.224",
-      "jsr:@std/yaml@0.224"
+      "jsr:@std/yaml@0.224",
+      "npm:zod@^3.25.76"
     ]
   }
 }

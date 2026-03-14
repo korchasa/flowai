@@ -21,7 +21,7 @@
 - ALWAYS USE RELATIVE PATHS IN COMMANDS WHEN POSSIBLE. ABSOLUTE PATHS ONLY WHEN REQUIRED BY THE TOOL OR CONTEXT.
 
 ---
-- REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE STORED IN THEIR IDE'S CONFIG DIR (.cursor/, .claude/, .opencode/). DO NOT CONFUSE AGENTS AND SKILLS AS A PRODUCT WITH DEV RESOURCES IN .dev/.
+- REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE INSTALLED BY flow-cli INTO THEIR IDE'S CONFIG DIR (.claude/). DO NOT CONFUSE FRAMEWORK SKILLS/AGENTS WITH DEV RESOURCES IN .claude/skills/ AND .claude/agents/.
 - ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 
@@ -55,11 +55,13 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 - Python (general-purpose utility scripts only: token counting, Mermaid validation)
 
 ## Architecture
-- `.dev/`: SPOT for dev resources (skills, agents, hooks, IDE configs). Symlinked to IDE dirs via `deno task link`.
 - `framework/skills/`: Source of truth for product skills (logical Commands and Skills)
-- `framework/agents/`: Source of truth for product agents
+- `framework/agents/`: Source of truth for product agents (universal format with all IDE fields)
+- `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flow-cli from remote.
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
+- `flow-cli/`: Distribution tool for the framework. Separate project with its own release cycle, CLAUDE.md, tests, and CI/CD. Clones `framework/` from this repo and transforms resources (skills, agents) into IDE-specific formats. Changes to `framework/` may require updating flow-cli's transformation logic and tests.
+- `.flow.yaml`: flow-cli config for this project (claude only)
 
 ## Terminology (agentskills.io)
 
@@ -71,7 +73,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - Use agentskills.io skills as the primary workflow system
 - Store project knowledge in `documents/` using SRS/SDS schema
 - Centralize verification through `deno task check`
-- Dev resources in `.dev/` (SPOT), symlinked to `.cursor/`, `.claude/`, `.opencode/` for multi-IDE support
+- Dev resources in `.claude/` (skills, agents). Framework resources installed by flow-cli
 
 ## Planning Rules
 

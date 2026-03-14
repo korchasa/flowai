@@ -1,1 +1,0 @@
-../../framework/agents/claude/deep-research-worker.md

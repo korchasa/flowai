@@ -12,43 +12,30 @@
 - **Overview diagram:**
   ```mermaid
   graph TD
-    Dev[.dev/ SPOT] -->|symlink| Cursor[.cursor/]
-    Dev -->|symlink| Claude[.claude/]
-    Dev -->|symlink| OpenCode[.opencode/]
-    Cursor -->|skills, agents, hooks| IDE1[Cursor IDE]
-    Claude -->|skills, agents| IDE2[Claude Code]
-    OpenCode -->|skills, agents| IDE3[OpenCode]
-    IDE1 & IDE2 & IDE3 -->|Updates| Docs[documents/*.md]
-    IDE1 & IDE2 & IDE3 -->|Executes| Actions[Code/Git/MCP]
-    Framework[framework/] -->|product skills| Users[End Users]
+    Framework[framework/] -->|flow-cli install| Claude[.claude/]
+    DevSkills[.claude/skills/ dev] -->|tracked in git| Claude
+    Claude -->|skills, agents| IDE[Claude Code]
+    IDE -->|Updates| Docs[documents/*.md]
+    IDE -->|Executes| Actions[Code/Git/MCP]
+    Framework -->|flow-cli| Users[End Users]
   ```
 - **Main subsystems and their roles:**
-  - **Dev Resources (`.dev/`):** IDE-agnostic SPOT for dev skills, agents, hooks. Symlinked to IDE directories via `deno task link`.
-  - **Product Framework (`framework/`):** Source of truth for end-user skills/agents. Separate from dev resources.
+  - **Product Framework (`framework/`):** Source of truth for end-user skills/agents. Distributed via flow-cli.
+  - **Dev Resources (`.claude/skills/`, `.claude/agents/`):** Dev-only skills/agents tracked in git. Framework resources installed by flow-cli from remote.
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
   - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
   - **Documentation Subsystem:** Stores project state and memory.
-  - **Link Manager (`scripts/task-link.ts`):** Creates/verifies symlinks from `.dev/` to IDE directories. Idempotent.
 
 ## 3. Components
 
-### 3.1 Dev Resources (`.dev/`)
+### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`)
 
-- **Purpose:** IDE-agnostic Single Point of Truth for all dev-time AI resources.
+- **Purpose:** Dev-only skills and agents for AssistFlow development. Not distributed to users.
 - **Structure:**
-  - `.dev/skills/` — Dev skills (SKILL.md directories)
-  - `.dev/agents/` — Dev agent definitions (Markdown files)
-  - `.dev/hooks/` — Hook scripts (e.g., `logger.sh`)
-  - `.dev/hooks.json` — Cursor hooks config
-  - `.dev/worktrees.json` — Cursor worktrees config
-- **Linking:** `deno task link` creates symlinks to IDE directories:
-  - `.cursor/skills`, `.claude/skills`, `.opencode/skills` -> `.dev/skills`
-  - `.cursor/agents`, `.claude/agents`, `.opencode/agents` -> `.dev/agents`
-  - `.cursor/hooks` -> `.dev/hooks` (Cursor-only)
-  - `.cursor/hooks.json` -> `.dev/hooks.json` (Cursor-only)
-  - `.cursor/worktrees.json` -> `.dev/worktrees.json` (Cursor-only)
-- **Constraints:** Claude Code write operations destroy symlinks (known bug). Dev skills are read-only — acceptable risk.
+  - `.claude/skills/` — Dev skills (SKILL.md directories, tracked in git) + framework skills (installed by flow-cli)
+  - `.claude/agents/` — Dev agents (tracked in git) + framework agents (installed by flow-cli)
+- **Distribution:** `.flow.yaml` configures flow-cli to install framework resources from remote into `.claude/`.
 
 ### 3.1.1 Product Skills (`framework/skills/`)
 
@@ -84,29 +71,27 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 
 #### 3.1.4 Skill Name Collision Resolution
 
-When the same skill name exists in both `.dev/skills/` and `framework/skills/`, the `.dev/` version takes precedence (project-level overrides framework-level). This follows the agentskills.io client implementation guide for project-level vs user-level skill precedence.
+When a dev skill in `.claude/skills/` has the same name as a framework skill in `framework/skills/`, flow-cli will overwrite the dev version during sync. Dev skills should use unique names to avoid collisions.
 
-`scripts/task-link.ts` implements this override logic during symlink creation and emits a warning to stderr when a collision is detected.
-
-### 3.2 Product Agents (`framework/agents/{ide}/`)
+### 3.2 Product Agents (`framework/agents/`)
 
 - **Purpose:** Define specialized AI subagent personas and roles for end users.
-- **Structure:** Per-IDE subdirectories: `framework/agents/claude/`, `framework/agents/cursor/`, `framework/agents/opencode/`.
-  Each IDE has its own frontmatter format; body (system prompt) is shared.
-- **IDE Frontmatter Differences:**
-  - **Claude Code:** `name`, `description` (req), `tools` (list: Read, Grep, etc.), `disallowedTools`, `model` (sonnet/opus/haiku/inherit).
-  - **Cursor:** `name`, `description` (req), `model` (inherit/fast/slow), `readonly` (bool).
-  - **OpenCode:** `description` (req), `mode: subagent`, `model` (provider/model-id), `tools` (map: write/edit/bash→bool). Filename = agent name.
-- **Key Agents (4, each in 3 IDE variants = 12 files):**
+- **Structure:** Flat directory `framework/agents/` with one canonical `.md` file per agent.
+  Frontmatter contains universal superset of all IDE fields; body is the shared system prompt.
+- **Canonical Format:** Universal frontmatter — superset of all IDE-specific fields:
+  `name`, `description` (required), `tools` (string, Claude), `disallowedTools` (string, Claude),
+  `readonly` (bool, Cursor), `mode` (string, OpenCode), `opencode_tools` (map, OpenCode).
+  `flow-cli` extracts IDE-relevant fields at install time via `transformAgent()`.
+- **Key Agents (4 canonical files):**
   - `deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flow-skill-deep-research` orchestrator.
   - `flow-console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
-- **Validation:** `scripts/check-agents.ts` (part of `deno task check`) verifies:
-  - Completeness (same files across all IDE subdirs)
-  - Body sync (system prompt identical across variants)
-  - Description sync
-  - IDE-specific frontmatter correctness (required/forbidden fields)
+- **Distribution:** `flow-cli` transforms canonical agents into IDE-specific format at install time.
+- **Reference: IDE frontmatter formats** (transformation rules owned by flow-cli):
+  - **Claude Code:** `name`, `description` (req), `tools` (list: Read, Grep, etc.), `disallowedTools`, `model` (sonnet/opus/haiku/inherit).
+  - **Cursor:** `name`, `description` (req), `model` (inherit/fast/slow), `readonly` (bool).
+  - **OpenCode:** `description` (req), `mode: subagent`, `model` (provider/model-id), `tools` (map: write/edit/bash→bool). Filename = agent name.
 
 ### 3.3 Project Documentation (`documents/`)
 
@@ -149,30 +134,20 @@ When the same skill name exists in both `.dev/skills/` and `framework/skills/`, 
 ### 3.5 Global Framework Distribution — FR-10
 
 - **Purpose:** Install/update AssistFlow framework globally into IDE config dirs.
-- **Strategy:** File copy (not symlinks). Copies skill directories and agent files
-  into IDE config directories. Real files ensure compatibility with devcontainers,
-  Codespaces, and environments where symlink targets are unavailable.
-- **Distribution:** Via package manager or CLI tool (e.g., Homebrew, npm global,
-  standalone binary). No Deno dependency for end users. Legacy `scripts/install.ts`
-  to be removed.
-- **IDE targets:** `~/.cursor/`, `~/.claude/`, `~/.config/opencode/`.
-- **Agent discovery:** Per-IDE — reads from `framework/agents/{claude,cursor,opencode}/`.
-  Each IDE gets agent files with IDE-native frontmatter format.
-- **Operations:**
-  - Remove all `flow-*` items from IDE config dirs (clean-and-copy).
-  - Copy `framework/skills/flow-*/` -> `<ide-config>/skills/flow-*/`
-  - Copy `framework/agents/<ide>/*.md` -> `<ide-config>/agents/*.md`
-  - Skip non-framework files (user-created). The `flow-*` namespace is reserved.
-- **Idempotent:** Safe to run multiple times. User files never touched.
-- **Status:** Not yet implemented. Design TBD (distribution mechanism selection).
+- **Delegated to:** [flow-cli](https://github.com/korchasa/flow-cli) — external tool, linked as git submodule at `flow-cli/`.
+- **Responsibility boundary:**
+  - **flow (this repo):** Canonical source of truth for skills and agents. Stores one definition per resource with IDE-agnostic metadata.
+  - **flow-cli:** Knows each IDE's format requirements. Transforms canonical definitions into IDE-specific format, copies to config dirs, handles install/upgrade/validation.
+- **Canonical agent format:** `framework/agents/*.md` with `name` + `description` frontmatter. Body is the shared system prompt. No per-IDE subdirectories.
+- **Dev workflow:** flow-cli installs framework agents from remote into `.claude/agents/`.
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11
 
 - **Purpose:** Dedicated commit type for AI agent/skill configuration changes.
 - **Integration point:** `flow-commit` SKILL.md — added to recognized types list.
 - **Auto-detection logic:** If all staged files match patterns
-  (`framework/agents/**`, `framework/skills/**`, `.dev/agents/**`, `.dev/skills/**`,
-  `AGENTS.md`, `<ide-dir>/agents/**`, `<ide-dir>/skills/**`) -> suggest `agent:` type.
+  (`framework/agents/**`, `framework/skills/**`, `.claude/agents/**`, `.claude/skills/**`,
+  `AGENTS.md`) -> suggest `agent:` type.
 - **Affected components:** `flow-commit` SKILL.md, `flow-diff-specialist` agent.
 
 ### 3.7 flow-init Multi-File Architecture + Diff-Based Updates — FR-12

@@ -36,7 +36,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 4. **Strict Commits**: Compose messages in **English** per Conventional Commits 1.0.0.
    - **MANDATORY**: ALWAYS prefix commit messages with a type (e.g., `feat:`, `fix:`, `docs:`, `style:`, `refactor:`, `test:`, `build:`, `agent:`).
    - **`agent:` type**: Use for changes to AI agent configuration, skills, and rules:
-     - **Scope**: Files in `framework/agents/`, `framework/skills/`, `.dev/agents/`, `.dev/skills/`, `**/AGENTS.md`, `**/CLAUDE.md`, IDE-specific agent/skill directories (`.cursor/agents/`, `.claude/agents/`, `.opencode/agents/`, `.cursor/skills/`, `.claude/skills/`, `.opencode/skills/`).
+     - **Scope**: Files in `framework/agents/`, `framework/skills/`, `**/AGENTS.md`, `**/CLAUDE.md`, IDE agent/skill directories (`.claude/agents/`, `.claude/skills/`).
      - **Auto-detection**: When ALL staged files match the `agent:` scope paths above, automatically use `agent:` type without asking.
      - **Mixed changes**: If staged files include both agent/skill files AND application code, use the appropriate application type (`feat:`, `fix:`, etc.) — NOT `agent:`.
      - **Example**: `agent: update flow-commit skill with atomic grouping rules` or `agent(flow-init): add brownfield detection logic`.
