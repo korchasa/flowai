@@ -9,6 +9,7 @@ export const SetupDevcontainerDenoWithClaude = new class
   id = "flow-skill-setup-ai-ide-devcontainer-deno-claude";
   name = "Deno project with Claude Code, global skills, and firewall";
   skill = "flow-skill-setup-ai-ide-devcontainer";
+  stepTimeoutMs = 180_000;
 
   userQuery =
     "/flow-skill-setup-ai-ide-devcontainer Set up a devcontainer for this Deno project with full Claude Code integration, global skills mounting, and security hardening.";
@@ -110,6 +111,33 @@ Confirm any file creation prompts.`;
         "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
       critical: false,
       type: "semantic" as const,
+    },
+    {
+      id: "auth_forwarding_initialize_command",
+      description:
+        "Does devcontainer.json include an `initializeCommand` that extracts Claude Code tokens from macOS Keychain using `security find-generic-password -s 'Claude Code-credentials'`?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
+      id: "auth_staging_mount",
+      description:
+        "Is there a bind mount for the auth staging file (e.g., `~/.claude-auth-staging.json`) from host to container, read-only?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
+      id: "auth_copy_in_post_create",
+      description:
+        "Does postCreateCommand include a conditional copy of auth staging file to `~/.claude/.credentials.json` (only if .credentials.json doesn't already exist in volume)?",
+      critical: true,
+      type: "semantic" as const,
+    },
+    {
+      id: "no_claude_config_dir_env",
+      description:
+        "Does remoteEnv NOT contain CLAUDE_CONFIG_DIR? Setting it breaks the volume auth strategy.",
+      critical: true,
     },
   ];
 }();

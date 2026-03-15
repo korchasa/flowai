@@ -49,8 +49,12 @@
 
   "mounts": [
     // Config persistence volume
+    // Auth forwarding staging mount (if Claude Code selected)
     // Global skills bind mount (if enabled)
   ],
+
+  // Runs on HOST before container creation (macOS only — extracts Keychain tokens)
+  "initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json",
 
   "postCreateCommand": "{{dependency_install_command}}",
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
@@ -142,8 +146,10 @@ Add only mounts for selected AI CLIs.
 
 ### Claude Code (when selected)
 ```jsonc
-// Config persistence volume
+// Config persistence volume (auth tokens in .credentials.json survive here)
 "source=claude-config-${devcontainerId},target=/home/{{remote_user}}/.claude,type=volume"
+// Auth forwarding: host Keychain tokens staged here (macOS only, read-only)
+"source=${localEnv:HOME}/.claude-auth-staging.json,target=/home/{{remote_user}}/.claude-auth-staging.json,type=bind,readonly"
 // Global skills from host (if enabled, local dev only)
 "source=${localEnv:HOME}/.claude,target=/home/{{remote_user}}/.claude-host,type=bind,readonly"
 ```
@@ -166,7 +172,26 @@ Add only mounts for selected AI CLIs.
 Docker named volumes are created with root ownership before `remoteUser` takes effect. AI CLI installers and extensions fail to write config/auth tokens without this fix. Each CLI install command in `postCreateCommand` MUST chain `sudo chown` first:
 ```jsonc
 "postCreateCommand": {
-  "claude-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.claude && curl -fsSL https://claude.ai/install.sh | bash && ...",
-  "opencode-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.config/opencode && curl -fsSL https://opencode.ai/install | bash && ..."
+  "claude-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.claude && curl -fsSL https://claude.ai/install.sh | bash",
+  "claude-auth": "[ ! -f ~/.claude/.credentials.json ] && [ -s ~/.claude-auth-staging.json ] && cp ~/.claude-auth-staging.json ~/.claude/.credentials.json && chmod 600 ~/.claude/.credentials.json || true",
+  "opencode-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.config/opencode && curl -fsSL https://opencode.ai/install | bash"
 }
 ```
+
+### Auth forwarding (Claude Code)
+
+Auth tokens live in `~/.claude/.credentials.json` inside the config volume. On first container creation (empty volume), tokens are copied from the host Keychain staging file. On subsequent rebuilds, the volume already has tokens — copy is skipped.
+
+**initializeCommand** (runs on host, macOS only):
+```jsonc
+"initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json"
+```
+
+**postCreateCommand** (copy once if volume is empty):
+```jsonc
+"claude-auth": "[ ! -f ~/.claude/.credentials.json ] && [ -s ~/.claude-auth-staging.json ] && cp ~/.claude-auth-staging.json ~/.claude/.credentials.json && chmod 600 ~/.claude/.credentials.json || true"
+```
+
+See [auth-forwarding.md](auth-forwarding.md) for full architecture details and warnings.
+
+**WARNING**: Do NOT set `CLAUDE_CONFIG_DIR` in `remoteEnv` — it redirects where Claude looks for `.credentials.json`, breaking the volume auth strategy.

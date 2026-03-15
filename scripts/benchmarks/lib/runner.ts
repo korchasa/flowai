@@ -289,6 +289,9 @@ export async function runScenario(
       whiteboardContent = "(file not found)";
     }
 
+    // Collect generated file contents (non-fixture files for judge inspection)
+    const generatedFiles = await collectGeneratedFiles(sandboxPath);
+
     await tracer.logEvidence(statusStr, logStr);
 
     const evidence = `
@@ -306,6 +309,9 @@ ${logStr}
 
 --- DOCUMENTS/WHITEBOARD.MD ---
 ${whiteboardContent}
+
+--- GENERATED FILES ---
+${generatedFiles}
     `;
 
     // 6. Judge
@@ -391,4 +397,67 @@ ${whiteboardContent}
     // Keep sandbox for inspection
     console.log(`  Sandbox available at: ${sandboxPath}\n`);
   }
+}
+
+/**
+ * Recursively collects text file contents from the sandbox for judge inspection.
+ * Skips hidden dirs (.claude, .git), binary files, and oversized files.
+ */
+async function collectGeneratedFiles(
+  sandboxPath: string,
+  maxFileSize = 10_000,
+): Promise<string> {
+  const parts: string[] = [];
+  const skipDirs = new Set([".claude", ".git", "node_modules"]);
+  const textExtensions = new Set([
+    ".json",
+    ".jsonc",
+    ".yaml",
+    ".yml",
+    ".toml",
+    ".md",
+    ".ts",
+    ".js",
+    ".sh",
+    ".py",
+    ".go",
+    ".rs",
+    ".txt",
+    ".cfg",
+    ".ini",
+    ".env",
+    ".dockerfile",
+  ]);
+
+  async function walk(dir: string, rel: string) {
+    for await (const entry of Deno.readDir(dir)) {
+      const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
+      if (entry.isDirectory) {
+        if (skipDirs.has(entry.name)) continue;
+        await walk(join(dir, entry.name), entryRel);
+      } else if (entry.isFile) {
+        const ext = entry.name.includes(".")
+          ? "." + entry.name.split(".").pop()!.toLowerCase()
+          : "";
+        const isDockerfile = entry.name.toLowerCase() === "dockerfile";
+        if (!textExtensions.has(ext) && !isDockerfile) continue;
+        try {
+          const stat = await Deno.stat(join(dir, entry.name));
+          if (stat.size > maxFileSize) {
+            parts.push(`--- ${entryRel} (${stat.size} bytes, truncated) ---`);
+            const content = await Deno.readTextFile(join(dir, entry.name));
+            parts.push(content.slice(0, maxFileSize));
+          } else {
+            parts.push(`--- ${entryRel} ---`);
+            parts.push(await Deno.readTextFile(join(dir, entry.name)));
+          }
+        } catch (_) {
+          // skip unreadable files
+        }
+      }
+    }
+  }
+
+  await walk(sandboxPath, "");
+  return parts.join("\n");
 }

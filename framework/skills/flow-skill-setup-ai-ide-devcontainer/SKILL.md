@@ -212,11 +212,13 @@ Fall back to manual install only if registry feature is unavailable or user requ
 |---|---|
 | **Install (feature, preferred)** | `ghcr.io/devcontainers-extra/features/claude-code:1` (npm) or `ghcr.io/stu-bell/devcontainer-features/claude-code:0` (native installer) |
 | **Install (manual fallback)** | `postCreateCommand`: `curl -fsSL https://claude.ai/install.sh \| bash` or `npm install -g @anthropic-ai/claude-code@latest` |
-| **Config dir** | `~/.claude/` (user settings, skills), `~/.claude.json` (preferences, tokens) |
+| **Config dir** | `~/.claude/` (settings, skills, auth tokens in `.credentials.json`). `~/.claude.json` (metadata, caches — auto-recreated, no tokens) |
+| **Auth tokens** | Stored in `~/.claude/.credentials.json` inside the config dir. On macOS host: Keychain service `Claude Code-credentials`. See [references/auth-forwarding.md](references/auth-forwarding.md) |
 | **Config volume** | `source=claude-config-${devcontainerId},target=/home/<user>/.claude,type=volume` |
+| **Auth forwarding** | Host Keychain → staging file → container volume. See [references/auth-forwarding.md](references/auth-forwarding.md) |
 | **Global skills mount** | `source=${localEnv:HOME}/.claude,target=/home/<user>/.claude-host,type=bind,readonly` |
 | **Skills sync** | `rm -rf ~/.claude/skills ~/.claude/commands && cp -rL ~/.claude-host/skills ~/.claude/skills 2>/dev/null \|\| true && cp -rL ~/.claude-host/commands ~/.claude/commands 2>/dev/null \|\| true` |
-| **Env vars** | `ANTHROPIC_API_KEY` (auth), `CLAUDE_CONFIG_DIR` (override config path), `DISABLE_AUTOUPDATER=1` (pin version) |
+| **Env vars** | `ANTHROPIC_API_KEY` (API key auth). Do NOT set `CLAUDE_CONFIG_DIR` (breaks volume auth strategy). `DISABLE_AUTOUPDATER=1` (optional, pin version) |
 | **Extension** | `anthropic.claude-code` |
 
 ### OpenCode
@@ -253,7 +255,8 @@ Add only for selected AI CLIs:
 {
   // Claude Code (when selected)
   "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
-  "CLAUDE_CONFIG_DIR": "/home/<user>/.claude",
+  // WARNING: Do NOT set CLAUDE_CONFIG_DIR — it breaks the volume auth strategy.
+  // See references/auth-forwarding.md for details.
   // OpenCode (when selected, if using Anthropic)
   // Uses same ANTHROPIC_API_KEY
   // GitHub (always)
@@ -281,7 +284,8 @@ Add only for selected AI CLIs:
 
 | Hook | When | Use For |
 |---|---|---|
-| `postCreateCommand` | Once after container creation | Dependency install, CLI install |
+| `initializeCommand` | On host, before container creation | Auth forwarding: extract host Keychain tokens to staging file (macOS only) |
+| `postCreateCommand` | Once after container creation | Dependency install, CLI install, auth token copy from staging to volume |
 | `postStartCommand` | Every container start | `git safe.directory`, global skills sync |
 | `postAttachCommand` | Every IDE attach | Shell customization |
 
