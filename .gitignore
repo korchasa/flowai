@@ -15,3 +15,7 @@ __pycache__/
 
 # IDE local settings (not shared)
 .claude/settings.local.json
+
+# Generated artifacts (cli)
+cli/src/bundled.json
+cli/src/_version.ts

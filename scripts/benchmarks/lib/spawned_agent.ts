@@ -1,4 +1,4 @@
-import { AgentAdapter } from "./adapters/types.ts";
+import type { AgentAdapter } from "./adapters/types.ts";
 
 export interface AgentOptions {
   workspace: string;

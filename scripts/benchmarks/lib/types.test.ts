@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import { BenchmarkResult, LLMResponse } from "./types.ts";
+import type { BenchmarkResult, LLMResponse } from "./types.ts";
 
 Deno.test("Types - BenchmarkResult should have totalCost", () => {
   const result: BenchmarkResult = {

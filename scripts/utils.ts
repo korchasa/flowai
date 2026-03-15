@@ -6,6 +6,7 @@ import { dirname } from "@std/path";
 export type CommandSpec = {
   cmd: string;
   args: string[];
+  cwd?: string;
 };
 
 /**
@@ -25,6 +26,7 @@ function formatCommand({ cmd, args }: CommandSpec): string {
 export async function runCommand(command: CommandSpec): Promise<void> {
   const process = new Deno.Command(command.cmd, {
     args: command.args,
+    cwd: command.cwd,
     stdin: "inherit",
     stdout: "inherit",
     stderr: "inherit",
@@ -56,6 +58,7 @@ export async function runCommandsInParallel(
   const processes = commands.map((command) =>
     new Deno.Command(command.cmd, {
       args: command.args,
+      cwd: command.cwd,
       stdin: "inherit",
       stdout: "inherit",
       stderr: "inherit",

@@ -1,5 +1,5 @@
-import { chatCompletion, ModelConfig } from "./llm.ts";
-import { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
+import { chatCompletion, type ModelConfig } from "./llm.ts";
+import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
 
 /**
  * Uses an LLM judge to evaluate agent performance against a checklist.

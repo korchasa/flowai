@@ -6,14 +6,29 @@ import type { CommandSpec } from "./utils.ts";
  */
 export function buildCheckCommands(): CommandSpec[] {
   return [
+    // Bundle framework (generates cli/src/bundled.json + cli/src/_version.ts)
     {
       cmd: "deno",
-      args: ["fmt", "--check", "scripts", "deno.json"],
+      args: ["task", "bundle"],
     },
+    // Format
     {
       cmd: "deno",
-      args: ["lint", "scripts"],
+      args: [
+        "fmt",
+        "--check",
+        "scripts",
+        "cli/src",
+        "cli/scripts",
+        "deno.json",
+      ],
     },
+    // Lint
+    {
+      cmd: "deno",
+      args: ["lint", "scripts", "cli/src", "cli/scripts"],
+    },
+    // Tests: root scripts
     {
       cmd: "deno",
       args: [
@@ -23,6 +38,12 @@ export function buildCheckCommands(): CommandSpec[] {
         "scripts",
       ],
     },
+    // Tests: CLI
+    {
+      cmd: "deno",
+      args: ["test", "-A", "cli/src"],
+    },
+    // Skill/agent validation
     {
       cmd: "deno",
       args: ["run", "-A", "scripts/check-skills.ts"],

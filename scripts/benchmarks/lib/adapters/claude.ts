@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { AgentAdapter, ParsedAgentOutput } from "./types.ts";
-import { SessionUsage } from "../usage.ts";
+import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
+import type { SessionUsage } from "../usage.ts";
 
 interface ClaudeEvent {
   type?: string;

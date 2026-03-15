@@ -1,0 +1,55 @@
+import { assertEquals, assertRejects } from "@std/assert";
+import { InMemoryFsAdapter } from "./adapters/fs.ts";
+import { detectIDEs, resolveIDEs } from "./ide.ts";
+
+Deno.test("detectIDEs - detects cursor by .cursor/ dir", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.cursor");
+
+  const ides = await detectIDEs("/project", fs);
+  assertEquals(ides.length, 1);
+  assertEquals(ides[0].name, "cursor");
+});
+
+Deno.test("detectIDEs - detects multiple IDEs", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.cursor");
+  fs.dirs.add("/project/.claude");
+
+  const ides = await detectIDEs("/project", fs);
+  assertEquals(ides.length, 2);
+  const names = ides.map((i) => i.name).sort();
+  assertEquals(names, ["claude", "cursor"]);
+});
+
+Deno.test("detectIDEs - returns empty if no IDE dirs", async () => {
+  const fs = new InMemoryFsAdapter();
+  const ides = await detectIDEs("/project", fs);
+  assertEquals(ides.length, 0);
+});
+
+Deno.test("resolveIDEs - uses config ides when provided", async () => {
+  const fs = new InMemoryFsAdapter();
+  const ides = await resolveIDEs(["claude", "cursor"], "/project", fs);
+  assertEquals(ides.length, 2);
+  assertEquals(ides[0].name, "claude");
+  assertEquals(ides[1].name, "cursor");
+});
+
+Deno.test("resolveIDEs - falls back to auto-detect", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.opencode");
+
+  const ides = await resolveIDEs([], "/project", fs);
+  assertEquals(ides.length, 1);
+  assertEquals(ides[0].name, "opencode");
+});
+
+Deno.test("resolveIDEs - throws on unknown IDE", async () => {
+  const fs = new InMemoryFsAdapter();
+  await assertRejects(
+    () => resolveIDEs(["unknown"], "/project", fs),
+    Error,
+    "Unknown IDE: unknown",
+  );
+});

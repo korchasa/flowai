@@ -1,12 +1,12 @@
 import { dirname, fromFileUrl, join } from "@std/path";
-import { BenchmarkResult, BenchmarkScenario } from "./types.ts";
-import { chatCompletion, ModelConfig } from "./llm.ts";
+import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
+import type { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyRecursive } from "./utils.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
-import { AgentAdapter } from "./adapters/types.ts";
+import type { AgentAdapter } from "./adapters/types.ts";
 
 export interface RunnerOptions {
   agentModel: string;

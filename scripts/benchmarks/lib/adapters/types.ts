@@ -1,4 +1,4 @@
-import { SessionUsage } from "../usage.ts";
+import type { SessionUsage } from "../usage.ts";
 
 export interface AgentAdapter {
   /** IDE identifier */

@@ -12,7 +12,7 @@
 - **Overview diagram:**
   ```mermaid
   graph TD
-    Framework[framework/] -->|flow-cli install| Claude[.claude/]
+    Framework[framework/] -->|flow-cli cli/| Claude[.claude/]
     DevSkills[.claude/skills/ dev] -->|tracked in git| Claude
     Claude -->|skills, agents| IDE[Claude Code]
     IDE -->|Updates| Docs[documents/*.md]
@@ -35,7 +35,7 @@
 - **Structure:**
   - `.claude/skills/` — Dev skills (SKILL.md directories, tracked in git) + framework skills (installed by flow-cli)
   - `.claude/agents/` — Dev agents (tracked in git) + framework agents (installed by flow-cli)
-- **Distribution:** `.flow.yaml` configures flow-cli to install framework resources from remote into `.claude/`.
+- **Distribution:** flow-cli (`cli/`) installs framework resources from bundled source into `.claude/`.
 
 ### 3.1.1 Product Skills (`framework/skills/`)
 
@@ -131,15 +131,48 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   - **Interactive Flows**: `SimulatedUser` component handles multi-turn interactions by simulating user responses via LLM.
   - **Multi-Turn Benchmarking**: `SpawnedAgent` and `runner.ts` support automatic session resumption (`--resume`) when `SimulatedUser` provides input, enabling testing of complex interactive workflows.
 
-### 3.5 Global Framework Distribution — FR-10
+### 3.5 Global Framework Distribution — FR-10 (`cli/`)
 
-- **Purpose:** Install/update AssistFlow framework globally into IDE config dirs.
-- **Delegated to:** [flow-cli](https://github.com/korchasa/flow-cli) — external tool, linked as git submodule at `flow-cli/`.
-- **Responsibility boundary:**
-  - **flow (this repo):** Canonical source of truth for skills and agents. Stores one definition per resource with IDE-agnostic metadata.
-  - **flow-cli:** Knows each IDE's format requirements. Transforms canonical definitions into IDE-specific format, copies to config dirs, handles install/upgrade/validation.
-- **Canonical agent format:** `framework/agents/*.md` with `name` + `description` frontmatter. Body is the shared system prompt. No per-IDE subdirectories.
-- **Dev workflow:** flow-cli installs framework agents from remote into `.claude/agents/`.
+- **Purpose:** Install/update AssistFlow framework skills/agents into project-local IDE config dirs.
+- **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flow-cli`.
+- **Pattern:** Single-command CLI. Adapter pattern for FS isolation. Bundled source (no network at runtime).
+- **Diagram:**
+```mermaid
+graph TD
+    CLI[CLI Entry: flow] --> ConfigLoader
+    ConfigLoader -->|no .flow.yaml| ConfigGenerator[Interactive Config Gen]
+    ConfigLoader -->|has .flow.yaml| SyncEngine
+    ConfigGenerator --> SyncEngine
+    SyncEngine --> BundledSrc[BundledSource: bundled.json]
+    SyncEngine --> IdeDetector[IDE Detector]
+    SyncEngine --> PlanEngine[Plan Engine]
+    SyncEngine --> FileWriter[File Writer]
+    BundledSrc -->|file listing + content| Memory[In-Memory Files]
+    PlanEngine -->|create/update/conflict| FileWriter
+    FileWriter --> FS[Project FS]
+```
+- **Components:**
+  - `cli/src/cli.ts` — CLI entry, flags (`--yes`, `--skip-update-check`), @cliffy/command
+  - `cli/src/config.ts` — `.flow.yaml` parser/writer, validation (include/exclude mutual exclusivity)
+  - `cli/src/config_generator.ts` — interactive config creation via @cliffy/prompt
+  - `cli/src/source.ts` — `FrameworkSource` interface, `BundledSource` (reads `bundled.json`), `InMemoryFrameworkSource` (tests)
+  - `cli/src/sync.ts` — orchestrates: load bundle → filter skills/agents → compute plan → write files → symlinks
+  - `cli/src/plan.ts` — compares upstream vs local (create/ok/conflict classification)
+  - `cli/src/writer.ts` — writes plan items to IDE config dirs
+  - `cli/src/transform.ts` — transforms universal agent frontmatter into IDE-specific format
+  - `cli/src/ide.ts` — IDE detection by config dir presence
+  - `cli/src/symlinks.ts` — `CLAUDE.md -> AGENTS.md` symlinks (FR-10.4)
+  - `cli/src/version.ts` — self-update check against JSR registry (fail-open)
+  - `cli/src/adapters/fs.ts` — `FsAdapter` abstraction + `DenoFsAdapter` + `InMemoryFsAdapter`
+  - `cli/scripts/bundle-framework.ts` — generates `src/bundled.json` from `../framework/`
+- **Data entities:**
+  - `FlowConfig`: `{ version, ides, skills: {include, exclude}, agents: {include, exclude} }`
+  - `PlanItem`: `{ type: skill|agent, name, action: create|update|ok|conflict, sourcePath, targetPath, content }`
+- **Agent transformation rules** (per IDE):
+  - Claude: `name`, `description`, `tools`, `disallowedTools`
+  - Cursor: `name`, `description`, `readonly`
+  - OpenCode: `description`, `mode`; `opencode_tools` → `tools`
+- **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time. No build step for TS.
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11
 

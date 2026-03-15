@@ -2,7 +2,7 @@ export type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 export { CursorAdapter } from "./cursor.ts";
 export { ClaudeAdapter } from "./claude.ts";
 
-import { AgentAdapter } from "./types.ts";
+import type { AgentAdapter } from "./types.ts";
 import { CursorAdapter } from "./cursor.ts";
 import { ClaudeAdapter } from "./claude.ts";
 

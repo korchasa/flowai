@@ -1,5 +1,5 @@
-import { chatCompletion, ModelConfig } from "./llm.ts";
-import { LLMMessage } from "./types.ts";
+import { chatCompletion, type ModelConfig } from "./llm.ts";
+import type { LLMMessage } from "./types.ts";
 
 export interface UserEmulatorOptions {
   persona: string;

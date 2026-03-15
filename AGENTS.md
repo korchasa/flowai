@@ -57,11 +57,11 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Architecture
 - `framework/skills/`: Source of truth for product skills (logical Commands and Skills)
 - `framework/agents/`: Source of truth for product agents (universal format with all IDE fields)
-- `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flow-cli from remote.
+- `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flow-cli.
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
-- `flow-cli/`: Distribution tool for the framework. Separate project with its own release cycle, CLAUDE.md, tests, and CI/CD. Clones `framework/` from this repo and transforms resources (skills, agents) into IDE-specific formats. Changes to `framework/` may require updating flow-cli's transformation logic and tests.
-- `.flow.yaml`: flow-cli config for this project (claude only)
+- `cli/`: Distribution tool (flow-cli). Published to JSR as `@korchasa/flow-cli`. Bundles `framework/` into `cli/src/bundled.json` at publish time — zero network dependency. Uses root `deno.json` (single config). Has own tests and `CLAUDE.md`.
+- `.github/workflows/ci.yml`: Unified CI/CD — checks framework + CLI, publishes to JSR on main.
 
 ## Terminology (agentskills.io)
 

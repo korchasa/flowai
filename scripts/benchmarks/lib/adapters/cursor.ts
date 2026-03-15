@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { AgentAdapter, ParsedAgentOutput } from "./types.ts";
-import { calculateSessionUsage, SessionUsage } from "../usage.ts";
+import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
+import { calculateSessionUsage, type SessionUsage } from "../usage.ts";
 
 interface CursorAgentOutput {
   session_id?: string;

@@ -10,9 +10,16 @@
 import { dirname, join } from "@std/path";
 import { parse } from "@std/flags";
 import { existsSync, walk } from "@std/fs";
-import { BenchmarkResult, BenchmarkScenario } from "./benchmarks/lib/types.ts";
+import type {
+  BenchmarkResult,
+  BenchmarkScenario,
+} from "./benchmarks/lib/types.ts";
 import { runScenario } from "./benchmarks/lib/runner.ts";
-import { getIdeConfig, loadConfig, ModelConfig } from "./benchmarks/lib/llm.ts";
+import {
+  getIdeConfig,
+  loadConfig,
+  type ModelConfig,
+} from "./benchmarks/lib/llm.ts";
 import {
   createAdapter,
   SUPPORTED_IDES,

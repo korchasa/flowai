@@ -381,28 +381,74 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 - **Description:** Dev resources (skills, agents) stored directly in `.claude/skills/`
   and `.claude/agents/` (tracked in git). Framework resources installed by flow-cli
-  from remote via `.flow.yaml`.
+  (bundled source, `cli/` monorepo directory).
 - **Use case scenario:** Developer clones project, runs `flow sync`, and framework
   skills/agents are installed into `.claude/`. Dev resources already present from git.
 - **Acceptance criteria:**
   - [x] Dev skills in `.claude/skills/`, dev agents in `.claude/agents/` (tracked in git). Evidence:
         `.claude/skills/`, `.claude/agents/`
-  - [x] `.flow.yaml` configures flow-cli for claude-only installation. Evidence:
-        `.flow.yaml`
   - [x] `check-skills.ts` validates `.claude/skills/` (dev skills). Evidence:
         `scripts/check-skills.ts:308-311`
   - [x] `.cursor/` and `.opencode/` in `.gitignore` (no longer used). Evidence:
         `.gitignore`
   - [x] Post-clone setup documented in README. Evidence: `README.md`
 
-### 3.10 Global Framework Distribution (FR-10)
+### 3.10 Global Framework Distribution — flow-cli (FR-10)
 
-- **Status:** Delegated to [flow-cli](https://github.com/korchasa/flow-cli) (external tool, git submodule at `flow-cli/`).
-- **Description:** All distribution responsibilities (installing, upgrading, transforming
-  skills/agents for end-user IDEs) are handled by flow-cli. This repository stores
-  canonical resource definitions; flow-cli transforms and delivers them.
-- **Note:** This project uses flow-cli for framework resource installation (`.flow.yaml`).
-  Acceptance criteria tracked in the flow-cli repository.
+- **Description:** `flow` CLI tool (`cli/` monorepo directory, published to JSR as `@korchasa/flow-cli`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime).
+- **Def/Abbr:** CLI = flow-cli, BundledSource = JSON artifact with all framework files baked at publish time.
+
+#### FR-10.1 Sync Command (`flow`)
+- **Desc:** Single command `flow` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs.
+- **Scenario A (no config):** `flow` without `.flow.yaml` → interactive prompts (IDEs, skills/agents) → generates `.flow.yaml` → syncs.
+- **Scenario B (with config):** `flow` with `.flow.yaml` → disclaimer → sync. Bundled files compared with local. Unchanged silently, locally modified → prompt.
+- **Acceptance:**
+  - [x] Without `.flow.yaml` → interactive config generation → sync. Evidence: `cli/src/cli.ts:30-36`, `cli/src/config_generator.ts:20-100`
+  - [x] With `.flow.yaml` → disclaimer → sync. Evidence: `cli/src/cli.ts:39-56`, `cli/src/sync.ts:52-138`
+  - [x] Files read from `BundledSource` (bundled.json). Evidence: `cli/src/source.ts:12-50`, `cli/src/source_test.ts:7-42`
+  - [x] Skills written to `{ide_dir}/skills/{name}/`. Evidence: `cli/src/sync.ts:94-100`, `cli/src/main_test.ts:56-69`
+  - [x] Agents transformed per-IDE via `transformAgent()`. Evidence: `cli/src/sync.ts:108-136`, `cli/src/transform.ts:31-60`
+  - [x] Idempotent: safe on repeated runs. Evidence: `cli/src/plan.ts:17-30`
+  - [x] `--yes` / `-y` flag for non-interactive mode. Evidence: `cli/src/cli.ts:21-23`
+
+#### FR-10.2 Config Generation
+- **Desc:** Interactive `.flow.yaml` creation when config missing.
+- **Acceptance:**
+  - [x] Prompts: IDEs (auto-detected), skills include/exclude, agents include/exclude. Evidence: `cli/src/config_generator.ts:27-100`
+  - [x] Reads available skills/agents from BundledSource. Evidence: `cli/src/config_generator.ts:47-58`
+  - [x] Writes valid `.flow.yaml`. Evidence: `cli/src/config.ts:71-80`
+
+#### FR-10.3 Selective Sync
+- **Desc:** `.flow.yaml` controls which skills/agents to sync.
+- **Acceptance:**
+  - [x] Include/exclude filters for skills and agents. Evidence: `cli/src/sync.ts:186-191`, `cli/src/sync_test.ts:5-18`
+  - [x] Include + exclude mutually exclusive. Evidence: `cli/src/config.ts:55-65`
+
+#### FR-10.4 CLAUDE.md Symlinks
+- **Desc:** When `claude` IDE configured, create `CLAUDE.md -> AGENTS.md` symlinks wherever `AGENTS.md` exists.
+- **Acceptance:**
+  - [x] Scans project, creates/updates symlinks. Evidence: `cli/src/symlinks.ts:21-55`, `cli/src/symlinks_test.ts`
+  - [x] Skips existing regular files. Evidence: `cli/src/symlinks.ts:41-43`
+
+#### FR-10.5 IDE Auto-Detection
+- **Desc:** Detect IDEs by config dir presence (`.cursor/`, `.claude/`, `.opencode/`).
+- **Acceptance:**
+  - [x] Detects 3 IDEs. Evidence: `cli/src/types.ts:46-48`, `cli/src/ide_test.ts`
+  - [x] Used as default when `ides` not in `.flow.yaml`. Evidence: `cli/src/ide.ts:19-30`
+
+#### FR-10.6 Self-Update Check
+- **Desc:** Before sync, checks JSR for newer version. Fail-open (network errors ignored).
+- **Acceptance:**
+  - [x] Fetches JSR meta, compares semver. Evidence: `cli/src/version.ts:36-62`
+  - [x] `--skip-update-check` flag. Evidence: `cli/src/cli.ts:22-25`
+  - [x] 5s timeout, fail-open. Evidence: `cli/src/version.ts:9`, `cli/src/version_test.ts`
+
+#### FR-10.7 Bundled Source
+- **Desc:** Framework files bundled into `cli/src/bundled.json` at publish time. No network dependency during sync.
+- **Acceptance:**
+  - [x] `scripts/bundle-framework.ts` generates bundle from `../framework/`. Evidence: `cli/scripts/bundle-framework.ts`
+  - [x] `BundledSource` reads bundle. Evidence: `cli/src/source.ts:12-50`, `cli/src/source_test.ts:33-42`
+  - [x] Guard: `task-check.ts` runs bundle before tests. Evidence: `scripts/task-check.ts:10-13`
 
 ### 3.11 Conventional Commits — `agent` Type (FR-11)
 
@@ -901,7 +947,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Acceptance criteria:**
   - [x] **FR-21.6.1 Framework distribution**: Framework skills distributed
         from `framework/skills/` to IDE directories via flow-cli. See FR-10.
-        Evidence: `.flow.yaml`, `flow-cli/`
+        Evidence: `cli/`, `cli/src/sync.ts`
   - [x] **FR-21.6.2 Cross-IDE discovery**: Skills discoverable by IDEs via
         IDE-specific config dirs (e.g., `.claude/skills/`). flow-cli handles
         placement per IDE.

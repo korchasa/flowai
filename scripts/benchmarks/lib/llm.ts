@@ -1,4 +1,4 @@
-import { LLMMessage, LLMResponse } from "./types.ts";
+import type { LLMMessage, LLMResponse } from "./types.ts";
 import { load } from "@std/dotenv";
 
 export interface ModelConfig {

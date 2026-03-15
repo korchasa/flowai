@@ -11,7 +11,7 @@ import { join } from "@std/path";
 import { load } from "@std/dotenv";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { runScenario } from "./runner.ts";
-import { BenchmarkScenario } from "./types.ts";
+import type { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
 import { getIdeConfig, loadConfig } from "./llm.ts";
 import { createAdapter } from "./adapters/mod.ts";
