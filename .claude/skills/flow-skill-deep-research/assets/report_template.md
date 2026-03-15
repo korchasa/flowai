@@ -72,6 +72,7 @@ Each sub-agent saves to `_research_tmp/<slug>.md` using this structure:
 ## Accepted Sources
 
 ### [N] [Source Title]
+
 - URL: [url]
 - Date: [YYYY-MM-DD or "unknown"]
 - Why accepted: [one sentence matching acceptance criteria]
@@ -80,6 +81,7 @@ Each sub-agent saves to `_research_tmp/<slug>.md` using this structure:
   - [Fact 2]
 
 ### [N+1] [Source Title]
+
 ...
 
 ## Rejected Sources

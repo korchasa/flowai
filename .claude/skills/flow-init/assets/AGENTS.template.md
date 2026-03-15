@@ -21,21 +21,27 @@
 - ALWAYS USE RELATIVE PATHS IN COMMANDS WHEN POSSIBLE. ABSOLUTE PATHS ONLY WHEN REQUIRED BY THE TOOL OR CONTEXT.
 
 ---
+
 {{PROJECT_RULES}}
 
 ## Project Information
+
 - Project Name: {{PROJECT_NAME}}
 
 ## Project Vision
+
 {{PROJECT_VISION}}
 
 ## Project tooling Stack
+
 {{TOOLING_STACK}}
 
 ## Architecture
+
 {{ARCHITECTURE}}
 
 ## Key Decisions
+
 {{KEY_DECISIONS}}
 
 ## Planning Rules

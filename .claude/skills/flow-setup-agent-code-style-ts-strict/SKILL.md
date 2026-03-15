@@ -5,21 +5,25 @@ disable-model-invocation: true
 ---
 
 ## Purpose
+
 Integrates TypeScript strict mode coding standards into AGENTS.md.
 
 ## Prerequisites
+
 - AGENTS.md must exist in project root
 - Project uses TypeScript with strict mode
 
 ## Injection Location
+
 Add code style rules to AGENTS.md after the "Project tooling Stack" section, before "Architecture".
 
 ## Code Style Rules (to inject)
 
-```markdown
+````markdown
 ## Code Style (TypeScript Strict Mode)
 
 ### General Principles
+
 - NO FALLBACKS/HACKS WITHOUT EXPLICIT REQUEST. "FAIL FAST, FAIL CLEARLY."
 - USE TYPED CONSTANTS/ENUMS INSTEAD OF MAGIC NUMBERS/STRINGS
 - FUNCTIONS ≤100 LINES; BREAK COMPLEX LOGIC INTO HELPERS
@@ -31,6 +35,7 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 - CODE ORDER IN FILES: imports, constants, types, interfaces, classes, main, public functions, private functions, tests
 
 ### TypeScript
+
 - Strict mode (`strict: true`)
 - Interfaces > types for objects
 - Union types over enums for simple cases
@@ -47,21 +52,23 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 export async function fetchData(
   {
     url,
-    method = 'GET',
+    method = "GET",
     retries = 3,
     requestData,
   }: Readonly<{
     url: string;
-    method?: 'GET' | 'POST';
+    method?: "GET" | "POST";
     retries?: number;
     requestData: RequestData;
-  }>
+  }>,
 ): Promise<readonly ResponseData[]> {
   // ...
 }
 ```
+````
 
 ### Testing
+
 - Don't change prod code to pass tests
 - Unit tests for pure functions
 - Integration tests for interactions
@@ -71,7 +78,7 @@ export async function fetchData(
 - Target 60% coverage
 - Keep a test pyramid (~70% unit, ~25% integration, ≤5% e2e)
 - Behavior-first tests; avoid locking to internals
-- Co-locate tests next to source (*.test.ts); keep fixtures in __fixtures__
+- Co-locate tests next to source (*.test.ts); keep fixtures in **fixtures**
 - Fail fast on unhandledRejection/console.error
 - Deterministic time/IDs/randomness; no wall-clock dependencies
 - Use fake timers deliberately; avoid arbitrary sleeps
@@ -79,12 +86,14 @@ export async function fetchData(
 - Split unit/integration in CI; publish coverage reports
 
 ### File Organization
+
 - Feature-based folders
 - Separate concerns: services, adapters, utils, types, tests
 - Shallow structure (≤3 levels)
 - Consistent naming
 
 ### Documentation
+
 - TSDoc for public APIs (params, returns, exceptions, examples)
 - English comments only
 - Intent/invariants when code unclear; no redundant comments
@@ -92,21 +101,24 @@ export async function fetchData(
 - Updated READMEs; inline comments for non-obvious code
 
 ### Performance
+
 - Avoid synchronous heavy CPU on request path; offload to workers
 - Use caches for repeated computations where safe
 - Apply circuit breakers/timeouts for external I/O
 
 ### Security
+
 - Input validation/sanitization
 - Secure secrets via env vars; never hardcode tokens/keys
 - Avoid logging secrets/PII; scrub identifiers in error logs
 - Limit file sizes/types for uploads; scan where applicable
 - Keep dependencies updated regularly
-```
 
+```
 ## Workflow
 - [ ] Read project AGENTS.md
 - [ ] Locate "Architecture" section
 - [ ] Insert code style rules before "Architecture"
 - [ ] Verify proper markdown formatting
 - [ ] No duplicate sections
+```

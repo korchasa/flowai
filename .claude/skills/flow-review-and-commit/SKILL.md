@@ -145,6 +145,7 @@ the other.
 ### Verdict Gate
 
 After completing the review report above:
+
 - If verdict is `## Review: Approve` → proceed to Phase 2 below.
 - If verdict is `## Review: Request Changes` or `## Review: Needs Discussion`
   → output the full review report to the user and **STOP**. Do NOT proceed.
@@ -179,7 +180,7 @@ After completing the review report above:
      - Default: all changes = one commit.
      - Split only when changes serve different, unrelated purposes OR the user explicitly requested a split.
      - Documentation describing a code change goes in the same commit as that code.
-      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
+     - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
    - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
 5. **Commit Execution Loop**
    - **Iterate** through the planned groups:
@@ -192,6 +193,7 @@ After completing the review report above:
 ### Final Combined Report
 
 Output a combined summary:
+
 - **Review**: verdict + key findings (or "no issues found")
 - **Commit**: files committed, commit message(s)
 

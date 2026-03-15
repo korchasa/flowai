@@ -3,6 +3,7 @@
 Use `run-code` to execute arbitrary Playwright code for advanced scenarios.
 
 ## Syntax
+
 ```bash
 playwright-cli run-code "async page => {
   // Your Playwright code here
@@ -12,6 +13,7 @@ playwright-cli run-code "async page => {
 ## Common Scenarios
 
 ### Geolocation & Permissions
+
 ```bash
 playwright-cli run-code "async page => {
   await page.context().grantPermissions(['geolocation']);
@@ -20,6 +22,7 @@ playwright-cli run-code "async page => {
 ```
 
 ### Wait Strategies
+
 ```bash
 playwright-cli run-code "async page => {
   await page.waitForLoadState('networkidle');
@@ -28,6 +31,7 @@ playwright-cli run-code "async page => {
 ```
 
 ### Frames & Iframes
+
 ```bash
 playwright-cli run-code "async page => {
   const frame = page.locator('iframe#my-iframe').contentFrame();
@@ -36,6 +40,7 @@ playwright-cli run-code "async page => {
 ```
 
 ### File Downloads
+
 ```bash
 playwright-cli run-code "async page => {
   const [download] = await Promise.all([

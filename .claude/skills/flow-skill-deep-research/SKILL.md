@@ -10,11 +10,13 @@ Multi-stage research: plan → sequential search (with per-direction review) →
 ## Overview
 
 **Architecture:**
+
 1. **Planner** (main agent): decomposes topic into non-overlapping research directions, defines search criteria and acceptance criteria per direction
 2. **Worker sub-agents** (sequential, one per direction): search → evaluate sources → fetch full content → save to temp file; after each worker completes, main agent reviews output and decides whether to escalate before launching next worker
 3. **Synthesizer** (main agent): reads all temp files, merges findings, writes final report
 
 **Key invariants:**
+
 - Every factual claim in the report carries a `[N]` citation
 - FACT (from source) vs SYNTHESIS (agent's analysis) are always labeled separately
 - Contradictions between sources are reported, not suppressed
@@ -29,12 +31,12 @@ Multi-stage research: plan → sequential search (with per-direction review) →
 
 Before planning, detect the available search/fetch method. Try each in order, stop at first that works.
 
-| Priority | Method | Detection |
-|---|---|---|
-| 1 | Built-in search tool | Check tool list for `websearch` (OpenCode), `WebSearch` (Claude Code), or IDE-native search equivalent — **search must return URLs from a query, not just fetch a known URL** |
-| 2 | `playwright-cli` (headless) | Run `playwright-cli --version` via shell; success = available |
-| 3 | Playwright MCP | Check tool list for `browser_navigate` + `browser_snapshot` tools |
-| 4 | Other MCP search/fetch tools | Check tool list for any MCP tool that accepts a query string and returns results |
+| Priority | Method                       | Detection                                                                                                                                                                     |
+| -------- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1        | Built-in search tool         | Check tool list for `websearch` (OpenCode), `WebSearch` (Claude Code), or IDE-native search equivalent — **search must return URLs from a query, not just fetch a known URL** |
+| 2        | `playwright-cli` (headless)  | Run `playwright-cli --version` via shell; success = available                                                                                                                 |
+| 3        | Playwright MCP               | Check tool list for `browser_navigate` + `browser_snapshot` tools                                                                                                             |
+| 4        | Other MCP search/fetch tools | Check tool list for any MCP tool that accepts a query string and returns results                                                                                              |
 
 **Output of this phase** — two variables passed to every worker:
 
@@ -92,12 +94,14 @@ If no method is available: stop, report to user, do not proceed.
 Decompose the research topic into **3–6 non-overlapping directions**.
 
 For each direction, define:
+
 - `direction`: one-sentence description of what to investigate
 - `search_queries`: 3–5 query variations (broad + narrow + negation/criticism)
 - `acceptance_criteria`: what makes a source acceptable (see `deep-research-worker.md` for authority scores and recency defaults)
 - `output_file`: path like `_research_tmp/<slug>.md`
 
 Create the temp directory:
+
 ```
 _research_tmp/
 ```
@@ -105,6 +109,7 @@ _research_tmp/
 Output the plan as a markdown list before proceeding. Do not ask for approval — proceed automatically.
 
 **Example direction definition:**
+
 ```
 Direction: Current adoption rates and market data
 Queries:
@@ -136,12 +141,12 @@ search_instructions: |
 
 **After each worker completes**, the main agent reads `{output_file}` and evaluates:
 
-| Check | Pass condition |
-|---|---|
-| Accepted sources | ≥ 2 sources with authority score ≥ 3 |
-| Coverage | At least 1 fact per search query angle |
+| Check            | Pass condition                            |
+| ---------------- | ----------------------------------------- |
+| Accepted sources | ≥ 2 sources with authority score ≥ 3      |
+| Coverage         | At least 1 fact per search query angle    |
 | Confidence floor | ≥ 1 fact with confidence = high or medium |
-| No fabrication | All facts have traceable source URL |
+| No fabrication   | All facts have traceable source URL       |
 
 - **All checks pass** → launch next direction's worker.
 - **Any check fails** → run Phase 3 escalation for this direction first, then continue.
@@ -156,18 +161,19 @@ Triggered inline during Phase 2 when the main agent's post-worker review fails a
 
 **Direction quality score** — computed by main agent after reading each worker's output:
 
-| Metric | Weight | How to score |
-|---|---|---|
-| Accepted source count | 30% | 0 sources=0, 1=5, 2=8, 3+=10 |
-| Avg authority score of accepted sources | 30% | avg of per-source scores (1–5), scaled ×2 |
-| Confidence distribution | 20% | high=10, medium=6, low=2 (use best fact's confidence) |
-| Coverage of search angles | 20% | (angles with ≥1 fact) / (total angles) × 10 |
+| Metric                                  | Weight | How to score                                          |
+| --------------------------------------- | ------ | ----------------------------------------------------- |
+| Accepted source count                   | 30%    | 0 sources=0, 1=5, 2=8, 3+=10                          |
+| Avg authority score of accepted sources | 30%    | avg of per-source scores (1–5), scaled ×2             |
+| Confidence distribution                 | 20%    | high=10, medium=6, low=2 (use best fact's confidence) |
+| Coverage of search angles               | 20%    | (angles with ≥1 fact) / (total angles) × 10           |
 
 **Weighted total:** sum of (metric score × weight). Max = 10.
 
 **Escalation threshold:** direction score < 6.0
 
 **Escalation procedure:**
+
 1. Generate 3 alternative query formulations (different angle: synonym, negation, domain-specific)
 2. Spawn a retry worker with the same prompt template but new queries
 3. Re-score after retry
@@ -182,6 +188,7 @@ Read all `_research_tmp/*.md` files.
 Produce the final report using `assets/report_template.md`.
 
 **Synthesis rules:**
+
 - Group findings thematically, not by direction
 - Merge overlapping facts; note if sources agree or conflict
 - Label explicitly:
@@ -209,6 +216,7 @@ Produce the final report using `assets/report_template.md`.
 5. **Delete** `_research_tmp/` directory — only after step 2 passes.
 
 **Executive summary format:**
+
 ```
 Research complete: [topic]
 Key findings: [2–3 sentences]
@@ -221,12 +229,12 @@ Full report: [file path]
 
 ## Error Handling
 
-| Situation | Action |
-|---|---|
-| Sub-agent finds 0 accepted sources | Retry with 3 alternative queries; if still 0 → mark gap |
-| Sub-agent fails/crashes | Note in report; continue with remaining directions |
-| Contradictory sources on key fact | Report both sides; do NOT pick one silently |
-| Topic too broad to decompose | Split into sub-topics; cap at 6 directions total; workers MUST NOT spawn sub-workers |
+| Situation                          | Action                                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------------------ |
+| Sub-agent finds 0 accepted sources | Retry with 3 alternative queries; if still 0 → mark gap                              |
+| Sub-agent fails/crashes            | Note in report; continue with remaining directions                                   |
+| Contradictory sources on key fact  | Report both sides; do NOT pick one silently                                          |
+| Topic too broad to decompose       | Split into sub-topics; cap at 6 directions total; workers MUST NOT spawn sub-workers |
 
 ---
 

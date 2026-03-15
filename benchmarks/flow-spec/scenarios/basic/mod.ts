@@ -22,7 +22,8 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "goal_section",
-      description: "Does the spec contain a '## Goal' section with business value?",
+      description:
+        "Does the spec contain a '## Goal' section with business value?",
       critical: true,
     },
     {

@@ -1,6 +1,7 @@
 # Development Commands
 
 ## Standard Interface
+
 - `check` - The main command for comprehensive project verification. Performs the following steps:
   - build the project
   - comment-scan: "TODO", "FIXME", "HACK", "XXX", debugger calls, linters and formatters suppression
@@ -12,7 +13,9 @@
 - `prod` - Runs the application in production mode.
 
 ## Detected Commands
+
 {{DEVELOPMENT_COMMANDS}}
 
 ## Command Scripts
+
 {{COMMAND_SCRIPTS}}

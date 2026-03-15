@@ -5,13 +5,16 @@ disable-model-invocation: true
 ---
 
 ## Purpose
+
 Integrates TypeScript/Deno coding standards into AGENTS.md to maintain consistency.
 
 ## Prerequisites
+
 - AGENTS.md must exist in project root
 - Project uses Deno
 
 ## Injection Location
+
 Add code style rules to AGENTS.md after the "Project tooling Stack" section, before "Architecture".
 
 ## Code Style Rules (to inject)
@@ -20,12 +23,14 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 ## Code Style (Deno + TypeScript)
 
 ### Dependency Imports
+
 - Use bare specifiers for dependencies defined in deno.json/imports
 - Avoid direct jsr:/npm:/https: imports in source code
 - Example: `import { assertEquals } from "@std/assert";` instead of `import { assertEquals } from "jsr:@std/assert";`
 - **Exception:** Standalone scripts (e.g., in `framework/skills/*/scripts/`) that run without deno.json MUST use `jsr:` specifiers
 
 ### Dockerfile Optimization
+
 - Use `deno compile` to create static binaries for production Docker images
 - Implement multi-stage builds:
   - Compilation stage: `denoland/deno:latest`
@@ -36,6 +41,7 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 ```
 
 ## Workflow
+
 - [ ] Read project AGENTS.md
 - [ ] Locate "Architecture" section
 - [ ] Insert code style rules before "Architecture"

@@ -10,6 +10,7 @@ This skill ensures a standardized development interface using Deno tasks and scr
 ## Context
 
 This skill can be invoked:
+
 - **Standalone**: When a user wants to fix or update their Deno commands.
 - **From flow-init**: During project initialization to set up the standard interface.
 
@@ -34,7 +35,7 @@ The project must support these commands in `deno.json`:
 
 1. **Analyze**: Check existing `deno.json` and `scripts/`.
 2. **Scaffold Scripts**: Create `scripts/check.ts` if missing.
-   
+
    **check.ts Template**:
    ```typescript
    // scripts/check.ts
@@ -56,13 +57,13 @@ The project must support these commands in `deno.json`:
      .action(async () => {
        console.log("Running Formatting check...");
        await run("deno", ["fmt", "--check"]);
-       
+
        console.log("Running Linting...");
        await run("deno", ["lint"]);
-       
+
        console.log("Running Tests...");
        await run("deno", ["test", "-A"]);
-       
+
        console.log("Check passed successfully!");
      })
      .parse(Deno.args);
@@ -74,6 +75,7 @@ The project must support these commands in `deno.json`:
 ## Examples
 
 ### deno.json tasks
+
 ```json
 {
   "tasks": {

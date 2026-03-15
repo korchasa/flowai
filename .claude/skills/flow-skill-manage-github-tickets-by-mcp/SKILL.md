@@ -28,6 +28,7 @@ description: How to manage GitHub tickets via MCP tools using the GODS framework
 ## Where GODS Works Best
 
 Applicable when:
+
 - The goal of the task is clear.
 - The context is clearly described.
 - There are measurable criteria for completion.

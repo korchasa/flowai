@@ -77,14 +77,14 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      - Default: all changes = one commit.
      - Split only when changes serve different, unrelated purposes OR the user explicitly requested a split.
      - Documentation describing a code change goes in the same commit as that code.
-      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
+     - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
    - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
 5. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
-</step_by_step>
+        </step_by_step>
 
 ## Verification
 

@@ -25,12 +25,14 @@ playwright-cli close
 ## Core Commands
 
 ### Session & Navigation
+
 - `playwright-cli open [url] [--headed]` — Open browser (optional URL, use `--headed` for visible window)
 - `playwright-cli goto <url>` — Navigate to URL
 - `playwright-cli go-back` / `go-forward` / `reload`
 - `playwright-cli close` — Close current browser
 
 ### Interaction
+
 - `playwright-cli click <ref>` — Click element by snapshot reference
 - `playwright-cli fill <ref> <value>` — Fill form field
 - `playwright-cli type <text>` — Type text
@@ -40,6 +42,7 @@ playwright-cli close
 - `playwright-cli upload <path>` — Upload file
 
 ### Observation
+
 - `playwright-cli snapshot [--filename=...]` — Capture accessibility snapshot (preferred over screenshot)
 - `playwright-cli screenshot [<ref>] [--filename=...]` — Take screenshot
 - `playwright-cli eval <js>` — Evaluate JS on page

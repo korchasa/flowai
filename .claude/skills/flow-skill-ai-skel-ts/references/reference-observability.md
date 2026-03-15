@@ -86,12 +86,12 @@ settings: { timeout, temperature, ... }
 request:
   model: "chat://openai/gpt-4o"
   messages: [{ role, content }]
-  response_format: { type: "json_object" }  # if schema
+  response_format: { type: "json_object" } # if schema
 attempts:
   - attempt: 1
     timestamp: "{ISO}"
     response: { status, raw, parsed, steps? }
     stats: { duration, cost, tokens: { input, output, total } }
-  - attempt: 2                               # only on retry
+  - attempt: 2 # only on retry
     error: "Schema validation failed: ..."
 ```

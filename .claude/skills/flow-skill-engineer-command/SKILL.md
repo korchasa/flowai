@@ -25,11 +25,11 @@ Commands work across multiple IDEs. Before creating a command, determine the cur
 
 ### Command Paths by IDE
 
-| IDE | User Commands | Project Commands | Format |
-|-----|--------------|-----------------|--------|
-| **Cursor** | `~/.cursor/commands/*.md` | `.cursor/commands/*.md` | Markdown (free-form args) |
-| **Claude Code** | `~/.claude/commands/*.md` | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | Markdown + YAML frontmatter (`allowed-tools`, `argument-hint`, `description`, `model`) |
-| **OpenCode** | `~/.config/opencode/commands/*.md` | `.opencode/commands/*.md` | Markdown + YAML frontmatter (`description`, `agent`, `model`, `subtask`) |
+| IDE             | User Commands                      | Project Commands                                               | Format                                                                                 |
+| --------------- | ---------------------------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Cursor**      | `~/.cursor/commands/*.md`          | `.cursor/commands/*.md`                                        | Markdown (free-form args)                                                              |
+| **Claude Code** | `~/.claude/commands/*.md`          | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | Markdown + YAML frontmatter (`allowed-tools`, `argument-hint`, `description`, `model`) |
+| **OpenCode**    | `~/.config/opencode/commands/*.md` | `.opencode/commands/*.md`                                      | Markdown + YAML frontmatter (`description`, `agent`, `model`, `subtask`)               |
 
 > **Note**: Claude Code unifies commands and skills. `.claude/commands/` is the legacy path; `.claude/skills/` (SKILL.md format) is recommended for new commands.
 

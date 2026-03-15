@@ -305,7 +305,9 @@ function main(): void {
     console.error("  - Max 40 characters");
     console.error("  - Must match directory name exactly");
     console.error("\nOptions:");
-    console.error("  --skip-existing  Skip if directory already exists (exit 0)");
+    console.error(
+      "  --skip-existing  Skip if directory already exists (exit 0)",
+    );
     console.error("\nExamples:");
     console.error("  init_command.ts flow-new-command --path skills/public");
     console.error(

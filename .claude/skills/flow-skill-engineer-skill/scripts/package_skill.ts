@@ -114,7 +114,9 @@ async function main(): Promise<void> {
       "Usage: deno run --allow-read --allow-write scripts/package_skill.ts <path/to/skill-folder> [output-directory]",
     );
     console.error("\nExample:");
-    console.error("  deno run --allow-read --allow-write scripts/package_skill.ts .cursor/skills/code-review");
+    console.error(
+      "  deno run --allow-read --allow-write scripts/package_skill.ts .cursor/skills/code-review",
+    );
     console.error(
       "  deno run --allow-read --allow-write scripts/package_skill.ts .cursor/skills/code-review ./dist",
     );

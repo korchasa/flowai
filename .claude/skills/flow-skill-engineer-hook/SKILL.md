@@ -13,11 +13,11 @@ This skill helps design and implement event hooks (or plugins). Hooks allow inte
 
 ### Hook Paths by IDE
 
-| IDE | User Hooks | Project Hooks | Format |
-|-----|-----------|--------------|--------|
-| **Cursor** | `~/.cursor/hooks.json` | `.cursor/hooks.json` | JSON config + shell scripts |
-| **Claude Code** | `~/.claude/settings.json` | `.claude/settings.json`<br>`.claude/settings.local.json` | JSON config (4 hook types) |
-| **OpenCode** | `~/.config/opencode/plugins/*.{js,ts}` | `.opencode/plugins/*.{js,ts}`<br>`opencode.json` `plugin` (npm) | JS/TS modules (event-based) |
+| IDE             | User Hooks                             | Project Hooks                                                   | Format                      |
+| --------------- | -------------------------------------- | --------------------------------------------------------------- | --------------------------- |
+| **Cursor**      | `~/.cursor/hooks.json`                 | `.cursor/hooks.json`                                            | JSON config + shell scripts |
+| **Claude Code** | `~/.claude/settings.json`              | `.claude/settings.json`<br>`.claude/settings.local.json`        | JSON config (4 hook types)  |
+| **OpenCode**    | `~/.config/opencode/plugins/*.{js,ts}` | `.opencode/plugins/*.{js,ts}`<br>`opencode.json` `plugin` (npm) | JS/TS modules (event-based) |
 
 ### Detection Strategy
 
@@ -31,41 +31,41 @@ This skill helps design and implement event hooks (or plugins). Hooks allow inte
 
 ## Hook Type Availability Matrix
 
-| Type | Cursor | Claude Code | OpenCode |
-|------|--------|-------------|----------|
-| **Command** (shell script) | Yes | Yes | No (use plugin code) |
-| **Prompt** (LLM-evaluated) | Yes | Yes (8 events) | No |
-| **HTTP** (POST to URL) | No | Yes | No |
-| **Agent** (multi-turn subagent) | No | Yes (8 events) | No |
-| **Programmatic** (JS/TS code) | No | No | Yes |
+| Type                            | Cursor | Claude Code    | OpenCode             |
+| ------------------------------- | ------ | -------------- | -------------------- |
+| **Command** (shell script)      | Yes    | Yes            | No (use plugin code) |
+| **Prompt** (LLM-evaluated)      | Yes    | Yes (8 events) | No                   |
+| **HTTP** (POST to URL)          | No     | Yes            | No                   |
+| **Agent** (multi-turn subagent) | No     | Yes (8 events) | No                   |
+| **Programmatic** (JS/TS code)   | No     | No             | Yes                  |
 
 ## Cross-IDE Event Mapping
 
-| Cursor Event | Claude Code Event | OpenCode Equivalent |
-|:---|:---|:---|
-| `beforeShellExecution` | `PreToolUse` (matcher: `"Bash"`) | `tool.execute.before` |
-| `afterShellExecution` | `PostToolUse` (matcher: `"Bash"`) | `tool.execute.after` |
-| `preToolUse` | `PreToolUse` | `tool.execute.before` |
-| `postToolUse` | `PostToolUse` | `tool.execute.after` |
-| `postToolUseFailure` | `PostToolUseFailure` | `event` → `tool.execute.after` |
-| `sessionStart` | `SessionStart` | `event` → `session.created` |
-| `sessionEnd` | `SessionEnd` | `event` → `session.deleted` |
-| `subagentStart` | `SubagentStart` | — |
-| `subagentStop` | `SubagentStop` | — |
-| `stop` | `Stop` | `event` → `session.idle` |
-| `preCompact` | `PreCompact` | `experimental.session.compacting` |
-| `afterFileEdit` | `PostToolUse` (matcher: `"Edit\|Write"`) | `event` → `file.edited` |
-| `beforeSubmitPrompt` | `UserPromptSubmit` | `chat.message` |
-| `beforeMCPExecution` | `PreToolUse` (matcher: `"mcp__.*"`) | `tool.execute.before` |
-| `afterMCPExecution` | `PostToolUse` (matcher: `"mcp__.*"`) | `tool.execute.after` |
-| `beforeReadFile` | `PreToolUse` (matcher: `"Read"`) | `tool.execute.before` |
-| — | `PermissionRequest` | `permission.ask` |
-| — | `Notification` | `event` → various |
-| — | `TeammateIdle` | — |
-| — | `TaskCompleted` | `event` → `todo.updated` |
-| — | `ConfigChange` | — |
-| — | `InstructionsLoaded` | — |
-| — | `WorktreeCreate` / `WorktreeRemove` | — |
+| Cursor Event           | Claude Code Event                        | OpenCode Equivalent               |
+| :--------------------- | :--------------------------------------- | :-------------------------------- |
+| `beforeShellExecution` | `PreToolUse` (matcher: `"Bash"`)         | `tool.execute.before`             |
+| `afterShellExecution`  | `PostToolUse` (matcher: `"Bash"`)        | `tool.execute.after`              |
+| `preToolUse`           | `PreToolUse`                             | `tool.execute.before`             |
+| `postToolUse`          | `PostToolUse`                            | `tool.execute.after`              |
+| `postToolUseFailure`   | `PostToolUseFailure`                     | `event` → `tool.execute.after`    |
+| `sessionStart`         | `SessionStart`                           | `event` → `session.created`       |
+| `sessionEnd`           | `SessionEnd`                             | `event` → `session.deleted`       |
+| `subagentStart`        | `SubagentStart`                          | —                                 |
+| `subagentStop`         | `SubagentStop`                           | —                                 |
+| `stop`                 | `Stop`                                   | `event` → `session.idle`          |
+| `preCompact`           | `PreCompact`                             | `experimental.session.compacting` |
+| `afterFileEdit`        | `PostToolUse` (matcher: `"Edit\|Write"`) | `event` → `file.edited`           |
+| `beforeSubmitPrompt`   | `UserPromptSubmit`                       | `chat.message`                    |
+| `beforeMCPExecution`   | `PreToolUse` (matcher: `"mcp__.*"`)      | `tool.execute.before`             |
+| `afterMCPExecution`    | `PostToolUse` (matcher: `"mcp__.*"`)     | `tool.execute.after`              |
+| `beforeReadFile`       | `PreToolUse` (matcher: `"Read"`)         | `tool.execute.before`             |
+| —                      | `PermissionRequest`                      | `permission.ask`                  |
+| —                      | `Notification`                           | `event` → various                 |
+| —                      | `TeammateIdle`                           | —                                 |
+| —                      | `TaskCompleted`                          | `event` → `todo.updated`          |
+| —                      | `ConfigChange`                           | —                                 |
+| —                      | `InstructionsLoaded`                     | —                                 |
+| —                      | `WorktreeCreate` / `WorktreeRemove`      | —                                 |
 
 ## Main Workflow
 
@@ -112,6 +112,7 @@ For events list, input/output schemas, env vars, matcher values: see [hooks_api.
 ### Example: Blocking Dangerous Commands
 
 **guard.sh**:
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -168,6 +169,7 @@ For all 18 events, input/output schemas, env vars, exit code behavior per event:
 ### Example: Blocking Dangerous Commands
 
 **guard.sh** (same script works for both Cursor and Claude Code):
+
 ```bash
 #!/bin/bash
 input=$(cat)
@@ -187,19 +189,19 @@ JS/TS modules returning a `Hooks` object. No JSON config — all logic is code.
 ### Plugin Structure
 
 ```typescript
-import type { Plugin } from "@opencode-ai/plugin"
+import type { Plugin } from "@opencode-ai/plugin";
 
 export default (async ({ project, client, $, directory, worktree }) => {
   return {
     "tool.execute.before": async (input) => {
       // inspect/modify tool arguments
-      return input
+      return input;
     },
     event: async (event) => {
       // handle any system event
     },
-  }
-}) satisfies Plugin
+  };
+}) satisfies Plugin;
 ```
 
 ### Distribution
@@ -214,17 +216,20 @@ For all hooks, events, `tool()` helper, examples: see [opencode_plugins_api.md](
 ### Example: Blocking Dangerous Commands
 
 ```typescript
-import type { Plugin } from "@opencode-ai/plugin"
+import type { Plugin } from "@opencode-ai/plugin";
 
 export default (async ({ client }) => ({
   "tool.execute.before": async (input) => {
     if (input.tool === "bash" && input.args?.command?.includes("rm -rf")) {
-      client.app.log({ body: { level: "warn", message: "Blocked rm -rf" } })
-      return { ...input, args: { command: "echo 'Blocked: rm -rf not allowed'" } }
+      client.app.log({ body: { level: "warn", message: "Blocked rm -rf" } });
+      return {
+        ...input,
+        args: { command: "echo 'Blocked: rm -rf not allowed'" },
+      };
     }
-    return input
+    return input;
   },
-})) satisfies Plugin
+})) satisfies Plugin;
 ```
 
 ## Resources

@@ -69,6 +69,7 @@ Generate modules in this order (each depends only on previously generated ones):
 ### Step 3: Add Tests
 
 For each module, generate at minimum:
+
 - Unit tests with mocked dependencies
 - One integration-style test with real interfaces (but mocked HTTP/LLM)
 
@@ -87,6 +88,7 @@ Each module below includes: purpose, key interfaces, algorithm, and critical imp
 **Purpose**: Structured logging with levels, context, and timestamps.
 
 **Interface**:
+
 - Constructor: `(context: string, logLevel: "debug"|"info"|"warn"|"error")`
 - Methods: `debug(msg, meta?)`, `info(msg, meta?)`, `warn(msg, meta?)`, `error(msg, error?)`
 - Factory: `createFromLevelString(context, levelString)` — validates level, warns and falls back to "debug"
@@ -104,6 +106,7 @@ Reference: [reference-observability.md](references/reference-observability.md)
 **Purpose**: Accumulate LLM token usage and costs across requests.
 
 **Interface**:
+
 - `addCost(cost: number)` — adds USD cost, increments request counter
 - `addTokens(inputTokens, outputTokens)` — accumulates token counts
 - `getReport()` → `{totalCost, totalInputTokens, totalOutputTokens, totalTokens, requestCount}`
@@ -121,17 +124,20 @@ Reference: [reference-observability.md](references/reference-observability.md)
 **Purpose**: Immutable execution context with unique run ID and debug artifact management.
 
 **Interface**:
+
 - `RunContext { runId, debugDir, logger, startTime, saveDebugFile() }`
 - Factory: `createRunContext(logger, debugDir, runId?)` — auto-generates reverse-sortable ID if not provided
 - `getSubDebugDir(ctx, stageDir)` — returns subdirectory path for a stage
 - `safeSanitize(obj)` — recursively handles Error, Buffer, circular refs for serialization
 
 **Critical algorithm** — Reverse-sortable Run ID:
+
 ```
 maxMs = Date.UTC(9999, 11, 31, 23, 59, 59, 999)
 reversedMs = maxMs - Date.now()
 runId = toISO(reversedMs) + microSequence
 ```
+
 This makes newest runs sort first in file listings.
 
 Reference: [reference-core.md](references/reference-core.md)
@@ -145,12 +151,14 @@ Reference: [reference-core.md](references/reference-core.md)
 **This is the most complex module.** Read [reference-core.md](references/reference-core.md) carefully.
 
 **Interface**:
+
 - `ModelURI` — parses `protocol://provider/model?params` (e.g., `chat://openai/gpt-4o?timeout=60000`)
 - `createLlmRequester(modelUri, logger, costTracker, ctx)` → requester function
 - Requester function: `(messages, identifier, schema?, tools?, maxSteps?, stageName, settings?) → GenerateResult`
 - `GenerateResult { result, text, toolCalls, toolResults, newMessages, steps, estimatedCost, inputTokens, outputTokens, validationError?, rawResponse? }`
 
 **Core algorithm** (retry loop with self-correction):
+
 ```
 parse URI → create provider instance → return requester function
 
@@ -181,6 +189,7 @@ requester(messages, schema, tools, ...):
 ```
 
 **Key details**:
+
 - API key resolution: URI param > environment variable (`{PROVIDER}_API_KEY`)
 - AbortController.abort() must be wrapped in try-catch (listeners can throw)
 - Mask apiKey in URI toString() for logging
@@ -195,11 +204,13 @@ Reference: [reference-core.md](references/reference-core.md)
 **Purpose**: Manage conversation context window by trimming or summarizing history.
 
 **Interface**:
+
 - `HistoryCompactor { compact(messages) → messages, estimateSymbols(message) → number }`
 - `SimpleHistoryCompactor(maxSymbols)` — trims oldest messages
 - `SummarizingHistoryCompactor(maxSymbols, summaryTokenThreshold, summaryGenerator)` — LLM-powered
 
 **Algorithm** (SimpleHistoryCompactor):
+
 ```
 trimBySymbolLimit:
   iterate messages from newest to oldest
@@ -213,6 +224,7 @@ ensureToolConsistency:
 ```
 
 **Algorithm** (SummarizingHistoryCompactor):
+
 ```
 estimate token count (symbols / 4)
 if under threshold → delegate to SimpleHistoryCompactor
@@ -234,11 +246,13 @@ Reference: [reference-session.md](references/reference-session.md)
 **Purpose**: Bridge between Model Context Protocol servers and the LLM tool interface.
 
 **Interface**:
+
 - `McpClientWrapper(config, logger, name)` — config is either `{type:"stdio", command, args}` or `{type:"sse", url}`
 - `connect()` / `disconnect()` — lifecycle management
 - `getTools()` → `Record<string, Tool>` — discovers and converts tools
 
 **Key details**:
+
 - Tool namespacing: prefix tool names with server name (`serverName__toolName`) to prevent collisions
 - Tool conversion: MCP JSON Schema → LLM SDK Tool format (use `jsonSchema()` helper if available)
 - Execute: call MCP `tools/call`, extract text content from response parts
@@ -252,6 +266,7 @@ Reference: [reference-session.md](references/reference-session.md)
 **Purpose**: Stateful conversation runner with tool integration and history management.
 
 **Interface**:
+
 - `Agent(llm, mcpClients?, ctx, systemPrompt?, compactor?, tools?)`
 - `init()` — connects MCP clients, aggregates all tools
 - `run(input)` → `GenerateResult` — full access to results
@@ -259,6 +274,7 @@ Reference: [reference-session.md](references/reference-session.md)
 - `getHistory()` → messages array
 
 **Algorithm**:
+
 ```
 constructor:
   store params
@@ -301,16 +317,16 @@ Reference: [reference-fetchers.md](references/reference-fetchers.md)
 
 When adapting patterns to a target language:
 
-| Concept | TypeScript | Python | Go | Rust |
-|---------|-----------|--------|-----|------|
-| Interfaces | `interface` / `type` | `Protocol` / `ABC` | `interface` | `trait` |
-| Generics | `<T>` | `Generic[T]` | `[T any]` | `<T>` |
-| Async | `async/await` | `async/await` | goroutines/channels | `async/await` |
-| Error handling | try/catch + types | try/except + types | error return | Result<T, E> |
-| Dependency injection | constructor params | constructor / `__init__` | struct fields | struct fields |
-| Singleton | static instance | module-level / `__new__` | `sync.Once` | `once_cell::Lazy` |
-| Schema validation | Zod | Pydantic | struct tags + validator | serde + validator |
-| URI parsing | `URL` class | `urllib.parse` | `net/url` | `url` crate |
+| Concept              | TypeScript           | Python                   | Go                      | Rust              |
+| -------------------- | -------------------- | ------------------------ | ----------------------- | ----------------- |
+| Interfaces           | `interface` / `type` | `Protocol` / `ABC`       | `interface`             | `trait`           |
+| Generics             | `<T>`                | `Generic[T]`             | `[T any]`               | `<T>`             |
+| Async                | `async/await`        | `async/await`            | goroutines/channels     | `async/await`     |
+| Error handling       | try/catch + types    | try/except + types       | error return            | Result<T, E>      |
+| Dependency injection | constructor params   | constructor / `__init__` | struct fields           | struct fields     |
+| Singleton            | static instance      | module-level / `__new__` | `sync.Once`             | `once_cell::Lazy` |
+| Schema validation    | Zod                  | Pydantic                 | struct tags + validator | serde + validator |
+| URI parsing          | `URL` class          | `urllib.parse`           | `net/url`               | `url` crate       |
 
 ## File Organization
 

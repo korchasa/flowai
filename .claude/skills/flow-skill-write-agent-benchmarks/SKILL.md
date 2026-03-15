@@ -15,7 +15,7 @@ This skill defines a universal, language-agnostic standard for benchmarking Auto
    - **Bad**: The agent says "I fixed the bug." -> Judge believes it.
    - **Good**: The agent says "I fixed the bug." -> Judge runs the test suite in the environment and verifies the exit code is 0.
 2. **Strict Isolation**: Test run MUST execute in a completely isolated environment (Docker, VM, etc.). This ensures a clean, reproducible state and prevents side effects.
-3. **Black Box Protocol**: The benchmark knows *nothing* about the agent's internals (prompts, tools, language). It only observes:
+3. **Black Box Protocol**: The benchmark knows _nothing_ about the agent's internals (prompts, tools, language). It only observes:
    - **Input**: User Query + Environment State.
    - **Output**: New Environment State + Response Text.
 4. **Determinism**: Benchmarks should be reproducible. Mock external network calls where possible and use fixed seeds.
@@ -46,14 +46,16 @@ The system supports three primary evaluation modes:
 Choosing the right interaction strategy is critical for stable benchmarks.
 
 ### 3.1 Atomic Request Verification (Step-by-Step)
+
 - **Method**: Send a single input, wait for output, verify immediately.
 - **Best for**: Stateless APIs, simple function calling agents, or deterministic workflows where the agent's path is fixed.
 - **Limitation**: Fails with autonomous agents that might "think" for 3 steps before acting. If you expect a file write on Step 1, but the agent does it on Step 2, the test fails falsely.
 
 ### 3.2 User Emulation (End-to-End Session)
+
 - **Method**: The Runner starts a session and acts as a **Simulated User**. It observes the agent's loop without interfering until the agent signals completion or asks for input.
 - **Best for**: Autonomous agents, complex problem solvers, and chat-based assistants.
-- **Reasoning**: In an autonomous loop, we cannot predict *when* the agent will perform the target action (e.g., writing a file). It might first explore, then plan, then act.
+- **Reasoning**: In an autonomous loop, we cannot predict _when_ the agent will perform the target action (e.g., writing a file). It might first explore, then plan, then act.
 - **Protocol**: The Runner waits for the agent to say "I'm done" or "I need X", providing replies via the Simulated User persona, and only verifies the final state after the session ends.
 
 ## 4. Architecture & Requirements
@@ -75,9 +77,9 @@ The isolated state container where the task is performed. It is not limited to a
 The central controller managing the test lifecycle.
 
 - **Interface Adapters**: Adapts the Agent's native output to the Environment.
-  - *Shell Adapter*: Executes bash commands.
-  - *SQL Adapter*: Executes SQL queries against the Data Context.
-  - *HTTP Adapter*: Sends requests to the Network Context.
+  - _Shell Adapter_: Executes bash commands.
+  - _SQL Adapter_: Executes SQL queries against the Data Context.
+  - _HTTP Adapter_: Sends requests to the Network Context.
 - **Concurrency**: Should run multiple scenarios in parallel.
 
 ### 4.3 The Simulated User (Persona)
@@ -146,8 +148,8 @@ Add the scenario to your Runner's registry.
 1. **Init**: Runner prepares the Environment (Docker, DB, Mocks).
 2. **Seed**: Runner executes Scenario Setup.
 3. **Act**: Agent runs in the environment.
-   - *Interactive Loop*: Agent <-> Simulated User.
-   - *Command Loop*: Agent <-> Environment (Shell/API).
+   - _Interactive Loop_: Agent <-> Simulated User.
+   - _Command Loop_: Agent <-> Environment (Shell/API).
 4. **Stop**: Agent signals completion or timeout.
 5. **Evidence**: Runner collects state diffs (git, DB dump) and logs.
 6. **Judge**: Runner passes Evidence to the Judge.

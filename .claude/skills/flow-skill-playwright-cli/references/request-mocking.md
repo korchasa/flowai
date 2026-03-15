@@ -28,6 +28,7 @@ playwright-cli unroute
 ## Advanced Mocking with run-code
 
 ### Conditional Response
+
 ```bash
 playwright-cli run-code "async page => {
   await page.route('**/api/login', route => {
@@ -42,6 +43,7 @@ playwright-cli run-code "async page => {
 ```
 
 ### Modify Real Response
+
 ```bash
 playwright-cli run-code "async page => {
   await page.route('**/api/user', async route => {

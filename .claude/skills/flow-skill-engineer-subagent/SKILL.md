@@ -10,6 +10,7 @@ This skill guides through creating effective Subagents — custom agent definiti
 ## About Subagents
 
 Subagents are specialized AI assistants that extend agent capabilities with:
+
 1. **Focused behavior** — custom system prompts for specific domains or tasks
 2. **Context isolation** — separate conversations that preserve your main context
 3. **Reusable configurations** — shareable agent definitions across projects or users
@@ -20,18 +21,18 @@ Subagents work across multiple IDEs. Before creating a subagent, determine the c
 
 ### Control Primitives Map by IDE
 
-| Primitive | Scope | Cursor | Claude Code | OpenCode |
-| :--- | :--- | :--- | :--- | :--- |
-| **Custom Agents (Subagents)** | User | `~/.cursor/agents/*.md` | `~/.claude/agents/*.md` | `~/.config/opencode/agents/*.md` |
-| | Project | `.cursor/agents/*.md` | `.claude/agents/*.md` | `.opencode/agents/*.md` |
+| Primitive                     | Scope   | Cursor                  | Claude Code             | OpenCode                         |
+| :---------------------------- | :------ | :---------------------- | :---------------------- | :------------------------------- |
+| **Custom Agents (Subagents)** | User    | `~/.cursor/agents/*.md` | `~/.claude/agents/*.md` | `~/.config/opencode/agents/*.md` |
+|                               | Project | `.cursor/agents/*.md`   | `.claude/agents/*.md`   | `.opencode/agents/*.md`          |
 
 ### Subagent-Specific Paths
 
-| IDE | Personal Subagents | Project Subagents |
-|-----|-------------------|-------------------|
-| **Cursor** | `~/.cursor/agents/*.md` | `.cursor/agents/*.md` |
-| **Claude Code** | `~/.claude/agents/*.md` | `.claude/agents/*.md` |
-| **OpenCode** | `~/.config/opencode/agents/*.md` | `.opencode/agents/*.md` |
+| IDE             | Personal Subagents               | Project Subagents       |
+| --------------- | -------------------------------- | ----------------------- |
+| **Cursor**      | `~/.cursor/agents/*.md`          | `.cursor/agents/*.md`   |
+| **Claude Code** | `~/.claude/agents/*.md`          | `.claude/agents/*.md`   |
+| **OpenCode**    | `~/.config/opencode/agents/*.md` | `.opencode/agents/*.md` |
 
 ### Detection Strategy
 
@@ -57,11 +58,11 @@ Each subagent should excel at **one specific task**.
 
 The description determines when the main agent delegates to this subagent.
 
-| Freedom Level | When to Use | Example |
-|---------------|-------------|---------|
-| **High** (manual) | User explicitly requests | "Use the data-analyst to..." |
-| **Medium** (suggested) | Agent suggests based on context | "Consider using debugger for errors" |
-| **Low** (proactive) | Automatic delegation on pattern match | "Use code-reviewer after code changes" |
+| Freedom Level          | When to Use                           | Example                                |
+| ---------------------- | ------------------------------------- | -------------------------------------- |
+| **High** (manual)      | User explicitly requests              | "Use the data-analyst to..."           |
+| **Medium** (suggested) | Agent suggests based on context       | "Consider using debugger for errors"   |
+| **Low** (proactive)    | Automatic delegation on pattern match | "Use code-reviewer after code changes" |
 
 ### Anatomy of a Subagent
 
@@ -88,12 +89,12 @@ readonly: false
 
 #### Cursor Additional Fields
 
-| Field        | Description                                      | Default                    |
-|-------------|---------------------------------------------------|----------------------------|
-| `name`      | Agent name                                       | Required                   |
-| `description` | Task description and role definition            | Required                   |
-| `model`     | Suggested model (`inherit`, `fast`, `slow`, or model ID) | Inherits from conversation |
-| `readonly`  | If `true`, restricts agent to read-only tools (no file edits, shell writes) | `false` |
+| Field         | Description                                                                 | Default                    |
+| ------------- | --------------------------------------------------------------------------- | -------------------------- |
+| `name`        | Agent name                                                                  | Required                   |
+| `description` | Task description and role definition                                        | Required                   |
+| `model`       | Suggested model (`inherit`, `fast`, `slow`, or model ID)                    | Inherits from conversation |
+| `readonly`    | If `true`, restricts agent to read-only tools (no file edits, shell writes) | `false`                    |
 
 #### OpenCode Format
 
@@ -109,18 +110,18 @@ permission: auto
 
 #### OpenCode Additional Fields
 
-| Field | Description | Default |
-|-------|-------------|---------|
-| `mode` | `primary` / `subagent` / `all` | `subagent` |
-| `model` | Specific model string | Inherits from conversation |
-| `temperature` | Creativity (0.0-2.0) | Inherits |
-| `top_p` | Nucleus sampling (0.0-1.0) | Inherits |
-| `steps` | Max reasoning steps | Inherits |
-| `tools` | Allowed tools | Inherits |
-| `permission` | `auto` / `ask` / `none` | Inherits |
-| `color` | UI color code | Inherited |
-| `hidden` | Hide from UI | `false` |
-| `disable` | Disable subagent | `false` |
+| Field         | Description                    | Default                    |
+| ------------- | ------------------------------ | -------------------------- |
+| `mode`        | `primary` / `subagent` / `all` | `subagent`                 |
+| `model`       | Specific model string          | Inherits from conversation |
+| `temperature` | Creativity (0.0-2.0)           | Inherits                   |
+| `top_p`       | Nucleus sampling (0.0-1.0)     | Inherits                   |
+| `steps`       | Max reasoning steps            | Inherits                   |
+| `tools`       | Allowed tools                  | Inherits                   |
+| `permission`  | `auto` / `ask` / `none`        | Inherits                   |
+| `color`       | UI color code                  | Inherited                  |
+| `hidden`      | Hide from UI                   | `false`                    |
+| `disable`     | Disable subagent               | `false`                    |
 
 ## Writing Effective Descriptions
 
@@ -168,11 +169,13 @@ description: Expert code review specialist. Proactively reviews code for quality
 You are a senior code reviewer ensuring high standards of code quality and security.
 
 When invoked:
+
 1. Run git diff to see recent changes
 2. Focus on modified files
 3. Begin review immediately
 
 Review checklist:
+
 - Code is clear and readable
 - Functions and variables are well-named
 - No duplicated code
@@ -183,6 +186,7 @@ Review checklist:
 - Performance considerations addressed
 
 Provide feedback organized by priority:
+
 - Critical issues (must fix)
 - Warnings (should fix)
 - Suggestions (consider improving)
@@ -201,6 +205,7 @@ description: Debugging specialist for errors, test failures, and unexpected beha
 You are an expert debugger specializing in root cause analysis.
 
 When invoked:
+
 1. Capture error message and stack trace
 2. Identify reproduction steps
 3. Isolate the failure location
@@ -208,6 +213,7 @@ When invoked:
 5. Verify solution works
 
 Debugging process:
+
 - Analyze error messages and logs
 - Check recent code changes
 - Form and test hypotheses
@@ -215,6 +221,7 @@ Debugging process:
 - Inspect variable states
 
 For each issue, provide:
+
 - Root cause explanation
 - Evidence supporting the diagnosis
 - Specific code fix
@@ -235,6 +242,7 @@ description: Data analysis expert for SQL queries, BigQuery operations, and data
 You are a data scientist specializing in SQL and BigQuery analysis.
 
 When invoked:
+
 1. Understand the data analysis requirement
 2. Write efficient SQL queries
 3. Use BigQuery command line tools (bq) when appropriate
@@ -242,6 +250,7 @@ When invoked:
 5. Present findings clearly
 
 Key practices:
+
 - Write optimized SQL queries with proper filters
 - Use appropriate aggregations and joins
 - Include comments explaining complex logic
@@ -249,6 +258,7 @@ Key practices:
 - Provide data-driven recommendations
 
 For each analysis:
+
 - Explain the query approach
 - Document any assumptions
 - Highlight key findings
@@ -268,6 +278,7 @@ description: Technical documentation expert for API docs, README files, and inli
 You are a technical documentation specialist focused on clarity and completeness.
 
 When invoked:
+
 1. Understand the code or feature being documented
 2. Identify target audience (developers, users, etc.)
 3. Structure documentation logically
@@ -275,6 +286,7 @@ When invoked:
 5. Include examples and use cases
 
 Documentation principles:
+
 - Start with user's goal, not implementation
 - Provide concrete examples
 - Keep explanations simple and direct
@@ -282,6 +294,7 @@ Documentation principles:
 - Link to related topics
 
 For each documentation piece:
+
 - Overview (what and why)
 - Quick start (minimal example)
 - Reference (detailed parameters)
@@ -294,6 +307,7 @@ For each documentation piece:
 ### Phase 1: Discovery
 
 Gather from user:
+
 1. Purpose and primary use case
 2. Target IDE and storage location (personal vs project)
 3. Delegation behavior (proactive, suggested, or manual)
@@ -347,6 +361,7 @@ Test the subagent:
 ```
 
 Checklist:
+
 - [ ] Description is specific, includes trigger terms, WHAT + WHEN
 - [ ] Written in third person
 - [ ] Consistent terminology
@@ -382,13 +397,13 @@ Checklist:
 
 ## Comparison with Skills
 
-| Aspect | Skills | Subagents |
-|--------|--------|-----------|
-| **Purpose** | Teach agent how to do something | Define a specialized assistant |
-| **Format** | Directory with `SKILL.md` | Single `.md` file |
-| **Context** | Loaded as reference when triggered | Isolated conversation context |
-| **Use case** | Reusable workflows and patterns | Specialized behavior or domain expertise |
-| **Scope** | Procedural knowledge | Behavioral specialization |
+| Aspect       | Skills                             | Subagents                                |
+| ------------ | ---------------------------------- | ---------------------------------------- |
+| **Purpose**  | Teach agent how to do something    | Define a specialized assistant           |
+| **Format**   | Directory with `SKILL.md`          | Single `.md` file                        |
+| **Context**  | Loaded as reference when triggered | Isolated conversation context            |
+| **Use case** | Reusable workflows and patterns    | Specialized behavior or domain expertise |
+| **Scope**    | Procedural knowledge               | Behavioral specialization                |
 
 Choose **Skills** when you want to extend the main agent's capabilities with new workflows or knowledge.
 

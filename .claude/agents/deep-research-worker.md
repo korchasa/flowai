@@ -1,8 +1,8 @@
 ---
 name: deep-research-worker
-description: 'Research worker for a single direction within a deep research task. Receives a direction, queries, and acceptance criteria; searches the web, evaluates sources, extracts facts, and saves structured output to a temp file. Spawned sequentially by the flow-skill-deep-research orchestrator — do NOT invoke directly for general research.'
-tools: 'Read, Grep, Glob, Bash, WebFetch, WebSearch'
-disallowedTools: 'Write, Edit'
+description: "Research worker for a single direction within a deep research task. Receives a direction, queries, and acceptance criteria; searches the web, evaluates sources, extracts facts, and saves structured output to a temp file. Spawned sequentially by the flow-skill-deep-research orchestrator — do NOT invoke directly for general research."
+tools: "Read, Grep, Glob, Bash, WebFetch, WebSearch"
+disallowedTools: "Write, Edit"
 ---
 
 You are a focused research worker. You execute one research direction and save results to a file. You do NOT spawn sub-agents.

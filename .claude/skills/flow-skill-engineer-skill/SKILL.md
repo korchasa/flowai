@@ -23,30 +23,30 @@ Skills work across multiple IDEs. Before creating a skill, determine the current
 
 ### Control Primitives Map by IDE
 
-| Primitive | Scope | Claude Code | Cursor | OpenCode |
-| :--- | :--- | :--- | :--- | :--- |
-| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | - | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
-| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
-| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | `subdir/AGENTS.md` | - |
-| **Conditional Instructions** | Project | `.claude/rules/*.md` | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `opencode.json` `instructions` (globs) |
-| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.cursor/commands/*.md` | `~/.config/opencode/commands/*.md` |
-| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md` | `.opencode/commands/*.md` |
-| **Skills** | User | `~/.claude/skills/<name>/` | `~/.cursor/skills/<name>/` | `~/.config/opencode/skills/<name>/`<br>`~/.claude/skills/<name>/` (fallback) |
-| | Project | `.claude/skills/<name>/` | `.cursor/skills/<name>/` | `.opencode/skills/<name>/`<br>`.claude/skills/<name>/` (fallback) |
-| **Event Hooks** | User | `~/.claude/settings.json` | `~/.cursor/hooks.json` | `~/.config/opencode/plugins/*.{js,ts}` |
-| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | `.cursor/hooks.json` | `.opencode/plugins/*.{js,ts}` |
-| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | `~/.cursor/mcp.json` | `opencode.json` `mcp` |
-| | Project | `.mcp.json` | `.cursor/mcp.json` | `opencode.json` `mcp` |
-| **Context Ignoring** | User | `.claude/settings.json` | - | - |
-| | Project | - | `.cursorignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
+| Primitive                    | Scope   | Claude Code                                                    | Cursor                                                                | OpenCode                                                                     |
+| :--------------------------- | :------ | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| **Persistent Instructions**  | User    | `~/.claude/CLAUDE.md`                                          | -                                                                     | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback)           |
+|                              | Project | `CLAUDE.md`<br>`.claude/rules/*.md`                            | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions`      |
+|                              | Folder  | `subdir/CLAUDE.md`<br>`CLAUDE.local.md`                        | `subdir/AGENTS.md`                                                    | -                                                                            |
+| **Conditional Instructions** | Project | `.claude/rules/*.md`                                           | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~                | `opencode.json` `instructions` (globs)                                       |
+| **Custom Commands**          | User    | `~/.claude/commands/*.md`                                      | `~/.cursor/commands/*.md`                                             | `~/.config/opencode/commands/*.md`                                           |
+|                              | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md`                                               | `.opencode/commands/*.md`                                                    |
+| **Skills**                   | User    | `~/.claude/skills/<name>/`                                     | `~/.cursor/skills/<name>/`                                            | `~/.config/opencode/skills/<name>/`<br>`~/.claude/skills/<name>/` (fallback) |
+|                              | Project | `.claude/skills/<name>/`                                       | `.cursor/skills/<name>/`                                              | `.opencode/skills/<name>/`<br>`.claude/skills/<name>/` (fallback)            |
+| **Event Hooks**              | User    | `~/.claude/settings.json`                                      | `~/.cursor/hooks.json`                                                | `~/.config/opencode/plugins/*.{js,ts}`                                       |
+|                              | Project | `.claude/settings.json`<br>`.claude/settings.local.json`       | `.cursor/hooks.json`                                                  | `.opencode/plugins/*.{js,ts}`                                                |
+| **MCP Integration**          | User    | `settings.json`<br>`managed-mcp.json`                          | `~/.cursor/mcp.json`                                                  | `opencode.json` `mcp`                                                        |
+|                              | Project | `.mcp.json`                                                    | `.cursor/mcp.json`                                                    | `opencode.json` `mcp`                                                        |
+| **Context Ignoring**         | User    | `.claude/settings.json`                                        | -                                                                     | -                                                                            |
+|                              | Project | -                                                              | `.cursorignore`                                                       | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore`                |
 
 ### Skill-Specific Paths
 
-| IDE | Personal Skills | Project Skills |
-|-----|----------------|----------------|
-| **Cursor** | `~/.cursor/skills/<name>/` | `.cursor/skills/<name>/` |
-| **Claude Code** | `~/.claude/skills/<name>/` | `.claude/skills/<name>/` |
-| **OpenCode** | `~/.config/opencode/skills/<name>/` | `.opencode/skills/<name>/` |
+| IDE             | Personal Skills                     | Project Skills             |
+| --------------- | ----------------------------------- | -------------------------- |
+| **Cursor**      | `~/.cursor/skills/<name>/`          | `.cursor/skills/<name>/`   |
+| **Claude Code** | `~/.claude/skills/<name>/`          | `.claude/skills/<name>/`   |
+| **OpenCode**    | `~/.config/opencode/skills/<name>/` | `.opencode/skills/<name>/` |
 
 OpenCode also reads skills from fallback locations: `.claude/skills/`, `.agents/skills/`, `~/.claude/skills/`, `~/.agents/skills/`.
 
@@ -70,6 +70,7 @@ Context window is shared with conversation, other skills, and user request. Ever
 **Default assumption: the agent is already very smart.** Only add context it doesn't already have.
 
 Challenge each piece:
+
 - "Does the agent really need this explanation?"
 - "Does this paragraph justify its token cost?"
 
@@ -77,11 +78,11 @@ Prefer concise examples over verbose explanations.
 
 ### Set Appropriate Degrees of Freedom
 
-| Freedom Level | When to Use | Example |
-|---------------|-------------|---------|
-| **High** (text instructions) | Multiple valid approaches, context-dependent | Code review guidelines |
-| **Medium** (pseudocode/templates) | Preferred pattern with acceptable variation | Report generation |
-| **Low** (specific scripts) | Fragile operations, consistency critical | Database migrations |
+| Freedom Level                     | When to Use                                  | Example                |
+| --------------------------------- | -------------------------------------------- | ---------------------- |
+| **High** (text instructions)      | Multiple valid approaches, context-dependent | Code review guidelines |
+| **Medium** (pseudocode/templates) | Preferred pattern with acceptable variation  | Report generation      |
+| **Low** (specific scripts)        | Fragile operations, consistency critical     | Database migrations    |
 
 ### Anatomy of a Skill
 
@@ -106,11 +107,11 @@ skill-name/
 
 #### Bundled Resources (optional)
 
-| Type | Path | Purpose | When to Include |
-|------|------|---------|-----------------|
-| **Scripts** | `scripts/` | Executable code (Python/Bash) | Same code rewritten repeatedly; deterministic reliability needed |
-| **References** | `references/` | Documentation loaded into context as needed | Detailed info too lengthy for SKILL.md |
-| **Assets** | `assets/` | Files used in output (templates, images, fonts) | Templates, boilerplate, images for final output |
+| Type           | Path          | Purpose                                         | When to Include                                                  |
+| -------------- | ------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| **Scripts**    | `scripts/`    | Executable code (Python/Bash)                   | Same code rewritten repeatedly; deterministic reliability needed |
+| **References** | `references/` | Documentation loaded into context as needed     | Detailed info too lengthy for SKILL.md                           |
+| **Assets**     | `assets/`     | Files used in output (templates, images, fonts) | Templates, boilerplate, images for final output                  |
 
 #### What NOT to Include
 
@@ -148,10 +149,10 @@ Description is critical for skill discovery. The agent uses it to decide when to
 
 ### Constraints
 
-| Field | Limit |
-|-------|-------|
-| `name` | Max 64 chars, `[a-z0-9-]` only, no leading/trailing/consecutive hyphens |
-| `description` | Max 1024 chars, no angle brackets `<>` |
+| Field         | Limit                                                                   |
+| ------------- | ----------------------------------------------------------------------- |
+| `name`        | Max 64 chars, `[a-z0-9-]` only, no leading/trailing/consecutive hyphens |
+| `description` | Max 1024 chars, no angle brackets `<>`                                  |
 
 ## Common Patterns
 
@@ -161,13 +162,21 @@ Provide output format templates when consistent structure matters:
 
 ```markdown
 ## Report structure
+
 ALWAYS use this template:
+
 # [Title]
+
 ## Executive summary
+
 [One-paragraph overview]
+
 ## Key findings
+
 - Finding 1 with data
+
 ## Recommendations
+
 1. Specific action
 ```
 
@@ -177,6 +186,7 @@ For output quality dependent on seeing examples:
 
 ```markdown
 ## Commit message format
+
 **Example 1:**
 Input: Added user authentication with JWT tokens
 Output: feat(auth): implement JWT-based authentication
@@ -188,6 +198,7 @@ Break complex operations into steps with checklists:
 
 ```markdown
 ## Workflow
+
 - [ ] Step 1: Analyze input
 - [ ] Step 2: Create mapping
 - [ ] Step 3: Validate
@@ -229,6 +240,7 @@ For quality-critical tasks:
 ### Phase 1: Discovery
 
 Gather from user:
+
 1. Purpose and primary use case
 2. Target IDE and storage location (personal vs project)
 3. Trigger scenarios (when should agent apply this?)
@@ -262,6 +274,7 @@ deno run -A scripts/validate_skill.ts <path/to/skill-directory>
 ```
 
 Checklist:
+
 - [ ] SKILL.md under 500 lines
 - [ ] Description is specific, includes trigger terms, WHAT + WHEN
 - [ ] Written in third person

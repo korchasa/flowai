@@ -7,29 +7,35 @@ Hooks let you observe, control, and extend the agent loop using custom scripts. 
 ## Hook Events (20 total)
 
 ### Session Lifecycle
+
 - **`sessionStart`**: New composer conversation created. Use to set env vars, inject context. Output: `env`, `additional_context`, `continue`.
 - **`sessionEnd`**: Conversation ends. Reason: `completed`, `aborted`, `error`, `window_close`, `user_close`. Fire-and-forget.
 
 ### Tool Execution
+
 - **`preToolUse`**: Before ANY tool execution. Matcher: tool type (`Shell`, `Read`, `Write`, `Grep`, `Delete`, `Task`, `MCP:<name>`). Can allow/deny or modify input.
 - **`postToolUse`**: After successful tool execution. Output: `updated_mcp_tool_output`, `additional_context`.
 - **`postToolUseFailure`**: Tool fails, times out, or is denied. Fire-and-forget.
 
 ### Shell & MCP Commands
+
 - **`beforeShellExecution`**: Terminal commands. Matcher: regex on command text. Supports `allow`, `deny`, `ask`. Output: `permission`, `user_message`, `agent_message`.
 - **`afterShellExecution`**: After shell command completes. Input includes output and duration. Fire-and-forget.
 - **`beforeMCPExecution`**: MCP tool calls. Fail-closed. Supports `allow`, `deny`, `ask`.
 - **`afterMCPExecution`**: After MCP tool completes. Input includes result JSON. Fire-and-forget.
 
 ### File Operations (Agent)
+
 - **`beforeReadFile`**: Before file read. Can block access. Fail-closed. Matcher: `TabRead` or `Read`.
 - **`afterFileEdit`**: After file edit. Matcher: `TabWrite` or `Write`. Fire-and-forget.
 
 ### Subagent (Task Tool) Lifecycle
+
 - **`subagentStart`**: Before spawning subagent. Matcher: `generalPurpose`, `explore`, `shell`. Input: `subagent_type`, `is_parallel_worker`, `git_branch`. Can allow/deny.
 - **`subagentStop`**: Subagent completes or errors. Input: `modified_files`, `agent_transcript_path`, `loop_count`, `tool_call_count`, `message_count`. Output: `followup_message`.
 
 ### Agent Loop & UI
+
 - **`beforeSubmitPrompt`**: After user sends, before backend. Matcher: `UserPromptSubmit`. Can prevent submission via `continue: false`.
 - **`afterAgentResponse`**: After assistant message. Matcher: `AgentResponse`. Fire-and-forget.
 - **`afterAgentThought`**: After thinking block. Matcher: `AgentThought`. Fire-and-forget.
@@ -37,6 +43,7 @@ Hooks let you observe, control, and extend the agent loop using custom scripts. 
 - **`stop`**: Agent loop ends. Input: `stop_hook_active`. Output: `followup_message` to continue loop.
 
 ### Cursor Tab (Inline Completions)
+
 - **`beforeTabFileRead`**: Control file access for Tab completions. Can allow/deny.
 - **`afterTabFileEdit`**: After Tab edit. Input includes `range` (start/end line/column), `old_line`, `new_line`.
 
@@ -65,14 +72,14 @@ Hooks defined in `hooks.json`. Priority (highest to lowest): Enterprise > Team (
 
 ### Hook Object Fields
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `command` | string | required | Shell command or script path |
-| `type` | `"command"` \| `"prompt"` | `"command"` | Execution type |
-| `timeout` | number (seconds) | — | Max execution time |
-| `matcher` | string/object | — | Regex filter for when hook fires |
-| `failClosed` | boolean | `false` | Block action if hook fails |
-| `loop_limit` | number \| null | `5` | Max auto-followups (stop/subagentStop only). null = unlimited |
+| Field        | Type                      | Default     | Description                                                   |
+| ------------ | ------------------------- | ----------- | ------------------------------------------------------------- |
+| `command`    | string                    | required    | Shell command or script path                                  |
+| `type`       | `"command"` \| `"prompt"` | `"command"` | Execution type                                                |
+| `timeout`    | number (seconds)          | —           | Max execution time                                            |
+| `matcher`    | string/object             | —           | Regex filter for when hook fires                              |
+| `failClosed` | boolean                   | `false`     | Block action if hook fails                                    |
+| `loop_limit` | number \| null            | `5`         | Max auto-followups (stop/subagentStop only). null = unlimited |
 
 ## Execution Types
 
@@ -83,20 +90,25 @@ Hooks defined in `hooks.json`. Priority (highest to lowest): Enterprise > Team (
 
 2. **Prompt-based**: LLM-evaluated condition. Returns `{ok, reason?}`.
    ```json
-   { "type": "prompt", "prompt": "Is this command safe?", "timeout": 10, "model": "gpt-4o-mini" }
+   {
+     "type": "prompt",
+     "prompt": "Is this command safe?",
+     "timeout": 10,
+     "model": "gpt-4o-mini"
+   }
    ```
    Supports `$ARGUMENTS` placeholder for hook input JSON.
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `CURSOR_PROJECT_DIR` | Project root directory |
-| `CURSOR_VERSION` | Cursor version |
-| `CURSOR_USER_EMAIL` | User email (nullable) |
-| `CURSOR_TRANSCRIPT_PATH` | Conversation transcript path (nullable) |
-| `CURSOR_CODE_REMOTE` | Set in remote environments |
-| `CLAUDE_PROJECT_DIR` | Compatibility alias for CURSOR_PROJECT_DIR |
+| Variable                 | Description                                |
+| ------------------------ | ------------------------------------------ |
+| `CURSOR_PROJECT_DIR`     | Project root directory                     |
+| `CURSOR_VERSION`         | Cursor version                             |
+| `CURSOR_USER_EMAIL`      | User email (nullable)                      |
+| `CURSOR_TRANSCRIPT_PATH` | Conversation transcript path (nullable)    |
+| `CURSOR_CODE_REMOTE`     | Set in remote environments                 |
+| `CLAUDE_PROJECT_DIR`     | Compatibility alias for CURSOR_PROJECT_DIR |
 
 Session-scoped env vars set via `sessionStart` output `env` field persist for all subsequent hooks in that session.
 
@@ -106,18 +118,18 @@ All hooks receive: `conversation_id`, `generation_id`, `model`, `hook_event_name
 
 ## Common Output Fields (JSON via stdout)
 
-| Field | Used By | Description |
-|-------|---------|-------------|
-| `permission` | beforeShellExecution, beforeMCPExecution | `"allow"` \| `"deny"` \| `"ask"` |
-| `decision` | preToolUse | `"allow"` \| `"deny"` |
-| `updated_input` | preToolUse | Modified tool input object |
-| `user_message` | blocking events | Shown to user |
-| `agent_message` | blocking events | Fed to agent |
-| `followup_message` | stop, subagentStop | Auto-continue message |
-| `continue` | sessionStart, beforeSubmitPrompt | `false` to prevent action |
-| `env` | sessionStart | Env vars for session |
-| `additional_context` | sessionStart, postToolUse | Extra context for agent |
-| `updated_mcp_tool_output` | postToolUse | Modified MCP result |
+| Field                     | Used By                                  | Description                      |
+| ------------------------- | ---------------------------------------- | -------------------------------- |
+| `permission`              | beforeShellExecution, beforeMCPExecution | `"allow"` \| `"deny"` \| `"ask"` |
+| `decision`                | preToolUse                               | `"allow"` \| `"deny"`            |
+| `updated_input`           | preToolUse                               | Modified tool input object       |
+| `user_message`            | blocking events                          | Shown to user                    |
+| `agent_message`           | blocking events                          | Fed to agent                     |
+| `followup_message`        | stop, subagentStop                       | Auto-continue message            |
+| `continue`                | sessionStart, beforeSubmitPrompt         | `false` to prevent action        |
+| `env`                     | sessionStart                             | Env vars for session             |
+| `additional_context`      | sessionStart, postToolUse                | Extra context for agent          |
+| `updated_mcp_tool_output` | postToolUse                              | Modified MCP result              |
 
 ## Claude Code Compatibility
 
