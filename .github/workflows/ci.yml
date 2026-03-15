@@ -31,7 +31,7 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno task bundle
-      - run: deno install --global -A --name flowai ./cli/src/main.ts
+      - run: deno install --global -A --config deno.json --name flowai ./cli/src/main.ts
       - run: flowai --help
 
   release-cli:
