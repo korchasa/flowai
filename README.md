@@ -62,7 +62,7 @@ For contributors working on AssistFlow itself (not end-user installation):
 **Prerequisites:** [Deno](https://deno.land), Git
 
 ```sh
-git clone https://github.com/korchasa/flow.git
+git clone https://github.com/korchasa/flowai.git
 cd flow
 deno task check
 ```

@@ -1,6 +1,6 @@
 # Framework (Product)
 
-Source of truth for end-user skills and agents distributed via [flowai](https://github.com/korchasa/flow).
+Source of truth for end-user skills and agents distributed via [flowai](https://github.com/korchasa/flowai).
 
 ## Responsibility
 
