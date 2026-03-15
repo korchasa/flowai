@@ -1,4 +1,4 @@
-/** Interactive config generation — prompts user for IDEs, skills/agents, writes .flow.yaml */
+/** Interactive config generation — prompts user for IDEs, skills/agents, writes .flowai.yaml */
 import { Checkbox, Confirm } from "@cliffy/prompt";
 import type { FsAdapter } from "./adapters/fs.ts";
 import { saveConfig } from "./config.ts";
@@ -11,13 +11,13 @@ import {
 } from "./source.ts";
 import { DEFAULT_VERSION, type FlowConfig, KNOWN_IDES } from "./types.ts";
 
-/** Interactive config generation when .flow.yaml is missing */
+/** Interactive config generation when .flowai.yaml is missing */
 export async function generateConfig(
   cwd: string,
   fs: FsAdapter,
   sourceOverride?: FrameworkSource,
 ): Promise<FlowConfig> {
-  console.log("No .flow.yaml found. Let's create one.\n");
+  console.log("No .flowai.yaml found. Let's create one.\n");
 
   // Auto-detect IDEs
   const detectedIDEs = await detectIDEs(cwd, fs);
@@ -96,7 +96,7 @@ export async function generateConfig(
   };
 
   await saveConfig(cwd, config, fs);
-  console.log("\n.flow.yaml created successfully.\n");
+  console.log("\n.flowai.yaml created successfully.\n");
 
   return config;
 }

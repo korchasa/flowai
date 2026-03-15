@@ -21,7 +21,7 @@
 - ALWAYS USE RELATIVE PATHS IN COMMANDS WHEN POSSIBLE. ABSOLUTE PATHS ONLY WHEN REQUIRED BY THE TOOL OR CONTEXT.
 
 ---
-- REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE INSTALLED BY flow-cli INTO THEIR IDE'S CONFIG DIR (.claude/). DO NOT CONFUSE FRAMEWORK SKILLS/AGENTS WITH DEV RESOURCES IN .claude/skills/ AND .claude/agents/.
+- REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE INSTALLED BY flowai INTO THEIR IDE'S CONFIG DIR (.claude/). DO NOT CONFUSE FRAMEWORK SKILLS/AGENTS WITH DEV RESOURCES IN .claude/skills/ AND .claude/agents/.
 - ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 
@@ -57,10 +57,10 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Architecture
 - `framework/skills/`: Source of truth for product skills (logical Commands and Skills)
 - `framework/agents/`: Source of truth for product agents (universal format with all IDE fields)
-- `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flow-cli.
+- `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flowai.
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
-- `cli/`: Distribution tool (flow-cli). Published to JSR as `@korchasa/flow-cli`. Bundles `framework/` into `cli/src/bundled.json` at publish time — zero network dependency. Uses root `deno.json` (single config). Has own tests and `CLAUDE.md`.
+- `cli/`: Distribution tool (flowai). Published to JSR as `@korchasa/flowai`. Bundles `framework/` into `cli/src/bundled.json` at publish time — zero network dependency. Uses root `deno.json` (single config). Has own tests and `CLAUDE.md`.
 - `.github/workflows/ci.yml`: Unified CI/CD — checks framework + CLI, publishes to JSR on main.
 
 ## Terminology (agentskills.io)
@@ -74,7 +74,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - Use agentskills.io skills as the primary workflow system
 - Store project knowledge in `documents/` using SRS/SDS schema
 - Centralize verification through `deno task check`
-- Dev resources in `.claude/` (skills, agents). Framework resources installed by flow-cli
+- Dev resources in `.claude/` (skills, agents). Framework resources installed by flowai
 
 ## Planning Rules
 

@@ -18,10 +18,10 @@
 
 - **System context:** A set of configuration files (`.md`, SKILL.md) stored in
   `framework/` (product) and `.claude/` (dev resources). Distributed to end users
-  via flow-cli. Interpreted by AI agents in supported IDEs.
+  via flowai. Interpreted by AI agents in supported IDEs.
 - **Assumptions and constraints:**
   - **Assumptions:** Developer uses Claude Code. macOS/Linux environment.
-    flow-cli installed for framework resource sync.
+    flowai installed for framework resource sync.
   - **Constraints:** Agent's context window limits apply.
     Hook/plugin systems differ per IDE (Cursor hooks, Claude Code hooks with
     17+ events, OpenCode plugins) — format transformation needed.
@@ -41,7 +41,7 @@ FR-12.5 (parallel)
 ```
 
 Note: FR-20 (Devcontainer) is complete for the framework's own dev workflow.
-FR-10 (Global Framework Distribution) has been delegated to flow-cli (external tool).
+FR-10 (Global Framework Distribution) has been delegated to flowai (external tool).
 
 ### 3.1 Command Execution (FR-1)
 
@@ -267,7 +267,7 @@ The benchmarking system must cover all core AssistFlow components to ensure reli
 
 #### Agents (`framework/agents/`)
 
-Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, shared body. IDE-specific transformation handled by flow-cli.
+Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, shared body. IDE-specific transformation handled by flowai.
 
 | Agent ID                | Description                              | Benchmarked | Scenario ID |
 | :---------------------- | :--------------------------------------- | :---------: | :---------- |
@@ -380,9 +380,9 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 ### 3.9 Multi-IDE Dev Resource Distribution (FR-9)
 
 - **Description:** Dev resources (skills, agents) stored directly in `.claude/skills/`
-  and `.claude/agents/` (tracked in git). Framework resources installed by flow-cli
+  and `.claude/agents/` (tracked in git). Framework resources installed by flowai
   (bundled source, `cli/` monorepo directory).
-- **Use case scenario:** Developer clones project, runs `flow sync`, and framework
+- **Use case scenario:** Developer clones project, runs `flowai sync`, and framework
   skills/agents are installed into `.claude/`. Dev resources already present from git.
 - **Acceptance criteria:**
   - [x] Dev skills in `.claude/skills/`, dev agents in `.claude/agents/` (tracked in git). Evidence:
@@ -393,18 +393,18 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         `.gitignore`
   - [x] Post-clone setup documented in README. Evidence: `README.md`
 
-### 3.10 Global Framework Distribution — flow-cli (FR-10)
+### 3.10 Global Framework Distribution — flowai (FR-10)
 
-- **Description:** `flow` CLI tool (`cli/` monorepo directory, published to JSR as `@korchasa/flow-cli`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime).
-- **Def/Abbr:** CLI = flow-cli, BundledSource = JSON artifact with all framework files baked at publish time.
+- **Description:** `flowai` CLI tool (`cli/` monorepo directory, published to JSR as `@korchasa/flowai`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime).
+- **Def/Abbr:** CLI = flowai, BundledSource = JSON artifact with all framework files baked at publish time.
 
-#### FR-10.1 Sync Command (`flow`)
-- **Desc:** Single command `flow` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs.
-- **Scenario A (no config):** `flow` without `.flow.yaml` → interactive prompts (IDEs, skills/agents) → generates `.flow.yaml` → syncs.
-- **Scenario B (with config):** `flow` with `.flow.yaml` → disclaimer → sync. Bundled files compared with local. Unchanged silently, locally modified → prompt.
+#### FR-10.1 Sync Command (`flowai`)
+- **Desc:** Single command `flowai` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs.
+- **Scenario A (no config):** `flowai` without `.flowai.yaml` → interactive prompts (IDEs, skills/agents) → generates `.flowai.yaml` → syncs.
+- **Scenario B (with config):** `flowai` with `.flowai.yaml` → disclaimer → sync. Bundled files compared with local. Unchanged silently, locally modified → prompt.
 - **Acceptance:**
-  - [x] Without `.flow.yaml` → interactive config generation → sync. Evidence: `cli/src/cli.ts:30-36`, `cli/src/config_generator.ts:20-100`
-  - [x] With `.flow.yaml` → disclaimer → sync. Evidence: `cli/src/cli.ts:39-56`, `cli/src/sync.ts:52-138`
+  - [x] Without `.flowai.yaml` → interactive config generation → sync. Evidence: `cli/src/cli.ts:30-36`, `cli/src/config_generator.ts:20-100`
+  - [x] With `.flowai.yaml` → disclaimer → sync. Evidence: `cli/src/cli.ts:39-56`, `cli/src/sync.ts:52-138`
   - [x] Files read from `BundledSource` (bundled.json). Evidence: `cli/src/source.ts:12-50`, `cli/src/source_test.ts:7-42`
   - [x] Skills written to `{ide_dir}/skills/{name}/`. Evidence: `cli/src/sync.ts:94-100`, `cli/src/main_test.ts:56-69`
   - [x] Agents transformed per-IDE via `transformAgent()`. Evidence: `cli/src/sync.ts:108-136`, `cli/src/transform.ts:31-60`
@@ -412,14 +412,14 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] `--yes` / `-y` flag for non-interactive mode. Evidence: `cli/src/cli.ts:21-23`
 
 #### FR-10.2 Config Generation
-- **Desc:** Interactive `.flow.yaml` creation when config missing.
+- **Desc:** Interactive `.flowai.yaml` creation when config missing.
 - **Acceptance:**
   - [x] Prompts: IDEs (auto-detected), skills include/exclude, agents include/exclude. Evidence: `cli/src/config_generator.ts:27-100`
   - [x] Reads available skills/agents from BundledSource. Evidence: `cli/src/config_generator.ts:47-58`
-  - [x] Writes valid `.flow.yaml`. Evidence: `cli/src/config.ts:71-80`
+  - [x] Writes valid `.flowai.yaml`. Evidence: `cli/src/config.ts:71-80`
 
 #### FR-10.3 Selective Sync
-- **Desc:** `.flow.yaml` controls which skills/agents to sync.
+- **Desc:** `.flowai.yaml` controls which skills/agents to sync.
 - **Acceptance:**
   - [x] Include/exclude filters for skills and agents. Evidence: `cli/src/sync.ts:186-191`, `cli/src/sync_test.ts:5-18`
   - [x] Include + exclude mutually exclusive. Evidence: `cli/src/config.ts:55-65`
@@ -434,7 +434,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Desc:** Detect IDEs by config dir presence (`.cursor/`, `.claude/`, `.opencode/`).
 - **Acceptance:**
   - [x] Detects 3 IDEs. Evidence: `cli/src/types.ts:46-48`, `cli/src/ide_test.ts`
-  - [x] Used as default when `ides` not in `.flow.yaml`. Evidence: `cli/src/ide.ts:19-30`
+  - [x] Used as default when `ides` not in `.flowai.yaml`. Evidence: `cli/src/ide.ts:19-30`
 
 #### FR-10.6 Self-Update Check
 - **Desc:** Before sync, checks JSR for newer version. Fail-open (network errors ignored).
@@ -667,7 +667,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 - **Description:** Root `AGENTS.md` line 25 lists 5 IDEs (Cursor, Claude Code,
   Antigravity, OpenAI Codex, OpenCode) but all infrastructure (scripts, agent
-  directories, flow-cli) supports only 3 (Cursor, Claude Code, OpenCode).
+  directories, flowai) supports only 3 (Cursor, Claude Code, OpenCode).
   Several skill SKILL.md files and their Python scripts reference Codex and
   Antigravity paths. This inconsistency must be resolved.
 - **Use case scenario:** A contributor reads AGENTS.md, expects Codex/Antigravity
@@ -825,7 +825,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   standard and work identically across supported IDEs (Cursor, Claude Code,
   OpenCode). Scripts bundled with skills MUST be cross-IDE compatible.
 - **Use case scenario:** A developer installs AssistFlow skills via
-  flow-cli. Skills with bundled scripts work in any of the three
+  flowai. Skills with bundled scripts work in any of the three
   supported IDEs without modification.
 - **Priority:** High (foundational for multi-IDE support).
 
@@ -946,14 +946,14 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 - **Acceptance criteria:**
   - [x] **FR-21.6.1 Framework distribution**: Framework skills distributed
-        from `framework/skills/` to IDE directories via flow-cli. See FR-10.
+        from `framework/skills/` to IDE directories via flowai. See FR-10.
         Evidence: `cli/`, `cli/src/sync.ts`
   - [x] **FR-21.6.2 Cross-IDE discovery**: Skills discoverable by IDEs via
-        IDE-specific config dirs (e.g., `.claude/skills/`). flow-cli handles
+        IDE-specific config dirs (e.g., `.claude/skills/`). flowai handles
         placement per IDE.
   - [x] **FR-21.6.3 Name collision**: Project-level skills override user-level
         skills when names collide (per agentskills.io client implementation
-        guide). flow-cli overwrites on sync. Documented in SDS (section 3.1.4).
+        guide). flowai overwrites on sync. Documented in SDS (section 3.1.4).
 
 ## 4. Non-functional requirements
 
@@ -982,5 +982,5 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - All defined commands are executable by agents in supported IDEs.
   - Rules are correctly loaded and applied by agents.
   - Dev resources in `.claude/` are accessible to Claude Code.
-  - Framework resources installable via flow-cli (`flow sync`).
+  - Framework resources installable via flowai (`flowai sync`).
   - Documentation accurately reflects the project state.

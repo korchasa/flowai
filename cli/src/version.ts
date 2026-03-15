@@ -3,9 +3,9 @@ import { VERSION } from "./_version.ts";
 
 export { VERSION };
 
-const JSR_META_URL = "https://jsr.io/@korchasa/flow-cli/meta.json";
+const JSR_META_URL = "https://jsr.io/@korchasa/flowai/meta.json";
 const DEFAULT_TIMEOUT_MS = 5000;
-const UPDATE_COMMAND = "deno install -g -A -f jsr:@korchasa/flow-cli";
+const UPDATE_COMMAND = "deno install -g -A -f jsr:@korchasa/flowai";
 
 /** Result of a version check against JSR registry */
 export interface VersionCheckResult {
@@ -21,7 +21,7 @@ export interface CheckForUpdateOptions {
 }
 
 /**
- * Check JSR for a newer version of flow-cli.
+ * Check JSR for a newer version of flowai.
  * Returns null on any error (network, parse, timeout) — fail-open design.
  */
 export async function checkForUpdate(

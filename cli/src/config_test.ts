@@ -2,16 +2,16 @@ import { assertEquals } from "@std/assert";
 import { InMemoryFsAdapter } from "./adapters/fs.ts";
 import { loadConfig, parseConfigData, saveConfig } from "./config.ts";
 
-Deno.test("loadConfig - returns null when no .flow.yaml", async () => {
+Deno.test("loadConfig - returns null when no .flowai.yaml", async () => {
   const fs = new InMemoryFsAdapter();
   const config = await loadConfig("/project", fs);
   assertEquals(config, null);
 });
 
-Deno.test("loadConfig - parses valid .flow.yaml", async () => {
+Deno.test("loadConfig - parses valid .flowai.yaml", async () => {
   const fs = new InMemoryFsAdapter();
   await fs.writeFile(
-    "/project/.flow.yaml",
+    "/project/.flowai.yaml",
     `version: "1.0"
 ides:
   - cursor
@@ -33,7 +33,7 @@ agents:
 Deno.test("loadConfig - ignores unknown fields (backward compat)", async () => {
   const fs = new InMemoryFsAdapter();
   await fs.writeFile(
-    "/project/.flow.yaml",
+    "/project/.flowai.yaml",
     `version: "1.0"
 source: korchasa/flow
 ref: main
@@ -68,7 +68,7 @@ Deno.test("parseConfigData - throws on include+exclude conflict", () => {
   } catch (e) {
     assertEquals(
       (e as Error).message,
-      "Invalid .flow.yaml: skills.include and skills.exclude are mutually exclusive",
+      "Invalid .flowai.yaml: skills.include and skills.exclude are mutually exclusive",
     );
   }
 });
@@ -82,7 +82,7 @@ Deno.test("parseConfigData - throws on agents include+exclude conflict", () => {
   } catch (e) {
     assertEquals(
       (e as Error).message,
-      "Invalid .flow.yaml: agents.include and agents.exclude are mutually exclusive",
+      "Invalid .flowai.yaml: agents.include and agents.exclude are mutually exclusive",
     );
   }
 });
@@ -96,7 +96,7 @@ Deno.test("saveConfig - writes valid YAML without source/ref", async () => {
     agents: { include: [], exclude: [] },
   }, fs);
 
-  const content = await fs.readFile("/project/.flow.yaml");
+  const content = await fs.readFile("/project/.flowai.yaml");
   assertEquals(content.includes("cursor"), true);
   assertEquals(content.includes("source:"), false);
   assertEquals(content.includes("ref:"), false);

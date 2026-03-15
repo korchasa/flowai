@@ -31,8 +31,8 @@ jobs:
         with:
           deno-version: v2.x
       - run: deno task bundle
-      - run: deno install --global -A --name flow ./cli/src/main.ts
-      - run: flow --help
+      - run: deno install --global -A --name flowai ./cli/src/main.ts
+      - run: flowai --help
 
   release-cli:
     name: Release CLI to JSR

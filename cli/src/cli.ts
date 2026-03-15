@@ -11,7 +11,7 @@ import { checkForUpdate, VERSION } from "./version.ts";
 /** CLI entry point */
 export async function main(args: string[]): Promise<void> {
   const command = new Command()
-    .name("flow")
+    .name("flowai")
     .version(VERSION)
     .description(
       "Sync AssistFlow framework skills/agents into project-local IDE config dirs.",
@@ -48,7 +48,7 @@ export async function main(args: string[]): Promise<void> {
       if (!config) {
         if (yes) {
           throw new Error(
-            "No .flow.yaml found. Cannot run in non-interactive mode without config.",
+            "No .flowai.yaml found. Cannot run in non-interactive mode without config.",
           );
         }
         config = await generateConfig(cwd, fs);

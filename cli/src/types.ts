@@ -4,7 +4,7 @@ export interface IDE {
   configDir: string;
 }
 
-/** .flow.yaml config structure */
+/** .flowai.yaml config structure */
 export interface FlowConfig {
   version: string;
   ides: string[];

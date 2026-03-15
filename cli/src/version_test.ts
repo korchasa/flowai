@@ -48,7 +48,7 @@ Deno.test("checkForUpdate - update available when latest > current", async () =>
   assertEquals(result!.updateAvailable, true);
   assertEquals(
     result!.updateCommand,
-    "deno install -g -A -f jsr:@korchasa/flow-cli",
+    "deno install -g -A -f jsr:@korchasa/flowai",
   );
 });
 

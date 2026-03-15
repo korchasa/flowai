@@ -39,21 +39,21 @@ Developer: sets task
 
 ## Installation
 
-Install the `flow` CLI globally, then run it in your project:
+Install the `flowai` CLI globally, then run it in your project:
 
 ```sh
-deno install -g -A jsr:@korchasa/flow-cli
-flow
+deno install -g -A jsr:@korchasa/flowai
+flowai
 ```
 
 **What happens:**
 
-1. `flow` reads skills and agents bundled inside the CLI (no network needed)
+1. `flowai` reads skills and agents bundled inside the CLI (no network needed)
 2. Detects which IDEs you have installed (Cursor, Claude Code, OpenCode)
 3. Transforms resources into IDE-specific format (adds required frontmatter per IDE)
 4. Copies files into IDE config directories — your own files are never touched
 
-Re-running is safe (idempotent). On first run, `flow` interactively creates `.flow.yaml` to configure which skills/agents to sync.
+Re-running is safe (idempotent). On first run, `flowai` interactively creates `.flowai.yaml` to configure which skills/agents to sync.
 
 ## Development Setup
 
@@ -67,7 +67,7 @@ cd flow
 deno task check
 ```
 
-Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (tracked in git). Framework skills/agents are installed by flow-cli from bundled source.
+Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (tracked in git). Framework skills/agents are installed by flowai from bundled source.
 
 ## How It Works
 
@@ -83,7 +83,7 @@ AI models lose context between sessions. AssistFlow compensates by storing all d
 
 This repository contains two distinct layers. Do not confuse them:
 
-- **`framework/`** — **the product itself**. Skills and agents that users install into their projects via `flow`. This is what AssistFlow distributes.
+- **`framework/`** — **the product itself**. Skills and agents that users install into their projects via `flowai`. This is what AssistFlow distributes.
 - **`.claude/skills/`, `.claude/agents/`** — **internal development tooling**. Skills and agents used to develop AssistFlow itself (benchmark runner, cursor-agent integration, code generation helpers). These are NOT distributed to users. Tracked in git directly.
 
 ## Developer Workflow
@@ -173,10 +173,10 @@ Every task follows the same supervised loop:
 ## Project Structure
 
 ```
-framework/              # THE PRODUCT — distributed to users via flow CLI
+framework/              # THE PRODUCT — distributed to users via flowai CLI
   skills/               #   Skills (SKILL.md per folder)
   agents/               #   Agents (universal .md files with all IDE fields)
-cli/                    # Distribution tool — published to JSR as @korchasa/flow-cli
+cli/                    # Distribution tool — published to JSR as @korchasa/flowai
   src/                  #   CLI source (BundledSource, sync, transform, plan)
   scripts/              #   Bundle script (generates bundled.json + _version.ts)
 documents/              # Project documentation (SRS, SDS, whiteboard)
@@ -186,8 +186,8 @@ deno.json               # Single config: JSR metadata, imports, tasks
 AGENTS.md               # Project vision, rules, agent instructions
 
 .claude/                # INTERNAL — dev tooling + framework resources
-  skills/               #   Dev-only skills (tracked) + framework skills (via flow)
-  agents/               #   Dev-only agents (tracked) + framework agents (via flow)
+  skills/               #   Dev-only skills (tracked) + framework skills (via flowai)
+  agents/               #   Dev-only agents (tracked) + framework agents (via flowai)
 ```
 
 ## Documentation as Memory

@@ -12,16 +12,16 @@
 - **Overview diagram:**
   ```mermaid
   graph TD
-    Framework[framework/] -->|flow-cli cli/| Claude[.claude/]
+    Framework[framework/] -->|flowai cli/| Claude[.claude/]
     DevSkills[.claude/skills/ dev] -->|tracked in git| Claude
     Claude -->|skills, agents| IDE[Claude Code]
     IDE -->|Updates| Docs[documents/*.md]
     IDE -->|Executes| Actions[Code/Git/MCP]
-    Framework -->|flow-cli| Users[End Users]
+    Framework -->|flowai| Users[End Users]
   ```
 - **Main subsystems and their roles:**
-  - **Product Framework (`framework/`):** Source of truth for end-user skills/agents. Distributed via flow-cli.
-  - **Dev Resources (`.claude/skills/`, `.claude/agents/`):** Dev-only skills/agents tracked in git. Framework resources installed by flow-cli from remote.
+  - **Product Framework (`framework/`):** Source of truth for end-user skills/agents. Distributed via flowai.
+  - **Dev Resources (`.claude/skills/`, `.claude/agents/`):** Dev-only skills/agents tracked in git. Framework resources installed by flowai from remote.
   - **Skills Subsystem:** Defines procedural workflows and capabilities.
   - **Agents Subsystem:** Defines specialized agent roles and prompts.
   - **Benchmark Runner:** Specialist in executing and analyzing agent benchmarks.
@@ -33,9 +33,9 @@
 
 - **Purpose:** Dev-only skills and agents for AssistFlow development. Not distributed to users.
 - **Structure:**
-  - `.claude/skills/` — Dev skills (SKILL.md directories, tracked in git) + framework skills (installed by flow-cli)
-  - `.claude/agents/` — Dev agents (tracked in git) + framework agents (installed by flow-cli)
-- **Distribution:** flow-cli (`cli/`) installs framework resources from bundled source into `.claude/`.
+  - `.claude/skills/` — Dev skills (SKILL.md directories, tracked in git) + framework skills (installed by flowai)
+  - `.claude/agents/` — Dev agents (tracked in git) + framework agents (installed by flowai)
+- **Distribution:** flowai (`cli/`) installs framework resources from bundled source into `.claude/`.
 
 ### 3.1.1 Product Skills (`framework/skills/`)
 
@@ -71,7 +71,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 
 #### 3.1.4 Skill Name Collision Resolution
 
-When a dev skill in `.claude/skills/` has the same name as a framework skill in `framework/skills/`, flow-cli will overwrite the dev version during sync. Dev skills should use unique names to avoid collisions.
+When a dev skill in `.claude/skills/` has the same name as a framework skill in `framework/skills/`, flowai will overwrite the dev version during sync. Dev skills should use unique names to avoid collisions.
 
 ### 3.2 Product Agents (`framework/agents/`)
 
@@ -81,14 +81,14 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
 - **Canonical Format:** Universal frontmatter — superset of all IDE-specific fields:
   `name`, `description` (required), `tools` (string, Claude), `disallowedTools` (string, Claude),
   `readonly` (bool, Cursor), `mode` (string, OpenCode), `opencode_tools` (map, OpenCode).
-  `flow-cli` extracts IDE-relevant fields at install time via `transformAgent()`.
+  `flowai` extracts IDE-relevant fields at install time via `transformAgent()`.
 - **Key Agents (4 canonical files):**
   - `deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flow-skill-deep-research` orchestrator.
   - `flow-console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `flow-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `flow-skill-executor.md`: Specialist in executing any prompt or task or specific skills.
-- **Distribution:** `flow-cli` transforms canonical agents into IDE-specific format at install time.
-- **Reference: IDE frontmatter formats** (transformation rules owned by flow-cli):
+- **Distribution:** `flowai` transforms canonical agents into IDE-specific format at install time.
+- **Reference: IDE frontmatter formats** (transformation rules owned by flowai):
   - **Claude Code:** `name`, `description` (req), `tools` (list: Read, Grep, etc.), `disallowedTools`, `model` (sonnet/opus/haiku/inherit).
   - **Cursor:** `name`, `description` (req), `model` (inherit/fast/slow), `readonly` (bool).
   - **OpenCode:** `description` (req), `mode: subagent`, `model` (provider/model-id), `tools` (map: write/edit/bash→bool). Filename = agent name.
@@ -134,14 +134,14 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
 ### 3.5 Global Framework Distribution — FR-10 (`cli/`)
 
 - **Purpose:** Install/update AssistFlow framework skills/agents into project-local IDE config dirs.
-- **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flow-cli`.
+- **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flowai`.
 - **Pattern:** Single-command CLI. Adapter pattern for FS isolation. Bundled source (no network at runtime).
 - **Diagram:**
 ```mermaid
 graph TD
-    CLI[CLI Entry: flow] --> ConfigLoader
-    ConfigLoader -->|no .flow.yaml| ConfigGenerator[Interactive Config Gen]
-    ConfigLoader -->|has .flow.yaml| SyncEngine
+    CLI[CLI Entry: flowai] --> ConfigLoader
+    ConfigLoader -->|no .flowai.yaml| ConfigGenerator[Interactive Config Gen]
+    ConfigLoader -->|has .flowai.yaml| SyncEngine
     ConfigGenerator --> SyncEngine
     SyncEngine --> BundledSrc[BundledSource: bundled.json]
     SyncEngine --> IdeDetector[IDE Detector]
@@ -153,7 +153,7 @@ graph TD
 ```
 - **Components:**
   - `cli/src/cli.ts` — CLI entry, flags (`--yes`, `--skip-update-check`), @cliffy/command
-  - `cli/src/config.ts` — `.flow.yaml` parser/writer, validation (include/exclude mutual exclusivity)
+  - `cli/src/config.ts` — `.flowai.yaml` parser/writer, validation (include/exclude mutual exclusivity)
   - `cli/src/config_generator.ts` — interactive config creation via @cliffy/prompt
   - `cli/src/source.ts` — `FrameworkSource` interface, `BundledSource` (reads `bundled.json`), `InMemoryFrameworkSource` (tests)
   - `cli/src/sync.ts` — orchestrates: load bundle → filter skills/agents → compute plan → write files → symlinks
