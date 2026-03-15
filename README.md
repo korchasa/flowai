@@ -43,7 +43,6 @@ Install the `flowai` CLI globally, then run it in your project:
 
 ```sh
 deno install -g -A jsr:@korchasa/flowai
-flowai
 ```
 
 **What happens:**
