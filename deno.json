@@ -1,11 +1,16 @@
 {
   "name": "@korchasa/flowai",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "exports": "./cli/src/main.ts",
   "license": "MIT",
   "publish": {
-    "include": ["cli/src/"],
-    "exclude": ["!cli/src/bundled.json", "!cli/src/_version.ts"]
+    "include": [
+      "cli/src/"
+    ],
+    "exclude": [
+      "!cli/src/bundled.json",
+      "!cli/src/_version.ts"
+    ]
   },
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0",
@@ -31,6 +36,8 @@
   },
   "fmt": {
     "proseWrap": "preserve",
-    "exclude": ["**/*.md"]
+    "exclude": [
+      "**/*.md"
+    ]
   }
 }
