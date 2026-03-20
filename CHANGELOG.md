@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.1](https://github.com/korchasa/flowai/compare/v0.3.0...v0.3.1) (2026-03-20)
+
+
+### Features
+
+* **cli:** implement cross-IDE user resource sync (FR-10.8, FR-10.9) ([09adfdf](https://github.com/korchasa/flowai/commit/09adfdf0d7e3f62cdefc86e5a38ed9ea2dc0a6a2))
+* **framework:** add clarity review criterion and TS no-nested-ternary rule ([c122a31](https://github.com/korchasa/flowai/commit/c122a31c5f631adab4e5dbfbdd3a17107006d818))
+* **sync:** implement user commands synchronization across IDEs ([b5a2320](https://github.com/korchasa/flowai/commit/b5a23203a1c0383a340ee5be20910ab1013d0ff5))
+
+
+### Tests
+
+* **cli:** add commands field to FlowConfig fixtures in main_test ([38179d7](https://github.com/korchasa/flowai/commit/38179d772525ac958009aab6637f1f77cb239e68))
+
 ## 0.3.0 (2026-03-16)
 
 
