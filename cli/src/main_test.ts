@@ -41,6 +41,7 @@ Deno.test("sync - full integration: downloads skills and agents to IDE dirs", as
     ides: ["cursor", "claude"],
     skills: { include: [], exclude: [] },
     agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
   };
 
   const logs: string[] = [];
@@ -105,6 +106,7 @@ Deno.test("sync - include filter with nonexistent skill syncs only agents", asyn
     ides: ["cursor"],
     skills: { include: ["nonexistent-skill"], exclude: [] },
     agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
   };
 
   const result = await sync("/project", config, fs, {
@@ -132,6 +134,7 @@ Deno.test("sync - conflict handling with --yes overwrites", async () => {
     ides: ["cursor"],
     skills: { include: [], exclude: [] },
     agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
   };
 
   const result = await sync("/project", config, fs, {
@@ -159,6 +162,7 @@ Deno.test("sync - CLAUDE.md symlinks created when claude IDE active", async () =
     ides: ["claude"],
     skills: { include: [], exclude: [] },
     agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
   };
 
   const result = await sync("/project", config, fs, {
