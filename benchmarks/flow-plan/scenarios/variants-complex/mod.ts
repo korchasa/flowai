@@ -31,7 +31,7 @@ export const PlanVariantsComplexBench = new class
     {
       id: "tradeoffs_discussed",
       description:
-        "Did the agent discuss pros/cons/trade-offs for the variants?",
+        "Did the agent discuss pros/cons/risks per variant and trade-offs across variants?",
       critical: true,
       type: "semantic" as const,
     },

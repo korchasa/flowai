@@ -33,7 +33,7 @@ design choices with the user, follow these strict guidelines.
 
 - **Compare Variants**: If asking the user to choose between options (A vs. B),
   explicitly compare them in the question description.
-  - Highlight trade-offs (pros/cons).
+  - Highlight Pros/Cons/Risks per option + Trade-offs across options.
   - Explain the impact of each choice.
 
 ## Example
