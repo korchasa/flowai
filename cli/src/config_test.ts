@@ -87,6 +87,51 @@ Deno.test("parseConfigData - throws on agents include+exclude conflict", () => {
   }
 });
 
+Deno.test("parseConfigData - parses commands section", () => {
+  const config = parseConfigData({
+    commands: { include: ["my-cmd"], exclude: [] },
+  });
+  assertEquals(config.commands.include, ["my-cmd"]);
+  assertEquals(config.commands.exclude, []);
+});
+
+Deno.test("parseConfigData - defaults commands to empty include/exclude", () => {
+  const config = parseConfigData({});
+  assertEquals(config.commands.include, []);
+  assertEquals(config.commands.exclude, []);
+});
+
+Deno.test("parseConfigData - throws on commands include+exclude conflict", () => {
+  try {
+    parseConfigData({
+      commands: { include: ["a"], exclude: ["b"] },
+    });
+    throw new Error("Should have thrown");
+  } catch (e) {
+    assertEquals(
+      (e as Error).message,
+      "Invalid .flowai.yaml: commands.include and commands.exclude are mutually exclusive",
+    );
+  }
+});
+
+Deno.test("saveConfig - writes valid YAML with commands section", async () => {
+  const fs = new InMemoryFsAdapter();
+  await saveConfig("/project", {
+    version: "1.0",
+    ides: ["cursor"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+  }, fs);
+
+  const content = await fs.readFile("/project/.flowai.yaml");
+  assertEquals(content.includes("cursor"), true);
+  assertEquals(content.includes("commands:"), true);
+  assertEquals(content.includes("source:"), false);
+  assertEquals(content.includes("ref:"), false);
+});
+
 Deno.test("saveConfig - writes valid YAML without source/ref", async () => {
   const fs = new InMemoryFsAdapter();
   await saveConfig("/project", {
@@ -94,6 +139,7 @@ Deno.test("saveConfig - writes valid YAML without source/ref", async () => {
     ides: ["cursor"],
     skills: { include: [], exclude: [] },
     agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
   }, fs);
 
   const content = await fs.readFile("/project/.flowai.yaml");

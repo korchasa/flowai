@@ -209,6 +209,8 @@ Frontmatter transform:
 
 `$ARGUMENTS` placeholder works the same way. Claude Code adds optional frontmatter: `allowed-tools`, `model`, `description`, `argument-hint`, `disable-model-invocation`.
 
+Note: Claude Code also supports user-invoked workflows as skills with `disable-model-invocation: true` in SKILL.md frontmatter (see 2.5). Commands and skill-commands coexist; commands are simpler (flat md), skill-commands support extra files (references/, scripts/).
+
 ### 3.4 Skills (SKILL.md)
 
 `.cursor/skills/<name>/` → `.claude/skills/<name>/` — copy entire directory. [^10][^11]

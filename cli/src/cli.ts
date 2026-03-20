@@ -99,7 +99,17 @@ export async function main(args: string[]): Promise<void> {
           spinner.stop();
           console.log("\nLocally modified files detected:");
           for (let i = 0; i < conflicts.length; i++) {
-            console.log(`  ${i + 1}. ${conflicts[i].targetPath}`);
+            const c = conflicts[i];
+            const srcTime = c.sourceMtime
+              ? formatMtime(c.sourceMtime)
+              : "unknown";
+            const tgtTime = c.targetMtime
+              ? formatMtime(c.targetMtime)
+              : "unknown";
+            console.log(`  ${i + 1}. ${c.targetPath}`);
+            if (c.sourceMtime !== undefined || c.targetMtime !== undefined) {
+              console.log(`     source: ${srcTime}  |  target: ${tgtTime}`);
+            }
           }
           const selected = await Checkbox.prompt({
             message: "Select files to overwrite",
@@ -148,4 +158,13 @@ export async function main(args: string[]): Promise<void> {
     });
 
   await command.parse(args);
+}
+
+/** Format a Date as "YYYY-MM-DD HH:MM" for conflict prompts */
+function formatMtime(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${
+    pad(date.getDate())
+  } ` +
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

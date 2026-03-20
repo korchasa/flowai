@@ -38,10 +38,12 @@ Dependencies between unclosed requirements define execution order:
 ```
 FR-21.3–21.6
 FR-12.5 (parallel)
+FR-10.9 open questions (parallel)
 ```
 
 Note: FR-20 (Devcontainer) is complete for the framework's own dev workflow.
 FR-10 (Global Framework Distribution) has been delegated to flowai (external tool).
+FR-10.9 defines cross-IDE resource mapping; open questions need user decisions before command sync implementation.
 
 ### 3.1 Command Execution (FR-1)
 
@@ -449,6 +451,77 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] `scripts/bundle-framework.ts` generates bundle from `../framework/`. Evidence: `cli/scripts/bundle-framework.ts`
   - [x] `BundledSource` reads bundle. Evidence: `cli/src/source.ts:12-50`, `cli/src/source_test.ts:33-42`
   - [x] Guard: `task-check.ts` runs bundle before tests. Evidence: `scripts/task-check.ts:10-13`
+
+#### FR-10.8 Cross-IDE User Resource Sync
+
+- **Desc:** When `user_sync: true` in `.flowai.yaml` and ≥2 IDEs configured, propagate user-created resources (non-`flow-*`, non-framework) across IDE config dirs. Canonical source = newest mtime.
+- **Acceptance:**
+  - [x] Scans skills/agents in each IDE dir, skips `flow-*` prefix. Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/user_sync_test.ts:39-53`
+  - [x] Skips framework-bundled resources by name (e.g., `deep-research-worker`). Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/sync.ts:148-150`
+  - [x] Merges by `(type, name)` across IDEs, picks canonical by newest mtime. Evidence: `cli/src/user_sync.ts:284-293`
+  - [x] Agent frontmatter transformed per IDE via `crossTransformAgent()`. Evidence: `cli/src/user_sync.ts:219-226`
+  - [x] Invalid YAML frontmatter: copies as-is with warning (no crash). Evidence: `cli/src/transform.ts:113-128`, `cli/src/transform_test.ts`
+  - [x] Skills copied as-is (no frontmatter transform). Evidence: `cli/src/user_sync.ts:218-228`
+  - [x] Conflict prompt in interactive mode; `--yes` overwrites. Evidence: `cli/src/sync.ts:198-223`
+  - [x] Skipped when <2 IDEs. Evidence: `cli/src/user_sync.ts:318-321`
+  - [x] Idempotent: repeated runs produce 0 writes. Evidence: manual verification
+
+#### FR-10.9 Cross-IDE Resource Mapping (universal representation)
+
+- **Desc:** Defines how each logical resource type maps to IDE-specific paths and formats. flowai uses these mappings during framework sync (FR-10.1) and user sync (FR-10.8).
+
+**Resource type mapping:**
+
+| Logical type | Cursor | Claude Code | OpenCode |
+|:---|:---|:---|:---|
+| **Command** (user-invoked only) | `.cursor/commands/foo.md` — flat md, no frontmatter | `.claude/commands/foo.md` — flat md, optional frontmatter (`allowed-tools`, `model`) | `.opencode/commands/foo.md` — flat md, `$ARGUMENTS` + shell interpolation |
+| **Skill** (model-invocable) | `.cursor/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.claude/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.opencode/skills/foo/SKILL.md` — dir, same format |
+| **Skill-command** (user-invoked skill) | `.cursor/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.claude/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.opencode/skills/foo/SKILL.md` with `disable-model-invocation: true` |
+| **Agent** | `.cursor/agents/foo.md` — frontmatter: `name`, `description`, `readonly` | `.claude/agents/foo.md` — frontmatter: `name`, `description`, `tools`, `disallowedTools` | `.opencode/agents/foo.md` — frontmatter: `description`, `mode`, `tools` (map) |
+
+**Agent frontmatter field mapping (universal → IDE):**
+
+| Universal field | Cursor | Claude Code | OpenCode |
+|:---|:---|:---|:---|
+| `name` | kept | kept | dropped |
+| `description` | kept | kept | kept |
+| `tools` (string) | dropped | kept | dropped |
+| `disallowedTools` | dropped | kept | dropped |
+| `readonly` | kept | dropped | dropped |
+| `mode` | dropped | dropped | kept |
+| `opencode_tools` (map) | dropped | dropped | renamed → `tools` |
+| unknown fields | pass-through | pass-through | pass-through |
+
+**Cross-IDE sync transformations (user_sync):**
+
+| Source → Target | Resource type | Transform |
+|:---|:---|:---|
+| Skill (any IDE pair) | skill | Copy dir as-is (format identical across IDEs) |
+| Skill with extra files (references/, scripts/) | skill | Copy entire dir tree |
+| Agent (cursor → claude) | agent | Frontmatter: keep `name`+`description`+`tools`+`disallowedTools`, drop `readonly` |
+| Agent (claude → cursor) | agent | Frontmatter: keep `name`+`description`+`readonly`, drop `tools`+`disallowedTools` |
+| Agent (any → opencode) | agent | Frontmatter: keep `description`+`mode`, rename `opencode_tools`→`tools`, drop rest |
+| Agent (invalid YAML) | agent | Copy as-is, log warning |
+| Command (cursor → claude) | command | Copy `.cursor/commands/foo.md` → `.claude/commands/foo.md` as-is |
+| Command (cursor → opencode) | command | Copy `.cursor/commands/foo.md` → `.opencode/commands/foo.md` as-is |
+
+**Not synced (by design):**
+
+- Framework resources (`flow-*` prefix or matching bundled names) — managed by framework sync (FR-10.1)
+- Rules (`.cursor/rules/` ↔ `.claude/rules/`) — frontmatter differs fundamentally (globs vs paths), no automated transform
+- Hooks (`.cursor/hooks.json` ↔ `.claude/settings.json` hooks key) — structure and event names differ, no automated transform
+- MCP config (`mcp.json` ↔ `.mcp.json`) — trivial rename, user responsibility
+
+**Open questions:**
+
+- [ ] Should `user_sync` also propagate `.cursor/commands/` ↔ `.claude/commands/` ↔ `.opencode/commands/`?
+- [ ] Should skills with `disable-model-invocation: true` in one IDE map to commands in another?
+
+- **Acceptance:**
+  - [x] Agent transform implemented per mapping table above. Evidence: `cli/src/transform.ts:38-70`, `cli/src/transform_test.ts`
+  - [x] Skill copy preserves dir structure with extra files. Evidence: `cli/src/user_sync.ts:89-104`
+  - [x] Framework resources excluded from user sync. Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/sync.ts:148-150`
+  - [ ] Command sync across IDEs (pending open question resolution)
 
 ### 3.11 Conventional Commits — `agent` Type (FR-11)
 

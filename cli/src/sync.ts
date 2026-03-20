@@ -10,6 +10,7 @@ import {
 } from "./source.ts";
 import { syncClaudeSymlinks } from "./symlinks.ts";
 import { transformAgent } from "./transform.ts";
+import { runUserSync } from "./user_sync.ts";
 import type { FlowConfig, PlanItem, UpstreamFile } from "./types.ts";
 import { writeFiles } from "./writer.ts";
 
@@ -140,7 +141,26 @@ export async function sync(
       }
     }
 
-    // 5. CLAUDE.md symlinks (FR-4)
+    // 5a. Cross-IDE user resource sync
+    if (config.userSync) {
+      log("\nSyncing user resources across IDEs...");
+      const fwNames = new Set([...allSkillNames, ...allAgentNames]);
+      const userResult = await runUserSync(
+        cwd,
+        ides,
+        config,
+        fs,
+        options,
+        log,
+        fwNames,
+      );
+      result.totalWritten += userResult.totalWritten;
+      result.totalSkipped += userResult.totalSkipped;
+      result.totalConflicts += userResult.totalConflicts;
+      result.errors.push(...userResult.errors);
+    }
+
+    // 5b. CLAUDE.md symlinks
     const hasClaudeIDE = ides.some((i) => i.name === "claude");
     if (hasClaudeIDE) {
       log("\nSyncing CLAUDE.md symlinks...");
@@ -170,7 +190,7 @@ export async function sync(
 }
 
 /** Process a plan: handle conflicts, write files */
-async function processPlan(
+export async function processPlan(
   plan: PlanItem[],
   fs: FsAdapter,
   options: SyncOptions,

@@ -93,6 +93,7 @@ export async function generateConfig(
     ides: selectedIDEs,
     skills: { include: skillsInclude, exclude: skillsExclude },
     agents: { include: agentsInclude, exclude: agentsExclude },
+    commands: { include: [], exclude: [] },
   };
 
   await saveConfig(cwd, config, fs);

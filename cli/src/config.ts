@@ -32,6 +32,7 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
 
   const skillsRaw = (data.skills ?? {}) as Record<string, unknown>;
   const agentsRaw = (data.agents ?? {}) as Record<string, unknown>;
+  const commandsRaw = (data.commands ?? {}) as Record<string, unknown>;
 
   const skills = {
     include: Array.isArray(skillsRaw.include)
@@ -51,6 +52,15 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
       : [],
   };
 
+  const commands = {
+    include: Array.isArray(commandsRaw.include)
+      ? commandsRaw.include.map(String)
+      : [],
+    exclude: Array.isArray(commandsRaw.exclude)
+      ? commandsRaw.exclude.map(String)
+      : [],
+  };
+
   // Include + exclude mutually exclusive
   if (skills.include.length > 0 && skills.exclude.length > 0) {
     throw new Error(
@@ -62,8 +72,15 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
       "Invalid .flowai.yaml: agents.include and agents.exclude are mutually exclusive",
     );
   }
+  if (commands.include.length > 0 && commands.exclude.length > 0) {
+    throw new Error(
+      "Invalid .flowai.yaml: commands.include and commands.exclude are mutually exclusive",
+    );
+  }
 
-  return { version, ides, skills, agents };
+  const userSync = data.user_sync === true;
+
+  return { version, ides, skills, agents, commands, userSync };
 }
 
 /** Save FlowConfig to .flowai.yaml */
@@ -73,11 +90,16 @@ export async function saveConfig(
   fs: FsAdapter,
 ): Promise<void> {
   const configPath = join(cwd, CONFIG_FILENAME);
-  const yaml = stringify({
+  const data: Record<string, unknown> = {
     version: config.version,
     ides: config.ides,
     skills: config.skills,
     agents: config.agents,
-  });
+    commands: config.commands,
+  };
+  if (config.userSync) {
+    data.user_sync = config.userSync;
+  }
+  const yaml = stringify(data);
   await fs.writeFile(configPath, yaml);
 }

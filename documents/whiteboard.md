@@ -1,226 +1,149 @@
-# Claude Code Auth in Devcontainers — Эксперименты на хосте
+# flowai: cross-IDE command sync
 
 ## Goal
 
-Проверить реальное поведение auth при lifecycle-событиях devcontainer (rebuild, restart, удаление volume). Внутри контейнера нельзя запустить эти тесты — нужен хост.
+Sync user commands (`.cursor/commands/`, `.claude/commands/`, `.opencode/commands/`) across IDEs during `user_sync`, eliminating manual duplication.
 
 ## Overview
 
-### Что уже установлено (тесты внутри контейнера)
+### Context
 
-- Auth токены хранятся в `~/.claude/.credentials.json` (НЕ в `~/.claude.json`)
-- На Linux: plaintext файл. На macOS: Keychain с fallback на plaintext
-- `~/.claude/.credentials.json` лежит на named volume (`claude-config-${devcontainerId}`) → device 40
-- `~/.claude.json` лежит на ephemeral fs → device 89, пересоздаётся автоматически
-- `claude auth status` работает БЕЗ `~/.claude.json` (только warning)
-- `claude auth status` НЕ работает без `.credentials.json`
-- Host `~/.claude/` (macOS) НЕ содержит `.credentials.json` (токены в Keychain)
-- `CLAUDE_CONFIG_DIR` перенаправляет поиск `.credentials.json`
-- Token refresh работает автоматически через refresh_token
-- Симуляция rebuild (HOME=/tmp/fresh + volume) → auth работает
+flowai `user_sync` (FR-10.8) propagates user skills and agents across IDEs. Commands are not synced — they're a separate resource type with own dirs per IDE.
 
-### Чего не хватает
+All 3 supported IDEs use identical format for commands:
+- Cursor: `.cursor/commands/*.md` — flat md, no frontmatter
+- Claude Code: `.claude/commands/*.md` — flat md, optional frontmatter (`allowed-tools`, `model`, `description`)
+- OpenCode: `.opencode/commands/*.md` — flat md, `$ARGUMENTS` + shell interpolation
 
-Реальные тесты lifecycle devcontainer, которые можно запустить только с хоста.
+Format is identical across IDEs → copy as-is (no transformation needed).
 
-## Эксперименты для хоста
+Related files:
+- `cli/src/user_sync.ts` — user resource scanning, planning, syncing
+- `cli/src/sync.ts` — orchestrator, calls `runUserSync`
+- `cli/src/types.ts` — `FlowConfig`, `PlanItem`, `KNOWN_IDES`
+- `documents/ides-difference.md` §2.3 — command format per IDE
+- `documents/requirements.md` FR-10.9 — resource mapping table
 
-### Подготовка
+### Current State
 
-```bash
-# Запомнить текущий devcontainerId (нужен для volume name)
-# Имя volume: claude-config-${devcontainerId}
-docker volume ls | grep claude-config
-```
+- `scanIdeResources` scans `skills/` and `agents/` dirs per IDE — no `commands/`
+- `UserResource.type` is `"skill" | "agent"` — no `"command"`
+- `FlowConfig` has no include/exclude for commands
+- `PlanItemType` is `"skill" | "agent"` — no `"command"`
+- Commands format is identical across IDEs → no transformation needed (unlike agents)
 
-### Эксперимент 1: Container Restart
+### Constraints
 
-**Гипотеза:** Auth сохраняется. Volume не пересоздаётся, ephemeral fs сохраняется.
-
-```bash
-# 1. До рестарта — проверить auth
-devcontainer exec --workspace-folder . claude auth status
-
-# 2. Рестарт
-docker restart <container_id>
-# или через VS Code: Ctrl+Shift+P → "Dev Containers: Restart Container"
-
-# 3. Подождать запуска, проверить auth
-devcontainer exec --workspace-folder . claude auth status
-
-# 4. Проверить файлы
-devcontainer exec --workspace-folder . ls -la ~/.claude.json ~/.claude/.credentials.json
-```
-
-**Ожидание:** `loggedIn: true`. Оба файла на месте.
-
-### Эксперимент 2: Container Rebuild (тот же devcontainerId)
-
-**Гипотеза:** Auth сохраняется. Volume выживает rebuild, `~/.claude.json` теряется но пересоздаётся.
-
-```bash
-# 1. До rebuild — зафиксировать auth и volume
-devcontainer exec --workspace-folder . claude auth status
-docker volume ls | grep claude-config
-
-# 2. Rebuild
-# VS Code: Ctrl+Shift+P → "Dev Containers: Rebuild Container"
-# или CLI: devcontainer up --workspace-folder . --rebuild
-
-# 3. После rebuild — проверить auth
-devcontainer exec --workspace-folder . claude auth status
-
-# 4. Проверить файлы
-devcontainer exec --workspace-folder . stat --format='device=%d name=%n' ~/.claude/.credentials.json
-devcontainer exec --workspace-folder . stat --format='device=%d name=%n' ~/.claude.json 2>&1 || echo "claude.json отсутствует (ожидаемо)"
-
-# 5. Проверить что volume тот же
-docker volume ls | grep claude-config
-```
-
-**Ожидание:** `loggedIn: true`. `.credentials.json` выжил на volume. `~/.claude.json` либо отсутствует, либо пересоздан CLI/extension.
-
-### Эксперимент 3: Удаление volume + rebuild
-
-**Гипотеза:** Auth потерян. Нужна повторная аутентификация через VS Code extension.
-
-```bash
-# 1. Найти volume
-docker volume ls | grep claude-config
-# Пример: claude-config-abc123
-
-# 2. Остановить контейнер
-docker stop <container_id>
-
-# 3. Удалить volume
-docker volume rm claude-config-<devcontainerId>
-
-# 4. Rebuild
-# VS Code: Ctrl+Shift+P → "Dev Containers: Rebuild Container"
-
-# 5. Проверить auth
-devcontainer exec --workspace-folder . claude auth status
-
-# 6. Проверить файлы
-devcontainer exec --workspace-folder . ls -la ~/.claude/.credentials.json 2>&1
-```
-
-**Ожидание:** `loggedIn: false`. `.credentials.json` отсутствует. Нужен повторный OAuth flow через extension UI.
-
-### Эксперимент 4: Rebuild Without Cache (новый devcontainerId)
-
-**Гипотеза:** Новый volume → auth потерян.
-
-```bash
-# 1. VS Code: Ctrl+Shift+P → "Dev Containers: Rebuild Without Cache"
-# Это создаёт новый devcontainerId → новый volume
-
-# 2. Проверить
-devcontainer exec --workspace-folder . claude auth status
-docker volume ls | grep claude-config  # должен быть новый volume
-```
-
-**Ожидание:** `loggedIn: false`. Новый пустой volume.
-
-### Эксперимент 5: Проверка host-side auth (macOS)
-
-**Гипотеза:** На macOS токены в Keychain, не в файлах.
-
-```bash
-# На хосте (macOS):
-# 1. Проверить наличие credentials файла
-ls -la ~/.claude/.credentials.json 2>&1
-
-# 2. Проверить Keychain
-security find-generic-password -s "claude.ai-credentials" -w 2>&1 | head -c 100
-# (или другое имя сервиса — проверить через `security dump-keychain | grep claude`)
-
-# 3. Auth status на хосте
-claude auth status
-```
-
-**Ожидание:** Нет `.credentials.json` на хосте. Токены в Keychain.
-
-### Эксперимент 6: Можно ли перенести auth с хоста в контейнер?
-
-**Гипотеза:** Можно достать токены из Keychain и скопировать в контейнер.
-
-```bash
-# На хосте (macOS):
-# 1. Извлечь credentials из Keychain
-security find-generic-password -s "claude.ai-credentials" -a "$(whoami)" -w 2>/dev/null > /tmp/claude-creds.json
-
-# 2. Проверить формат
-cat /tmp/claude-creds.json | jq 'keys'
-
-# 3. Скопировать в контейнер (если volume пустой)
-docker cp /tmp/claude-creds.json <container_id>:/home/vscode/.claude/.credentials.json
-docker exec <container_id> chown vscode:vscode /home/vscode/.claude/.credentials.json
-docker exec <container_id> chmod 600 /home/vscode/.claude/.credentials.json
-
-# 4. Проверить auth
-docker exec -u vscode <container_id> claude auth status
-
-# 5. Очистить
-rm /tmp/claude-creds.json
-```
-
-**Ожидание:** Auth работает. Это позволит автоматизировать проброс auth в devcontainer.
+- Must NOT break existing `flowai` behavior (framework sync, user_sync for skills/agents)
+- Commands are flat files (not dirs like skills) — scan pattern matches agents
+- No frontmatter transformation needed (format identical across IDEs)
+- Framework commands (`flow-*` prefix) should be skipped like other framework resources
+- `user_sync: true` should be the only gate — no separate `commands_sync` flag
+- Existing `FlowConfig.skills`/`FlowConfig.agents` include/exclude filters do NOT apply to commands (different resource type)
 
 ## Definition of Done
 
-- [x] Эксперимент 1: restart — auth сохраняется
-- [x] Эксперимент 2: rebuild — auth сохраняется (volume жив)
-- [x] Эксперимент 3: удаление volume — auth потерян, нужен re-login
-- [x] Эксперимент 4: rebuild without cache — auth потерян (новый volume)
-- [x] Эксперимент 5: host auth location подтверждён (Keychain на macOS)
-- [x] Эксперимент 6: копирование auth из Keychain в контейнер работает
+- [ ] `FlowConfig.commands` with `{ include: [], exclude: [] }` — consistent with skills/agents
+- [ ] `.flowai.yaml` parsing/serialization for `commands:` section
+- [ ] Include + exclude mutually exclusive validation (same as skills/agents)
+- [ ] `scanIdeResources` scans `{ide.configDir}/commands/` dir for `.md` files
+- [ ] `PlanItemType = "skill" | "agent" | "command"`
+- [ ] `UserResource.type` supports `"command"`
+- [ ] Commands with `flow-*` prefix and frameworkNames skipped
+- [ ] Commands copied as-is between IDEs (no frontmatter transform)
+- [ ] Missing command in target IDE → create
+- [ ] Command exists in both, content differs → conflict (mtime-based canonical with `--yes`)
+- [ ] Config generator prompts for command include/exclude
+- [ ] Tests: config parsing, command scan, command create, command skip, command conflict
+- [ ] `deno task check` passes
+- [ ] `/Users/korchasa/www/4ra/` sync: cursor commands appear in `.claude/commands/`
 
-## Результаты
+## Solution (Variant B — commands with include/exclude)
 
-### Эксперимент 5: Host-side auth (macOS)
+### 1. Types (`cli/src/types.ts`)
 
-- `~/.claude/.credentials.json` на хосте **отсутствует** (подтверждено)
-- Keychain сервис: **`Claude Code-credentials`** (НЕ `claude.ai-credentials` как в гипотезе)
-- Дополнительные Keychain записи: `Claude Safe Storage`, `AIR Claude Credentials`
-- Содержимое: `claudeAiOauth` (accessToken, refreshToken, expiresAt, scopes, subscriptionType, rateLimitTier) + `organizationUuid`
-- `claude auth status` на хосте: `loggedIn: true`, method: `claude.ai`, subscription: `max`
+```typescript
+// Extend PlanItemType
+export type PlanItemType = "skill" | "agent" | "command";
 
-### Эксперимент 6: Проброс auth из Keychain в контейнер
+// Extend FlowConfig
+export interface FlowConfig {
+  // ... existing ...
+  commands: {
+    include: string[];
+    exclude: string[];
+  };
+}
+```
 
-- `security find-generic-password -s "Claude Code-credentials" -w` → JSON с токенами
-- Формат **идентичен** формату `.credentials.json` в контейнере
-- После записи в `/home/vscode/.claude/.credentials.json` + `chmod 600` → `loggedIn: true`
-- **Работает без OAuth flow через extension UI**
+### 2. Config (`cli/src/config.ts`)
 
-### Эксперимент 1: Container Restart
+Parse `commands:` section from `.flowai.yaml` (same pattern as skills/agents):
+```yaml
+commands:
+  include: []
+  exclude: []
+```
 
-- Auth сохраняется после `docker restart`
-- `.credentials.json` на месте (device=40, volume)
-- **Гипотеза подтверждена**
+- `parseConfigData`: extract `commands.include`/`commands.exclude`, default `[]`
+- Validate mutual exclusivity (include + exclude = error)
+- `saveConfig`: serialize `commands` section
 
-### Эксперимент 2: Container Rebuild (тот же devcontainerId)
+### 3. Scanning (`cli/src/user_sync.ts`)
 
-- `devcontainer up --workspace-folder . --remove-existing-container` → новый контейнер, тот же volume
-- Auth сохраняется: `loggedIn: true`
-- Volume `claude-config-{devcontainerId}` выжил rebuild
-- **Гипотеза подтверждена**
+Add commands block to `scanIdeResources` after agents block:
 
-### Эксперимент 3: Удаление volume + rebuild
+```typescript
+// Commands (flat .md files, same pattern as agents)
+const commandsDir = join(cwd, ide.configDir, "commands");
+if (await fs.exists(commandsDir)) {
+  for await (const entry of fs.readDir(commandsDir)) {
+    if (!entry.isFile || !entry.name.endsWith(".md")) continue;
+    const name = entry.name.replace(/\.md$/, "");
+    if (isFramework(name)) continue;
+    if (!passesFilter(name, config.commands)) continue;
+    // ... read content, mtime, push resource with type: "command"
+  }
+}
+```
 
-- `docker volume rm claude-config-{id}` + rebuild → `loggedIn: false`
-- `.credentials.json` отсутствует
-- **Гипотеза подтверждена**
+### 4. Plan computation (`cli/src/user_sync.ts`)
 
-### Эксперимент 4: Rebuild Without Cache (новый devcontainerId)
+`computeUserSyncPlan` already handles arbitrary resource types. Commands need:
+- `subDir` = `"commands"` (alongside `"skills"` / `"agents"`)
+- No `crossTransformAgent` call — content copied as-is
 
-- Новая папка → новый devcontainerId → новый volume `claude-config-{newId}`
-- `loggedIn: false`
-- **Гипотеза подтверждена**
+Add to `getContent()`:
+```typescript
+if (resource.type === "agent" && canonical.ideName !== ide.name) {
+  return crossTransformAgent(...);
+}
+// commands and skills: return content as-is
+return canonical.content;
+```
 
-### Ключевые находки
+Already works — agents are the only type with transform. No change needed in plan computation.
 
-- Keychain сервис: `Claude Code-credentials` (не `claude.ai-credentials`)
-- Автоматизация проброса auth возможна: `security find-generic-password -s "Claude Code-credentials" -w > ~/.claude/.credentials.json`
-- Можно добавить в `postCreateCommand` devcontainer для автоматического проброса
-- Volume привязан к devcontainerId (hash от workspace path) → меняется при смене папки
+### 5. Config generator (`cli/src/config_generator.ts`)
+
+Add command include/exclude prompt (same pattern as skills/agents). Default: all commands synced.
+
+### 6. Files changed
+
+- `cli/src/types.ts` — add `commands` to `FlowConfig`, `"command"` to `PlanItemType`
+- `cli/src/config.ts` — parse/validate/serialize `commands` section
+- `cli/src/config_test.ts` — test commands config parsing + validation
+- `cli/src/user_sync.ts` — add commands scanning block
+- `cli/src/user_sync_test.ts` — add command-specific tests
+- `cli/src/config_generator.ts` — add commands prompt
+
+### 7. TDD order
+
+1. RED: config test — `parseConfigData` handles `commands` section
+2. GREEN: implement in `config.ts` + `types.ts`
+3. RED: user_sync test — `scanIdeResources` finds commands
+4. GREEN: implement commands block in `user_sync.ts`
+5. RED: user_sync test — commands synced cross-IDE (create, conflict, skip)
+6. GREEN: verify `computeUserSyncPlan` handles commands (should work without changes)
+7. REFACTOR: `deno task check`
+8. Manual: run on `/Users/korchasa/www/4ra/`, verify cursor commands in `.claude/commands/`

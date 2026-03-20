@@ -16,6 +16,12 @@ export interface FlowConfig {
     include: string[];
     exclude: string[];
   };
+  commands: {
+    include: string[];
+    exclude: string[];
+  };
+  /** Cross-IDE user resource propagation (default: false) */
+  userSync?: boolean;
 }
 
 /** Downloaded file in memory */
@@ -28,7 +34,7 @@ export interface UpstreamFile {
 export type PlanAction = "create" | "update" | "ok" | "conflict";
 
 /** Plan item type */
-export type PlanItemType = "skill" | "agent";
+export type PlanItemType = "skill" | "agent" | "command";
 
 /** Plan item for sync */
 export interface PlanItem {
@@ -38,6 +44,10 @@ export interface PlanItem {
   sourcePath: string;
   targetPath: string;
   content: string;
+  /** mtime of the source file (hint for conflict prompt) */
+  sourceMtime?: Date | null;
+  /** mtime of the target file (hint for conflict prompt) */
+  targetMtime?: Date | null;
 }
 
 /** Known IDE definitions */

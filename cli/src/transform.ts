@@ -69,6 +69,64 @@ export function transformAgent(content: string, ideName: string): string {
   return `---\n${yamlOut}\n---\n${body}`;
 }
 
+/**
+ * Reverse-transform IDE-specific agent content into universal-ish format.
+ * Inverse of transformAgent: restores IDE-specific fields back to universal names.
+ * Unknown fields always pass through.
+ */
+export function reverseTransformAgent(
+  content: string,
+  sourceIde: string,
+): string {
+  const { frontmatter, body } = splitFrontmatter(content);
+  const data = parse(frontmatter) as Record<string, unknown>;
+  const result: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    if (
+      sourceIde === "opencode" && key === "tools" &&
+      typeof value === "object" && value !== null && !Array.isArray(value)
+    ) {
+      // opencode: tools (map) → opencode_tools (universal)
+      result["opencode_tools"] = value;
+    } else {
+      result[key] = value;
+    }
+  }
+
+  const yamlOut = stringify(result, { lineWidth: -1 }).trimEnd();
+  return `---\n${yamlOut}\n---\n${body}`;
+}
+
+/**
+ * Transform agent content from source IDE format to target IDE format.
+ * If same IDE, returns content unchanged.
+ * Logs a warning when fields may be dropped during cross-IDE transformation.
+ */
+export function crossTransformAgent(
+  content: string,
+  sourceIde: string,
+  targetIde: string,
+  log?: (msg: string) => void,
+): string {
+  if (sourceIde === targetIde) return content;
+  try {
+    (log ?? console.log)(
+      "Note: agent frontmatter fields unsupported by target IDE will be dropped",
+    );
+    return transformAgent(
+      reverseTransformAgent(content, sourceIde),
+      targetIde,
+    );
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    (log ?? console.log)(
+      `Warning: failed to transform agent frontmatter, copying as-is: ${msg}`,
+    );
+    return content;
+  }
+}
+
 /** Split content into frontmatter string and body (including leading newline) */
 function splitFrontmatter(content: string): {
   frontmatter: string;
