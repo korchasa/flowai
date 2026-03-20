@@ -32,6 +32,7 @@ Add code style rules to AGENTS.md after the "Project tooling Stack" section, bef
 
 ### TypeScript
 - Strict mode (`strict: true`)
+- Avoid nested ternary operators; prefer `if/else` chains or `switch` for multiple conditions
 - Interfaces > types for objects
 - Union types over enums for simple cases
 - Pass all class dependencies via constructors or factory methods

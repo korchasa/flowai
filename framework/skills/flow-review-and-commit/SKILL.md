@@ -107,6 +107,9 @@ the other.
      stale comments.
    - **Complexity**: Flag functions > 40 lines or cyclomatic complexity spikes
      introduced in this diff.
+   - **Clarity**: Flag clarity sacrificed for brevity — nested ternaries, dense
+     one-liners, overly compact expressions. Explicit code is preferred over
+     clever short forms.
 
 8. **Run Automated Checks**
    - If the project has a check command (`deno task check`, `npm run lint`,
