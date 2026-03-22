@@ -10,6 +10,7 @@ export const CleanApproveBench = new class extends BenchmarkSkillScenario {
   skill = "flow-review";
   maxSteps = 15;
   stepTimeoutMs = 180_000;
+  interactive = true;
 
   override async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);
@@ -22,6 +23,12 @@ export const CleanApproveBench = new class extends BenchmarkSkillScenario {
   }
 
   userQuery = "/flow-review Review the added capitalize function";
+
+  userPersona =
+    `You are a developer who submitted clean code for review.
+When the agent asks questions or proposes a review plan, confirm and let it proceed.
+When shown review results, acknowledge them.
+Keep answers brief and affirmative.`;
 
   checklist = [
     {

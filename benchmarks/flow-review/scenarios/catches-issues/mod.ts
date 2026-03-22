@@ -10,6 +10,7 @@ export const CatchesIssuesBench = new class extends BenchmarkSkillScenario {
   skill = "flow-review";
   maxSteps = 15;
   stepTimeoutMs = 180_000;
+  interactive = true;
 
   override async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);
@@ -32,6 +33,12 @@ export const CatchesIssuesBench = new class extends BenchmarkSkillScenario {
   }
 
   userQuery = "/flow-review The login function is implemented, please review";
+
+  userPersona =
+    `You are a developer who submitted code for review.
+When the agent asks questions or proposes a review plan, confirm and let it proceed.
+When shown review results, acknowledge them.
+Keep answers brief and direct.`;
 
   checklist = [
     {

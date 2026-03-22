@@ -8,8 +8,9 @@ export const RejectStopsBench = new class extends BenchmarkSkillScenario {
   id = "flow-review-and-commit-reject";
   name = "Review Rejects and Stops Without Commit";
   skill = "flow-review-and-commit";
-  maxSteps = 20;
+  maxSteps = 5;
   stepTimeoutMs = 180_000;
+  interactive = true;
 
   override async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);
@@ -28,6 +29,12 @@ export const RejectStopsBench = new class extends BenchmarkSkillScenario {
 
   userQuery =
     "/flow-review-and-commit The divide function is implemented, review and commit";
+
+  userPersona =
+    `You are a developer who submitted the divide function for review and commit.
+When the agent asks questions or proposes a review plan, confirm and let it proceed.
+When shown review results with "Request Changes" verdict, say "OK, I'll fix these issues myself later. Thanks for the review." and STOP.
+NEVER ask the agent to fix anything. NEVER ask for another review. Just acknowledge the report.`;
 
   checklist = [
     {
