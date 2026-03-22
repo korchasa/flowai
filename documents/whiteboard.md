@@ -131,20 +131,13 @@ const userEmulator = scenario.interactive && scenario.userPersona
 - **flow-review-and-commit-approve**: 4/5 → **5/5 PASSED** (177.8s)
 - **flow-review-and-commit-reject**: 1/4 → **4/4 PASSED** (121.3s)
 
-### P4. Отсутствие внешних инструментов в sandbox (3 сценария)
+### P4. Отсутствие внешних инструментов в sandbox (3 сценария) — РЕШЕНО
 
-#### Root cause анализ
+- **flow-skill-manage-github-tickets-by-mcp** → переименован в `flow-skill-manage-github-tickets`. Скилл tool-agnostic: MCP / `gh` CLI / показать user. Чек `uses_mcp_create_issue` → `detects_tool`. **6/6 PASSED** (агент нашёл `gh` CLI).
 
-- **flow-skill-manage-github-tickets-by-mcp-create-issue** — 5/6 чеков. MCP server `create_issue` недоступен в sandbox.
-  - `mocks` поле пустое. Hook-based mocking (`setupMocks`) не поддерживает MCP tools — только bash/shell
-  - Сценарий: `benchmarks/flow-skill-manage-github-tickets-by-mcp/scenarios/create-issue/mod.ts`
-  - Фикс: (a) Смягчить `uses_mcp_create_issue` → `critical: false`, или (b) mock MCP через hooks
+- **flow-skill-cursor-agent-integration-parse-json** — fixture `agent-output.json` СУЩЕСТВУЕТ (ошибка в первоначальном анализе). Переклассифицирован в P6 (flaky).
 
-- **flow-skill-cursor-agent-integration-parse-json** — Fixture file `agent-output.json` НЕ СУЩЕСТВУЕТ
-  - **Root cause**: Сценарий ссылается на `agent-output.json`, но fixture директория не содержит этот файл. Агент не может спарсить несуществующий файл.
-  - Фикс: Создать fixture файл `agent-output.json` с ожидаемыми данными (session_id, duration, messages)
-
-- **flow-skill-playwright-cli** — уже в P1 (playwright-cli не установлен)
+- **flow-skill-playwright-cli** → решено в P1 (переименован в `flow-skill-browser-automation`, 5/5 PASSED).
 
 ### P5. Слишком строгие чеклисты (6+ сценариев) — РЕШЕНО
 
