@@ -67,14 +67,10 @@
 - **Root cause**: Одноразовый `MaxFileReadTokenExceededError` (agent прочитал report.html 3MB из parent dir). Не воспроизводится.
 - **Повторный прогон**: **8/8 PASSED** (все чеки включая `phases_present` и `phases_in_chat`).
 
-#### 4. flow-skill-ai-skel-ts-basic (300s) — SKIP (не решено)
+#### 4. flow-skill-ai-skel-ts — УДАЛЁН ИЗ ФРЕЙМВОРКА
 
-- **Root cause**: SKILL.md (14.8KB) + references (17.6KB) = 32KB инструкций. Агент тратит все 300s на чтение и планирование (7 tool calls), 0 файлов написано. Задача требует генерации 6 модулей с реальным кодом (Logger, Cost Tracker, LLM Requester, Agent, entry point, tests) — это слишком для sonnet за один проход.
-- **Статус**: Помечен `skip` — проблема не в сценарии и не в инфраструктуре, а в ограничениях модели.
-- **Варианты реального решения** (не реализованы):
-  - (a) Упростить сценарий: запросить 2-3 модуля вместо 6
-  - (b) Увеличить timeout до 600s + сменить модель на opus
-  - (c) Разбить на 2+ последовательных сценария (scaffold → verify)
+- **Root cause**: SKILL.md (14.8KB) + references (17.6KB) = 32KB инструкций. Задача не по силам sonnet за один проход.
+- **Решение**: Скилл удалён из framework, benchmarks, .claude. Слишком специфичный и тяжёлый для универсального фреймворка.
 
 #### 5. flow-skill-playwright-cli (120s) → flow-skill-browser-automation — РЕШЕНО
 
@@ -85,7 +81,7 @@
 #### Сводка таймаутов
 
 - **Решено**: 4/5 (plan-db — flaky, vision-integration — увеличен timeout, spec-basic — flaky/8/8, playwright-cli → browser-automation 5/5)
-- **Skip (не решено)**: 1/5 (ai-skel-ts — ограничение модели)
+- **Удалён**: 1/5 (ai-skel-ts — убран из фреймворка)
 - **Инфраструктура**: добавлен `skip` field в `BenchmarkScenario` + обработка в `runner.ts`
 
 ### P2. Агент не применяет изменения — предлагает, но не пишет (5 сценариев) — РЕШЕНО
