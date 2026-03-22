@@ -323,6 +323,18 @@ Claude Code respects `.gitignore` by default (`respectGitignore: true`). Migrati
 
 ---
 
+## 3.9 IDE Detection (Environment Variables)
+
+Verified empirically (2026-03-22, `scripts/detect-ide-env.sh`):
+
+- **Claude Code**: `CLAUDECODE=1`
+- **Cursor Agent**: `CURSOR_AGENT=1`
+- **OpenCode**: `OPENCODE=1`
+
+Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested envs), then `CLAUDECODE`, then `OPENCODE`.
+
+---
+
 ## 4. Comparative Summary
 
 | Primitive | Cursor | Claude Code | OpenCode | Antigravity | OpenAI Codex |

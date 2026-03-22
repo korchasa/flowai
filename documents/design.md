@@ -152,7 +152,7 @@ graph TD
     FileWriter --> FS[Project FS]
 ```
 - **Components:**
-  - `cli/src/cli.ts` — CLI entry, flags (`--yes`, `--skip-update-check`), @cliffy/command
+  - `cli/src/cli.ts` — CLI entry, `sync` subcommand, IDE context guard (`isInsideIDE`), @cliffy/command
   - `cli/src/config.ts` — `.flowai.yaml` parser/writer, validation (include/exclude mutual exclusivity)
   - `cli/src/config_generator.ts` — interactive config creation via @cliffy/prompt
   - `cli/src/source.ts` — `FrameworkSource` interface, `BundledSource` (reads `bundled.json`), `InMemoryFrameworkSource` (tests)
@@ -160,7 +160,7 @@ graph TD
   - `cli/src/plan.ts` — compares upstream vs local (create/ok/conflict classification)
   - `cli/src/writer.ts` — writes plan items to IDE config dirs
   - `cli/src/transform.ts` — transforms universal agent frontmatter into IDE-specific format
-  - `cli/src/ide.ts` — IDE detection by config dir presence
+  - `cli/src/ide.ts` — IDE detection by config dir presence + `isInsideIDE()` env var check (`CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`)
   - `cli/src/symlinks.ts` — `CLAUDE.md -> AGENTS.md` symlinks (FR-10.4)
   - `cli/src/version.ts` — self-update check against JSR registry (fail-open)
   - `cli/src/adapters/fs.ts` — `FsAdapter` abstraction + `DenoFsAdapter` + `InMemoryFsAdapter`
@@ -243,6 +243,15 @@ graph TD
   confirmation.
 - **Integration:** Invoked standalone or delegated from `flow-init` step 11.
 - **Deps:** None (pure SKILL.md, agent-driven generation).
+
+### 3.10 Framework Update Skill — `flow-update`
+
+- **Purpose:** Single entry point for updating framework + migrating scaffolded project artifacts.
+- **Location:** `framework/skills/flow-update/` (SKILL.md + `references/scaffolded-artifacts.md`).
+- **Workflow:** 7 steps: sync → detect changes (`git status --porcelain`) → analyze diffs → map to artifacts → propose → confirm → commit.
+- **Scaffolded artifacts:** Files created once by setup skills (flow-init, flow-setup-agent-*, flow-skill-configure-deno-commands), then owned by the project. Registry in `references/scaffolded-artifacts.md`.
+- **CLI integration:** `flowai` bare command is no-op inside IDE (env var check: `CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`). `flowai sync` required explicitly. See `cli/src/ide.ts:isInsideIDE()`.
+- **Deps:** None (pure SKILL.md, agent-driven migration).
 
 ## 4. Data and Storage
 

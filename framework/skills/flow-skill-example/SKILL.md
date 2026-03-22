@@ -1,7 +1,6 @@
 ---
 name: flow-skill-example
 description: Example skill demonstrating variable renaming across a project.
-version: 1.0.0
 ---
 
 # flow-skill-example: Rename Variable Across Project
