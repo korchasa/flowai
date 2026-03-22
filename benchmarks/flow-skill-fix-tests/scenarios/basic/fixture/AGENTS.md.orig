@@ -1,0 +1,5 @@
+# Calculator Project
+
+TypeScript project using Deno for testing.
+
+Run tests: `deno test`
