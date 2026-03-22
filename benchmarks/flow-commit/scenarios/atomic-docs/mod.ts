@@ -9,6 +9,7 @@ export const CommitAtomicDocsBench = new class extends BenchmarkSkillScenario {
   id = "flow-commit-atomic-docs";
   name = "Atomic Split: Docs vs Code";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

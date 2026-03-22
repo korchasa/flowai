@@ -7,6 +7,7 @@ export const InitVisionIntegrationBench = new class
   id = "flow-init-vision-integration";
   name = "Init Project with Vision Integration (No vision.md)";
   skill = "flow-init";
+  stepTimeoutMs = 300_000;
 
   override async setup(sandboxPath: string) {
     // 1. Copy the flow-init skill files (scripts, assets) to the sandbox

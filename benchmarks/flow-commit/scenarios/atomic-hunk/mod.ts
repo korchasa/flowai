@@ -9,6 +9,7 @@ export const CommitAtomicHunkBench = new class extends BenchmarkSkillScenario {
   id = "flow-commit-atomic-hunk";
   name = "Atomic Split: Hunk (Style vs Logic)";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

@@ -9,6 +9,7 @@ export const CommitConsolidateBench = new class extends BenchmarkSkillScenario {
   id = "flow-commit-consolidate";
   name = "Consolidation: Multi-file single feature";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   override async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

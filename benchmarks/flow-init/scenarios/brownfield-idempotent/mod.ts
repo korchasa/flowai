@@ -5,6 +5,9 @@ export const InitBrownfieldIdempotentBench = new class
   id = "flow-init-brownfield-idempotent";
   name = "Init Brownfield Project Idempotency Check";
   skill = "flow-init";
+  stepTimeoutMs = 300_000;
+  interactive = true;
+  maxSteps = 20;
 
   override async setup(_sandboxPath: string) {
     // Files are copied from fixture/ (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md, deno.json, src/)

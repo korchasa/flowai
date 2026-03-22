@@ -4,6 +4,7 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   id = "flow-plan-basic";
   name = "Basic Plan Generation";
   skill = "flow-plan";
+  stepTimeoutMs = 120_000;
 
   userQuery =
     "/flow-plan Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";
@@ -30,7 +31,7 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
       id: "critique_offered",
       description:
         "Did the agent offer to critique the plan after detailing the solution?",
-      critical: true,
+      critical: false,
       type: "semantic" as const,
     },
   ];

@@ -4,6 +4,7 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
   id = "flow-plan-refactor";
   name = "Plan Refactoring of God Class";
   skill = "flow-plan";
+  stepTimeoutMs = 120_000;
 
   userQuery =
     "/flow-plan Plan a refactoring of src/UserManager.ts to separate concerns. It does too much right now.";

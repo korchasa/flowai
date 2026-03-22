@@ -6,6 +6,7 @@ export const PlanVariantsComplexBench = new class
   id = "flow-plan-variants-complex";
   name = "Plan Variants - Complex Task";
   skill = "flow-plan";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });

@@ -10,6 +10,7 @@ export const CommitAtomicRefactorBench = new class
   id = "flow-commit-atomic-refactor";
   name = "Atomic Split: Refactor vs Feature";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

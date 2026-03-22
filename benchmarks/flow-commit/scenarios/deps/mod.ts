@@ -9,6 +9,7 @@ export const CommitDepsBench = new class extends BenchmarkSkillScenario {
   id = "flow-commit-deps";
   name = "Atomic Split: Deps vs Logic";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

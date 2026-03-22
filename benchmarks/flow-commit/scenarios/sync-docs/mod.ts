@@ -9,6 +9,7 @@ export const CommitSyncDocsBench = new class extends BenchmarkSkillScenario {
   id = "flow-commit-sync-docs";
   name = "Workspace Sync: Docs Update";
   skill = "flow-commit";
+  stepTimeoutMs = 120_000;
 
   async setup(sandboxPath: string) {
     await setupGitRepo(sandboxPath);

@@ -5,6 +5,9 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
   id = "flow-init-brownfield";
   name = "Init Brownfield Project with Architecture Discovery";
   skill = "flow-init";
+  stepTimeoutMs = 300_000;
+  interactive = true;
+  maxSteps = 20;
 
   override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
@@ -12,6 +15,13 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
   }
 
   userQuery = "/flow-init";
+
+  userPersona =
+    `You are a developer running flow-init on an existing Express/TypeScript project.
+When the agent asks questions about the project, confirm the defaults it discovers.
+When asked to create or overwrite files, approve all changes.
+When shown diffs or proposals, approve them.
+Keep answers brief and affirmative.`;
 
   checklist = [
     {

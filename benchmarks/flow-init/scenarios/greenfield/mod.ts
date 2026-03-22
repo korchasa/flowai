@@ -5,6 +5,9 @@ export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
   id = "flow-init-greenfield";
   name = "Init Greenfield Project with Interview";
   skill = "flow-init";
+  stepTimeoutMs = 300_000;
+  interactive = true;
+  maxSteps = 20;
 
   override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
@@ -13,7 +16,7 @@ export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
 
   userQuery = "/flow-init";
 
-  userPersona = `You are a developer starting a new project called 'MyProject'. 
+  userPersona = `You are a developer starting a new project called 'MyProject'.
 Your vision is 'World domination'. 
 Target audience is 'Everyone'. 
 The problem is 'Boredom' and the solution is 'Fun'. 

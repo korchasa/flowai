@@ -4,6 +4,7 @@ export const PlanContextBench = new class extends BenchmarkSkillScenario {
   id = "flow-plan-context";
   name = "Plan with Context Gathering";
   skill = "flow-plan";
+  stepTimeoutMs = 120_000;
 
   userQuery =
     "/flow-plan Plan implementation of the requirement described in documents/requirements.md.";
