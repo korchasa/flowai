@@ -1,5 +1,10 @@
 import { assertEquals } from "@std/assert";
-import { checkForUpdate, VERSION } from "./version.ts";
+import {
+  buildUpdateCommand,
+  checkForUpdate,
+  runUpdate,
+  VERSION,
+} from "./version.ts";
 
 /** Mock fetch that returns a successful JSR meta response */
 function mockFetch(latestVersion: string): typeof globalThis.fetch {
@@ -48,7 +53,7 @@ Deno.test("checkForUpdate - update available when latest > current", async () =>
   assertEquals(result!.updateAvailable, true);
   assertEquals(
     result!.updateCommand,
-    "deno install -g -A -f jsr:@korchasa/flowai",
+    "deno install -g -A -f jsr:@korchasa/flowai@0.2.0",
   );
 });
 
@@ -89,4 +94,37 @@ Deno.test("checkForUpdate - returns null on timeout", async () => {
     timeoutMs: 100,
   });
   assertEquals(result, null);
+});
+
+Deno.test("buildUpdateCommand - includes explicit version", () => {
+  assertEquals(
+    buildUpdateCommand("1.2.3"),
+    "deno install -g -A -f jsr:@korchasa/flowai@1.2.3",
+  );
+});
+
+Deno.test("runUpdate - returns true on success", async () => {
+  const result = await runUpdate("0.3.2", {
+    spawn: () => Promise.resolve({ success: true, stderr: "" }),
+  });
+  assertEquals(result, true);
+});
+
+Deno.test("runUpdate - returns false on failure", async () => {
+  const result = await runUpdate("0.3.2", {
+    spawn: () =>
+      Promise.resolve({ success: false, stderr: "permission denied" }),
+  });
+  assertEquals(result, false);
+});
+
+Deno.test("runUpdate - passes explicit version in specifier", async () => {
+  let receivedCmd: string[] = [];
+  await runUpdate("0.4.0", {
+    spawn: (cmd) => {
+      receivedCmd = cmd;
+      return Promise.resolve({ success: true, stderr: "" });
+    },
+  });
+  assertEquals(receivedCmd.includes("jsr:@korchasa/flowai@0.4.0"), true);
 });

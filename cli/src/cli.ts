@@ -1,12 +1,17 @@
 import { Command } from "@cliffy/command";
-import { Checkbox, Confirm } from "@cliffy/prompt";
+import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
 import { DenoFsAdapter } from "./adapters/fs.ts";
 import { loadConfig } from "./config.ts";
 import { generateConfig } from "./config_generator.ts";
 import type { PlanItem } from "./types.ts";
 import { sync, type SyncOptions } from "./sync.ts";
-import { checkForUpdate, VERSION } from "./version.ts";
+import {
+  buildUpdateCommand,
+  checkForUpdate,
+  runUpdate,
+  VERSION,
+} from "./version.ts";
 
 /** CLI entry point */
 export async function main(args: string[]): Promise<void> {
@@ -37,7 +42,27 @@ export async function main(args: string[]): Promise<void> {
           console.log(
             `\nUpdate available: ${update.currentVersion} → ${update.latestVersion}`,
           );
-          console.log(`Run: ${update.updateCommand}\n`);
+
+          if (yes) {
+            console.log(
+              `Run: ${buildUpdateCommand(update.latestVersion)}\n`,
+            );
+          } else {
+            const doUpdate = await Confirm.prompt({
+              message: "Update now?",
+              default: true,
+            });
+
+            if (doUpdate) {
+              const success = await runUpdate(update.latestVersion);
+              if (success) {
+                console.log(
+                  `\nUpdated to ${update.latestVersion}. Please re-run flowai.\n`,
+                );
+                return;
+              }
+            }
+          }
         }
       }
 
@@ -98,28 +123,15 @@ export async function main(args: string[]): Promise<void> {
         promptConflicts: yes ? undefined : async (conflicts: PlanItem[]) => {
           spinner.stop();
           console.log("\nLocally modified files detected:");
-          for (let i = 0; i < conflicts.length; i++) {
-            const c = conflicts[i];
-            const srcTime = c.sourceMtime
-              ? formatMtime(c.sourceMtime)
-              : "unknown";
-            const tgtTime = c.targetMtime
-              ? formatMtime(c.targetMtime)
-              : "unknown";
-            console.log(`  ${i + 1}. ${c.targetPath}`);
-            if (c.sourceMtime !== undefined || c.targetMtime !== undefined) {
-              console.log(`     source: ${srcTime}  |  target: ${tgtTime}`);
-            }
+          for (const c of conflicts) {
+            console.log(`  - ${c.targetPath}`);
           }
-          const selected = await Checkbox.prompt({
-            message: "Select files to overwrite",
-            options: conflicts.map((c, i) => ({
-              name: c.targetPath,
-              value: String(i),
-            })),
+          const overwrite = await Confirm.prompt({
+            message: "Overwrite all?",
+            default: true,
           });
           spinner.start();
-          return selected.map(Number);
+          return overwrite ? conflicts.map((_, i) => i) : [];
         },
       };
 
@@ -158,13 +170,4 @@ export async function main(args: string[]): Promise<void> {
     });
 
   await command.parse(args);
-}
-
-/** Format a Date as "YYYY-MM-DD HH:MM" for conflict prompts */
-function formatMtime(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${
-    pad(date.getDate())
-  } ` +
-    `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }

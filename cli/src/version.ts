@@ -5,7 +5,13 @@ export { VERSION };
 
 const JSR_META_URL = "https://jsr.io/@korchasa/flowai/meta.json";
 const DEFAULT_TIMEOUT_MS = 5000;
-const UPDATE_COMMAND = "deno install -g -A -f jsr:@korchasa/flowai";
+const UPDATE_COMMAND_PREFIX = "deno install -g -A -f";
+const JSR_PACKAGE = "jsr:@korchasa/flowai";
+
+/** Build update command with explicit version to bypass deno.lock pinning */
+export function buildUpdateCommand(version: string): string {
+  return `${UPDATE_COMMAND_PREFIX} ${JSR_PACKAGE}@${version}`;
+}
 
 /** Result of a version check against JSR registry */
 export interface VersionCheckResult {
@@ -59,7 +65,7 @@ export async function checkForUpdate(
         currentVersion,
         latestVersion,
         updateAvailable,
-        updateCommand: UPDATE_COMMAND,
+        updateCommand: buildUpdateCommand(latestVersion),
       };
     } finally {
       clearTimeout(timer);
@@ -67,4 +73,46 @@ export async function checkForUpdate(
   } catch {
     return null;
   }
+}
+
+export interface RunUpdateOptions {
+  /** Override for spawning subprocess (for testing) */
+  spawn?: (
+    cmd: string[],
+  ) => Promise<{ success: boolean; stderr: string }>;
+}
+
+/**
+ * Run the update command with explicit version pinning.
+ * Explicit version in the specifier (e.g. jsr:@korchasa/flowai@0.3.2) bypasses
+ * the stale deno.lock in ~/.deno/bin/.flowai/ that pins the old resolved version.
+ */
+export async function runUpdate(
+  version: string,
+  options?: RunUpdateOptions,
+): Promise<boolean> {
+  const parts = buildUpdateCommand(version).split(" ");
+  const spawnFn = options?.spawn ?? defaultSpawn;
+
+  const result = await spawnFn(parts);
+  if (!result.success) {
+    console.error(`Update failed: ${result.stderr}`);
+    return false;
+  }
+  return true;
+}
+
+async function defaultSpawn(
+  cmd: string[],
+): Promise<{ success: boolean; stderr: string }> {
+  const proc = new Deno.Command(cmd[0], {
+    args: cmd.slice(1),
+    stdout: "inherit",
+    stderr: "piped",
+  });
+  const output = await proc.output();
+  return {
+    success: output.success,
+    stderr: new TextDecoder().decode(output.stderr),
+  };
 }
