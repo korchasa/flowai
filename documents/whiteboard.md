@@ -162,27 +162,26 @@ const userEmulator = scenario.interactive && scenario.userPersona
 - **brownfield**: 5/7 → **8/8 PASSED** (interactive fix + правильные critical flags)
 - **opencode-multi-cli**: 11/13 → **11/11 PASSED** (убраны нерелевантные чеки + interactive)
 
-### P6. Нестабильные тесты (flaky) — 7 сценариев
+### P6. Нестабильные тесты (flaky) — 7 сценариев — ЧАСТИЧНО РЕШЕНО
 
-#### Root cause (тройной)
+#### Root cause анализ (обновлён)
 
-1. **LLM недетерминизм**: temperature > 0, stochastic sampling → разный output при разных прогонах
-2. **Judge недетерминизм**: LLM-judge тоже недетерминистичен, semantic оценки плавают между прогонами
-3. **API latency variance**: один и тот же сценарий может занять 60s или 120s
+3 из 7 "flaky" оказались **детерминированными багами**, а не LLM-недетерминизмом:
 
-#### Сценарии
+**Детерминированные (исправлены):**
+- `flow-commit-basic`: `git add .cursor` фейлит при claude adapter (`.cursor` не существует). Фикс: `.gitignore` вместо hardcode. **4/4 PASSED**.
+- `flow-commit-check`: `.claude/` попадает в git через `git add .` → dirty status. Фикс: `.gitignore`. **2/2 PASSED**.
+- `flow-commit-deps`: то же `.gitignore` + `build:` vs `chore:`. Фикс: `.gitignore`. **3/3 PASSED**.
+- `flow-review-catches-issues`: отсутствие interactive → P3 fixed ранее. **7/7 PASSED**.
 
-- `flow-commit-basic` (passed → failed): wording commit message варьируется
-- `flow-commit-deps` (passed → failed): agent может использовать `build:` или `chore:` → P5 пересечение
-- `flow-commit-check` (passed → failed, 1 warning): borderline clean_status
-- `flow-review-catches-issues` (passed → failed): → P3 пересечение (отсутствие interactive)
-- `flow-skill-cursor-agent-integration-parse-json` (passed → failed): → P4 пересечение (нет fixture)
-- `flow-skill-engineer-skill-basic` (passed → failed): генерация файла с нуля, максимальная вариативность
-- `flow-skill-engineer-subagent-basic` (passed → failed): генерация файла с нуля
+**Настоящий flaky (LLM variance):**
+- `flow-skill-cursor-agent-integration-parse-json`: fixture существует, агент иногда не парсит корректно
+- `flow-skill-engineer-skill-basic`: генерация файла с нуля, высокая вариативность
+- `flow-skill-engineer-subagent-basic`: генерация файла с нуля
 
-#### Фикс
+#### Инфраструктура
 
-Инфраструктурное решение: `--runs N` с threshold (2/3 passed = OK). Также многие flaky сценарии пересекаются с P3/P4/P5 — фикс корневых причин уменьшит flakiness.
+Добавлен `--runs N` majority threshold в `task-bench.ts`: при `runs > 1` сценарий считается passed если >= ceil(N/2) прогонов успешны.
 
 ### P7. Observability: переход на stream-json — DONE
 
