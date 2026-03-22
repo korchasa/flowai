@@ -146,34 +146,32 @@ const userEmulator = scenario.interactive && scenario.userPersona
 
 - **flow-skill-playwright-cli** — уже в P1 (playwright-cli не установлен)
 
-### P5. Слишком строгие чеклисты (6+ сценариев)
+### P5. Слишком строгие чеклисты (6+ сценариев) — РЕШЕНО
 
-#### Root cause (общий)
+#### Root cause
 
-Semantic чеки с высокой вариативностью LLM-output помечены как `critical`. Advanced features (auth forwarding, Keychain extraction) из отдельных reference docs оцениваются наравне с core workflow.
+Три категории проблем:
+1. Чеклист тестирует wording, а не поведение (commit_message_match)
+2. Скилл не учит нужному знанию (deno-cli не упоминал unstable features)
+3. Сценарий не-interactive, хотя скилл требует диалога (brownfield diff/confirmation)
+4. Чеклист тестирует фичу, не запрошенную в userQuery (auth_forwarding)
 
-#### Конкретные проблемы
+#### Фиксы
 
-**flow-commit (basic/check/deps):**
-- `commit_message_match` (critical) — требует упоминания "sum function", агент может написать "Add utility function". Фикс: → `critical: false`
-- `build_commit` (critical) — требует `build:` prefix, агент может использовать `chore:`. Фикс: → `critical: false` или принимать оба
-- `check_executed` (non-critical) — ссылается на `deno task check`, но в fixture нет `deno.json`. Фикс: удалить или добавить deno.json в fixture
+**flow-commit-basic**: `commit_message_match` → `critical: false` (скилл не требует конкретных слов)
 
-**flow-skill-deno-cli-test-permissions:**
-- `mentions_unstable_kv` (critical) — KV упомянут только в user query, не в коде. Агент может корректно объяснить permissions без `--unstable-kv`. Фикс: → `critical: false`
-- `deno_add_jsr` (critical) — требует точный синтаксис `deno add jsr:@scope/package`. Фикс: → `critical: false`
+**flow-commit-deps**: оставлен без изменений. Скилл явно: "ALWAYS use `build:`. Do NOT use `chore:`". Flaky — агент иногда не следует.
 
-**flow-skill-setup-ai-ide-devcontainer:**
-- `auth_forwarding_initialize_command` (critical) — macOS Keychain extraction из отдельного reference doc, не core workflow. Фикс: → `critical: false`
-- `auth_copy_in_post_create` (critical) — парный с auth_forwarding. Фикс: → `critical: false`
-- `diff_shown` и `confirmation_asked` (critical в brownfield) — semantic проверка формулировки. Фикс: → `critical: false`
-- `claude_global_skills_mount` / `opencode_global_skills_mount` (critical) — path naming слишком prescriptive. Фикс: → `critical: false`
+**flow-skill-deno-cli-test-permissions**: добавлен раздел "Unstable Features" в SKILL.md (`Deno.openKv()` → `--unstable-kv`). Fixture уже содержал `Deno.openKv()` в server.ts — root cause был в скилле. `mentions_unstable_kv` и `deno_add_jsr` → `critical: false`.
 
-#### Правило для фикса
+**devcontainer opencode-multi-cli**: убраны `auth_forwarding_initialize_command` и `auth_copy_in_post_create` (userQuery не просит auth forwarding). Добавлен `interactive = true`.
 
-- Structural чеки (файл создан, JSON валиден, файл в коммите) → `critical: true`
-- Semantic чеки с высокой вариативностью (формулировка, exact flags, wording) → `critical: false`
-- Advanced features из reference docs → `critical: false`
+**devcontainer brownfield**: добавлен `interactive = true` + `maxSteps = 15`. `diff_shown`, `confirmation_asked`, `pip_install` → `critical: true` (скилл Step 3 явно требует diff + confirmation).
+
+#### Результаты
+
+- **brownfield**: 5/7 → **8/8 PASSED** (interactive fix + правильные critical flags)
+- **opencode-multi-cli**: 11/13 → **11/11 PASSED** (убраны нерелевантные чеки + interactive)
 
 ### P6. Нестабильные тесты (flaky) — 7 сценариев
 
