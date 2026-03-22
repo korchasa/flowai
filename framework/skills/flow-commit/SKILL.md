@@ -84,6 +84,15 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
+6. **Session Complexity Check → Suggest Reflect**
+   - After all commits are done, analyze the current conversation for complexity signals:
+     - Errors or failed attempts occurred (test failures, lint errors, build errors).
+     - Agent retried the same action multiple times.
+     - User corrected the agent's approach or output.
+     - Workarounds or non-obvious solutions were applied.
+   - If **any** of these signals are detected, suggest:
+     "This session had [errors/retries/corrections/workarounds]. Consider running `/flow-reflect` to capture improvements for project instructions."
+   - If none detected, skip silently.
 </step_by_step>
 
 ## Verification
@@ -95,4 +104,5 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 - [ ] Changes grouped by logical purpose (no mixed independent concerns).
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.
+- [ ] Session complexity check performed; `/flow-reflect` suggested if signals detected.
 </verification>
