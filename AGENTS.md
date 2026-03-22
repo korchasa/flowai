@@ -22,7 +22,7 @@
 
 ---
 - REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE INSTALLED BY flowai INTO THEIR IDE'S CONFIG DIR (.claude/). DO NOT CONFUSE FRAMEWORK SKILLS/AGENTS WITH DEV RESOURCES IN .claude/skills/ AND .claude/agents/.
-- ANY CHANGES TO SKILLS MUST BE TESTED THROUGH BENCHMARKS, LIKE TDD FOR CODE.
+- ANY CHANGES TO SKILLS MUST FOLLOW BENCHMARK TDD FLOW (see "Benchmark TDD" section below).
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 
 ## Project Information
@@ -95,15 +95,32 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 ## TDD FLOW
 
+### Code TDD (TypeScript)
+
 1. **RED**: Write test (`deno test <id>`) for new/changed logic or behavior.
 2. **GREEN**: Pass test (`deno test <id>`).
 3. **REFACTOR**: Improve code/tests. No behavior change. (`deno test <id>`).
 4. **CHECK**: `deno fmt && deno lint && deno test`. Fix all.
 
-### Test Rules
+#### Code Test Rules
 
 - DO NOT test constants/templates. Test LOGIC/BEHAVIOR only.
 - Tests in same pkg. Private methods OK.
 - Code ONLY to fix tests/issues.
 - NO STUBS. Real code.
 - Run ALL tests before finish.
+
+### Benchmark TDD (Skills/Agents)
+
+1. **RED**: Write benchmark scenario (`benchmarks/<skill>/scenarios/<name>/mod.ts`) for new/changed skill behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
+2. **GREEN**: Update skill (`framework/skills/<name>/SKILL.md`) until benchmark passes.
+3. **REFACTOR**: Improve skill text or benchmark clarity. No behavior change. Re-run benchmark.
+4. **CHECK**: Run ALL benchmarks for the affected skill. Fix all failures.
+
+#### Benchmark Rules
+
+- EVERY skill change MUST have a corresponding benchmark scenario (new or existing) that covers the changed behavior.
+- Write benchmark BEFORE changing the skill (RED phase). If the benchmark already passes before the skill change, the scenario is not testing the right thing — revise it.
+- Benchmark scenarios test OBSERVABLE BEHAVIOR (checklist items), not internal wording.
+- One scenario per distinct capability or edge case. Do not overload a single scenario.
+- Run ALL benchmarks for the affected skill before finishing, not just the new one.
