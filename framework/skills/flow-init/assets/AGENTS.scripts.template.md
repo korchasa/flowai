@@ -1,8 +1,8 @@
 # Development Commands
 
 ## Shell Environment
-- ALWAYS prefix shell commands with `NO_COLOR=1` to disable ANSI color codes in output. Colored output is unreadable for agents and pollutes logs.
-- All project scripts MUST respect the `NO_COLOR` env var (https://no-color.org/). When `NO_COLOR` is set, scripts MUST NOT emit ANSI escape codes.
+- All project scripts auto-detect AI agent environments (`CLAUDECODE=1`) and disable ANSI colors automatically. Manual `NO_COLOR=1` prefix is not required when running from Claude Code.
+- Scripts also respect the `NO_COLOR` env var (https://no-color.org/) for non-agent contexts.
 
 ## Standard Interface
 - `check` - The main command for comprehensive project verification. Performs the following steps:

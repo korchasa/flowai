@@ -2,10 +2,13 @@ import { dirname } from "@std/path";
 
 /**
  * Returns the ANSI code if colors are enabled, empty string otherwise.
- * Respects NO_COLOR env via Deno.noColor.
+ * Disables colors when NO_COLOR is set (via Deno.noColor) or when running
+ * inside Claude Code (CLAUDECODE=1).
  */
 export function ansi(code: string): string {
-  return Deno.noColor ? "" : code;
+  if (Deno.noColor) return "";
+  if (Deno.env.get("CLAUDECODE") === "1") return "";
+  return code;
 }
 
 /**
