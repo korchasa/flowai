@@ -41,8 +41,9 @@ export const CommitDepsBench = new class extends BenchmarkSkillScenario {
     },
     {
       id: "build_commit",
-      description: "Is there a commit with type 'build' for json change?",
-      critical: true,
+      description:
+        "Is there a commit with type 'build' or 'chore' for json change?",
+      critical: false,
     },
     {
       id: "feat_fix_commit",

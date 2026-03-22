@@ -6,6 +6,8 @@ export const SetupDevcontainerBrownfield = new class
   name = "Brownfield: existing devcontainer in Python project";
   skill = "flow-skill-setup-ai-ide-devcontainer";
   stepTimeoutMs = 180_000;
+  interactive = true;
+  maxSteps = 15;
 
   userQuery =
     "/flow-skill-setup-ai-ide-devcontainer Update the devcontainer config for this Python project. Add Claude Code support.";

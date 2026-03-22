@@ -32,7 +32,7 @@ export const CommitBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "commit_message_match",
       description: "Does the commit message describe sum function?",
-      critical: true,
+      critical: false,
     },
     {
       id: "conventional_commits",

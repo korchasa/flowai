@@ -50,6 +50,16 @@ Deno is secure by default. When using `deno run` or `deno test`, you **must** ex
 - `--allow-env`: Environment variable access.
 - `-A` or `--allow-all`: Allow everything (use with caution).
 
+## Unstable Features
+
+Some Deno APIs require explicit opt-in via `--unstable-*` flags or `deno.json` config:
+
+- `Deno.openKv()` → `--unstable-kv` or `"unstable": ["kv"]` in deno.json
+- `Deno.cron()` → `--unstable-cron` or `"unstable": ["cron"]` in deno.json
+- `new Deno.UnsafeWindowSurface()` → `--unstable-webgpu`
+
+When reviewing code, check for unstable API usage and ensure the corresponding flag is set.
+
 ## Configuration (`deno.json`)
 
 Always check for `deno.json` or `deno.jsonc` in the project root to understand `imports`, `tasks`, and `lint`/`fmt` settings.
