@@ -72,7 +72,6 @@ Each sub-agent saves to `<tmp_dir>/<slug>.md` (system temp directory created by 
 ## Accepted Sources
 
 ### [N] [Source Title]
-
 - URL: [url]
 - Date: [YYYY-MM-DD or "unknown"]
 - Why accepted: [one sentence matching acceptance criteria]
@@ -81,7 +80,6 @@ Each sub-agent saves to `<tmp_dir>/<slug>.md` (system temp directory created by 
   - [Fact 2]
 
 ### [N+1] [Source Title]
-
 ...
 
 ## Rejected Sources

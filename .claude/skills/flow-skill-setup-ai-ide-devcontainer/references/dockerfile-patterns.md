@@ -46,14 +46,12 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 ## AI CLI Installation (append for selected tools)
 
 ### Claude Code
-
 ```dockerfile
 # Claude Code CLI (native installer, recommended)
 RUN curl -fsSL https://claude.ai/install.sh | bash
 ```
 
 Alternative with version pinning via npm:
-
 ```dockerfile
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs \
@@ -63,7 +61,6 @@ RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 ```
 
 ### OpenCode
-
 ```dockerfile
 # OpenCode CLI (check https://opencode.ai for latest install method)
 RUN curl -fsSL https://opencode.ai/install | bash
@@ -91,7 +88,6 @@ RUN chmod +x /usr/local/bin/init-firewall.sh \
 ## Environment Markers
 
 Always add near the end of Dockerfile:
-
 ```dockerfile
 ENV DEVCONTAINER=true
 WORKDIR /workspace

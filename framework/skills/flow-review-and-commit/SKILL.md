@@ -160,16 +160,24 @@ After completing the review report above:
 
 1. **Initialize**
    - Use a task management tool (e.g., todo write) to create a plan based on these steps.
-2. **Documentation Audit & Compression**
-   - **Analyze Impact**: For each code change, identify which documentation files must be updated:
-     - `requirements.md`: If functional/non-functional requirements changed.
-     - `design.md`: If architecture, components, or data structures changed.
-     - `AGENTS.md`: If global project rules or agent definitions changed.
+2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
+   - **Check each doc file against the diff** (if `./documents` exists):
+     - `requirements.md` — check diff for new/changed/removed functional or non-functional requirements. If found → update. If not → note "no requirement changes".
+     - `design.md` — check diff for new/changed/removed components, data structures, APIs, or architecture decisions. If found → update. If not → note "no design changes".
+     - `AGENTS.md` — check diff for changes to project rules, agent definitions, or conventions. If found → update. If not → note "no agent rule changes".
    - **Apply Compression Rules**:
      - Use **combined extractive + abstractive summarization** (preserve all facts, minimize words).
      - Use compact formats: lists, tables, YAML, or Mermaid diagrams.
      - Optimize lexicon: use concise language, remove filler phrases, and use abbreviations after first mention.
    - **Execute Updates**: Perform necessary edits in `./documents` BEFORE proceeding to grouping.
+   - **Output Documentation Audit Report** (always, even if no updates needed):
+     ```
+     ### Documentation Audit
+     - requirements.md: [updated | no changes — <reason>]
+     - design.md: [updated | no changes — <reason>]
+     - AGENTS.md: [updated | no changes — <reason>]
+     ```
+   - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
 3. **Pre-commit Verification**
    - Run project-specific verification (linter, formatter, tests) if configured.
    - If verification fails, report the error and **STOP**.

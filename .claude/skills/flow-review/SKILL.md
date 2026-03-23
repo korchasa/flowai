@@ -25,12 +25,11 @@ the entire project. Your two hats:
    consistent with the project's conventions?
 
 Input sources:
-
 - Git diff (`git diff`, `git diff --cached`, `git diff <base>..HEAD`).
 - The original User Request (from chat history).
 - The Plan (task management tool or `documents/whiteboard.md`).
 - Project conventions (`AGENTS.md`, linter/formatter configs).
-  </context>
+</context>
 
 ## Rules & Constraints
 
@@ -115,6 +114,9 @@ Input sources:
      stale comments.
    - **Complexity**: Flag functions > 40 lines or cyclomatic complexity spikes
      introduced in this diff.
+   - **Clarity**: Flag clarity sacrificed for brevity — nested ternaries, dense
+     one-liners, overly compact expressions. Explicit code is preferred over
+     clever short forms.
 
 8. **Run Automated Checks**
    - If the project has a check command (`deno task check`, `npm run lint`,

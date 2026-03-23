@@ -18,15 +18,15 @@ Always use typed errors with context:
 \`\`\`typescript
 // BAD
 try {
-await fetchData();
+  await fetchData();
 } catch (e) {}
 
 // GOOD
 try {
-await fetchData();
+  await fetchData();
 } catch (e) {
-logger.error('Failed to fetch', { error: e });
-throw new DataFetchError('Unable to retrieve data', { cause: e });
+  logger.error('Failed to fetch', { error: e });
+  throw new DataFetchError('Unable to retrieve data', { cause: e });
 }
 \`\`\`
 ```
@@ -125,3 +125,4 @@ paths: src/**/*.ts
 - Prefer `interface` over `type` for object shapes
 - Use `readonly` for immutable properties
 ```
+

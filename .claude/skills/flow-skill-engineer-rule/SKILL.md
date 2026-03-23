@@ -13,7 +13,6 @@ This skill guides through creating persistent rules — instructions that automa
 Rules are markdown files with metadata that provide persistent context to AI agents. They differ from skills in that rules are **automatically injected** into every relevant session without explicit invocation.
 
 Rules serve two purposes:
-
 1. **Always-apply rules** — universal standards for every conversation (coding style, architecture decisions, project conventions)
 2. **Conditional rules** — file-specific patterns triggered when matching files are open (TypeScript conventions for `*.ts`, React patterns for `*.tsx`)
 
@@ -23,28 +22,28 @@ Rules work across multiple IDEs but use different file formats and locations. Be
 
 ### Control Primitives Map by IDE
 
-| Primitive                    | Scope   | Claude Code                                                    | Cursor                                                                | OpenCode                                                                |
-| :--------------------------- | :------ | :------------------------------------------------------------- | :-------------------------------------------------------------------- | :---------------------------------------------------------------------- |
-| **Persistent Instructions**  | User    | `~/.claude/CLAUDE.md`                                          | -                                                                     | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback)      |
-|                              | Project | `CLAUDE.md`<br>`.claude/rules/*.md`                            | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
-|                              | Folder  | `subdir/CLAUDE.md`<br>`CLAUDE.local.md`                        | `subdir/AGENTS.md`                                                    | -                                                                       |
-| **Conditional Instructions** | Project | `.claude/rules/*.md`                                           | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~                | `opencode.json` `instructions` (globs)                                  |
-| **Custom Commands**          | User    | `~/.claude/commands/*.md`                                      | `~/.cursor/commands/*.md`                                             | `~/.config/opencode/commands/*.md`                                      |
-|                              | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md`                                               | `.opencode/commands/*.md`                                               |
-| **Event Hooks**              | User    | `~/.claude/settings.json`                                      | `~/.cursor/hooks.json`                                                | `~/.config/opencode/plugins/*.{js,ts}`                                  |
-|                              | Project | `.claude/settings.json`<br>`.claude/settings.local.json`       | `.cursor/hooks.json`                                                  | `.opencode/plugins/*.{js,ts}`                                           |
-| **MCP Integration**          | User    | `settings.json`<br>`managed-mcp.json`                          | `~/.cursor/mcp.json`                                                  | `opencode.json` `mcp`                                                   |
-|                              | Project | `.mcp.json`                                                    | `.cursor/mcp.json`                                                    | `opencode.json` `mcp`                                                   |
-| **Context Ignoring**         | User    | `.claude/settings.json`                                        | -                                                                     | -                                                                       |
-|                              | Project | -                                                              | `.cursorignore`                                                       | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore`           |
+| Primitive | Scope | Claude Code | Cursor | OpenCode |
+| :--- | :--- | :--- | :--- | :--- |
+| **Persistent Instructions** | User | `~/.claude/CLAUDE.md` | - | `~/.config/opencode/AGENTS.md`<br>`~/.claude/CLAUDE.md` (fallback) |
+| | Project | `CLAUDE.md`<br>`.claude/rules/*.md` | `AGENTS.md`<br>`.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `AGENTS.md`<br>`CLAUDE.md` (fallback)<br>`opencode.json` `instructions` |
+| | Folder | `subdir/CLAUDE.md`<br>`CLAUDE.local.md` | `subdir/AGENTS.md` | - |
+| **Conditional Instructions** | Project | `.claude/rules/*.md` | `.cursor/rules/*/RULE.md`<br>~~`.cursor/rules/*.mdc`~~ | `opencode.json` `instructions` (globs) |
+| **Custom Commands** | User | `~/.claude/commands/*.md` | `~/.cursor/commands/*.md` | `~/.config/opencode/commands/*.md` |
+| | Project | `.claude/commands/*.md`<br>`.claude/commands/<namespace>/*.md` | `.cursor/commands/*.md` | `.opencode/commands/*.md` |
+| **Event Hooks** | User | `~/.claude/settings.json` | `~/.cursor/hooks.json` | `~/.config/opencode/plugins/*.{js,ts}` |
+| | Project | `.claude/settings.json`<br>`.claude/settings.local.json` | `.cursor/hooks.json` | `.opencode/plugins/*.{js,ts}` |
+| **MCP Integration** | User | `settings.json`<br>`managed-mcp.json` | `~/.cursor/mcp.json` | `opencode.json` `mcp` |
+| | Project | `.mcp.json` | `.cursor/mcp.json` | `opencode.json` `mcp` |
+| **Context Ignoring** | User | `.claude/settings.json` | - | - |
+| | Project | - | `.cursorignore` | `.gitignore`<br>`.ignore`<br>`opencode.json` `watcher.ignore` |
 
 ### Rule-Specific Paths
 
-| IDE             | Always-Apply Rules                                 | Conditional Rules                       | Format                                                                       |
-| --------------- | -------------------------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------- |
-| **Cursor**      | `.cursor/rules/*/RULE.md` with `alwaysApply: true` | `.cursor/rules/*/RULE.md` with `globs:` | YAML frontmatter + Markdown                                                  |
-| **Claude Code** | `CLAUDE.md`, `.claude/rules/*.md`                  | `.claude/rules/*.md` with `paths:`      | YAML frontmatter + Markdown                                                  |
-| **OpenCode**    | `AGENTS.md`, `opencode.json` `instructions`        | `opencode.json` `instructions` (globs)  | `AGENTS.md`: Plain Markdown; `opencode.json`: JSON array of paths/globs/URLs |
+| IDE | Always-Apply Rules | Conditional Rules | Format |
+|-----|-------------------|-------------------|--------|
+| **Cursor** | `.cursor/rules/*/RULE.md` with `alwaysApply: true` | `.cursor/rules/*/RULE.md` with `globs:` | YAML frontmatter + Markdown |
+| **Claude Code** | `CLAUDE.md`, `.claude/rules/*.md` | `.claude/rules/*.md` with `paths:` | YAML frontmatter + Markdown |
+| **OpenCode** | `AGENTS.md`, `opencode.json` `instructions` | `opencode.json` `instructions` (globs) | `AGENTS.md`: Plain Markdown; `opencode.json`: JSON array of paths/globs/URLs |
 
 ### Detection Strategy
 
@@ -70,11 +69,9 @@ If prior conversation context exists, infer rules from what was discussed. Creat
 ### Required Questions
 
 If scope not specified:
-
 - "Should this rule always apply, or only when working with specific files?"
 
 If file-specific but no concrete patterns:
-
 - "Which file patterns should this rule apply to?"
 
 ## Rule Format by IDE
@@ -97,11 +94,11 @@ Rule content here...
 
 **Legacy format** (`.cursor/rules/*.mdc`) still works but is deprecated. Prefer directory format.
 
-| Field         | Type    | Description                                                             |
-| ------------- | ------- | ----------------------------------------------------------------------- |
-| `description` | string  | What the rule does (used for agent discovery when `alwaysApply: false`) |
-| `globs`       | string  | File pattern — rule applies when matching files are in context          |
-| `alwaysApply` | boolean | If `true`, applies to every session regardless of files                 |
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | string | What the rule does (used for agent discovery when `alwaysApply: false`) |
+| `globs` | string | File pattern — rule applies when matching files are in context |
+| `alwaysApply` | boolean | If `true`, applies to every session regardless of files |
 
 ### Claude Code
 
@@ -156,7 +153,6 @@ Global user rules: `~/.config/opencode/AGENTS.md`. Falls back to `~/.claude/CLAU
 ### Structure
 
 Every rule should contain:
-
 1. **Clear title** — what aspect it covers
 2. **Brief context** — why this rule exists (1-2 sentences max)
 3. **The rules themselves** — concrete, actionable instructions
@@ -193,7 +189,6 @@ deno run -A scripts/validate_rule.ts <path/to/rule-file-or-directory>
 ```
 
 Checklist:
-
 - [ ] Correct file format for target IDE
 - [ ] Frontmatter configured correctly (description, globs/paths, alwaysApply)
 - [ ] Content under 500 lines (prefer under 50)
@@ -203,14 +198,14 @@ Checklist:
 
 ## Common Rule Categories
 
-| Category           | Scope                  | Example Patterns                    |
-| ------------------ | ---------------------- | ----------------------------------- |
-| Coding standards   | Always or per-language | Error handling, naming, imports     |
-| Architecture       | Always                 | Layer boundaries, dependency rules  |
-| Framework patterns | File-specific          | React components, API routes        |
-| Testing            | File-specific          | Test structure, mocking conventions |
-| Documentation      | File-specific          | JSDoc format, comment standards     |
-| Security           | Always                 | Auth patterns, input validation     |
+| Category | Scope | Example Patterns |
+|----------|-------|-----------------|
+| Coding standards | Always or per-language | Error handling, naming, imports |
+| Architecture | Always | Layer boundaries, dependency rules |
+| Framework patterns | File-specific | React components, API routes |
+| Testing | File-specific | Test structure, mocking conventions |
+| Documentation | File-specific | JSDoc format, comment standards |
+| Security | Always | Auth patterns, input validation |
 
 ## Example Rules
 
@@ -230,15 +225,15 @@ Always use typed errors with context:
 \`\`\`typescript
 // BAD
 try {
-await fetchData();
+  await fetchData();
 } catch (e) {}
 
 // GOOD
 try {
-await fetchData();
+  await fetchData();
 } catch (e) {
-logger.error('Failed to fetch', { error: e });
-throw new DataFetchError('Unable to retrieve data', { cause: e });
+  logger.error('Failed to fetch', { error: e });
+  throw new DataFetchError('Unable to retrieve data', { cause: e });
 }
 \`\`\`
 ```

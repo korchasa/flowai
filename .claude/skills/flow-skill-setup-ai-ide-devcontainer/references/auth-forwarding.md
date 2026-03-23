@@ -4,17 +4,17 @@
 
 Claude Code uses **two separate files** for auth-related data:
 
-| File                          | Location                | Contains                                                           | Required for auth?            |
-| ----------------------------- | ----------------------- | ------------------------------------------------------------------ | ----------------------------- |
-| `~/.claude/.credentials.json` | Inside `~/.claude/` dir | OAuth tokens (accessToken, refreshToken, expiresAt, scopes)        | **Yes** — sole source of auth |
-| `~/.claude.json`              | Home dir root           | Account metadata (email, org, display name), feature flags, caches | No — auto-recreated by CLI    |
+| File | Location | Contains | Required for auth? |
+|---|---|---|---|
+| `~/.claude/.credentials.json` | Inside `~/.claude/` dir | OAuth tokens (accessToken, refreshToken, expiresAt, scopes) | **Yes** — sole source of auth |
+| `~/.claude.json` | Home dir root | Account metadata (email, org, display name), feature flags, caches | No — auto-recreated by CLI |
 
 ### Platform-Specific Token Storage
 
-| Platform              | Primary storage                            | Fallback                                  |
-| --------------------- | ------------------------------------------ | ----------------------------------------- |
-| **macOS** (host)      | Keychain service `Claude Code-credentials` | `~/.claude/.credentials.json` (plaintext) |
-| **Linux** (container) | `~/.claude/.credentials.json` (plaintext)  | None                                      |
+| Platform | Primary storage | Fallback |
+|---|---|---|
+| **macOS** (host) | Keychain service `Claude Code-credentials` | `~/.claude/.credentials.json` (plaintext) |
+| **Linux** (container) | `~/.claude/.credentials.json` (plaintext) | None |
 
 On macOS, `~/.claude/.credentials.json` typically does **not exist** — tokens live in Keychain only. In containers (Linux), plaintext file is the only option.
 
@@ -34,13 +34,13 @@ On macOS, `~/.claude/.credentials.json` typically does **not exist** — tokens 
 
 ### Lifecycle Behavior Matrix
 
-| Scenario                               | Volume survives?            | Auth persists? | Action needed                |
-| -------------------------------------- | --------------------------- | -------------- | ---------------------------- |
-| Container restart                      | Yes                         | Yes            | None                         |
-| Container rebuild (same workspace)     | Yes (same `devcontainerId`) | Yes            | None                         |
-| Rebuild Without Cache (same workspace) | Depends on IDE behavior     | Usually yes    | Verify                       |
-| Different workspace folder             | No (new `devcontainerId`)   | No             | Re-auth or forward from host |
-| Volume manually deleted                | No                          | No             | Re-auth or forward from host |
+| Scenario | Volume survives? | Auth persists? | Action needed |
+|---|---|---|---|
+| Container restart | Yes | Yes | None |
+| Container rebuild (same workspace) | Yes (same `devcontainerId`) | Yes | None |
+| Rebuild Without Cache (same workspace) | Depends on IDE behavior | Usually yes | Verify |
+| Different workspace folder | No (new `devcontainerId`) | No | Re-auth or forward from host |
+| Volume manually deleted | No | No | Re-auth or forward from host |
 
 `devcontainerId` is derived from workspace path. Same path = same volume name = auth persists.
 
@@ -57,20 +57,17 @@ When auth is lost (new volume, new workspace), it can be restored automatically 
 ### Implementation
 
 **devcontainer.json mounts** (add to existing mounts):
-
 ```jsonc
 // Host auth staging (read-only, created by initializeCommand)
 "source=${localEnv:HOME}/.claude-auth-staging.json,target=/home/{{remote_user}}/.claude-auth-staging.json,type=bind,readonly"
 ```
 
 **initializeCommand** (runs on host before container creation):
-
 ```jsonc
 "initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json"
 ```
 
 **postCreateCommand** (add to existing):
-
 ```jsonc
 "claude-auth": "[ ! -f ~/.claude/.credentials.json ] && [ -s ~/.claude-auth-staging.json ] && cp ~/.claude-auth-staging.json ~/.claude/.credentials.json && chmod 600 ~/.claude/.credentials.json || true"
 ```

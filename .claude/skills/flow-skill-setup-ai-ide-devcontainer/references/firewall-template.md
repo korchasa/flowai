@@ -111,7 +111,6 @@ Uncomment domain blocks in `ALLOWED_DOMAINS` based on project stack. The agent s
 ## devcontainer.json Requirements
 
 When firewall is enabled, add to devcontainer.json:
-
 ```jsonc
 {
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],

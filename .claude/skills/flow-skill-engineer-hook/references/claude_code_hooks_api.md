@@ -29,11 +29,11 @@ Hooks live in `settings.json` (not a separate file). Scope hierarchy (highest to
 
 ### Settings-Level Controls
 
-| Setting                  | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `disableAllHooks`        | Disable all hooks globally                           |
-| `allowManagedHooksOnly`  | (Managed only) Block user/project/plugin hooks       |
-| `allowedHttpHookUrls`    | URL allowlist for HTTP hooks (supports `*` wildcard) |
+| Setting | Description |
+|---------|-------------|
+| `disableAllHooks` | Disable all hooks globally |
+| `allowManagedHooksOnly` | (Managed only) Block user/project/plugin hooks |
+| `allowedHttpHookUrls` | URL allowlist for HTTP hooks (supports `*` wildcard) |
 | `httpHookAllowedEnvVars` | Env var allowlist for HTTP hook header interpolation |
 
 ## Hook Types (4)
@@ -105,12 +105,12 @@ Multi-turn subagent verification with tool access (Read, Grep, Glob, etc., up to
 
 ### Common Fields (all types)
 
-| Field           | Type    | Description                                      |
-| --------------- | ------- | ------------------------------------------------ |
-| `type`          | string  | Required. `command`, `http`, `prompt`, `agent`   |
-| `timeout`       | number  | Seconds. Default varies by type                  |
-| `statusMessage` | string  | Custom spinner text during execution             |
-| `once`          | boolean | (Skills only) Run once per session, then removed |
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | string | Required. `command`, `http`, `prompt`, `agent` |
+| `timeout` | number | Seconds. Default varies by type |
+| `statusMessage` | string | Custom spinner text during execution |
+| `once` | boolean | (Skills only) Run once per session, then removed |
 
 ## Hook Events (18 total)
 
@@ -123,31 +123,23 @@ Multi-turn subagent verification with tool access (Read, Grep, Glob, etc., up to
 ### Event Reference
 
 #### SessionStart
-
 Fires when session begins or resumes. Matcher: `startup`, `resume`, `clear`, `compact`.
-
 - Input: `source`, `model`, optionally `agent_type`
 - Output: `additionalContext` via hookSpecificOutput
 
 #### InstructionsLoaded
-
 Fires when CLAUDE.md or `.claude/rules/*.md` loaded into context. No matcher.
-
 - Input: `file_path`, `memory_type` (`User`/`Project`/`Local`/`Managed`), `load_reason` (`session_start`/`nested_traversal`/`path_glob_match`/`include`), optionally `globs`, `trigger_file_path`, `parent_file_path`
 - Exit code ignored
 
 #### UserPromptSubmit
-
 Fires when user submits a prompt, before processing. No matcher.
-
 - Input: `prompt`
 - Block: `decision: "block"` + `reason`, or exit 2 (erases prompt)
 - Output: `additionalContext`
 
 #### PreToolUse
-
 Fires before a tool call. Matcher: tool name (`Bash`, `Edit|Write`, `Read`, `Grep`, `Glob`, `WebFetch`, `WebSearch`, `Agent`, `mcp__.*`).
-
 - Input: `tool_name`, `tool_input`, `tool_use_id`
 - Output: `hookSpecificOutput` with:
   - `permissionDecision`: `"allow"` | `"deny"` | `"ask"`
@@ -157,9 +149,7 @@ Fires before a tool call. Matcher: tool name (`Bash`, `Edit|Write`, `Read`, `Gre
 - Exit 2: blocks the tool call
 
 #### PermissionRequest
-
 Fires when a permission dialog appears. Matcher: tool name.
-
 - Input: `tool_name`, `tool_input`, optionally `permission_suggestions`
 - Output: `hookSpecificOutput` with `decision`:
   - `behavior`: `"allow"` | `"deny"`
@@ -167,114 +157,88 @@ Fires when a permission dialog appears. Matcher: tool name.
 - Note: Does NOT fire in non-interactive mode (`-p`); use `PreToolUse` instead
 
 #### PostToolUse
-
 Fires after tool succeeds. Matcher: tool name.
-
 - Input: `tool_name`, `tool_input`, `tool_response`, `tool_use_id`
 - Output: `additionalContext`, `updatedMCPToolOutput` (MCP only)
 - Cannot undo — tool already ran
 
 #### PostToolUseFailure
-
 Fires after tool fails. Matcher: tool name.
-
 - Input: `tool_name`, `tool_input`, `tool_use_id`, `error`, optionally `is_interrupt`
 - Output: `additionalContext`
 
 #### Notification
-
 Fires on notification. Matcher: `permission_prompt`, `idle_prompt`, `auth_success`, `elicitation_dialog`.
-
 - Input: `message`, optionally `title`, `notification_type`
 - Output: `additionalContext`
 
 #### SubagentStart
-
 Fires before subagent spawn. Matcher: agent type (`Bash`, `Explore`, `Plan`, custom names).
-
 - Input: `agent_id`, `agent_type`
 - Output: `additionalContext`
 
 #### SubagentStop
-
 Fires when subagent finishes. Matcher: agent type.
-
 - Input: `stop_hook_active`, `agent_id`, `agent_type`, `agent_transcript_path`, `last_assistant_message`
 - Block: `decision: "block"` + `reason`
 
 #### Stop
-
 Fires when Claude finishes responding. No matcher. Does NOT fire on user interrupts.
-
 - Input: `stop_hook_active` (check to prevent infinite loops!), `last_assistant_message`
 - Block: `decision: "block"` + `reason` (prevents stopping)
 
 #### TeammateIdle
-
 Fires when a teammate is about to go idle. No matcher.
-
 - Input: `teammate_name`, `team_name`
 - Exit 2: prevents idle
 
 #### TaskCompleted
-
 Fires when task is marked completed. No matcher.
-
 - Input: `task_id`, `task_subject`, optionally `task_description`, `teammate_name`, `team_name`
 - Exit 2: prevents completion
 
 #### ConfigChange
-
 Fires when config file changes. Matcher: `user_settings`, `project_settings`, `local_settings`, `policy_settings`, `skills`.
-
 - Input: `source`, optionally `file_path`
 - Block: `decision: "block"` + `reason` (except `policy_settings`)
 
 #### WorktreeCreate
-
 Fires when worktree is created via `--worktree` or `isolation: "worktree"`. No matcher.
-
 - Input: `name` (slug identifier)
 - Output: absolute path on stdout (replaces default git behavior)
 - Any non-zero exit = creation fails
 
 #### WorktreeRemove
-
 Fires when worktree is removed. No matcher.
-
 - Input: `worktree_path`
 - Failures logged in debug mode only
 
 #### PreCompact
-
 Fires before context compaction. Matcher: `manual`, `auto`.
-
 - Input: `trigger`, `custom_instructions`
 - Side-effects only
 
 #### SessionEnd
-
 Fires when session terminates. Matcher: `clear`, `logout`, `prompt_input_exit`, `bypass_permissions_disabled`, `other`.
-
 - Input: `reason`
 - Side-effects only
 
 ## Exit Code Conventions
 
-| Exit Code | Meaning                                               |
-| --------- | ----------------------------------------------------- |
-| `0`       | Success. stdout parsed for JSON output                |
-| `2`       | Blocking error. stderr fed to Claude as error message |
-| Other     | Non-blocking error. stderr shown in verbose mode only |
+| Exit Code | Meaning |
+|-----------|---------|
+| `0` | Success. stdout parsed for JSON output |
+| `2` | Blocking error. stderr fed to Claude as error message |
+| Other | Non-blocking error. stderr shown in verbose mode only |
 
 ## Environment Variables
 
-| Variable             | Description                                                                   |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `CLAUDE_PROJECT_DIR` | Project root directory                                                        |
-| `CLAUDE_PLUGIN_ROOT` | Plugin root directory (plugin hooks only)                                     |
-| `CLAUDE_CODE_REMOTE` | `"true"` in remote web environments                                           |
-| `CLAUDE_ENV_FILE`    | (SessionStart only) Path to write `export` statements for persisting env vars |
+| Variable | Description |
+|----------|-------------|
+| `CLAUDE_PROJECT_DIR` | Project root directory |
+| `CLAUDE_PLUGIN_ROOT` | Plugin root directory (plugin hooks only) |
+| `CLAUDE_CODE_REMOTE` | `"true"` in remote web environments |
+| `CLAUDE_ENV_FILE` | (SessionStart only) Path to write `export` statements for persisting env vars |
 
 Note: `tool_name`, `tool_input`, `session_id`, `hook_event_name` etc. are JSON fields in stdin input, NOT environment variables.
 
@@ -284,12 +248,12 @@ All hooks receive: `session_id`, `transcript_path`, `cwd`, `permission_mode` (`d
 
 ## Universal Output Fields (JSON via stdout on exit 0)
 
-| Field            | Description                             |
-| ---------------- | --------------------------------------- |
-| `continue`       | `false` to stop Claude entirely         |
-| `stopReason`     | Message shown when `continue` is false  |
+| Field | Description |
+|-------|-------------|
+| `continue` | `false` to stop Claude entirely |
+| `stopReason` | Message shown when `continue` is false |
 | `suppressOutput` | `true` to hide stdout from verbose mode |
-| `systemMessage`  | Warning message shown to user           |
+| `systemMessage` | Warning message shown to user |
 
 ## Hooks in Skills/Agents (YAML Frontmatter)
 

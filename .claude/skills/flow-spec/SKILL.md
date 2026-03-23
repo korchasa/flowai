@@ -106,11 +106,11 @@ documentation, web) to understand the problem before asking the user.
 ```markdown
 # Spec: {Feature Name}
 
-| Field   | Value                        |
-| ------- | ---------------------------- |
+| Field   | Value                       |
+|---------|-----------------------------|
 | Status  | Draft/Ready/In-Progress/Done |
-| Created | YYYY-MM-DD                   |
-| Updated | YYYY-MM-DD                   |
+| Created | YYYY-MM-DD                  |
+| Updated | YYYY-MM-DD                  |
 
 ## Goal
 
@@ -123,7 +123,6 @@ documentation, web) to understand the problem before asking the user.
 ## Non-Goals
 
 <!-- Examples: "No backward compatibility with v1 API", "No UI changes in this phase", "No performance optimization", "No migration of existing data" -->
-
 - {Explicit exclusion 1}
 - {Explicit exclusion 2}
 

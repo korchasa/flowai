@@ -10,7 +10,6 @@ This skill provides instructions for effective use of the Deno CLI for developme
 ## Core Commands
 
 ### Execution and Tasks
-
 - `deno run [OPTIONS] <FILE>`: Run a script. Always consider permission flags, e.g., `--allow-net`, `--allow-read`, `--allow-env`.
 - `deno task <TASK>`: Run a task defined in `deno.json`. This is the preferred way to run project scripts.
 - `deno serve [OPTIONS] <FILE>`: Run an HTTP server.
@@ -18,7 +17,6 @@ This skill provides instructions for effective use of the Deno CLI for developme
 - `deno eval`: Evaluate a script from the command line.
 
 ### Dependency Management
-
 - `deno add <PACKAGE>`: Add dependencies (e.g., `deno add jsr:@std/assert` or `deno add npm:express`).
 - `deno install`: Install project dependencies.
 - `deno outdated`: Check for outdated dependencies.
@@ -27,7 +25,6 @@ This skill provides instructions for effective use of the Deno CLI for developme
 - `deno approve-scripts`: Approve npm lifecycle scripts.
 
 ### Tooling
-
 - `deno test [OPTIONS]`: Run tests. Use `--watch` for development mode.
 - `deno fmt`: Format source files.
 - `deno lint`: Lint source files.
@@ -53,6 +50,16 @@ Deno is secure by default. When using `deno run` or `deno test`, you **must** ex
 - `--allow-env`: Environment variable access.
 - `-A` or `--allow-all`: Allow everything (use with caution).
 
+## Unstable Features
+
+Some Deno APIs require explicit opt-in via `--unstable-*` flags or `deno.json` config:
+
+- `Deno.openKv()` → `--unstable-kv` or `"unstable": ["kv"]` in deno.json
+- `Deno.cron()` → `--unstable-cron` or `"unstable": ["cron"]` in deno.json
+- `new Deno.UnsafeWindowSurface()` → `--unstable-webgpu`
+
+When reviewing code, check for unstable API usage and ensure the corresponding flag is set.
+
 ## Configuration (`deno.json`)
 
 Always check for `deno.json` or `deno.jsonc` in the project root to understand `imports`, `tasks`, and `lint`/`fmt` settings.
@@ -60,25 +67,21 @@ Always check for `deno.json` or `deno.jsonc` in the project root to understand `
 ## Usage Examples
 
 ### Run tests with permissions
-
 ```bash
 deno test --allow-read --allow-env
 ```
 
 ### Add a dependency from JSR
-
 ```bash
 deno add jsr:@std/http
 ```
 
 ### Format the entire project
-
 ```bash
 deno fmt
 ```
 
 ## Tips
-
 - Use `deno help <command>` for detailed information on any subcommand.
 - Use `deno compile` to create standalone binaries.
 - For cloud deployments, use the `flow-skill-deno-deploy` skill.
