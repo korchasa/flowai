@@ -3,24 +3,26 @@ import { BenchmarkSkillScenario } from "../../../../scripts/benchmarks/lib/types
 export const EngineerSubagentBasicBench = new class
   extends BenchmarkSkillScenario {
   id = "flow-skill-engineer-subagent-basic";
-  name = "Create a code reviewer subagent for a Claude Code project";
+  name = "Create a code reviewer subagent for a Cursor project";
   skill = "flow-skill-engineer-subagent";
 
+  // NOTE: Uses Cursor (.cursor/) instead of Claude Code (.claude/) because
+  // Claude Code CLI blocks Write tool to .claude/ even in bypassPermissions mode.
   userQuery =
-    "/flow-skill-engineer-subagent Create a subagent that acts as a security-focused code reviewer. It should proactively check for hardcoded secrets, SQL injection, XSS vulnerabilities, and insecure dependencies. This is a Claude Code project, place it at project level.";
+    "/flow-skill-engineer-subagent Create a subagent that acts as a security-focused code reviewer. It should proactively check for hardcoded secrets, SQL injection, XSS vulnerabilities, and insecure dependencies. This is a Cursor project, place it at project level.";
 
   checklist = [
     {
       id: "detects_ide",
       description:
-        "Did the agent detect Claude Code as the target IDE (via .claude/ directory) or acknowledge the user's specification?",
+        "Did the agent detect Cursor as the target IDE (via .cursor/ directory) or acknowledge the user's specification?",
       critical: true,
       type: "semantic" as const,
     },
     {
       id: "correct_file_location",
       description:
-        "Did the agent create the subagent file in the correct location (.claude/agents/*.md)?",
+        "Did the agent create the subagent file in the correct location (.cursor/agents/*.md)?",
       critical: true,
     },
     {
@@ -61,8 +63,8 @@ export const EngineerSubagentBasicBench = new class
   ];
 
   override setup(sandboxDir: string): Promise<void> {
-    // Create .claude directory marker so agent detects Claude Code
-    Deno.mkdirSync(`${sandboxDir}/.claude/agents`, { recursive: true });
+    // Create .cursor directory marker so agent detects Cursor
+    Deno.mkdirSync(`${sandboxDir}/.cursor/agents`, { recursive: true });
     return Promise.resolve();
   }
 }();

@@ -6,18 +6,20 @@ export const EngineerSkillBasicBench = new class
   name = "Create a skill for generating database migration files";
   skill = "flow-skill-engineer-skill";
 
+  // NOTE: Uses Cursor (.cursor/) instead of Claude Code (.claude/) because
+  // Claude Code CLI blocks Write tool to .claude/ even in bypassPermissions mode.
   userQuery =
-    "/flow-skill-engineer-skill Create a skill that helps generate database migration files for PostgreSQL. It should guide through creating up/down migrations with proper naming conventions (timestamp-based), handle common patterns like adding columns, creating tables, and adding indexes. Place it as a project skill for Claude Code.";
+    "/flow-skill-engineer-skill Create a skill that helps generate database migration files for PostgreSQL. It should guide through creating up/down migrations with proper naming conventions (timestamp-based), handle common patterns like adding columns, creating tables, and adding indexes. Place it as a project skill for Cursor.";
 
   interactive = true;
   userPersona =
-    "A backend developer who wants a skill for database migrations. When asked about IDE, answer Claude Code. When asked about scope, answer project-level. Keep answers brief.";
+    "A backend developer who wants a skill for database migrations. When asked about IDE, answer Cursor. When asked about scope, answer project-level. Keep answers brief.";
 
   checklist = [
     {
       id: "skill_md_created",
       description:
-        "Did the agent create a SKILL.md file in the correct location (e.g., .claude/skills/<name>/SKILL.md)?",
+        "Did the agent create a SKILL.md file in the correct location (e.g., .cursor/skills/<name>/SKILL.md)?",
       critical: true,
     },
     {
@@ -56,8 +58,8 @@ export const EngineerSkillBasicBench = new class
   ];
 
   override setup(sandboxDir: string): Promise<void> {
-    // Create .claude directory marker so agent detects Claude Code
-    Deno.mkdirSync(`${sandboxDir}/.claude/skills`, { recursive: true });
+    // Create .cursor directory marker so agent detects Cursor
+    Deno.mkdirSync(`${sandboxDir}/.cursor/skills`, { recursive: true });
     return Promise.resolve();
   }
 }();

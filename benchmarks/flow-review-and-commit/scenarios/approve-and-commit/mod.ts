@@ -67,5 +67,11 @@ Keep answers brief and affirmative.`;
         "Is the final git status clean (no untracked or modified files)?",
       critical: true,
     },
+    {
+      id: "no_reflect_suggestion",
+      description:
+        "Did the agent correctly skip the /flow-reflect suggestion? In a simple session without errors, retries, or user corrections, the agent must NOT suggest running /flow-reflect.",
+      critical: false,
+    },
   ];
 }();

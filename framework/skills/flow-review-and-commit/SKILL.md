@@ -198,7 +198,6 @@ After completing the review report above:
    - If **any** of these signals are detected, suggest:
      "This session had [errors/retries/corrections/workarounds]. Consider running `/flow-reflect` to capture improvements for project instructions."
    - If none detected, skip silently.
-
 </step_by_step>
 
 ### Final Combined Report
