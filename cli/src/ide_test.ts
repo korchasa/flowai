@@ -114,8 +114,9 @@ Deno.test("CLI - bare command inside IDE prints message instead of syncing", asy
 
   assertEquals(output.code, 0);
   assert(
-    stdout.includes("IDE context detected"),
-    `Expected IDE message, got: ${stdout}`,
+    stdout.includes("IDE context detected") &&
+      stdout.includes("flowai sync -y --skip-update-check"),
+    `Expected IDE message with sync subcommand hint, got: ${stdout}`,
   );
   assert(
     !stdout.includes("Sync plan"),

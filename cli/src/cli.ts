@@ -206,7 +206,7 @@ export async function main(args: string[]): Promise<void> {
       // Inside IDE context: show help instead of auto-syncing
       if (isInsideIDE()) {
         console.log(
-          "IDE context detected. Run `flowai sync` explicitly or use `/flow-update` skill.",
+          "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flow-update` skill.",
         );
         return;
       }
