@@ -188,8 +188,9 @@ export async function main(args: string[]): Promise<void> {
       .description(
         "Explicitly sync framework skills/agents into IDE config dirs.",
       ),
-  ).action(async (options: Record<string, unknown>) => {
-    await runSync(extractSyncOptions(options));
+    // deno-lint-ignore no-explicit-any
+  ).action(async (options: any) => {
+    await runSync(extractSyncOptions(options as Record<string, unknown>));
   });
 
   const command = withSyncOptions(
@@ -200,7 +201,8 @@ export async function main(args: string[]): Promise<void> {
         "Sync AssistFlow framework skills/agents into project-local IDE config dirs.",
       ),
   )
-    .action(async (options: Record<string, unknown>) => {
+    // deno-lint-ignore no-explicit-any
+    .action(async (options: any) => {
       // Inside IDE context: show help instead of auto-syncing
       if (isInsideIDE()) {
         console.log(
@@ -209,7 +211,7 @@ export async function main(args: string[]): Promise<void> {
         return;
       }
 
-      await runSync(extractSyncOptions(options));
+      await runSync(extractSyncOptions(options as Record<string, unknown>));
     })
     .command("sync", syncSubcommand);
 

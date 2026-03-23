@@ -4,7 +4,7 @@ import { buildCheckCommands } from "./task-check.ts";
 Deno.test("buildCheckCommands returns expected steps", () => {
   const commands = buildCheckCommands();
 
-  assertEquals(commands.length, 8, "Expected eight check commands.");
+  assertEquals(commands.length, 9, "Expected nine check commands.");
   assertEquals(commands[0].args.join(" "), "task bundle");
   assertEquals(
     commands[1].args.join(" "),
@@ -16,10 +16,11 @@ Deno.test("buildCheckCommands returns expected steps", () => {
     "test -A --ignore=scripts/benchmarks/lib/integration.test.ts scripts",
   );
   assertEquals(commands[4].args.join(" "), "test -A cli/src");
-  assertEquals(commands[5].args.join(" "), "run -A scripts/check-skills.ts");
-  assertEquals(commands[6].args.join(" "), "run -A scripts/check-agents.ts");
+  assertEquals(commands[5].args.join(" "), "check cli/src/main.ts");
+  assertEquals(commands[6].args.join(" "), "run -A scripts/check-skills.ts");
+  assertEquals(commands[7].args.join(" "), "run -A scripts/check-agents.ts");
   assertEquals(
-    commands[7].args.join(" "),
+    commands[8].args.join(" "),
     "run -A scripts/check-skill-sync.ts",
   );
 });

@@ -43,6 +43,11 @@ export function buildCheckCommands(): CommandSpec[] {
       cmd: "deno",
       args: ["test", "-A", "cli/src"],
     },
+    // Type-check CLI entry point (catches errors missed by tests but found by deno publish)
+    {
+      cmd: "deno",
+      args: ["check", "cli/src/main.ts"],
+    },
     // Skill/agent validation
     {
       cmd: "deno",
