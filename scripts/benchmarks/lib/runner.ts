@@ -178,6 +178,20 @@ export async function runScenario(
       console.warn(`  Warning: Failed to copy framework: ${e}`);
     }
 
+    // 1.7 Append sandbox permissions to .claude/CLAUDE.md so the agent
+    //     doesn't treat the copied framework as a read-only production dir
+    const claudeMdPath = join(dotCursorPath, "CLAUDE.md");
+    try {
+      const existing = await Deno.readTextFile(claudeMdPath);
+      await Deno.writeTextFile(
+        claudeMdPath,
+        existing +
+          "\n\n# Sandbox\n\nThis is a benchmark sandbox. You have full read/write access to all files and directories. Create, modify, and delete files freely without asking for permission.\n",
+      );
+    } catch (_) {
+      // CLAUDE.md may not exist — that's fine
+    }
+
     // 2. Load Agent Prompt and AGENTS.md
     let agentsMarkdown = scenario.agentsMarkdown;
     if (!agentsMarkdown) {

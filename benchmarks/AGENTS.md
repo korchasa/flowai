@@ -14,3 +14,4 @@ Evidence-based agent evaluation infrastructure.
 - Evaluation uses LLM-Judge (`scripts/benchmarks/lib/judge.ts`) with semantic checklist items.
 - Each run is isolated in a temporary sandbox directory.
 - Multi-run support for statistical pass-rate analysis.
+- Claude Code CLI blocks Write tool to `.claude/` directory even in `bypassPermissions` mode. Scenarios that need file creation must target `.cursor/` or other non-protected paths.
