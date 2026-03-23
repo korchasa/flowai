@@ -188,7 +188,7 @@ export async function main(args: string[]): Promise<void> {
       .description(
         "Explicitly sync framework skills/agents into IDE config dirs.",
       ),
-  ).action(async (options) => {
+  ).action(async (options: Record<string, unknown>) => {
     await runSync(extractSyncOptions(options));
   });
 
@@ -200,7 +200,7 @@ export async function main(args: string[]): Promise<void> {
         "Sync AssistFlow framework skills/agents into project-local IDE config dirs.",
       ),
   )
-    .action(async (options) => {
+    .action(async (options: Record<string, unknown>) => {
       // Inside IDE context: show help instead of auto-syncing
       if (isInsideIDE()) {
         console.log(
