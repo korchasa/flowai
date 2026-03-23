@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.2](https://github.com/korchasa/flowai/compare/v0.3.1...v0.3.2) (2026-03-20)
+
+
+### Features
+
+* **cli:** delete excluded framework resources during sync ([94bd68b](https://github.com/korchasa/flowai/commit/94bd68beede533818f137b70976a869e2f464a77))
+
 ### [0.3.1](https://github.com/korchasa/flowai/compare/v0.3.0...v0.3.1) (2026-03-20)
 
 
