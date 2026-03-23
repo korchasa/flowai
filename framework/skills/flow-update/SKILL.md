@@ -39,26 +39,36 @@ See `references/scaffolded-artifacts.md` for the full source-skill → artifact 
 
 <step_by_step>
 
-1. **Sync framework**
-   - Run `flowai sync -y --skip-update-check` via shell. Capture output.
-     - IMPORTANT: `sync` is a **subcommand** — always `flowai sync [flags]`, never bare `flowai [flags]`.
-     - Bare `flowai` is blocked in IDE context and will print a help message instead of syncing.
-   - If `flowai` is not installed, inform the user:
+1. **Update CLI**
+   - Run `flowai --version` to check if installed. If not installed, inform the user:
      ```
      Install: deno install -gArf jsr:@korchasa/flowai
      ```
+     and stop.
+   - Check for a newer version by fetching `https://jsr.io/@korchasa/flowai/meta.json` (field `latest`).
+   - If a newer version is available, update:
+     ```
+     deno install -g -A -f jsr:@korchasa/flowai@<latest_version>
+     ```
+     IMPORTANT: Always specify the explicit version (`@X.Y.Z`) — without it, `deno.lock` may pin the old version.
+   - Verify the update: `flowai --version`.
 
-2. **Detect changes**
+2. **Sync framework**
+   - Run `flowai sync -y --skip-update-check` via shell. Capture output.
+     - IMPORTANT: `sync` is a **subcommand** — always `flowai sync [flags]`, never bare `flowai [flags]`.
+     - Bare `flowai` is blocked in IDE context and will print a help message instead of syncing.
+
+3. **Detect changes**
    - Determine which IDE config dirs exist in the project (check for `.claude/`, `.cursor/`, `.opencode/` directories, or read `.flowai.yaml` `ides` field).
    - For each existing IDE config dir, run `git status --porcelain` filtered to `<ide-dir>/skills/` and `<ide-dir>/agents/`. This catches both new (untracked) and modified files, unlike `git diff` which misses untracked files.
    - If no changes detected — report "Framework is up to date" and stop.
 
-3. **Analyze template diffs**
+4. **Analyze template diffs**
    - For each changed skill/agent file, run `git diff <file>`.
    - Parse diffs to understand what conventions changed (e.g., new TDD step, updated doc format, changed devcontainer pattern).
    - Summarize changes per skill.
 
-4. **Map to project artifacts**
+5. **Map to project artifacts**
    - Read `references/scaffolded-artifacts.md` for source-skill → artifact mapping.
    - Cross-reference changed skills with scaffolded artifacts:
      - `flow-init` templates changed → check `./AGENTS.md`, `./documents/AGENTS.md`, `./scripts/AGENTS.md`
@@ -67,19 +77,19 @@ See `references/scaffolded-artifacts.md` for the full source-skill → artifact 
      - `flow-skill-configure-deno-commands` changed → check `deno.json` tasks, `scripts/check.ts`
    - If no affected artifacts found — report only sync results and stop.
 
-5. **Propose changes**
+6. **Propose changes**
    - For each affected artifact, show:
      - What changed in the framework template (summary of diff)
      - Current state of the project artifact (relevant section)
      - Proposed update (preserving project-specific content)
    - Clearly explain **why** the change is recommended.
 
-6. **Apply with confirmation**
+7. **Apply with confirmation**
    - Show per-file diff to the user.
    - Wait for user approval/rejection of each change.
    - Apply only approved changes.
 
-7. **Commit**
+8. **Commit**
    - Stage all synced files + migrated artifacts.
    - Commit with message: `chore(framework): update AssistFlow framework`
    - Include list of migrated artifacts in commit body.

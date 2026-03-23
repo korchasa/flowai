@@ -203,8 +203,16 @@ export async function main(args: string[]): Promise<void> {
   )
     // deno-lint-ignore no-explicit-any
     .action(async (options: any) => {
-      // Inside IDE context: show help instead of auto-syncing
+      // Inside IDE context: show update hint + sync command instead of auto-syncing
       if (isInsideIDE()) {
+        const update = await checkForUpdate(VERSION).catch(() => null);
+        if (update?.updateAvailable) {
+          console.log(
+            `Update available: ${update.currentVersion} → ${update.latestVersion}`,
+          );
+          console.log(`Run: ${update.updateCommand}`);
+          console.log("");
+        }
         console.log(
           "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flow-update` skill.",
         );
