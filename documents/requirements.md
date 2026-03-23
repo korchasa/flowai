@@ -34,10 +34,12 @@ Dependencies between unclosed requirements define execution order:
 
 1. **FR-21.3–21.6** Universal Skill & Script Requirements — standardize before distribution
 2. **FR-12.5** flow-init idempotent re-run — independent, can run in parallel with 1
+3. **FR-7.1** Co-locate benchmarks with skills — can run in parallel with 1–2
 
 ```
 FR-21.3–21.6
 FR-12.5 (parallel)
+FR-7.1 (parallel)
 FR-10.9 open questions (parallel)
 ```
 
@@ -217,6 +219,11 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
       `scripts/benchmarks/lib/runner.ts:237-253`
 - [x] **Environment Management**: `.env` support for API keys in benchmarks. Evidence:
       `scripts/benchmarks/lib/llm.ts:2-61`, `.env`
+- [ ] **FR-7.1 Co-located Benchmarks**: Benchmark scenarios MUST be stored alongside
+      the skills they test, inside `framework/skills/<skill-name>/benchmarks/` instead
+      of the top-level `benchmarks/<skill-name>/`. This keeps scenarios, fixtures, and
+      the skill definition in a single SPOT, simplifies discovery, and ensures benchmarks
+      are distributed/versioned together with their skill.
 
 ### 3.8 Component Coverage Matrix
 
@@ -1026,6 +1033,75 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] **FR-21.6.3 Name collision**: Project-level skills override user-level
         skills when names collide (per agentskills.io client implementation
         guide). flowai overwrites on sync. Documented in SDS (section 3.1.4).
+
+### 3.22 Framework Update — `flow-update` (FR-22)
+
+- **Description:** Single entry point for updating the AssistFlow framework in a
+  project. Handles CLI update, skill/agent sync via `flowai sync`, and migration
+  of scaffolded project artifacts using template diffs as migration source.
+- **Use case scenario:** A new AssistFlow version changes TDD conventions in
+  `flow-init` templates. The developer runs `/flow-update`. The skill updates the
+  CLI, syncs skills/agents, detects the convention drift in the project's
+  `AGENTS.md`, shows a diff, and applies the change after confirmation.
+- **Priority:** High (ensures projects stay aligned with framework conventions).
+
+#### FR-22.1 CLI Update
+
+- **Acceptance criteria:**
+  - [x] **FR-22.1.1 Auto-update check**: `flow-update` runs `flowai sync` which
+        checks JSR for newer CLI version and offers to update. Evidence:
+        `framework/skills/flow-update/SKILL.md:42-47` step 1 "Sync framework"
+        delegates to `flowai sync`, which has built-in update check
+        (`cli/src/cli.ts:50-79`).
+  - [x] **FR-22.1.2 Sync execution**: After CLI update, skills and agents are
+        re-synced into IDE config directories. Evidence:
+        `framework/skills/flow-update/SKILL.md:43` runs `flowai sync` which
+        performs full sync (`cli/src/sync.ts`).
+
+#### FR-22.2 Scaffolded Artifact Migration
+
+- **Acceptance criteria:**
+  - [x] **FR-22.2.1 Drift detection**: Compares changed framework templates
+        against scaffolded project artifacts (AGENTS.md, .devcontainer/,
+        deno.json tasks, scripts/check.ts, documents/). Evidence:
+        `framework/skills/flow-update/SKILL.md:49-52` step 2 uses
+        `git status --porcelain`; step 3 (`SKILL.md:54-57`) analyzes diffs;
+        step 4 (`SKILL.md:59-66`) maps to artifacts via
+        `references/scaffolded-artifacts.md`.
+  - [x] **FR-22.2.2 Per-file confirmation**: Shows diff and asks user before
+        modifying each scaffolded artifact. Never silently overwrites. Evidence:
+        `framework/skills/flow-update/SKILL.md:30` rule 2 "Per-file
+        confirmation"; step 6 (`SKILL.md:75-78`) "Show per-file diff...
+        Wait for user approval/rejection".
+  - [x] **FR-22.2.3 User content preservation**: Only updates
+        framework-originated sections. Project-specific customizations are
+        preserved. Evidence: `framework/skills/flow-update/SKILL.md:31`
+        rule 3 "Preserve user content"; step 5 (`SKILL.md:71`)
+        "Proposed update (preserving project-specific content)".
+  - [x] **FR-22.2.4 Evidence-based changes**: Only proposes migrations when
+        template diffs show relevant convention changes. Evidence:
+        `framework/skills/flow-update/SKILL.md:32` rule 4 "No changes
+        without evidence"; step 3 (`SKILL.md:54-57`) parses template diffs
+        before proposing.
+
+#### FR-22.3 Cross-IDE Support
+
+- **Acceptance criteria:**
+  - [x] **FR-22.3.1 IDE detection**: Works for Cursor, Claude Code, and OpenCode
+        projects. Detects IDE config dirs or reads `.flowai.yaml` `ides` field.
+        Evidence: `framework/skills/flow-update/SKILL.md:33` rule 5
+        "Cross-IDE: Must work for Cursor, Claude Code, and OpenCode";
+        step 2 (`SKILL.md:50`) checks `.claude/`, `.cursor/`, `.opencode/`
+        or `.flowai.yaml`.
+
+#### FR-22.4 Commit
+
+- **Acceptance criteria:**
+  - [x] **FR-22.4.1 Atomic commit**: Stages synced files + migrated artifacts
+        together in one commit with message
+        `chore(framework): update AssistFlow framework`. Evidence:
+        `framework/skills/flow-update/SKILL.md:35` rule 7 "Atomic commit";
+        step 7 (`SKILL.md:80-83`) stages all + commits with specified message.
 
 ## 4. Non-functional requirements
 

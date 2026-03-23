@@ -39,22 +39,23 @@ Developer: sets task
 
 ## Installation
 
-**Prerequisite:** [Deno](https://deno.land/) v2.x (`curl -fsSL https://deno.land/install.sh | sh`)
-
-Install the `flowai` CLI globally, then run it in your project:
+Requires [Deno](https://deno.land/) v2.x.
 
 ```sh
 deno install -g -A jsr:@korchasa/flowai
+flowai
 ```
 
-**What happens:**
+On first run, `flowai` interactively creates `.flowai.yaml` to configure which skills/agents to sync.
 
-1. `flowai` reads skills and agents bundled inside the CLI (no network needed)
-2. Detects which IDEs you have installed (Cursor, Claude Code, OpenCode)
-3. Transforms resources into IDE-specific format (adds required frontmatter per IDE)
-4. Copies files into IDE config directories — your own files are never touched
+## Updating
 
-Re-running is safe (idempotent). On first run, `flowai` interactively creates `.flowai.yaml` to configure which skills/agents to sync.
+Run `/flow-update` in your AI IDE. It handles the full update cycle:
+
+1. Updates the `flowai` CLI to the latest version
+2. Syncs skills and agents into IDE config directories
+3. Detects convention changes in framework templates
+4. Proposes per-file migrations for scaffolded artifacts (AGENTS.md, devcontainer, deno.json tasks) — with diffs and confirmation for each file
 
 ## Development Setup
 
@@ -64,7 +65,7 @@ For contributors working on AssistFlow itself (not end-user installation):
 
 ```sh
 git clone https://github.com/korchasa/flowai.git
-cd flow
+cd flowai
 deno task check
 ```
 
@@ -118,7 +119,7 @@ Every task follows the same supervised loop:
 
 - `flow-init` — project initialization
 - `flow-plan` — task planning (GODS format)
-- `flow-commit` — atomic commits with QA
+- `flow-commit` — atomic commits with QA and self-reflection
 - `flow-review` — QA + code review of current changes
 - `flow-review-and-commit` — review quality, then commit if approved
 - `flow-reflect` — self-analysis of recent work
@@ -126,6 +127,7 @@ Every task follows the same supervised loop:
 - `flow-investigate` — deep bug investigation
 - `flow-answer` — codebase questions
 - `flow-spec` — structured feature specification
+- `flow-update` — update AssistFlow framework (sync skills/agents, migrate artifacts)
 
 ### Extending AssistFlow (Skills)
 
@@ -149,8 +151,8 @@ Every task follows the same supervised loop:
 - `flow-skill-write-gods-tasks` — GODS-format tasks
 - `flow-skill-write-prd` — Product Requirements Documents
 - `flow-skill-write-in-informational-style` — informational writing style
-- `flow-skill-manage-github-tickets-by-mcp` — GitHub issue management
-- `flow-skill-playwright-cli` — browser automation
+- `flow-skill-manage-github-tickets` — GitHub issue management
+- `flow-skill-browser-automation` — browser automation
 - `flow-skill-fix-tests` — fix failing tests
 - `flow-skill-conduct-qa-session` — Q&A sessions
 - `flow-skill-analyze-context` — token usage analysis
@@ -161,6 +163,14 @@ Every task follows the same supervised loop:
 - `flow-skill-deno-deploy` — Deno Deploy management
 - `flow-skill-cursor-agent-integration` — cursor-agent CLI integration
 - `flow-skill-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
+- `flow-skill-example` — example skill demonstrating variable renaming
+
+### Agents
+
+- `deep-research-worker` — research worker for deep research sub-tasks
+- `flow-console-expert` — complex console tasks and command execution
+- `flow-diff-specialist` — git diff analysis and atomic commit preparation
+- `flow-skill-executor` — executes specific skills by request
 
 ## Key Principles
 
