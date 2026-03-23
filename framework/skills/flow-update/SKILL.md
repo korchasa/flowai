@@ -40,7 +40,9 @@ See `references/scaffolded-artifacts.md` for the full source-skill → artifact 
 <step_by_step>
 
 1. **Sync framework**
-   - Run `flowai sync` via shell. Capture output.
+   - Run `flowai sync -y --skip-update-check` via shell. Capture output.
+     - IMPORTANT: `sync` is a **subcommand** — always `flowai sync [flags]`, never bare `flowai [flags]`.
+     - Bare `flowai` is blocked in IDE context and will print a help message instead of syncing.
    - If `flowai` is not installed, inform the user:
      ```
      Install: deno install -gArf jsr:@korchasa/flowai
