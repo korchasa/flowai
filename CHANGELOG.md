@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.3](https://github.com/korchasa/flowai/compare/v0.3.2...v0.3.3) (2026-03-23)
+
+
+### Features
+
+* **benchmarks:** add 25 new benchmark scenarios for framework skills ([1e2cb74](https://github.com/korchasa/flowai/commit/1e2cb7434240d0c07b34374e36ba87c3f78afc2f))
+* **benchmarks:** migrate to stream-json, add NO_COLOR support, skip logic ([cf8fb0b](https://github.com/korchasa/flowai/commit/cf8fb0b3513e73981d94b8d9508ea18d875a18d4))
+* **cli:** interactive update prompt with deno.lock pinning fix ([601f75f](https://github.com/korchasa/flowai/commit/601f75f80a8fc77e73902666283f5ab7593461e2))
+* **framework:** add flow-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
+* **framework:** enrich variant analysis with Risks and Trade-offs ([a0a66b7](https://github.com/korchasa/flowai/commit/a0a66b733e83c29352880a09ef4e14f0a528900e))
+* **scripts:** auto-disable ANSI colors when running under Claude Code ([252981c](https://github.com/korchasa/flowai/commit/252981c5a86731b267ce1aea287d4956c89ff58f))
+
+
+### Bug Fixes
+
+* **benchmarks:** add interactive mode to review scenarios (P3) ([3ed58ee](https://github.com/korchasa/flowai/commit/3ed58ee1ae16ae8343647c2a9e13a7269b1eac97))
+* **benchmarks:** fix P5 strict checklists — skill fixes and interactive mode ([7c8830b](https://github.com/korchasa/flowai/commit/7c8830bb68b5b6229b189c1d5dbc98943f77ce9d))
+* **benchmarks:** fix P6 deterministic failures in flow-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
+* **benchmarks:** switch engineer-skill/subagent scenarios to .cursor/ to avoid CLI write block ([f8a6709](https://github.com/korchasa/flowai/commit/f8a670952fb19f8d00a6a171589a330c1dce6813))
+* **framework:** use system temp dir instead of _research_tmp in deep-research skill ([0e45167](https://github.com/korchasa/flowai/commit/0e4516750b941a71cecfe80002199369b15d247d))
+
+
+### Code Refactoring
+
+* **framework:** remove flow-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
+* **skills:** rename flow-skill-manage-github-tickets-by-mcp → flow-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
+* **skills:** rename flow-skill-playwright-cli → flow-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
+
+
+### Agent Changes
+
+* add Benchmark TDD flow to project instructions ([2f2f2e3](https://github.com/korchasa/flowai/commit/2f2f2e39061cf8d377851f90d0e4bdcc00dbc4b5))
+* **flow-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
+
+
+### Tests
+
+* **flow-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
+
+
+### Documentation
+
+* clean whiteboard — only remaining TODO items ([f8304b2](https://github.com/korchasa/flowai/commit/f8304b242f582ddff1ab6bc24adbb2bac0f4871c))
+* update whiteboard — ai-skel-ts removed from framework ([f85f077](https://github.com/korchasa/flowai/commit/f85f077d0774b2c058dbd9558d5ec700dc0dc066))
+* update whiteboard — P4 resolved ([b3dee86](https://github.com/korchasa/flowai/commit/b3dee8619f99b14f30f27c3391747cfd5aa9a4e8))
+* update whiteboard — P5 resolved ([1bb76b0](https://github.com/korchasa/flowai/commit/1bb76b0df666b2f7cd4c812941b2dc308a168a36))
+* update whiteboard — P6 partially resolved ([bc7ffcf](https://github.com/korchasa/flowai/commit/bc7ffcffd527fd618fa913e4664af527b945b00a))
+* **versioning:** add draft spec for per-skill semantic versioning ([b60d3cd](https://github.com/korchasa/flowai/commit/b60d3cdcc55b7ad13dcf60464592eb6ba2448581))
+
+
+### Chores
+
+* **benchmarks:** tune scenario timeouts, interactive mode, and params ([ee2578f](https://github.com/korchasa/flowai/commit/ee2578f1eef9c5c71c377b8f06a789c64a67bab6))
+* **scripts:** add IDE environment detection utility script ([5a8679d](https://github.com/korchasa/flowai/commit/5a8679de2cfa93b34f372e209c70873ed49dba04))
+
 ### [0.3.2](https://github.com/korchasa/flowai/compare/v0.3.1...v0.3.2) (2026-03-20)
 
 
