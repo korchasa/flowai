@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.7](https://github.com/korchasa/flowai/compare/v0.3.6...v0.3.7) (2026-03-24)
+
+
+### Features
+
+* **cli:** --version checks for updates and shows update command ([af74d6d](https://github.com/korchasa/flowai/commit/af74d6d42e17af8ca86e72bba3d084eba4ffad98))
+* **framework:** add explicit git diff commands to flow-update skill ([b94122e](https://github.com/korchasa/flowai/commit/b94122ec036c0b2d1391ef6378e65c3de5039231))
+* **framework:** add interactive-teaching-materials skill ([6f84b1e](https://github.com/korchasa/flowai/commit/6f84b1e64ef830b80601a464f72a4c502540a466))
+* **framework:** mandatory Documentation Audit with gate and report template ([64eea6a](https://github.com/korchasa/flowai/commit/64eea6a6b66a754ba8ee5359d075f8d3ba5c2774))
+
+
+### Tests
+
+* **benchmarks:** add auto-docs scenarios and .flowai.yaml config ([2f720f9](https://github.com/korchasa/flowai/commit/2f720f944de5305fc1a3fa912daaba29e25c22e1))
+
 ### [0.3.6](https://github.com/korchasa/flowai/compare/v0.3.5...v0.3.6) (2026-03-23)
 
 
