@@ -41,9 +41,9 @@
 - **OpenCode**: `opencode.json` (`instructions` with globs).[^3]
 
 ### 2.3 Custom Commands (`/command`)
-- **Cursor**: `.cursor/commands/*.md`.
-- **Claude Code**: `.claude/commands/*.md` (supports args, frontmatter: `allowed-tools`, `model`).[^2]
-- **OpenCode**: `.opencode/commands/*.md` (supports `$ARGUMENTS`, shell interpolation).[^3]
+- **Cursor**: `.cursor/commands/*.md`. Arguments passed in free form.
+- **Claude Code**: `.claude/commands/*.md`, `.claude/commands/<namespace>/*.md`. Supports `$1`–`$N` args. Frontmatter: `allowed-tools`, `argument-hint`, `description`, `model`, `disable-model-invocation`.[^2]
+- **OpenCode**: `.opencode/commands/*.md`. Supports `$ARGUMENTS`, `$1`–`$N`, `` !`shell` ``, `@filepath`. Frontmatter: `description`, `agent`, `model`, `subtask` (boolean).[^3]
 
 ### 2.4 Event Hooks / Plugins
 
@@ -135,7 +135,7 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 ### 2.5 Skills (SKILL.md)
 - **Cursor**: `.cursor/skills/<name>/SKILL.md`; also `.claude/skills/`, `.codex/skills/` (compat).[^10]
 - **Claude Code**: `~/.claude/skills/`, `.claude/skills/` (project).[^11]
-- **OpenCode**: `.opencode/skills/` (fallbacks: `.claude/skills/`, `.agents/skills/`).[^12]
+- **OpenCode**: `.opencode/skills/` (fallbacks: `.claude/skills/`, `.agents/skills/`). Frontmatter: `name`, `description` (required); `license`, `compatibility`, `metadata` (optional). Name regex: `^[a-z0-9]+(-[a-z0-9]+)*$`, 1–64 chars, must match dir name.[^12]
 
 ### 2.6 MCP Integration
 - **Cursor**: `.cursor/mcp.json` (project/user). Transports: stdio, SSE, Streamable HTTP. OAuth. Config interpolation (`${env:NAME}`, `${workspaceFolder}`). MCP Marketplace (one-click install).[^1]
@@ -159,10 +159,10 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 ### 2.8 Custom Agents (Subagents)
 - **Cursor**: `~/.cursor/agents/*.md`, `.cursor/agents/*.md`.
 - **Claude Code**: `.claude/agents/*.md` (project), `~/.claude/agents/*.md` (user). Built-in: Explore (Haiku, read-only), Plan (inherit, read-only), general-purpose. Frontmatter: `tools`, `disallowedTools`, `model`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (worktree). No subagent nesting.[^23]
-- **OpenCode**: `~/.config/opencode/agents/*.md`, `.opencode/agents/*.md`.[^3]
+- **OpenCode**: `~/.config/opencode/agents/*.md`, `.opencode/agents/*.md`. Frontmatter: `description`, `mode` (`primary`/`subagent`/`all`), `model`, `temperature`, `top_p`, `steps`, `tools`, `permission`, `color`, `hidden`, `disable`.[^3]
 
 ### 2.9 Custom Tools
-- **OpenCode**: `.opencode/tools/*.{ts,js}`.[^3]
+- **OpenCode**: `.opencode/tools/*.{ts,js}` (project), `~/.config/opencode/tools/` (user). Uses `tool()` from `@opencode-ai/plugin`. Filename = tool name. Multiple exports create `<filename>_<exportname>`. Can override built-in tools by using same name.[^3]
 
 ### 2.10 Plugin Bundles & Distribution
 
