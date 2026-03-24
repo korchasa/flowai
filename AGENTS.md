@@ -112,7 +112,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 ### Benchmark TDD (Skills/Agents)
 
-1. **RED**: Write benchmark scenario (`benchmarks/<skill>/scenarios/<name>/mod.ts`) for new/changed skill behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
+1. **RED**: Write benchmark scenario (`framework/skills/<skill>/benchmarks/<name>/mod.ts`) for new/changed skill behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
 2. **GREEN**: Update skill (`framework/skills/<name>/SKILL.md`) until benchmark passes.
 3. **REFACTOR**: Improve skill text or benchmark clarity. No behavior change. Re-run benchmark.
 4. **CHECK**: Run ALL benchmarks for the affected skill. Fix all failures.

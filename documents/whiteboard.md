@@ -34,9 +34,9 @@
 - `documents/CLAUDE.md` — иерархия, формат
 - `documents/.gitignore` — паттерн игнора
 - `.claude/skills/flow-*/SKILL.md` — локальные копии (генерируются flowai)
-- `benchmarks/flow-plan/scenarios/*/mod.ts` — 5 сценариев
-- `benchmarks/flow-init/scenarios/brownfield/mod.ts`
-- `benchmarks/flow-maintenance/scenarios/basic/mod.ts`
+- `framework/skills/flow-plan/benchmarks/*/mod.ts` — 5 сценариев
+- `framework/skills/flow-init/benchmarks/brownfield/mod.ts`
+- `framework/skills/flow-maintenance/benchmarks/basic/mod.ts`
 
 ### Constraints
 
@@ -145,14 +145,14 @@ whiteboards/
 Все сценарии, проверяющие `documents/whiteboard.md`, обновить.
 Description — это prompt для LLM-judge (semantic check), не код. Заменить текст описания на `documents/whiteboards/`.
 - Затронутые файлы:
-  - `benchmarks/flow-plan/scenarios/basic/mod.ts` — id "whiteboard_created"
-  - `benchmarks/flow-plan/scenarios/variants-complex/mod.ts` — id "whiteboard_created"
-  - `benchmarks/flow-plan/scenarios/variants-obvious/mod.ts` — id "whiteboard_created"
-  - `benchmarks/flow-plan/scenarios/interactive/mod.ts` — id "solution_filled"
-  - `benchmarks/flow-plan/scenarios/context/mod.ts` — id "whiteboard_context"
-  - `benchmarks/flow-plan/scenarios/refactor/mod.ts` — id "no_implementation"
-  - `benchmarks/flow-init/scenarios/brownfield/mod.ts` — id "documents_folder_created"
-  - `benchmarks/flow-maintenance/scenarios/basic/mod.ts` — id "whiteboard_report"
+  - `framework/skills/flow-plan/benchmarks/basic/mod.ts` — id "whiteboard_created"
+  - `framework/skills/flow-plan/benchmarks/variants-complex/mod.ts` — id "whiteboard_created"
+  - `framework/skills/flow-plan/benchmarks/variants-obvious/mod.ts` — id "whiteboard_created"
+  - `framework/skills/flow-plan/benchmarks/interactive/mod.ts` — id "solution_filled"
+  - `framework/skills/flow-plan/benchmarks/context/mod.ts` — id "whiteboard_context"
+  - `framework/skills/flow-plan/benchmarks/refactor/mod.ts` — id "no_implementation"
+  - `framework/skills/flow-init/benchmarks/brownfield/mod.ts` — id "documents_folder_created"
+  - `framework/skills/flow-maintenance/benchmarks/basic/mod.ts` — id "whiteboard_report"
 
 Description в checklist items обновить: упоминание `'documents/whiteboard.md'` → `'documents/whiteboards/'`.
 

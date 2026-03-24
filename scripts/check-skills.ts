@@ -39,6 +39,7 @@ export const ALLOWED_SUBDIRS = new Set([
   "references",
   "assets",
   "evals",
+  "benchmarks",
 ]);
 
 const SKILL_MAX_LINES = 500;
@@ -190,7 +191,11 @@ export async function validateReferenceDepth(
 ): Promise<SkillError[]> {
   const errors: SkillError[] = [];
 
-  for (const subdir of ALLOWED_SUBDIRS) {
+  // benchmarks/ is excluded: scenarios naturally have nested dirs (fixture/, etc.)
+  const depthCheckedDirs = [...ALLOWED_SUBDIRS].filter((d) =>
+    d !== "benchmarks"
+  );
+  for (const subdir of depthCheckedDirs) {
     const subdirPath = join(skillPath, subdir);
     try {
       for await (const entry of Deno.readDir(subdirPath)) {

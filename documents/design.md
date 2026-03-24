@@ -117,7 +117,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   - **Parallel Execution Protection**: Uses `benchmarks/benchmarks.lock` file containing the PID to prevent concurrent runs. Implements signal listeners (`SIGINT`, `SIGTERM`) and `unload` events for reliable cleanup.
   - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based).
   - **Docker**: Optional Docker isolation (`Dockerfile` based on `denoland/deno:alpine`) with `git`, `bash`, `curl`, and `cursor-agent` installed.
-  - **Hierarchical Scenarios**: Scenarios are organized as `benchmarks/<skill>/scenarios/<scenario>/mod.ts`.
+  - **Co-located Scenarios**: Scenarios are co-located with skills as `framework/skills/<skill>/benchmarks/<scenario>/mod.ts`.
   - **JSON Configuration**: `benchmarks/config.json` stores unified model presets.
   - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.

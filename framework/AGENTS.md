@@ -4,7 +4,7 @@ Source of truth for end-user skills and agents distributed via [flowai](https://
 
 ## Responsibility
 
-- `skills/` — Product skills (`SKILL.md` directories). Categories: `flow-*` (commands), `flow-skill-*` (capabilities).
+- `skills/` — Product skills (`SKILL.md` directories). Categories: `flow-*` (commands), `flow-skill-*` (capabilities). Benchmark scenarios co-located in `skills/<skill>/benchmarks/`.
 - `agents/` — Canonical agent definitions (flat `.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by flowai at install time.
 
 ## Key Decisions
