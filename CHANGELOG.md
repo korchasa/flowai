@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.6](https://github.com/korchasa/flowai/compare/v0.3.5...v0.3.6) (2026-03-23)
+
+
+### Features
+
+* **cli,framework:** add CLI update step to flow-update skill and version hint in IDE guard ([9ed9c3e](https://github.com/korchasa/flowai/commit/9ed9c3e61f2d45cf273bce7ddd90711acdfc8ad4))
+
+
+### Bug Fixes
+
+* **cli,framework:** clarify flowai sync subcommand in IDE context ([0ad8bcd](https://github.com/korchasa/flowai/commit/0ad8bcd7ac0bcc91fd181412164b0a74b476a881))
+
+
+### Documentation
+
+* update README and requirements for post-0.3.2 changes ([fd858d4](https://github.com/korchasa/flowai/commit/fd858d46e055475428216d0d4f40677d55319fb7))
+
 ### [0.3.5](https://github.com/korchasa/flowai/compare/v0.3.2...v0.3.5) (2026-03-23)
 
 
