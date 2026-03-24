@@ -55,19 +55,36 @@ See `references/scaffolded-artifacts.md` for the full source-skill → artifact 
    - For each existing IDE config dir, run `git status --porcelain` filtered to `<ide-dir>/skills/` and `<ide-dir>/agents/`. This catches both new (untracked) and modified files, unlike `git diff` which misses untracked files.
    - If no changes detected — report "Framework is up to date" and stop.
 
-4. **Analyze template diffs**
-   - For each changed skill/agent file, run `git diff <file>`.
+4. **Analyze template diffs (what changed in synced files)**
+   - For each changed skill/agent file from step 3, run:
+     ```
+     git diff -- <ide-dir>/skills/<skill-name>/
+     ```
    - Parse diffs to understand what conventions changed (e.g., new TDD step, updated doc format, changed devcontainer pattern).
-   - Summarize changes per skill.
+   - Summarize changes per skill: separate **formatting-only** changes from **substantive** changes (new rules, new sections, changed behavior).
+   - IMPORTANT: Do NOT conclude "no migration needed" based on this step alone. Formatting-only diffs in templates can still mask substantive differences between templates and project artifacts. Always proceed to step 5.
 
-5. **Map to project artifacts**
+5. **Compare templates against project artifacts**
    - Read `references/scaffolded-artifacts.md` for source-skill → artifact mapping.
-   - Cross-reference changed skills with scaffolded artifacts:
-     - `flow-init` templates changed → check `./AGENTS.md`, `./documents/AGENTS.md`, `./scripts/AGENTS.md`
-     - `flow-setup-agent-code-style-*` changed → check code style section in `./AGENTS.md`
-     - `flow-skill-setup-ai-ide-devcontainer` changed → check `.devcontainer/`
-     - `flow-skill-configure-deno-commands` changed → check `deno.json` tasks, `scripts/check.ts`
-   - If no affected artifacts found — report only sync results and stop.
+   - For each affected mapping, run `git diff --no-index` to compare the **template** directly against the **project artifact**:
+     ```
+     # flow-init templates → project artifacts
+     git diff --no-index -- <ide-dir>/skills/flow-init/assets/AGENTS.template.md ./AGENTS.md
+     git diff --no-index -- <ide-dir>/skills/flow-init/assets/AGENTS.documents.template.md ./documents/AGENTS.md
+     git diff --no-index -- <ide-dir>/skills/flow-init/assets/AGENTS.scripts.template.md ./scripts/AGENTS.md
+
+     # flow-setup-agent-code-style-* → code style section in ./AGENTS.md
+     # (read the skill's SKILL.md to find the injection content, then check if ./AGENTS.md has it)
+
+     # flow-skill-setup-ai-ide-devcontainer → .devcontainer/
+     # (compare reference files from the skill against project's .devcontainer/)
+
+     # flow-skill-configure-deno-commands → deno.json tasks, scripts/check.ts
+     # (compare template in skill against project files)
+     ```
+   - Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
+   - For each artifact, determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
+   - If no gaps found in any artifact — report only sync results and stop.
 
 6. **Propose changes**
    - For each affected artifact, show:

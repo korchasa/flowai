@@ -40,10 +40,18 @@ See `references/scaffolded-artifacts.md` for the full source-skill → artifact 
 <step_by_step>
 
 1. **Update CLI**
-   - Run `flowai --version`. It prints the current version and checks JSR for updates.
-   - If not installed, inform the user: `deno install -gArf jsr:@korchasa/flowai` and stop.
-   - If the output contains "Update available", run the update command shown in the output (e.g., `deno install -g -A -f jsr:@korchasa/flowai@X.Y.Z`).
-   - After updating, run `flowai --version` again to verify.
+   - Run `flowai --version` to check if installed. If not installed, inform the user:
+     ```
+     Install: deno install -gArf jsr:@korchasa/flowai
+     ```
+     and stop.
+   - Check for a newer version by fetching `https://jsr.io/@korchasa/flowai/meta.json` (field `latest`).
+   - If a newer version is available, update:
+     ```
+     deno install -g -A -f jsr:@korchasa/flowai@<latest_version>
+     ```
+     IMPORTANT: Always specify the explicit version (`@X.Y.Z`) — without it, `deno.lock` may pin the old version.
+   - Verify the update: `flowai --version`.
 
 2. **Sync framework**
    - Run `flowai sync -y --skip-update-check` via shell. Capture output.
