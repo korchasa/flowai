@@ -36,8 +36,6 @@
   },
   "fmt": {
     "proseWrap": "preserve",
-    "exclude": [
-      "**/*.md"
-    ]
+    "exclude": ["**/*.md", ".cursor/", ".claude/", ".flowai.yaml"]
   }
 }
