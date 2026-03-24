@@ -12,7 +12,7 @@ Maps source skills to project artifacts they generate. Used by `flow-update` to 
 - `./CLAUDE.md` — symlink to `AGENTS.md` (Claude Code compatibility)
 - `./documents/requirements.md` — SRS template
 - `./documents/design.md` — SDS template
-- `./documents/whiteboard.md` — temporary plans (GODS format)
+- `./documents/whiteboards/` — temporary plans (GODS format, one file per session)
 
 ### flow-setup-agent-code-style-ts-deno
 - Code style section in `./AGENTS.md`

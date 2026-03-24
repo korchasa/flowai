@@ -64,7 +64,7 @@ Keep answers brief and affirmative.`;
     {
       id: "documents_folder_created",
       description:
-        "Was the 'documents/' folder created with requirements.md, design.md and whiteboard.md?",
+        "Was the 'documents/' folder created with requirements.md and design.md?",
       critical: true,
     },
     {

@@ -314,9 +314,9 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         flow-init scope. Evidence: `framework/skills/flow-init/SKILL.md` rule 6 "No rule copying"
   - [x] **FR-8.4 Auto-generation of missing documentation**: SKILL.md step 8
         generates `documents/requirements.md` (SRS), `documents/design.md`
-        (SDS), `documents/whiteboard.md` from actual project data using LLM
-        capabilities. Skips existing files exceeding line thresholds (50 for
-        SRS/SDS, 10 for whiteboard). Evidence:
+        (SDS), `documents/whiteboards/` (brownfield: init-context file) from
+        actual project data using LLM capabilities. Skips existing files
+        exceeding line thresholds (50 for SRS/SDS). Evidence:
         `framework/skills/flow-init/SKILL.md` step 9 "Generate Documentation"
   - [x] **FR-8.5 Greenfield workflow**: SKILL.md step 3 defines structured
         interview collecting 10 data points (project name, vision, audience,

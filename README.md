@@ -207,7 +207,7 @@ Documentation is not optional — it is the only mechanism that preserves contex
 - **`AGENTS.md`** — project vision, constraints, mandatory rules
 - **`requirements.md` (SRS)** — functional and non-functional requirements
 - **`design.md` (SDS)** — architecture, components, data models
-- **`whiteboard.md`** — current task plan (GODS: Goal, Overview, Done, Solution)
+- **`whiteboards/`** — task plans per session (GODS: Goal, Overview, Done, Solution)
 
 The agent reads these at session start. If the docs are outdated, the agent works with wrong assumptions. Keep them accurate.
 

@@ -1,92 +1,178 @@
-# flow-update: Skill-Driven Framework Update
+# Множественные whiteboards для параллельных сессий
 
 ## Goal
 
-Single entry point (`/flow-update`) for updating the AssistFlow framework in a project. The skill handles everything: CLI update, skill/agent sync, and migration of scaffolded project artifacts (AGENTS.md, devcontainer, deno.json, scripts/) using template diff as migration source.
+Позволить нескольким агентам/сессиям работать параллельно без конфликтов за единый whiteboard.md. Сейчас два параллельных `/flow-plan` перезаписывают один файл, что приводит к потере планов.
 
 ## Overview
 
 ### Context
 
-AssistFlow generates two types of outputs in projects:
-- **Synced** (skills/, agents/) — updated automatically by `flowai sync`
-- **Scaffolded** (AGENTS.md, .devcontainer/, deno.json tasks, scripts/check.ts, documents/) — created once by setup skills (flow-init, flow-setup-agent-*, flow-skill-configure-deno-commands), then owned by the project
-
-When framework conventions change (TDD flow, planning rules, doc format, devcontainer best practices), scaffolded artifacts become stale. No mechanism exists to detect or resolve this.
+- `documents/whiteboard.md` — единственный файл для временных заметок и планов (GODS-формат)
+- Захардкожен в 7 framework-скиллах: flow-plan, flow-answer, flow-review, flow-init, flow-spec, flow-maintenance, flow-review-and-commit
+- Упоминается в: `AGENTS.md`, `documents/CLAUDE.md`, `documents/.gitignore`
+- ~10 benchmark-сценариев проверяют работу с whiteboard.md
+- Файл gitignored — не трекается в git
+- @documents/CLAUDE.md — определяет иерархию документов и формат whiteboard
+- @AGENTS.md:88 — Planning Rules, Plan Persistence
 
 ### Current State
 
-- `flowai sync` updates skills/agents only (binary content equality, conflict detection)
-- `flowai` bare command = `flowai sync` (same behavior)
-- `.flowai.lock` planned but not implemented (spec-skill-versioning.md)
-- flow-init brownfield already supports re-running on existing projects with per-file diff confirmation
-- IDE detection (verified empirically): `CLAUDECODE=1` (Claude Code), `CURSOR_AGENT=1` (Cursor Agent CLI), `OPENCODE=1` (OpenCode)
+Один файл `documents/whiteboard.md`. Все скиллы пишут в него напрямую по фиксированному пути. При параллельном запуске агентов — race condition и потеря данных.
+
+Затронутые файлы (framework — продуктовые):
+- `framework/skills/flow-plan/SKILL.md` — 6 упоминаний
+- `framework/skills/flow-answer/SKILL.md` — 4 упоминания
+- `framework/skills/flow-review/SKILL.md` — 1 упоминание
+- `framework/skills/flow-init/SKILL.md` — 1 упоминание
+- `framework/skills/flow-spec/SKILL.md` — 1 упоминание
+- `framework/skills/flow-init/assets/AGENTS.template.md` — в шаблоне для новых проектов
+- `framework/skills/flow-init/assets/AGENTS.documents.template.md` — шаблон documents/CLAUDE.md
+
+Затронутые файлы (dev/infra):
+- `AGENTS.md` — Plan Persistence rule
+- `documents/CLAUDE.md` — иерархия, формат
+- `documents/.gitignore` — паттерн игнора
+- `.claude/skills/flow-*/SKILL.md` — локальные копии (генерируются flowai)
+- `benchmarks/flow-plan/scenarios/*/mod.ts` — 5 сценариев
+- `benchmarks/flow-init/scenarios/brownfield/mod.ts`
+- `benchmarks/flow-maintenance/scenarios/basic/mod.ts`
 
 ### Constraints
 
-- `flowai` (bare) MUST NOT auto-update or auto-sync when run from IDE context. Only `flowai sync` explicitly.
-- IDE detection via env vars (see ides-difference.md §3.9): `CURSOR_AGENT=1` first (may co-exist with CLAUDECODE), then `CLAUDECODE=1`. No fallback to directory presence.
-- Migration logic lives in the skill (LLM-driven), not in the CLI (deterministic script).
-- Must work across IDEs (Cursor, Claude Code, OpenCode).
+- Фреймворк должен оставаться IDE-агностичным (Cursor, Claude Code, OpenCode)
+- Скиллы не могут полагаться на IDE-специфичные механизмы получения session ID
+- Формат GODS должен сохраняться
+- Gitignore должен покрывать все whiteboards
+- Benchmark TDD: изменения скиллов требуют обновления/создания benchmark-сценариев
+- Обратная совместимость: существующие проекты с `documents/whiteboard.md` не должны ломаться
 
 ## Definition of Done
 
-- [x] `flowai` bare command: no-op when IDE detected (env var check), shows help instead. Evidence: `cli/src/cli.ts:189`, `cli/src/ide.ts:13-18`
-- [x] `flowai sync` explicitly required to update skills/agents. Evidence: `cli/src/cli.ts:201-225`
-- [x] `flow-update` skill created in `framework/skills/flow-update/`. Evidence: `framework/skills/flow-update/SKILL.md`
-- [x] Skill step 1: runs `flowai sync` (updates skills/agents in IDE config dir). Evidence: `framework/skills/flow-update/SKILL.md` step 1
-- [x] Skill step 2: reads `git diff` on synced skill/agent files to see framework changes. Evidence: `framework/skills/flow-update/SKILL.md` step 2
-- [x] Skill step 3: reads project scaffolded artifacts (AGENTS.md, devcontainer, deno.json, scripts/). Evidence: `framework/skills/flow-update/SKILL.md` step 4
-- [x] Skill step 4: identifies relevant changes from template diffs that affect project artifacts. Evidence: `framework/skills/flow-update/SKILL.md` step 3-4
-- [x] Skill step 5: proposes per-file changes to project artifacts with explanation (why). Evidence: `framework/skills/flow-update/SKILL.md` step 5
-- [x] Skill step 6: applies changes with user confirmation (per-file, like flow-init brownfield). Evidence: `framework/skills/flow-update/SKILL.md` step 6
-- [x] Skill step 7: commits all changes together (sync + migrations). Evidence: `framework/skills/flow-update/SKILL.md` step 7
-- [x] IDE detection section added to `documents/ides-difference.md` (section 3.9). Evidence: `documents/ides-difference.md:326-334` (pre-existing)
-- [x] Benchmark scenarios for flow-update. Evidence: `benchmarks/flow-update/scenarios/basic/mod.ts`
-- [x] `deno task check` passes
+- [ ] Каждая сессия/агент может создать свой whiteboard-файл без конфликтов
+- [ ] Все framework-скиллы обновлены для поддержки множественных whiteboards
+- [ ] documents/CLAUDE.md обновлён (иерархия, формат, правила)
+- [ ] AGENTS.md Plan Persistence rule обновлён
+- [ ] .gitignore покрывает все whiteboard-файлы
+- [ ] flow-init шаблоны обновлены
+- [ ] Benchmark-сценарии обновлены для новой схемы
+- [ ] Старый `documents/whiteboard.md` не ломает проекты (gitignore чистый)
 
 ## Solution
 
-### Part 1: CLI behavior change
+**Выбран Variant B:** `documents/whiteboards/<YYYY-MM-DD>-<slug>.md`
 
-Modify `flowai` bare command (no subcommand):
-- Detect IDE context via env vars (see ides-difference.md §3.9)
-- If inside IDE: print message "Run `flowai sync` explicitly or use `/flow-update` skill" and exit 0
-- If outside IDE (terminal): keep current behavior (= `flowai sync`)
+### Шаг 1: Обновить документацию формата (documents/CLAUDE.md шаблон)
 
-### Part 2: flow-update SKILL.md
+**Файл:** `framework/skills/flow-init/assets/AGENTS.documents.template.md`
 
+Заменить секцию `## Whiteboard`:
+- Путь: `documents/whiteboard.md` → `documents/whiteboards/<YYYY-MM-DD>-<slug>.md`
+- Добавить правило именования: дата + slug из задачи (kebab-case, ≤40 символов)
+- Добавить: "Один файл = один план/задача. Не переиспользовать чужие whiteboards."
+- Оставить формат GODS без изменений
+- Убрать "Clean up after session" — файлы накапливаются, это нормально (gitignored)
+
+**Файл:** `documents/CLAUDE.md` (dev-копия для этого проекта) — аналогичные изменения.
+
+### Шаг 2: Обновить AGENTS.md шаблон
+
+**Файл:** `framework/skills/flow-init/assets/AGENTS.template.md`
+
+Строка 50 (Plan Persistence):
 ```
-framework/skills/flow-update/
-├── SKILL.md
-└── references/
-    └── scaffolded-artifacts.md   # list of known artifacts and their source skills
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/whiteboards/<date>-<slug>.md` using GODS format. Chat-only plans are lost between sessions.
 ```
 
-**Skill workflow:**
+**Файл:** `AGENTS.md` (dev-копия) — аналогично.
 
-1. **Sync**: Run `flowai sync` via shell. Capture output.
-2. **Detect changes**: Run `git diff --name-only` on IDE config dirs (`.claude/skills/`, `.cursor/skills/`, etc.). If no changes — report "framework is up to date" and stop.
-3. **Analyze template diffs**: For each changed skill/agent, run `git diff <file>`. Parse diffs to understand what conventions changed.
-4. **Map to project artifacts**: Cross-reference changed templates with scaffolded artifacts:
-   - flow-init templates changed → check `./AGENTS.md`, `./documents/AGENTS.md`, `./scripts/AGENTS.md`
-   - flow-setup-agent-code-style-* changed → check code style section in `./AGENTS.md`
-   - flow-skill-setup-ai-ide-devcontainer changed → check `.devcontainer/`
-   - flow-skill-configure-deno-commands changed → check `deno.json` tasks, `scripts/check.ts`
-5. **Propose changes**: For each affected artifact, show:
-   - What changed in the framework template (summary)
-   - What the current project artifact looks like
-   - Proposed update (preserving project-specific content)
-6. **Apply with confirmation**: Per-file diff, user approves/rejects each.
-7. **Commit**: Stage synced files + migrated artifacts, commit with conventional message `chore(framework): update to vX.Y.Z`.
+### Шаг 3: Обновить framework-скиллы
 
-### Part 3: Scaffolded artifacts registry
+#### 3.1 flow-plan/SKILL.md
 
-`references/scaffolded-artifacts.md` maps source skills to project artifacts:
+Заменить все `documents/whiteboard.md` на `documents/whiteboards/<YYYY-MM-DD>-<slug>.md`:
+- Overview: "Create a clear, critiqued plan in `./documents/whiteboards/` using the GODS framework."
+- Rule 1 (Pure Planning): "MUST NOT write into any file except a single whiteboard in `./documents/whiteboards/`. Name: `<YYYY-MM-DD>-<slug>.md` where slug is derived from the task (kebab-case, ≤40 chars). Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`, `2026-03-24-refactor-db-layer.md`. If the directory does not exist, CREATE it."
+- Step 3 (Draft G-O-D): "Create ... in `documents/whiteboards/<date>-<slug>.md`"
+- Step 5, 7: аналогично
+- Verification: "ONLY one file in `./documents/whiteboards/` modified."
 
-- `flow-init` → `AGENTS.md`, `documents/AGENTS.md`, `scripts/AGENTS.md`, `CLAUDE.md` symlinks
-- `flow-setup-agent-code-style-ts-deno` → code style section in `AGENTS.md`
-- `flow-setup-agent-code-style-ts-strict` → code style section in `AGENTS.md`
-- `flow-skill-setup-ai-ide-devcontainer` → `.devcontainer/devcontainer.json`, `Dockerfile`, `init-firewall.sh`
-- `flow-skill-configure-deno-commands` → `deno.json` tasks, `scripts/check.ts`
-- `flow-init` → `documents/requirements.md` (SRS template), `documents/design.md` (SDS template), `documents/whiteboard.md`
+#### 3.2 flow-answer/SKILL.md
+
+- Overview: "save detailed analysis to a file in `documents/whiteboards/`"
+- Rule 2: "Keep all repository files unchanged (except files in `documents/whiteboards/`)."
+- Step 5: "save detailed analysis to `documents/whiteboards/<date>-<slug>.md`"
+- Verification: аналогично
+
+#### 3.3 flow-review/SKILL.md
+
+- Строка 30: "The Plan (task management tool or a whiteboard in `documents/whiteboards/`)."
+
+#### 3.4 flow-init/SKILL.md
+
+- Строка 150-152: Убрать явное создание `documents/whiteboard.md`. Не создавать директорию `documents/whiteboards/` — она будет создана автоматически при первом вызове скилла (flow-plan, flow-answer и т.д.).
+- Brownfield: записать "Discovered Context" в `documents/whiteboards/<date>-init-context.md` (это автоматически создаст директорию)
+
+#### 3.5 flow-spec/SKILL.md
+
+- Строка 21: "start with `flow-plan`; if it outgrows a whiteboard, upgrade to `flow-spec`"
+
+#### 3.6 flow-review-and-commit/SKILL.md
+
+- Обновить аналогично flow-review (grep подтвердил наличие упоминания whiteboard)
+
+#### 3.7 flow-maintenance/SKILL.md
+
+- Обновить все упоминания `documents/whiteboard.md` → `documents/whiteboards/<date>-<slug>.md`
+
+### Шаг 4: Обновить .gitignore
+
+**Файл:** `documents/.gitignore`
+
+Заменить:
+```
+whiteboard.md
+```
+На:
+```
+whiteboards/
+```
+
+Это покрывает всю директорию. Старый `whiteboard.md` убрать — он больше не создаётся скиллами. Если у кого-то остался — просто лежит, не мешает.
+
+### Шаг 5: Обновить benchmark-сценарии
+
+Все сценарии, проверяющие `documents/whiteboard.md`, обновить.
+Description — это prompt для LLM-judge (semantic check), не код. Заменить текст описания на `documents/whiteboards/`.
+- Затронутые файлы:
+  - `benchmarks/flow-plan/scenarios/basic/mod.ts` — id "whiteboard_created"
+  - `benchmarks/flow-plan/scenarios/variants-complex/mod.ts` — id "whiteboard_created"
+  - `benchmarks/flow-plan/scenarios/variants-obvious/mod.ts` — id "whiteboard_created"
+  - `benchmarks/flow-plan/scenarios/interactive/mod.ts` — id "solution_filled"
+  - `benchmarks/flow-plan/scenarios/context/mod.ts` — id "whiteboard_context"
+  - `benchmarks/flow-plan/scenarios/refactor/mod.ts` — id "no_implementation"
+  - `benchmarks/flow-init/scenarios/brownfield/mod.ts` — id "documents_folder_created"
+  - `benchmarks/flow-maintenance/scenarios/basic/mod.ts` — id "whiteboard_report"
+
+Description в checklist items обновить: упоминание `'documents/whiteboard.md'` → `'documents/whiteboards/'`.
+
+### Шаг 6: Обновить .claude/skills/ (dev-копии)
+
+Запустить `flowai` (или вручную скопировать) обновлённые framework-скиллы в `.claude/skills/`.
+
+### Шаг 7: Верификация
+
+1. `deno fmt && deno lint` — без ошибок
+2. `deno test` — все тесты проходят
+3. Grep по `documents/whiteboard.md` в framework/ — 0 результатов (кроме обратной совместимости)
+4. Запустить benchmarks для flow-plan: `deno task benchmark flow-plan`
+5. Запустить benchmarks для flow-init: `deno task benchmark flow-init`
+
+### Порядок выполнения
+
+1. documents/.gitignore (Шаг 4)
+2. documents/CLAUDE.md + AGENTS.md шаблоны (Шаги 1-2)
+3. framework skills по очереди (Шаг 3) — каждый с benchmark RED-GREEN
+4. Benchmarks (Шаг 5) — параллельно с Шагом 3
+5. Dev-копии (Шаг 6)
+6. Финальная верификация (Шаг 7)

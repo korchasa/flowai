@@ -12,7 +12,8 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   checklist = [
     {
       id: "whiteboard_created",
-      description: "Did the agent create/write to 'documents/whiteboard.md'?",
+      description:
+        "Did the agent create/write to a file in 'documents/whiteboards/' directory?",
       critical: true,
     },
     {

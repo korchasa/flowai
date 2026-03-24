@@ -21,21 +21,27 @@
 - ALWAYS USE RELATIVE PATHS IN COMMANDS WHEN POSSIBLE. ABSOLUTE PATHS ONLY WHEN REQUIRED BY THE TOOL OR CONTEXT.
 
 ---
+
 {{PROJECT_RULES}}
 
 ## Project Information
+
 - Project Name: {{PROJECT_NAME}}
 
 ## Project Vision
+
 {{PROJECT_VISION}}
 
 ## Project tooling Stack
+
 {{TOOLING_STACK}}
 
 ## Architecture
+
 {{ARCHITECTURE}}
 
 ## Key Decisions
+
 {{KEY_DECISIONS}}
 
 ## Planning Rules
@@ -47,7 +53,7 @@
 - **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).
 - **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks per variant + Trade-offs across variants. Quality > quantity. 1 variant OK if path is clear.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
-- **Plan Persistence**: After variant selection, save the detailed plan to `documents/whiteboard.md` using GODS format. Chat-only plans are lost between sessions.
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` using GODS format. Chat-only plans are lost between sessions.
 - **Proactive Resolution**: Before asking user, exhaust available resources (codebase, docs, web) to find the answer autonomously.
 
 ## CODE DOCS

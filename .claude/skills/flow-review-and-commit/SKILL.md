@@ -59,7 +59,7 @@ the other.
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
      branch-based changes.
-   - Read the original user request and the plan (whiteboard / task list).
+   - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
    - Look for project conventions in `AGENTS.md` and config files.
      If these files do not exist, rely on conventions visible in the diff
      and surrounding code.
@@ -148,6 +148,7 @@ the other.
 ### Verdict Gate
 
 After completing the review report above:
+
 - If verdict is `## Review: Approve` → proceed to Phase 2 below.
 - If verdict is `## Review: Request Changes` or `## Review: Needs Discussion`
   → output the full review report to the user and **STOP**. Do NOT proceed.
@@ -160,16 +161,24 @@ After completing the review report above:
 
 1. **Initialize**
    - Use a task management tool (e.g., todo write) to create a plan based on these steps.
-2. **Documentation Audit & Compression**
-   - **Analyze Impact**: For each code change, identify which documentation files must be updated:
-     - `requirements.md`: If functional/non-functional requirements changed.
-     - `design.md`: If architecture, components, or data structures changed.
-     - `AGENTS.md`: If global project rules or agent definitions changed.
+2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
+   - **Check each doc file against the diff** (if `./documents` exists):
+     - `requirements.md` — check diff for new/changed/removed functional or non-functional requirements. If found → update. If not → note "no requirement changes".
+     - `design.md` — check diff for new/changed/removed components, data structures, APIs, or architecture decisions. If found → update. If not → note "no design changes".
+     - `AGENTS.md` — check diff for changes to project rules, agent definitions, or conventions. If found → update. If not → note "no agent rule changes".
    - **Apply Compression Rules**:
      - Use **combined extractive + abstractive summarization** (preserve all facts, minimize words).
      - Use compact formats: lists, tables, YAML, or Mermaid diagrams.
      - Optimize lexicon: use concise language, remove filler phrases, and use abbreviations after first mention.
    - **Execute Updates**: Perform necessary edits in `./documents` BEFORE proceeding to grouping.
+   - **Output Documentation Audit Report** (always, even if no updates needed):
+     ```
+     ### Documentation Audit
+     - requirements.md: [updated | no changes — <reason>]
+     - design.md: [updated | no changes — <reason>]
+     - AGENTS.md: [updated | no changes — <reason>]
+     ```
+   - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
 3. **Pre-commit Verification**
    - Run project-specific verification (linter, formatter, tests) if configured.
    - If verification fails, report the error and **STOP**.
@@ -182,7 +191,7 @@ After completing the review report above:
      - Default: all changes = one commit.
      - Split only when changes serve different, unrelated purposes OR the user explicitly requested a split.
      - Documentation describing a code change goes in the same commit as that code.
-      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
+     - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
    - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
 5. **Commit Execution Loop**
    - **Iterate** through the planned groups:
@@ -198,11 +207,12 @@ After completing the review report above:
    - If **any** of these signals are detected, suggest:
      "This session had [errors/retries/corrections/workarounds]. Consider running `/flow-reflect` to capture improvements for project instructions."
    - If none detected, skip silently.
-</step_by_step>
+     </step_by_step>
 
 ### Final Combined Report
 
 Output a combined summary:
+
 - **Review**: verdict + key findings (or "no issues found")
 - **Commit**: files committed, commit message(s)
 

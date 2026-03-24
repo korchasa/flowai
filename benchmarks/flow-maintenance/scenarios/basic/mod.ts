@@ -13,7 +13,7 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "whiteboard_report",
       description:
-        "Did the agent create a maintenance report? (Check logs for whiteboard.md content)",
+        "Did the agent create a maintenance report in 'documents/whiteboards/'? (Check logs for whiteboard content)",
       critical: true,
       type: "semantic" as const,
     },

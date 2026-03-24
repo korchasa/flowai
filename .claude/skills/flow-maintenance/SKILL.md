@@ -12,7 +12,7 @@ disable-model-invocation: true
 Execute a rigorous 7-point maintenance sweep to identify structural deviations,
 documentation inconsistencies, dead code, complexity hotspots, technical debt,
 missing code documentation, and terminology drift. All findings must be
-actionable and saved to whiteboard.
+actionable and saved to a whiteboard in `documents/whiteboards/`.
 
 ## Context
 
@@ -31,7 +31,7 @@ It addresses:
 ## Rules & Constraints
 
 <rules>
-1.  **Output Target**: All findings MUST be written to whiteboard. Start with a timestamped header.
+1.  **Output Target**: All findings MUST be written to `documents/whiteboards/<YYYY-MM-DD>-maintenance.md`. Start with a timestamped header.
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 3.  **Constructive**: Every "Issue" must have a "Proposed Fix".
 4.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
@@ -45,8 +45,8 @@ It addresses:
 
 1. **Initialize & Plan**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering the 7 phases below.
-   - Read project whiteboard to preserve existing long-term notes (if any), but
-     clear old automated reports.
+   - Check `documents/whiteboards/` for existing maintenance reports. Review prior reports for context, but
+     always create a new report file.
    - Identify project's primary language and source directories.
 
 2. **Phase 1: Structural Integrity**
@@ -96,7 +96,7 @@ It addresses:
    - **Report**: List undocumented symbols.
 
 8. **Phase 7: Reporting**
-   - Compile all findings into whiteboard with the following format:
+   - Compile all findings into the whiteboard file with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
 
@@ -134,5 +134,5 @@ It addresses:
 [ ] Aggregated all TODO/FIXME tags.
 [ ] Verified documentation terminology vs code usage.
 [ ] Checked for missing code documentation (File/Class/Method).
-[ ] Saved structured report to whiteboard.
+[ ] Saved structured report to `documents/whiteboards/`.
 </verification>

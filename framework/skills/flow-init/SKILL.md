@@ -147,9 +147,9 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - Generate core documentation files in `documents/`:
      - `documents/requirements.md` (SRS): Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
      - `documents/design.md` (SDS): Create initial structure. Skip if file exists and has more than 50 lines.
-     - `documents/whiteboard.md`:
-       - For **Brownfield**: Include "Discovered Context" (file tree) and README summary. Skip if file exists and has more than 10 lines.
-       - For **Greenfield**: Initialize with empty notes.
+     - `documents/whiteboards/` directory:
+       - For **Brownfield**: Create `documents/whiteboards/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
+       - For **Greenfield**: Directory will be created on first use by planning/answer skills. No need to initialize.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
 
 10. **Configure Development Commands**

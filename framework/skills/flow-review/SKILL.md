@@ -27,7 +27,7 @@ the entire project. Your two hats:
 Input sources:
 - Git diff (`git diff`, `git diff --cached`, `git diff <base>..HEAD`).
 - The original User Request (from chat history).
-- The Plan (task management tool or `documents/whiteboard.md`).
+- The Plan (task management tool or a whiteboard in `documents/whiteboards/`).
 - Project conventions (`AGENTS.md`, linter/formatter configs).
 </context>
 

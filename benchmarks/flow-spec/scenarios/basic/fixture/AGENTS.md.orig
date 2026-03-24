@@ -8,7 +8,7 @@
 ## Project Structure
 
 - `framework/skills/*/SKILL.md` — Skill definitions (agentskills.io format).
-- `documents/` — Project documentation (SRS, SDS, specs, whiteboard).
+- `documents/` — Project documentation (SRS, SDS, specs, whiteboards).
 
 ## Planning Rules
 

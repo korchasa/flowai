@@ -100,12 +100,12 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   1. `AGENTS.md` — project vision, constraints, mandatory rules (root-level, read-only reference).
   2. `documents/requirements.md` (SRS) — functional and non-functional requirements. Source of truth for "what" and "why".
   3. `documents/design.md` (SDS) — architecture and implementation details. Depends on SRS.
-  4. `documents/whiteboard.md` — temporary plans and notes in GODS format. Cleaned up after task completion.
+  4. `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` — temporary plans and notes in GODS format. One file per task/session. Directory is gitignored.
   5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-14–FR-17.
   6. `documents/benchmarking.md` — benchmark results and analysis.
 - **Rules:**
   - Every `[x]` acceptance criterion in SRS must include file-path evidence.
-  - English only (except whiteboard). Compressed style (no fluff, high-info words).
+  - English only (except whiteboards). Compressed style (no fluff, high-info words).
   - Agent reads docs at session start; outdated docs = wrong assumptions.
 - **Deps:** None (plain Markdown files).
 
@@ -199,7 +199,7 @@ graph TD
 - **Preservation:** User's custom project rules preserved. Extracted content takes
   priority over template content.
 - **Diff-based update:** Agent shows diff per file, asks user for confirmation.
-- **Documents guard:** Skip existing files exceeding line thresholds (50 for SRS/SDS, 10 for whiteboard).
+- **Documents guard:** Skip existing files exceeding line thresholds (50 for SRS/SDS). Whiteboards directory created on first use by planning/answer skills.
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
   Template rendering removed; agent handles generation natively.
 - **IDE compat:** Cursor, Claude Code support subdir AGENTS.md natively.
@@ -283,6 +283,16 @@ graph TD
 - **Simplified:** No centralized database; relies on file system.
 - **Deferred:** Automated regression testing of skills.
 
-## 8. Future Extensions
+## 8. Known Issues
+
+### 8.1 flow-plan Benchmark Failures (pre-existing)
+
+3 of 8 flow-plan benchmarks fail consistently. Root cause: agent behavioral issues unrelated to skill text.
+
+- **flow-plan-interactive**: Agent skips variant presentation step, jumps to G-O-D draft. SimulatedUser responds before variants are shown. Likely cause: sonnet model doesn't reliably follow multi-step interactive protocol with single-turn timeout.
+- **flow-plan-variants-obvious**: Agent presents 2 variants for trivial task ("create hello.txt") instead of 1. "Variant Analysis" rule says "1 variant OK if path is clear" but agent over-interprets.
+- **flow-plan-variants-complex**: Agent exits with code 130 (timeout at 120s). Complex auth system task exceeds `stepTimeoutMs`. Agent spends time thinking internally but doesn't emit variants to chat before timeout.
+
+## 9. Future Extensions
 
 - Hook format transformation — now tracked as FR-14 in SRS (cross-IDE hook/plugin format transformation).

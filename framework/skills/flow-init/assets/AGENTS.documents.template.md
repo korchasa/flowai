@@ -6,7 +6,7 @@
 1. **`AGENTS.md`**: "Why" & "For Whom". Long-term goal/value. READ-ONLY.
 2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth. Depends on VISION.
 3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
-4. **Whiteboard** (`documents/whiteboard.md`): Temporary notes.
+4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes. One file per task/session.
 
 ## Rules
 - **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
@@ -74,10 +74,13 @@
 - **Simplified/Deferred:**
 ````
 
-## Whiteboard (`documents/whiteboard.md`)
+## Whiteboards (`documents/whiteboards/`)
 
-- Temp notes/plans. Clean up after session.
+- One file per task/session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, ≤40 chars).
+- Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`.
+- Do NOT reuse another session's whiteboard. Create a new file.
 - Issue or plan in GODS format.
+- Directory is gitignored. Files accumulate — this is expected.
 
 ### GODS Format
 
@@ -115,7 +118,7 @@
 ## Compressed Style Rules (All Docs)
 
 - **No History**: No changelogs.
-- **English Only(Except whiteboard.md)**.
+- **English Only(Except whiteboards)**.
 - **Summarize**: Extract facts -> compress. No loss of facts.
 - **Essential Info**: No fluff. High-info words.
 - **Compact**: Lists, tables, YAML, Mermaid.

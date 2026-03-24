@@ -18,7 +18,7 @@ features too large for a single agent session.
 
 - Use `flow-spec` when feature spans >3 files AND requires >2 sessions, OR has >5 phases
 - Use `flow-plan` for tasks completable within one agent session
-- When unsure: start with `flow-plan`; if it outgrows whiteboard.md, upgrade to `flow-spec`
+- When unsure: start with `flow-plan`; if it outgrows a single whiteboard, upgrade to `flow-spec`
 
 ## Context
 
@@ -106,11 +106,11 @@ documentation, web) to understand the problem before asking the user.
 ```markdown
 # Spec: {Feature Name}
 
-| Field   | Value                       |
-|---------|-----------------------------|
+| Field   | Value                        |
+| ------- | ---------------------------- |
 | Status  | Draft/Ready/In-Progress/Done |
-| Created | YYYY-MM-DD                  |
-| Updated | YYYY-MM-DD                  |
+| Created | YYYY-MM-DD                   |
+| Updated | YYYY-MM-DD                   |
 
 ## Goal
 
@@ -123,6 +123,7 @@ documentation, web) to understand the problem before asking the user.
 ## Non-Goals
 
 <!-- Examples: "No backward compatibility with v1 API", "No UI changes in this phase", "No performance optimization", "No migration of existing data" -->
+
 - {Explicit exclusion 1}
 - {Explicit exclusion 2}
 

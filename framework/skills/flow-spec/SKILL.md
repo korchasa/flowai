@@ -18,7 +18,7 @@ features too large for a single agent session.
 
 - Use `flow-spec` when feature spans >3 files AND requires >2 sessions, OR has >5 phases
 - Use `flow-plan` for tasks completable within one agent session
-- When unsure: start with `flow-plan`; if it outgrows whiteboard.md, upgrade to `flow-spec`
+- When unsure: start with `flow-plan`; if it outgrows a single whiteboard, upgrade to `flow-spec`
 
 ## Context
 

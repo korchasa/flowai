@@ -21,10 +21,11 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 - **Brownfield (Existing Projects)**: Requires discovery, reverse-engineering architecture, and **extracting existing instructions** from `./AGENTS.md` into the appropriate subdirectory files.
 
 **File Structure**: flow-init produces 3 AGENTS.md files:
+
 - `./AGENTS.md` — core agent rules, project metadata, planning rules, TDD flow
 - `./documents/AGENTS.md` — documentation system rules (SRS/SDS/GODS formats, compressed style)
 - `./scripts/AGENTS.md` — development commands (standard interface, detected commands)
-</context>
+  </context>
 
 ## Rules & Constraints
 
@@ -121,7 +122,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **For Greenfield**: Fill templates with interview data. Replace `{{PLACEHOLDERS}}` with actual values.
 
    - **For Brownfield**:
-     - `./AGENTS.md`: Use the template structure. Fill with data inferred from the project. Preserve user's custom project rules (content between `---` and the next `## ` heading). **Remove** any sections that were extracted for documents/ or scripts/.
+     - `./AGENTS.md`: Use the template structure. Fill with data inferred from the project. Preserve user's custom project rules (content between `---` and the next `##` heading). **Remove** any sections that were extracted for documents/ or scripts/.
      - `./documents/AGENTS.md`: Use **extracted documentation sections** from the existing `./AGENTS.md`. If no documentation sections were found, use `AGENTS.documents.template.md` as fallback.
      - `./scripts/AGENTS.md`: Use **extracted script/command sections** from the existing `./AGENTS.md`. If no command sections were found, use `AGENTS.scripts.template.md` as fallback, filling `{{DEVELOPMENT_COMMANDS}}` from detected stack and `{{COMMAND_SCRIPTS}}` from project config.
 
@@ -147,29 +148,31 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - Generate core documentation files in `documents/`:
      - `documents/requirements.md` (SRS): Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
      - `documents/design.md` (SDS): Create initial structure. Skip if file exists and has more than 50 lines.
-     - `documents/whiteboard.md`:
-       - For **Brownfield**: Include "Discovered Context" (file tree) and README summary. Skip if file exists and has more than 10 lines.
-       - For **Greenfield**: Initialize with empty notes.
+     - `documents/whiteboards/` directory:
+       - For **Brownfield**: Create `documents/whiteboards/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
+       - For **Greenfield**: Directory will be created on first use by planning/answer skills. No need to initialize.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
 
 10. **Configure Development Commands**
-   - Read analysis output to get detected stack.
-   - **Check Interview Data**: If `use_deno_tooling: true`, FORCE usage of `flow-skill-configure-deno-commands`.
-   - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flow-skill-configure-deno-commands`).
-   - If specialized skill exists: Read and follow its `SKILL.md`.
-   - If NO specialized skill:
-     1. Ask user for preferred scripting language (shell/python/stack-native).
-     2. Analyze existing config files.
-     3. Create standard command interface (`check`, `test`, `dev`, `prod`) in `scripts/`.
-     4. Update project config (e.g., `package.json`) to reference these scripts.
-   - **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
-   - **Verify**: Run `check` command to ensure it works.
+
+- Read analysis output to get detected stack.
+- **Check Interview Data**: If `use_deno_tooling: true`, FORCE usage of `flow-skill-configure-deno-commands`.
+- **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flow-skill-configure-deno-commands`).
+- If specialized skill exists: Read and follow its `SKILL.md`.
+- If NO specialized skill:
+  1. Ask user for preferred scripting language (shell/python/stack-native).
+  2. Analyze existing config files.
+  3. Create standard command interface (`check`, `test`, `dev`, `prod`) in `scripts/`.
+  4. Update project config (e.g., `package.json`) to reference these scripts.
+- **Skip condition**: If `scripts/` already exists with standard commands and user chose "create missing" -> skip.
+- **Verify**: Run `check` command to ensure it works.
 
 11. **Devcontainer Setup (Optional)**
-   - **For Greenfield**: Check `use_devcontainer` from interview data.
-   - **For Brownfield**: Ask the user: "Would you like to set up a devcontainer for reproducible development environments?"
-   - **If user declines**: Skip this step entirely.
-   - **If user agrees**: Delegate to the `flow-skill-setup-ai-ide-devcontainer` skill. Read and follow its `SKILL.md`.
+
+- **For Greenfield**: Check `use_devcontainer` from interview data.
+- **For Brownfield**: Ask the user: "Would you like to set up a devcontainer for reproducible development environments?"
+- **If user declines**: Skip this step entirely.
+- **If user agrees**: Delegate to the `flow-skill-setup-ai-ide-devcontainer` skill. Read and follow its `SKILL.md`.
 
 12. **Cleanup & Verify**
     - Remove temporary files: `project_info.json`, `interview_data.json` (if created).

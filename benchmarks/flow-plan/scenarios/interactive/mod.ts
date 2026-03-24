@@ -29,7 +29,7 @@ export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
     {
       id: "solution_filled",
       description:
-        "Is the 'Solution' section in 'documents/whiteboard.md' filled with technical details for the selected variant?",
+        "Is the 'Solution' section in a file in 'documents/whiteboards/' filled with technical details for the selected variant?",
       critical: true,
       type: "semantic" as const,
     },

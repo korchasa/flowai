@@ -59,7 +59,7 @@ the other.
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
      branch-based changes.
-   - Read the original user request and the plan (whiteboard / task list).
+   - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
    - Look for project conventions in `AGENTS.md` and config files.
      If these files do not exist, rely on conventions visible in the diff
      and surrounding code.

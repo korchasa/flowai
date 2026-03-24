@@ -40,7 +40,7 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
 3. **REFACTOR**: Improve code/tests. No behavior change.
 
 ## Planning Rules
-- Save plans to whiteboard.md
+- Save plans to documents/whiteboards/
 `;
 
   override async setup(sandboxPath: string) {

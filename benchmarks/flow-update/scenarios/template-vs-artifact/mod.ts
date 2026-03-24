@@ -31,8 +31,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     "Compares templates against project artifacts (not just template git diff)";
   skill = "flow-update";
 
-  fixturePath =
-    "benchmarks/flow-update/scenarios/template-vs-artifact/fixture";
+  fixturePath = "benchmarks/flow-update/scenarios/template-vs-artifact/fixture";
 
   maxSteps = 25;
 
@@ -51,7 +50,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 - **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).
 - **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks per variant + Trade-offs across variants. Quality > quantity. 1 variant OK if path is clear.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
-- **Plan Persistence**: After variant selection, save the detailed plan to whiteboard.md using GODS format. Chat-only plans are lost between sessions.
+- **Plan Persistence**: After variant selection, save the detailed plan to documents/whiteboards/<date>-<slug>.md using GODS format. Chat-only plans are lost between sessions.
 
 ## TDD FLOW
 
@@ -78,7 +77,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 1. **\`AGENTS.md\`**: "Why" & "For Whom". Long-term goal/value. READ-ONLY.
 2. **SRS** (\`documents/requirements.md\`): "What" & "Why". Source of truth.
 3. **SDS** (\`documents/design.md\`): "How". Implementation details.
-4. **Whiteboard** (\`documents/whiteboard.md\`): Temporary notes.
+4. **Whiteboards** (\`documents/whiteboards/<YYYY-MM-DD>-<slug>.md\`): Temporary plans/notes.
 
 ## Rules
 - **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.

@@ -41,7 +41,7 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
     {
       id: "no_implementation",
       description:
-        "Did the agent follow the rule to NOT modify any files except whiteboard.md?",
+        "Did the agent follow the rule to NOT modify any files except files in documents/whiteboards/?",
       critical: true,
       type: "semantic" as const,
     },
@@ -53,7 +53,7 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
         trigger:
           /I will (now|begin to) (apply|implement|modify|update|refactor)/i,
         response:
-          "Wait, you are a planner. You must NOT modify any files except whiteboard.md. Please just finish the plan.",
+          "Wait, you are a planner. You must NOT modify any files except files in documents/whiteboards/. Please just finish the plan.",
       },
     ],
   };

@@ -18,7 +18,7 @@ export const PlanVariantsObviousBench = new class
     {
       id: "whiteboard_created",
       description:
-        "Did the agent create/write to 'documents/whiteboard.md' (as required by the planning process)?",
+        "Did the agent create/write to a file in 'documents/whiteboards/' directory (as required by the planning process)?",
       critical: true,
     },
     {

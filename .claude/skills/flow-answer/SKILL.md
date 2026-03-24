@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 Analyze and answer a user's question in Autonomous Mode by carefully reading
 documentation and inspecting the codebase. For large responses, save detailed
-analysis to `documents/whiteboard.md`.
+analysis to a file in `documents/whiteboards/`.
 
 ## Context
 
@@ -27,7 +27,7 @@ The user has a question about the project's logic, architecture, or implementati
    - Code, technical terms, and quotes from codebase: **English**.
    - Analysis, explanations, and chat responses: **User's Query Language** (or Russian if undefined).
 2. **Read-Only Mode**:
-   - Keep all repository files unchanged (except `documents/whiteboard.md`).
+   - Keep all repository files unchanged (except files in `documents/whiteboards/`).
    - Use tools in read-only mode (reading files, searching code).
    - **DO NOT** modify project configuration or code.
 3. **Accuracy**: Cross-check implementation against requirements and design to identify matches, gaps, or inconsistencies.
@@ -42,7 +42,7 @@ The user has a question about the project's logic, architecture, or implementati
    - Use a task management tool (e.g., todo write) to create a plan based on these steps.
 2. **Understand the question**
    - Read all available docs in `./documents` (SRS, SDS, file structure,
-     manuals, whiteboard) if they exist.
+     manuals, whiteboards) if they exist.
    - Clarify and restate the user's question in a more precise and structured
      form.
    - Ask the user follow-up questions if the task, constraints, or expected
@@ -70,7 +70,7 @@ The user has a question about the project's logic, architecture, or implementati
    - If critical uncertainties remain, clearly state them and ask for input
      instead of guessing.
    - For large responses (>1000 characters), save detailed analysis to
-     `documents/whiteboard.md` and provide summary in chat. </step_by_step>
+     `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` and provide summary in chat. </step_by_step>
 
 ## Verification
 
@@ -79,5 +79,5 @@ The user has a question about the project's logic, architecture, or implementati
 - [ ] Necessary clarification questions asked to the user (if needed).
 - [ ] Relevant code located and analyzed.
 - [ ] Answer formulated and structured.
-- [ ] Response saved to `documents/whiteboard.md` if large, otherwise provided directly.
+- [ ] Response saved to `documents/whiteboards/` if large, otherwise provided directly.
 </verification>

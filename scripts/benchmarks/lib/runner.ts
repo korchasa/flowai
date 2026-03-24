@@ -320,14 +320,28 @@ export async function runScenario(
     const statusStr = new TextDecoder().decode(statusOut.stdout);
     const logStr = new TextDecoder().decode(logOut.stdout);
 
-    // Read whiteboard.md content if it exists
+    // Read whiteboards directory content if it exists
     let whiteboardContent = "";
     try {
-      whiteboardContent = await Deno.readTextFile(
-        join(sandboxPath, "documents", "whiteboard.md"),
-      );
+      const whiteboardsDir = join(sandboxPath, "documents", "whiteboards");
+      for await (const entry of Deno.readDir(whiteboardsDir)) {
+        if (entry.isFile && entry.name.endsWith(".md")) {
+          const content = await Deno.readTextFile(
+            join(whiteboardsDir, entry.name),
+          );
+          whiteboardContent += `\n--- ${entry.name} ---\n${content}\n`;
+        }
+      }
+      if (!whiteboardContent) whiteboardContent = "(no whiteboard files found)";
     } catch (_) {
-      whiteboardContent = "(file not found)";
+      // Fallback: try legacy whiteboard.md
+      try {
+        whiteboardContent = await Deno.readTextFile(
+          join(sandboxPath, "documents", "whiteboard.md"),
+        );
+      } catch (_) {
+        whiteboardContent = "(no whiteboards found)";
+      }
     }
 
     // Collect generated file contents (non-fixture files for judge inspection)
@@ -348,7 +362,7 @@ ${statusStr}
 --- LAST COMMIT ---
 ${logStr}
 
---- DOCUMENTS/WHITEBOARD.MD ---
+--- DOCUMENTS/WHITEBOARDS ---
 ${whiteboardContent}
 
 --- GENERATED FILES ---
