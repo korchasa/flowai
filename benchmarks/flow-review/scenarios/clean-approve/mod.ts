@@ -24,8 +24,7 @@ export const CleanApproveBench = new class extends BenchmarkSkillScenario {
 
   userQuery = "/flow-review Review the added capitalize function";
 
-  userPersona =
-    `You are a developer who submitted clean code for review.
+  userPersona = `You are a developer who submitted clean code for review.
 When the agent asks questions or proposes a review plan, confirm and let it proceed.
 When shown review results, acknowledge them.
 Keep answers brief and affirmative.`;

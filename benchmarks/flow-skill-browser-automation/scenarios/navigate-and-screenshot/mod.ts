@@ -21,8 +21,7 @@ export const BrowserAutomationNavigateBench = new class
     },
     {
       id: "navigates_to_url",
-      description:
-        "Did the agent navigate to or fetch https://example.com?",
+      description: "Did the agent navigate to or fetch https://example.com?",
       critical: true,
       type: "semantic" as const,
     },
