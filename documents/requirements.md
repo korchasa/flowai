@@ -219,11 +219,14 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
       `scripts/benchmarks/lib/runner.ts:237-253`
 - [x] **Environment Management**: `.env` support for API keys in benchmarks. Evidence:
       `scripts/benchmarks/lib/llm.ts:2-61`, `.env`
-- [ ] **FR-7.1 Co-located Benchmarks**: Benchmark scenarios MUST be stored alongside
+- [x] **FR-7.1 Co-located Benchmarks**: Benchmark scenarios MUST be stored alongside
       the skills they test, inside `framework/skills/<skill-name>/benchmarks/` instead
       of the top-level `benchmarks/<skill-name>/`. This keeps scenarios, fixtures, and
       the skill definition in a single SPOT, simplifies discovery, and ensures benchmarks
       are distributed/versioned together with their skill.
+      Evidence: `framework/skills/*/benchmarks/*/mod.ts` (all scenarios moved),
+      `scripts/task-bench.ts:32-34` (discovery walks `framework/skills/`),
+      `benchmarks/AGENTS.md` (updated responsibility docs)
 
 ### 3.8 Component Coverage Matrix
 
@@ -379,11 +382,11 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         (re-run with diffs and user content preservation), `brownfield-idempotent`
         (preserve files when user declines changes), `vision-integration`
         (pre-filled interview data). Evidence:
-        `benchmarks/flow-init/scenarios/greenfield/mod.ts`,
-        `benchmarks/flow-init/scenarios/brownfield/mod.ts`,
-        `benchmarks/flow-init/scenarios/brownfield-update/mod.ts`,
-        `benchmarks/flow-init/scenarios/brownfield-idempotent/mod.ts`,
-        `benchmarks/flow-init/scenarios/vision-integration/mod.ts`
+        `framework/skills/flow-init/benchmarks/greenfield/mod.ts`,
+        `framework/skills/flow-init/benchmarks/brownfield/mod.ts`,
+        `framework/skills/flow-init/benchmarks/brownfield-update/mod.ts`,
+        `framework/skills/flow-init/benchmarks/brownfield-idempotent/mod.ts`,
+        `framework/skills/flow-init/benchmarks/vision-integration/mod.ts`
 
 ### 3.9 Multi-IDE Dev Resource Distribution (FR-9)
 
@@ -676,7 +679,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         Cover all 18 event types. Evidence:
         `framework/skills/flow-skill-engineer-hook/SKILL.md:106-147` (Claude Code section),
         `framework/skills/flow-skill-engineer-hook/references/claude_code_hooks_api.md`,
-        `benchmarks/flow-skill-engineer-hook/scenarios/basic-claude-code/mod.ts` (benchmark PASSED)
+        `framework/skills/flow-skill-engineer-hook/benchmarks/basic-claude-code/mod.ts` (benchmark PASSED)
   - [x] **FR-14.4 OpenCode output**: SKILL.md + reference provide templates
         for generating correct OpenCode plugin `.ts` files using `Plugin` type
         and `tool()` helper. Evidence:
@@ -837,7 +840,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] **FR-20.1 User consent**: Agent asks the user before creating devcontainer
         files. Devcontainer is NOT created without explicit user agreement.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md` Step 4 "Determine Capabilities",
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/node-basic/mod.ts` (userPersona confirms prompts)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/node-basic/mod.ts` (userPersona confirms prompts)
   - [x] **FR-20.2 Stack-aware generation**: `devcontainer.json` references a base
         image matching the detected stack (e.g., `mcr.microsoft.com/devcontainers/typescript-node`
         for Node/TS, community Deno feature for Deno). Extensions list includes
@@ -848,7 +851,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         diff and asks for per-file confirmation before overwriting (same pattern as
         other brownfield files).
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md` Step 3 "Detect Existing Configuration",
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/brownfield-existing/mod.ts`
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/brownfield-existing/mod.ts`
   - [x] **FR-20.4 Greenfield interview integration**: For greenfield projects via
         flow-init, the devcontainer question is included in the interview (step 3).
         flow-init delegates to flow-skill-setup-ai-ide-devcontainer when user agrees.
@@ -862,7 +865,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         installer or npm install, config persistence volume, and `ANTHROPIC_API_KEY`
         via `remoteEnv` with `${localEnv:}` (no hardcoded values).
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md:207-268` (AI CLI Setup Reference),
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/opencode-multi-cli/mod.ts` (multi-CLI coverage)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/opencode-multi-cli/mod.ts` (multi-CLI coverage)
   - [x] **FR-20.7 Global skills mounting**: Host `~/.claude/` is bind-mounted
         read-only to `~/.claude-host`. `~/.claude` itself is a Docker volume
         (isolates container state from host). `postStartCommand` syncs global
@@ -871,21 +874,21 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         into real files). Skills update on container restart, not real-time.
         Documents that bind mounts do not work in Codespaces.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md:248-253` (Global Skills Mount Rules),
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/deno-with-claude/mod.ts` (global_skills_mount check)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (global_skills_mount check)
   - [x] **FR-20.8 Security hardening**: Optional firewall (`init-firewall.sh`) with
         default-deny policy, stack-aware domain allowlist, and verification tests.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/references/firewall-template.md`,
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/deno-with-claude/mod.ts` (firewall_script check)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (firewall_script check)
   - [x] **FR-20.9 Sync timing**: Global skill/command sync MUST happen in
         `postStartCommand` (not `postCreateCommand`), so updates from host
         are picked up on every container restart without rebuild.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md:286-293` (Lifecycle Hooks Reference),
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/deno-with-claude/mod.ts` (global_skills_sync_in_post_start check)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (global_skills_sync_in_post_start check)
   - [x] **FR-20.10 Symlink dereferencing**: `cp -rL` MUST be used (not `cp -r`)
         because host skills may be symlinks with host-relative paths that are
         unresolvable inside the container.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md:252` (cp -rL in Global Skills Mount Rules),
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/deno-with-claude/mod.ts` (symlink_dereference check)
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (symlink_dereference check)
   - [x] **FR-20.11 Feature discovery**: Agent scans project files for indicators
         (lockfiles, config files, dependency manifests) and suggests relevant
         devcontainer features from the catalog (`references/features-catalog.md`).
@@ -896,7 +899,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
         rationale before generation.
         Evidence: `framework/skills/flow-skill-setup-ai-ide-devcontainer/SKILL.md` Step 2 "Discover Relevant Features",
         `framework/skills/flow-skill-setup-ai-ide-devcontainer/references/features-catalog.md`,
-        `benchmarks/flow-skill-setup-ai-ide-devcontainer/scenarios/feature-discovery/mod.ts`
+        `framework/skills/flow-skill-setup-ai-ide-devcontainer/benchmarks/feature-discovery/mod.ts`
 
 ### 3.21 Universal Skill & Script Requirements (FR-21)
 

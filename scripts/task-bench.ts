@@ -1,9 +1,9 @@
 /**
  * task-bench.ts — Discovers and runs agent benchmark scenarios.
  *
- * Walks `benchmarks/` for scenario mod.ts files, runs each through the
- * benchmark runner with LLM-Judge evaluation, and outputs results as
- * console summary + HTML report.
+ * Walks `framework/skills/<skill>/benchmarks/` for scenario mod.ts files,
+ * runs each through the benchmark runner with LLM-Judge evaluation, and
+ * outputs results as console summary + HTML report.
  *
  * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
  */
@@ -29,17 +29,17 @@ import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
-  const benchmarksDir = join(Deno.cwd(), "benchmarks");
+  const skillsDir = join(Deno.cwd(), "framework", "skills");
 
-  if (existsSync(benchmarksDir)) {
+  if (existsSync(skillsDir)) {
     for await (
-      const entry of walk(benchmarksDir, {
+      const entry of walk(skillsDir, {
         maxDepth: 12,
         includeFiles: true,
         match: [/mod\.ts$/],
       })
     ) {
-      if (!entry.path.includes("/scenarios/")) {
+      if (!entry.path.includes("/benchmarks/")) {
         continue;
       }
       try {

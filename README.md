@@ -184,14 +184,14 @@ Every task follows the same supervised loop:
 
 ```
 framework/              # THE PRODUCT — distributed to users via flowai CLI
-  skills/               #   Skills (SKILL.md per folder)
+  skills/               #   Skills (SKILL.md per folder, benchmarks co-located)
   agents/               #   Agents (universal .md files with all IDE fields)
 cli/                    # Distribution tool — published to JSR as @korchasa/flowai
   src/                  #   CLI source (BundledSource, sync, transform, plan)
   scripts/              #   Bundle script (generates bundled.json + _version.ts)
 documents/              # Project documentation (SRS, SDS, whiteboard)
 scripts/                # Deno task scripts + benchmark infrastructure
-benchmarks/             # Evidence-based agent benchmarks
+benchmarks/             # Benchmark runs, config, lock (scenarios in framework/skills/)
 deno.json               # Single config: JSR metadata, imports, tasks
 AGENTS.md               # Project vision, rules, agent instructions
 
