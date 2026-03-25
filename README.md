@@ -163,7 +163,6 @@ Every task follows the same supervised loop:
 - `flowai-skill-deno-deploy` — Deno Deploy management
 - `flowai-skill-cursor-agent-integration` — cursor-agent CLI integration
 - `flowai-skill-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
-- `flowai-skill-example` — example skill demonstrating variable renaming
 
 ### Agents
 

@@ -5,6 +5,7 @@ tmp/
 benchmarks/runs/
 benchmarks/benchmarks.lock
 framework/skills/*/benchmarks/runs/
+framework/**/flowai-skill-example/
 .env
 __pycache__/
 _research_tmp/
