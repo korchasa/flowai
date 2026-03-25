@@ -51,7 +51,7 @@
   ```
 - **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
-- **No inter-pack dependencies:** Each pack is self-contained.
+- **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs omit prefix (e.g., `commit/`, `write-dep/`). flowai adds `flowai-*` prefix at install time.
 - **Categories (by installed prefix):**
   - `flowai-*`: Command-like skills (e.g., `flowai-commit`, `flowai-plan`).
@@ -127,7 +127,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
 - **Architecture:**
   - `deno task bench`: Evaluates agents via evidence-based scenarios. Supports direct model selection via `-m, --model` flag.
   - **Parallel Execution Protection**: Uses `benchmarks/benchmarks.lock` file containing the PID to prevent concurrent runs. Implements signal listeners (`SIGINT`, `SIGTERM`) and `unload` events for reliable cleanup.
-  - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based).
+  - **Isolation**: Benchmarks run in isolated sandboxes using `SpawnedAgent` (direct `Deno.Command` based). Sandbox contains only pack-scoped primitives: core pack benchmark → core only; non-core pack benchmark → core + that pack.
   - **Docker**: Optional Docker isolation (`Dockerfile` based on `denoland/deno:alpine`) with `git`, `bash`, `curl`, and `cursor-agent` installed.
   - **Co-located Scenarios**: Scenarios are co-located with skills as `framework/<pack>/skills/<skill>/benchmarks/<scenario>/mod.ts`.
   - **JSON Configuration**: `benchmarks/config.json` stores unified model presets.

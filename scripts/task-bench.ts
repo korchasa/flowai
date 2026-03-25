@@ -66,6 +66,7 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
             if (!scenario.fixturePath) {
               scenario.fixturePath = join(dirname(entry.path), "fixture");
             }
+            scenario.pack = packEntry.name;
             scenarios.push(scenario);
           }
         }

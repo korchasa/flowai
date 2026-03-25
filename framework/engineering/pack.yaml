@@ -1,8 +1,3 @@
 name: engineering
 version: "1.0.0"
 description: Procedural engineering knowledge (deep-research, fix-tests, draw-diagrams, write-prd, etc.)
-scaffolds:
-  flowai-skill-setup-ai-ide-devcontainer:
-    - .devcontainer/devcontainer.json
-    - .devcontainer/Dockerfile
-    - .devcontainer/init-firewall.sh

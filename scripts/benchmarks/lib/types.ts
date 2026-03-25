@@ -11,6 +11,9 @@ export interface BenchmarkScenario {
   targetAgentPath?: string; // Path to the agent/skill .md file
   skill?: string; // Skill identifier (e.g., "flowai-plan")
 
+  /** Pack name this scenario belongs to (auto-populated by discovery). */
+  pack?: string;
+
   /**
    * Setup the sandbox environment.
    * @param sandboxPath Absolute path to the temporary sandbox directory

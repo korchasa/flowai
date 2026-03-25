@@ -80,11 +80,20 @@ export async function copyFrameworkToIdeDir(
   frameworkPath: string,
   ideConfigDir: string,
   ideName: string = "claude",
+  allowedPacks?: string[],
 ) {
   const skipDirs = ["benchmarks", "runs", "tmp"];
 
+  console.log(
+    `  Copying packs: ${allowedPacks ? allowedPacks.join(", ") : "all"}`,
+  );
+
   for await (const pack of Deno.readDir(frameworkPath)) {
     if (!pack.isDirectory) continue;
+
+    // Filter packs if allowedPacks is specified
+    if (allowedPacks && !allowedPacks.includes(pack.name)) continue;
+
     const packDir = join(frameworkPath, pack.name);
 
     // Check if this is a pack (has pack.yaml) or a legacy dir

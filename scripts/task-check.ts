@@ -61,6 +61,10 @@ export function buildCheckCommands(): CommandSpec[] {
       cmd: "deno",
       args: ["run", "-A", "scripts/check-skill-sync.ts"],
     },
+    {
+      cmd: "deno",
+      args: ["run", "-A", "scripts/check-pack-refs.ts"],
+    },
   ];
 }
 

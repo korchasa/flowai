@@ -164,12 +164,26 @@ export async function runScenario(
     const frameworkPath = join(Deno.cwd(), "framework");
     const dotCursorPath = join(sandboxPath, adapter.configDir);
 
+    // Determine which packs to include in sandbox
+    const scenarioPack = scenario.pack;
+    let allowedPacks: string[] | undefined;
+    if (scenarioPack) {
+      allowedPacks = scenarioPack === "core"
+        ? ["core"]
+        : ["core", scenarioPack];
+    }
+
     try {
       await Deno.mkdir(dotCursorPath, { recursive: true });
       console.log(
         `  Copying framework from ${frameworkPath} to ${dotCursorPath}`,
       );
-      await copyFrameworkToIdeDir(frameworkPath, dotCursorPath, adapter.ide);
+      await copyFrameworkToIdeDir(
+        frameworkPath,
+        dotCursorPath,
+        adapter.ide,
+        allowedPacks,
+      );
     } catch (e) {
       console.warn(`  Warning: Failed to copy framework: ${e}`);
     }
