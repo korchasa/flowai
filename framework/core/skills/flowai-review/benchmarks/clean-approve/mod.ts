@@ -1,8 +1,8 @@
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 import {
   runGit,
   setupGitRepo,
-} from "../../../../../scripts/benchmarks/lib/utils.ts";
+} from "../../../../../../scripts/benchmarks/lib/utils.ts";
 
 export const CleanApproveBench = new class extends BenchmarkSkillScenario {
   id = "flowai-review-clean-approve";

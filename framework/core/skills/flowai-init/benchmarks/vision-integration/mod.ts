@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
-import { copyRecursive } from "../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { copyRecursive } from "../../../../../../scripts/benchmarks/lib/utils.ts";
 
 export const InitVisionIntegrationBench = new class
   extends BenchmarkSkillScenario {

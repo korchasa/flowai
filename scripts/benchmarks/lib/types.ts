@@ -92,6 +92,19 @@ export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
   abstract checklist: BenchmarkChecklistItem[];
 
   get targetAgentPath(): string {
+    // Scan pack structure: framework/<pack>/skills/<skill>/SKILL.md
+    try {
+      for (const pack of Deno.readDirSync("framework")) {
+        if (!pack.isDirectory) continue;
+        const skillPath =
+          `framework/${pack.name}/skills/${this.skill}/SKILL.md`;
+        try {
+          Deno.statSync(skillPath);
+          return skillPath;
+        } catch { /* not in this pack */ }
+      }
+    } catch { /* framework dir not found */ }
+    // Fallback for legacy flat structure
     return `framework/skills/${this.skill}/SKILL.md`;
   }
 

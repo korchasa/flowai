@@ -1,9 +1,9 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 import {
   runGit,
   setupGitRepo,
-} from "../../../../../scripts/benchmarks/lib/utils.ts";
+} from "../../../../../../scripts/benchmarks/lib/utils.ts";
 
 /**
  * Tests that the agent compares templates against actual project artifacts,

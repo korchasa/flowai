@@ -3,7 +3,7 @@ import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { chatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
-import { copyRecursive } from "./utils.ts";
+import { copyFrameworkToIdeDir, copyRecursive } from "./utils.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
@@ -160,7 +160,7 @@ export async function runScenario(
       }
     }
 
-    // 1.6 Copy framework to IDE config dir
+    // 1.6 Copy framework to IDE config dir (flatten pack structure)
     const frameworkPath = join(Deno.cwd(), "framework");
     const dotCursorPath = join(sandboxPath, adapter.configDir);
 
@@ -169,11 +169,7 @@ export async function runScenario(
       console.log(
         `  Copying framework from ${frameworkPath} to ${dotCursorPath}`,
       );
-      await copyRecursive(frameworkPath, dotCursorPath, [
-        "benchmarks",
-        "runs",
-        "tmp",
-      ]);
+      await copyFrameworkToIdeDir(frameworkPath, dotCursorPath, adapter.ide);
     } catch (e) {
       console.warn(`  Warning: Failed to copy framework: ${e}`);
     }

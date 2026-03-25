@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 
 export const WriteDepBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-dep-basic";

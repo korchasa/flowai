@@ -1,7 +1,7 @@
 /**
  * task-bench.ts — Discovers and runs agent benchmark scenarios.
  *
- * Walks `framework/skills/<skill>/benchmarks/` for scenario mod.ts files,
+ * Walks `framework/<pack>/skills/<skill>/benchmarks/` for scenario mod.ts files,
  * runs each through the benchmark runner with LLM-Judge evaluation, and
  * outputs results as console summary + HTML report.
  *
@@ -29,17 +29,29 @@ import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
-  const skillsDir = join(Deno.cwd(), "framework", "skills");
+  const frameworkDir = join(Deno.cwd(), "framework");
 
-  if (existsSync(skillsDir)) {
+  if (!existsSync(frameworkDir)) {
+    return scenarios;
+  }
+
+  // Walk pack-structured framework: framework/<pack>/skills/<skill>/benchmarks/*/mod.ts
+  for await (const packEntry of Deno.readDir(frameworkDir)) {
+    if (!packEntry.isDirectory) continue;
+    const packSkillsDir = join(frameworkDir, packEntry.name, "skills");
+    if (!existsSync(packSkillsDir)) continue;
+
     for await (
-      const entry of walk(skillsDir, {
-        maxDepth: 12,
+      const entry of walk(packSkillsDir, {
+        maxDepth: 10,
         includeFiles: true,
         match: [/mod\.ts$/],
       })
     ) {
-      if (!entry.path.includes("/benchmarks/")) {
+      if (
+        !entry.path.includes("/benchmarks/") ||
+        entry.path.includes("/fixture/")
+      ) {
         continue;
       }
       try {

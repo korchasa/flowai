@@ -1,5 +1,0 @@
-# User Stats Project
-
-TypeScript project using Deno.
-
-Run type-check: `deno check **/*.ts`

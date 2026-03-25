@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 
 export const DeepResearchPlanBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deep-research-plan";
