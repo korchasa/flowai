@@ -26,29 +26,27 @@ export class UserEmulator {
   async getResponse(
     messages: Array<{ role: string; content: string }>,
   ): Promise<string | null> {
+    // Build conversation summary for the LLM
+    // Use a single user message to avoid model-specific issues with system+multi-turn patterns
+    const conversationLines = messages.map((m) =>
+      `[${m.role.toUpperCase()}]: ${m.content}`
+    ).join("\n\n");
+
     const llmMessages: LLMMessage[] = [
       {
-        role: "system",
-        content: `You are a simulated user in a CLI environment. 
-Your persona: ${this.persona}
+        role: "user",
+        content: `You are a simulated user with this persona: ${this.persona}
 
-TASK:
-1. Analyze the conversation history between you (user) and the AI agent (assistant).
-2. Determine if the agent is waiting for your input (e.g., asking a question, requesting confirmation, or showing a prompt).
-3. If the agent is NOT waiting for input and you should let it continue, respond strictly with "<NO_RESPONSE>".
-4. If the agent IS waiting for input, provide the response according to your persona.
+Below is a conversation between you (USER) and an AI agent (ASSISTANT). The agent may write in any language (English, Russian, etc.).
 
-RULES:
-- Respond ONLY with the input string to send to the agent, or "<NO_RESPONSE>".
-- "If the agent does not address you, respond strictly with <NO_RESPONSE>".
-- Do not include any explanations or quotes.
-- If the agent asks a multiple-choice question, pick one based on your persona.
-- If the agent asks for confirmation, say 'yes' or 'no' based on your persona.`,
+${conversationLines}
+
+---
+TASK: Is the agent asking YOU a question or waiting for your input? Look for question marks (?), requests to choose/select/confirm, or similar prompts in any language.
+
+If YES — reply with your response according to your persona. Keep it short (1-2 sentences). Do not add quotes or formatting.
+If NO — reply with exactly: <NO_RESPONSE>`,
       },
-      ...messages.map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
     ];
 
     const response = await this.llm(llmMessages, this.config);

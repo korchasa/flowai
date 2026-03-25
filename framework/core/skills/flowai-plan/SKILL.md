@@ -44,11 +44,15 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 3. **Draft Framework (G-O-D)**
    - Create Goal, Overview, Definition of Done in `documents/whiteboards/<date>-<slug>.md` following `### GODS Format` from AGENTS.md.
    - **CRITICAL**: Do NOT fill `Solution` section yet.
-4. **Strategic Analysis (Chat Only)**
+4. **Strategic Analysis & Variant Selection**
    - Generate variants in chat following `Variant Analysis` from AGENTS.md.
-   - Follow `User Decision Gate` from AGENTS.md: STOP and wait for variant selection.
-5. **Detail Solution (S)**
-   - Complete `Solution` section in the whiteboard file with detailed steps for selected variant (follow `### GODS Format` from AGENTS.md).
+   - Ask user which variant they prefer. Wait for response.
+   - When user selects a variant, immediately proceed to fill the Solution section (Step 5). Do NOT stop after receiving the selection.
+5. **Detail Solution (S)** — execute immediately after user selects a variant
+   - Re-read the whiteboard file you created in Step 3.
+   - Overwrite the `Solution` section placeholder with concrete implementation steps for the selected variant (follow `### GODS Format` from AGENTS.md).
+   - The Solution section MUST contain: files to create/modify, implementation approach, code structure, dependencies, and verification commands.
+   - **CRITICAL**: You MUST write the updated content to the whiteboard file. Never leave Solution as a placeholder or comment.
 6. **Critique**
    - Present the plan to the user in chat and offer to critique it before finalizing.
    - If user agrees: critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat.

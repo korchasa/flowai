@@ -110,8 +110,8 @@ export class ClaudeAdapter implements AgentAdapter {
       }
     }
 
-    // Fallback: use last assistant text if no result event
-    if (result.result === null && assistantTexts.length > 0) {
+    // Fallback: use last assistant text if result is missing or empty
+    if (!result.result && assistantTexts.length > 0) {
       result.result = assistantTexts[assistantTexts.length - 1];
     }
 
