@@ -1,9 +1,9 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 import {
   runGit,
   setupGitRepo,
-} from "../../../../../scripts/benchmarks/lib/utils.ts";
+} from "../../../../../../scripts/benchmarks/lib/utils.ts";
 
 /**
  * Simulates a framework update where flowai-init's AGENTS.template.md gained a CHECK step.

@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 
 export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
   id = "flowai-init-greenfield";

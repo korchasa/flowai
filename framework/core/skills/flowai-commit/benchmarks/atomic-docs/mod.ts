@@ -1,8 +1,8 @@
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 import {
   runGit,
   setupGitRepo,
-} from "../../../../../scripts/benchmarks/lib/utils.ts";
+} from "../../../../../../scripts/benchmarks/lib/utils.ts";
 import { join } from "@std/path";
 
 export const CommitAtomicDocsBench = new class extends BenchmarkSkillScenario {

@@ -2,7 +2,7 @@
 // That path (flowai-init → devcontainer delegation) belongs to flowai-init benchmarks,
 // not to devcontainer skill benchmarks. The skill itself is tested standalone.
 
-import { BenchmarkSkillScenario } from "../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
 
 export const SetupDevcontainerDenoWithClaude = new class
   extends BenchmarkSkillScenario {
