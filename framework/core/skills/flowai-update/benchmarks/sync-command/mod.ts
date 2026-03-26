@@ -22,8 +22,6 @@ export const FlowUpdateSyncCommandBench = new class
   name = "Uses `flowai sync` subcommand (not bare `flowai`) for syncing";
   skill = "flowai-update";
 
-  fixturePath = "framework/skills/flowai-update/benchmarks/sync-command/fixture";
-
   maxSteps = 15;
 
   agentsMarkdown = `# TestProject

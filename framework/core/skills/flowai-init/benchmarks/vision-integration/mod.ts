@@ -11,7 +11,7 @@ export const InitVisionIntegrationBench = new class
 
   override async setup(sandboxPath: string) {
     // 1. Copy the flowai-init skill files (scripts, assets) to the sandbox
-    const sourceInitDir = join(Deno.cwd(), "framework/skills/flowai-init");
+    const sourceInitDir = join(Deno.cwd(), "framework/core/skills/flowai-init");
     const destInitDir = join(sandboxPath, ".cursor/skills/flowai-init");
 
     await Deno.mkdir(destInitDir, { recursive: true });

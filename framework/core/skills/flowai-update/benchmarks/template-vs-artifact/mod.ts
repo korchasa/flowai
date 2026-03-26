@@ -31,8 +31,6 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     "Compares templates against project artifacts (not just template git diff)";
   skill = "flowai-update";
 
-  fixturePath = "framework/skills/flowai-update/benchmarks/template-vs-artifact/fixture";
-
   maxSteps = 25;
 
   // Project AGENTS.md — missing "Proactive Resolution" planning rule

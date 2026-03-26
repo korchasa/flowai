@@ -23,8 +23,6 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
   name = "Detect framework changes and propose AGENTS.md migration";
   skill = "flowai-update";
 
-  fixturePath = "framework/skills/flowai-update/benchmarks/basic/fixture";
-
   maxSteps = 20;
 
   // AGENTS.md with outdated TDD section (3 steps, missing CHECK)

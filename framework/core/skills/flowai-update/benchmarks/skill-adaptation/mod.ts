@@ -25,9 +25,6 @@ export const FlowUpdateSkillAdaptationBench = new class
   name = "Adapt updated skills to project specifics after sync";
   skill = "flowai-update";
 
-  fixturePath =
-    "framework/skills/flowai-update/benchmarks/skill-adaptation/fixture";
-
   maxSteps = 25;
 
   agentsMarkdown = `# MyPythonProject
