@@ -260,6 +260,26 @@ export async function runScenario(
       );
     }
 
+    // Initialize an isolated git repo with all sandbox content committed,
+    // so the agent cannot escape into the parent project and starts with clean status
+    for (
+      const args of [
+        ["init"],
+        ["config", "user.email", "bench@localhost"],
+        ["config", "user.name", "Benchmark"],
+        ["add", "."],
+        ["commit", "--allow-empty", "-m", "init"],
+      ]
+    ) {
+      const cmd = new Deno.Command("git", {
+        args,
+        cwd: sandboxPath,
+        stdout: "null",
+        stderr: "null",
+      });
+      await cmd.output();
+    }
+
     // Prepare Environment
     const fullPrompt = scenario.userQuery;
 
