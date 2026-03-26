@@ -5,6 +5,9 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   name = "Basic Plan Generation";
   skill = "flowai-plan";
   stepTimeoutMs = 120_000;
+  interactive = true;
+  userPersona =
+    "A pragmatic developer who prefers the simplest approach. When asked to choose a variant, pick variant A (or the first/simplest one). When asked about critique, agree to it. Keep answers short.";
 
   userQuery =
     "/flowai-plan Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";
