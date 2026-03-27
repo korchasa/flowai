@@ -178,7 +178,7 @@ graph TD
 - **Data entities:**
   - `FlowConfig`: `{ version, ides, packs, skills: {include, exclude}, agents: {include, exclude} }` (v1.1: `packs` field added)
   - `PackDefinition`: `{ name, version, description, scaffolds?: Record<skill, paths[]> }` (parsed from `pack.yaml`)
-  - `HookDefinition`: `{ event, matcher?, description }` (parsed from `hook.yaml`)
+  - `HookDefinition`: `{ event, matcher?, description, timeout? }` (parsed from `hook.yaml`; timeout default: 30 PostToolUse, 600 PreToolUse)
   - `PlanItem`: `{ type: skill|agent|hook|script, name, action: create|update|ok|conflict, sourcePath, targetPath, content }`
 - **Agent transformation rules** (per IDE):
   - Claude: `name`, `description`, `tools`, `disallowedTools`
@@ -186,8 +186,8 @@ graph TD
   - OpenCode: `description`, `mode`; `opencode_tools` → `tools`
 - **Pack resolution flow:** Load config → expand `packs:` to resource lists (skills, agents, hooks, scripts from `framework/*/`) → apply `skills.include/exclude` filter → compute plan → write. `resolvePackResources()` returns `hookNames` and `scriptNames` alongside skills/agents.
 - **Automigration:** v1 config detected → rewrite as v1.1 with `packs:` listing all available packs (backward-compatible).
-- **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agent updates) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]` with per-resource action and scaffolds.
-- **Hook installation:** Reads `hook.yaml`, generates IDE-specific config (Claude: `settings.json` hooks, Cursor: `.cursor/hooks/`, OpenCode: plugin config). Script receives `FLOWAI_IDE` env var. Unsupported events skipped with warning.
+- **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agent updates, hook installs) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]` with per-resource action and scaffolds.
+- **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `lint-on-write` (PostToolUse, ts/js/py linting), `test-before-commit` (PreToolUse, blocks commit w/o tests), `skill-structure-validate` (PostToolUse, SKILL.md validation), `mermaid-validate` (PostToolUse, Mermaid diagram validation).
 - **Script installation:** Copies to `.{ide}/scripts/` (simple file copy).
 - **Naming transform:** Pack directory names → installed names with prefix (`commit/` → `flowai-commit`, `write-dep/` → `flowai-skill-write-dep`).
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.

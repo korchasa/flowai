@@ -227,6 +227,26 @@ export function renderSyncOutput(result: SyncResult): void {
     );
   }
 
+  // Hook actions
+  const hooksByAction = groupByAction(result.hookActions);
+  if (hooksByAction.create.length > 0) {
+    actionNum++;
+    const lines = hooksByAction.create.map((h) => `   - ${h.name}`);
+    actions.push(
+      `${actionNum}. HOOKS INSTALLED (${hooksByAction.create.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   IDE hook configuration auto-generated.`,
+    );
+  }
+  if (hooksByAction.update.length > 0) {
+    actionNum++;
+    const lines = hooksByAction.update.map((h) => `   - ${h.name}`);
+    actions.push(
+      `${actionNum}. HOOKS UPDATED (${hooksByAction.update.length}):\n` +
+        lines.join("\n"),
+    );
+  }
+
   // Errors
   if (result.errors.length > 0) {
     actionNum++;
@@ -245,9 +265,11 @@ export function renderSyncOutput(result: SyncResult): void {
   // No-action summary
   const okSkills = skillsByAction.ok.length;
   const okAgents = agentsByAction.ok.length;
+  const okHooks = hooksByAction.ok.length;
   const noActionParts: string[] = [];
   if (okSkills > 0) noActionParts.push(`${okSkills} skills unchanged`);
   if (okAgents > 0) noActionParts.push(`${okAgents} agents unchanged`);
+  if (okHooks > 0) noActionParts.push(`${okHooks} hooks unchanged`);
 
   if (actions.length === 0) {
     console.log("\n>>> NO ACTIONS REQUIRED.");
