@@ -5,6 +5,10 @@ export const EngineerRuleConditionalBench = new class
   id = "flowai-skill-engineer-rule-conditional";
   name = "Create a conditional TypeScript error handling rule";
   skill = "flowai-skill-engineer-rule";
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     "/flowai-skill-engineer-rule Create a rule that enforces typed error handling in TypeScript files: always use custom error classes, never catch without re-throwing or logging, and always include error context. This should only apply to .ts files.";

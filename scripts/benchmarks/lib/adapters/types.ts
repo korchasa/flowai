@@ -19,6 +19,7 @@ export interface AgentAdapter {
     workspace: string;
     prompt: string;
     sessionId?: string;
+    name?: string;
   }): string[];
 
   /** Parse raw stdout into structured output */

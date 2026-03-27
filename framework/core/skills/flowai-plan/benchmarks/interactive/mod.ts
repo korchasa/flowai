@@ -5,6 +5,11 @@ export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
   name = "Plan with Interactive Variant Selection";
   skill = "flowai-plan";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    generateDocuments: true,
+  };
 
   userQuery = "/flowai-plan Plan a simple CLI tool that prints 'Hello World'.";
 

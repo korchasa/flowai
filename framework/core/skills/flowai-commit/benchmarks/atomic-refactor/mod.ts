@@ -7,6 +7,10 @@ export const CommitAtomicRefactorBench = new class
   name = "Atomic Split: Refactor vs Feature";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   override sandboxState = {
     commits: [],

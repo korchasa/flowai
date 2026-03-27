@@ -24,6 +24,7 @@ export class CursorAdapter implements AgentAdapter {
     workspace: string;
     prompt: string;
     sessionId?: string;
+    name?: string;
   }): string[] {
     const args = [
       "--model",

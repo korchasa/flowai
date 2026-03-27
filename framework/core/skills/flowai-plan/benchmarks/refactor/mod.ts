@@ -5,6 +5,11 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
   name = "Plan Refactoring of God Class";
   skill = "flowai-plan";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript",
+    generateDocuments: true,
+  };
 
   userQuery =
     "/flowai-plan Plan a refactoring of src/UserManager.ts to separate concerns. It does too much right now.";

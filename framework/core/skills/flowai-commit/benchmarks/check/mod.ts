@@ -6,6 +6,10 @@ export const CommitCheckBench = new class extends BenchmarkSkillScenario {
   name = "Pre-flight Check";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   override sandboxState = {
     commits: [],

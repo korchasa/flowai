@@ -8,6 +8,11 @@ import { formatAgentLogs } from "./format_logs.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
+import {
+  renderAgentsMd,
+  renderDocumentsMd,
+  renderScriptsMd,
+} from "./template.ts";
 
 export interface RunnerOptions {
   agentModel: string;
@@ -168,7 +173,38 @@ export async function runScenario(
       // CLAUDE.md may not exist — that's fine
     }
 
-    // 2. Load AGENTS.md: scenario override → sandbox (from fixture) → minimal default
+    // 1.8 Generate AGENTS.md from template if agentsTemplateVars is set
+    if (scenario.agentsTemplateVars && !scenario.agentsMarkdown) {
+      const vars = scenario.agentsTemplateVars;
+      const templateVars: Record<string, string> = {
+        PROJECT_NAME: vars.PROJECT_NAME,
+        PROJECT_RULES: vars.PROJECT_RULES ?? "",
+        PROJECT_VISION: vars.PROJECT_VISION ?? "",
+        TOOLING_STACK: vars.TOOLING_STACK ?? "",
+        ARCHITECTURE: vars.ARCHITECTURE ?? "",
+        KEY_DECISIONS: vars.KEY_DECISIONS ?? "",
+      };
+      const rootContent = await renderAgentsMd(templateVars);
+      await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), rootContent);
+
+      if (vars.generateDocuments) {
+        await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
+        await Deno.writeTextFile(
+          join(sandboxPath, "documents", "AGENTS.md"),
+          await renderDocumentsMd(),
+        );
+      }
+
+      if (vars.scripts) {
+        await Deno.mkdir(join(sandboxPath, "scripts"), { recursive: true });
+        await Deno.writeTextFile(
+          join(sandboxPath, "scripts", "AGENTS.md"),
+          await renderScriptsMd(vars.scripts),
+        );
+      }
+    }
+
+    // 2. Load AGENTS.md: scenario override → sandbox (from fixture/template) → minimal default
     let agentsMarkdown = scenario.agentsMarkdown;
     if (!agentsMarkdown) {
       try {
@@ -187,6 +223,18 @@ export async function runScenario(
         "# Agent Reference\n\nThis is a minimal AGENTS.md for initialization benchmarks.";
     }
     await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), agentsMarkdown);
+
+    // 2.1 Create CLAUDE.md symlinks for Claude Code compatibility
+    if (adapter.ide === "claude") {
+      for (const subdir of ["", "documents", "scripts"]) {
+        const agentsPath = join(sandboxPath, subdir, "AGENTS.md");
+        const claudePath = join(sandboxPath, subdir, "CLAUDE.md");
+        try {
+          await Deno.stat(agentsPath);
+          await Deno.symlink("AGENTS.md", claudePath);
+        } catch (_) { /* AGENTS.md doesn't exist in this subdir — skip */ }
+      }
+    }
 
     // Setup mocks using IDE-specific hooks mechanism (before git init so hooks are committed)
     if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
@@ -240,6 +288,7 @@ export async function runScenario(
       maxSteps: scenario.maxSteps || 10,
       stepTimeout: scenario.stepTimeoutMs || 300000,
       adapter,
+      name: scenario.skill ? `${scenario.skill}/${scenario.id}` : scenario.id,
     });
 
     // Global scenario timeout (default 15 min)

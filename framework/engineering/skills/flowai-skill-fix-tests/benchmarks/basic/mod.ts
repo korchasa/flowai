@@ -4,6 +4,10 @@ export const FixTestsBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-fix-tests-basic";
   name = "Fix a failing divide-by-zero test";
   skill = "flowai-skill-fix-tests";
+  agentsTemplateVars = {
+    PROJECT_NAME: "Calculator",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     "/flowai-skill-fix-tests The test 'divide by zero throws an error' is failing. The test expects divide(10, 0) to throw an Error with message 'Cannot divide by zero', but the function returns Infinity instead. Fix the code.";

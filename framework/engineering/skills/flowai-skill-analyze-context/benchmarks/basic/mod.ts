@@ -5,6 +5,13 @@ export const AnalyzeContextBasicBench = new class
   id = "flowai-skill-analyze-context-basic";
   name = "Analyze conversation context token usage";
   skill = "flowai-skill-analyze-context";
+  agentsTemplateVars = {
+    PROJECT_NAME: "SampleProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    ARCHITECTURE:
+      "- `src/` — Application source code\n- `scripts/` — Utility scripts",
+    KEY_DECISIONS: "- Use Deno for all tooling\n- Follow TDD workflow",
+  };
 
   userQuery =
     "/flowai-skill-analyze-context How many tokens are we using in this conversation? Give me a full breakdown.";

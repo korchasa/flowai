@@ -37,6 +37,7 @@ export class ClaudeAdapter implements AgentAdapter {
     workspace: string;
     prompt: string;
     sessionId?: string;
+    name?: string;
   }): string[] {
     const args = [
       "-p",
@@ -48,6 +49,10 @@ export class ClaudeAdapter implements AgentAdapter {
       "--permission-mode",
       "bypassPermissions",
     ];
+
+    if (opts.name) {
+      args.push("--name", opts.name);
+    }
 
     if (opts.sessionId) {
       args.push("--resume", opts.sessionId);

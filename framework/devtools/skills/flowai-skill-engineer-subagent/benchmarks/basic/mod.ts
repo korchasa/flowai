@@ -5,6 +5,10 @@ export const EngineerSubagentBasicBench = new class
   id = "flowai-skill-engineer-subagent-basic";
   name = "Create a code reviewer subagent for a Cursor project";
   skill = "flowai-skill-engineer-subagent";
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   // NOTE: Uses Cursor (.cursor/) instead of Claude Code (.claude/) because
   // Claude Code CLI blocks Write tool to .claude/ even in bypassPermissions mode.

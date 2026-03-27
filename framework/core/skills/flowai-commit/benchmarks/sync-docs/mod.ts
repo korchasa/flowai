@@ -6,6 +6,11 @@ export const CommitSyncDocsBench = new class extends BenchmarkSkillScenario {
   name = "Workspace Sync: Docs Update";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    generateDocuments: true,
+  };
 
   override sandboxState = {
     commits: [],

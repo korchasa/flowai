@@ -6,6 +6,10 @@ export const CommitAtomicHunkBench = new class extends BenchmarkSkillScenario {
   name = "Atomic Split: Hunk (Style vs Logic)";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   override sandboxState = {
     commits: [],

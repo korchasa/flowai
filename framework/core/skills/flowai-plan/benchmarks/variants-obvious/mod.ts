@@ -7,6 +7,11 @@ export const PlanVariantsObviousBench = new class
   name = "Plan Variants - Obvious Task";
   skill = "flowai-plan";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    generateDocuments: true,
+  };
 
   async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });

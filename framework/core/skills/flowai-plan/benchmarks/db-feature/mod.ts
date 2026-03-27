@@ -5,6 +5,11 @@ export const PlanDbFeatureBench = new class extends BenchmarkSkillScenario {
   name = "Plan Database Feature";
   skill = "flowai-plan";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno\n- Prisma",
+    generateDocuments: true,
+  };
 
   userQuery =
     "/flowai-plan Plan adding a 'role' field to the User model. It should be an enum with values 'USER' and 'ADMIN', defaulting to 'USER'. Update the registration flow to support it.";

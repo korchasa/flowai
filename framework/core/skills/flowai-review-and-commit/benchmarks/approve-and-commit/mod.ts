@@ -7,6 +7,10 @@ export const ApproveAndCommitBench = new class extends BenchmarkSkillScenario {
   skill = "flowai-review-and-commit";
   maxSteps = 20;
   stepTimeoutMs = 420_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
   interactive = true;
 
   override sandboxState = {

@@ -111,6 +111,27 @@ export interface BenchmarkScenario {
   agentsMarkdown?: string;
 
   /**
+   * Placeholder values for generating AGENTS.md from flowai-init templates.
+   * When set (and agentsMarkdown is NOT set), runner generates AGENTS.md
+   * from templates at runtime instead of using fixture files.
+   */
+  agentsTemplateVars?: {
+    PROJECT_NAME: string;
+    PROJECT_RULES?: string;
+    PROJECT_VISION?: string;
+    TOOLING_STACK?: string;
+    ARCHITECTURE?: string;
+    KEY_DECISIONS?: string;
+    /** Also generate documents/AGENTS.md from template */
+    generateDocuments?: boolean;
+    /** Also generate scripts/AGENTS.md; values fill template placeholders */
+    scripts?: {
+      DEVELOPMENT_COMMANDS?: string;
+      COMMAND_SCRIPTS?: string;
+    };
+  };
+
+  /**
    * Skip this scenario with a reason.
    * If set, the scenario will not be executed and will be reported as skipped.
    */

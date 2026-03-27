@@ -7,6 +7,10 @@ export const CleanApproveBench = new class extends BenchmarkSkillScenario {
   skill = "flowai-review";
   maxSteps = 15;
   stepTimeoutMs = 420_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "StringUtils",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
   interactive = true;
 
   override sandboxState = {
