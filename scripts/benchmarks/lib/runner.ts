@@ -1,9 +1,10 @@
-import { dirname, fromFileUrl, join } from "@std/path";
+import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { cliChatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
-import { copyFrameworkToIdeDir, copyRecursive } from "./utils.ts";
+import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
+import { formatAgentLogs } from "./format_logs.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
@@ -106,31 +107,8 @@ export async function runScenario(
   let result: (BenchmarkResult & { evidence: string }) | undefined;
 
   try {
-    // 1.5 Copy fixtures if exist
-    let fixturePath = scenario.fixturePath;
-
-    if (!fixturePath) {
-      // Heuristic: derive fixture path from the call stack by finding the scenario's
-      // mod.ts file and looking for a sibling "fixture/" directory. This avoids
-      // requiring every scenario to explicitly set fixturePath.
-      try {
-        // @ts-ignore: Accessing internal property to find the file path
-        const stack = new Error().stack;
-        const match = stack?.match(/at\s+(?:new\s+)?.*\((.*mod\.ts):/);
-        if (match && match[1]) {
-          const modPath = match[1].startsWith("file://")
-            ? fromFileUrl(match[1])
-            : match[1];
-          const candidate = join(dirname(modPath), "fixture");
-          const stat = await Deno.stat(candidate);
-          if (stat.isDirectory) {
-            fixturePath = candidate;
-          }
-        }
-      } catch (_) {
-        // Fallback to old heuristic if dynamic detection fails
-      }
-    }
+    // 1.5 Copy fixtures if exist (fixturePath is set by task-bench.ts discovery)
+    const fixturePath = scenario.fixturePath;
 
     if (fixturePath) {
       try {
@@ -138,18 +116,6 @@ export async function runScenario(
         if (fixtureStat.isDirectory) {
           console.log(`  Copying fixtures from: ${fixturePath}`);
           await copyRecursive(fixturePath, sandboxPath);
-
-          // Rename AGENTS.md.orig to AGENTS.md if it exists
-          try {
-            await Deno.rename(
-              join(sandboxPath, "AGENTS.md.orig"),
-              join(sandboxPath, "AGENTS.md"),
-            );
-          } catch (e) {
-            if (!(e instanceof Deno.errors.NotFound)) {
-              throw e;
-            }
-          }
         }
       } catch (e) {
         if (!(e instanceof Deno.errors.NotFound)) {
@@ -202,36 +168,17 @@ export async function runScenario(
       // CLAUDE.md may not exist — that's fine
     }
 
-    // 2. Load Agent Prompt and AGENTS.md
+    // 2. Load AGENTS.md: scenario override → sandbox (from fixture) → minimal default
     let agentsMarkdown = scenario.agentsMarkdown;
     if (!agentsMarkdown) {
-      const agentsPath = join(sandboxPath, "AGENTS.md");
       try {
-        agentsMarkdown = await Deno.readTextFile(agentsPath);
-      } catch (e) {
-        if (!(e instanceof Deno.errors.NotFound)) {
-          throw e;
-        }
-        // If not in sandbox after fixture copy, try to find it in the fixture source
-        if (fixturePath) {
-          try {
-            agentsMarkdown = await Deno.readTextFile(
-              join(fixturePath, "AGENTS.md"),
-            );
-          } catch (_) {
-            try {
-              agentsMarkdown = await Deno.readTextFile(
-                join(fixturePath, "AGENTS.md.orig"),
-              );
-            } catch (__) {
-              // Still not found
-            }
-          }
-        }
+        agentsMarkdown = await Deno.readTextFile(
+          join(sandboxPath, "AGENTS.md"),
+        );
+      } catch {
+        // Not found in sandbox — use minimal default
       }
     }
-
-    // If still no agentsMarkdown, use a minimal default instead of throwing
     if (!agentsMarkdown) {
       console.log(
         `  Warning: AGENTS.md not found for scenario ${scenario.id}. Using minimal default.`,
@@ -239,10 +186,7 @@ export async function runScenario(
       agentsMarkdown =
         "# Agent Reference\n\nThis is a minimal AGENTS.md for initialization benchmarks.";
     }
-
-    if (agentsMarkdown) {
-      await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), agentsMarkdown);
-    }
+    await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), agentsMarkdown);
 
     // Setup mocks using IDE-specific hooks mechanism (before git init so hooks are committed)
     if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
@@ -256,23 +200,20 @@ export async function runScenario(
 
     // Initialize an isolated git repo with all framework/fixture/mock files committed.
     // This runs BEFORE setup() so scenarios can create specific git state on top.
-    for (
-      const args of [
-        ["init"],
-        ["config", "user.email", "bench@localhost"],
-        ["config", "user.name", "Benchmark"],
-        ["add", "."],
-        ["commit", "--allow-empty", "-m", "init"],
-      ]
-    ) {
-      const cmd = new Deno.Command("git", {
-        args,
-        cwd: sandboxPath,
-        stdout: "null",
-        stderr: "null",
-      });
-      await cmd.output();
-    }
+    await runGit(sandboxPath, ["init"]);
+    await runGit(sandboxPath, ["config", "user.email", "bench@localhost"]);
+    await runGit(sandboxPath, ["config", "user.name", "Benchmark"]);
+    await runGit(sandboxPath, ["add", "."]);
+    await runGit(sandboxPath, [
+      "commit",
+      "--allow-empty",
+      "-m",
+      "init",
+    ]);
+
+    // Save init commit hash for later diff
+    const initHashOut = await runGit(sandboxPath, ["rev-parse", "HEAD"]);
+    const initHash = new TextDecoder().decode(initHashOut.stdout).trim();
 
     // Scenario-specific setup: creates commits, modified/untracked files on top of "init"
     await scenario.setup(sandboxPath);
@@ -301,8 +242,33 @@ export async function runScenario(
       adapter,
     });
 
-    const { code, logs } = await agent.run(userEmulator || undefined);
+    // Global scenario timeout (default 15 min)
+    const totalTimeout = scenario.totalTimeoutMs ?? 900_000;
+    let agentResult: { code: number; logs: string };
+    let globalTimeoutId: number | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      globalTimeoutId = setTimeout(
+        () =>
+          reject(new Error(`Global scenario timeout after ${totalTimeout}ms`)),
+        totalTimeout,
+      );
+    });
 
+    try {
+      agentResult = await Promise.race([
+        agent.run(userEmulator || undefined),
+        timeoutPromise,
+      ]);
+    } catch (e) {
+      agent.kill();
+      const err = e as Error;
+      console.warn(`  ${err.message}`);
+      agentResult = { code: 124, logs: `[GLOBAL TIMEOUT] ${err.message}` };
+    } finally {
+      if (globalTimeoutId !== undefined) clearTimeout(globalTimeoutId);
+    }
+
+    const { code, logs } = agentResult;
     const durationMs = performance.now() - start;
 
     console.log(`  Agent finished with exit code ${code}`);
@@ -336,21 +302,23 @@ export async function runScenario(
     );
 
     // 5. Gather Evidence for Judge
-    // Get git status/diff to show what happened
-    const gitStatus = new Deno.Command("git", {
-      args: ["status"],
-      cwd: sandboxPath,
-    });
-    const statusOut = await gitStatus.output();
-
-    const gitLog = new Deno.Command("git", {
-      args: ["log", "-5", "--stat"],
-      cwd: sandboxPath,
-    });
-    const logOut = await gitLog.output();
-
+    const statusOut = await runGit(sandboxPath, ["status"]);
     const statusStr = new TextDecoder().decode(statusOut.stdout);
+
+    const logOut = await runGit(sandboxPath, ["log", "-5", "--stat"]);
     const logStr = new TextDecoder().decode(logOut.stdout);
+
+    // Full diff from init to current state (covers all agent commits + working changes)
+    let diffStr = "";
+    try {
+      const diffOut = await runGit(sandboxPath, [
+        "diff",
+        `${initHash}..HEAD`,
+      ]);
+      diffStr = new TextDecoder().decode(diffOut.stdout);
+    } catch (_) {
+      diffStr = "(git diff failed)";
+    }
 
     // Read whiteboards directory content if it exists
     let whiteboardContent = "";
@@ -381,17 +349,20 @@ export async function runScenario(
 
     await tracer.logEvidence(traceId, statusStr, logStr);
 
+    // Convert raw NDJSON logs to readable conversation for judge
+    const formattedLogs = formatAgentLogs(logs, adapter.outputFormat);
+
     // Truncate large sections to stay within judge model context limits.
     // Keep start + end of logs (results are usually at the end).
     const maxLogsLen = 150_000;
-    let truncatedLogs = logs;
-    if (logs.length > maxLogsLen) {
+    let truncatedLogs = formattedLogs;
+    if (formattedLogs.length > maxLogsLen) {
       const half = Math.floor(maxLogsLen / 2);
-      truncatedLogs = logs.slice(0, half) +
+      truncatedLogs = formattedLogs.slice(0, half) +
         "\n...[TRUNCATED " +
-        ((logs.length - maxLogsLen) / 1024).toFixed(0) +
+        ((formattedLogs.length - maxLogsLen) / 1024).toFixed(0) +
         "KB]...\n" +
-        logs.slice(-half);
+        formattedLogs.slice(-half);
     }
     const maxFilesLen = 100_000;
     const truncatedFiles = generatedFiles.length > maxFilesLen
@@ -399,11 +370,21 @@ export async function runScenario(
       : generatedFiles;
 
     const evidence = `
+--- EXPECTED OUTCOME ---
+${scenario.sandboxState.expectedOutcome}
+
 --- FINAL GIT STATUS ---
 ${statusStr}
 
---- LAST COMMIT ---
+--- GIT LOG ---
 ${logStr}
+
+--- GIT DIFF (init..HEAD) ---
+${
+      diffStr.length > 50_000
+        ? diffStr.slice(0, 50_000) + "\n...[DIFF TRUNCATED]..."
+        : diffStr
+    }
 
 --- DOCUMENTS/WHITEBOARDS ---
 ${whiteboardContent}
@@ -423,13 +404,7 @@ ${truncatedFiles}
     );
     const checklistResults = judgeOutput.results;
 
-    if (code !== 0) {
-      checklistResults["exit_code_zero"] = {
-        pass: false,
-        reason: `Agent exited with non-zero code: ${code}`,
-      };
-    }
-
+    // Build full checklist including dynamic exit_code_zero if agent crashed
     const checklistToJudge = [...scenario.checklist];
     if (code !== 0) {
       checklistToJudge.push({
@@ -437,6 +412,10 @@ ${truncatedFiles}
         description: "Agent should exit successfully",
         critical: true,
       });
+      checklistResults["exit_code_zero"] = {
+        pass: false,
+        reason: `Agent exited with non-zero code: ${code}`,
+      };
     }
 
     await tracer.logEvaluation(traceId, checklistResults, checklistToJudge, {
@@ -445,7 +424,8 @@ ${truncatedFiles}
     });
 
     // 7. Calculate Score and Metrics
-    const totalItems = scenario.checklist.length;
+    // Use checklistToJudge.length (includes dynamic exit_code_zero) for accurate denominator
+    const totalItems = checklistToJudge.length;
     const passedItems = Object.values(checklistResults).filter((v) =>
       v.pass
     ).length;

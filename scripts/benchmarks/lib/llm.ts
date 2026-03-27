@@ -1,5 +1,4 @@
 import type { LLMMessage, LLMResponse } from "./types.ts";
-import { load } from "@std/dotenv";
 
 export interface ModelConfig {
   model: string;
@@ -56,70 +55,6 @@ export async function loadConfig(
     }
     throw e;
   }
-}
-
-export async function chatCompletion(
-  messages: LLMMessage[],
-  configOrModel: ModelConfig | string,
-  temperature?: number,
-  signal?: AbortSignal,
-): Promise<LLMResponse> {
-  // Load .env if present
-  try {
-    await load({ export: true });
-  } catch (_) {
-    // Ignore if .env is missing or fails to load
-  }
-
-  const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-
-  if (!OPENROUTER_API_KEY) {
-    console.warn(
-      "WARNING: OPENROUTER_API_KEY is not set. LLM calls will fail.",
-    );
-    throw new Error("OPENROUTER_API_KEY is not set.");
-  }
-
-  const config: ModelConfig = typeof configOrModel === "string"
-    ? { model: configOrModel, temperature: temperature ?? 0 }
-    : { ...configOrModel };
-
-  // If temperature was passed explicitly, override the one in config
-  if (temperature !== undefined) {
-    config.temperature = temperature;
-  }
-
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://cursor.sh", // Optional, for OpenRouter rankings
-        "X-Title": "Cursor IDE Rules Benchmark", // Optional
-      },
-      body: JSON.stringify({
-        messages,
-        ...config,
-      }),
-      signal,
-    },
-  );
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(
-      `OpenRouter API error: ${response.status} ${response.statusText} - ${text}`,
-    );
-  }
-
-  const data = await response.json();
-
-  return {
-    content: data.choices[0].message.content,
-    usage: data.usage,
-  };
 }
 
 interface ClaudeCliEvent {

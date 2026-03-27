@@ -88,27 +88,42 @@ Evaluate the agent performance now.
     jsonSchema,
   };
 
-  try {
-    const response = await cliChatCompletion(
-      messages,
-      configWithSchema,
-    );
+  // Retry once on failure before marking all items as failed
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const response = await cliChatCompletion(
+        messages,
+        configWithSchema,
+      );
 
-    return {
-      results: JSON.parse(response.content),
-      messages,
-      response: response.content,
-    };
-  } catch (error) {
-    console.error("Error in Judge evaluation:", error);
-    const fallback: Record<string, { pass: boolean; reason: string }> = {};
-    for (const item of checklist) {
-      fallback[item.id] = { pass: false, reason: "Judge evaluation failed" };
+      return {
+        results: JSON.parse(response.content),
+        messages,
+        response: response.content,
+      };
+    } catch (error) {
+      if (attempt === 0) {
+        console.warn(
+          `  Judge evaluation failed (attempt 1/2), retrying: ${error}`,
+        );
+        continue;
+      }
+      console.error("  Judge evaluation failed after 2 attempts:", error);
+      const fallback: Record<string, { pass: boolean; reason: string }> = {};
+      for (const item of checklist) {
+        fallback[item.id] = {
+          pass: false,
+          reason: "Judge evaluation failed after 2 attempts",
+        };
+      }
+      return {
+        results: fallback,
+        messages,
+        response: "ERROR: Judge failed after 2 attempts",
+      };
     }
-    return {
-      results: fallback,
-      messages,
-      response: "ERROR: Judge failed",
-    };
   }
+
+  // Unreachable, but TypeScript needs it
+  throw new Error("Unreachable");
 }

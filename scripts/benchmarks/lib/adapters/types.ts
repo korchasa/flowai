@@ -10,6 +10,9 @@ export interface AgentAdapter {
   /** Binary name or path */
   readonly command: string;
 
+  /** Output format used by the CLI (for log formatting) */
+  readonly outputFormat: "stream-json" | "json";
+
   /** Build CLI arguments for a single agent step */
   buildArgs(opts: {
     model: string;

@@ -25,6 +25,7 @@ export class ClaudeAdapter implements AgentAdapter {
   readonly ide = "claude" as const;
   readonly configDir = ".claude";
   readonly command = "claude";
+  readonly outputFormat = "stream-json" as const;
 
   getEnv(): Record<string, string> {
     // Unset CLAUDECODE to allow spawning claude inside a claude session

@@ -2,7 +2,6 @@ export interface BenchmarkChecklistItem {
   id: string;
   description: string;
   critical: boolean;
-  type?: "static" | "semantic";
 }
 
 export interface BenchmarkScenario {
@@ -84,6 +83,13 @@ export interface BenchmarkScenario {
    * Defaults to no timeout.
    */
   stepTimeoutMs?: number;
+
+  /**
+   * Global timeout for the entire scenario in milliseconds.
+   * Kills agent and proceeds to judge with partial evidence on expiry.
+   * Defaults to 900_000 (15 minutes).
+   */
+  totalTimeoutMs?: number;
 
   /**
    * Simulated user persona for interactive Q&A.

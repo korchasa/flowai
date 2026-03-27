@@ -136,6 +136,118 @@ Deno.test("Runner - Fixture Copying", async () => {
   }
 });
 
+Deno.test("Runner - Score counts failed items correctly", async () => {
+  const tempDir = await createTempDir("runner");
+  const agentPath = join(tempDir, "agent.md");
+  await Deno.writeTextFile(agentPath, "agent");
+
+  const scenario: BenchmarkScenario = {
+    id: "test-score",
+    name: "Score Calculation Test",
+    targetAgentPath: agentPath,
+    sandboxState: {
+      commits: [],
+      expectedOutcome: "Agent completes task",
+    },
+    setup: async () => {},
+    userQuery: "Say hello",
+    agentsMarkdown: "# Agent",
+    checklist: [
+      { id: "check1", description: "Check 1", critical: true },
+      { id: "check2", description: "Check 2", critical: false },
+      { id: "check3", description: "Check 3", critical: true },
+    ],
+  };
+
+  // Judge fails check1 (critical) and check2 (non-critical), passes check3
+  const judgeClient = () => {
+    return Promise.resolve({
+      results: {
+        check1: { pass: false, reason: "failed" },
+        check2: { pass: false, reason: "failed" },
+        check3: { pass: true, reason: "ok" },
+      },
+      messages: [],
+      response: "ok",
+    });
+  };
+
+  const scenarioWorkDir = join(tempDir, "test-score", "run-1");
+  try {
+    const result = await runScenario(scenario, {
+      agentModel: AGENT_MODEL,
+      judgeConfig: JUDGE_CONFIG,
+      workDir: scenarioWorkDir,
+      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+      adapter,
+    });
+
+    // 1 passed out of 3 = 33.3%
+    assertEquals(Math.round(result.score), 33);
+    assertEquals(result.errorsCount, 1); // check1 critical
+    assertEquals(result.warningsCount, 1); // check2 non-critical
+    assertEquals(result.success, false);
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
+Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () => {
+  const tempDir = await createTempDir("runner");
+  const agentPath = join(tempDir, "agent.md");
+  await Deno.writeTextFile(agentPath, "agent");
+
+  const scenario: BenchmarkScenario = {
+    id: "test-evidence",
+    name: "Evidence Test",
+    targetAgentPath: agentPath,
+    sandboxState: {
+      commits: [],
+      expectedOutcome: "Test expected outcome for judge",
+    },
+    setup: async () => {},
+    userQuery: "Say hello",
+    agentsMarkdown: "# Agent",
+    checklist: [
+      { id: "check1", description: "Check", critical: true },
+    ],
+  };
+
+  let capturedEvidence = "";
+  const judgeClient = (
+    _q: string,
+    _logs: string,
+    evidence: string,
+  ) => {
+    capturedEvidence = evidence;
+    return Promise.resolve({
+      results: { check1: { pass: true, reason: "ok" } },
+      messages: [],
+      response: "ok",
+    });
+  };
+
+  const scenarioWorkDir = join(tempDir, "test-evidence", "run-1");
+  try {
+    await runScenario(scenario, {
+      agentModel: AGENT_MODEL,
+      judgeConfig: JUDGE_CONFIG,
+      workDir: scenarioWorkDir,
+      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
+      adapter,
+    });
+
+    assertStringIncludes(capturedEvidence, "--- EXPECTED OUTCOME ---");
+    assertStringIncludes(
+      capturedEvidence,
+      "Test expected outcome for judge",
+    );
+    assertStringIncludes(capturedEvidence, "--- GIT DIFF (init..HEAD) ---");
+  } finally {
+    await Deno.remove(tempDir, { recursive: true });
+  }
+});
+
 Deno.test("Runner - AGENTS.md Fallback", async () => {
   const tempDir = await createTempDir("runner");
   const agentPath = join(tempDir, "agent.md");
