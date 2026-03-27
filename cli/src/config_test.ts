@@ -6,6 +6,9 @@ import {
   parseConfigData,
   saveConfig,
 } from "./config.ts";
+import { generateConfigNonInteractive } from "./config_generator.ts";
+import { InMemoryFrameworkSource } from "./source.ts";
+import { PACKS_VERSION } from "./types.ts";
 
 Deno.test("loadConfig - returns null when no .flowai.yaml", async () => {
   const fs = new InMemoryFsAdapter();
@@ -254,4 +257,90 @@ agents:
   const config = await loadConfig("/project", fs);
   assertEquals(config!.version, "1.1");
   assertEquals(config!.packs, ["core", "deno"]);
+});
+
+// --- Non-interactive config generation tests ---
+
+Deno.test("generateConfigNonInteractive - uses auto-detected IDEs", async () => {
+  const fs = new InMemoryFsAdapter();
+  await fs.mkdir("/project/.claude");
+  await fs.mkdir("/project/.cursor");
+
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/pack.yaml",
+        "name: core\nversion: 1.0\ndescription: Core",
+      ],
+    ]),
+  );
+
+  const config = await generateConfigNonInteractive("/project", fs, source);
+  assertEquals(config.ides, ["cursor", "claude"]);
+});
+
+Deno.test("generateConfigNonInteractive - selects all available packs", async () => {
+  const fs = new InMemoryFsAdapter();
+  await fs.mkdir("/project/.claude");
+
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/pack.yaml",
+        "name: core\nversion: 1.0\ndescription: Core",
+      ],
+      [
+        "framework/deno/pack.yaml",
+        "name: deno\nversion: 1.0\ndescription: Deno",
+      ],
+      [
+        "framework/engineering/pack.yaml",
+        "name: engineering\nversion: 1.0\ndescription: Eng",
+      ],
+    ]),
+  );
+
+  const config = await generateConfigNonInteractive("/project", fs, source);
+  assertEquals(config.version, PACKS_VERSION);
+  assertEquals(config.packs, ["core", "deno", "engineering"]);
+});
+
+Deno.test("generateConfigNonInteractive - saves .flowai.yaml", async () => {
+  const fs = new InMemoryFsAdapter();
+  await fs.mkdir("/project/.claude");
+
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/pack.yaml",
+        "name: core\nversion: 1.0\ndescription: Core",
+      ],
+    ]),
+  );
+
+  await generateConfigNonInteractive("/project", fs, source);
+
+  const saved = await loadConfig("/project", fs);
+  assertEquals(saved !== null, true);
+  assertEquals(saved!.ides, ["claude"]);
+  assertEquals(saved!.packs, ["core"]);
+});
+
+Deno.test("generateConfigNonInteractive - empty filters by default", async () => {
+  const fs = new InMemoryFsAdapter();
+  await fs.mkdir("/project/.opencode");
+
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/pack.yaml",
+        "name: core\nversion: 1.0\ndescription: Core",
+      ],
+    ]),
+  );
+
+  const config = await generateConfigNonInteractive("/project", fs, source);
+  assertEquals(config.skills, { include: [], exclude: [] });
+  assertEquals(config.agents, { include: [], exclude: [] });
+  assertEquals(config.commands, { include: [], exclude: [] });
 });

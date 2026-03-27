@@ -164,7 +164,7 @@ graph TD
 - **Components:**
   - `cli/src/cli.ts` — CLI entry, `sync` subcommand, IDE context guard (`isInsideIDE`), @cliffy/command
   - `cli/src/config.ts` — `.flowai.yaml` parser/writer, validation (include/exclude mutual exclusivity)
-  - `cli/src/config_generator.ts` — interactive config creation via @cliffy/prompt
+  - `cli/src/config_generator.ts` — config creation: interactive (prompts via @cliffy/prompt) and non-interactive (auto-detect IDEs, all packs)
   - `cli/src/source.ts` — `FrameworkSource` interface, `BundledSource` (reads `bundled.json`), `InMemoryFrameworkSource` (tests)
   - `cli/src/sync.ts` — orchestrates: load bundle → filter skills/agents → compute plan → write files → symlinks
   - `cli/src/plan.ts` — compares upstream vs local (create/ok/conflict classification)

@@ -3,7 +3,10 @@ import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
 import { DenoFsAdapter } from "./adapters/fs.ts";
 import { loadConfig } from "./config.ts";
-import { generateConfig } from "./config_generator.ts";
+import {
+  generateConfig,
+  generateConfigNonInteractive,
+} from "./config_generator.ts";
 import { isInsideIDE } from "./ide.ts";
 import type { PlanItem, ResourceAction } from "./types.ts";
 import { sync, type SyncOptions, type SyncResult } from "./sync.ts";
@@ -83,12 +86,9 @@ async function runSync(options: {
   const isNewConfig = !config;
 
   if (!config) {
-    if (yes) {
-      throw new Error(
-        "No .flowai.yaml found. Cannot run in non-interactive mode without config.",
-      );
-    }
-    config = await generateConfig(cwd, fs);
+    config = yes
+      ? await generateConfigNonInteractive(cwd, fs)
+      : await generateConfig(cwd, fs);
   }
 
   // 2. Show sync plan

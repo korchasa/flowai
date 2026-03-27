@@ -431,7 +431,8 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 #### FR-10.1 Sync Command (`flowai`)
 - **Desc:** Single command `flowai` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs.
-- **Scenario A (no config):** `flowai` without `.flowai.yaml` → interactive prompts (IDEs, skills/agents) → generates `.flowai.yaml` → syncs.
+- **Scenario A (no config, interactive):** `flowai` without `.flowai.yaml` → interactive prompts (IDEs, packs) → generates `.flowai.yaml` → syncs.
+- **Scenario A2 (no config, non-interactive):** `flowai -y` without `.flowai.yaml` → auto-detect IDEs, select all packs → generates `.flowai.yaml` with defaults → syncs.
 - **Scenario B (with config):** `flowai` with `.flowai.yaml` → disclaimer → sync. Bundled files compared with local. Unchanged silently, locally modified → prompt.
 - **Acceptance:**
   - [x] Without `.flowai.yaml` → interactive config generation → sync. Evidence: `cli/src/cli.ts:30-36`, `cli/src/config_generator.ts:20-100`
@@ -441,6 +442,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] Agents transformed per-IDE via `transformAgent()`. Evidence: `cli/src/sync.ts:108-136`, `cli/src/transform.ts:31-60`
   - [x] Idempotent: safe on repeated runs. Evidence: `cli/src/plan.ts:17-30`
   - [x] `--yes` / `-y` flag for non-interactive mode. Evidence: `cli/src/cli.ts:21-23`
+  - [x] `-y` without config → non-interactive config generation (auto-detect IDEs, all packs). Evidence: `cli/src/cli.ts:88-90`, `cli/src/config_generator.ts:13-54`
 
 #### FR-10.2 Config Generation
 - **Desc:** Interactive `.flowai.yaml` creation when config missing.
