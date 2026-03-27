@@ -73,20 +73,20 @@ Executable code (Python/Bash/etc.) that can be run directly to perform specific 
 
 **Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
 
-**Note:** Scripts may be executed without loading into context, but can still be read by AssistFlow for patching or environment adjustments.
+**Note:** Scripts may be executed without loading into context, but can still be read by flowai for patching or environment adjustments.
 
 ### references/
-Documentation and reference material intended to be loaded into context to inform AssistFlow's process and thinking.
+Documentation and reference material intended to be loaded into context to inform flowai's process and thinking.
 
 **Examples from other commands:**
 - Product management: \`communication.md\`, \`context_building.md\` - detailed workflow guides
 - BigQuery: API reference documentation and query examples
 - Finance: Schema documentation, company policies
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that AssistFlow should reference while working.
+**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that flowai should reference while working.
 
 ### assets/
-Files not intended to be loaded into context, but rather used within the output AssistFlow produces.
+Files not intended to be loaded into context, but rather used within the output flowai produces.
 
 **Examples from other commands:**
 - Brand guidelines: logo.png, slides_template.pptx
@@ -163,7 +163,7 @@ This placeholder represents where asset files would be stored.
 Replace with actual asset files (templates, images, fonts, etc.) or delete if not needed.
 
 Asset files are NOT intended to be loaded into context, but rather used within
-the output AssistFlow produces.
+the output flowai produces.
 
 Example asset files from other commands:
 - Brand guidelines: logo.png, slides_template.pptx

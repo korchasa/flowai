@@ -233,10 +233,24 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
       Evidence: `framework/skills/*/benchmarks/*/mod.ts` (all scenarios moved),
       `scripts/task-bench.ts:32-34` (discovery walks `framework/skills/`),
       `benchmarks/AGENTS.md` (updated responsibility docs)
+- [x] **FR-7.2 Pack-Scoped Sandbox**: Benchmark sandbox contains only primitives
+      from the tested skill's pack (+ core), not all packs. Core benchmark → core only;
+      non-core benchmark → core + that pack. Cross-pack references validated by TS test.
+      Evidence: `scripts/benchmarks/lib/types.ts` (`pack?: string` field),
+      `scripts/task-bench.ts` (`scenario.pack = packEntry.name`),
+      `scripts/benchmarks/lib/utils.ts` (`allowedPacks` parameter in `copyFrameworkToIdeDir`),
+      `scripts/benchmarks/lib/runner.ts` (pack filter logic),
+      `scripts/check-pack-refs.ts` + `scripts/check-pack-refs.test.ts` (cross-pack validation)
+- [x] **FR-7.3 Claude CLI Judge**: Judge and user emulator use Claude CLI (`cliChatCompletion`)
+      instead of OpenRouter API. Eliminates `OPENROUTER_API_KEY` dependency. Uses
+      `--output-format json` + `--json-schema` for structured judge output.
+      Evidence: `scripts/benchmarks/lib/llm.ts` (`cliChatCompletion()`),
+      `scripts/benchmarks/lib/judge.ts` (imports `cliChatCompletion`),
+      `scripts/benchmarks/lib/user_emulator.ts` (imports `cliChatCompletion`)
 
 ### 3.8 Component Coverage Matrix
 
-The benchmarking system must cover all core AssistFlow components to ensure reliability across all workflows.
+The benchmarking system must cover all core flowai components to ensure reliability across all workflows.
 
 #### Skills (`framework/skills/`)
 
@@ -606,12 +620,12 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 ### 3.13 Migrate Framework-Specific Python Scripts to Deno/TypeScript (FR-13)
 
 - **Description:** Python scripts in `framework/skills/` are split into two categories:
-  **framework-specific** (AssistFlow lifecycle tooling: init, validate, package for
+  **framework-specific** (flowai lifecycle tooling: init, validate, package for
   commands/skills/rules) — must be migrated to Deno/TS to eliminate Deno users'
   Python dependency. **General-purpose** (universally useful utilities: token counting,
   Mermaid validation) — remain in Python as they serve any project regardless of
   framework.
-- **Use case scenario:** User installs AssistFlow framework. Framework lifecycle
+- **Use case scenario:** User installs flowai framework. Framework lifecycle
   scripts (scaffolding, validation, packaging) execute via `deno run`. General-purpose
   utility scripts remain as `python3` invocations (Python available in target
   environments).
@@ -912,7 +926,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Description:** All framework skills MUST conform to the agentskills.io
   standard and work identically across supported IDEs (Cursor, Claude Code,
   OpenCode). Scripts bundled with skills MUST be cross-IDE compatible.
-- **Use case scenario:** A developer installs AssistFlow skills via
+- **Use case scenario:** A developer installs flowai skills via
   flowai. Skills with bundled scripts work in any of the three
   supported IDEs without modification.
 - **Priority:** High (foundational for multi-IDE support).
@@ -1045,10 +1059,10 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 ### 3.22 Framework Update — `flowai-update` (FR-22)
 
-- **Description:** Single entry point for updating the AssistFlow framework in a
+- **Description:** Single entry point for updating the flowai framework in a
   project. Handles CLI update, skill/agent sync via `flowai sync`, and migration
   of scaffolded project artifacts using template diffs as migration source.
-- **Use case scenario:** A new AssistFlow version changes TDD conventions in
+- **Use case scenario:** A new flowai version changes TDD conventions in
   `flowai-init` templates. The developer runs `/flowai-update`. The skill updates the
   CLI, syncs skills/agents, detects the convention drift in the project's
   `AGENTS.md`, shows a diff, and applies the change after confirmation.
@@ -1108,7 +1122,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Acceptance criteria:**
   - [x] **FR-22.4.1 Atomic commit**: Stages synced files + migrated artifacts
         together in one commit with message
-        `chore(framework): update AssistFlow framework`. Evidence:
+        `chore(framework): update flowai framework`. Evidence:
         `framework/skills/flowai-update/SKILL.md:35` rule 7 "Atomic commit";
         step 7 (`SKILL.md:80-83`) stages all + commits with specified message.
 

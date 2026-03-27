@@ -3,7 +3,7 @@ import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib
 export const EngineerCommandCreateBench = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-engineer-command-create";
-  name = "Create a new AssistFlow command for Docker Compose management";
+  name = "Create a new flowai command for Docker Compose management";
   skill = "flowai-skill-engineer-command";
   stepTimeoutMs = 600_000;
 

@@ -1,20 +1,20 @@
 ---
 name: flowai-update
 description: >-
-  Update AssistFlow framework: sync skills/agents, adapt skills to project specifics, and migrate scaffolded project artifacts (AGENTS.md, devcontainer, deno.json, scripts/).
+  Update flowai framework: sync skills/agents, adapt skills to project specifics, and migrate scaffolded project artifacts (AGENTS.md, devcontainer, deno.json, scripts/).
 disable-model-invocation: true
 ---
 
-# Task: Update AssistFlow Framework
+# Task: Update flowai Framework
 
 ## Overview
 
-Single entry point for updating the AssistFlow framework in a project. Handles CLI update, skill/agent sync, skill adaptation to project specifics, and migration of scaffolded project artifacts. All migration intelligence comes from `flowai sync` output — no manual discovery needed.
+Single entry point for updating the flowai framework in a project. Handles CLI update, skill/agent sync, skill adaptation to project specifics, and migration of scaffolded project artifacts. All migration intelligence comes from `flowai sync` output — no manual discovery needed.
 
 ## Context
 
 <context>
-AssistFlow generates two types of outputs:
+flowai generates two types of outputs:
 - **Synced** (skills/, agents/) — updated automatically by `flowai sync`, then adapted to the project
 - **Scaffolded** (AGENTS.md, .devcontainer/, deno.json tasks, scripts/check.ts, documents/) — created once by setup skills (flowai-init, flowai-setup-agent-*, flowai-skill-configure-deno-commands), then owned by the project
 
@@ -115,7 +115,7 @@ adapted:
 
 9. **Commit**
    - Stage all synced files + adapted skills + migrated artifacts.
-   - Commit with message: `chore(framework): update AssistFlow framework`
+   - Commit with message: `chore(framework): update flowai framework`
    - Include list of adapted skills and migrated artifacts in commit body.
 
 </step_by_step>

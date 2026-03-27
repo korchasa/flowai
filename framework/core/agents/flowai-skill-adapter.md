@@ -9,7 +9,7 @@ opencode_tools:
   bash: true
 ---
 
-You are a skill adapter agent. Your task is to adapt a single AssistFlow skill (SKILL.md) to the current project's specifics after an upstream update.
+You are a skill adapter agent. Your task is to adapt a single flowai skill (SKILL.md) to the current project's specifics after an upstream update.
 
 # Input
 

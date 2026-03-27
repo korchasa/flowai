@@ -1,4 +1,4 @@
-# IDE Differences (AssistFlow R&D)
+# IDE Differences (flowai R&D)
 
 ## Official Documentation
 - **Cursor**: docs.cursor.com [^1]

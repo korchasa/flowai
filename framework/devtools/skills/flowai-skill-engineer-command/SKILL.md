@@ -1,16 +1,16 @@
 ---
 name: flowai-skill-engineer-command
-description: Guide for creating effective AssistFlow commands. This skill should be used when users want to create a new command (or update an existing command) that extends AssistFlow's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
+description: Guide for creating effective flowai commands. This skill should be used when users want to create a new command (or update an existing command) that extends flowai's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
 license: Based on https://github.com/anthropics/skills
 ---
 
 # Command Creator
 
-This skill provides guidance for creating effective AssistFlow commands.
+This skill provides guidance for creating effective flowai commands.
 
-## About AssistFlow Commands
+## About flowai Commands
 
-Commands are modular, self-contained packages that extend AssistFlow's capabilities by providing specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific domains or tasks—they transform AssistFlow from a general-purpose agent into a specialized agent equipped with procedural knowledge that no model can fully possess.
+Commands are modular, self-contained packages that extend flowai's capabilities by providing specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific domains or tasks—they transform flowai from a general-purpose agent into a specialized agent equipped with procedural knowledge that no model can fully possess.
 
 ### What Commands Provide
 
@@ -48,9 +48,9 @@ OpenCode supports `$ARGUMENTS`, `$1`-`$N`, `` !`shell command` ``, `@filepath` i
 
 ### Concise is Key
 
-The context window is a public good. Commands share the context window with everything else AssistFlow needs: system prompt, conversation history, other Commands' metadata, and the actual user request.
+The context window is a public good. Commands share the context window with everything else flowai needs: system prompt, conversation history, other Commands' metadata, and the actual user request.
 
-**Default assumption: AssistFlow is already very smart.** Only add context AssistFlow doesn't already have. Challenge each piece of information: "Does AssistFlow really need this explanation?" and "Does this paragraph justify its token cost?"
+**Default assumption: flowai is already very smart.** Only add context flowai doesn't already have. Challenge each piece of information: "Does flowai really need this explanation?" and "Does this paragraph justify its token cost?"
 
 Prefer concise examples over verbose explanations.
 
@@ -64,7 +64,7 @@ Match the level of specificity to the task's fragility and variability:
 
 **Low freedom (specific scripts, few parameters)**: Use when operations are fragile and error-prone, consistency is critical, or a specific sequence must be followed.
 
-Think of AssistFlow as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).
+Think of flowai as exploring a path: a narrow bridge with cliffs needs specific guardrails (low freedom), while an open field allows many routes (high freedom).
 
 ### Anatomy of a Command
 
@@ -87,7 +87,7 @@ cmd-<name>/
 
 Every SKILL.md consists of:
 
-- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that AssistFlow reads to determine when the command gets used, thus it is very important to be clear and comprehensive in describing what the command is, and when it should be used.
+- **Frontmatter** (YAML): Contains `name` and `description` fields. These are the only fields that flowai reads to determine when the command gets used, thus it is very important to be clear and comprehensive in describing what the command is, and when it should be used.
 - **Body** (Markdown): Instructions and guidance for using the command. Only loaded AFTER the command triggers (if at all).
 
 #### Bundled Resources (optional)
@@ -99,27 +99,27 @@ Executable code (Python/Bash/etc.) for tasks that require deterministic reliabil
 - **When to include**: When the same code is being rewritten repeatedly or deterministic reliability is needed
 - **Example**: `scripts/rotate_pdf.py` for PDF rotation tasks
 - **Benefits**: Token efficient, deterministic, may be executed without loading into context
-- **Note**: Scripts may still need to be read by AssistFlow for patching or environment-specific adjustments
+- **Note**: Scripts may still need to be read by flowai for patching or environment-specific adjustments
 
 ##### References (`references/`)
 
-Documentation and reference material intended to be loaded as needed into context to inform AssistFlow's process and thinking.
+Documentation and reference material intended to be loaded as needed into context to inform flowai's process and thinking.
 
-- **When to include**: For documentation that AssistFlow should reference while working
+- **When to include**: For documentation that flowai should reference while working
 - **Examples**: `references/finance.md` for financial schemas, `references/mnda.md` for company NDA template, `references/policies.md` for company policies, `references/api_docs.md` for API specifications
 - **Use cases**: Database schemas, API documentation, domain knowledge, company policies, detailed workflow guides
-- **Benefits**: Keeps SKILL.md lean, loaded only when AssistFlow determines it's needed
+- **Benefits**: Keeps SKILL.md lean, loaded only when flowai determines it's needed
 - **Best practice**: If files are large (>10k words), include grep search patterns in SKILL.md
 - **Avoid duplication**: Information should live in either SKILL.md or references files, not both. Prefer references files for detailed information unless it's truly core to the command—this keeps SKILL.md lean while making information discoverable without hogging the context window. Keep only essential procedural instructions and workflow guidance in SKILL.md; move detailed reference material, schemas, and examples to references files.
 
 ##### Assets (`assets/`)
 
-Files not intended to be loaded into context, but rather used within the output AssistFlow produces.
+Files not intended to be loaded into context, but rather used within the output flowai produces.
 
 - **When to include**: When the command needs files that will be used in the final output
 - **Examples**: `assets/logo.png` for brand assets, `assets/slides.pptx` for PowerPoint templates, `assets/frontend-template/` for HTML/React boilerplate, `assets/font.ttf` for typography
 - **Use cases**: Templates, images, icons, boilerplate code, fonts, sample documents that get copied or modified
-- **Benefits**: Separates output resources from documentation, enables AssistFlow to use files without loading them into context
+- **Benefits**: Separates output resources from documentation, enables flowai to use files without loading them into context
 
 #### What to Not Include in a Command
 
@@ -139,7 +139,7 @@ Commands use a three-level loading system to manage context efficiently:
 
 1. **Metadata (name + description)** - Always in context (~100 words)
 2. **SKILL.md body** - When command triggers (<5k words)
-3. **Bundled resources** - As needed by AssistFlow (Unlimited because scripts can be executed without reading into context window)
+3. **Bundled resources** - As needed by flowai (Unlimited because scripts can be executed without reading into context window)
 
 #### Progressive Disclosure Patterns
 
@@ -164,7 +164,7 @@ Extract text with pdfplumber:
 - **Examples**: See [EXAMPLES.md](EXAMPLES.md) for common patterns
 ```
 
-AssistFlow loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.
+flowai loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.
 
 **Pattern 2: Domain-specific organization**
 
@@ -180,7 +180,7 @@ flow-bigquery/
     └── marketing.md (campaigns, attribution)
 ```
 
-When a user asks about sales metrics, AssistFlow only reads sales.md.
+When a user asks about sales metrics, flowai only reads sales.md.
 
 Similarly, for commands supporting multiple frameworks or variants, organize by variant:
 
@@ -193,7 +193,7 @@ flow-cloud-deploy/
     └── azure.md (Azure deployment patterns)
 ```
 
-When the user chooses AWS, AssistFlow only reads aws.md.
+When the user chooses AWS, flowai only reads aws.md.
 
 **Pattern 3: Conditional details**
 
@@ -214,12 +214,12 @@ For simple edits, modify the XML directly.
 **For OOXML details**: See [OOXML.md](OOXML.md)
 ```
 
-AssistFlow reads REDLINING.md or OOXML.md only when the user needs those features.
+flowai reads REDLINING.md or OOXML.md only when the user needs those features.
 
 **Important guidelines:**
 
 - **Avoid deeply nested references** - Keep references one level deep from SKILL.md. All reference files should link directly from SKILL.md.
-- **Structure longer reference files** - For files longer than 100 lines, include a table of contents at the top so AssistFlow can see the full scope when previewing.
+- **Structure longer reference files** - For files longer than 100 lines, include a table of contents at the top so flowai can see the full scope when previewing.
 
 ## Command Creation Process
 
@@ -300,7 +300,7 @@ After initialization, customize or remove the generated SKILL.md and example fil
 
 ### Step 4: Edit the Command
 
-When editing the (newly-generated or existing) command, remember that the command is being created for another instance of AssistFlow to use. Include information that would be beneficial and non-obvious to AssistFlow. Consider what procedural knowledge, domain-specific details, or reusable assets would help another AssistFlow instance execute these tasks more effectively.
+When editing the (newly-generated or existing) command, remember that the command is being created for another instance of flowai to use. Include information that would be beneficial and non-obvious to flowai. Consider what procedural knowledge, domain-specific details, or reusable assets would help another flowai instance execute these tasks more effectively.
 
 #### Learn Proven Design Patterns
 
@@ -328,10 +328,10 @@ Any example files and directories not needed for the command should be deleted. 
 Write the YAML frontmatter with `name` and `description`:
 
 - `name`: The command name
-- `description`: This is the primary triggering mechanism for your command, and helps AssistFlow understand when to use the command.
+- `description`: This is the primary triggering mechanism for your command, and helps flowai understand when to use the command.
   - Include both what the Command does and specific triggers/contexts for when to use it.
-  - Include all "when to use" information here - Not in the body. The body is only loaded after triggering, so "When to Use This Command" sections in the body are not helpful to AssistFlow.
-  - Example description for a `docx` command: "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when AssistFlow needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks"
+  - Include all "when to use" information here - Not in the body. The body is only loaded after triggering, so "When to Use This Command" sections in the body are not helpful to flowai.
+  - Example description for a `docx` command: "Comprehensive document creation, editing, and analysis with support for tracked changes, comments, formatting preservation, and text extraction. Use when flowai needs to work with professional documents (.docx files) for: (1) Creating new documents, (2) Modifying or editing content, (3) Working with tracked changes, (4) Adding comments, or any other document tasks"
 
 Do not include any other fields in YAML frontmatter.
 

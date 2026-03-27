@@ -31,7 +31,7 @@
 
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`)
 
-- **Purpose:** Dev-only skills and agents for AssistFlow development. Not distributed to users.
+- **Purpose:** Dev-only skills and agents for flowai development. Not distributed to users.
 - **Structure:**
   - `.claude/skills/` — Dev skills (SKILL.md directories, tracked in git) + framework skills (installed by flowai)
   - `.claude/agents/` — Dev agents (tracked in git) + framework agents (installed by flowai)
@@ -132,7 +132,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   - **Co-located Scenarios**: Scenarios are co-located with skills as `framework/<pack>/skills/<skill>/benchmarks/<scenario>/mod.ts`.
   - **JSON Configuration**: `benchmarks/config.json` stores unified model presets.
   - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
-  - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge.
+  - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge via Claude CLI (`cliChatCompletion` in `llm.ts`). Uses `--output-format json` + `--json-schema` for structured verdicts. No external API key required.
   - **Execution Stability**: Implements a 60-second step timeout in `SpawnedAgent` to prevent infinite hangs during benchmark execution.
   - **Usage Calculation**: Automatically calculates token usage (input, output, cache read/write) based on session transcripts using `calculateSessionUsage`.
   - **Realistic Context**: `system-prompt-generator.ts` assembles system prompts using `system-prompt.template.md`, simulating Cursor's context (including dynamic project layout, git status, and user query).
@@ -145,7 +145,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
 
 ### 3.5 Global Framework Distribution — FR-10 (`cli/`)
 
-- **Purpose:** Install/update AssistFlow framework skills/agents into project-local IDE config dirs.
+- **Purpose:** Install/update flowai framework skills/agents into project-local IDE config dirs.
 - **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flowai`.
 - **Pattern:** Single-command CLI. Adapter pattern for FS isolation. Bundled source (no network at runtime).
 - **Diagram:**

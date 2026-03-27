@@ -321,7 +321,7 @@ export async function main(args: string[]): Promise<void> {
         },
       )
       .description(
-        "Sync AssistFlow framework skills/agents into project-local IDE config dirs.",
+        "Sync flowai framework skills/agents into project-local IDE config dirs.",
       ),
   )
     // deno-lint-ignore no-explicit-any

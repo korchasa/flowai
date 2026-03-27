@@ -1013,7 +1013,7 @@ export class TraceLogger {
 <body>
   <nav class="nav-bar">
     <div class="nav-links">
-      <a href="#" onclick="showScenario('overview'); return false;">ASSISTFLOW BENCHMARK TRACE</a>
+      <a href="#" onclick="showScenario('overview'); return false;">FLOWAI BENCHMARK TRACE</a>
     </div>
   </nav>
 

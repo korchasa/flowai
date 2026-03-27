@@ -4,7 +4,7 @@
 
 ## Purpose
 
-CLI tool for distributing the AssistFlow framework. Single `flowai` command published to JSR (`@korchasa/flowai`). Bundles `../framework/` into `src/bundled.json` at publish time — zero network dependency at runtime.
+CLI tool for distributing the flowai framework. Single `flowai` command published to JSR (`@korchasa/flowai`). Bundles `../framework/` into `src/bundled.json` at publish time — zero network dependency at runtime.
 
 ## Stack
 

@@ -5,7 +5,7 @@ description: Understand and interact with the cursor-agent CLI, including its ou
 
 # Cursor Agent Integration
 
-This skill provides technical details for interacting with the `cursor-agent` CLI, the primary interface for the AssistFlow AI agent.
+This skill provides technical details for interacting with the `cursor-agent` CLI, the primary interface for the flowai AI agent.
 
 ## CLI Overview
 

@@ -6,7 +6,7 @@
 
 ## Responsibility
 
-Build tooling, verification, and benchmark infrastructure for AssistFlow.
+Build tooling, verification, and benchmark infrastructure for flowai.
 
 - `scripts/*.ts` — Deno task entry points (check, test, dev, bench)
 - `scripts/benchmarks/lib/` — Benchmark framework: adapter layer for IDE CLIs, scenario runner, LLM judge, trace visualization, token usage estimation

@@ -1,4 +1,4 @@
-# AssistFlow
+# flowai
 
 An Assisted Engineering framework: the developer remains the architect and reviewer, while AI handles implementation under supervision.
 
@@ -48,6 +48,16 @@ flowai
 
 On first run, `flowai` interactively creates `.flowai.yaml` to configure which skills/agents to sync.
 
+### Quick Start Prompt
+
+Copy and paste the following prompt into your AI IDE (Claude Code, Cursor, OpenCode) to install and initialize flowai in your project:
+
+> Install the flowai framework in this project:
+> 1. Check if Deno v2.x is installed (`deno --version`). If not, ask the user which OS they are on and install Deno using the official method for their platform (macOS: `brew install deno` or `curl -fsSL https://deno.land/install.sh | sh`, Windows: `irm https://deno.land/install.ps1 | iex`, Linux: `curl -fsSL https://deno.land/install.sh | sh`).
+> 2. Run `deno install -g -A jsr:@korchasa/flowai` to install the CLI (skip if already installed).
+> 3. Run `flowai` in the project root to sync skills and agents into the IDE config directory.
+> 4. Run `/flowai-init` to analyze the codebase and generate AGENTS.md files, documentation scaffolding, and development commands.
+
 ## Updating
 
 Run `/flowai-update` in your AI IDE. It handles the full update cycle:
@@ -59,7 +69,7 @@ Run `/flowai-update` in your AI IDE. It handles the full update cycle:
 
 ## Development Setup
 
-For contributors working on AssistFlow itself (not end-user installation):
+For contributors working on flowai itself (not end-user installation):
 
 **Prerequisites:** [Deno](https://deno.land), Git
 
@@ -73,20 +83,20 @@ Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (trac
 
 ## How It Works
 
-AssistFlow is a set of **Skills** and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, etc.) load into context to follow structured workflows.
+flowai is a set of **Skills** and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, etc.) load into context to follow structured workflows.
 
 - **Skills** (`SKILL.md`) — step-by-step workflows for specific tasks
 - **Agents** (`.md`) — role definitions with specialized capabilities
 - **Documentation** (`documents/`) — persistent project memory across sessions
 
-AI models lose context between sessions. AssistFlow compensates by storing all decisions, requirements, and architecture in structured docs that the agent reads at the start of every session.
+AI models lose context between sessions. flowai compensates by storing all decisions, requirements, and architecture in structured docs that the agent reads at the start of every session.
 
 ### Product vs. Development Tooling
 
 This repository contains two distinct layers. Do not confuse them:
 
-- **`framework/`** — **the product itself**. Skills and agents that users install into their projects via `flowai`. This is what AssistFlow distributes.
-- **`.claude/skills/`, `.claude/agents/`** — **internal development tooling**. Skills and agents used to develop AssistFlow itself (benchmark runner, cursor-agent integration, code generation helpers). These are NOT distributed to users. Tracked in git directly.
+- **`framework/`** — **the product itself**. Skills and agents that users install into their projects via `flowai`. This is what flowai distributes.
+- **`.claude/skills/`, `.claude/agents/`** — **internal development tooling**. Skills and agents used to develop flowai itself (benchmark runner, cursor-agent integration, code generation helpers). These are NOT distributed to users. Tracked in git directly.
 
 ## Developer Workflow
 
@@ -127,9 +137,9 @@ Every task follows the same supervised loop:
 - `flowai-investigate` — deep bug investigation
 - `flowai-answer` — codebase questions
 - `flowai-spec` — structured feature specification
-- `flowai-update` — update AssistFlow framework (sync skills/agents, migrate artifacts)
+- `flowai-update` — update flowai framework (sync skills/agents, migrate artifacts)
 
-### Extending AssistFlow (Skills)
+### Extending flowai (Skills)
 
 - `flowai-skill-engineer-command` — create/modify a command
 - `flowai-skill-engineer-skill` — create/modify a skill
