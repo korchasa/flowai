@@ -338,6 +338,7 @@ export async function runUserSync(
     errors: [],
     skillActions: [],
     agentActions: [],
+    hookActions: [],
   };
 
   const resolvedIdes = ides.length > 0 ? ides : await resolveIDEs(

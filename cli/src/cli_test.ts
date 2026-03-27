@@ -24,6 +24,7 @@ function baseSyncResult(): SyncResult {
     errors: [],
     skillActions: [],
     agentActions: [],
+    hookActions: [],
   };
 }
 

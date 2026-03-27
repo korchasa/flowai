@@ -46,12 +46,14 @@ export type PlanAction = "create" | "update" | "ok" | "conflict" | "delete";
 
 /** Hook definition from hook.yaml */
 export interface HookDefinition {
-  /** IDE event name (e.g., pre-tool-call, post-tool-call, on-save) */
+  /** IDE event name (e.g., PostToolUse, PreToolUse) — Claude Code naming as canonical */
   event: string;
   /** Regex pattern to match tool/file names (optional) */
   matcher?: string;
   /** Human-readable description */
   description: string;
+  /** Timeout in seconds. Default: 30 (PostToolUse), 600 (PreToolUse) */
+  timeout?: number;
 }
 
 /** Plan item type */

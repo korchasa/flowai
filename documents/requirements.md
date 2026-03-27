@@ -1182,34 +1182,37 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 ### 3.24 Hook Resources (FR-24)
 
-- **Description:** Packs can contain hooks — shell scripts triggered by IDE events (pre-tool-call, post-tool-call, on-save, etc.). Hooks are IDE-agnostic: stored as `hook.yaml` + `run.sh`, installed by flowai with IDE-specific configuration generation.
-- **Use case scenario:** Pack `core` contains a `lint-on-edit` hook. `flowai sync` for Claude Code adds an entry to `settings.json` hooks section; for Cursor — creates a file in `.cursor/hooks/`.
+- **Description:** Packs contain hooks — Deno TS scripts triggered by IDE events (PostToolUse, PreToolUse). Hooks are IDE-agnostic: stored as `hook.yaml` + `run.ts`, installed by flowai with IDE-specific configuration generation. Claude Code naming as canonical; flowai transforms for other IDEs.
+- **Use case scenario:** Pack `core` contains `lint-on-write` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
 - **Priority:** Medium (new resource type, depends on FR-23).
 
 #### FR-24.1 Hook Format
 
-- **Desc:** Hook = directory with `hook.yaml` (metadata) + `run.sh` (script). Located at `framework/<pack>/hooks/<name>/`.
+- **Desc:** Hook = directory with `hook.yaml` (metadata) + `run.ts` (Deno script). Located at `framework/<pack>/hooks/<name>/`.
 - **Acceptance:**
-  - [x] **FR-24.1.1** `hook.yaml` fields: `event` (string), `matcher` (regex, optional), `description` (string). Evidence: `cli/src/types.ts:49-56` (HookDefinition interface)
-  - [ ] **FR-24.1.2** Supported events: maximum union across IDEs. Unsupported events skipped at install time.
-  - [ ] **FR-24.1.3** `run.sh` receives `FLOWAI_IDE=claude|cursor|opencode` env var. Script handles IDE-specific input parsing.
+  - [x] **FR-24.1.1** `hook.yaml` fields: `event`, `matcher` (optional), `description`, `timeout` (optional, default 30/600). Evidence: `cli/src/types.ts:48-56`, `cli/src/hooks.ts:62-64`
+  - [x] **FR-24.1.2** Supported events: PostToolUse, PreToolUse. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:18-28` (EVENT_MAP, TOOL_MAP)
+  - [x] **FR-24.1.3** `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
+  - [x] **FR-24.1.4** 4 framework hooks: `lint-on-write` (core), `test-before-commit` (core), `skill-structure-validate` (devtools), `mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
 
 #### FR-24.2 IDE-Specific Installation
 
-- **Desc:** flowai reads `hook.yaml` and generates IDE-specific configuration.
+- **Desc:** flowai reads `hook.yaml` and generates IDE-specific configuration. Manifest tracks installed hooks for clean deinstallation.
 - **Acceptance:**
-  - [ ] **FR-24.2.1** Claude Code: entry in `settings.json` hooks section.
-  - [ ] **FR-24.2.2** Cursor: file in `.cursor/hooks/`.
-  - [ ] **FR-24.2.3** OpenCode: plugin configuration.
-  - [ ] **FR-24.2.4** Unsupported events silently skipped with warning.
+  - [x] **FR-24.2.1** Claude Code: 3-level nested entry in `settings.json` hooks section. Evidence: `cli/src/hooks.ts:78-96` (transformHookForClaude), `cli/src/sync.ts:793-822` (writeHookConfig)
+  - [x] **FR-24.2.2** Cursor: flat entry in `.cursor/hooks.json`. Evidence: `cli/src/hooks.ts:99-113` (transformHookForCursor), `cli/src/sync.ts:823-849`
+  - [x] **FR-24.2.3** OpenCode: generated plugin file `.opencode/plugins/flowai-hooks.ts`. Evidence: `cli/src/hooks.ts:116-150` (generateOpenCodePlugin), `cli/src/sync.ts:850-863`
+  - [x] **FR-24.2.4** Manifest `.{ide}/flowai-hooks.json` tracks installed hooks. Removed hooks cleaned from IDE config. Evidence: `cli/src/hooks.ts:258-322` (cleanupRemovedHooks, readManifest, buildManifest)
+  - [x] **FR-24.2.5** Merge preserves user hooks (not in manifest). Evidence: `cli/src/hooks.ts:155-206` (mergeClaudeHooks, mergeCursorHooks), `cli/src/hooks_test.ts`
 
 #### FR-24.3 Hook Sync Infrastructure
 
-- **Desc:** flowai discovers, reads, and copies hook files from pack structure during sync.
+- **Desc:** flowai discovers, reads, copies hook files, generates IDE config, and tracks actions in SyncResult.
 - **Acceptance:**
   - [x] **FR-24.3.1** Hook discovery: `extractPackHookNames()` extracts hooks from `framework/<pack>/hooks/`. Evidence: `cli/src/source.ts:159-172`, `cli/src/source_test.ts:201-213`
-  - [x] **FR-24.3.2** Hook files copied to `.{ide}/scripts/` during sync. Evidence: `cli/src/sync.ts:311-325`, `cli/src/sync.ts:530-545`
+  - [x] **FR-24.3.2** Hook files copied to `.{ide}/scripts/` during sync. Evidence: `cli/src/sync.ts:322-362`
   - [x] **FR-24.3.3** `resolvePackResources()` includes `hookNames` in return. Evidence: `cli/src/sync.ts:62`, `cli/src/sync_test.ts:101-106`
+  - [x] **FR-24.3.4** `SyncResult.hookActions` tracks per-hook actions. Evidence: `cli/src/sync.ts:69`, `cli/src/cli.ts:231-251`
 
 ### 3.25 Script Resources (FR-25)
 

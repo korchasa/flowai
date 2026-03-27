@@ -20,6 +20,7 @@ import { transformAgent } from "./transform.ts";
 import { runUserSync } from "./user_sync.ts";
 import type {
   FlowConfig,
+  HookDefinition,
   PackDefinition,
   PlanItem,
   PlanItemType,
@@ -28,6 +29,16 @@ import type {
 } from "./types.ts";
 import { writeFiles } from "./writer.ts";
 import { parse as parseYaml } from "@std/yaml";
+import {
+  buildManifest,
+  cleanupRemovedHooks,
+  generateOpenCodePlugin,
+  mergeClaudeHooks,
+  mergeCursorHooks,
+  readManifest,
+  transformHookForClaude,
+  transformHookForCursor,
+} from "./hooks.ts";
 
 /** Sync options */
 export interface SyncOptions {
@@ -54,6 +65,8 @@ export interface SyncResult {
   skillActions: ResourceAction[];
   /** Per-agent action breakdown */
   agentActions: ResourceAction[];
+  /** Per-hook action breakdown */
+  hookActions: ResourceAction[];
 }
 
 /** Resolve which skills, agents, hooks, and scripts to sync based on packs and filters */
@@ -141,6 +154,7 @@ export async function sync(
     errors: [],
     skillActions: [],
     agentActions: [],
+    hookActions: [],
   };
 
   // 1. Resolve IDEs
@@ -308,7 +322,7 @@ export async function sync(
         await processPlan(agentDeletePlan, fs, options, result, log);
       }
 
-      // Hooks (copy run.sh to scripts dir, IDE-specific config deferred)
+      // Hooks (copy files + generate IDE-specific config)
       if (hookNames.length > 0 && usePacks) {
         const hookFiles = await readPackHookFiles(hookNames, allPaths, source);
         const hookTargetDir = join(cwd, ide.configDir, "scripts");
@@ -318,10 +332,39 @@ export async function sync(
           "hook",
           fs,
         );
-        if (isFirstIde && hookPlan.length > 0) {
-          log(`  Hooks: ${hookNames.join(", ")}`);
+
+        if (isFirstIde) {
+          if (hookPlan.length > 0) {
+            log(`  Hooks: ${hookNames.join(", ")}`);
+          }
+          result.hookActions = extractResourceActions(
+            hookPlan,
+            hookNames,
+            new Map(),
+          );
         }
+
         await processPlan(hookPlan, fs, options, result, log);
+
+        // Generate IDE-specific hook configuration
+        const hookDefs = await readHookDefinitions(
+          hookNames,
+          allPaths,
+          source,
+        );
+        const manifestPath = join(cwd, ide.configDir, "flowai-hooks.json");
+        const manifestContent = await fs.exists(manifestPath)
+          ? await fs.readFile(manifestPath)
+          : null;
+        const oldManifest = readManifest(manifestContent);
+
+        await writeHookConfig(cwd, ide, hookDefs, oldManifest, fs);
+
+        const newManifest = buildManifest(hookDefs);
+        await fs.writeFile(
+          manifestPath,
+          JSON.stringify(newManifest, null, 2),
+        );
       }
 
       // Scripts (simple copy to .{ide}/scripts/)
@@ -708,4 +751,115 @@ export function filterNames(
     return all.filter((n) => !exclude.includes(n));
   }
   return all;
+}
+
+/** Read hook.yaml definitions for all hook names from source */
+async function readHookDefinitions(
+  hookNames: string[],
+  allPaths: string[],
+  source: FrameworkSource,
+): Promise<Array<{ name: string; hook: HookDefinition }>> {
+  const defs: Array<{ name: string; hook: HookDefinition }> = [];
+  const hookYamlRegex = /^framework\/[^/]+\/hooks\/([^/]+)\/hook\.yaml$/;
+
+  for (const path of allPaths) {
+    const match = path.match(hookYamlRegex);
+    if (match && hookNames.includes(match[1])) {
+      const content = await source.readFile(path);
+      const data = parseYaml(content) as Record<string, unknown>;
+      defs.push({
+        name: match[1],
+        hook: {
+          event: String(data.event ?? ""),
+          matcher: data.matcher ? String(data.matcher) : undefined,
+          description: String(data.description ?? ""),
+          timeout: data.timeout ? Number(data.timeout) : undefined,
+        },
+      });
+    }
+  }
+  return defs;
+}
+
+/** Write IDE-specific hook configuration files */
+async function writeHookConfig(
+  cwd: string,
+  ide: { name: string; configDir: string },
+  hookDefs: Array<{ name: string; hook: HookDefinition }>,
+  oldManifest: ReturnType<typeof readManifest>,
+  fs: FsAdapter,
+): Promise<void> {
+  const activeNames = hookDefs.map((d) => d.name);
+
+  if (ide.name === "claude") {
+    const settingsPath = join(cwd, ide.configDir, "settings.json");
+    let existing: Record<string, unknown> = {};
+    if (await fs.exists(settingsPath)) {
+      try {
+        existing = JSON.parse(await fs.readFile(settingsPath));
+      } catch {
+        // Invalid JSON — start fresh for hooks section
+      }
+    }
+
+    // Cleanup removed hooks
+    existing = cleanupRemovedHooks(
+      existing,
+      oldManifest,
+      activeNames,
+      "claude",
+    );
+
+    // Generate new hook entries
+    const claudeHooks = hookDefs.map(({ name, hook }) =>
+      transformHookForClaude(
+        hook,
+        `${ide.configDir}/scripts/${name}/run.ts`,
+      )
+    );
+
+    const merged = mergeClaudeHooks(existing, claudeHooks, oldManifest);
+    await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2));
+  } else if (ide.name === "cursor") {
+    const hooksPath = join(cwd, ide.configDir, "hooks.json");
+    let existing: Record<string, unknown> = {};
+    if (await fs.exists(hooksPath)) {
+      try {
+        existing = JSON.parse(await fs.readFile(hooksPath));
+      } catch {
+        // Invalid JSON
+      }
+    }
+
+    existing = cleanupRemovedHooks(
+      existing,
+      oldManifest,
+      activeNames,
+      "cursor",
+    );
+
+    const cursorHooks = hookDefs.map(({ name, hook }) =>
+      transformHookForCursor(
+        hook,
+        `${ide.configDir}/scripts/${name}/run.ts`,
+      )
+    );
+
+    const merged = mergeCursorHooks(existing, cursorHooks, oldManifest);
+    await fs.writeFile(hooksPath, JSON.stringify(merged, null, 2));
+  } else if (ide.name === "opencode") {
+    const pluginPath = join(
+      cwd,
+      ide.configDir,
+      "plugins",
+      "flowai-hooks.ts",
+    );
+    const openCodeHooks = hookDefs.map(({ name, hook }) => ({
+      name,
+      hook,
+      scriptPath: `${ide.configDir}/scripts/${name}/run.ts`,
+    }));
+    const content = generateOpenCodePlugin(openCodeHooks);
+    await fs.writeFile(pluginPath, content);
+  }
 }
