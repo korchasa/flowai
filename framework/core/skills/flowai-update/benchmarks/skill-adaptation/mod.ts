@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
-import { runGit } from "../../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { runGit } from "@bench/utils.ts";
 
 /**
  * Tests that flowai-update adapts skills to the project after sync.
@@ -200,7 +200,6 @@ description: Commit workflow
       description:
         "Did the agent use a subagent (skill-adapter or similar) for skill adaptation?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

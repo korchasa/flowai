@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanDbFeatureBench = new class extends BenchmarkSkillScenario {
   id = "flowai-plan-db";
@@ -15,28 +15,24 @@ export const PlanDbFeatureBench = new class extends BenchmarkSkillScenario {
       description:
         "Does the plan include updating 'prisma/schema.prisma' with the new Role enum and field?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "migration_step",
       description:
         "Does the plan include a step to create/run the database migration (e.g., 'prisma migrate')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "service_update",
       description:
         "Does the plan include updating 'src/user.service.ts' to accept and handle the optional role parameter?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "default_value",
       description:
         "Does the plan mention setting the default value to 'USER' in the schema?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

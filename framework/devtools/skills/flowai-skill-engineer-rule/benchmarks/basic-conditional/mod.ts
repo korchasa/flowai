@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerRuleConditionalBench = new class
   extends BenchmarkSkillScenario {
@@ -15,7 +15,6 @@ export const EngineerRuleConditionalBench = new class
       description:
         "Did the agent detect the target IDE (via .claude/ directory) or ask the user which IDE to target?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "correct_file_location",
@@ -28,28 +27,24 @@ export const EngineerRuleConditionalBench = new class
       description:
         "Does the rule file have valid YAML frontmatter with description and file pattern fields (globs or paths)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "conditional_scope",
       description:
         "Is the rule scoped to TypeScript files (e.g., globs: '**/*.ts' or paths: '**/*.ts'), not always-apply?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "includes_code_examples",
       description:
         "Does the rule include concrete code examples showing good and bad error handling patterns?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "concise_content",
       description:
         "Is the rule content concise and actionable (under 500 lines, preferably under 50)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 

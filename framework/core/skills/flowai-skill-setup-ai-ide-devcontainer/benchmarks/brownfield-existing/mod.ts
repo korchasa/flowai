@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupDevcontainerBrownfield = new class
   extends BenchmarkSkillScenario {
@@ -26,14 +26,12 @@ When shown diffs of existing files, confirm the overwrite.`;
       description:
         "Did the agent show a diff or comparison of the existing devcontainer.json before overwriting?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "confirmation_asked",
       description:
         "Did the agent ask for confirmation before overwriting the existing config?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "python_base_image",
@@ -51,7 +49,6 @@ When shown diffs of existing files, confirm the overwrite.`;
       description:
         "Does postCreateCommand include pip install or equivalent Python dependency command?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "valid_json",
@@ -69,7 +66,6 @@ When shown diffs of existing files, confirm the overwrite.`;
       description:
         "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

@@ -93,50 +93,16 @@ Options:
   }) (default: from config)
   -n, --runs <number>          Number of runs per scenario (default: 1)
   -p, --parallel <number>      Max concurrent scenarios (default: 1, sequential)
+  --lock <string>              Custom lock file name (default: benchmarks.lock)
   --help                       Show this help message
   `);
 }
 
 async function main() {
-  const lockFile = join(Deno.cwd(), "benchmarks/benchmarks.lock");
-
-  if (existsSync(lockFile)) {
-    const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
-    console.error(
-      `${
-        ansi("\x1b[31m")
-      }Error: Another benchmark process (PID: ${pid}) is already running.${
-        ansi("\x1b[0m")
-      }`,
-    );
-    Deno.exit(1);
-  }
-
-  await Deno.writeTextFile(lockFile, Deno.pid.toString());
-
-  // Ensure lock file is removed on exit
-  const cleanup = () => {
-    try {
-      Deno.removeSync(lockFile);
-    } catch {
-      // Ignore if already removed
-    }
-  };
-
-  globalThis.addEventListener("unload", cleanup);
-  Deno.addSignalListener("SIGINT", () => {
-    cleanup();
-    Deno.exit(130);
-  });
-  Deno.addSignalListener("SIGTERM", () => {
-    cleanup();
-    Deno.exit(143);
-  });
-
   const config = await loadConfig();
 
   const args = parse(Deno.args, {
-    string: ["filter", "runs", "model", "ide", "parallel"],
+    string: ["filter", "runs", "model", "ide", "parallel", "lock"],
     boolean: ["help"],
     alias: {
       f: "filter",
@@ -166,6 +132,43 @@ async function main() {
     printHelp("<per IDE>");
     Deno.exit(1);
   }
+
+  const lockName = args.lock || "benchmarks.lock";
+  const lockFile = join(Deno.cwd(), "benchmarks", lockName);
+
+  if (existsSync(lockFile)) {
+    const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
+    console.error(
+      `${
+        ansi("\x1b[31m")
+      }Error: Another benchmark process (PID: ${pid}) is already running.${
+        ansi("\x1b[0m")
+      }`,
+    );
+    Deno.exit(1);
+  }
+
+  await Deno.mkdir(join(Deno.cwd(), "benchmarks"), { recursive: true });
+  await Deno.writeTextFile(lockFile, Deno.pid.toString());
+
+  // Ensure lock file is removed on exit
+  const cleanup = () => {
+    try {
+      Deno.removeSync(lockFile);
+    } catch {
+      // Ignore if already removed
+    }
+  };
+
+  globalThis.addEventListener("unload", cleanup);
+  Deno.addSignalListener("SIGINT", () => {
+    cleanup();
+    Deno.exit(130);
+  });
+  Deno.addSignalListener("SIGTERM", () => {
+    cleanup();
+    Deno.exit(143);
+  });
 
   const ideName = args.ide || config.default_ides[0];
   const adapter = createAdapter(ideName);

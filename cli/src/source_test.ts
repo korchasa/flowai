@@ -205,9 +205,9 @@ Deno.test("extractPackHookNames - extracts hooks within a pack", () => {
   const paths = [
     "framework/core/pack.yaml",
     "framework/core/hooks/lint-on-edit/hook.yaml",
-    "framework/core/hooks/lint-on-edit/run.sh",
+    "framework/core/hooks/lint-on-edit/run.ts",
     "framework/core/hooks/format-on-save/hook.yaml",
-    "framework/core/hooks/format-on-save/run.sh",
+    "framework/core/hooks/format-on-save/run.ts",
     "framework/core/skills/commit/SKILL.md",
   ];
   assertEquals(

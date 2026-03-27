@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanContextBench = new class extends BenchmarkSkillScenario {
   id = "flowai-plan-context";

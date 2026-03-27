@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerSkillBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -27,27 +27,23 @@ export const EngineerSkillBasicBench = new class
       description:
         "Does the SKILL.md have valid YAML frontmatter with name (lowercase hyphenated, max 64 chars) and description fields?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "description_quality",
       description:
         "Is the description written in third person, includes WHAT the skill does and WHEN to use it, and contains specific trigger terms (e.g., migration, database, PostgreSQL)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "actionable_content",
       description:
         "Does the SKILL.md body contain actionable workflow steps or templates for generating migrations (not just abstract advice)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "under_500_lines",
       description: "Is the SKILL.md under 500 lines?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_auxiliary_docs",

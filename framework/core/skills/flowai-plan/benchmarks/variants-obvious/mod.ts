@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanVariantsObviousBench = new class
   extends BenchmarkSkillScenario {
@@ -27,7 +27,6 @@ export const PlanVariantsObviousBench = new class
       description:
         "Did the agent present EXACTLY ONE implementation variant in the chat? It should NOT offer alternatives for such a simple task.",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

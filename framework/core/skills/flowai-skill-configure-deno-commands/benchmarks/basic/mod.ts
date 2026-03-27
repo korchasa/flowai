@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const ConfigureDenoCommandsBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -43,7 +43,6 @@ export const ConfigureDenoCommandsBasicBench = new class
       description:
         "Does the check script use non-zero exit codes on failure (Deno.exit(1) or equivalent)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "existing_config_preserved",
@@ -56,7 +55,6 @@ export const ConfigureDenoCommandsBasicBench = new class
       description:
         "Do the deno.json tasks point to script files in scripts/ directory (not inline complex commands)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

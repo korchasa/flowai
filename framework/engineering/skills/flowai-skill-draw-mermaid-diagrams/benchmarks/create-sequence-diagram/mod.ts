@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const DrawMermaidSequenceBench = new class
   extends BenchmarkSkillScenario {
@@ -15,28 +15,24 @@ export const DrawMermaidSequenceBench = new class
       description:
         "Did the agent create a sequenceDiagram (not a flowchart or other type)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "four_participants",
       description:
         "Does the diagram include all four participants: User, Browser, Auth Server, Resource Server?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "auth_code_flow",
       description:
         "Does the diagram show the key OAuth2 steps: authorization request, redirect with code, token exchange, API call with token?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "mermaid_code_block",
       description:
         "Is the diagram wrapped in a ```mermaid code block inside a markdown file?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "file_saved",
@@ -49,7 +45,6 @@ export const DrawMermaidSequenceBench = new class
       description:
         "Does the Mermaid syntax use correct arrow notation (->>, -->>), participant declarations, and activate/deactivate where appropriate?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

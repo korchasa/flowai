@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 import { join } from "@std/path";
 
 export const CommitAtomicHunkBench = new class extends BenchmarkSkillScenario {

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupCodeStyleTsDenoBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -22,21 +22,18 @@ export const SetupCodeStyleTsDenoBasicBench = new class
       description:
         'Is the code style section placed after "Project tooling Stack" and before "Architecture" in AGENTS.md?',
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "bare_specifiers_rule",
       description:
         "Does the injected content include the rule about using bare specifiers for dependencies defined in deno.json/imports?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "dockerfile_optimization_rule",
       description:
         "Does the injected content include Dockerfile optimization guidance (deno compile, multi-stage builds)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "no_duplicate_sections",
@@ -49,7 +46,6 @@ export const SetupCodeStyleTsDenoBasicBench = new class
       description:
         "Are the original AGENTS.md sections (Project tooling Stack, Architecture) still present and unmodified?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "valid_markdown",

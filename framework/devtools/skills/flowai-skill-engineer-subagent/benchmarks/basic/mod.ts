@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerSubagentBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -17,7 +17,6 @@ export const EngineerSubagentBasicBench = new class
       description:
         "Did the agent detect Cursor as the target IDE (via .cursor/ directory) or acknowledge the user's specification?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "correct_file_location",
@@ -30,35 +29,30 @@ export const EngineerSubagentBasicBench = new class
       description:
         "Does the subagent file have valid YAML frontmatter with name and description fields?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "description_third_person",
       description:
         "Is the description written in third person with specific trigger terms and includes WHAT + WHEN?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "focused_specialization",
       description:
         "Is the subagent focused on one specific task (security review) rather than being overly broad?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "has_workflow",
       description:
         "Does the system prompt body define a clear workflow or checklist for how the subagent should operate?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "security_concerns_covered",
       description:
         "Does the subagent address the requested security concerns (secrets, SQL injection, XSS, insecure deps)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 

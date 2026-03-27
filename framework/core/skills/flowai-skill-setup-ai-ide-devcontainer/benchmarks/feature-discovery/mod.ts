@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupDevcontainerFeatureDiscovery = new class
   extends BenchmarkSkillScenario {
@@ -32,55 +32,47 @@ Confirm any file creation prompts.`;
       description:
         "Did the agent present a list of discovered/suggested features to the user before generating config?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "postgres_feature_suggested",
       description:
         "Was PostgreSQL feature suggested (detected from prisma schema or docker-compose)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "redis_feature_suggested",
       description:
         "Was Redis feature suggested (detected from ioredis dependency or docker-compose)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "docker_in_docker_suggested",
       description:
         "Was Docker-in-Docker feature suggested (detected from docker-compose.yml)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "direnv_feature_detected",
       description: "Was direnv feature detected and added (found .envrc file)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "features_in_config",
       description:
         "Does the final devcontainer.json include at least 2 features beyond the base template (common-utils, github-cli)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "detection_rationale",
       description:
         "Did the agent explain WHY each feature was suggested (which file/indicator triggered it)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "claude_code_as_feature",
       description:
         "Is Claude Code installed via a devcontainer registry feature (ghcr.io/.../claude-code) rather than raw curl/npm in postCreateCommand?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "node_base_image",

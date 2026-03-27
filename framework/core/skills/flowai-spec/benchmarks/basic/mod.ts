@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SpecBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-spec-basic";
@@ -50,14 +50,12 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent present phase decomposition in chat BEFORE writing phases to the file?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "critique_offered",
       description:
         "Did the agent offer to critique the spec after detailing phases?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "definition_of_done",

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const DeepResearchPlanBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deep-research-plan";
@@ -17,42 +17,36 @@ export const DeepResearchPlanBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent attempt to detect the available search method (built-in, playwright-cli, MCP) before planning?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "directions_count",
       description:
         "Did the agent decompose the topic into 3-6 non-overlapping research directions?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "queries_per_direction",
       description:
         "Did each direction include 3-5 search query variations (broad, narrow, criticism)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "acceptance_criteria",
       description:
         "Did each direction specify acceptance criteria (source type, recency)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "output_files_defined",
       description:
         "Did the plan define output file paths in a temporary directory (system temp via mktemp or similar) for each direction?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_approval_wait",
       description:
         "Did the agent proceed automatically without asking for user approval of the plan?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

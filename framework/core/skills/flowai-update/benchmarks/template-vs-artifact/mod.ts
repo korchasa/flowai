@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
-import { runGit } from "../../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { runGit } from "@bench/utils.ts";
 
 /**
  * Tests that the agent compares templates against actual project artifacts,
@@ -258,14 +258,12 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       description:
         "Did the agent also check `documents/AGENTS.md` against its template (AGENTS.documents.template.md)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "correctly_no_migration_for_docs",
       description:
         "Did the agent correctly determine that `documents/AGENTS.md` and `scripts/AGENTS.md` do NOT need migration (they already match)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

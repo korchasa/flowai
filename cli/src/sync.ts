@@ -545,7 +545,7 @@ async function readPackHookFiles(
     const match = path.match(packHookRegex);
     if (match && nameSet.has(match[1])) {
       const content = await source.readFile(path);
-      // Install as <hook-name>/<filename> (e.g., lint-on-edit/run.sh)
+      // Install as <hook-name>/<filename> (e.g., lint-on-edit/run.ts)
       files.push({ path: `${match[1]}/${match[2]}`, content });
     }
   }

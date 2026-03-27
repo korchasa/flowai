@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-maintenance-basic";
@@ -15,26 +15,22 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent create a maintenance report in 'documents/whiteboards/'? (Check logs for whiteboard content)",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "todo_found",
       description: "Did the report identify the TODO in src/main.ts?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "god_object_found",
       description:
         "Did the report identify SystemManager as a God Object candidate?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "unused_export_found",
       description: "Did the report identify unusedExport?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

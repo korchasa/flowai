@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const DenoCliTestPermsBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deno-cli-test-permissions";
@@ -20,28 +20,24 @@ export const DenoCliTestPermsBench = new class extends BenchmarkSkillScenario {
       description:
         'Did the agent suggest using "deno task test" as the preferred way to run tests (since a task is defined)?',
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "mentions_unstable_kv",
       description:
         "Did the agent mention that Deno KV requires --unstable-kv flag or unstable config in deno.json?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "explains_permissions",
       description:
         "Did the agent explain the relevant permissions (--allow-read, --allow-env, --allow-net) and their purpose?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "deno_add_jsr",
       description:
         'Did the agent explain "deno add jsr:@scope/package" as the way to add a JSR dependency?',
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

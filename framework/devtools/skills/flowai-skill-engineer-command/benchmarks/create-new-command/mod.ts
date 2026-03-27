@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerCommandCreateBench = new class
   extends BenchmarkSkillScenario {
@@ -20,42 +20,36 @@ export const EngineerCommandCreateBench = new class
       description:
         "Did the agent ask for or discuss concrete usage examples before creating the command (Step 1)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "plans_resources",
       description:
         "Did the agent identify reusable resources (scripts, references, assets) needed for the command (Step 2)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "skill_md_created",
       description:
         "Did the agent create a SKILL.md file with YAML frontmatter containing name and description fields?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "description_includes_triggers",
       description:
         "Does the SKILL.md description field include when to use the command (trigger contexts), not just what it does?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "concise_body",
       description:
         "Is the SKILL.md body focused on procedural knowledge the agent needs, without unnecessary documentation or README-style content?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "ide_detection",
       description:
         "Did the agent detect or ask about the IDE environment and place the command in the correct path?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

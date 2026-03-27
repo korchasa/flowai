@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const ReflectLoopBench = new class extends BenchmarkSkillScenario {
   id = "flowai-reflect-loop";
@@ -20,14 +20,12 @@ export const ReflectLoopBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent identify the repetitive actions (loop) or failure to check file existence?",
       critical: true,
-      type: "semantic",
     },
     {
       id: "propose_fix",
       description:
         "Did the agent propose a process fix (e.g., check file existence first)?",
       critical: true,
-      type: "semantic",
     },
   ];
 }();

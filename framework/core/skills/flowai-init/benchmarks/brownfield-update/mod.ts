@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitBrownfieldUpdateBench = new class
   extends BenchmarkSkillScenario {
@@ -26,35 +26,30 @@ You want the framework template updates but also want your custom content preser
       description:
         "Did the agent show a diff or proposed changes for the root AGENTS.md before applying?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "diff_shown_documents",
       description:
         "Did the agent show a diff or proposed changes for documents/AGENTS.md before applying?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "project_rules_preserved",
       description:
         "Were the project-specific rules between --- markers preserved in AGENTS.md (contains 'MY PROJECT SPECIFIC RULES')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "user_confirmation_requested",
       description:
         "Did the agent ask for user confirmation before applying changes to each file?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "three_files_handled",
       description:
         "Did the agent handle all 3 AGENTS.md files (root, documents/, scripts/)?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const ManageGithubTicketsCreateIssueBench = new class
   extends BenchmarkSkillScenario {
@@ -20,41 +20,35 @@ export const ManageGithubTicketsCreateIssueBench = new class
       description:
         "Did the agent detect or attempt to use a GitHub tool (MCP create_issue, gh CLI, or explain it's unavailable)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "gods_goal",
       description:
         "Does the issue body contain a 'Goal' section that describes the business objective (e.g., restore CI/CD pipeline)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "gods_overview",
       description:
         "Does the issue body contain an 'Overview' section with context about what happened (plugin update, build failures)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "gods_definition_of_done",
       description:
         "Does the issue body contain a 'Definition of Done' section with measurable completion criteria?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "gods_solution",
       description:
         "Does the issue body contain a 'Solution' section with actionable steps?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "english_language",
       description: "Is the issue title and body written in English?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

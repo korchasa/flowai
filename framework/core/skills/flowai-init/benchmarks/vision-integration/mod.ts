@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
-import { copyRecursive } from "../../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { copyRecursive } from "@bench/utils.ts";
 
 export const InitVisionIntegrationBench = new class
   extends BenchmarkSkillScenario {
@@ -52,13 +52,11 @@ export const InitVisionIntegrationBench = new class
       description:
         "Does AGENTS.md contain the Vision section with 'SuperApp' details?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_vision_md",
       description: "Ensure documents/vision.md does NOT exist.",
       critical: true,
-      type: "static" as const,
     },
   ];
 }();

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
   id = "flowai-plan-interactive";
@@ -20,27 +20,23 @@ When asked for confirmation, always respond with: 'Yes, confirmed. Please procee
       id: "variants_presented",
       description: "Did the agent present implementation variants in the chat?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "question_asked",
       description:
         "Did the agent ask the user to select an implementation variant?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "solution_filled",
       description:
         "Check the 'Solution' section in the whiteboard file in 'documents/whiteboards/'. It MUST contain concrete technical implementation details (not a placeholder, not a comment like '<!-- ... -->', not '_To be filled..._'). If the Solution section is empty, contains only a placeholder comment, or says 'to be filled', this check FAILS.",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_switch_mode",
       description: "Did the logs NOT contain 'SwitchMode'?",
       critical: true,
-      type: "static" as const,
     },
   ];
 }();

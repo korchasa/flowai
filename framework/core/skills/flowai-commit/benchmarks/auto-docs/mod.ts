@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const CommitAutoDocsBench = new class extends BenchmarkSkillScenario {
   id = "flowai-commit-auto-docs";

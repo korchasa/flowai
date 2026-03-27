@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanVariantsComplexBench = new class
   extends BenchmarkSkillScenario {
@@ -27,14 +27,12 @@ export const PlanVariantsComplexBench = new class
       description:
         "Did the agent present MULTIPLE (2 or more) implementation variants in the chat?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "tradeoffs_discussed",
       description:
         "Did the agent discuss pros/cons/risks per variant and trade-offs across variants?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

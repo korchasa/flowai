@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerHookClaudeCodeBench = new class
   extends BenchmarkSkillScenario {
@@ -16,28 +16,24 @@ export const EngineerHookClaudeCodeBench = new class
       description:
         "Did the agent detect or acknowledge Claude Code as the target IDE (via .claude/ directory presence)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "settings_json_format",
       description:
         "Did the agent create or show a settings.json with the correct nested Claude Code hook structure: hooks.PreToolUse[].matcher + hooks[] array?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "correct_event",
       description:
         'Did the agent use PreToolUse event with matcher "Bash" (not a Cursor event name like beforeShellExecution)?',
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "script_created",
       description:
         "Did the agent create a shell script that reads JSON from stdin and uses exit code 2 to block (Claude Code convention)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const WriteDepBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-dep-basic";
@@ -26,48 +26,41 @@ export const WriteDepBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Does the DEP contain an Executive Summary section that is understandable on its own?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "problem_with_data",
       description:
         "Does the Problem Statement use specific metrics/data (latency numbers, incident counts, DAU growth) rather than vague descriptions?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "alternatives_analyzed",
       description:
         "Does the DEP analyze at least 2 alternatives (including 'do nothing') with pros and cons?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "risks_with_mitigation",
       description:
         "Does the DEP list specific risks with probability, impact, and mitigation plans?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "measurable_success_criteria",
       description:
         "Does the DEP define measurable success criteria with current and target values?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "implementation_plan",
       description:
         "Does the DEP include an implementation plan with phases and a rollback strategy?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "metadata_present",
       description: "Does the DEP include metadata (author, status, date)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const AnswerBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-answer-basic";
@@ -25,7 +25,6 @@ export const AnswerBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent correctly identify that bcrypt is used for hashing as required?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 }();

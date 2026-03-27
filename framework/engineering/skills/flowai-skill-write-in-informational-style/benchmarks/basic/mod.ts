@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const WriteInInformationalStyleBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -15,41 +15,35 @@ export const WriteInInformationalStyleBasicBench = new class
       description:
         "Is the rewritten text significantly shorter than the original (at least 50% fewer words)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "preserves_key_facts",
       description:
         "Does the rewritten text preserve the key facts: water supply off, June 1-15, stock up on water?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_bureaucratic_language",
       description:
         "Is the text free of bureaucratic phrases like 'hereby inform', 'in accordance with', 'aforementioned', 'pertaining to'?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "uses_simple_words",
       description:
         "Does the text use simple, common words instead of complex ones (e.g., 'water' not 'potable water', 'start' not 'commencement')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "active_voice",
       description: "Does the text prefer active voice over passive voice?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "markdown_format",
       description:
         "Is the output presented in markdown format (inside four backticks as specified by the skill)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

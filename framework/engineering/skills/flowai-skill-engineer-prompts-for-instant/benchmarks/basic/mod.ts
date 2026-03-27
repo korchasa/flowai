@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerPromptsForInstantBench = new class
   extends BenchmarkSkillScenario {
@@ -15,35 +15,30 @@ export const EngineerPromptsForInstantBench = new class
       description:
         "Does the generated prompt follow the 4-part formula structure (Role, Task, Rules/Format, Examples)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "includes_few_shot_examples",
       description:
         "Does the prompt include at least one few-shot example showing input and expected output?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "specifies_output_format",
       description:
         "Does the prompt explicitly specify JSON as the output format with a concrete structure?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "includes_negative_constraints",
       description:
         "Does the prompt include negative constraints (e.g., no extra text, no explanations)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "handles_edge_cases",
       description:
         "Does the prompt address edge cases like missing prices or ambiguous product names (e.g., return 'N/A' or 'Unknown')?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

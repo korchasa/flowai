@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const FixTestsBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-fix-tests-basic";
@@ -31,7 +31,6 @@ export const FixTestsBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent identify that the divide function lacks a zero-divisor check as the root cause?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "ran_failing_test",
@@ -62,7 +61,6 @@ export const FixTestsBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Was the fix minimal — only adding the zero-check guard, without refactoring unrelated code?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

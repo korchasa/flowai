@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const DenoDeployTroubleshootBench = new class
   extends BenchmarkSkillScenario {
@@ -15,28 +15,24 @@ export const DenoDeployTroubleshootBench = new class
       description:
         'Did the agent recommend adding "unstable": ["kv"] to deno.json as the fix for the KV error (not a CLI flag)?',
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_cli_unstable_flag",
       description:
         "Did the agent explain that deno deploy does NOT support --unstable-kv flags?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "gitignore_solution",
       description:
         "Did the agent recommend adding .playwright-browsers/ to .gitignore to exclude it from uploads?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_exclude_flag",
       description:
         "Did the agent mention (or avoid suggesting) that deno deploy does NOT support --exclude flag?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "reads_project_files",

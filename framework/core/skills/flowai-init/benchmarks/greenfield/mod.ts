@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
   id = "flowai-init-greenfield";
@@ -33,7 +33,6 @@ Always confirm when asked to apply diffs.`;
       description:
         "Did the agent start an interview to gather project details?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "agents_md_created",
@@ -46,27 +45,23 @@ Always confirm when asked to apply diffs.`;
       description:
         "Was documents/AGENTS.md created with documentation rules (SRS/SDS formats, compressed style)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "scripts_agents_md_created",
       description: "Was scripts/AGENTS.md created with development commands?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "doc_rules_present",
       description:
         "Does documents/AGENTS.md contain 'Documentation Rules' or 'DOCS STRUCTURE'?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "dev_commands_configured",
       description:
         "Were development commands configured with real scripts (not just stub echo commands)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

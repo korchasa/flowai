@@ -1,5 +1,5 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
-import { runGit } from "../../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { runGit } from "@bench/utils.ts";
 
 export const CommitBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-commit-basic";

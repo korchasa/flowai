@@ -1,5 +1,5 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
   id = "flowai-init-brownfield";
@@ -45,21 +45,18 @@ Keep answers brief and affirmative.`;
       description:
         "Does AGENTS.md contain architecture description inferred from the project (Express, TypeScript)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "key_decisions_discovered",
       description:
         "Does AGENTS.md contain key decisions inferred from the project (e.g., using Deno, using TDD)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "doc_rules_present",
       description:
         "Does documents/AGENTS.md contain the 'Documentation Rules' or DOCS STRUCTURE section?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "documents_folder_created",

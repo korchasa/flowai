@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
   id = "flowai-plan-refactor";
@@ -15,35 +15,30 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
       description:
         "Does the plan identify separate responsibilities like Database/Storage, Validation, Email/Notification, and Logging?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "propose_services",
       description:
         "Does the plan propose creating separate classes or services (e.g., UserRepository, EmailService, Logger)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "dependency_injection",
       description:
         "Does the plan mention using dependency injection or passing dependencies to the UserManager?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "test_preservation",
       description:
         "Does the plan mention ensuring functionality is preserved or adding tests before refactoring?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_implementation",
       description:
         "Did the agent follow the rule to NOT modify any files except files in documents/whiteboards/?",
       critical: true,
-      type: "semantic" as const,
     },
   ];
 

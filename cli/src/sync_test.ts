@@ -93,7 +93,7 @@ const PACK_PATHS_WITH_HOOKS_SCRIPTS = [
   "framework/core/pack.yaml",
   "framework/core/skills/flowai-commit/SKILL.md",
   "framework/core/hooks/lint-on-edit/hook.yaml",
-  "framework/core/hooks/lint-on-edit/run.sh",
+  "framework/core/hooks/lint-on-edit/run.ts",
   "framework/core/scripts/check.ts",
   "framework/deno/pack.yaml",
   "framework/deno/scripts/validate.ts",

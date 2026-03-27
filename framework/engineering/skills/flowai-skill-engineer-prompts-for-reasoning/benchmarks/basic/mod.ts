@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const EngineerPromptsForReasoningBench = new class
   extends BenchmarkSkillScenario {
@@ -15,42 +15,36 @@ export const EngineerPromptsForReasoningBench = new class
       description:
         "Does the generated prompt use structured context with XML-style tags (e.g., <context>, <rules>, <instructions>)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "has_role_section",
       description:
         "Does the prompt define a clear role (e.g., Senior Security Engineer)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "has_goal_or_objective",
       description:
         "Does the prompt include a clear goal or objective section describing what to achieve?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "has_instructions_or_steps",
       description:
         "Does the prompt include step-by-step instructions or a plan-first approach?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "defines_success_criteria",
       description:
         "Does the prompt define success criteria or what a good output looks like?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "has_rules_or_constraints",
       description:
         "Does the prompt include rules or constraints (e.g., prioritization criteria, output format)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

@@ -24,7 +24,9 @@
     "@std/path": "jsr:@std/path@^1.1.4",
     "@std/semver": "jsr:@std/semver@^1.0.0",
     "@std/yaml": "jsr:@std/yaml@^1.0.12",
-    "zod": "npm:zod@^3.25.76"
+    "zod": "npm:zod@^3.25.76",
+    "@bench/": "./scripts/benchmarks/lib/",
+    "@bench/": "./scripts/benchmarks/lib/"
   },
   "tasks": {
     "check": "deno run -A scripts/task-check.ts",

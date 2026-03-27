@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-plan-basic";
@@ -29,14 +29,12 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
       id: "variants_presented",
       description: "Did the agent present implementation variants in the chat?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "critique_offered",
       description:
         "Did the agent offer to critique the plan after detailing the solution?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

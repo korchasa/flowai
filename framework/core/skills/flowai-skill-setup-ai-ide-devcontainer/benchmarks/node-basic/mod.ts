@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupDevcontainerNodeBasic = new class
   extends BenchmarkSkillScenario {
@@ -70,7 +70,6 @@ Confirm any file creation prompts.`;
       description:
         "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

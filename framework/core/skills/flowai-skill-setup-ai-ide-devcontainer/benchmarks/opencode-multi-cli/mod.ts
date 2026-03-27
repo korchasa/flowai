@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupDevcontainerOpenCodeMultiCli = new class
   extends BenchmarkSkillScenario {
@@ -38,28 +38,24 @@ Confirm any file creation prompts.`;
       description:
         "Is Claude Code configured (via registry feature like ghcr.io/.../claude-code, or npm/curl install in postCreateCommand)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "opencode_configured",
       description:
         "Is OpenCode configured (via registry feature like ghcr.io/.../opencode, or curl install in postCreateCommand)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "claude_global_skills_mount",
       description:
         "Is there a bind mount for host ~/.claude/ (read-only) to a separate path like ~/.claude-host?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "opencode_global_skills_mount",
       description:
         "Is there a bind mount for host ~/.config/opencode/ (read-only) to a separate path like ~/.config/opencode-host?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "anthropic_api_key_env",
@@ -72,7 +68,6 @@ Confirm any file creation prompts.`;
       description:
         "Does postStartCommand sync global skills for BOTH Claude Code (cp -rL ~/.claude-host/skills ~/.claude/skills) and OpenCode (cp -rL ~/.config/opencode-host/skills ~/.config/opencode/skills)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_hardcoded_secrets",

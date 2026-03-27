@@ -2,7 +2,7 @@
 // That path (flowai-init → devcontainer delegation) belongs to flowai-init benchmarks,
 // not to devcontainer skill benchmarks. The skill itself is tested standalone.
 
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const SetupDevcontainerDenoWithClaude = new class
   extends BenchmarkSkillScenario {
@@ -34,7 +34,6 @@ Confirm any file creation prompts.`;
       description:
         "Does the config include Deno support (deno feature from devcontainers-extra, or Deno in Dockerfile, or denoland base image)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "deno_extension",
@@ -46,21 +45,18 @@ Confirm any file creation prompts.`;
       description:
         "Is Claude Code CLI installation configured (native installer or npm install in Dockerfile or postCreateCommand)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "global_skills_mount",
       description:
         "Is there a bind mount for host ~/.claude/ (read-only) to a separate path like ~/.claude-host?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "firewall_script",
       description:
         "Was `init-firewall.sh` created with default-deny policy and domain allowlist?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "net_admin_cap",
@@ -96,42 +92,36 @@ Confirm any file creation prompts.`;
       description:
         "Is the global skills sync command (cp -rL from ~/.claude-host) placed in postStartCommand (NOT postCreateCommand), so it runs on every container restart?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "symlink_dereference",
       description:
         "Does the skills sync command use `cp -rL` (with -L flag to dereference symlinks) rather than plain `cp -r`?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "feature_discovery_performed",
       description:
         "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
       critical: false,
-      type: "semantic" as const,
     },
     {
       id: "auth_forwarding_initialize_command",
       description:
         "Does devcontainer.json include an `initializeCommand` that extracts Claude Code tokens from macOS Keychain using `security find-generic-password -s 'Claude Code-credentials'`?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "auth_staging_mount",
       description:
         "Is there a bind mount for the auth staging file (e.g., `~/.claude-auth-staging.json`) from host to container, read-only?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "auth_copy_in_post_create",
       description:
         "Does postCreateCommand include a conditional copy of auth staging file to `~/.claude/.credentials.json` (only if .credentials.json doesn't already exist in volume)?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "no_claude_config_dir_env",

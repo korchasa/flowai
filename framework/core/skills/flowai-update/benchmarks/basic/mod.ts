@@ -1,6 +1,6 @@
 import { join } from "@std/path";
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
-import { runGit } from "../../../../../../scripts/benchmarks/lib/utils.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { runGit } from "@bench/utils.ts";
 
 /**
  * Simulates a framework update where flowai-init's AGENTS.template.md gained a CHECK step.
@@ -120,7 +120,6 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
       description:
         "Did the agent explain WHY the change is recommended (e.g., new CHECK step ensures code quality)?",
       critical: false,
-      type: "semantic" as const,
     },
   ];
 }();

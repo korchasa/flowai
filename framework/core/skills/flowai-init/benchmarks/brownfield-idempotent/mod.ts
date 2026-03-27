@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitBrownfieldIdempotentBench = new class
   extends BenchmarkSkillScenario {
@@ -27,21 +27,18 @@ Confirm all other actions like creating missing documents.`;
       description:
         "Was the existing AGENTS.md preserved (contains 'CUSTOM CONTENT MARKER')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "documents_agents_md_preserved",
       description:
         "Was documents/AGENTS.md preserved (contains 'DOCS CUSTOM MARKER')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "scripts_agents_md_preserved",
       description:
         "Was scripts/AGENTS.md preserved (contains 'SCRIPTS CUSTOM MARKER')?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "missing_components_created",
@@ -54,7 +51,6 @@ Confirm all other actions like creating missing documents.`;
       description:
         "Did the agent ask the user about overwriting existing files or show diffs before applying?",
       critical: true,
-      type: "semantic" as const,
     },
     {
       id: "dev_commands_created",

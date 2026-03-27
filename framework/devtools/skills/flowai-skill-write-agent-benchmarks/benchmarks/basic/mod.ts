@@ -1,4 +1,4 @@
-import { BenchmarkSkillScenario } from "../../../../../../scripts/benchmarks/lib/types.ts";
+import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const WriteAgentBenchmarksBasicBench = new class
   extends BenchmarkSkillScenario {
@@ -90,35 +90,35 @@ export const WriteAgentBenchmarksBasicBench = new class
       id: "extends_base_class",
       description: "Does the scenario class extend BenchmarkSkillScenario?",
       critical: true,
-      type: "semantic" as const,
+
     },
     {
       id: "has_checklist",
       description:
         "Does the scenario define a checklist with at least 2 items, including at least one critical check?",
       critical: true,
-      type: "semantic" as const,
+
     },
     {
       id: "has_user_query",
       description:
         "Does the scenario have a realistic userQuery that describes the task?",
       critical: true,
-      type: "semantic" as const,
+
     },
     {
       id: "has_setup_or_fixture",
       description:
         "Does the scenario include either an override setup() method or a fixture directory with test files?",
       critical: true,
-      type: "semantic" as const,
+
     },
     {
       id: "evidence_based_checks",
       description:
         "Are the checklist items evidence-based (verifying artifacts/state) rather than trusting agent claims?",
       critical: false,
-      type: "semantic" as const,
+
     },
   ];
 }();
