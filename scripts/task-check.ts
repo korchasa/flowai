@@ -44,7 +44,7 @@ export function buildCheckCommands(): CommandSpec[] {
       args: [
         "test",
         "-A",
-        "--ignore=scripts/benchmarks/lib/integration.test.ts",
+        "--ignore=scripts/benchmarks/lib/integration_test.ts",
         "scripts",
       ],
     },
