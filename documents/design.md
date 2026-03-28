@@ -44,15 +44,15 @@
   ```
   framework/<pack-name>/
     pack.yaml              # name, version (semver), description, scaffolds (optional)
-    skills/<name>/SKILL.md # skills (directory names without flowai- prefix)
-    agents/<name>.md       # agents
-    hooks/<name>/          # hook.yaml + run.sh
-    scripts/<name>         # utility scripts
+    skills/<name>/SKILL.md # skills (full installed name, e.g. flowai-commit/)
+    agents/<name>.md       # agents (optional)
+    hooks/<name>/          # hook.yaml + run.sh (optional)
+    scripts/<name>         # utility scripts (optional)
   ```
 - **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
-- **Naming:** Directory names inside packs omit prefix (e.g., `commit/`, `write-dep/`). flowai adds `flowai-*` prefix at install time.
+- **Naming:** Directory names inside packs are the full installed names (e.g., `flowai-commit/`, `flowai-skill-write-dep/`). flowai copies them as-is — no name transformation at install time.
 - **Categories (by installed prefix):**
   - `flowai-*`: Command-like skills (e.g., `flowai-commit`, `flowai-plan`).
   - `flowai-skill-*`: Practical guides (e.g., `flowai-skill-fix-tests`).
@@ -65,7 +65,7 @@
 
 #### 3.1.2 Script Language Policy
 
-All project scripts (both `framework/<pack>/skills/*/scripts/` and root `scripts/`) use Deno/TypeScript exclusively. Python is not used in the project.
+All project scripts (both `framework/<pack>/skills/*/scripts/` and root `scripts/`) use Deno/TypeScript exclusively. Python appears only in benchmark fixtures (test project stubs).
 
 #### 3.1.3 Skill Tool Hints (`allowed-tools`)
 
@@ -191,7 +191,7 @@ graph TD
 - **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agent updates, hook installs) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]` with per-resource action and scaffolds.
 - **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `lint-on-write` (PostToolUse, ts/js/py linting), `test-before-commit` (PreToolUse, blocks commit w/o tests), `skill-structure-validate` (PostToolUse, SKILL.md validation), `mermaid-validate` (PostToolUse, Mermaid diagram validation).
 - **Script installation:** Copies to `.{ide}/scripts/` (simple file copy).
-- **Naming transform:** Pack directory names → installed names with prefix (`commit/` → `flowai-commit`, `write-dep/` → `flowai-skill-write-dep`).
+- **Naming:** Pack directory names are the final installed names (e.g., `flowai-commit`, `flowai-skill-write-dep`). No name transformation at install time.
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11

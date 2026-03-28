@@ -6,9 +6,9 @@
  *     init_command.ts <command-name> --path <path>
  *
  * Examples:
- *     init_command.ts flow-new-command --path skills/public
- *     init_command.ts flow-api-helper --path skills/private
- *     init_command.ts flow-custom-command --path /custom/location
+ *     init_command.ts flowai-new-command --path skills/public
+ *     init_command.ts flowai-api-helper --path skills/private
+ *     init_command.ts flowai-custom-command --path /custom/location
  */
 
 import { join, resolve } from "jsr:@std/path";
@@ -300,7 +300,7 @@ function main(): void {
       "Usage: init_command.ts <command-name> --path <path> [--skip-existing]",
     );
     console.error("\nCommand name requirements:");
-    console.error("  - Hyphen-case identifier (e.g., 'flow-data-analyzer')");
+    console.error("  - Hyphen-case identifier (e.g., 'flowai-data-analyzer')");
     console.error("  - Lowercase letters, digits, and hyphens only");
     console.error("  - Max 40 characters");
     console.error("  - Must match directory name exactly");
@@ -309,9 +309,9 @@ function main(): void {
       "  --skip-existing  Skip if directory already exists (exit 0)",
     );
     console.error("\nExamples:");
-    console.error("  init_command.ts flow-new-command --path skills/public");
+    console.error("  init_command.ts flowai-new-command --path skills/public");
     console.error(
-      "  init_command.ts flow-custom-command --path /custom/location --skip-existing",
+      "  init_command.ts flowai-custom-command --path /custom/location --skip-existing",
     );
     Deno.exit(1);
   }

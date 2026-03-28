@@ -55,6 +55,8 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 
 1. **Initialize**
    - Use a task management tool (e.g., todo write) to create a plan based on these steps.
+   - Run `git status` to identify ALL changes: modified (unstaged), staged, and **untracked** files.
+   - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
 2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
    - **Check each doc file against the diff** (if `./documents` exists):
      - `requirements.md` — check diff for new/changed/removed functional or non-functional requirements. If found → update. If not → note "no requirement changes".
@@ -74,8 +76,9 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
 3. **Pre-commit Verification**
-   - Run project-specific verification (linter, formatter, tests) if configured.
-   - If verification fails, report the error and **STOP**.
+   - Check for project check command: `deno task check`, `npm run lint`, `make check`, etc. (inspect `deno.json`, `package.json`, `Makefile`).
+   - If found, run it. If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
+   - If no check command found, note "No automated checks configured" and proceed.
 4. **Atomic Grouping Strategy (Subagent)**
    - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
    - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
@@ -92,7 +95,10 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
-6. **Session Complexity Check → Suggest Reflect**
+6. **Verify Clean State**
+   - Run `git status` to confirm all changes are committed.
+   - If uncommitted changes remain, investigate and report to the user.
+7. **Session Complexity Check → Suggest Reflect**
    - After all commits are done, analyze the current conversation for complexity signals:
      - Errors or failed attempts occurred (test failures, lint errors, build errors).
      - Agent retried the same action multiple times.

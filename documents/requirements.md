@@ -256,7 +256,7 @@ The benchmarking system must cover all core flowai components to ensure reliabil
 
 | Skill ID                                   | Description                          | Benchmarked | Scenario ID              |
 | :----------------------------------------- | :----------------------------------- | :---------: | :----------------------- |
-| **Commands (`flow-*`)**                    |                                      |             |                          |
+| **Commands (`flowai-*`)**                  |                                      |             |                          |
 | `flowai-answer`                              | Answering user questions             |     [ ]     |                          |
 | `flowai-commit`                              | Atomic commits and QA                |     [x]     | `flowai-commit-*`          |
 | `flowai-init`                                | Project initialization               |     [x]     | `flowai-init-*`            |
@@ -485,9 +485,9 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 #### FR-10.8 Cross-IDE User Resource Sync
 
-- **Desc:** When `user_sync: true` in `.flowai.yaml` and ≥2 IDEs configured, propagate user-created resources (non-`flow-*`, non-framework) across IDE config dirs. Canonical source = newest mtime.
+- **Desc:** When `user_sync: true` in `.flowai.yaml` and ≥2 IDEs configured, propagate user-created resources (non-`flowai-*`, non-framework) across IDE config dirs. Canonical source = newest mtime.
 - **Acceptance:**
-  - [x] Scans skills/agents in each IDE dir, skips `flow-*` prefix. Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/user_sync_test.ts:39-53`
+  - [x] Scans skills/agents in each IDE dir, skips `flowai-*` prefix. Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/user_sync_test.ts:39-53`
   - [x] Skips framework-bundled resources by name (e.g., `deep-research-worker`). Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/sync.ts:148-150`
   - [x] Merges by `(type, name)` across IDEs, picks canonical by newest mtime. Evidence: `cli/src/user_sync.ts:284-293`
   - [x] Agent frontmatter transformed per IDE via `crossTransformAgent()`. Evidence: `cli/src/user_sync.ts:219-226`
@@ -538,7 +538,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 **Not synced (by design):**
 
-- Framework resources (`flow-*` prefix or matching bundled names) — managed by framework sync (FR-10.1)
+- Framework resources (`flowai-*` prefix or matching bundled names) — managed by framework sync (FR-10.1)
 - Rules (`.cursor/rules/` ↔ `.claude/rules/`) — frontmatter differs fundamentally (globs vs paths), no automated transform
 - Hooks (`.cursor/hooks.json` ↔ `.claude/settings.json` hooks key) — structure and event names differ, no automated transform
 - MCP config (`mcp.json` ↔ `.mcp.json`) — trivial rename, user responsibility
@@ -1228,8 +1228,8 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Priority:** Medium (brand alignment, part of pack migration).
 - **Acceptance:**
   - [x] **FR-26.1** All installed skills use `flowai-*` prefix in IDE config dirs. Evidence: `framework/*/skills/flowai-*` directories, `cli/src/sync_test.ts:47`, `cli/src/cli_test.ts`
-  - [ ] **FR-26.2** Pack directories use short names without prefix. (Deferred: currently directories use `flowai-*` prefix; short-name transform planned as future optimization)
-  - [ ] **FR-26.3** flowai adds prefix during sync based on resource type. (Deferred: same as FR-26.2)
+  - [x] **FR-26.2** Pack directories use full installed names (`flowai-*` prefix). No name transformation at install time — flowai copies as-is. Evidence: `framework/*/skills/flowai-*` directories, `documents/design.md:55`
+  - [x] **FR-26.3** ~~flowai adds prefix during sync~~ Rejected: decided to store full names in packs for simplicity (no translation logic needed). Evidence: `documents/design.md:55,194`
 
 ### 3.27 Reflection with Session History Search (FR-27)
 

@@ -582,7 +582,7 @@ Deno.test("runUserSync - copies commands across IDEs", async () => {
   );
 });
 
-Deno.test("runUserSync - flow-* agent not synced", async () => {
+Deno.test("runUserSync - flowai-* agent not synced", async () => {
   const fs = new InMemoryFsAdapter();
   fs.files.set("/cwd/.claude/agents/flowai-commit.md", AGENT_CONTENT);
   fs.dirs.add("/cwd/.claude/agents");

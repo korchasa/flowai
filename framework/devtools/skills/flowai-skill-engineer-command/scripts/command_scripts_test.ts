@@ -30,7 +30,7 @@ Deno.test("validate: valid command with name and description", async () => {
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: flow-test-cmd\ndescription: A valid test command\n---\n# Title\n",
+      "---\nname: flowai-test-cmd\ndescription: A valid test command\n---\n# Title\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, true);
@@ -75,7 +75,7 @@ Deno.test("validate: missing name field returns error", async () => {
 
 Deno.test("validate: missing description field returns error", async () => {
   await withTempDir(async (dir) => {
-    await writeSkillMd(dir, "---\nname: flow-test\n---\n");
+    await writeSkillMd(dir, "---\nname: flowai-test\n---\n");
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
     assertEquals(msg, "Missing 'description' in frontmatter");
@@ -86,7 +86,7 @@ Deno.test("validate: unexpected frontmatter key returns error listing allowed ke
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: flow-test\ndescription: ok\nauthor: someone\n---\n",
+      "---\nname: flowai-test\ndescription: ok\nauthor: someone\n---\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -100,7 +100,7 @@ Deno.test("validate: name with uppercase returns error", async () => {
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: Flow-Test\ndescription: A command\n---\n",
+      "---\nname: flowai-Test\ndescription: A command\n---\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -112,7 +112,7 @@ Deno.test("validate: name starting with hyphen returns error", async () => {
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: -flow-test\ndescription: A command\n---\n",
+      "---\nname: -flowai-test\ndescription: A command\n---\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -124,7 +124,7 @@ Deno.test("validate: name with consecutive hyphens returns error", async () => {
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: flow--test\ndescription: A command\n---\n",
+      "---\nname: flowai--test\ndescription: A command\n---\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -150,7 +150,7 @@ Deno.test("validate: description with angle brackets returns error", async () =>
   await withTempDir(async (dir) => {
     await writeSkillMd(
       dir,
-      "---\nname: flow-test\ndescription: Use <html> tags\n---\n",
+      "---\nname: flowai-test\ndescription: Use <html> tags\n---\n",
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -163,7 +163,7 @@ Deno.test("validate: description too long (>1024 chars) returns error", async ()
     const longDesc = "x".repeat(1025);
     await writeSkillMd(
       dir,
-      `---\nname: flow-test\ndescription: ${longDesc}\n---\n`,
+      `---\nname: flowai-test\ndescription: ${longDesc}\n---\n`,
     );
     const [valid, msg] = validateCommand(dir);
     assertEquals(valid, false);
@@ -178,11 +178,11 @@ Deno.test("validate: description too long (>1024 chars) returns error", async ()
 
 Deno.test("init: creates directory with SKILL.md and resource dirs", async () => {
   await withTempDir(async (parentDir) => {
-    const result = initCommand("flow-new-cmd", parentDir);
+    const result = initCommand("flowai-new-cmd", parentDir);
     assertEquals(typeof result, "string");
     assertEquals(result !== null, true);
 
-    const cmdDir = join(parentDir, "flow-new-cmd");
+    const cmdDir = join(parentDir, "flowai-new-cmd");
 
     // SKILL.md exists
     const skillStat = await Deno.stat(join(cmdDir, "SKILL.md"));
@@ -203,28 +203,28 @@ Deno.test("init: creates directory with SKILL.md and resource dirs", async () =>
 Deno.test("init: fails if directory already exists", async () => {
   await withTempDir(async (parentDir) => {
     // Pre-create the directory
-    await Deno.mkdir(join(parentDir, "flow-existing"), { recursive: true });
+    await Deno.mkdir(join(parentDir, "flowai-existing"), { recursive: true });
 
-    const result = initCommand("flow-existing", parentDir);
+    const result = initCommand("flowai-existing", parentDir);
     assertEquals(result, null);
   });
 });
 
 Deno.test("init: SKILL.md contains correct name in frontmatter", async () => {
   await withTempDir(async (parentDir) => {
-    initCommand("flow-abc-test", parentDir);
+    initCommand("flowai-abc-test", parentDir);
 
     const content = await Deno.readTextFile(
-      join(parentDir, "flow-abc-test", "SKILL.md"),
+      join(parentDir, "flowai-abc-test", "SKILL.md"),
     );
     assertEquals(content.startsWith("---"), true);
-    assertEquals(content.includes("name: flow-abc-test"), true);
+    assertEquals(content.includes("name: flowai-abc-test"), true);
   });
 });
 
 Deno.test("init: template description is a YAML list placeholder requiring user edit", async () => {
   await withTempDir((parentDir) => {
-    const cmdDir = initCommand("flow-valid-init", parentDir);
+    const cmdDir = initCommand("flowai-valid-init", parentDir);
     assertEquals(cmdDir !== null, true);
 
     // The template description is `[TODO: ...]` which YAML parses as a list,
@@ -237,9 +237,9 @@ Deno.test("init: template description is a YAML list placeholder requiring user 
 
 Deno.test("init: --skip-existing returns path when directory exists", async () => {
   await withTempDir(async (parentDir) => {
-    await Deno.mkdir(join(parentDir, "flow-existing"), { recursive: true });
+    await Deno.mkdir(join(parentDir, "flowai-existing"), { recursive: true });
 
-    const result = initCommand("flow-existing", parentDir, {
+    const result = initCommand("flowai-existing", parentDir, {
       skipExisting: true,
     });
     assertEquals(typeof result, "string");

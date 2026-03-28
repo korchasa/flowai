@@ -37,9 +37,9 @@ You receive:
    - Project-specific conventions
 5. **Merge / Adapt**:
    - Start from the **new upstream version** as the base.
-   - **Incorporate upstream changes** (new rules, steps, corrections) — keep them all.
-   - **Apply project adaptations**: Replace generic commands/examples with project-specific ones (e.g., `deno test` → `poetry run pytest`).
-   - **Preserve user customizations** from the previous adapted version that don't conflict with upstream changes.
+   - **Incorporate ALL upstream changes** — every new rule, step, section, or correction MUST appear in the result. Missing even one upstream addition is a failure.
+   - **Apply project adaptations**: Replace generic commands/examples with project-specific ones from the previous adapted version (e.g., `deno test` → `poetry run pytest`, `deno lint` → `ruff check .`).
+   - **Preserve ALL project-specific commands and examples** from the previous adapted version — language-specific tools, package managers, test runners, linter commands.
    - Remove sections irrelevant to the project's stack (e.g., Deno-specific sections for a Python project).
 6. **Add `adapted` frontmatter**: Add or update the `adapted` field:
    ```yaml

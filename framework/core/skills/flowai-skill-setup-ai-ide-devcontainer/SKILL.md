@@ -54,7 +54,10 @@ Skip this step only if user explicitly provided a complete feature list in their
 ### Step 3: Detect Existing Configuration
 
 Check if `.devcontainer/` exists:
-- **If exists**: read current `devcontainer.json`, show diff after generating new version, ask for per-file confirmation before overwriting.
+- **If exists**:
+  1. Read current `devcontainer.json` and display it to the user.
+  2. After generating the new version (Step 5), show a **diff** (old vs new) to the user.
+  3. **MANDATORY**: Ask for explicit per-file confirmation before overwriting. If user declines — **abort**, do not proceed to writing files.
 - **If not exists**: proceed to generation.
 
 ### Step 4: Determine Capabilities
