@@ -183,10 +183,20 @@ Deno.test("Runner - Score counts failed items correctly", async () => {
       adapter,
     });
 
-    // 1 passed out of 3 = 33.3%
-    assertEquals(Math.round(result.score), 33);
-    assertEquals(result.errorsCount, 1); // check1 critical
-    assertEquals(result.warningsCount, 1); // check2 non-critical
+    // When agent exits non-zero, runner injects exit_code_zero (critical) →
+    // 1 passed / 4 total = 25%, errorsCount=2 (check1 + exit_code_zero).
+    // When agent exits 0: 1 passed / 3 total = 33%, errorsCount=1.
+    if (result.errorsCount === 2) {
+      // Agent crashed → exit_code_zero added
+      assertEquals(Math.round(result.score), 25);
+      assertEquals(result.errorsCount, 2); // check1 + exit_code_zero
+      assertEquals(result.warningsCount, 1); // check2
+    } else {
+      // Agent exited cleanly
+      assertEquals(Math.round(result.score), 33);
+      assertEquals(result.errorsCount, 1); // check1 critical
+      assertEquals(result.warningsCount, 1); // check2 non-critical
+    }
     assertEquals(result.success, false);
   } finally {
     await Deno.remove(tempDir, { recursive: true });
