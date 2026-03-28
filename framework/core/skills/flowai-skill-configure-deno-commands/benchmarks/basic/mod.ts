@@ -56,5 +56,29 @@ export const ConfigureDenoCommandsBasicBench = new class
         "Do the deno.json tasks point to script files in scripts/ directory (not inline complex commands)?",
       critical: false,
     },
+    {
+      id: "check_runs_parallel",
+      description:
+        "Does check.ts run independent checks (fmt, lint, test) in parallel (e.g., Promise.all/Promise.allSettled), not sequentially one after another?",
+      critical: true,
+    },
+    {
+      id: "check_buffers_output",
+      description:
+        "Does check.ts buffer stdout/stderr per-command (piped, not inherit) to prevent interleaving of parallel command output?",
+      critical: true,
+    },
+    {
+      id: "check_failed_last",
+      description:
+        "Does check.ts print output of passed checks first, then ALL failed checks at the end?",
+      critical: true,
+    },
+    {
+      id: "check_no_external_deps",
+      description:
+        "Does check.ts avoid external dependencies (no cliffy, no npm packages) — only Deno stdlib or built-in APIs?",
+      critical: true,
+    },
   ];
 }();

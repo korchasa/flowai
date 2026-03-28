@@ -29,45 +29,18 @@ The project must support these commands in `deno.json`:
 3. **Task Definitions**: `deno.json` should point to these scripts.
 4. **Standard Interface Compliance**: The `check.ts` script must implement the full verification checklist.
 5. **Exit Codes**: Scripts must return non-zero exit codes on failure to break CI/CD and agent workflows.
+6. **No External Dependencies**: Generated scripts must only use Deno built-in APIs and `@std/` stdlib. No cliffy, no npm packages.
+7. **Parallel Execution**: Independent checks (fmt, lint, test, type-check) MUST run in parallel, not sequentially.
+8. **Sequential Prerequisites**: If the project has build/codegen steps whose output is needed by subsequent checks, those steps MUST complete before parallel checks start.
+9. **Buffered Output**: Each parallel command's stdout/stderr MUST be buffered (piped, not inherited) to prevent interleaving.
+10. **Real-Time Progress**: Print a status line when each command starts and when it finishes (pass/fail).
+11. **Output Ordering**: After all checks complete, print buffered output of passed checks first, then ALL failed checks at the end — for easy debugging.
+12. **No Output Loss**: ALL stdout and stderr from every check MUST be printed regardless of success/failure.
 
 ## Workflow
 
 1. **Analyze**: Check existing `deno.json` and `scripts/`.
-2. **Scaffold Scripts**: Create `scripts/check.ts` if missing.
-   
-   **check.ts Template**:
-   ```typescript
-   // scripts/check.ts
-   import { Command } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
-
-   async function run(cmd: string, args: string[]) {
-     console.log(`> ${cmd} ${args.join(" ")}`);
-     const process = new Deno.Command(cmd, { args });
-     const { success } = await process.output();
-     if (!success) {
-       console.error(`Command failed: ${cmd}`);
-       Deno.exit(1);
-     }
-   }
-
-   await new Command()
-     .name("check")
-     .description("Full project check")
-     .action(async () => {
-       console.log("Running Formatting check...");
-       await run("deno", ["fmt", "--check"]);
-       
-       console.log("Running Linting...");
-       await run("deno", ["lint"]);
-       
-       console.log("Running Tests...");
-       await run("deno", ["test", "-A"]);
-       
-       console.log("Check passed successfully!");
-     })
-     .parse(Deno.args);
-   ```
-
+2. **Scaffold Scripts**: Create `scripts/check.ts` if missing. The script must satisfy all Rules & Constraints above (parallel execution, buffered output, failed-last ordering, no external deps).
 3. **Configure Tasks**: Update `deno.json` tasks to reference the scripts.
 4. **Verify**: Run `deno task check` to ensure everything works.
 
