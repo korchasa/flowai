@@ -144,41 +144,48 @@ Deno.test("CLI - bare command inside IDE prints message instead of syncing", asy
 
 Deno.test("CLI - sync subcommand works even inside IDE", async () => {
   // sync subcommand should attempt sync regardless of IDE env
-  // It will fail because no .flowai.yaml + --yes, but it should NOT print the IDE message
-  const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(Deno.env.toObject())) {
-    if (!["CLAUDECODE", "CURSOR_AGENT", "OPENCODE"].includes(k)) {
-      env[k] = v;
+  // Run in a temp dir without .flowai.yaml so it fails cleanly
+  // and does NOT modify real project files
+  const tmpDir = await Deno.makeTempDir();
+  try {
+    const env: Record<string, string> = {};
+    for (const [k, v] of Object.entries(Deno.env.toObject())) {
+      if (!["CLAUDECODE", "CURSOR_AGENT", "OPENCODE"].includes(k)) {
+        env[k] = v;
+      }
     }
+    env["CLAUDECODE"] = "1";
+
+    const cmd = new Deno.Command("deno", {
+      args: [
+        "run",
+        "-A",
+        "cli/src/main.ts",
+        "sync",
+        "--yes",
+        "--skip-update-check",
+      ],
+      cwd: tmpDir,
+      env,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const output = await cmd.output();
+    const stderr = new TextDecoder().decode(output.stderr);
+    const stdout = new TextDecoder().decode(output.stdout);
+
+    // Should NOT show IDE message — sync subcommand bypasses the check
+    assert(
+      !stdout.includes("IDE context detected"),
+      "sync subcommand should not show IDE message",
+    );
+    // Will fail with "No .flowai.yaml" since --yes requires config
+    assert(
+      output.code !== 0 || stderr.includes(".flowai.yaml") ||
+        stdout.includes("Sync"),
+      `Expected sync attempt or config error, got stdout: ${stdout}, stderr: ${stderr}`,
+    );
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
   }
-  env["CLAUDECODE"] = "1";
-
-  const cmd = new Deno.Command("deno", {
-    args: [
-      "run",
-      "-A",
-      "cli/src/main.ts",
-      "sync",
-      "--yes",
-      "--skip-update-check",
-    ],
-    env,
-    stdout: "piped",
-    stderr: "piped",
-  });
-  const output = await cmd.output();
-  const stderr = new TextDecoder().decode(output.stderr);
-  const stdout = new TextDecoder().decode(output.stdout);
-
-  // Should NOT show IDE message — sync subcommand bypasses the check
-  assert(
-    !stdout.includes("IDE context detected"),
-    "sync subcommand should not show IDE message",
-  );
-  // Will fail with "No .flowai.yaml" since --yes requires config
-  assert(
-    output.code !== 0 || stderr.includes(".flowai.yaml") ||
-      stdout.includes("Sync"),
-    `Expected sync attempt or config error, got stdout: ${stdout}, stderr: ${stderr}`,
-  );
 });
