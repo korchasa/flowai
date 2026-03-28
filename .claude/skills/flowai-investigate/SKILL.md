@@ -2,9 +2,6 @@
 name: flowai-investigate
 description: Iterative issue investigation with user-controlled hypothesis selection
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Investigate Issue

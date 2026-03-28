@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-write-in-informational-style
 description: How to write in informational style
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 ## HOW TO WRITE IN INFORMATIONAL STYLE

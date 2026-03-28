@@ -2,9 +2,6 @@
 name: flowai-review
 description: "Review current changes as QA engineer and lead engineer simultaneously: verify task completion, code quality, architecture, and cleanup."
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task: Review Changes

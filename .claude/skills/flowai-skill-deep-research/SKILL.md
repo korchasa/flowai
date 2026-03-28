@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-deep-research
 description: Multi-directional deep research with sub-agents, scoring, source verification, and cited synthesis. Use for comprehensive research, deep analysis, or evidence-backed answers. Produces executive summary + markdown report. Supports search tools, playwright-cli, and MCP.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Deep Research Skill

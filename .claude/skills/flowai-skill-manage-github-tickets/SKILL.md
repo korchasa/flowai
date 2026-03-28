@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-manage-github-tickets
 description: Create and manage GitHub issues using the GODS framework. Use when creating, updating, or triaging GitHub issues.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Manage GitHub Tickets

@@ -2,9 +2,6 @@
 name: flowai-review-and-commit
 description: "Composite command: review changes then commit only if approved. Inlines flowai-review and flowai-commit with a verdict gate between them."
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task: Review and Commit

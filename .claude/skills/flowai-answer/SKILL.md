@@ -4,9 +4,6 @@ description: >-
   Analyze and answer user questions in Autonomous Mode by reading documentation
   and inspecting codebase
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task Answer

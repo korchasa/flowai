@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-conduct-qa-session
 description: How to conduct a Q&A session with the user
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # How to Conduct a Q&A Session

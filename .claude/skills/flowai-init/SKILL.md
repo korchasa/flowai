@@ -2,9 +2,6 @@
 name: flowai-init
 description: Initialize project with AGENTS.md and rules, handling both Greenfield (new) and Brownfield (existing) projects.
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task: Initialize Project Agent Documentation

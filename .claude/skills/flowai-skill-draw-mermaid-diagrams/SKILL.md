@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-draw-mermaid-diagrams
 description: Draw and edit Mermaid diagrams in Markdown. Use when the user wants to visualize processes, flows, sequences, or asks for diagrams.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Draw Mermaid Diagrams

@@ -5,9 +5,6 @@ description: >-
   Produces documents/spec-{name}.md with dependency-ordered phases, atomic tasks,
   explicit boundaries, and per-phase status tracking.
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Feature Specification

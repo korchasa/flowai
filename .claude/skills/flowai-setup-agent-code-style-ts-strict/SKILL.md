@@ -2,9 +2,6 @@
 name: flowai-setup-agent-code-style-ts-strict
 description: Adds TypeScript strict mode code style rules to project AGENTS.md. Use when setting up TypeScript projects with strict mode or establishing coding standards.
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 ## Purpose

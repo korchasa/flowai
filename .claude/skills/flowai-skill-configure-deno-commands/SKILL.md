@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-configure-deno-commands
 description: Configure and maintain Deno development commands (check, test, dev, prod). Use when the user wants to set up or update the standard command interface in deno.json and scripts/ directory.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Configure Deno Commands

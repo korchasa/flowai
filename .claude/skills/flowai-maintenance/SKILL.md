@@ -3,9 +3,6 @@ name: flowai-maintenance
 description: >-
   Perform a comprehensive "Lead Engineer" audit: structure, consistency, code quality, technical debt, documentation coverage, and terminology checks.
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task: Project Maintenance & Health Audit

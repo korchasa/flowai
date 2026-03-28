@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-fix-tests
 description: How to fix tests
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 ## HOW TO FIX TESTS

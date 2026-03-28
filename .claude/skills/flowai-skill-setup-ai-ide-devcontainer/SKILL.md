@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-setup-ai-ide-devcontainer
 description: Set up .devcontainer for AI IDE development. Generates devcontainer.json and optional Dockerfile for project tech stack, AI CLI integration (Claude Code, OpenCode), secrets, skill mounting, and security hardening. Use for AI-assisted devcontainer setup or flowai-init delegation.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # AI Devcontainer Setup

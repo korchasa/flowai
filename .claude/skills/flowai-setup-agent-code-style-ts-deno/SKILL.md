@@ -2,9 +2,6 @@
 name: flowai-setup-agent-code-style-ts-deno
 description: Adds TypeScript/Deno code style rules to project AGENTS.md. Use when setting up new Deno projects or when user needs to establish code style guidelines.
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 ## Purpose

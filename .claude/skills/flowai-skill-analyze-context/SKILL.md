@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-analyze-context
 description: Analyze total token usage including conversation history, system prompts, and active rules to estimate cost.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Analyze Context (Total Cost Estimation)

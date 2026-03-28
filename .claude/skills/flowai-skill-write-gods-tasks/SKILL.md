@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-write-gods-tasks
 description: How to write tasks using GODS framework
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 ## HOW TO WRITE TASKS USING GODS FRAMEWORK
