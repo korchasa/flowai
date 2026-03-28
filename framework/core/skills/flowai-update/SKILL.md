@@ -93,19 +93,24 @@ adapted:
 6. **Migrate scaffolded artifacts**
    - For each SKILLS UPDATED entry that has scaffolds listed:
      a. Run `git diff` on the skill directory (e.g., `.claude/skills/flowai-init/`) to understand what changed in the template.
-     b. For each scaffolded artifact path listed: compare the updated template directly against the project artifact using `git diff --no-index`:
-        ```
-        git diff --no-index -- .claude/skills/flowai-init/assets/AGENTS.template.md ./AGENTS.md
-        ```
+     b. For each scaffolded artifact path listed:
+        - **MUST read** the actual project artifact file (e.g., `./AGENTS.md`, `./documents/design.md`).
+        - **MUST read** the framework template (e.g., `.claude/skills/flowai-init/assets/AGENTS.template.md`).
+        - Compare line-by-line using `git diff --no-index`:
+          ```
+          git diff --no-index -- .claude/skills/flowai-init/assets/AGENTS.template.md ./AGENTS.md
+          ```
+        - Primary comparison is **template content vs project artifact**, not just template git history.
      c. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
      d. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
    - If no gaps found in any artifact — skip to commit.
 
 7. **Propose scaffolded changes**
-   - For each affected artifact, show:
-     - What changed in the framework template (summary of diff)
-     - Current state of the project artifact (relevant section)
-     - Proposed update (preserving project-specific content)
+   - For each affected artifact, show **all three**:
+     a. **What changed in template** — cite the diff lines or section names
+     b. **Current project artifact section** — show the outdated version (before/quote)
+     c. **Proposed update** — show the complete updated section with project-specific content preserved (after/quote)
+   - Use diff format or before/after block quotes — make changes visually clear.
    - Clearly explain **why** the change is recommended.
 
 8. **Apply with confirmation**

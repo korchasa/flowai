@@ -92,7 +92,7 @@ Agent builds internal KB: environment constraints, valid state variables, reward
 
 **Evidence**: Same quote as #3 above (Section 5.1, [PDF p.8-9](https://arxiv.org/pdf/2603.19461#page=8)).
 
-**Implication for flowai**: Skills like `flow-init` and `flow-update` would benefit from project-specific knowledge accumulation in reflection memory (conventions, common pitfalls). Currently each session starts from zero.
+**Implication for flowai**: Skills like `flowai-init` and `flowai-update` would benefit from project-specific knowledge accumulation in reflection memory (conventions, common pitfalls). Currently each session starts from zero.
 
 ---
 
@@ -106,7 +106,7 @@ Transfer hyperagents from paper review + robotics achieve imp@50 = 0.630 on math
 
 > "We qualitatively attribute the observed transfer gains to a set of general-purpose meta-level capabilities that the DGM-H autonomously acquires during prior runs. In particular, the transfer hyperagents have features such as performance tracking and persistent memory, which allow them to reason about improvement as an ongoing process rather than as isolated code edits. As a result, even when transferred to an unseen domain, these hyperagents can quickly self-improve and make meaningful progress."
 
-**Implication for flowai**: Core skills (flow-commit, flow-review) must be domain-agnostic — experimentally confirmed. Domain-specific knowledge belongs in separate packs. Current pack split is correct.
+**Implication for flowai**: Core skills (flowai-commit, flowai-review) must be domain-agnostic — experimentally confirmed. Domain-specific knowledge belongs in separate packs. Current pack split is correct.
 
 ---
 

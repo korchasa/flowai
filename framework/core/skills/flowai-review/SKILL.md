@@ -66,6 +66,9 @@ Input sources:
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
      branch-based changes.
+   - **Untracked files**: `git diff` does NOT show untracked files. Check
+     `git status` output from step 1 — for each untracked file, read its
+     content directly and include it in the review scope.
    - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
    - Look for project conventions in `AGENTS.md` and config files.
      If these files do not exist, rely on conventions visible in the diff

@@ -8,7 +8,7 @@ export const EngineerCommandCreateBench = new class
   stepTimeoutMs = 600_000;
 
   userQuery =
-    '/flowai-skill-engineer-command I want to create a command called "flow-docker-compose" that helps manage Docker Compose services. It should help with starting/stopping services, viewing logs, rebuilding containers, and checking health. This is a project-level command.';
+    '/flowai-skill-engineer-command I want to create a command called "flowai-docker-compose" that helps manage Docker Compose services. It should help with starting/stopping services, viewing logs, rebuilding containers, and checking health. This is a project-level command.';
 
   interactive = true;
   userPersona =

@@ -11,6 +11,10 @@ Integrates TypeScript/Deno coding standards into AGENTS.md to maintain consisten
 - AGENTS.md must exist in project root
 - Project uses Deno
 
+## File Target
+- Target file is **AGENTS.md** (project agent definitions), NOT CLAUDE.md.
+- If AGENTS.md does not exist, inform the user and stop.
+
 ## Injection Location
 Add code style rules to AGENTS.md after the "Project tooling Stack" section, before "Architecture".
 

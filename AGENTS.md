@@ -53,10 +53,10 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Project tooling Stack
 - TypeScript
 - Deno
-- Python (general-purpose utility scripts only: token counting, Mermaid validation)
+- Python (benchmark fixtures only; no production scripts)
 
 ## Architecture
-- `framework/<pack>/`: Source of truth for product packs (skills, agents, hooks, scripts). Each pack has `pack.yaml` + `skills/`, `agents/` subdirs.
+- `framework/<pack>/`: Source of truth for product packs (skills, agents, hooks, scripts). Each pack has `pack.yaml` + `skills/` subdir; `agents/`, `hooks/`, `scripts/` are optional.
 - `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flowai.
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
@@ -66,7 +66,7 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Terminology (agentskills.io)
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). Logically, they are divided into:
-- **Commands** (`flow-*`): High-level task workflows (e.g., `/flowai-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
+- **Commands** (`flowai-*`): High-level task workflows (e.g., `/flowai-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
 - **Setup** (`flowai-setup-agent-*`): One-time project configuration commands (e.g., `flowai-setup-agent-code-style-ts-deno`). User-invoked only (`disable-model-invocation: true`), must not be triggered automatically.
 - **Skills** (`flowai-skill-*`): Procedural knowledge and specialized capabilities (e.g., `flowai-skill-draw-mermaid-diagrams`). Can be discovered and used by agents to perform specific sub-tasks.
 

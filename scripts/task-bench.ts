@@ -27,6 +27,7 @@ import {
 } from "./benchmarks/lib/adapters/mod.ts";
 import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
+/** Walks `framework/<pack>/skills/<skill>/benchmarks/` and imports all scenario mod.ts files. */
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
   const frameworkDir = join(Deno.cwd(), "framework");
@@ -81,6 +82,7 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   return scenarios;
 }
 
+/** Prints CLI usage information with available options. */
 function printHelp(defaultAgentModel: string) {
   console.log(`
 Usage: deno task bench [options]
@@ -98,6 +100,7 @@ Options:
   `);
 }
 
+/** Parses CLI args, discovers scenarios, runs benchmarks, and prints summary report. */
 async function main() {
   const config = await loadConfig();
 
@@ -215,7 +218,7 @@ async function main() {
     }
   }
 
-  /** Runs a single scenario+run task, prints results, and pushes to results array. */
+  /** Executes a single scenario run, prints checklist results, and accumulates costs. */
   async function executeTask(
     task: { scenario: BenchmarkScenario; runIndex: number },
   ) {

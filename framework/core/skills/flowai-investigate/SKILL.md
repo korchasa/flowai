@@ -37,8 +37,10 @@ Used for debugging and root cause analysis. The process is iterative and relies 
 2. **Hypotheses Generation**
    - Propose 3-7 candidate root causes (hypotheses) with initial probabilities
      and reasoning.
-   - **Checkpoint**: Present the list to the user and ask: "Which hypothesis
+   - **MANDATORY STOP**: Present the list to the user and ask: "Which hypothesis
      should we investigate first?"
+   - Wait for explicit user selection. Do NOT proceed to Step 3, recommend a
+     hypothesis yourself, or skip this checkpoint.
 3. **Experiment Design**
    - For the selected hypothesis, design a discrete-outcome experiment.
    - Explain what "Success" and "Failure" outcomes will mean for the hypothesis.

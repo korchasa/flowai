@@ -171,7 +171,7 @@ flowai loads FORMS.md, REFERENCE.md, or EXAMPLES.md only when needed.
 For Commands with multiple domains, organize content by domain to avoid loading irrelevant context:
 
 ```
-flow-bigquery/
+flowai-bigquery/
 ├── SKILL.md (overview and navigation)
 └── reference/
     ├── finance.md (revenue, billing metrics)
@@ -185,7 +185,7 @@ When a user asks about sales metrics, flowai only reads sales.md.
 Similarly, for commands supporting multiple frameworks or variants, organize by variant:
 
 ```
-flow-cloud-deploy/
+flowai-cloud-deploy/
 ├── SKILL.md (workflow + provider selection)
 └── references/
     ├── aws.md (AWS deployment patterns)
@@ -258,17 +258,17 @@ To turn concrete examples into an effective command, analyze each example by:
 1. Considering how to execute on the example from scratch
 2. Identifying what scripts, references, and assets would be helpful when executing these workflows repeatedly
 
-Example: When building a `flow-pdf-editor` command to handle queries like "Help me rotate this PDF," the analysis shows:
+Example: When building a `flowai-pdf-editor` command to handle queries like "Help me rotate this PDF," the analysis shows:
 
 1. Rotating a PDF requires re-writing the same code each time
 2. A `scripts/rotate_pdf.py` script would be helpful to store in the command
 
-Example: When designing a `flow-webapp-builder` command for queries like "Build me a todo app" or "Build me a dashboard to track my steps," the analysis shows:
+Example: When designing a `flowai-webapp-builder` command for queries like "Build me a todo app" or "Build me a dashboard to track my steps," the analysis shows:
 
 1. Writing a frontend webapp requires the same boilerplate HTML/React each time
 2. An `assets/hello-world/` template containing the boilerplate HTML/React project files would be helpful to store in the command
 
-Example: When building a `flow-big-query` command to handle queries like "How many users have logged in today?" the analysis shows:
+Example: When building a `flowai-big-query` command to handle queries like "How many users have logged in today?" the analysis shows:
 
 1. Querying BigQuery requires re-discovering the table schemas and relationships each time
 2. A `references/schema.md` file documenting the table schemas would be helpful to store in the command
@@ -362,7 +362,7 @@ The packaging script will:
    - Description completeness and quality
    - File organization and resource references
 
-2. **Package** the command if validation passes, creating a .skill file named after the command (e.g., `flow-my-command.skill`) that includes all files and maintains the proper directory structure for distribution. The .skill file is a zip file with a .skill extension.
+2. **Package** the command if validation passes, creating a .skill file named after the command (e.g., `flowai-my-command.skill`) that includes all files and maintains the proper directory structure for distribution. The .skill file is a zip file with a .skill extension.
 
 If validation fails, the script will report the errors and exit without creating a package. Fix any validation errors and run the packaging command again.
 
