@@ -450,6 +450,7 @@ ${truncatedFiles}
       evidence, // The file/system state changes (also contains truncated logs)
       scenario.checklist,
       options.judgeConfig,
+      options.workDir,
     );
     const checklistResults = judgeOutput.results;
 
