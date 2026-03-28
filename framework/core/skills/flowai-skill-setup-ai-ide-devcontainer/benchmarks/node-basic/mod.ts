@@ -6,6 +6,10 @@ export const SetupDevcontainerNodeBasic = new class
   name = "Basic Node.js devcontainer setup";
   skill = "flowai-skill-setup-ai-ide-devcontainer";
   stepTimeoutMs = 420_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "NodeExpressApp",
+    TOOLING_STACK: "- TypeScript\n- Node.js\n- Express",
+  };
 
   userQuery =
     "/flowai-skill-setup-ai-ide-devcontainer Set up a devcontainer for this Node.js project. Use Claude Code as AI CLI. No global skills mount. No firewall. No custom Dockerfile.";

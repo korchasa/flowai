@@ -5,6 +5,9 @@ export const ManageGithubTicketsCreateIssueBench = new class
   id = "flowai-skill-manage-github-tickets-create-issue";
   name = "Create GitHub Issue Using GODS Framework";
   skill = "flowai-skill-manage-github-tickets";
+  agentsTemplateVars = {
+    PROJECT_NAME: "AcmeBackend",
+  };
 
   userQuery =
     "/flowai-skill-manage-github-tickets Create a GitHub issue for our CI/CD pipeline being broken. Jenkins plugin update caused 5 builds to fail. We need to restore builds within 1 hour. Repo: acme/backend.";

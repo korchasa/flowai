@@ -22,17 +22,10 @@ export const FlowUpdateSyncCommandBench = new class
 
   maxSteps = 15;
 
-  agentsMarkdown = `# TestProject
-
-## Project tooling Stack
-- TypeScript, Deno
-
-## TDD FLOW
-1. RED
-2. GREEN
-3. REFACTOR
-4. CHECK
-`;
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   // Mock flowai: bare command prints IDE message, `sync` subcommand succeeds
   mocks: Record<string, string> = {

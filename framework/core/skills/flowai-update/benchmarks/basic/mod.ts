@@ -23,21 +23,11 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
 
   maxSteps = 20;
 
-  // AGENTS.md with outdated TDD section (3 steps, missing CHECK)
-  agentsMarkdown = `# MyProject
-
-## Project tooling Stack
-- TypeScript, Deno
-
-## TDD FLOW
-
-1. **RED**: Write test for new/changed logic or behavior.
-2. **GREEN**: Pass test.
-3. **REFACTOR**: Improve code/tests. No behavior change.
-
-## Planning Rules
-- Save plans to documents/whiteboards/
-`;
+  agentsTemplateVars = {
+    PROJECT_NAME: "MyProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    KEY_DECISIONS: "- Save plans to documents/whiteboards/",
+  };
 
   override sandboxState = {
     commits: [
@@ -52,6 +42,28 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
   };
 
   override async setup(sandboxPath: string) {
+    // Overwrite template-generated AGENTS.md with outdated version (3-step TDD, no CHECK)
+    // so the agent can detect the gap and propose adding CHECK
+    await Deno.writeTextFile(
+      join(sandboxPath, "AGENTS.md"),
+      [
+        "# MyProject",
+        "",
+        "## Project tooling Stack",
+        "- TypeScript, Deno",
+        "",
+        "## TDD FLOW",
+        "",
+        "1. **RED**: Write test for new/changed logic or behavior.",
+        "2. **GREEN**: Pass test.",
+        "3. **REFACTOR**: Improve code/tests. No behavior change.",
+        "",
+        "## Planning Rules",
+        "- Save plans to documents/whiteboards/",
+        "",
+      ].join("\n"),
+    );
+
     // Runner has already copied framework to .claude/ and written AGENTS.md
     const templatePath = join(
       sandboxPath,

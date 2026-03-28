@@ -4,6 +4,11 @@ export const DenoCliTestPermsBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deno-cli-test-permissions";
   name = "Run Deno tests and diagnose permission requirements";
   skill = "flowai-skill-deno-cli";
+  agentsTemplateVars = {
+    PROJECT_NAME: "DenoKvServer",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+    ARCHITECTURE: "- Deno KV for persistence\n- JSR for dependency management",
+  };
 
   userQuery =
     "/flowai-skill-deno-cli I want to run the tests for this project. The server uses Deno KV. What permissions do I need and what is the correct command? Also, how do I add a new dependency from JSR?";

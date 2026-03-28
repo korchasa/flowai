@@ -6,6 +6,12 @@ export const SetupCodeStyleTsDenoBasicBench = new class
   name = "Inject Deno/TS code style rules into AGENTS.md";
   skill = "flowai-setup-agent-code-style-ts-deno";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "MyDenoApp",
+    TOOLING_STACK: "- Language: TypeScript\n- Runtime: Deno",
+    ARCHITECTURE:
+      "- `src/` — Application source code\n- `scripts/` — Build and utility scripts",
+  };
 
   userQuery =
     "/flowai-setup-agent-code-style-ts-deno Add Deno TypeScript code style rules to this project.";

@@ -10,6 +10,10 @@ export const SetupDevcontainerDenoWithClaude = new class
   name = "Deno project with Claude Code, global skills, and firewall";
   skill = "flowai-skill-setup-ai-ide-devcontainer";
   stepTimeoutMs = 420_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "DenoSecureApp",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     "/flowai-skill-setup-ai-ide-devcontainer Set up a devcontainer for this Deno project with full Claude Code integration, global skills mounting, and security hardening.";

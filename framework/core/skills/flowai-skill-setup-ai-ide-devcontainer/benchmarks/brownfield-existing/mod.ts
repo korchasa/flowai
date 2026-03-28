@@ -8,6 +8,10 @@ export const SetupDevcontainerBrownfield = new class
   stepTimeoutMs = 420_000;
   interactive = true;
   maxSteps = 15;
+  agentsTemplateVars = {
+    PROJECT_NAME: "PyBrownfield",
+    TOOLING_STACK: "- Python",
+  };
 
   userQuery =
     "/flowai-skill-setup-ai-ide-devcontainer Update the devcontainer config for this Python project. Add Claude Code support.";

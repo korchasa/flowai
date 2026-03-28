@@ -104,18 +104,11 @@ export interface BenchmarkScenario {
   interactive?: boolean;
 
   /**
-   * AGENTS.md content.
-   * If provided as string, it will be used.
-   * If not provided, the runner will try to load it from the scenario's fixture directory.
-   */
-  agentsMarkdown?: string;
-
-  /**
    * Placeholder values for generating AGENTS.md from flowai-init templates.
-   * When set (and agentsMarkdown is NOT set), runner generates AGENTS.md
-   * from templates at runtime instead of using fixture files.
+   * Required field — runner generates AGENTS.md from templates at runtime
+   * (single source of truth). Minimum: PROJECT_NAME.
    */
-  agentsTemplateVars?: {
+  agentsTemplateVars: {
     PROJECT_NAME: string;
     PROJECT_RULES?: string;
     PROJECT_VISION?: string;
@@ -148,6 +141,7 @@ export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
   abstract skill: string;
   abstract userQuery: string;
   abstract checklist: BenchmarkChecklistItem[];
+  abstract agentsTemplateVars: BenchmarkScenario["agentsTemplateVars"];
 
   /** Default: no setup changes, clean state. Override in subclass. */
   sandboxState: BenchmarkScenario["sandboxState"] = {

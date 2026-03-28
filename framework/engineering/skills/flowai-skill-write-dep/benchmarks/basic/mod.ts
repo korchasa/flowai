@@ -4,6 +4,9 @@ export const WriteDepBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-dep-basic";
   name = "Write a DEP for Cache Migration";
   skill = "flowai-skill-write-dep";
+  agentsTemplateVars = {
+    PROJECT_NAME: "CacheMigration",
+  };
   stepTimeoutMs = 420_000;
 
   userQuery =

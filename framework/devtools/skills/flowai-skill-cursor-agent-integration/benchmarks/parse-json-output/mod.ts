@@ -5,6 +5,10 @@ export const CursorAgentParseJsonBench = new class
   id = "flowai-skill-cursor-agent-integration-parse-json";
   name = "Parse cursor-agent JSON output and extract session info";
   skill = "flowai-skill-cursor-agent-integration";
+  agentsTemplateVars = {
+    PROJECT_NAME: "TestProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     "/flowai-skill-cursor-agent-integration I have a cursor-agent JSON output file at agent-output.json. Parse it and tell me: the session ID, whether it succeeded, the duration, and how many messages were exchanged. Then explain how I would resume this session with a follow-up prompt.";

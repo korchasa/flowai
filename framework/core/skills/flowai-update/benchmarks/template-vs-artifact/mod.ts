@@ -31,30 +31,10 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
   maxSteps = 25;
 
-  // Project AGENTS.md — missing "Proactive Resolution" planning rule
-  agentsMarkdown = `# MyProject
-
-## Project tooling Stack
-- TypeScript, Deno
-
-## Planning Rules
-
-- **Environment Side-Effects**: Changes to infra/DB/external services → plan MUST include migration/sync/deploy steps.
-- **Verification Steps**: Plan MUST include specific verification commands (tests, validation tools, connectivity checks).
-- **Functionality Preservation**: Refactoring/modifications → run existing tests before/after; add new tests if coverage missing.
-- **Data-First**: Integration with external APIs/processes → inspect protocol & data formats BEFORE planning.
-- **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).
-- **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks per variant + Trade-offs across variants. Quality > quantity. 1 variant OK if path is clear.
-- **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
-- **Plan Persistence**: After variant selection, save the detailed plan to documents/whiteboards/<date>-<slug>.md using GODS format. Chat-only plans are lost between sessions.
-
-## TDD FLOW
-
-1. **RED**: Write test for new/changed logic or behavior.
-2. **GREEN**: Pass test.
-3. **REFACTOR**: Improve code/tests. No behavior change.
-4. **CHECK**: Run check command. Fix all.
-`;
+  agentsTemplateVars = {
+    PROJECT_NAME: "MyProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   override sandboxState = {
     commits: [
@@ -85,6 +65,37 @@ export const FlowUpdateTemplateVsArtifactBench = new class
   };
 
   override async setup(sandboxPath: string) {
+    // Overwrite template-generated AGENTS.md with version MISSING "Proactive Resolution"
+    // so the agent must compare templates vs artifacts to find the gap
+    await Deno.writeTextFile(
+      join(sandboxPath, "AGENTS.md"),
+      [
+        "# MyProject",
+        "",
+        "## Project tooling Stack",
+        "- TypeScript, Deno",
+        "",
+        "## Planning Rules",
+        "",
+        "- **Environment Side-Effects**: Changes to infra/DB/external services → plan MUST include migration/sync/deploy steps.",
+        "- **Verification Steps**: Plan MUST include specific verification commands (tests, validation tools, connectivity checks).",
+        "- **Functionality Preservation**: Refactoring/modifications → run existing tests before/after; add new tests if coverage missing.",
+        "- **Data-First**: Integration with external APIs/processes → inspect protocol & data formats BEFORE planning.",
+        "- **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).",
+        "- **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks per variant + Trade-offs across variants. Quality > quantity. 1 variant OK if path is clear.",
+        "- **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.",
+        "- **Plan Persistence**: After variant selection, save the detailed plan to documents/whiteboards/<date>-<slug>.md using GODS format. Chat-only plans are lost between sessions.",
+        "",
+        "## TDD FLOW",
+        "",
+        "1. **RED**: Write test for new/changed logic or behavior.",
+        "2. **GREEN**: Pass test.",
+        "3. **REFACTOR**: Improve code/tests. No behavior change.",
+        "4. **CHECK**: Run check command. Fix all.",
+        "",
+      ].join("\n"),
+    );
+
     // --- Create project artifacts ---
     // documents/AGENTS.md (matches template — no migration needed)
     const docsDir = join(sandboxPath, "documents");

@@ -6,6 +6,10 @@ export const ConfigureDenoCommandsBasicBench = new class
   name = "Configure standard Deno development commands";
   skill = "flowai-skill-configure-deno-commands";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "DenoCommandsProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     "/flowai-skill-configure-deno-commands Set up the standard Deno development commands (check, test, dev, prod) for this project.";

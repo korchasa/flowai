@@ -8,6 +8,9 @@ export const InitGreenfieldBench = new class extends BenchmarkSkillScenario {
   stepTimeoutMs = 600_000;
   interactive = true;
   maxSteps = 20;
+  agentsTemplateVars = {
+    PROJECT_NAME: "InitTestProject",
+  };
 
   override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });

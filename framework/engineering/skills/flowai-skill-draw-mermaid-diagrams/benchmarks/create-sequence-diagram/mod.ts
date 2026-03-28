@@ -5,6 +5,9 @@ export const DrawMermaidSequenceBench = new class
   id = "flowai-skill-draw-mermaid-diagrams-sequence";
   name = "Create a Mermaid sequence diagram for an API auth flow";
   skill = "flowai-skill-draw-mermaid-diagrams";
+  agentsTemplateVars = {
+    PROJECT_NAME: "AuthService",
+  };
 
   userQuery =
     "/flowai-skill-draw-mermaid-diagrams Create a sequence diagram showing an OAuth2 authorization code flow between a User, Browser, Auth Server, and Resource Server. Include the redirect, token exchange, and API call with the access token. Save it to docs/auth-flow.md.";

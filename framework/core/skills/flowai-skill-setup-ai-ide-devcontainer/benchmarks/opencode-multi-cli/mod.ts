@@ -8,6 +8,10 @@ export const SetupDevcontainerOpenCodeMultiCli = new class
   stepTimeoutMs = 420_000;
   interactive = true;
   maxSteps = 15;
+  agentsTemplateVars = {
+    PROJECT_NAME: "PyMultiCli",
+    TOOLING_STACK: "- Python",
+  };
 
   userQuery =
     "/flowai-skill-setup-ai-ide-devcontainer Set up a devcontainer for this Python project. Install both Claude Code and OpenCode. Mount global skills from host. No firewall. No custom Dockerfile.";

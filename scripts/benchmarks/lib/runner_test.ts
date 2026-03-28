@@ -45,7 +45,7 @@ Deno.test("Runner - Basic Scenario Execution", async () => {
       await Deno.writeTextFile(join(sandbox, "test.txt"), "initial");
     },
     userQuery: "Change test.txt content to 'modified'",
-    agentsMarkdown: "# Test Agent\nYou can modify files.",
+    agentsTemplateVars: { PROJECT_NAME: "TestProject" },
     checklist: [
       { id: "check1", description: "File was modified", critical: true },
     ],
@@ -101,6 +101,7 @@ Deno.test("Runner - Fixture Copying", async () => {
     },
     setup: async () => {},
     userQuery: "Say hello",
+    agentsTemplateVars: { PROJECT_NAME: "FixtureTest" },
     checklist: [],
   };
 
@@ -151,7 +152,7 @@ Deno.test("Runner - Score counts failed items correctly", async () => {
     },
     setup: async () => {},
     userQuery: "Say hello",
-    agentsMarkdown: "# Agent",
+    agentsTemplateVars: { PROJECT_NAME: "ScoreTest" },
     checklist: [
       { id: "check1", description: "Check 1", critical: true },
       { id: "check2", description: "Check 2", critical: false },
@@ -207,7 +208,7 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
     },
     setup: async () => {},
     userQuery: "Say hello",
-    agentsMarkdown: "# Agent",
+    agentsTemplateVars: { PROJECT_NAME: "EvidenceTest" },
     checklist: [
       { id: "check1", description: "Check", critical: true },
     ],
@@ -243,53 +244,6 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
       "Test expected outcome for judge",
     );
     assertStringIncludes(capturedEvidence, "--- GIT DIFF (init..HEAD) ---");
-  } finally {
-    await Deno.remove(tempDir, { recursive: true });
-  }
-});
-
-Deno.test("Runner - AGENTS.md Fallback", async () => {
-  const tempDir = await createTempDir("runner");
-  const agentPath = join(tempDir, "agent.md");
-  await Deno.writeTextFile(agentPath, "agent");
-
-  const scenario: BenchmarkScenario = {
-    id: "test-no-agents-md",
-    name: "No AGENTS.md Test",
-    targetAgentPath: agentPath,
-    sandboxState: {
-      commits: [],
-      expectedOutcome: "Agent uses minimal default AGENTS.md",
-    },
-    setup: async () => {},
-    userQuery: "Say hello",
-    checklist: [],
-    // agentsMarkdown is undefined
-  };
-
-  const judgeClient = () => {
-    return Promise.resolve({
-      results: {},
-      messages: [],
-      response: "ok",
-    });
-  };
-
-  const scenarioWorkDir = join(tempDir, "test-no-agents-md", "run-1");
-  try {
-    await runScenario(scenario, {
-      agentModel: AGENT_MODEL,
-      judgeConfig: JUDGE_CONFIG,
-      workDir: scenarioWorkDir,
-      judgeClient: judgeClient as unknown as typeof evaluateChecklist,
-      adapter,
-    });
-
-    const sandboxPath = join(scenarioWorkDir, "sandbox");
-    const agentsContent = await Deno.readTextFile(
-      join(sandboxPath, "AGENTS.md"),
-    );
-    assertStringIncludes(agentsContent, "Agent Reference");
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }

@@ -4,6 +4,10 @@ export const AnswerBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-answer-basic";
   name = "Basic Codebase Q&A";
   skill = "flowai-answer";
+  agentsTemplateVars = {
+    PROJECT_NAME: "AuthService",
+    TOOLING_STACK: "- TypeScript",
+  };
 
   userQuery =
     "/flowai-answer How is password hashing implemented in this project? Does it follow the requirements?";

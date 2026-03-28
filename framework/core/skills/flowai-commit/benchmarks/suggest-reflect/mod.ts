@@ -7,6 +7,10 @@ export const CommitSuggestReflectBench = new class
   name = "Suggest /flowai-reflect after error-prone session";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "UtilsProject",
+    TOOLING_STACK: "- TypeScript",
+  };
 
   override sandboxState = {
     commits: [],

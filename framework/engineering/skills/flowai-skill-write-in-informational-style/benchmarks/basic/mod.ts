@@ -5,6 +5,9 @@ export const WriteInInformationalStyleBasicBench = new class
   id = "flowai-skill-write-in-informational-style-basic";
   name = "Rewrite Bureaucratic Text in Informational Style";
   skill = "flowai-skill-write-in-informational-style";
+  agentsTemplateVars = {
+    PROJECT_NAME: "ContentEditor",
+  };
 
   userQuery =
     '/flowai-skill-write-in-informational-style Rewrite the following text: "In accordance with the provisions set forth by the municipal authorities, we hereby inform all residents of the designated zones that, due to the commencement of comprehensive infrastructure modernization works pertaining to the water supply system, the supply of potable water will be temporarily suspended for the period beginning on the first day of June and concluding on the fifteenth day of June of the current calendar year. We kindly request that all affected parties take the necessary precautionary measures to ensure adequate water reserves are maintained throughout the aforementioned period."';

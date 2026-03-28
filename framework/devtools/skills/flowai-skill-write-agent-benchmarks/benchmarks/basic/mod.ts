@@ -6,6 +6,10 @@ export const WriteAgentBenchmarksBasicBench = new class
   name = "Create Benchmark Scenario for a Skill";
   skill = "flowai-skill-write-agent-benchmarks";
   stepTimeoutMs = 180_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "BenchmarkExample",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
 
   userQuery =
     '/flowai-skill-write-agent-benchmarks Create a benchmark scenario for the skill "flowai-skill-example" that tests whether the agent can rename a variable across all files in a project. The skill is at framework/skills/flowai-skill-example/SKILL.md.';
@@ -56,7 +60,16 @@ export const WriteAgentBenchmarksBasicBench = new class
         "  stepTimeoutMs?: number;",
         "  userPersona?: string;",
         "  interactive?: boolean;",
-        "  agentsMarkdown?: string;",
+        "  agentsTemplateVars: {",
+        "    PROJECT_NAME: string;",
+        "    PROJECT_RULES?: string;",
+        "    PROJECT_VISION?: string;",
+        "    TOOLING_STACK?: string;",
+        "    ARCHITECTURE?: string;",
+        "    KEY_DECISIONS?: string;",
+        "    generateDocuments?: boolean;",
+        "    scripts?: { DEVELOPMENT_COMMANDS?: string; COMMAND_SCRIPTS?: string; };",
+        "  };",
         "}",
         "",
         "export abstract class BenchmarkSkillScenario implements BenchmarkScenario {",
@@ -65,6 +78,7 @@ export const WriteAgentBenchmarksBasicBench = new class
         "  abstract skill: string;",
         "  abstract userQuery: string;",
         "  abstract checklist: BenchmarkChecklistItem[];",
+        "  abstract agentsTemplateVars: BenchmarkScenario['agentsTemplateVars'];",
         "  get targetAgentPath(): string {",
         "    return `framework/skills/${this.skill}/SKILL.md`;",
         "  }",

@@ -5,6 +5,12 @@ export const DenoDeployTroubleshootBench = new class
   id = "flowai-skill-deno-deploy-troubleshoot";
   name = "Troubleshoot Deno Deploy with KV and .gitignore";
   skill = "flowai-skill-deno-deploy";
+  agentsTemplateVars = {
+    PROJECT_NAME: "DenoDeployApp",
+    TOOLING_STACK: "- TypeScript\n- Deno\n- Deno Deploy",
+    ARCHITECTURE:
+      "- Deno KV for persistence\n- Deno Deploy for hosting\n- Playwright for testing",
+  };
 
   userQuery =
     '/flowai-skill-deno-deploy My app uses Deno.openKv() and works locally with --unstable-kv, but when deployed to Deno Deploy it fails with "TypeError: Deno.openKv is not a function". Also, I have a large .playwright-browsers/ directory that causes slow uploads. How do I fix both issues?';

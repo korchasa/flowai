@@ -1,3 +1,4 @@
+import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitBrownfieldUpdateBench = new class
@@ -6,9 +7,53 @@ export const InitBrownfieldUpdateBench = new class
   name = "Init Brownfield Project Update with Diff Confirmation";
   skill = "flowai-init";
   stepTimeoutMs = 420_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "UpdateTestProject",
+    TOOLING_STACK: "- Deno\n- TypeScript",
+    ARCHITECTURE: "- Monolith",
+    KEY_DECISIONS: "- Use Deno for tooling",
+  };
 
-  override async setup(_sandboxPath: string) {
-    // Files are copied from fixture/ (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md, deno.json, src/)
+  override async setup(sandboxPath: string) {
+    // Overwrite template-generated AGENTS.md with custom content containing markers
+    // that the checklist verifies are preserved after flowai-init update
+    await Deno.writeTextFile(
+      join(sandboxPath, "AGENTS.md"),
+      [
+        "# YOU MUST",
+        "",
+        "- STRICTLY FOLLOW YOUR ROLE.",
+        "- FIRST ACTION IN SESSION: READ ALL PROJECT DOCS. ONE-TIME PER SESSION.",
+        "- MY CUSTOM MUST RULE THAT SHOULD SURVIVE",
+        "",
+        "---",
+        "MY PROJECT SPECIFIC RULES",
+        "SHOULD BE PRESERVED",
+        "",
+        "## Project Information",
+        "- Project Name: UpdateTestProject",
+        "",
+        "## Project tooling Stack",
+        "- Deno",
+        "- TypeScript",
+        "",
+        "## Architecture",
+        "- Monolith",
+        "",
+        "## Key Decisions",
+        "- Use Deno for tooling",
+        "",
+        "## Planning Rules",
+        "",
+        "- **Custom Planning Rule**: This was added by the user and should survive updates.",
+        "",
+        "## TDD FLOW",
+        "",
+        "1. **RED**: Write test.",
+        "2. **GREEN**: Pass test.",
+        "",
+      ].join("\n"),
+    );
   }
 
   userQuery = "/flowai-init";

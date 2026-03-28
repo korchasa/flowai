@@ -173,8 +173,8 @@ export async function runScenario(
       // CLAUDE.md may not exist — that's fine
     }
 
-    // 1.8 Generate AGENTS.md from template if agentsTemplateVars is set
-    if (scenario.agentsTemplateVars && !scenario.agentsMarkdown) {
+    // 1.8 Generate AGENTS.md from template (agentsTemplateVars is required)
+    {
       const vars = scenario.agentsTemplateVars;
       const templateVars: Record<string, string> = {
         PROJECT_NAME: vars.PROJECT_NAME,
@@ -204,27 +204,7 @@ export async function runScenario(
       }
     }
 
-    // 2. Load AGENTS.md: scenario override → sandbox (from fixture/template) → minimal default
-    let agentsMarkdown = scenario.agentsMarkdown;
-    if (!agentsMarkdown) {
-      try {
-        agentsMarkdown = await Deno.readTextFile(
-          join(sandboxPath, "AGENTS.md"),
-        );
-      } catch {
-        // Not found in sandbox — use minimal default
-      }
-    }
-    if (!agentsMarkdown) {
-      console.log(
-        `  Warning: AGENTS.md not found for scenario ${scenario.id}. Using minimal default.`,
-      );
-      agentsMarkdown =
-        "# Agent Reference\n\nThis is a minimal AGENTS.md for initialization benchmarks.";
-    }
-    await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), agentsMarkdown);
-
-    // 2.1 Create CLAUDE.md symlinks for Claude Code compatibility
+    // 2. Create CLAUDE.md symlinks for Claude Code compatibility
     if (adapter.ide === "claude") {
       for (const subdir of ["", "documents", "scripts"]) {
         const agentsPath = join(sandboxPath, subdir, "AGENTS.md");

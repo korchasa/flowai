@@ -8,6 +8,10 @@ export const InitVisionIntegrationBench = new class
   name = "Init Project with Vision Integration (No vision.md)";
   skill = "flowai-init";
   stepTimeoutMs = 600_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "InitTestProject",
+    TOOLING_STACK: "- Deno\n- TypeScript",
+  };
 
   override async setup(sandboxPath: string) {
     // 1. Copy the flowai-init skill files (scripts, assets) to the sandbox

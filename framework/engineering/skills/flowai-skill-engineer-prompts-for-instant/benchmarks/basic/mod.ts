@@ -5,6 +5,9 @@ export const EngineerPromptsForInstantBench = new class
   id = "flowai-skill-engineer-prompts-for-instant-basic";
   name = "Write a prompt for an instant model to extract structured data";
   skill = "flowai-skill-engineer-prompts-for-instant";
+  agentsTemplateVars = {
+    PROJECT_NAME: "EmailExtractor",
+  };
 
   userQuery =
     "/flowai-skill-engineer-prompts-for-instant Help me write a prompt for GPT-4o Mini that extracts product names and prices from unstructured customer emails and outputs them as JSON.";

@@ -8,6 +8,10 @@ export const InitBrownfieldBench = new class extends BenchmarkSkillScenario {
   stepTimeoutMs = 600_000;
   interactive = true;
   maxSteps = 20;
+  agentsTemplateVars = {
+    PROJECT_NAME: "InitTestProject",
+    TOOLING_STACK: "- TypeScript\n- Express",
+  };
 
   override async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });

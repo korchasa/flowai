@@ -5,6 +5,9 @@ export const WriteGodsTasksBasicBench = new class
   id = "flowai-skill-write-gods-tasks-basic";
   name = "Write a Task Using GODS Framework";
   skill = "flowai-skill-write-gods-tasks";
+  agentsTemplateVars = {
+    PROJECT_NAME: "AlphaService",
+  };
 
   userQuery =
     "/flowai-skill-write-gods-tasks Write a task for migrating the Alpha service from virtual machines to Docker containers. Currently, deployment takes 45 minutes and causes errors during updates. We need to reduce deployment time by 50% and eliminate update errors.";

@@ -5,6 +5,10 @@ export const EngineerPromptsForReasoningBench = new class
   id = "flowai-skill-engineer-prompts-for-reasoning-basic";
   name = "Write a prompt for a reasoning model to refactor code";
   skill = "flowai-skill-engineer-prompts-for-reasoning";
+  agentsTemplateVars = {
+    PROJECT_NAME: "SecurityAuditor",
+    TOOLING_STACK: "- Python",
+  };
 
   userQuery =
     "/flowai-skill-engineer-prompts-for-reasoning Help me write a prompt for Claude 3.5 Sonnet that analyzes a Python codebase for security vulnerabilities and produces a prioritized report with remediation steps.";

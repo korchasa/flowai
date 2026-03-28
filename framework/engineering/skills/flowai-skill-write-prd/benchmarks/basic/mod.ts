@@ -4,6 +4,9 @@ export const WritePrdBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-prd-basic";
   name = "Write PRD for User Notification Feature";
   skill = "flowai-skill-write-prd";
+  agentsTemplateVars = {
+    PROJECT_NAME: "ShopNotify",
+  };
   stepTimeoutMs = 420_000;
 
   userQuery =

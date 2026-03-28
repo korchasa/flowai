@@ -1,3 +1,4 @@
+import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const InitBrownfieldIdempotentBench = new class
@@ -8,9 +9,15 @@ export const InitBrownfieldIdempotentBench = new class
   stepTimeoutMs = 600_000;
   interactive = true;
   maxSteps = 20;
+  agentsTemplateVars = { PROJECT_NAME: "CustomProject" };
 
-  override async setup(_sandboxPath: string) {
-    // Files are copied from fixture/ (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md, deno.json, src/)
+  override async setup(sandboxPath: string) {
+    // Overwrite template-generated AGENTS.md with custom content containing markers
+    // that the checklist verifies are preserved after flowai-init re-run
+    await Deno.writeTextFile(
+      join(sandboxPath, "AGENTS.md"),
+      `# YOU MUST\n- STRICTLY FOLLOW YOUR ROLE.\n---\nCUSTOM CONTENT MARKER\n## Project Information\n- Project Name: CustomProject\n`,
+    );
   }
 
   userQuery = "/flowai-init";

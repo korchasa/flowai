@@ -5,6 +5,12 @@ export const SetupCodeStyleTsStrictBasicBench = new class
   id = "flowai-setup-agent-code-style-ts-strict-basic";
   name = "Inject TypeScript strict mode code style rules into AGENTS.md";
   skill = "flowai-setup-agent-code-style-ts-strict";
+  agentsTemplateVars = {
+    PROJECT_NAME: "MyTsApp",
+    TOOLING_STACK:
+      "- Language: TypeScript\n- Runtime: Node.js\n- Strict mode enabled",
+    ARCHITECTURE: "- `src/` — Application source code\n- `tests/` — Test files",
+  };
 
   userQuery =
     "/flowai-setup-agent-code-style-ts-strict Add TypeScript strict mode code style rules to this project.";

@@ -213,10 +213,13 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
       simulate real-world single-turn agent invocation. Evidence:
       `scripts/benchmarks/lib/runner.ts:235-249`,
       `scripts/benchmarks/lib/spawned_agent.ts:211-213`
-- [x] **Mandatory AGENTS.md**: Every scenario must have an `AGENTS.md` file in its
-      fixtures or provided via config. Evidence:
-      `scripts/benchmarks/lib/runner.ts:137-176`,
-      `scripts/benchmarks/lib/runner.test.ts:122-161`
+- [x] **Mandatory agentsTemplateVars**: Every scenario MUST declare `agentsTemplateVars`
+      (required field in `BenchmarkScenario`). Runner generates `AGENTS.md` from
+      `flowai-init` templates at runtime (single source of truth). Legacy mechanisms
+      (`agentsMarkdown` string, fixture `AGENTS.md` files) are removed. Scenarios
+      without `agentsTemplateVars` fail at compile time (TypeScript) and at runtime
+      (explicit error in runner). Evidence: `scripts/benchmarks/lib/types.ts`,
+      `scripts/benchmarks/lib/runner.ts`
 - [x] **Secure Execution**: Benchmarks run in an isolated environment (Docker or
       local process). Evidence: `scripts/benchmarks/lib/runner.ts:27-40`,
       `scripts/benchmarks/lib/spawned_agent.ts:171-173`
@@ -240,7 +243,7 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
       `scripts/task-bench.ts` (`scenario.pack = packEntry.name`),
       `scripts/benchmarks/lib/utils.ts` (`allowedPacks` parameter in `copyFrameworkToIdeDir`),
       `scripts/benchmarks/lib/runner.ts` (pack filter logic),
-      `scripts/check-pack-refs.ts` + `scripts/check-pack-refs.test.ts` (cross-pack validation)
+      `scripts/check-pack-refs.ts` + `scripts/check-pack-refs_test.ts` (cross-pack validation)
 - [x] **FR-7.3 Claude CLI Judge**: Judge and user emulator use Claude CLI (`cliChatCompletion`)
       instead of OpenRouter API. Eliminates `OPENROUTER_API_KEY` dependency. Uses
       `--output-format json` + `--json-schema` for structured judge output.
@@ -1247,6 +1250,16 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [ ] **FR-27.2** Search depth (number of sessions) is determined autonomously by the agent — not hardcoded or user-configured.
   - [ ] **FR-27.3** Reflection output includes a "Historical patterns" section listing matched past errors with session references.
   - [ ] **FR-27.4** If no similar errors found in history, the section states "No similar errors found" explicitly.
+
+### 3.28 CI/CD Pipeline Security (FR-28)
+
+- **Description:** GitHub Actions workflow (`.github/workflows/ci.yml`) must follow supply chain security and least privilege practices.
+- **Scenario:** Contributor pushes to main or opens PR. CI runs checks with minimal permissions; release steps get elevated permissions only when needed. Third-party actions cannot modify repository files.
+- **Acceptance:**
+  - [x] **FR-28.1 SHA pinning**: All third-party GitHub Actions pinned to full commit SHA with version comment. Evidence: `.github/workflows/ci.yml:18,24,98`
+  - [ ] **FR-28.2 Least privilege**: Check job uses `contents: read` only. Write permissions (`contents: write`, `id-token: write`) granted only to release job, gated on `push` to `main`.
+  - [ ] **FR-28.3 File integrity**: After third-party setup steps (`checkout`, `setup-deno`) and after `deno task check`, verify no unexpected file modifications via `git diff --exit-code` + untracked file check. Fail pipeline if integrity violated.
+  - [ ] **FR-28.4 Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
 
 ## 4. Non-functional requirements
 

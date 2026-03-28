@@ -4,6 +4,9 @@ export const DeepResearchPlanBench = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deep-research-plan";
   name = "Create a deep research plan with directions and queries";
   skill = "flowai-skill-deep-research";
+  agentsTemplateVars = {
+    PROJECT_NAME: "WasmResearch",
+  };
   stepTimeoutMs = 600_000;
 
   userQuery =

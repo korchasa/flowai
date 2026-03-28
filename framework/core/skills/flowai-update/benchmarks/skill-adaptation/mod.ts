@@ -25,22 +25,12 @@ export const FlowUpdateSkillAdaptationBench = new class
 
   maxSteps = 25;
 
-  agentsMarkdown = `# MyPythonProject
-
-## Project tooling Stack
-- Python 3.12, pytest, ruff, poetry
-
-## TDD FLOW
-1. RED: Write failing test with pytest
-2. GREEN: Make test pass
-3. REFACTOR: Clean up
-4. CHECK: poetry run pytest && ruff check .
-
-## Architecture
-- src/ — application code
-- tests/ — pytest test files
-- pyproject.toml — project config
-`;
+  agentsTemplateVars = {
+    PROJECT_NAME: "MyPythonProject",
+    TOOLING_STACK: "- Python 3.12, pytest, ruff, poetry",
+    ARCHITECTURE:
+      "- `src/` — application code\n- `tests/` — pytest test files\n- `pyproject.toml` — project config",
+  };
 
   // Mock flowai that reports skills updated
   mocks: Record<string, string> = {

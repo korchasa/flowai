@@ -83,7 +83,7 @@ Deno.test({
         // No setup needed for simple keyword test
       },
       userQuery: "Say the word 'BANANA' and nothing else.",
-      agentsMarkdown: "# Test Agent\nYou are a helpful assistant.",
+      agentsTemplateVars: { PROJECT_NAME: "IntegrationTest" },
       checklist: [
         {
           id: "keyword_present",
@@ -139,8 +139,7 @@ Deno.test({
       userPersona:
         "You are a user whose favorite color is blue. If asked about your favorite color (in any language, e.g., 'цвет'), answer 'Blue'. If asked about something else, respond strictly with <NO_RESPONSE>.",
       interactive: true,
-      agentsMarkdown:
-        "# Test Agent\nYou are a helpful assistant. Always ask the user about their favorite color before proceeding. As soon as he says it, repeat his answer verbatim and stop.",
+      agentsTemplateVars: { PROJECT_NAME: "InteractiveTest" },
       checklist: [
         {
           id: "interaction_occurred",

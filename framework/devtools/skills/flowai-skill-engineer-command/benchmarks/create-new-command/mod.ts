@@ -6,6 +6,10 @@ export const EngineerCommandCreateBench = new class
   name = "Create a new flowai command for Docker Compose management";
   skill = "flowai-skill-engineer-command";
   stepTimeoutMs = 600_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "DockerServices",
+    TOOLING_STACK: "- TypeScript\n- Docker Compose",
+  };
 
   userQuery =
     '/flowai-skill-engineer-command I want to create a command called "flowai-docker-compose" that helps manage Docker Compose services. It should help with starting/stopping services, viewing logs, rebuilding containers, and checking health. This is a project-level command.';
