@@ -74,6 +74,8 @@ export async function cliChatCompletion(
   configOrModel: ModelConfig | string,
   _temperature?: number,
   signal?: AbortSignal,
+  /** Path to a file whose content is appended to the system prompt via --append-system-prompt-file. */
+  appendSystemPromptFile?: string,
 ): Promise<LLMResponse> {
   const config: ModelConfig = typeof configOrModel === "string"
     ? { model: configOrModel, temperature: 0 }
@@ -102,6 +104,10 @@ export async function cliChatCompletion(
 
   if (config.jsonSchema) {
     args.push("--json-schema", JSON.stringify(config.jsonSchema));
+  }
+
+  if (appendSystemPromptFile) {
+    args.push("--append-system-prompt-file", appendSystemPromptFile);
   }
 
   // Pass user message via stdin to avoid E2BIG when trace is large

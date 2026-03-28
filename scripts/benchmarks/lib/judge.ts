@@ -1,9 +1,11 @@
 import { cliChatCompletion, type ModelConfig } from "./llm.ts";
 import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
+import { writeRunFile } from "./utils.ts";
 
 /**
  * Uses an LLM judge (via Claude CLI) to evaluate agent performance against a checklist.
- * Returns per-item pass/fail with reasoning, plus raw judge messages.
+ * Evidence is written to `<runDir>/judge-evidence.md` and passed via --append-system-prompt-file
+ * to avoid E2BIG / stdin size limits. Returns per-item pass/fail with reasoning.
  */
 export async function evaluateChecklist(
   userQuery: string,
@@ -11,6 +13,7 @@ export async function evaluateChecklist(
   fileDiffs: string,
   checklist: BenchmarkChecklistItem[],
   judgeConfig: ModelConfig,
+  runDir: string,
 ): Promise<{
   results: Record<string, { pass: boolean; reason: string }>;
   messages: LLMMessage[];
@@ -50,13 +53,14 @@ You are provided with the user's original query, the agent's execution logs, and
 Your task is to verify if the agent successfully fulfilled the requirements based on the evidence.
 
 # RULES
-1. Base your judgment ONLY on the provided evidence in <evidence>. ALL evidence is in the user message — do NOT use any tools to search for files or information.
+1. Base your judgment ONLY on the provided evidence in <evidence>. ALL evidence is appended to this system prompt — do NOT use any tools to search for files or information.
 2. Be strict: a "pass" is true only if the requirement is fully and clearly met.
 3. The 'reason' field for each item must explain WHY it passed or failed based on specific evidence.
 4. Do NOT attempt to read files, browse, or use any tools. Only analyze the text provided.
 `;
 
-  const userMessage = `
+  // Write evidence to file — passed via --append-system-prompt-file to avoid E2BIG
+  const evidenceContent = `
 <evidence>
   <user_query>
   ${userQuery}
@@ -70,12 +74,20 @@ Your task is to verify if the agent successfully fulfilled the requirements base
   ${fileDiffs}
   </file_diffs>
 </evidence>
+`;
+  const evidencePath = await writeRunFile(
+    runDir,
+    "judge-evidence.md",
+    evidenceContent,
+  );
 
+  // User message is now short — only checklist + evaluation instruction
+  const userMessage = `
 <checklist_items>
 ${checklistJson}
 </checklist_items>
 
-Evaluate the agent performance now.
+Evaluate the agent performance against the checklist using the evidence from the system prompt.
 `;
 
   const messages: LLMMessage[] = [
@@ -94,6 +106,9 @@ Evaluate the agent performance now.
       const response = await cliChatCompletion(
         messages,
         configWithSchema,
+        undefined,
+        undefined,
+        evidencePath,
       );
 
       return {

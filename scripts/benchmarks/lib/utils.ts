@@ -4,6 +4,20 @@ import { transformAgent } from "../../../cli/src/transform.ts";
 const TMP_DIR = join(Deno.cwd(), "tmp");
 
 /**
+ * Writes content to a file in the specified directory. Returns the absolute path.
+ * Used to persist prompt/evidence data in run directories for debugging.
+ */
+export async function writeRunFile(
+  dir: string,
+  name: string,
+  content: string,
+): Promise<string> {
+  const filePath = join(dir, name);
+  await Deno.writeTextFile(filePath, content);
+  return filePath;
+}
+
+/**
  * Creates a temporary directory in ./tmp with a unique name.
  * Cleans up old directories if needed.
  */
