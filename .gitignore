@@ -10,11 +10,6 @@ framework/**/flowai-skill-example/
 __pycache__/
 _research_tmp/
 
-# IDE directories (installed by flowai, not tracked)
-.cursor/
-.opencode/
-.claude/
-
 # Generated artifacts (cli)
 cli/src/bundled.json
 cli/src/_version.ts

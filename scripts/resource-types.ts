@@ -32,6 +32,10 @@ export const SkillFrontmatterSchema = z.object({
   description: descriptionField,
   "disable-model-invocation": z.boolean().optional(),
   license: z.string().optional(),
+  adapted: z.object({
+    "upstream-version": z.string(),
+    date: z.string(),
+  }).optional(),
 }).strict();
 
 export type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>;
