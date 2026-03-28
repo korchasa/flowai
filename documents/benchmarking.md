@@ -6,18 +6,22 @@ The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by
 
 ## 2. Directory Structure
 
-Work artifacts are stored in `benchmarks/`, which is git-ignored. Scenarios are organized by skill; runs stored centrally.
+Scenarios are co-located with skills; runs and infra stored centrally in `benchmarks/`.
 
 ```text
+framework/skills/<skill>/
+├── SKILL.md                    # Skill definition
+└── benchmarks/
+    └── <scenario>/
+        ├── mod.ts              # Scenario definition
+        └── fixture/            # Test fixtures (optional)
+
 benchmarks/
-├── <skill>/
-│   └── scenarios/
-│       └── <scenario>/
-│           └── mod.ts          # Scenario definition
 ├── runs/                       # All run artifacts (git-ignored)
-│   └── <scenario-id>/
-│       ├── sandbox/            # Isolated execution environment
-│       └── trace.html          # Execution log and report
+│   └── <timestamp>/
+│       ├── <scenario-id>/
+│       │   └── sandbox/        # Isolated execution environment
+│       └── report.html         # Execution log and report
 ├── benchmarks.lock
 └── config.json                 # Multi-IDE benchmark configuration
 ```
@@ -56,23 +60,23 @@ The trace is a structured HTML document designed for readability and detailed in
 
 | Scenario ID | Result | Errors | Warnings | Time (s) | Notes |
 | :--- | :--- | :---: | :---: | :---: | :--- |
-| `flow-answer-basic` | PASSED | 0 | 0 | 17.6 | |
-| `flow-commit-basic` | PASSED | 0 | 1 | 19.0 | |
-| `flow-commit-atomic-refactor` | PASSED | 0 | 0 | 21.1 | |
-| `flow-commit-atomic-docs` | PASSED | 0 | 0 | 18.9 | |
-| `flow-commit-check` | PASSED | 0 | 0 | 30.0+ | |
-| `flow-commit-check-fail` | PASSED | 0 | 0 | 19.9 | Correctly refused to commit on check failure |
-| `flow-commit-deps` | PASSED | 0 | 0 | 22.1 |  |
-| `flow-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
-| `flow-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
-| `flow-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
-| `flow-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
-| `flow-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include whiteboard.md in evidence |
-| `flow-plan-context` | PASSED | 0 | 0 | 25.5 | |
-| `flow-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
-| `flow-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
-| `flow-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
-| `flow-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
-| `flow-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
-| `flow-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
-| `flow-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |
+| `flowai-answer-basic` | PASSED | 0 | 0 | 17.6 | |
+| `flowai-commit-basic` | PASSED | 0 | 1 | 19.0 | |
+| `flowai-commit-atomic-refactor` | PASSED | 0 | 0 | 21.1 | |
+| `flowai-commit-atomic-docs` | PASSED | 0 | 0 | 18.9 | |
+| `flowai-commit-check` | PASSED | 0 | 0 | 30.0+ | |
+| `flowai-commit-check-fail` | PASSED | 0 | 0 | 19.9 | Correctly refused to commit on check failure |
+| `flowai-commit-deps` | PASSED | 0 | 0 | 22.1 |  |
+| `flowai-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
+| `flowai-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
+| `flowai-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
+| `flowai-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
+| `flowai-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include whiteboard.md in evidence |
+| `flowai-plan-context` | PASSED | 0 | 0 | 25.5 | |
+| `flowai-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
+| `flowai-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
+| `flowai-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
+| `flowai-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
+| `flowai-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
+| `flowai-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
+| `flowai-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |

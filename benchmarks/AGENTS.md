@@ -1,16 +1,18 @@
 # Benchmarks
 
-Evidence-based agent evaluation infrastructure.
+Evidence-based agent evaluation infrastructure (run artifacts and config).
 
 ## Responsibility
 
-- `<skill>/scenarios/<scenario>/mod.ts` — Scenario definitions (class implementing `BenchmarkScenario`).
-- `<skill>/scenarios/<scenario>/fixture/` — Test fixtures copied to sandbox before execution.
 - `runs/` — Generated output (trace HTML, sandbox snapshots). Gitignored.
+- `config.json` — Multi-IDE benchmark configuration.
+- `benchmarks.lock` — Prevents concurrent benchmark runs.
+
+Scenario definitions live co-located with skills: `framework/skills/<skill>/benchmarks/<scenario>/mod.ts`.
 
 ## Key Decisions
 
-- Scenarios are discovered dynamically via `walk()` in `scripts/task-bench.ts`.
+- Scenarios are discovered dynamically via `walk()` over `framework/skills/` in `scripts/task-bench.ts`.
 - Evaluation uses LLM-Judge (`scripts/benchmarks/lib/judge.ts`) with semantic checklist items.
 - Each run is isolated in a temporary sandbox directory.
 - Multi-run support for statistical pass-rate analysis.

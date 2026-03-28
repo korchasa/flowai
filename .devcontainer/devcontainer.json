@@ -1,5 +1,5 @@
 {
-  "name": "AssistFlow",
+  "name": "flowai",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 
   "features": {

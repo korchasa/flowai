@@ -1,0 +1,3 @@
+name: devtools
+version: "1.0.0"
+description: Skill and agent authoring tools (engineer-skill, engineer-command, benchmarks, etc.)

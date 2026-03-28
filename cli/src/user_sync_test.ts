@@ -37,9 +37,9 @@ A custom user skill.
 
 // --- scanIdeResources ---
 
-Deno.test("scanIdeResources - skips flow-* framework resources", async () => {
+Deno.test("scanIdeResources - skips flowai-* framework resources", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/cwd/.claude/agents/flow-commit.md", AGENT_CONTENT);
+  fs.files.set("/cwd/.claude/agents/flowai-commit.md", AGENT_CONTENT);
   fs.files.set("/cwd/.claude/agents/my-agent.md", AGENT_CONTENT);
   fs.dirs.add("/cwd/.claude/agents");
 
@@ -127,12 +127,12 @@ Deno.test("scanIdeResources - respects skills.include filter", async () => {
   assertEquals(results[0].name, "my-skill");
 });
 
-Deno.test("scanIdeResources - skips flow-* skills", async () => {
+Deno.test("scanIdeResources - skips flowai-* skills", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/cwd/.claude/skills/flow-commit/SKILL.md", SKILL_CONTENT);
+  fs.files.set("/cwd/.claude/skills/flowai-commit/SKILL.md", SKILL_CONTENT);
   fs.files.set("/cwd/.claude/skills/my-skill/SKILL.md", SKILL_CONTENT);
   fs.dirs.add("/cwd/.claude/skills");
-  fs.dirs.add("/cwd/.claude/skills/flow-commit");
+  fs.dirs.add("/cwd/.claude/skills/flowai-commit");
   fs.dirs.add("/cwd/.claude/skills/my-skill");
 
   const results = await scanIdeResources(
@@ -519,9 +519,9 @@ Deno.test("scanIdeResources - finds commands in commands/ dir", async () => {
   assertEquals(cmds[0].versions[0].relPath, "my-cmd.md");
 });
 
-Deno.test("scanIdeResources - skips flow-* commands", async () => {
+Deno.test("scanIdeResources - skips flowai-* commands", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/cwd/.cursor/commands/flow-commit.md", COMMAND_CONTENT);
+  fs.files.set("/cwd/.cursor/commands/flowai-commit.md", COMMAND_CONTENT);
   fs.files.set("/cwd/.cursor/commands/my-cmd.md", COMMAND_CONTENT);
   fs.dirs.add("/cwd/.cursor/commands");
 
@@ -582,9 +582,9 @@ Deno.test("runUserSync - copies commands across IDEs", async () => {
   );
 });
 
-Deno.test("runUserSync - flow-* agent not synced", async () => {
+Deno.test("runUserSync - flowai-* agent not synced", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/cwd/.claude/agents/flow-commit.md", AGENT_CONTENT);
+  fs.files.set("/cwd/.claude/agents/flowai-commit.md", AGENT_CONTENT);
   fs.dirs.add("/cwd/.claude/agents");
   fs.dirs.add("/cwd/.opencode/agents");
 
@@ -601,7 +601,7 @@ Deno.test("runUserSync - flow-* agent not synced", async () => {
     (m) => logs.push(m),
   );
 
-  assertEquals(fs.files.has("/cwd/.opencode/agents/flow-commit.md"), false);
+  assertEquals(fs.files.has("/cwd/.opencode/agents/flowai-commit.md"), false);
 });
 
 // Re-export processPlan to ensure it's accessible (compile check)

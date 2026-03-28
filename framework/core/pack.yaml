@@ -1,0 +1,15 @@
+name: core
+version: "1.0.0"
+description: Base commands for development workflows (commit, plan, review, init, etc.)
+scaffolds:
+  flowai-init:
+    - AGENTS.md
+    - documents/AGENTS.md
+    - scripts/AGENTS.md
+    - CLAUDE.md
+    - documents/requirements.md
+    - documents/design.md
+  flowai-skill-setup-ai-ide-devcontainer:
+    - .devcontainer/devcontainer.json
+    - .devcontainer/Dockerfile
+    - .devcontainer/init-firewall.sh

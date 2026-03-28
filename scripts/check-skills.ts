@@ -39,6 +39,7 @@ export const ALLOWED_SUBDIRS = new Set([
   "references",
   "assets",
   "evals",
+  "benchmarks",
 ]);
 
 const SKILL_MAX_LINES = 500;
@@ -190,7 +191,11 @@ export async function validateReferenceDepth(
 ): Promise<SkillError[]> {
   const errors: SkillError[] = [];
 
-  for (const subdir of ALLOWED_SUBDIRS) {
+  // benchmarks/ is excluded: scenarios naturally have nested dirs (fixture/, etc.)
+  const depthCheckedDirs = [...ALLOWED_SUBDIRS].filter((d) =>
+    d !== "benchmarks"
+  );
+  for (const subdir of depthCheckedDirs) {
     const subdirPath = join(skillPath, subdir);
     try {
       for await (const entry of Deno.readDir(subdirPath)) {
@@ -300,13 +305,32 @@ export async function validateAllSkills(
   return allErrors;
 }
 
+/** Discover all skills directories from pack structure */
+async function discoverSkillsDirs(
+  frameworkDir: string,
+): Promise<string[]> {
+  const dirs: string[] = [];
+  try {
+    for await (const pack of Deno.readDir(frameworkDir)) {
+      if (!pack.isDirectory) continue;
+      const skillsDir = join(frameworkDir, pack.name, "skills");
+      try {
+        const stat = await Deno.stat(skillsDir);
+        if (stat.isDirectory) dirs.push(skillsDir);
+      } catch { /* no skills/ in this pack */ }
+    }
+  } catch { /* framework dir not found */ }
+  return dirs;
+}
+
 if (import.meta.main) {
   console.log(
     "Checking skills (FR-21.1, FR-21.2 agentskills.io compliance)...",
   );
 
+  const packSkillsDirs = await discoverSkillsDirs("framework");
   const errors = await validateAllSkills([
-    "framework/skills",
+    ...packSkillsDirs,
     ".claude/skills",
   ]);
 

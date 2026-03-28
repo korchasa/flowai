@@ -1,6 +1,21 @@
 import { join } from "@std/path";
+import { transformAgent } from "../../../cli/src/transform.ts";
 
 const TMP_DIR = join(Deno.cwd(), "tmp");
+
+/**
+ * Writes content to a file in the specified directory. Returns the absolute path.
+ * Used to persist prompt/evidence data in run directories for debugging.
+ */
+export async function writeRunFile(
+  dir: string,
+  name: string,
+  content: string,
+): Promise<string> {
+  const filePath = join(dir, name);
+  await Deno.writeTextFile(filePath, content);
+  return filePath;
+}
 
 /**
  * Creates a temporary directory in ./tmp with a unique name.
@@ -65,5 +80,79 @@ export async function copyRecursive(
     }
   } else {
     await Deno.copyFile(src, dest);
+  }
+}
+
+/**
+ * Copies pack-structured framework/ into flat IDE config dir,
+ * matching flowai CLI sync behavior:
+ * - Skills: framework/<pack>/skills/<name>/ → dest/skills/<name>/ (as-is, skip benchmarks/runs/tmp)
+ * - Agents: framework/<pack>/agents/<name>.md → dest/agents/<name>.md (frontmatter transformed per IDE)
+ * - Hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/ (when present)
+ */
+export async function copyFrameworkToIdeDir(
+  frameworkPath: string,
+  ideConfigDir: string,
+  ideName: string = "claude",
+  allowedPacks?: string[],
+) {
+  const skipDirs = ["benchmarks", "runs", "tmp"];
+
+  console.log(
+    `  Copying packs: ${allowedPacks ? allowedPacks.join(", ") : "all"}`,
+  );
+
+  for await (const pack of Deno.readDir(frameworkPath)) {
+    if (!pack.isDirectory) continue;
+
+    // Filter packs if allowedPacks is specified
+    if (allowedPacks && !allowedPacks.includes(pack.name)) continue;
+
+    const packDir = join(frameworkPath, pack.name);
+
+    // Check if this is a pack (has pack.yaml) or a legacy dir
+    try {
+      await Deno.stat(join(packDir, "pack.yaml"));
+    } catch {
+      continue; // Not a pack, skip
+    }
+
+    // Copy skills: framework/<pack>/skills/<name>/ → dest/skills/<name>/
+    const skillsDir = join(packDir, "skills");
+    try {
+      for await (const skill of Deno.readDir(skillsDir)) {
+        if (!skill.isDirectory) continue;
+        await copyRecursive(
+          join(skillsDir, skill.name),
+          join(ideConfigDir, "skills", skill.name),
+          skipDirs,
+        );
+      }
+    } catch { /* no skills/ in pack */ }
+
+    // Copy agents with IDE-specific frontmatter transformation
+    const agentsDir = join(packDir, "agents");
+    try {
+      for await (const agent of Deno.readDir(agentsDir)) {
+        if (!agent.isFile || !agent.name.endsWith(".md")) continue;
+        const destAgentsDir = join(ideConfigDir, "agents");
+        await Deno.mkdir(destAgentsDir, { recursive: true });
+        const raw = await Deno.readTextFile(join(agentsDir, agent.name));
+        const transformed = transformAgent(raw, ideName);
+        await Deno.writeTextFile(join(destAgentsDir, agent.name), transformed);
+      }
+    } catch { /* no agents/ in pack */ }
+
+    // Copy hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/
+    const hooksDir = join(packDir, "hooks");
+    try {
+      for await (const hook of Deno.readDir(hooksDir)) {
+        if (!hook.isDirectory) continue;
+        await copyRecursive(
+          join(hooksDir, hook.name),
+          join(ideConfigDir, "scripts", hook.name),
+        );
+      }
+    } catch { /* no hooks/ in pack */ }
   }
 }

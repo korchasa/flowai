@@ -5,39 +5,42 @@ import { computeDeletePlan } from "./sync.ts";
 Deno.test("computeDeletePlan - deletes excluded skill directory", async () => {
   const fs = new InMemoryFsAdapter();
   // Pre-existing skill directory
-  fs.files.set("/project/.claude/skills/flow-skill-foo/SKILL.md", "content");
-  fs.dirs.add("/project/.claude/skills/flow-skill-foo");
+  fs.files.set("/project/.claude/skills/flowai-skill-foo/SKILL.md", "content");
+  fs.dirs.add("/project/.claude/skills/flowai-skill-foo");
 
   const plan = await computeDeletePlan(
-    ["flow-skill-foo", "flow-skill-bar"],
-    ["flow-skill-bar"], // only bar included
+    ["flowai-skill-foo", "flowai-skill-bar"],
+    ["flowai-skill-bar"], // only bar included
     "/project/.claude/skills",
     "skill",
     fs,
   );
 
   assertEquals(plan.length, 1);
-  assertEquals(plan[0].name, "flow-skill-foo");
+  assertEquals(plan[0].name, "flowai-skill-foo");
   assertEquals(plan[0].action, "delete");
-  assertEquals(plan[0].targetPath, "/project/.claude/skills/flow-skill-foo");
+  assertEquals(plan[0].targetPath, "/project/.claude/skills/flowai-skill-foo");
 });
 
 Deno.test("computeDeletePlan - deletes excluded agent file", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/project/.claude/agents/flow-agent-foo.md", "content");
+  fs.files.set("/project/.claude/agents/flowai-agent-foo.md", "content");
 
   const plan = await computeDeletePlan(
-    ["flow-agent-foo", "flow-agent-bar"],
-    ["flow-agent-bar"],
+    ["flowai-agent-foo", "flowai-agent-bar"],
+    ["flowai-agent-bar"],
     "/project/.claude/agents",
     "agent",
     fs,
   );
 
   assertEquals(plan.length, 1);
-  assertEquals(plan[0].name, "flow-agent-foo");
+  assertEquals(plan[0].name, "flowai-agent-foo");
   assertEquals(plan[0].action, "delete");
-  assertEquals(plan[0].targetPath, "/project/.claude/agents/flow-agent-foo.md");
+  assertEquals(
+    plan[0].targetPath,
+    "/project/.claude/agents/flowai-agent-foo.md",
+  );
 });
 
 Deno.test("computeDeletePlan - does not delete user resources", async () => {
@@ -47,7 +50,7 @@ Deno.test("computeDeletePlan - does not delete user resources", async () => {
   fs.dirs.add("/project/.claude/skills/my-custom-skill");
 
   const plan = await computeDeletePlan(
-    ["flow-skill-foo"], // bundle only has flow-skill-foo
+    ["flowai-skill-foo"], // bundle only has flowai-skill-foo
     [], // nothing included (empty = all included)
     "/project/.claude/skills",
     "skill",
@@ -60,21 +63,21 @@ Deno.test("computeDeletePlan - does not delete user resources", async () => {
 
 Deno.test("computeDeletePlan - include mode deletes non-included framework resources", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/project/.claude/skills/flow-skill-a/SKILL.md", "a");
-  fs.dirs.add("/project/.claude/skills/flow-skill-a");
-  fs.files.set("/project/.claude/skills/flow-skill-b/SKILL.md", "b");
-  fs.dirs.add("/project/.claude/skills/flow-skill-b");
+  fs.files.set("/project/.claude/skills/flowai-skill-a/SKILL.md", "a");
+  fs.dirs.add("/project/.claude/skills/flowai-skill-a");
+  fs.files.set("/project/.claude/skills/flowai-skill-b/SKILL.md", "b");
+  fs.dirs.add("/project/.claude/skills/flowai-skill-b");
 
   const plan = await computeDeletePlan(
-    ["flow-skill-a", "flow-skill-b"],
-    ["flow-skill-a"], // only A included → B should be deleted
+    ["flowai-skill-a", "flowai-skill-b"],
+    ["flowai-skill-a"], // only A included → B should be deleted
     "/project/.claude/skills",
     "skill",
     fs,
   );
 
   assertEquals(plan.length, 1);
-  assertEquals(plan[0].name, "flow-skill-b");
+  assertEquals(plan[0].name, "flowai-skill-b");
   assertEquals(plan[0].action, "delete");
 });
 
@@ -83,7 +86,7 @@ Deno.test("computeDeletePlan - idempotent when resource does not exist locally",
   // No pre-existing files
 
   const plan = await computeDeletePlan(
-    ["flow-skill-foo"],
+    ["flowai-skill-foo"],
     [], // all included, but foo excluded means includedNames would be empty only via exclude
     "/project/.claude/skills",
     "skill",
@@ -99,8 +102,8 @@ Deno.test("computeDeletePlan - idempotent when excluded resource does not exist 
   // No pre-existing files at all
 
   const plan = await computeDeletePlan(
-    ["flow-skill-foo", "flow-skill-bar"],
-    ["flow-skill-bar"], // foo excluded but doesn't exist locally
+    ["flowai-skill-foo", "flowai-skill-bar"],
+    ["flowai-skill-bar"], // foo excluded but doesn't exist locally
     "/project/.claude/skills",
     "skill",
     fs,
@@ -112,16 +115,16 @@ Deno.test("computeDeletePlan - idempotent when excluded resource does not exist 
 Deno.test("writeFiles - handles delete action", async () => {
   const { writeFiles } = await import("./writer.ts");
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/project/.claude/skills/flow-skill-foo/SKILL.md", "content");
-  fs.dirs.add("/project/.claude/skills/flow-skill-foo");
+  fs.files.set("/project/.claude/skills/flowai-skill-foo/SKILL.md", "content");
+  fs.dirs.add("/project/.claude/skills/flowai-skill-foo");
 
   const result = await writeFiles(
     [{
       type: "skill",
-      name: "flow-skill-foo",
+      name: "flowai-skill-foo",
       action: "delete",
       sourcePath: "",
-      targetPath: "/project/.claude/skills/flow-skill-foo",
+      targetPath: "/project/.claude/skills/flowai-skill-foo",
       content: "",
     }],
     fs,
@@ -130,11 +133,11 @@ Deno.test("writeFiles - handles delete action", async () => {
   assertEquals(result.deleted, 1);
   assertEquals(result.written, 0);
   assertEquals(
-    await fs.exists("/project/.claude/skills/flow-skill-foo"),
+    await fs.exists("/project/.claude/skills/flowai-skill-foo"),
     false,
   );
   assertEquals(
-    await fs.exists("/project/.claude/skills/flow-skill-foo/SKILL.md"),
+    await fs.exists("/project/.claude/skills/flowai-skill-foo/SKILL.md"),
     false,
   );
 });

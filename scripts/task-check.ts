@@ -20,13 +20,23 @@ export function buildCheckCommands(): CommandSpec[] {
         "scripts",
         "cli/src",
         "cli/scripts",
+        "framework",
         "deno.json",
       ],
     },
-    // Lint
+    // Lint: project code (strict)
     {
       cmd: "deno",
       args: ["lint", "scripts", "cli/src", "cli/scripts"],
+    },
+    // Lint: framework (relaxed — scripts use jsr: specifiers for standalone-runnable)
+    {
+      cmd: "deno",
+      args: [
+        "lint",
+        "--rules-exclude=no-import-prefix,no-unversioned-import",
+        "framework",
+      ],
     },
     // Tests: root scripts
     {
@@ -34,7 +44,7 @@ export function buildCheckCommands(): CommandSpec[] {
       args: [
         "test",
         "-A",
-        "--ignore=scripts/benchmarks/lib/integration.test.ts",
+        "--ignore=scripts/benchmarks/lib/integration_test.ts",
         "scripts",
       ],
     },
@@ -42,6 +52,16 @@ export function buildCheckCommands(): CommandSpec[] {
     {
       cmd: "deno",
       args: ["test", "-A", "cli/src"],
+    },
+    // Tests: framework hooks and scripts
+    {
+      cmd: "deno",
+      args: [
+        "test",
+        "-A",
+        "--ignore=framework/*/skills/*/benchmarks",
+        "framework",
+      ],
     },
     // Type-check CLI entry point (catches errors missed by tests but found by deno publish)
     {
@@ -60,6 +80,10 @@ export function buildCheckCommands(): CommandSpec[] {
     {
       cmd: "deno",
       args: ["run", "-A", "scripts/check-skill-sync.ts"],
+    },
+    {
+      cmd: "deno",
+      args: ["run", "-A", "scripts/check-pack-refs.ts"],
     },
   ];
 }

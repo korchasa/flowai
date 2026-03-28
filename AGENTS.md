@@ -21,12 +21,13 @@
 - ALWAYS USE RELATIVE PATHS IN COMMANDS WHEN POSSIBLE. ABSOLUTE PATHS ONLY WHEN REQUIRED BY THE TOOL OR CONTEXT.
 
 ---
+- WHEN `typescript-lsp` PLUGIN IS ENABLED: IT AUTO-REMOVES UNUSED EXPORTS/IMPORTS ON SAVE. WHEN ADDING A NEW EXPORTED FUNCTION, EDIT THE CONSUMER FILE (import) BEFORE OR SIMULTANEOUSLY WITH THE PROVIDER FILE (export). OTHERWISE LSP WILL DELETE THE "UNUSED" EXPORT BETWEEN EDITS. ALTERNATIVE: USE Write TOOL (FULL REWRITE) INSTEAD OF Edit FOR THE PROVIDER FILE.
 - REMEMBER, EVERYTHING IN THE framework/ FOLDER IS THE FRAMEWORK - THE PRODUCT OF THIS PROJECT. FOR USERS, THEY WILL BE INSTALLED BY flowai INTO THEIR IDE'S CONFIG DIR (.claude/). DO NOT CONFUSE FRAMEWORK SKILLS/AGENTS WITH DEV RESOURCES IN .claude/skills/ AND .claude/agents/.
 - ANY CHANGES TO SKILLS MUST FOLLOW BENCHMARK TDD FLOW (see "Benchmark TDD" section below).
 - REMEMBER THAT YOU ARE CREATING A UNIVERSAL FRAMEWORK SUITABLE FOR DIFFERENT IDEs(cursor, claude code, opencode). DO NOT USE TOOL NAMES SPECIFIC TO A SINGLE IDE. IT IS BETTER TO WRITE GENERICALLY AND PROVIDE EXAMPLES FOR VARIOUS IDEs. FOR EXAMPLE, INSTEAD OF `use todo_write`, USE `add to todo list (by todo_write, todowrite, etc.)`
 
 ## Project Information
-- Project Name: AssistFlow
+- Project Name: flowai
 
 ## Project Vision
 ### Vision Statement
@@ -52,11 +53,10 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Project tooling Stack
 - TypeScript
 - Deno
-- Python (general-purpose utility scripts only: token counting, Mermaid validation)
+- Python (benchmark fixtures only; no production scripts)
 
 ## Architecture
-- `framework/skills/`: Source of truth for product skills (logical Commands and Skills)
-- `framework/agents/`: Source of truth for product agents (universal format with all IDE fields)
+- `framework/<pack>/`: Source of truth for product packs (skills, agents, hooks, scripts). Each pack has `pack.yaml` + `skills/` subdir; `agents/`, `hooks/`, `scripts/` are optional.
 - `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework skills/agents installed here by flowai.
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
@@ -66,9 +66,9 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 ## Terminology (agentskills.io)
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). Logically, they are divided into:
-- **Commands** (`flow-*`): High-level task workflows (e.g., `/flow-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
-- **Setup** (`flow-setup-agent-*`): One-time project configuration commands (e.g., `flow-setup-agent-code-style-ts-deno`). User-invoked only (`disable-model-invocation: true`), must not be triggered automatically.
-- **Skills** (`flow-skill-*`): Procedural knowledge and specialized capabilities (e.g., `flow-skill-draw-mermaid-diagrams`). Can be discovered and used by agents to perform specific sub-tasks.
+- **Commands** (`flowai-*`): High-level task workflows (e.g., `/flowai-commit`). Executed by the agent upon user request, but usually not invoked by the agent itself as a tool.
+- **Setup** (`flowai-setup-agent-*`): One-time project configuration commands (e.g., `flowai-setup-agent-code-style-ts-deno`). User-invoked only (`disable-model-invocation: true`), must not be triggered automatically.
+- **Skills** (`flowai-skill-*`): Procedural knowledge and specialized capabilities (e.g., `flowai-skill-draw-mermaid-diagrams`). Can be discovered and used by agents to perform specific sub-tasks.
 
 ## Key Decisions
 - Use agentskills.io skills as the primary workflow system
@@ -112,8 +112,8 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 ### Benchmark TDD (Skills/Agents)
 
-1. **RED**: Write benchmark scenario (`benchmarks/<skill>/scenarios/<name>/mod.ts`) for new/changed skill behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
-2. **GREEN**: Update skill (`framework/skills/<name>/SKILL.md`) until benchmark passes.
+1. **RED**: Write benchmark scenario (`framework/<pack>/skills/<skill>/benchmarks/<name>/mod.ts`) for new/changed skill behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
+2. **GREEN**: Update skill (`framework/<pack>/skills/<name>/SKILL.md`) until benchmark passes.
 3. **REFACTOR**: Improve skill text or benchmark clarity. No behavior change. Re-run benchmark.
 4. **CHECK**: Run ALL benchmarks for the affected skill. Fix all failures.
 

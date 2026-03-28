@@ -2,17 +2,47 @@ export interface BenchmarkChecklistItem {
   id: string;
   description: string;
   critical: boolean;
-  type?: "static" | "semantic";
 }
 
 export interface BenchmarkScenario {
   id: string;
   name: string;
   targetAgentPath?: string; // Path to the agent/skill .md file
-  skill?: string; // Skill identifier (e.g., "flow-plan")
+  skill?: string; // Skill identifier (e.g., "flowai-plan")
+
+  /** Pack name this scenario belongs to (auto-populated by discovery). */
+  pack?: string;
+
+  /**
+   * Sandbox state when the agent starts.
+   *
+   * Runner lifecycle:
+   *   1. Copy fixture files to sandbox
+   *   2. Copy framework to IDE config dir
+   *   3. `git init` + commit all framework/fixture files as "init"
+   *   4. Call `setup(sandboxPath)` — scenario creates its specific git state
+   *   5. Start agent
+   *
+   * setup() receives a sandbox with an initialized git repo where all
+   * framework and fixture files are already committed. It should create
+   * the desired git state on top (additional commits, modified files,
+   * untracked files, etc.).
+   */
+  sandboxState: {
+    /** Commits created by setup() on top of runner's "init" commit */
+    commits: Array<{ message: string; files: string[] }>;
+    /** Files left modified (tracked but changed) when agent starts */
+    modified?: string[];
+    /** Files left untracked (not in any commit) when agent starts */
+    untracked?: string[];
+    /** Expected outcome after agent finishes */
+    expectedOutcome: string;
+  };
 
   /**
    * Setup the sandbox environment.
+   * Called AFTER runner initializes git with framework/fixture files committed.
+   * Must NOT call setupGitRepo() — git is already initialized.
    * @param sandboxPath Absolute path to the temporary sandbox directory
    */
   setup: (sandboxPath: string) => Promise<void>;
@@ -55,6 +85,13 @@ export interface BenchmarkScenario {
   stepTimeoutMs?: number;
 
   /**
+   * Global timeout for the entire scenario in milliseconds.
+   * Kills agent and proceeds to judge with partial evidence on expiry.
+   * Defaults to 900_000 (15 minutes).
+   */
+  totalTimeoutMs?: number;
+
+  /**
    * Simulated user persona for interactive Q&A.
    * Describes the user's preferences and goals to the Simulated User LLM.
    */
@@ -67,11 +104,25 @@ export interface BenchmarkScenario {
   interactive?: boolean;
 
   /**
-   * AGENTS.md content.
-   * If provided as string, it will be used.
-   * If not provided, the runner will try to load it from the scenario's fixture directory.
+   * Placeholder values for generating AGENTS.md from flowai-init templates.
+   * Required field — runner generates AGENTS.md from templates at runtime
+   * (single source of truth). Minimum: PROJECT_NAME.
    */
-  agentsMarkdown?: string;
+  agentsTemplateVars: {
+    PROJECT_NAME: string;
+    PROJECT_RULES?: string;
+    PROJECT_VISION?: string;
+    TOOLING_STACK?: string;
+    ARCHITECTURE?: string;
+    KEY_DECISIONS?: string;
+    /** Also generate documents/AGENTS.md from template */
+    generateDocuments?: boolean;
+    /** Also generate scripts/AGENTS.md; values fill template placeholders */
+    scripts?: {
+      DEVELOPMENT_COMMANDS?: string;
+      COMMAND_SCRIPTS?: string;
+    };
+  };
 
   /**
    * Skip this scenario with a reason.
@@ -90,8 +141,28 @@ export abstract class BenchmarkSkillScenario implements BenchmarkScenario {
   abstract skill: string;
   abstract userQuery: string;
   abstract checklist: BenchmarkChecklistItem[];
+  abstract agentsTemplateVars: BenchmarkScenario["agentsTemplateVars"];
+
+  /** Default: no setup changes, clean state. Override in subclass. */
+  sandboxState: BenchmarkScenario["sandboxState"] = {
+    commits: [],
+    expectedOutcome: "Agent completes the task successfully",
+  };
 
   get targetAgentPath(): string {
+    // Scan pack structure: framework/<pack>/skills/<skill>/SKILL.md
+    try {
+      for (const pack of Deno.readDirSync("framework")) {
+        if (!pack.isDirectory) continue;
+        const skillPath =
+          `framework/${pack.name}/skills/${this.skill}/SKILL.md`;
+        try {
+          Deno.statSync(skillPath);
+          return skillPath;
+        } catch { /* not in this pack */ }
+      }
+    } catch { /* framework dir not found */ }
+    // Fallback for legacy flat structure
     return `framework/skills/${this.skill}/SKILL.md`;
   }
 

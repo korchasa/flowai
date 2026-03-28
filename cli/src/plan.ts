@@ -1,11 +1,16 @@
 import { type FsAdapter, join } from "./adapters/fs.ts";
-import type { PlanAction, PlanItem, UpstreamFile } from "./types.ts";
+import type {
+  PlanAction,
+  PlanItem,
+  PlanItemType,
+  UpstreamFile,
+} from "./types.ts";
 
 /** Compute sync plan: compare upstream files vs local files */
 export async function computePlan(
   upstreamFiles: UpstreamFile[],
   targetDir: string,
-  type: "skill" | "agent",
+  type: PlanItemType,
   fs: FsAdapter,
 ): Promise<PlanItem[]> {
   const plan: PlanItem[] = [];
@@ -40,13 +45,18 @@ export async function computePlan(
 }
 
 /** Extract item name from relative path */
-function extractName(path: string, type: "skill" | "agent"): string {
-  if (type === "skill") {
-    // skills/{name}/... → name
+function extractName(path: string, type: PlanItemType): string {
+  if (type === "skill" || type === "hook") {
+    // skills/{name}/... or hooks/{name}/... → name
     const parts = path.split("/");
     return parts[0];
   }
-  // agents/{name}.md → name
+  if (type === "script") {
+    // scripts/{filename} → filename
+    const filename = path.split("/").pop() ?? path;
+    return filename;
+  }
+  // agents/{name}.md or commands/{name}.md → name
   const filename = path.split("/").pop() ?? path;
   return filename.replace(/\.md$/, "");
 }

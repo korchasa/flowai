@@ -1,0 +1,8 @@
+name: typescript
+version: "1.0.0"
+description: TypeScript-specific setup skills (code style, strict mode)
+scaffolds:
+  flowai-setup-agent-code-style-ts-deno:
+    - AGENTS.md
+  flowai-setup-agent-code-style-ts-strict:
+    - AGENTS.md

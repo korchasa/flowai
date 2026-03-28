@@ -64,7 +64,7 @@ async function readMtime(
 
 /**
  * Scan one IDE's skills and agents dirs, returning user-owned resources.
- * Skips framework resources (flow-* prefix) and applies include/exclude filters.
+ * Skips framework resources (flowai-* prefix) and applies include/exclude filters.
  */
 export async function scanIdeResources(
   cwd: string,
@@ -75,7 +75,7 @@ export async function scanIdeResources(
 ): Promise<UserResource[]> {
   const resources: UserResource[] = [];
   const isFramework = (name: string) =>
-    name.startsWith("flow-") || (frameworkNames?.has(name) ?? false);
+    name.startsWith("flowai-") || (frameworkNames?.has(name) ?? false);
 
   // Skills
   const skillsDir = join(cwd, ide.configDir, "skills");
@@ -336,6 +336,9 @@ export async function runUserSync(
     totalDeleted: 0,
     totalConflicts: 0,
     errors: [],
+    skillActions: [],
+    agentActions: [],
+    hookActions: [],
   };
 
   const resolvedIdes = ides.length > 0 ? ides : await resolveIDEs(

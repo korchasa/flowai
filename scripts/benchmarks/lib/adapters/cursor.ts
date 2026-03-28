@@ -13,6 +13,7 @@ export class CursorAdapter implements AgentAdapter {
   readonly ide = "cursor" as const;
   readonly configDir = ".cursor";
   readonly command = "cursor-agent";
+  readonly outputFormat = "json" as const;
 
   getEnv(): Record<string, string> {
     return {};
@@ -23,6 +24,7 @@ export class CursorAdapter implements AgentAdapter {
     workspace: string;
     prompt: string;
     sessionId?: string;
+    name?: string;
   }): string[] {
     const args = [
       "--model",

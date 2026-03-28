@@ -14,6 +14,8 @@ export interface AgentOptions {
   maxSteps?: number;
   /** Maximum execution time in milliseconds for a single step. Defaults to 60000 (1 minute). */
   stepTimeout?: number;
+  /** Session name for IDE identification (e.g. "skill/scenario"). */
+  name?: string;
 }
 
 export interface AgentResult {
@@ -174,6 +176,7 @@ export class SpawnedAgent {
       workspace: this.options.workspace,
       prompt,
       sessionId: this.sessionId || undefined,
+      name: this.options.name,
     });
 
     const cmd = new Deno.Command(command, {

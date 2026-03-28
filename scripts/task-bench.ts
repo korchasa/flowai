@@ -1,9 +1,9 @@
 /**
  * task-bench.ts — Discovers and runs agent benchmark scenarios.
  *
- * Walks `benchmarks/` for scenario mod.ts files, runs each through the
- * benchmark runner with LLM-Judge evaluation, and outputs results as
- * console summary + HTML report.
+ * Walks `framework/<pack>/skills/<skill>/benchmarks/` for scenario mod.ts files,
+ * runs each through the benchmark runner with LLM-Judge evaluation, and
+ * outputs results as console summary + HTML report.
  *
  * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
  */
@@ -27,19 +27,32 @@ import {
 } from "./benchmarks/lib/adapters/mod.ts";
 import { TraceLogger } from "./benchmarks/lib/trace.ts";
 
+/** Walks `framework/<pack>/skills/<skill>/benchmarks/` and imports all scenario mod.ts files. */
 async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   const scenarios: BenchmarkScenario[] = [];
-  const benchmarksDir = join(Deno.cwd(), "benchmarks");
+  const frameworkDir = join(Deno.cwd(), "framework");
 
-  if (existsSync(benchmarksDir)) {
+  if (!existsSync(frameworkDir)) {
+    return scenarios;
+  }
+
+  // Walk pack-structured framework: framework/<pack>/skills/<skill>/benchmarks/*/mod.ts
+  for await (const packEntry of Deno.readDir(frameworkDir)) {
+    if (!packEntry.isDirectory) continue;
+    const packSkillsDir = join(frameworkDir, packEntry.name, "skills");
+    if (!existsSync(packSkillsDir)) continue;
+
     for await (
-      const entry of walk(benchmarksDir, {
-        maxDepth: 12,
+      const entry of walk(packSkillsDir, {
+        maxDepth: 10,
         includeFiles: true,
         match: [/mod\.ts$/],
       })
     ) {
-      if (!entry.path.includes("/scenarios/")) {
+      if (
+        !entry.path.includes("/benchmarks/") ||
+        entry.path.includes("/fixture/")
+      ) {
         continue;
       }
       try {
@@ -54,6 +67,7 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
             if (!scenario.fixturePath) {
               scenario.fixturePath = join(dirname(entry.path), "fixture");
             }
+            scenario.pack = packEntry.name;
             scenarios.push(scenario);
           }
         }
@@ -68,6 +82,7 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   return scenarios;
 }
 
+/** Prints CLI usage information with available options. */
 function printHelp(defaultAgentModel: string) {
   console.log(`
 Usage: deno task bench [options]
@@ -79,52 +94,27 @@ Options:
     SUPPORTED_IDES.join(", ")
   }) (default: from config)
   -n, --runs <number>          Number of runs per scenario (default: 1)
+  -p, --parallel <number>      Max concurrent scenarios (default: 1, sequential)
+  --lock <string>              Custom lock file name (default: benchmarks.lock)
   --help                       Show this help message
   `);
 }
 
+/** Parses CLI args, discovers scenarios, runs benchmarks, and prints summary report. */
 async function main() {
-  const lockFile = join(Deno.cwd(), "benchmarks/benchmarks.lock");
-
-  if (existsSync(lockFile)) {
-    const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
-    console.error(
-      `${
-        ansi("\x1b[31m")
-      }Error: Another benchmark process (PID: ${pid}) is already running.${
-        ansi("\x1b[0m")
-      }`,
-    );
-    Deno.exit(1);
-  }
-
-  await Deno.writeTextFile(lockFile, Deno.pid.toString());
-
-  // Ensure lock file is removed on exit
-  const cleanup = () => {
-    try {
-      Deno.removeSync(lockFile);
-    } catch {
-      // Ignore if already removed
-    }
-  };
-
-  globalThis.addEventListener("unload", cleanup);
-  Deno.addSignalListener("SIGINT", () => {
-    cleanup();
-    Deno.exit(130);
-  });
-  Deno.addSignalListener("SIGTERM", () => {
-    cleanup();
-    Deno.exit(143);
-  });
-
   const config = await loadConfig();
 
   const args = parse(Deno.args, {
-    string: ["filter", "runs", "model", "ide"],
+    string: ["filter", "runs", "model", "ide", "parallel", "lock"],
     boolean: ["help"],
-    alias: { f: "filter", n: "runs", h: "help", m: "model", i: "ide" },
+    alias: {
+      f: "filter",
+      n: "runs",
+      h: "help",
+      m: "model",
+      i: "ide",
+      p: "parallel",
+    },
     unknown: (arg) => {
       if (arg.startsWith("-")) {
         console.error(`Unknown argument: ${arg}`);
@@ -146,6 +136,43 @@ async function main() {
     Deno.exit(1);
   }
 
+  const lockName = args.lock || "benchmarks.lock";
+  const lockFile = join(Deno.cwd(), "benchmarks", lockName);
+
+  if (existsSync(lockFile)) {
+    const pid = await Deno.readTextFile(lockFile).catch(() => "unknown");
+    console.error(
+      `${
+        ansi("\x1b[31m")
+      }Error: Another benchmark process (PID: ${pid}) is already running.${
+        ansi("\x1b[0m")
+      }`,
+    );
+    Deno.exit(1);
+  }
+
+  await Deno.mkdir(join(Deno.cwd(), "benchmarks"), { recursive: true });
+  await Deno.writeTextFile(lockFile, Deno.pid.toString());
+
+  // Ensure lock file is removed on exit
+  const cleanup = () => {
+    try {
+      Deno.removeSync(lockFile);
+    } catch {
+      // Ignore if already removed
+    }
+  };
+
+  globalThis.addEventListener("unload", cleanup);
+  Deno.addSignalListener("SIGINT", () => {
+    cleanup();
+    Deno.exit(130);
+  });
+  Deno.addSignalListener("SIGTERM", () => {
+    cleanup();
+    Deno.exit(143);
+  });
+
   const ideName = args.ide || config.default_ides[0];
   const adapter = createAdapter(ideName);
   const ideConfig = getIdeConfig(config, ideName);
@@ -155,6 +182,7 @@ async function main() {
 
   const filter = args.filter;
   const runs = parseInt(args.runs || "1", 10);
+  const parallel = parseInt(args.parallel || "1", 10);
 
   const allScenarios = await discoverScenarios();
   const scenariosToRun = filter
@@ -166,6 +194,9 @@ async function main() {
   console.log(`Using agent model: ${agentModel}`);
   console.log(`Using judge model: ${judgeConfig.model}`);
   console.log(`Runs per scenario: ${runs}`);
+  if (parallel > 1) {
+    console.log(`Parallel concurrency: ${parallel}`);
+  }
 
   const results: BenchmarkResult[] = [];
 
@@ -179,70 +210,117 @@ async function main() {
 
   let totalCostAll = 0;
 
+  // Build flat list of tasks: (scenario, runIndex) pairs
+  const tasks: { scenario: BenchmarkScenario; runIndex: number }[] = [];
   for (const scenario of scenariosToRun) {
     for (let i = 0; i < runs; i++) {
-      const runIndex = i + 1;
-      if (runs > 1) {
-        console.log(`\n--- Run ${runIndex}/${runs} for ${scenario.id} ---`);
-      }
-      const scenarioWorkDir = join(runDir, scenario.id, `run-${runIndex}`);
-      try {
-        const result = await runScenario(scenario, {
-          agentModel,
-          judgeConfig,
-          workDir: scenarioWorkDir,
-          adapter,
-          tracer,
-          runIndex,
-        });
-        results.push(result);
-        totalCostAll += result.totalCost;
+      tasks.push({ scenario, runIndex: i + 1 });
+    }
+  }
 
-        const statusLabel = result.success ? "PASSED" : "FAILED";
-        console.log(
-          `  Result: ${statusLabel} (Errors: ${result.errorsCount}, Warnings: ${result.warningsCount}) Cost: $${
-            result.totalCost.toFixed(6)
-          }`,
-        );
-        console.log("  Checklist:");
-        for (const [id, res] of Object.entries(result.checklistResults)) {
-          const item = scenario.checklist.find((i) => i.id === id);
-          const isCritical = item?.critical ?? true;
+  /** Executes a single scenario run, prints checklist results, and accumulates costs. */
+  async function executeTask(
+    task: { scenario: BenchmarkScenario; runIndex: number },
+  ) {
+    const { scenario, runIndex } = task;
+    if (runs > 1) {
+      console.log(`\n--- Run ${runIndex}/${runs} for ${scenario.id} ---`);
+    }
+    const scenarioWorkDir = join(runDir, scenario.id, `run-${runIndex}`);
+    try {
+      const result = await runScenario(scenario, {
+        agentModel,
+        judgeConfig,
+        workDir: scenarioWorkDir,
+        adapter,
+        tracer,
+        runIndex,
+      });
+      results.push(result);
+      totalCostAll += result.totalCost;
 
-          let color = ansi("\x1b[32m"); // Green
-          let mark = "x";
-          let label = "";
+      const statusLabel = result.success ? "PASSED" : "FAILED";
+      console.log(
+        `  Result: ${statusLabel} (Errors: ${result.errorsCount}, Warnings: ${result.warningsCount}) Cost: $${
+          result.totalCost.toFixed(6)
+        }`,
+      );
+      console.log("  Checklist:");
+      for (const [id, res] of Object.entries(result.checklistResults)) {
+        const item = scenario.checklist.find((i) => i.id === id);
+        const isCritical = item?.critical ?? true;
 
-          if (!res.pass) {
-            if (isCritical) {
-              color = ansi("\x1b[31m"); // Red
-              mark = " ";
-              label = " (ERROR)";
-            } else {
-              color = ansi("\x1b[33m"); // Yellow
-              mark = "!";
-              label = " (WARNING)";
-            }
+        let color = ansi("\x1b[32m"); // Green
+        let mark = "x";
+        let label = "";
+
+        if (!res.pass) {
+          if (isCritical) {
+            color = ansi("\x1b[31m"); // Red
+            mark = " ";
+            label = " (ERROR)";
+          } else {
+            color = ansi("\x1b[33m"); // Yellow
+            mark = "!";
+            label = " (WARNING)";
           }
-
-          const dim = ansi("\x1b[2m");
-          const reset = ansi("\x1b[0m");
-          console.log(
-            `    ${color}[${mark}] ${id}${label}:${reset} ${dim}${res.reason}${reset}`,
-          );
         }
 
-        if (!result.success) {
-          const reportPath = join(runDir, "report.html");
-          console.log(
-            `\n  ${
-              ansi("\x1b[31m")
-            }See trace for details: file://${reportPath}${ansi("\x1b[0m")}\n`,
-          );
-        }
-      } catch (e) {
-        console.error(`  Error running scenario ${scenario.id}:`, e);
+        const dim = ansi("\x1b[2m");
+        const reset = ansi("\x1b[0m");
+        console.log(
+          `    ${color}[${mark}] ${id}${label}:${reset} ${dim}${res.reason}${reset}`,
+        );
       }
+
+      if (!result.success) {
+        const reportPath = join(runDir, "report.html");
+        console.log(
+          `\n  ${ansi("\x1b[31m")}See trace for details: file://${reportPath}${
+            ansi("\x1b[0m")
+          }\n`,
+        );
+      }
+    } catch (e) {
+      console.error(`  Error running scenario ${scenario.id}:`, e);
+    }
+  }
+
+  // Execute tasks with concurrency control
+  if (parallel <= 1) {
+    // Sequential mode (default)
+    for (const task of tasks) {
+      await executeTask(task);
+    }
+  } else {
+    // Parallel mode with semaphore
+    let running = 0;
+    let taskIndex = 0;
+    const errors: Error[] = [];
+
+    await new Promise<void>((resolve) => {
+      function scheduleNext() {
+        while (running < parallel && taskIndex < tasks.length) {
+          const task = tasks[taskIndex++];
+          running++;
+          executeTask(task).catch((e) => {
+            errors.push(e instanceof Error ? e : new Error(String(e)));
+          }).finally(() => {
+            running--;
+            if (taskIndex >= tasks.length && running === 0) {
+              resolve();
+            } else {
+              scheduleNext();
+            }
+          });
+        }
+        if (tasks.length === 0) resolve();
+      }
+      scheduleNext();
+    });
+
+    if (errors.length > 0) {
+      console.error(`\n${errors.length} task(s) failed with errors.`);
     }
   }
 

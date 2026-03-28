@@ -2,7 +2,13 @@ import { assertEquals, assertRejects } from "@std/assert";
 import {
   BundledSource,
   extractAgentNames,
+  extractPackAgentNames,
+  extractPackHookNames,
+  extractPackNames,
+  extractPackScriptNames,
+  extractPackSkillNames,
   extractSkillNames,
+  hasPacks,
   InMemoryFrameworkSource,
 } from "./source.ts";
 
@@ -45,8 +51,8 @@ Deno.test("BundledSource - readFile throws on missing", async () => {
 
 Deno.test("BundledSource.load - reads real bundled.json", async () => {
   const source = await BundledSource.load();
-  const files = await source.listFiles("framework/skills/");
-  // Should find at least some skill files from the real bundle
+  const files = await source.listFiles("framework/");
+  // Should find at least some files from the real bundle (pack structure)
   assertEquals(files.length > 0, true);
 
   const content = await source.readFile(files[0]);
@@ -117,4 +123,118 @@ Deno.test("extractAgentNames - ignores nested paths", () => {
     "framework/agents/subdir/agent2.md",
   ];
   assertEquals(extractAgentNames(paths), ["agent1"]);
+});
+
+// --- Pack-aware extractor tests ---
+
+Deno.test("extractPackNames - extracts pack names from pack.yaml paths", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/skills/commit/SKILL.md",
+    "framework/engineering/pack.yaml",
+    "framework/engineering/skills/write-dep/SKILL.md",
+    "framework/skills/old-skill/SKILL.md",
+  ];
+  assertEquals(extractPackNames(paths), ["core", "engineering"]);
+});
+
+Deno.test("extractPackNames - returns empty for legacy structure", () => {
+  const paths = [
+    "framework/skills/foo/SKILL.md",
+    "framework/agents/bar.md",
+  ];
+  assertEquals(extractPackNames(paths), []);
+});
+
+Deno.test("extractPackSkillNames - extracts skills within a pack", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/skills/commit/SKILL.md",
+    "framework/core/skills/commit/refs/a.md",
+    "framework/core/skills/plan/SKILL.md",
+    "framework/engineering/skills/write-dep/SKILL.md",
+  ];
+  assertEquals(extractPackSkillNames(paths, "core"), ["commit", "plan"]);
+  assertEquals(extractPackSkillNames(paths, "engineering"), ["write-dep"]);
+  assertEquals(extractPackSkillNames(paths, "nonexistent"), []);
+});
+
+Deno.test("extractPackAgentNames - extracts agents within a pack", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/agents/diff-specialist.md",
+    "framework/core/agents/console-expert.md",
+    "framework/core/skills/commit/SKILL.md",
+    "framework/engineering/agents/deep-research-worker.md",
+  ];
+  assertEquals(
+    extractPackAgentNames(paths, "core"),
+    ["console-expert", "diff-specialist"],
+  );
+  assertEquals(
+    extractPackAgentNames(paths, "engineering"),
+    ["deep-research-worker"],
+  );
+});
+
+Deno.test("extractPackAgentNames - ignores nested agent dirs", () => {
+  const paths = [
+    "framework/core/agents/valid.md",
+    "framework/core/agents/subdir/invalid.md",
+  ];
+  assertEquals(extractPackAgentNames(paths, "core"), ["valid"]);
+});
+
+Deno.test("hasPacks - true when framework/ exists", () => {
+  assertEquals(
+    hasPacks(["framework/core/pack.yaml"]),
+    true,
+  );
+});
+
+Deno.test("hasPacks - false for legacy structure", () => {
+  assertEquals(
+    hasPacks(["framework/skills/foo/SKILL.md", "framework/agents/bar.md"]),
+    false,
+  );
+});
+
+// --- Hook and Script extractor tests ---
+
+Deno.test("extractPackHookNames - extracts hooks within a pack", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/hooks/lint-on-edit/hook.yaml",
+    "framework/core/hooks/lint-on-edit/run.ts",
+    "framework/core/hooks/format-on-save/hook.yaml",
+    "framework/core/hooks/format-on-save/run.ts",
+    "framework/core/skills/commit/SKILL.md",
+  ];
+  assertEquals(
+    extractPackHookNames(paths, "core"),
+    ["format-on-save", "lint-on-edit"],
+  );
+  assertEquals(extractPackHookNames(paths, "nonexistent"), []);
+});
+
+Deno.test("extractPackScriptNames - extracts scripts within a pack", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/scripts/check.ts",
+    "framework/core/scripts/validate.ts",
+    "framework/core/skills/commit/SKILL.md",
+  ];
+  assertEquals(
+    extractPackScriptNames(paths, "core"),
+    ["check.ts", "validate.ts"],
+  );
+  assertEquals(extractPackScriptNames(paths, "nonexistent"), []);
+});
+
+Deno.test("extractPackScriptNames - ignores subdirectories", () => {
+  const paths = [
+    "framework/core/scripts/check.ts",
+    "framework/core/scripts/lib/helper.ts",
+  ];
+  assertEquals(extractPackScriptNames(paths, "core"), ["check.ts"]);
 });

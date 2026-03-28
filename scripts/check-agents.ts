@@ -1,5 +1,5 @@
 /**
- * check-agents.ts — Validate universal agent frontmatter in framework/agents/*.md.
+ * check-agents.ts — Validate universal agent frontmatter in framework/<pack>/agents/*.md.
  *
  * Uses AgentFrontmatterSchema from resource-types.ts (Zod-based validation).
  *
@@ -104,7 +104,20 @@ export async function validateAllAgents(
 if (import.meta.main) {
   console.log("Checking agents (frontmatter validation)...");
 
-  const errors = await validateAllAgents(["framework/agents"]);
+  // Discover agent dirs from pack structure
+  const agentDirs: string[] = [];
+  try {
+    for await (const pack of Deno.readDir("framework")) {
+      if (!pack.isDirectory) continue;
+      const agentsDir = join("framework", pack.name, "agents");
+      try {
+        const stat = await Deno.stat(agentsDir);
+        if (stat.isDirectory) agentDirs.push(agentsDir);
+      } catch { /* no agents/ in this pack */ }
+    }
+  } catch { /* framework dir not found */ }
+
+  const errors = await validateAllAgents(agentDirs);
 
   if (errors.length > 0) {
     for (const e of errors) {

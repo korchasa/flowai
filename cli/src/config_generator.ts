@@ -1,15 +1,57 @@
-/** Interactive config generation — prompts user for IDEs, skills/agents, writes .flowai.yaml */
+/** Config generation — interactive and non-interactive modes */
 import { Checkbox, Confirm } from "@cliffy/prompt";
 import type { FsAdapter } from "./adapters/fs.ts";
 import { saveConfig } from "./config.ts";
 import { detectIDEs } from "./ide.ts";
 import {
   BundledSource,
-  extractAgentNames,
-  extractSkillNames,
+  extractPackNames,
   type FrameworkSource,
 } from "./source.ts";
-import { DEFAULT_VERSION, type FlowConfig, KNOWN_IDES } from "./types.ts";
+import { type FlowConfig, KNOWN_IDES, PACKS_VERSION } from "./types.ts";
+
+/** Non-interactive config generation: auto-detect IDEs, select all packs */
+export async function generateConfigNonInteractive(
+  cwd: string,
+  fs: FsAdapter,
+  sourceOverride?: FrameworkSource,
+): Promise<FlowConfig> {
+  console.log(
+    "No .flowai.yaml found. Generating with defaults (non-interactive).\n",
+  );
+
+  const detectedIDEs = await detectIDEs(cwd, fs);
+  const detectedNames = detectedIDEs.map((i) => i.name);
+
+  const fwSource = sourceOverride ?? await BundledSource.load();
+  let availablePacks: string[] = [];
+  try {
+    const allPaths = await fwSource.listFiles("framework/");
+    availablePacks = extractPackNames(allPaths);
+  } catch (e) {
+    console.warn(
+      `Warning: Could not read framework: ${(e as Error).message}`,
+    );
+  } finally {
+    if (!sourceOverride) {
+      await fwSource.dispose();
+    }
+  }
+
+  const config: FlowConfig = {
+    version: PACKS_VERSION,
+    ides: detectedNames,
+    packs: availablePacks,
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+  };
+
+  await saveConfig(cwd, config, fs);
+  console.log(".flowai.yaml created successfully.\n");
+
+  return config;
+}
 
 /** Interactive config generation when .flowai.yaml is missing */
 export async function generateConfig(
@@ -33,66 +75,54 @@ export async function generateConfig(
     })),
   });
 
-  // Read available skills/agents from bundled source
-  let availableSkills: string[] = [];
-  let availableAgents: string[] = [];
+  // Read available packs from bundled source
+  let availablePacks: string[] = [];
 
   const fwSource = sourceOverride ?? await BundledSource.load();
   try {
-    console.log("\nReading available skills and agents...");
+    console.log("\nReading available packs...");
     const allPaths = await fwSource.listFiles("framework/");
-    availableSkills = extractSkillNames(allPaths);
-    availableAgents = extractAgentNames(allPaths);
+    availablePacks = extractPackNames(allPaths);
   } catch (e) {
     console.warn(
       `Warning: Could not read framework: ${(e as Error).message}`,
     );
-    console.warn("Proceeding with empty skill/agent lists.\n");
+    console.warn("Proceeding with empty pack list.\n");
   } finally {
     if (!sourceOverride) {
       await fwSource.dispose();
     }
   }
 
-  let skillsInclude: string[] = [];
-  const skillsExclude: string[] = [];
+  // Default: all packs selected
+  let selectedPacks = [...availablePacks];
 
-  if (availableSkills.length > 0) {
-    const syncAllSkills = await Confirm.prompt({
-      message: `Sync all ${availableSkills.length} skills?`,
+  if (availablePacks.length > 0) {
+    const syncAllPacks = await Confirm.prompt({
+      message: `Install all ${availablePacks.length} packs? (${
+        availablePacks.join(", ")
+      })`,
       default: true,
     });
 
-    if (!syncAllSkills) {
-      skillsInclude = await Checkbox.prompt({
-        message: "Select skills to include",
-        options: availableSkills,
-      });
-    }
-  }
-
-  let agentsInclude: string[] = [];
-  const agentsExclude: string[] = [];
-
-  if (availableAgents.length > 0) {
-    const syncAllAgents = await Confirm.prompt({
-      message: `Sync all ${availableAgents.length} agents?`,
-      default: true,
-    });
-
-    if (!syncAllAgents) {
-      agentsInclude = await Checkbox.prompt({
-        message: "Select agents to include",
-        options: availableAgents,
+    if (!syncAllPacks) {
+      selectedPacks = await Checkbox.prompt({
+        message: "Select packs to install",
+        options: availablePacks.map((name) => ({
+          name,
+          value: name,
+          checked: name === "core", // core always pre-selected
+        })),
       });
     }
   }
 
   const config: FlowConfig = {
-    version: DEFAULT_VERSION,
+    version: PACKS_VERSION,
     ides: selectedIDEs,
-    skills: { include: skillsInclude, exclude: skillsExclude },
-    agents: { include: agentsInclude, exclude: agentsExclude },
+    packs: selectedPacks,
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
     commands: { include: [], exclude: [] },
   };
 

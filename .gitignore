@@ -2,10 +2,10 @@
 .vscode
 skeleton.md
 tmp/
-benchmarks/*/runs/
-benchmarks/*/runs/**
 benchmarks/runs/
 benchmarks/benchmarks.lock
+framework/skills/*/benchmarks/runs/
+framework/**/flowai-skill-example/
 .env
 __pycache__/
 _research_tmp/

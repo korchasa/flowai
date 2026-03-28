@@ -15,24 +15,46 @@ jobs:
       id-token: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Deno
-        uses: denoland/setup-deno@v2
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
         with:
           deno-version: v2.x
 
       - name: Run checks
         run: deno task check
 
+      - name: Verify no files modified by checks
+        run: |
+          if ! git diff --exit-code; then
+            echo "::error::Unexpected file modifications detected after checks"
+            git diff --stat
+            exit 1
+          fi
+          if [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            echo "::error::Unexpected untracked files detected after checks"
+            git ls-files --others --exclude-standard
+            exit 1
+          fi
+
       - name: Verify CLI install
         run: |
           deno task bundle
           deno install --global -A --config deno.json --name flowai ./cli/src/main.ts
           flowai --help
+
+      - name: Verify no files modified before release
+        run: |
+          git checkout -- . 2>/dev/null || true
+          git clean -fd 2>/dev/null || true
+          if ! git diff --exit-code HEAD; then
+            echo "::error::Working tree is dirty before release step"
+            exit 1
+          fi
 
       - name: Create release and push tags
         id: create-release
@@ -73,7 +95,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.create-release.outputs.released == 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           tag_name: v${{ steps.create-release.outputs.version }}
           generate_release_notes: true

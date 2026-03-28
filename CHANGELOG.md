@@ -35,7 +35,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Features
 
 * **cli:** --version checks for updates and shows update command ([af74d6d](https://github.com/korchasa/flowai/commit/af74d6d42e17af8ca86e72bba3d084eba4ffad98))
-* **framework:** add explicit git diff commands to flow-update skill ([b94122e](https://github.com/korchasa/flowai/commit/b94122ec036c0b2d1391ef6378e65c3de5039231))
+* **framework:** add explicit git diff commands to flowai-update skill ([b94122e](https://github.com/korchasa/flowai/commit/b94122ec036c0b2d1391ef6378e65c3de5039231))
 * **framework:** add interactive-teaching-materials skill ([6f84b1e](https://github.com/korchasa/flowai/commit/6f84b1e64ef830b80601a464f72a4c502540a466))
 * **framework:** mandatory Documentation Audit with gate and report template ([64eea6a](https://github.com/korchasa/flowai/commit/64eea6a6b66a754ba8ee5359d075f8d3ba5c2774))
 
@@ -49,7 +49,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* **cli,framework:** add CLI update step to flow-update skill and version hint in IDE guard ([9ed9c3e](https://github.com/korchasa/flowai/commit/9ed9c3e61f2d45cf273bce7ddd90711acdfc8ad4))
+* **cli,framework:** add CLI update step to flowai-update skill and version hint in IDE guard ([9ed9c3e](https://github.com/korchasa/flowai/commit/9ed9c3e61f2d45cf273bce7ddd90711acdfc8ad4))
 
 
 ### Bug Fixes
@@ -69,7 +69,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **benchmarks:** add 25 new benchmark scenarios for framework skills ([1e2cb74](https://github.com/korchasa/flowai/commit/1e2cb7434240d0c07b34374e36ba87c3f78afc2f))
 * **benchmarks:** migrate to stream-json, add NO_COLOR support, skip logic ([cf8fb0b](https://github.com/korchasa/flowai/commit/cf8fb0b3513e73981d94b8d9508ea18d875a18d4))
 * **cli:** interactive update prompt with deno.lock pinning fix ([601f75f](https://github.com/korchasa/flowai/commit/601f75f80a8fc77e73902666283f5ab7593461e2))
-* **framework:** add flow-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
+* **framework:** add flowai-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
 * **framework:** enrich variant analysis with Risks and Trade-offs ([a0a66b7](https://github.com/korchasa/flowai/commit/a0a66b733e83c29352880a09ef4e14f0a528900e))
 * **scripts:** auto-disable ANSI colors when running under Claude Code ([252981c](https://github.com/korchasa/flowai/commit/252981c5a86731b267ce1aea287d4956c89ff58f))
 
@@ -78,7 +78,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **benchmarks:** add interactive mode to review scenarios (P3) ([3ed58ee](https://github.com/korchasa/flowai/commit/3ed58ee1ae16ae8343647c2a9e13a7269b1eac97))
 * **benchmarks:** fix P5 strict checklists — skill fixes and interactive mode ([7c8830b](https://github.com/korchasa/flowai/commit/7c8830bb68b5b6229b189c1d5dbc98943f77ce9d))
-* **benchmarks:** fix P6 deterministic failures in flow-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
+* **benchmarks:** fix P6 deterministic failures in flowai-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
 * **benchmarks:** switch engineer-skill/subagent scenarios to .cursor/ to avoid CLI write block ([f8a6709](https://github.com/korchasa/flowai/commit/f8a670952fb19f8d00a6a171589a330c1dce6813))
 * **cli:** add explicit type annotation to cliffy action callbacks ([46b145f](https://github.com/korchasa/flowai/commit/46b145f26176f1cae0e730103e312dd6cfec89fd))
 * **cli:** resolve TS2345 in cliffy action callbacks, add deno check to task-check ([8dc8551](https://github.com/korchasa/flowai/commit/8dc8551b9013e27b6a8b5f37889cbe43a994927b))
@@ -87,20 +87,20 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Code Refactoring
 
-* **framework:** remove flow-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
-* **skills:** rename flow-skill-manage-github-tickets-by-mcp → flow-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
-* **skills:** rename flow-skill-playwright-cli → flow-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
+* **framework:** remove flowai-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
+* **skills:** rename flowai-skill-manage-github-tickets-by-mcp → flowai-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
+* **skills:** rename flowai-skill-playwright-cli → flowai-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
 
 
 ### Agent Changes
 
 * add Benchmark TDD flow to project instructions ([2f2f2e3](https://github.com/korchasa/flowai/commit/2f2f2e39061cf8d377851f90d0e4bdcc00dbc4b5))
-* **flow-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
+* **flowai-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
 
 
 ### Tests
 
-* **flow-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
+* **flowai-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
 
 
 ### Documentation
@@ -128,7 +128,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **benchmarks:** add 25 new benchmark scenarios for framework skills ([1e2cb74](https://github.com/korchasa/flowai/commit/1e2cb7434240d0c07b34374e36ba87c3f78afc2f))
 * **benchmarks:** migrate to stream-json, add NO_COLOR support, skip logic ([cf8fb0b](https://github.com/korchasa/flowai/commit/cf8fb0b3513e73981d94b8d9508ea18d875a18d4))
 * **cli:** interactive update prompt with deno.lock pinning fix ([601f75f](https://github.com/korchasa/flowai/commit/601f75f80a8fc77e73902666283f5ab7593461e2))
-* **framework:** add flow-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
+* **framework:** add flowai-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
 * **framework:** enrich variant analysis with Risks and Trade-offs ([a0a66b7](https://github.com/korchasa/flowai/commit/a0a66b733e83c29352880a09ef4e14f0a528900e))
 * **scripts:** auto-disable ANSI colors when running under Claude Code ([252981c](https://github.com/korchasa/flowai/commit/252981c5a86731b267ce1aea287d4956c89ff58f))
 
@@ -137,7 +137,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **benchmarks:** add interactive mode to review scenarios (P3) ([3ed58ee](https://github.com/korchasa/flowai/commit/3ed58ee1ae16ae8343647c2a9e13a7269b1eac97))
 * **benchmarks:** fix P5 strict checklists — skill fixes and interactive mode ([7c8830b](https://github.com/korchasa/flowai/commit/7c8830bb68b5b6229b189c1d5dbc98943f77ce9d))
-* **benchmarks:** fix P6 deterministic failures in flow-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
+* **benchmarks:** fix P6 deterministic failures in flowai-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
 * **benchmarks:** switch engineer-skill/subagent scenarios to .cursor/ to avoid CLI write block ([f8a6709](https://github.com/korchasa/flowai/commit/f8a670952fb19f8d00a6a171589a330c1dce6813))
 * **cli:** add explicit type annotation to cliffy action callbacks ([46b145f](https://github.com/korchasa/flowai/commit/46b145f26176f1cae0e730103e312dd6cfec89fd))
 * **framework:** use system temp dir instead of _research_tmp in deep-research skill ([0e45167](https://github.com/korchasa/flowai/commit/0e4516750b941a71cecfe80002199369b15d247d))
@@ -145,20 +145,20 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Code Refactoring
 
-* **framework:** remove flow-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
-* **skills:** rename flow-skill-manage-github-tickets-by-mcp → flow-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
-* **skills:** rename flow-skill-playwright-cli → flow-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
+* **framework:** remove flowai-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
+* **skills:** rename flowai-skill-manage-github-tickets-by-mcp → flowai-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
+* **skills:** rename flowai-skill-playwright-cli → flowai-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
 
 
 ### Agent Changes
 
 * add Benchmark TDD flow to project instructions ([2f2f2e3](https://github.com/korchasa/flowai/commit/2f2f2e39061cf8d377851f90d0e4bdcc00dbc4b5))
-* **flow-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
+* **flowai-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
 
 
 ### Tests
 
-* **flow-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
+* **flowai-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
 
 
 ### Documentation
@@ -185,7 +185,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **benchmarks:** add 25 new benchmark scenarios for framework skills ([1e2cb74](https://github.com/korchasa/flowai/commit/1e2cb7434240d0c07b34374e36ba87c3f78afc2f))
 * **benchmarks:** migrate to stream-json, add NO_COLOR support, skip logic ([cf8fb0b](https://github.com/korchasa/flowai/commit/cf8fb0b3513e73981d94b8d9508ea18d875a18d4))
 * **cli:** interactive update prompt with deno.lock pinning fix ([601f75f](https://github.com/korchasa/flowai/commit/601f75f80a8fc77e73902666283f5ab7593461e2))
-* **framework:** add flow-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
+* **framework:** add flowai-update skill and CLI IDE context guard ([95945d5](https://github.com/korchasa/flowai/commit/95945d5a9abd377629f15b902c3abb95b29dd994))
 * **framework:** enrich variant analysis with Risks and Trade-offs ([a0a66b7](https://github.com/korchasa/flowai/commit/a0a66b733e83c29352880a09ef4e14f0a528900e))
 * **scripts:** auto-disable ANSI colors when running under Claude Code ([252981c](https://github.com/korchasa/flowai/commit/252981c5a86731b267ce1aea287d4956c89ff58f))
 
@@ -194,27 +194,27 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **benchmarks:** add interactive mode to review scenarios (P3) ([3ed58ee](https://github.com/korchasa/flowai/commit/3ed58ee1ae16ae8343647c2a9e13a7269b1eac97))
 * **benchmarks:** fix P5 strict checklists — skill fixes and interactive mode ([7c8830b](https://github.com/korchasa/flowai/commit/7c8830bb68b5b6229b189c1d5dbc98943f77ce9d))
-* **benchmarks:** fix P6 deterministic failures in flow-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
+* **benchmarks:** fix P6 deterministic failures in flowai-commit scenarios ([82106ad](https://github.com/korchasa/flowai/commit/82106ada5df2631758f7b14db7e9985657b89efe))
 * **benchmarks:** switch engineer-skill/subagent scenarios to .cursor/ to avoid CLI write block ([f8a6709](https://github.com/korchasa/flowai/commit/f8a670952fb19f8d00a6a171589a330c1dce6813))
 * **framework:** use system temp dir instead of _research_tmp in deep-research skill ([0e45167](https://github.com/korchasa/flowai/commit/0e4516750b941a71cecfe80002199369b15d247d))
 
 
 ### Code Refactoring
 
-* **framework:** remove flow-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
-* **skills:** rename flow-skill-manage-github-tickets-by-mcp → flow-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
-* **skills:** rename flow-skill-playwright-cli → flow-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
+* **framework:** remove flowai-skill-ai-skel-ts (moved to ai-skel-ts library) ([23f6e5d](https://github.com/korchasa/flowai/commit/23f6e5d541bf0eab469776ee07d1637f4b37113c))
+* **skills:** rename flowai-skill-manage-github-tickets-by-mcp → flowai-skill-manage-github-tickets ([3f064c6](https://github.com/korchasa/flowai/commit/3f064c6cd9a3b04fa9e44947f29935366ee28117))
+* **skills:** rename flowai-skill-playwright-cli → flowai-skill-browser-automation ([c4d955b](https://github.com/korchasa/flowai/commit/c4d955bb685734c0c882eca8a9fd55cf3d6da230))
 
 
 ### Agent Changes
 
 * add Benchmark TDD flow to project instructions ([2f2f2e3](https://github.com/korchasa/flowai/commit/2f2f2e39061cf8d377851f90d0e4bdcc00dbc4b5))
-* **flow-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
+* **flowai-commit:** add suggest-reflect step after commit ([8cddd55](https://github.com/korchasa/flowai/commit/8cddd55441767c254a9efe7eae4d0bc962cf8ecd))
 
 
 ### Tests
 
-* **flow-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
+* **flowai-review-and-commit:** add suggest-reflect benchmark scenarios ([1ebf235](https://github.com/korchasa/flowai/commit/1ebf2352d4dbda67a140cbd8fb60f908103ee9d1))
 
 
 ### Documentation
@@ -258,8 +258,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### ⚠ BREAKING CHANGES
 
-* All skill names changed from af-* to flow-*.
-Commands like /af-commit are now /flow-commit.
+* All skill names changed from af-* to flowai-*.
+Commands like /af-commit are now /flowai-commit.
 
 Co-authored-by: Cursor <cursoragent@cursor.com>
 * **rules:** Rule files moved from .mdc extension to RULE.md in directories.
@@ -270,7 +270,7 @@ Cursor IDE will automatically detect and load rules from new structure.
 * add 'fail fast' strategy to AGENTS rules ([90f2b32](https://github.com/korchasa/flowai/commit/90f2b32d130e2f60dfc34533ed54ed227c9a0c19))
 * add af-skill-generate-code and context-inefficiency benchmark scenario ([309ab83](https://github.com/korchasa/flowai/commit/309ab83fb3628337e2aacf62322e98805e9b7af8))
 * add Cursor desktop and OpenCode guides to skills catalog ([d276c82](https://github.com/korchasa/flowai/commit/d276c82b2c97861aa8bc9dddde1ec6378a0eda17))
-* add flow-skill-playwright-cli and update requirements ([78a707b](https://github.com/korchasa/flowai/commit/78a707bc1dd4b4ccd50e773c9485b53d3641eb78))
+* add flowai-skill-playwright-cli and update requirements ([78a707b](https://github.com/korchasa/flowai/commit/78a707bc1dd4b4ccd50e773c9485b53d3641eb78))
 * add how-to guide for writing DEP ([3ba2c47](https://github.com/korchasa/flowai/commit/3ba2c471f3323625bff850c054fdf07cb8b060b6))
 * add new commands and enhance existing development workflows ([a0dae30](https://github.com/korchasa/flowai/commit/a0dae305be7d979da789483000b27d1a12054e7a))
 * add QA command for task verification and cleanup ([59d3be4](https://github.com/korchasa/flowai/commit/59d3be4bf4569749700c73f43b93de17bdfa6e6c))
@@ -286,15 +286,15 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **af-skill-ai-skel-ts:** add AI agent scaffold skill ([99dd2f0](https://github.com/korchasa/flowai/commit/99dd2f04b28d83b8e22c02e8f0ffd8b77d28e3ce))
 * **af-skill-configure-deno-commands:** add skill for standardizing deno dev commands ([11cfa67](https://github.com/korchasa/flowai/commit/11cfa673df91d00e77475935477f18ac184ff976))
 * **af-skill-configure-strict-typescript:** add strict TypeScript configuration skill ([e642440](https://github.com/korchasa/flowai/commit/e642440664e7e6cbbb8709cf8fcaeff35eb95c97))
-* **agents:** add flow-console-expert subagent ([43b6f1d](https://github.com/korchasa/flowai/commit/43b6f1dbdd08cc63528d4f1c75fe775bd5e163b0))
+* **agents:** add flowai-console-expert subagent ([43b6f1d](https://github.com/korchasa/flowai/commit/43b6f1dbdd08cc63528d4f1c75fe775bd5e163b0))
 * **agents:** add general-purpose executor agent ([9dbb83a](https://github.com/korchasa/flowai/commit/9dbb83aed727d9d9cffbdd9f0864a22126cebba7))
 * **agents:** specify default models for prompt-engineer and skill-executor ([3fdc46d](https://github.com/korchasa/flowai/commit/3fdc46dc7499c5ac780730bc924f1c439af37efe))
 * **bench:** implement secure dockerized execution for benchmarks ([#4](https://github.com/korchasa/flowai/issues/4)) ([8c31c9a](https://github.com/korchasa/flowai/commit/8c31c9a021bcdca087fbe0a5a07816dfe12bae46))
 * **benchmarks:** add multi-IDE support via adapter pattern ([#6](https://github.com/korchasa/flowai/issues/6)) ([20511fc](https://github.com/korchasa/flowai/commit/20511fc83cc18b719abc553d1fef60caca3da0a2))
-* **catalog:** add flow-commit agent for automated commit workflow ([3201199](https://github.com/korchasa/flowai/commit/32011996d074e25debb68f953d77c11de5cdcd91))
-* **catalog:** add flow-convert-cursor-to-claude skill ([5c654a1](https://github.com/korchasa/flowai/commit/5c654a1138793b2df86698ab83665548638d654e))
-* **catalog:** add flow-execute and flow-plan agents ([bc10689](https://github.com/korchasa/flowai/commit/bc106897a40b26335c0523a4f02d476c82da051d))
-* **catalog:** add flow-skill-deep-research skill and deep-research-worker agent ([46e6500](https://github.com/korchasa/flowai/commit/46e65000775e8d7228546d3235a60e74280b39d0))
+* **catalog:** add flowai-commit agent for automated commit workflow ([3201199](https://github.com/korchasa/flowai/commit/32011996d074e25debb68f953d77c11de5cdcd91))
+* **catalog:** add flowai-convert-cursor-to-claude skill ([5c654a1](https://github.com/korchasa/flowai/commit/5c654a1138793b2df86698ab83665548638d654e))
+* **catalog:** add flowai-execute and flowai-plan agents ([bc10689](https://github.com/korchasa/flowai/commit/bc106897a40b26335c0523a4f02d476c82da051d))
+* **catalog:** add flowai-skill-deep-research skill and deep-research-worker agent ([46e6500](https://github.com/korchasa/flowai/commit/46e65000775e8d7228546d3235a60e74280b39d0))
 * **catalog:** disable model invocation for engineer and setup skills ([9542504](https://github.com/korchasa/flowai/commit/9542504107da35bbef0a29d1f2cb81578b078e9d))
 * command to build CLAUDE.md file using .cursor/rules ([cf61412](https://github.com/korchasa/flowai/commit/cf614122e8ab05b7c17624de5f7e0193f3471cc5))
 * **commands:** add analysis and gap filling step to execution workflow ([e4a4560](https://github.com/korchasa/flowai/commit/e4a45603b46657e5862b7b329728e90b7d1122b8))
@@ -314,16 +314,16 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **devcontainer:** add Claude Code auth forwarding from macOS Keychain ([e4bedee](https://github.com/korchasa/flowai/commit/e4bedeeb19c029ae417d26d2b1bf33e3dff24751))
 * enforce IDE-agnostic language and update skills ([d8e2702](https://github.com/korchasa/flowai/commit/d8e2702a5b199152bc2a158e6d3be690521d52ba))
 * **engineer:** add OpenCode IDE support to all engineer skills and docs ([21052e0](https://github.com/korchasa/flowai/commit/21052e00d10bfaab740da2fbce7f905646e1d9f2))
-* **flow-cli:** add self-update check against JSR registry ([0b9ce3b](https://github.com/korchasa/flowai/commit/0b9ce3b4adb967fe7c17d42df30dfbdd5f015f65))
-* **flow-commit:** enforce consolidation-first commit grouping ([1ee2c06](https://github.com/korchasa/flowai/commit/1ee2c0639eb5879a140ccff8857ad6961680e97b))
-* **flow-init:** add 'no tables in chat' rule to AGENTS template ([4c3168c](https://github.com/korchasa/flowai/commit/4c3168cb87ef7fa525af9eb1079bb8b4319cd5b8))
-* **flow-init:** add CLAUDE.md symlink step and fix evidence references (FR-19) ([373108d](https://github.com/korchasa/flowai/commit/373108d05aa6a8380c553076a1a4290869f94841))
-* **flow-init:** add Deno tooling option to interview ([00c2d87](https://github.com/korchasa/flowai/commit/00c2d87eb23438b181aa07cd82e15eeb1553a824))
-* **flow-init:** split AGENTS.md into domain-scoped files with manifest-driven generation (FR-12) ([c03c336](https://github.com/korchasa/flowai/commit/c03c3361486afb94f8d8732b22bc353f65bc8557))
-* **flow-reflect:** add undocumented discoveries and automation opportunity analysis ([fec9efa](https://github.com/korchasa/flowai/commit/fec9efa101a5aa25389e6a741d1fcbf21f47b8b4))
-* **flow-skill-executor:** add introduce-yourself step to workflow ([817105e](https://github.com/korchasa/flowai/commit/817105e1cd38f7b8fcc6742b669c06031be64b9f))
-* **flow-skill-setup-ai-ide-devcontainer:** add feature discovery step and catalog (FR-20.11) ([e1b7a19](https://github.com/korchasa/flowai/commit/e1b7a19dac5d5bd1d5924b0ab19dc372030350d7))
-* **flow-skill-setup-ai-ide-devcontainer:** complete FR-20 coverage gaps (SDS, benchmarks, multi-CLI) ([73b41b5](https://github.com/korchasa/flowai/commit/73b41b5b61210a99fb383d241ba0100f9c48f638))
+* **flowai-cli:** add self-update check against JSR registry ([0b9ce3b](https://github.com/korchasa/flowai/commit/0b9ce3b4adb967fe7c17d42df30dfbdd5f015f65))
+* **flowai-commit:** enforce consolidation-first commit grouping ([1ee2c06](https://github.com/korchasa/flowai/commit/1ee2c0639eb5879a140ccff8857ad6961680e97b))
+* **flowai-init:** add 'no tables in chat' rule to AGENTS template ([4c3168c](https://github.com/korchasa/flowai/commit/4c3168cb87ef7fa525af9eb1079bb8b4319cd5b8))
+* **flowai-init:** add CLAUDE.md symlink step and fix evidence references (FR-19) ([373108d](https://github.com/korchasa/flowai/commit/373108d05aa6a8380c553076a1a4290869f94841))
+* **flowai-init:** add Deno tooling option to interview ([00c2d87](https://github.com/korchasa/flowai/commit/00c2d87eb23438b181aa07cd82e15eeb1553a824))
+* **flowai-init:** split AGENTS.md into domain-scoped files with manifest-driven generation (FR-12) ([c03c336](https://github.com/korchasa/flowai/commit/c03c3361486afb94f8d8732b22bc353f65bc8557))
+* **flowai-reflect:** add undocumented discoveries and automation opportunity analysis ([fec9efa](https://github.com/korchasa/flowai/commit/fec9efa101a5aa25389e6a741d1fcbf21f47b8b4))
+* **flowai-skill-executor:** add introduce-yourself step to workflow ([817105e](https://github.com/korchasa/flowai/commit/817105e1cd38f7b8fcc6742b669c06031be64b9f))
+* **flowai-skill-setup-ai-ide-devcontainer:** add feature discovery step and catalog (FR-20.11) ([e1b7a19](https://github.com/korchasa/flowai/commit/e1b7a19dac5d5bd1d5924b0ab19dc372030350d7))
+* **flowai-skill-setup-ai-ide-devcontainer:** complete FR-20 coverage gaps (SDS, benchmarks, multi-CLI) ([73b41b5](https://github.com/korchasa/flowai/commit/73b41b5b61210a99fb383d241ba0100f9c48f638))
 * implement unified benchmark trace with dashboard and skill grouping ([c6bad40](https://github.com/korchasa/flowai/commit/c6bad40c409634efbd310446a28a27d69fd592be))
 * **install:** add --yes/-y flag for non-interactive execution ([19f343c](https://github.com/korchasa/flowai/commit/19f343ccd01fccccf2de5cc9032d8fd59eeb177d))
 * **install:** add global installer for per-IDE agent/skill symlinks (FR-10) ([c7852b7](https://github.com/korchasa/flowai/commit/c7852b744e2c89309ea9a5132e4a948b11a4dc28))
@@ -336,13 +336,13 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **planning:** add Plan Persistence rule to save plans to whiteboard.md ([85c40d3](https://github.com/korchasa/flowai/commit/85c40d3984863ae27a1c683a5e49c6942fd5a91a))
 * replace /check with iterative /check-and-fix command ([1ac758e](https://github.com/korchasa/flowai/commit/1ac758e5ba08fbe501fb27715a8b2a986cd99d25))
 * **rules:** add skill-creator guide and scripts ([214a74f](https://github.com/korchasa/flowai/commit/214a74fb24b6b91d704436f33d6dcdce14c39131))
-* **settings:** update permissions and add additional directories for flow-review-and-commit ([e0829b6](https://github.com/korchasa/flowai/commit/e0829b6f7d9d714cb60cd18a0d332d84881d2198))
-* **skills:** add flow-spec skill for phased feature specifications ([a2314a3](https://github.com/korchasa/flowai/commit/a2314a3337814d4a14136242ef7fea21633befac))
+* **settings:** update permissions and add additional directories for flowai-review-and-commit ([e0829b6](https://github.com/korchasa/flowai/commit/e0829b6f7d9d714cb60cd18a0d332d84881d2198))
+* **skills:** add flowai-spec skill for phased feature specifications ([a2314a3](https://github.com/korchasa/flowai/commit/a2314a3337814d4a14136242ef7fea21633befac))
 * **skills:** close FR-21.3–21.6 universal skill & script requirements ([bf7f1cb](https://github.com/korchasa/flowai/commit/bf7f1cb5279323152936c0077651fa5464d5248f))
 * **skills:** enforce FR-21.1 agentskills.io compliance with validation and fixes ([188ebf0](https://github.com/korchasa/flowai/commit/188ebf008c7985126cc50cd6a4f693e1fb7b0cce))
 * **skills:** enforce FR-21.2 cross-IDE script path resolution ([5ecbf09](https://github.com/korchasa/flowai/commit/5ecbf0970d3e116c78f0d98a4f6c0bdca8d7260b))
-* **skill:** update flow-skill-analyze-context to focus on total cost estimation ([79c0ba4](https://github.com/korchasa/flowai/commit/79c0ba4c76249874ccd85160d0397486a5907877))
-* universal agent format + flow-cli distribution ([#7](https://github.com/korchasa/flowai/issues/7)) ([2ba936b](https://github.com/korchasa/flowai/commit/2ba936b73c0da788a8a0022fcd33c3ff3c82168e))
+* **skill:** update flowai-skill-analyze-context to focus on total cost estimation ([79c0ba4](https://github.com/korchasa/flowai/commit/79c0ba4c76249874ccd85160d0397486a5907877))
+* universal agent format + flowai-cli distribution ([#7](https://github.com/korchasa/flowai/issues/7)) ([2ba936b](https://github.com/korchasa/flowai/commit/2ba936b73c0da788a8a0022fcd33c3ff3c82168e))
 * update /investigate command with iterative workflow ([e6ac7ce](https://github.com/korchasa/flowai/commit/e6ac7ce2503349f3998a96268a8c3d5cbf632aa0))
 * update commands ([7a81c8c](https://github.com/korchasa/flowai/commit/7a81c8cde4c259999dc6ef851f09da4b14430801))
 
@@ -382,13 +382,13 @@ Cursor IDE will automatically detect and load rules from new structure.
 * add relative paths rule to AGENTS.md and template ([45090d0](https://github.com/korchasa/flowai/commit/45090d0ca82971b978e8154a7e70202fadbc2b39))
 * **AGENTS:** update guidelines to include post-session review and evidence provision ([b129998](https://github.com/korchasa/flowai/commit/b129998cc5df2e7f5c94fd955a5c5be4e951c309))
 * fix inconsistent punctuation in project rules ([96c6cc7](https://github.com/korchasa/flowai/commit/96c6cc759be4f5f361ca0723bbec00944c0de342))
-* **flow-commit:** add agent: commit type for AI config changes (FR-11) ([db3cb60](https://github.com/korchasa/flowai/commit/db3cb60f13c414efebffc847f77a23b3a0fbc50e))
-* **flow-engineer-hook:** add cross-IDE hook docs and benchmarks (FR-14, FR-15, FR-16) ([7d23c9c](https://github.com/korchasa/flowai/commit/7d23c9c0674e3e8bc0c19c535ce9aad5b7315e3d))
-* **flow-review-and-commit:** implement composite review+commit command (FR-18) ([9621cc4](https://github.com/korchasa/flowai/commit/9621cc40f9edd54d59648ab8d3efe8e796472e3c))
-* **flow-review:** inline workflows in composite skill, add sync check and benchmarks ([e77441a](https://github.com/korchasa/flowai/commit/e77441a386f7d08def7d2c71a16f50ae58c30ad3))
-* **flow-skill-setup-ai-ide-devcontainer:** add devcontainer skill, update FR-10/FR-20 requirements ([12778b2](https://github.com/korchasa/flowai/commit/12778b2456c068da23b691afc64791f4c91ec601))
+* **flowai-commit:** add agent: commit type for AI config changes (FR-11) ([db3cb60](https://github.com/korchasa/flowai/commit/db3cb60f13c414efebffc847f77a23b3a0fbc50e))
+* **flowai-engineer-hook:** add cross-IDE hook docs and benchmarks (FR-14, FR-15, FR-16) ([7d23c9c](https://github.com/korchasa/flowai/commit/7d23c9c0674e3e8bc0c19c535ce9aad5b7315e3d))
+* **flowai-review-and-commit:** implement composite review+commit command (FR-18) ([9621cc4](https://github.com/korchasa/flowai/commit/9621cc40f9edd54d59648ab8d3efe8e796472e3c))
+* **flowai-review:** inline workflows in composite skill, add sync check and benchmarks ([e77441a](https://github.com/korchasa/flowai/commit/e77441a386f7d08def7d2c71a16f50ae58c30ad3))
+* **flowai-skill-setup-ai-ide-devcontainer:** add devcontainer skill, update FR-10/FR-20 requirements ([12778b2](https://github.com/korchasa/flowai/commit/12778b2456c068da23b691afc64791f4c91ec601))
 * replace bare @std/ specifiers with jsr: for standalone script independence ([347f414](https://github.com/korchasa/flowai/commit/347f414767d15e4bd16c4db53cf07655e6ca2f79))
-* replace flow-qa with flow-review combining QA and code review roles ([c7d2bc2](https://github.com/korchasa/flowai/commit/c7d2bc2da7a55c5f22d81b3a364a78449ee6a40f))
+* replace flowai-qa with flowai-review combining QA and code review roles ([c7d2bc2](https://github.com/korchasa/flowai/commit/c7d2bc2da7a55c5f22d81b3a364a78449ee6a40f))
 * resolve IDE support scope to 3 IDEs (FR-17) ([1380901](https://github.com/korchasa/flowai/commit/13809019f64d0e4498274f1e2b2a28e6886357e5))
 * use portable <this-skill-dir> placeholder for bundled script paths ([2d623bc](https://github.com/korchasa/flowai/commit/2d623bc0f683d5f752d079e52edc3464b43adae8))
 
@@ -399,7 +399,7 @@ Cursor IDE will automatically detect and load rules from new structure.
 * add code-style-typescript-deno.mdc with TS strict rules and Deno import guidance ([950352c](https://github.com/korchasa/flowai/commit/950352cdb1bf8b5c19a97f2177d1c56983695047))
 * add deno-cli and deno-deploy to skill coverage matrix ([41a7687](https://github.com/korchasa/flowai/commit/41a7687731416db562461e6c9a32e9fbf22e3eb7))
 * add descriptions to command files for clarity and guidance ([d693965](https://github.com/korchasa/flowai/commit/d6939651e4106bed7a770ea43716d8f61c2b3b51))
-* add flow-review-and-commit command and FR-18/FR-19 requirements ([2738a4b](https://github.com/korchasa/flowai/commit/2738a4bdd402c92f6c2e6110c5ed248027f411f8))
+* add flowai-review-and-commit command and FR-18/FR-19 requirements ([2738a4b](https://github.com/korchasa/flowai/commit/2738a4bdd402c92f6c2e6110c5ed248027f411f8))
 * add guidelines for writing Product Requirements Documents (PRD) ([5dac365](https://github.com/korchasa/flowai/commit/5dac3654fcfb6f5b2addaed7bea734161c916667))
 * add IDE comparison and research documents ([1798c61](https://github.com/korchasa/flowai/commit/1798c61c9d2c81d43e739bbdb6a21f9ee7c8edfe))
 * add JSDoc to benchmark lib, rewrite scripts/AGENTS.md, clean up duplicates ([cf79b38](https://github.com/korchasa/flowai/commit/cf79b38f9bd910fd608cf8b0213d096632cddfcf))
@@ -414,7 +414,6 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **af-do:** clarify skill overview description ([6728226](https://github.com/korchasa/flowai/commit/6728226572fc5a4a9cd8d2946f5bb4427ae12224))
 * **agents:** clarify TDD RED step scope ([559a9b1](https://github.com/korchasa/flowai/commit/559a9b191c5b072329c70a940a3bf3569f35f7b8))
 * **agents:** reformulate session-start doc reading rule ([a4241db](https://github.com/korchasa/flowai/commit/a4241db45e6623f0f535705ec88efc91d9fb2356))
-* allow Russian in whiteboard.md ([bbe92a2](https://github.com/korchasa/flowai/commit/bbe92a24419bdf1af831b5ee661c2034ce0338fc))
 * **bench:** enhance README with Docker isolation details and improved benchmark execution instructions ([cb3f50c](https://github.com/korchasa/flowai/commit/cb3f50cd5e28c5fe77b281b6fc2c546f220ca7ea))
 * clarify documentation language requirements in RULE.md ([0e9b206](https://github.com/korchasa/flowai/commit/0e9b206d621702698cc9a176e559abaa702a263c))
 * clarify GIT_PAGER usage in task-commit.md ([c66a70f](https://github.com/korchasa/flowai/commit/c66a70f895b801f1ef7b8a1abaee68657c8cfad9))
@@ -446,7 +445,6 @@ Cursor IDE will automatically detect and load rules from new structure.
 * remove interactive clarification requirement and AskQuestion tool references ([f4f366d](https://github.com/korchasa/flowai/commit/f4f366d984bbfa3eef68e2e6d449c2e0822babec))
 * remove obsolete RnD documents ([96f1cff](https://github.com/korchasa/flowai/commit/96f1cffbd98078bd58d3dc0ccc32167613b3d6a1))
 * remove outdated task planning guidelines from task-plan-with-qa.md ([17655ae](https://github.com/korchasa/flowai/commit/17655aeb1ec39e7e9ed6a19647098bd1b85ce6f9))
-* remove Russian language requirement from howto-write-in-informational-style and adjust task-review guidance to drop language constraint and revise negative-aspects wording ([45495aa](https://github.com/korchasa/flowai/commit/45495aa12ca575df3d60ca818d3be7f0ad960b2a))
 * rename "Steps" section to "Todo List" in all command docs ([49acf23](https://github.com/korchasa/flowai/commit/49acf239daaf84c1f266d40295a563859caa90f8))
 * reorganize R&D documents and add new research notes ([2e4b3a5](https://github.com/korchasa/flowai/commit/2e4b3a598aa878ae7d2dfa84c56c63d84769d2f0))
 * **requirements:** add FR-8 af-init, update FR-3/FR-6 status ([820edbd](https://github.com/korchasa/flowai/commit/820edbd6d219da9416236394c2fac77cf6e875f3))
@@ -496,13 +494,13 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **af-plan:** deduplicate planning rules, reference AGENTS.md ([8a2507c](https://github.com/korchasa/flowai/commit/8a2507cc6b693859fbe821945cdcccbc4a60541a))
 * **agents:** remove explicit model declarations from agent frontmatter ([a584ea2](https://github.com/korchasa/flowai/commit/a584ea2e9cdcb39f1551d71ae8e05a46dc2d3035))
 * **agents:** restructure to per-IDE subdirs with frontmatter validation ([e788a75](https://github.com/korchasa/flowai/commit/e788a75893adaedfe79bfc5fb8faf86a80ccb23c))
-* **agents:** update flow-skill-executor ([9d10ec4](https://github.com/korchasa/flowai/commit/9d10ec4d2e4f97cbcca63fea3bd497682af9444b))
-* **catalog:** remove flow-execute and flow-plan agents ([b6b0463](https://github.com/korchasa/flowai/commit/b6b04634ee4bd4cb2ea81999ef9dac479046d89a))
-* **catalog:** remove flow-skill-debug-by-playwright ([643ad21](https://github.com/korchasa/flowai/commit/643ad2140750a7d7969611fed0876fc642558c9c))
-* **catalog:** update flow-do, flow-engineer-subagent, flow-execute, flow-auto skills ([df3867b](https://github.com/korchasa/flowai/commit/df3867bb417688cefc7b181c9f03248124cc4238))
-* **catalog:** update flow-init skill and AGENTS template ([ea2e868](https://github.com/korchasa/flowai/commit/ea2e8684519b4a03c027cb6218f033788b1b4c8e))
-* **catalog:** update flow-maintenance and flow-reflect skills ([20bf2db](https://github.com/korchasa/flowai/commit/20bf2db5cea22311c38231dcbc58476c627ea1b7))
-* **catalog:** update flow-skill guides ([d181c96](https://github.com/korchasa/flowai/commit/d181c96476e80b17821e34acdf0f7176e10ed824))
+* **agents:** update flowai-skill-executor ([9d10ec4](https://github.com/korchasa/flowai/commit/9d10ec4d2e4f97cbcca63fea3bd497682af9444b))
+* **catalog:** remove flowai-execute and flowai-plan agents ([b6b0463](https://github.com/korchasa/flowai/commit/b6b04634ee4bd4cb2ea81999ef9dac479046d89a))
+* **catalog:** remove flowai-skill-debug-by-playwright ([643ad21](https://github.com/korchasa/flowai/commit/643ad2140750a7d7969611fed0876fc642558c9c))
+* **catalog:** update flowai-do, flowai-engineer-subagent, flowai-execute, flowai-auto skills ([df3867b](https://github.com/korchasa/flowai/commit/df3867bb417688cefc7b181c9f03248124cc4238))
+* **catalog:** update flowai-init skill and AGENTS template ([ea2e868](https://github.com/korchasa/flowai/commit/ea2e8684519b4a03c027cb6218f033788b1b4c8e))
+* **catalog:** update flowai-maintenance and flowai-reflect skills ([20bf2db](https://github.com/korchasa/flowai/commit/20bf2db5cea22311c38231dcbc58476c627ea1b7))
+* **catalog:** update flowai-skill guides ([d181c96](https://github.com/korchasa/flowai/commit/d181c96476e80b17821e34acdf0f7176e10ed824))
 * **commands:** consolidate planning workflows and enhance GODS framework ([51fd403](https://github.com/korchasa/flowai/commit/51fd4033df52bc47a6ff6aa25400c3a259ba3bcd))
 * **commands:** drop task prefix from command files ([fdc54ac](https://github.com/korchasa/flowai/commit/fdc54ac3c956bd74935a79667e3d94c1110288c6))
 * **commands:** integrate BED-LLM algorithm details into workflow steps ([e9664e0](https://github.com/korchasa/flowai/commit/e9664e0c464896522e821b1dbd2fe6424b6fce50))
@@ -514,25 +512,25 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **commands:** reorganize investigation and analysis workflows ([c8248e9](https://github.com/korchasa/flowai/commit/c8248e9b35db1070652539088917dc86a412a19a))
 * **cursor:** convert GODS rule to how-to guide ([14d8bf0](https://github.com/korchasa/flowai/commit/14d8bf0aa9c7a582da47b84c43422947cbcb62cc))
 * **docs:** remove standalone vision.md, consolidate into AGENTS.md ([a867831](https://github.com/korchasa/flowai/commit/a867831bf86b3d1f596bf881e0aa3a907da293c6))
-* **flow-init:** make TDD commands in AGENTS.template generic ([6eafdad](https://github.com/korchasa/flowai/commit/6eafdadc9fa981c3d20144e0dec79ac865404b07))
-* **flow-init:** merge analyze/inventory/verify into single script output ([cf5a80e](https://github.com/korchasa/flowai/commit/cf5a80e5f8984b05985e8b9d009bd14bccbb45d6))
-* **flow-init:** replace manifest-driven generation with agent-native approach ([8273cba](https://github.com/korchasa/flowai/commit/8273cba86598b92e80a531b3ffc395daa0106f55))
+* **flowai-init:** make TDD commands in AGENTS.template generic ([6eafdad](https://github.com/korchasa/flowai/commit/6eafdadc9fa981c3d20144e0dec79ac865404b07))
+* **flowai-init:** merge analyze/inventory/verify into single script output ([cf5a80e](https://github.com/korchasa/flowai/commit/cf5a80e5f8984b05985e8b9d009bd14bccbb45d6))
+* **flowai-init:** replace manifest-driven generation with agent-native approach ([8273cba](https://github.com/korchasa/flowai/commit/8273cba86598b92e80a531b3ffc395daa0106f55))
 * **install:** remove shell bootstrap and fix process hang on exit ([3b07b25](https://github.com/korchasa/flowai/commit/3b07b25e6160d0b7878b006ff3457fd3491addcd))
-* merge flow-cli submodule into monorepo ([df5a868](https://github.com/korchasa/flowai/commit/df5a86823b8adb161870fe30b38fd7387c16c9b4))
+* merge flowai-cli submodule into monorepo ([df5a868](https://github.com/korchasa/flowai/commit/df5a86823b8adb161870fe30b38fd7387c16c9b4))
 * **project:** reorganize file structure into .cursor/ directories ([8b46177](https://github.com/korchasa/flowai/commit/8b46177de97a71f3a7690b2b1174a53837993a24))
 * reclassify skill types — engineer→skill, setup→setup-agent ([7652f61](https://github.com/korchasa/flowai/commit/7652f612d420958585c860a5592127baa164da53))
-* rename af-* prefix to flow-* ([fadf38a](https://github.com/korchasa/flowai/commit/fadf38a39b5f52fc5639057b534c659d17c24f16))
-* rename agents to flow-* convention and update references ([2e4fec6](https://github.com/korchasa/flowai/commit/2e4fec6c5a54fd4ddd9a1ecc621f27acc252aac3))
+* rename af-* prefix to flowai-* ([fadf38a](https://github.com/korchasa/flowai/commit/fadf38a39b5f52fc5639057b534c659d17c24f16))
+* rename agents to flowai-* convention and update references ([2e4fec6](https://github.com/korchasa/flowai/commit/2e4fec6c5a54fd4ddd9a1ecc621f27acc252aac3))
 * rename catalog/ to framework/ ([8450f9e](https://github.com/korchasa/flowai/commit/8450f9ea7f885a98767abb78609705a75ff46bcf))
 * rename create-deno-scripts command to create-scripts ([2b54634](https://github.com/korchasa/flowai/commit/2b5463479b844754c0601db1b88b6ef346449054))
-* rename Deno skills to follow flow-skill-* convention ([d5678d3](https://github.com/korchasa/flowai/commit/d5678d37b22d7cb4a47d1e16122669603de1cf8f))
-* rename flow-cli → flowai ([af1fbb2](https://github.com/korchasa/flowai/commit/af1fbb239d964dfcbfcc604cccf26013c2ba2d3c))
-* replace flow-skill-configure-strict-typescript with setup-code-style ([c547e51](https://github.com/korchasa/flowai/commit/c547e5149de9b114f3e3a0d8b042c588a7bd102f))
+* rename Deno skills to follow flowai-skill-* convention ([d5678d3](https://github.com/korchasa/flowai/commit/d5678d37b22d7cb4a47d1e16122669603de1cf8f))
+* rename flowai-cli → flowai ([af1fbb2](https://github.com/korchasa/flowai/commit/af1fbb239d964dfcbfcc604cccf26013c2ba2d3c))
+* replace flowai-skill-configure-strict-typescript with setup-code-style ([c547e51](https://github.com/korchasa/flowai/commit/c547e5149de9b114f3e3a0d8b042c588a7bd102f))
 * **rules:** migrate .mdc files to directory-based RULE.md structure ([8b06dc3](https://github.com/korchasa/flowai/commit/8b06dc39d86499bbc7ec90b9940e9e4193dd1a06))
 * **rules:** remove iOS-specific requirements from main-example rule ([ac85e5d](https://github.com/korchasa/flowai/commit/ac85e5d54a846c8fff05645ba1a4b1fead2eeac0))
 * **skills:** generalize task management tool description ([6f04367](https://github.com/korchasa/flowai/commit/6f04367e0c7be3f240ceb7011483accaaf402a6b))
-* **skills:** remove flow-do and flow-execute, superseded by AGENTS.md rules ([61eed19](https://github.com/korchasa/flowai/commit/61eed195b04e7afb4f1d848debf6e82950dc46c9))
-* **skills:** remove obsolete flow-auto and flow-convert-cursor-to-claude skills ([2f1aac7](https://github.com/korchasa/flowai/commit/2f1aac7ddde2a0c6162c9943ea85269d9dd84355))
+* **skills:** remove flowai-do and flowai-execute, superseded by AGENTS.md rules ([61eed19](https://github.com/korchasa/flowai/commit/61eed195b04e7afb4f1d848debf6e82950dc46c9))
+* **skills:** remove obsolete flowai-auto and flowai-convert-cursor-to-claude skills ([2f1aac7](https://github.com/korchasa/flowai/commit/2f1aac7ddde2a0c6162c9943ea85269d9dd84355))
 * streamline task-create-command.md for clarity and structure ([34188c1](https://github.com/korchasa/flowai/commit/34188c155e5124d4bd170c3771f7ce73459ba724))
 * **task-link:** create per-item symlinks from .dev/ and framework/ into IDE dirs ([b41afc2](https://github.com/korchasa/flowai/commit/b41afc273f3f1b02ca760456e02bfef9d77b7531))
 * update do command steps for clarity and verification ([5910de7](https://github.com/korchasa/flowai/commit/5910de79bef4522fe77db0a9e3a606c48e23da6e))
@@ -550,12 +548,12 @@ Cursor IDE will automatically detect and load rules from new structure.
 * remove deprecated settings.json and whiteboard.md files ([0368efd](https://github.com/korchasa/flowai/commit/0368efd6426baf2aca512c4089516bdb745ea6ff))
 * remove obsolete R&D tasks format documentation ([d3cc746](https://github.com/korchasa/flowai/commit/d3cc746d08f110d08c764ea54edc8e5de256d09e))
 * remove write-skill command ([4f281e1](https://github.com/korchasa/flowai/commit/4f281e1d5037f4dbbe840df074d84943b7ea3cec))
-* sync framework skills/agents via flow-cli ([3bdf132](https://github.com/korchasa/flowai/commit/3bdf1323955d680e5030084bc266c41b8234045e))
+* sync framework skills/agents via flowai-cli ([3bdf132](https://github.com/korchasa/flowai/commit/3bdf1323955d680e5030084bc266c41b8234045e))
 * update .gitignore and add .cursorignore ([134e6ae](https://github.com/korchasa/flowai/commit/134e6ae72b22ad6ba72d087316c4a26c46f327fd))
 * update .gitignore and enhance README with new command descriptions ([5f867c4](https://github.com/korchasa/flowai/commit/5f867c45032f95b935d632fa0cb0f012de1315e2))
 * update .gitignore to ignore .vscode ([553c382](https://github.com/korchasa/flowai/commit/553c382ca7bccc677a06bb090e1ef063719fbde3))
 * update .gitignore to ignore documents directory ([f27d7ee](https://github.com/korchasa/flowai/commit/f27d7ee4b3090c504060ee47a8218b4202c691b1))
-* update flow-cli submodule (PATH docs) ([d9dd37c](https://github.com/korchasa/flowai/commit/d9dd37cac4264a20506112ebc0caaec9a7be90ee))
+* update flowai-cli submodule (PATH docs) ([d9dd37c](https://github.com/korchasa/flowai/commit/d9dd37cac4264a20506112ebc0caaec9a7be90ee))
 * Update project files and add README.md ([e63718b](https://github.com/korchasa/flowai/commit/e63718b689b9d3fd681f257cd872b15552bd88c9))
 * update repo scaffolding and cleanup ([324ce4e](https://github.com/korchasa/flowai/commit/324ce4e59a416475269a60151340184a93f0d25b))
 * update repo URL korchasa/flow → korchasa/flowai ([1cb3b17](https://github.com/korchasa/flowai/commit/1cb3b17fd9e849c3f696eca59b417682c681cabe))

@@ -3,10 +3,13 @@ import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
 import { DenoFsAdapter } from "./adapters/fs.ts";
 import { loadConfig } from "./config.ts";
-import { generateConfig } from "./config_generator.ts";
+import {
+  generateConfig,
+  generateConfigNonInteractive,
+} from "./config_generator.ts";
 import { isInsideIDE } from "./ide.ts";
-import type { PlanItem } from "./types.ts";
-import { sync, type SyncOptions } from "./sync.ts";
+import type { PlanItem, ResourceAction } from "./types.ts";
+import { sync, type SyncOptions, type SyncResult } from "./sync.ts";
 import {
   buildUpdateCommand,
   checkForUpdate,
@@ -83,12 +86,9 @@ async function runSync(options: {
   const isNewConfig = !config;
 
   if (!config) {
-    if (yes) {
-      throw new Error(
-        "No .flowai.yaml found. Cannot run in non-interactive mode without config.",
-      );
-    }
-    config = await generateConfig(cwd, fs);
+    config = yes
+      ? await generateConfigNonInteractive(cwd, fs)
+      : await generateConfig(cwd, fs);
   }
 
   // 2. Show sync plan
@@ -151,34 +151,164 @@ async function runSync(options: {
     const result = await sync(cwd, config, fs, syncOptions);
     spinner.stop();
 
-    // 4. Summary
-    console.log("\nSync complete:");
-    console.log(`  Written: ${result.totalWritten}`);
-    console.log(`  Unchanged: ${result.totalSkipped}`);
-    if (result.totalConflicts > 0) {
-      console.log(`  Overwritten (conflicts): ${result.totalConflicts}`);
-    }
-    if (result.errors.length > 0) {
-      console.error(`  Errors: ${result.errors.length}`);
-      for (const err of result.errors) {
-        console.error(`    ${err.path}: ${err.error}`);
-      }
-    }
-    if (result.symlinkResult) {
-      const sl = result.symlinkResult;
-      if (
-        sl.created.length > 0 || sl.updated.length > 0 ||
-        sl.skipped.length > 0
-      ) {
-        console.log(
-          `  CLAUDE.md symlinks: ${sl.created.length} created, ${sl.updated.length} updated, ${sl.skipped.length} skipped`,
-        );
-      }
-    }
+    // 4. Render instruction-oriented output
+    renderSyncOutput(result);
   } catch (e) {
     spinner.stop();
     throw e;
   }
+}
+
+/** Render instruction-oriented sync output */
+export function renderSyncOutput(result: SyncResult): void {
+  console.log("\nflowai sync complete.");
+
+  const actions: string[] = [];
+  let actionNum = 0;
+
+  // Config migration
+  if (result.configMigrated) {
+    const m = result.configMigrated;
+    actionNum++;
+    actions.push(
+      `${actionNum}. CONFIG MIGRATED (v${m.from} -> v${m.to}):\n` +
+        `   .flowai.yaml updated with packs: ${m.packs.join(", ")}.\n` +
+        `   Commit this file.`,
+    );
+  }
+
+  // Group skill actions by type
+  const skillsByAction = groupByAction(result.skillActions);
+
+  if (skillsByAction.update.length > 0) {
+    actionNum++;
+    const lines = skillsByAction.update.map((s) => {
+      const scaff = s.scaffolds.length > 0
+        ? ` (scaffolds: ${s.scaffolds.join(", ")})`
+        : "";
+      return `   - ${s.name}${scaff}`;
+    });
+    actions.push(
+      `${actionNum}. SKILLS UPDATED (${skillsByAction.update.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   For each skill with scaffolds: compare the updated template against the project artifact using git diff on the skill directory.`,
+    );
+  }
+
+  if (skillsByAction.create.length > 0) {
+    actionNum++;
+    const lines = skillsByAction.create.map((s) => `   - ${s.name}`);
+    actions.push(
+      `${actionNum}. SKILLS CREATED (${skillsByAction.create.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   No migration needed for new skills.`,
+    );
+  }
+
+  if (skillsByAction.delete.length > 0) {
+    actionNum++;
+    const lines = skillsByAction.delete.map((s) => `   - ${s.name}`);
+    actions.push(
+      `${actionNum}. SKILLS DELETED (${skillsByAction.delete.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   Check if deleted skills are referenced in project docs.`,
+    );
+  }
+
+  // Agent actions
+  const agentsByAction = groupByAction(result.agentActions);
+  if (agentsByAction.update.length > 0) {
+    actionNum++;
+    const lines = agentsByAction.update.map((a) => `   - ${a.name}`);
+    actions.push(
+      `${actionNum}. AGENTS UPDATED (${agentsByAction.update.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   Check if agent prompts are referenced in project docs.`,
+    );
+  }
+
+  // Hook actions
+  const hooksByAction = groupByAction(result.hookActions);
+  if (hooksByAction.create.length > 0) {
+    actionNum++;
+    const lines = hooksByAction.create.map((h) => `   - ${h.name}`);
+    actions.push(
+      `${actionNum}. HOOKS INSTALLED (${hooksByAction.create.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   IDE hook configuration auto-generated.`,
+    );
+  }
+  if (hooksByAction.update.length > 0) {
+    actionNum++;
+    const lines = hooksByAction.update.map((h) => `   - ${h.name}`);
+    actions.push(
+      `${actionNum}. HOOKS UPDATED (${hooksByAction.update.length}):\n` +
+        lines.join("\n"),
+    );
+  }
+
+  // Errors
+  if (result.errors.length > 0) {
+    actionNum++;
+    const lines = result.errors.map((e) => `   - ${e.path}: ${e.error}`);
+    actions.push(
+      `${actionNum}. ERRORS (${result.errors.length}):\n` + lines.join("\n"),
+    );
+  }
+
+  // Render
+  if (actions.length > 0) {
+    console.log("\n>>> ACTIONS REQUIRED:\n");
+    console.log(actions.join("\n\n"));
+  }
+
+  // No-action summary
+  const okSkills = skillsByAction.ok.length;
+  const okAgents = agentsByAction.ok.length;
+  const okHooks = hooksByAction.ok.length;
+  const noActionParts: string[] = [];
+  if (okSkills > 0) noActionParts.push(`${okSkills} skills unchanged`);
+  if (okAgents > 0) noActionParts.push(`${okAgents} agents unchanged`);
+  if (okHooks > 0) noActionParts.push(`${okHooks} hooks unchanged`);
+
+  if (actions.length === 0) {
+    console.log("\n>>> NO ACTIONS REQUIRED.");
+    if (noActionParts.length > 0) {
+      console.log(`${noActionParts.join(", ")}.`);
+    }
+  } else if (noActionParts.length > 0) {
+    console.log(`\n>>> NO ACTIONS REQUIRED:\n${noActionParts.join(", ")}.`);
+  }
+
+  // Symlinks (informational)
+  if (result.symlinkResult) {
+    const sl = result.symlinkResult;
+    if (
+      sl.created.length > 0 || sl.updated.length > 0
+    ) {
+      console.log(
+        `\nCLAUDE.md symlinks: ${sl.created.length} created, ${sl.updated.length} updated.`,
+      );
+    }
+  }
+}
+
+function groupByAction(
+  actions: ResourceAction[],
+): Record<"create" | "update" | "delete" | "ok", ResourceAction[]> {
+  const groups: Record<string, ResourceAction[]> = {
+    create: [],
+    update: [],
+    delete: [],
+    ok: [],
+  };
+  for (const a of actions) {
+    (groups[a.action] ?? groups.ok).push(a);
+  }
+  return groups as Record<
+    "create" | "update" | "delete" | "ok",
+    ResourceAction[]
+  >;
 }
 
 /** CLI entry point */
@@ -213,7 +343,7 @@ export async function main(args: string[]): Promise<void> {
         },
       )
       .description(
-        "Sync AssistFlow framework skills/agents into project-local IDE config dirs.",
+        "Sync flowai framework skills/agents into project-local IDE config dirs.",
       ),
   )
     // deno-lint-ignore no-explicit-any
@@ -221,7 +351,7 @@ export async function main(args: string[]): Promise<void> {
       // Inside IDE context: show sync hint instead of auto-syncing
       if (isInsideIDE()) {
         console.log(
-          "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flow-update` skill.",
+          "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
         );
         return;
       }

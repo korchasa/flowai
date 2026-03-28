@@ -76,7 +76,7 @@ export class InMemoryFrameworkSource implements FrameworkSource {
   }
 }
 
-/** Extract skill names from framework file paths */
+/** Extract skill names from framework file paths (legacy flat structure) */
 export function extractSkillNames(paths: string[]): string[] {
   const names = new Set<string>();
   for (const p of paths) {
@@ -88,7 +88,7 @@ export function extractSkillNames(paths: string[]): string[] {
   return [...names].sort();
 }
 
-/** Extract agent names from flat framework/agents/ directory */
+/** Extract agent names from flat framework/agents/ directory (legacy) */
 export function extractAgentNames(paths: string[]): string[] {
   const names: string[] = [];
   for (const p of paths) {
@@ -98,4 +98,99 @@ export function extractAgentNames(paths: string[]): string[] {
     }
   }
   return names.sort();
+}
+
+// --- Pack-aware extractors ---
+
+/** Extract pack names from framework/<pack>/pack.yaml paths */
+export function extractPackNames(paths: string[]): string[] {
+  const names = new Set<string>();
+  for (const p of paths) {
+    const match = p.match(/^framework\/([^/]+)\/pack\.yaml$/);
+    if (match) {
+      names.add(match[1]);
+    }
+  }
+  return [...names].sort();
+}
+
+/** Extract skill names within a specific pack */
+export function extractPackSkillNames(
+  paths: string[],
+  packName: string,
+): string[] {
+  const names = new Set<string>();
+  const prefix = `framework/${packName}/skills/`;
+  for (const p of paths) {
+    if (p.startsWith(prefix)) {
+      const rest = p.substring(prefix.length);
+      const slashIdx = rest.indexOf("/");
+      if (slashIdx > 0) {
+        names.add(rest.substring(0, slashIdx));
+      }
+    }
+  }
+  return [...names].sort();
+}
+
+/** Extract agent names within a specific pack */
+export function extractPackAgentNames(
+  paths: string[],
+  packName: string,
+): string[] {
+  const names: string[] = [];
+  const prefix = `framework/${packName}/agents/`;
+  for (const p of paths) {
+    if (p.startsWith(prefix)) {
+      const rest = p.substring(prefix.length);
+      // Only flat .md files (no subdirectories)
+      if (!rest.includes("/") && rest.endsWith(".md")) {
+        names.push(rest.replace(/\.md$/, ""));
+      }
+    }
+  }
+  return names.sort();
+}
+
+/** Extract hook names within a specific pack */
+export function extractPackHookNames(
+  paths: string[],
+  packName: string,
+): string[] {
+  const names = new Set<string>();
+  const prefix = `framework/${packName}/hooks/`;
+  for (const p of paths) {
+    if (p.startsWith(prefix)) {
+      const rest = p.substring(prefix.length);
+      const slashIdx = rest.indexOf("/");
+      if (slashIdx > 0) {
+        names.add(rest.substring(0, slashIdx));
+      }
+    }
+  }
+  return [...names].sort();
+}
+
+/** Extract script names within a specific pack */
+export function extractPackScriptNames(
+  paths: string[],
+  packName: string,
+): string[] {
+  const names: string[] = [];
+  const prefix = `framework/${packName}/scripts/`;
+  for (const p of paths) {
+    if (p.startsWith(prefix)) {
+      const rest = p.substring(prefix.length);
+      // Only flat files (no subdirectories)
+      if (!rest.includes("/")) {
+        names.push(rest);
+      }
+    }
+  }
+  return names.sort();
+}
+
+/** Check if bundle uses pack structure (has pack.yaml files) */
+export function hasPacks(paths: string[]): boolean {
+  return paths.some((p) => /^framework\/[^/]+\/pack\.yaml$/.test(p));
 }

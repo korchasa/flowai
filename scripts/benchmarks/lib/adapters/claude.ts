@@ -25,6 +25,7 @@ export class ClaudeAdapter implements AgentAdapter {
   readonly ide = "claude" as const;
   readonly configDir = ".claude";
   readonly command = "claude";
+  readonly outputFormat = "stream-json" as const;
 
   getEnv(): Record<string, string> {
     // Unset CLAUDECODE to allow spawning claude inside a claude session
@@ -36,6 +37,7 @@ export class ClaudeAdapter implements AgentAdapter {
     workspace: string;
     prompt: string;
     sessionId?: string;
+    name?: string;
   }): string[] {
     const args = [
       "-p",
@@ -47,6 +49,10 @@ export class ClaudeAdapter implements AgentAdapter {
       "--permission-mode",
       "bypassPermissions",
     ];
+
+    if (opts.name) {
+      args.push("--name", opts.name);
+    }
 
     if (opts.sessionId) {
       args.push("--resume", opts.sessionId);
@@ -110,8 +116,8 @@ export class ClaudeAdapter implements AgentAdapter {
       }
     }
 
-    // Fallback: use last assistant text if no result event
-    if (result.result === null && assistantTexts.length > 0) {
+    // Fallback: use last assistant text if result is missing or empty
+    if (!result.result && assistantTexts.length > 0) {
       result.result = assistantTexts[assistantTexts.length - 1];
     }
 

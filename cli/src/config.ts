@@ -1,6 +1,6 @@
 import { parse, stringify } from "@std/yaml";
 import { type FsAdapter, join } from "./adapters/fs.ts";
-import { DEFAULT_VERSION, type FlowConfig } from "./types.ts";
+import { DEFAULT_VERSION, type FlowConfig, PACKS_VERSION } from "./types.ts";
 
 const CONFIG_FILENAME = ".flowai.yaml";
 
@@ -80,7 +80,23 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
 
   const userSync = data.user_sync === true;
 
-  return { version, ides, skills, agents, commands, userSync };
+  // Parse packs (v1.1+). undefined = legacy mode (all resources).
+  const packs = Array.isArray(data.packs) ? data.packs.map(String) : undefined;
+
+  return { version, ides, packs, skills, agents, commands, userSync };
+}
+
+/** Migrate v1 config to v1.1 by adding packs: (all available packs) */
+export function migrateV1ToV1_1(
+  config: FlowConfig,
+  availablePackNames: string[],
+): FlowConfig {
+  if (config.packs !== undefined) return config; // already v1.1+
+  return {
+    ...config,
+    version: PACKS_VERSION,
+    packs: [...availablePackNames],
+  };
 }
 
 /** Save FlowConfig to .flowai.yaml */
@@ -93,10 +109,13 @@ export async function saveConfig(
   const data: Record<string, unknown> = {
     version: config.version,
     ides: config.ides,
-    skills: config.skills,
-    agents: config.agents,
-    commands: config.commands,
   };
+  if (config.packs !== undefined) {
+    data.packs = config.packs;
+  }
+  data.skills = config.skills;
+  data.agents = config.agents;
+  data.commands = config.commands;
   if (config.userSync) {
     data.user_sync = config.userSync;
   }
