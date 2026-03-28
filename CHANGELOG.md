@@ -2,6 +2,73 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.3.9](https://github.com/korchasa/flowai/compare/v0.3.8...v0.3.9) (2026-03-28)
+
+
+### Features
+
+* **benchmarks:** add pack-scoped sandbox isolation and cross-pack reference validation ([8399a2f](https://github.com/korchasa/flowai/commit/8399a2f0d41f85c2a6bbdfa5230d0114e5fc6800))
+* **benchmarks:** generate AGENTS.md from templates, add CLAUDE.md symlinks ([dd04a34](https://github.com/korchasa/flowai/commit/dd04a3401d7faec24fc8ee40d221a34462f1cf01))
+* **benchmarks:** switch judge to Claude CLI, add parallel execution and explicit trace IDs ([1dcdbf9](https://github.com/korchasa/flowai/commit/1dcdbf9280df61ed0e04799f367bc830f1aac959))
+* **cli:** add non-interactive config generation for -y flag ([e193c43](https://github.com/korchasa/flowai/commit/e193c432678cfbdda32d01e47598af5fe8f3c045))
+* **configure-deno-commands:** require parallel buffered check execution ([c8e7665](https://github.com/korchasa/flowai/commit/c8e7665eda24eb9047d6b92b14d0fdaf488359fd))
+* **flowai-plan:** improve variant selection flow and fix interactive benchmark infrastructure ([9bf6c4d](https://github.com/korchasa/flowai/commit/9bf6c4df99ec348284eddf8dc4babb276f98f65b))
+* **framework,cli:** implement pack system — flowai-* renaming, hooks/scripts, rich sync output ([98aa386](https://github.com/korchasa/flowai/commit/98aa386db2c95b6d25ba081e4c82f2f679eeec24))
+* **framework:** add skill adaptation to flowai-update ([e306c6c](https://github.com/korchasa/flowai/commit/e306c6c3375ecc471ed71780995c85e744d49c48))
+* **framework:** migrate benchmarks and runner to pack structure ([2e0e3b7](https://github.com/korchasa/flowai/commit/2e0e3b7c7ccf61565e6b1fbf58a1508b2ab86b79))
+* **hooks:** add framework hooks with IDE-specific config generation ([0c204c9](https://github.com/korchasa/flowai/commit/0c204c90db958cdaaed87afc7a17de3422c621b1))
+
+
+### Bug Fixes
+
+* **benchmarks:** handle dynamic exit_code_zero in score test ([e468a4e](https://github.com/korchasa/flowai/commit/e468a4edabd2464d012ea05b47c2c0b88d46f42f))
+* **benchmarks:** isolate sandbox with git init to prevent agent escaping to parent repo ([63d6423](https://github.com/korchasa/flowai/commit/63d6423a8fcc3531430733576f250bb66f11403a))
+* **benchmarks:** overhaul benchmark infrastructure for reliability ([2d24f02](https://github.com/korchasa/flowai/commit/2d24f02263ef1d0336c4eb90c7570c5e35e57e0f))
+* **benchmarks:** pass judge evidence via file to avoid E2BIG crashes ([14e1c3a](https://github.com/korchasa/flowai/commit/14e1c3ac8bb570497070cb55228d9fd9e49db804))
+* **benchmarks:** update paths after pack migration, remove stale fixturePath overrides ([40be066](https://github.com/korchasa/flowai/commit/40be066c04791268ce5cc2b0a8cf19278586a7c1))
+* **flowai-plan:** enable interactive mode in basic benchmark ([aaf6b0c](https://github.com/korchasa/flowai/commit/aaf6b0c476e1fda3391f87740c5eb1f4b286516b))
+* **flowai-review:** add deletion guard for entire directories ([853b579](https://github.com/korchasa/flowai/commit/853b5792c6ad6587212563b96ad00dc56fc04aa0))
+
+
+### Chores
+
+* remove flowai-skill-example and prevent re-creation ([efb3403](https://github.com/korchasa/flowai/commit/efb3403d0c9280a067551ae5fb0f7cf4504006cd))
+
+
+### Documentation
+
+* **AGENTS.md:** add TypeScript LSP plugin caveat for export ordering ([cb85bf3](https://github.com/korchasa/flowai/commit/cb85bf300773881261c38154a2aeb96a1ccb9051))
+* merge RND control primitives data into ides-difference.md and remove source ([917322c](https://github.com/korchasa/flowai/commit/917322c9198d5e62f9f5eb1a5ce51ea50a90be56))
+* remove duplicate build-in-ide-tools.md (data already in ides-difference.md) ([6e3c4f5](https://github.com/korchasa/flowai/commit/6e3c4f5e9ed61b4c30da32bf01fe08f2bc837673))
+* **rnd:** add Claude Code CLI feature analysis ([abb0c5e](https://github.com/korchasa/flowai/commit/abb0c5e60e9b38a93bd889ab88bf9339f04e8191))
+* **rnd:** add Hyperagents paper practical conclusions with evidence ([f3e5099](https://github.com/korchasa/flowai/commit/f3e5099ecaa75f628befa481b8bb9094f38e5e1f))
+* **spec:** add draft spec for skill versioning feature ([d1023cb](https://github.com/korchasa/flowai/commit/d1023cb0c2233a34c94e0d5b43e2e6ae8d03d8f6))
+* **spec:** add skill versioning specification ([cbde22a](https://github.com/korchasa/flowai/commit/cbde22a840e2f9f7a4f47856021326102060ed1d))
+* update IDE comparison — add plugin systems, remove Codex/Antigravity ([59f2ee8](https://github.com/korchasa/flowai/commit/59f2ee8b1aa03c5af6bb839136ee54783e5f5111))
+* update whiteboard with packs plan, add plugin bundles comparison, remove stale spec ([c4621f8](https://github.com/korchasa/flowai/commit/c4621f85b63975ac87db80ce48ac2416a6e6a19e))
+
+
+### Agent Changes
+
+* maintenance — fix flow-* naming, improve skill instructions, add JSDoc ([893764a](https://github.com/korchasa/flowai/commit/893764a239df0e900d66c4258d44b46068ea26ad))
+
+
+### Build System
+
+* add CI integrity checks and update judge model ([82fda8d](https://github.com/korchasa/flowai/commit/82fda8db0e3e95041160960196f90bec8487467f))
+* pin GitHub Actions to SHA checksums ([5e75c8c](https://github.com/korchasa/flowai/commit/5e75c8c413f2ff9d39c6109847c8eff9ccb71c28))
+
+
+### Code Refactoring
+
+* **benchmarks:** improve judge evidence, fix score calculation, add safety ([5357397](https://github.com/korchasa/flowai/commit/535739794823d7c5c39b984a148070ece33ac9f1))
+* **benchmarks:** migrate to @bench/ import map and clean up checklist types ([c99050c](https://github.com/korchasa/flowai/commit/c99050cd63217f5a270d53182d9d2515c4d878a1))
+* **benchmarks:** require agentsTemplateVars, remove legacy agentsMarkdown ([9de987a](https://github.com/korchasa/flowai/commit/9de987a62466c5126ad0391ae1e9db0f80696e56))
+* **benchmarks:** split trace.ts into modular architecture ([0c9ac68](https://github.com/korchasa/flowai/commit/0c9ac6859042f986145e33f52c487c154698086c))
+* co-locate benchmarks with skills (FR-7.1) ([7d9495f](https://github.com/korchasa/flowai/commit/7d9495f377c4d3c36773af2567bc96352d4cf01f))
+* rename AssistFlow to flowai across the project ([53c6f93](https://github.com/korchasa/flowai/commit/53c6f931c47bcc177d480c33ca2fa34258587cb5))
+* rename test files to Deno _test.ts convention ([a569a15](https://github.com/korchasa/flowai/commit/a569a15888352e19e3f8e80d7aba52200438efe9))
+
 ### [0.3.8](https://github.com/korchasa/flowai/compare/v0.3.7...v0.3.8) (2026-03-24)
 
 
