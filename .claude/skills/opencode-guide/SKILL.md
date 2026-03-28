@@ -1,9 +1,6 @@
 ---
 name: opencode-guide
 description: Guide for using OpenCode features including AGENTS.md, Config, Rules, Skills, Commands, Agents, and MCP. Use when the user asks about OpenCode configuration, features, or how to set up the environment.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # OpenCode Guide

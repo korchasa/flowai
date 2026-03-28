@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-engineer-hook
 description: "Creation and configuration of event hooks/plugins to manage agent behavior, command filtering, auditing, and automation. Works across IDEs (Cursor, Claude Code, OpenCode). Use when you need to: (1) Create a new hook (e.g., for formatting or security checks), (2) Configure hooks/plugins, (3) Implement logic for blocking or modifying agent actions via scripts."
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Hook / Plugin Creator

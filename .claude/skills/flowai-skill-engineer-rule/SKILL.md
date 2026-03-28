@@ -2,9 +2,6 @@
 name: flowai-skill-engineer-rule
 description: Guide for creating persistent AI rules (coding standards, project conventions, file-specific patterns). Use when users want to create a rule, add coding standards, set up project conventions, configure file-specific patterns, or ask about rules placement. Works across IDEs (Cursor, Claude Code, OpenCode).
 license: Based on https://github.com/anthropics/skills
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Rule Creator

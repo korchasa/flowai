@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-write-prd
 description: Guidelines for writing comprehensive Product Requirements Documents (PRD)
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # How to Write a Product Requirements Document (PRD)

@@ -2,9 +2,6 @@
 name: flowai-skill-engineer-command
 description: Guide for creating effective flowai commands. This skill should be used when users want to create a new command (or update an existing command) that extends flowai's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
 license: Based on https://github.com/anthropics/skills
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Command Creator

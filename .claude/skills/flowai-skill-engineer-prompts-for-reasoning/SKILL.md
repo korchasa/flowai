@@ -3,9 +3,6 @@ name: flowai-skill-engineer-prompts-for-reasoning
 description: >-
   Guide for writing prompts for reasoning/smart models (Gemini Pro, GPT-4o,
   Claude 3.5 Sonnet), focused on structure and context.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # HOW TO WRITE PROMPTS FOR REASONING MODELS

@@ -2,9 +2,6 @@
 name: flowai-commit
 description: Automated commit workflow with atomic grouping
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Commit Workflow

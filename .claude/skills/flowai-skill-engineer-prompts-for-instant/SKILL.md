@@ -3,9 +3,6 @@ name: flowai-skill-engineer-prompts-for-instant
 description: >-
   Guide for writing stable, effective prompts for instant/fast models (Gemini
   Flash, GPT-4o Mini, Haiku), suitable for beginners.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # HOW TO WRITE PROMPTS FOR INSTANT MODELS

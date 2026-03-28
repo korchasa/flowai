@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-interactive-teaching-materials
 description: Creates interactive HTML teaching materials with clickable state diagrams. Use when the user asks to produce an explorable tutorial artifact, not to answer a question.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Interactive Teaching Materials for Complex Processes

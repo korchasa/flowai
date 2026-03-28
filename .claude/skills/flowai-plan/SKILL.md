@@ -4,9 +4,6 @@ description: >-
   Create critiqued plan in documents/whiteboards/ using GODS framework with
   proactive uncertainty resolution
 disable-model-invocation: true
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Task Planning

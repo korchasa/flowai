@@ -1,9 +1,6 @@
 ---
 name: bench-all
 description: Run all framework benchmarks. Default is sequential (single `deno task bench`). Use `--parallel` for 5-subagent parallel mode. Triggers on "run all benchmarks", "bench all", "/bench-all".
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Run All Benchmarks

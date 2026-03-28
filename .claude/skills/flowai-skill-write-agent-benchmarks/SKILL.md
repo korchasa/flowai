@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-write-agent-benchmarks
 description: Create, maintain, and run evidence-based benchmarks for AI agents. Use when setting up testing infrastructure, writing new test scenarios, or evaluating agent performance.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Universal Agent Benchmarking Skill

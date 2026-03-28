@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-cursor-agent-integration
 description: Understand and interact with the cursor-agent CLI, including its output formats (JSON, text, stream-json), session management (resume), and integration with benchmarks. Use when working on cursor-agent CLI, benchmark runners, or automated agent interactions.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Cursor Agent Integration

@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-engineer-subagent
 description: Guide for creating effective Subagents (custom agent definitions). Use when users want to create a new subagent, set up task-specific agents, configure code reviewers, debuggers, or domain-specific assistants. Works across IDEs (Cursor, OpenCode).
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Subagent Creator

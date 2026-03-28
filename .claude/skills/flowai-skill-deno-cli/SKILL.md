@@ -1,9 +1,6 @@
 ---
 name: flowai-skill-deno-cli
 description: Manage all Deno capabilities via CLI (run, test, fmt, lint, task, add, etc.). Use this skill when you need to execute Deno commands, manage dependencies, run tests, or handle local development workflows.
-adapted:
-  upstream-version: "1.0.0"
-  date: "2026-03-28"
 ---
 
 # Deno CLI
