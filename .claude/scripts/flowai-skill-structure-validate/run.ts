@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-read
 
 /**
- * skill-structure-validate hook: auto-validate SKILL.md structure after edits.
+ * flowai-skill-structure-validate hook: auto-validate SKILL.md structure after edits.
  * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
  */
 

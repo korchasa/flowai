@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-run --allow-read
 
 /**
- * test-before-commit hook: block git commit if tests fail.
+ * flowai-test-before-commit hook: block git commit if tests fail.
  * PreToolUse hook — exit 0 = allow, exit 2 = block.
  */
 
@@ -55,7 +55,7 @@ if (import.meta.main) {
   }
 
   console.error(
-    `[test-before-commit] Running tests (${runner.marker})...`,
+    `[flowai-test-before-commit] Running tests (${runner.marker})...`,
   );
 
   const proc = new Deno.Command(runner.cmd[0], {
@@ -68,7 +68,7 @@ if (import.meta.main) {
 
   if (result.code !== 0) {
     console.error(
-      `[test-before-commit] Tests failed. Commit blocked.`,
+      `[flowai-test-before-commit] Tests failed. Commit blocked.`,
     );
     Deno.exit(2); // Block the commit
   }

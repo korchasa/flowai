@@ -136,7 +136,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `flowai-skill-interactive-teaching-materials` — interactive HTML teaching materials
 
 **Agents:**
-- `deep-research-worker` — research worker for deep research sub-tasks
+- `flowai-deep-research-worker` — research worker for deep research sub-tasks
 
 ### devtools
 

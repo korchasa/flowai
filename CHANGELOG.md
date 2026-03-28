@@ -369,7 +369,7 @@ Cursor IDE will automatically detect and load rules from new structure.
 * **catalog:** add flowai-commit agent for automated commit workflow ([3201199](https://github.com/korchasa/flowai/commit/32011996d074e25debb68f953d77c11de5cdcd91))
 * **catalog:** add flowai-convert-cursor-to-claude skill ([5c654a1](https://github.com/korchasa/flowai/commit/5c654a1138793b2df86698ab83665548638d654e))
 * **catalog:** add flowai-execute and flowai-plan agents ([bc10689](https://github.com/korchasa/flowai/commit/bc106897a40b26335c0523a4f02d476c82da051d))
-* **catalog:** add flowai-skill-deep-research skill and deep-research-worker agent ([46e6500](https://github.com/korchasa/flowai/commit/46e65000775e8d7228546d3235a60e74280b39d0))
+* **catalog:** add flowai-skill-deep-research skill and flowai-deep-research-worker agent ([46e6500](https://github.com/korchasa/flowai/commit/46e65000775e8d7228546d3235a60e74280b39d0))
 * **catalog:** disable model invocation for engineer and setup skills ([9542504](https://github.com/korchasa/flowai/commit/9542504107da35bbef0a29d1f2cb81578b078e9d))
 * command to build CLAUDE.md file using .cursor/rules ([cf61412](https://github.com/korchasa/flowai/commit/cf614122e8ab05b7c17624de5f7e0193f3471cc5))
 * **commands:** add analysis and gap filling step to execution workflow ([e4a4560](https://github.com/korchasa/flowai/commit/e4a45603b46657e5862b7b329728e90b7d1122b8))
