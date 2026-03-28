@@ -95,7 +95,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   `readonly` (bool, Cursor), `mode` (string, OpenCode), `opencode_tools` (map, OpenCode).
   `flowai` extracts IDE-relevant fields at install time via `transformAgent()`.
 - **Key Agents (4 canonical files):**
-  - `engineering/agents/deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flowai-skill-deep-research` orchestrator.
+  - `engineering/agents/flowai-deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flowai-skill-deep-research` orchestrator.
   - `core/agents/console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `core/agents/diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `core/agents/skill-executor.md`: Specialist in executing any prompt or task or specific skills.
@@ -189,7 +189,7 @@ graph TD
 - **Pack resolution flow:** Load config → expand `packs:` to resource lists (skills, agents, hooks, scripts from `framework/*/`) → apply `skills.include/exclude` filter → compute plan → write. `resolvePackResources()` returns `hookNames` and `scriptNames` alongside skills/agents.
 - **Automigration:** v1 config detected → rewrite as v1.1 with `packs:` listing all available packs (backward-compatible).
 - **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agent updates, hook installs) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]` with per-resource action and scaffolds.
-- **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `lint-on-write` (PostToolUse, ts/js/py linting), `test-before-commit` (PreToolUse, blocks commit w/o tests), `skill-structure-validate` (PostToolUse, SKILL.md validation), `mermaid-validate` (PostToolUse, Mermaid diagram validation).
+- **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `flowai-lint-on-write` (PostToolUse, ts/js/py linting), `flowai-test-before-commit` (PreToolUse, blocks commit w/o tests), `flowai-skill-structure-validate` (PostToolUse, SKILL.md validation), `flowai-mermaid-validate` (PostToolUse, Mermaid diagram validation).
 - **Script installation:** Copies to `.{ide}/scripts/` (simple file copy).
 - **Naming:** Pack directory names are the final installed names (e.g., `flowai-commit`, `flowai-skill-write-dep`). No name transformation at install time.
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.

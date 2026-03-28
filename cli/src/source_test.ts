@@ -165,7 +165,7 @@ Deno.test("extractPackAgentNames - extracts agents within a pack", () => {
     "framework/core/agents/diff-specialist.md",
     "framework/core/agents/console-expert.md",
     "framework/core/skills/commit/SKILL.md",
-    "framework/engineering/agents/deep-research-worker.md",
+    "framework/engineering/agents/flowai-deep-research-worker.md",
   ];
   assertEquals(
     extractPackAgentNames(paths, "core"),
@@ -173,7 +173,7 @@ Deno.test("extractPackAgentNames - extracts agents within a pack", () => {
   );
   assertEquals(
     extractPackAgentNames(paths, "engineering"),
-    ["deep-research-worker"],
+    ["flowai-deep-research-worker"],
   );
 });
 

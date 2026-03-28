@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-run --allow-read
 
 /**
- * lint-on-write hook: auto-lint ts/js/py files after Write/Edit.
+ * flowai-lint-on-write hook: auto-lint ts/js/py files after Write/Edit.
  * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
  */
 

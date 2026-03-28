@@ -305,7 +305,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 | Agent ID                | Description                              | Benchmarked | Scenario ID |
 | :---------------------- | :--------------------------------------- | :---------: | :---------- |
-| `deep-research-worker`  | Single-direction research worker         |     [ ]     |             |
+| `flowai-deep-research-worker`  | Single-direction research worker         |     [ ]     |             |
 | `flowai-console-expert`   | Complex console tasks without code edits |     [ ]     |             |
 | `flowai-diff-specialist`  | Analyze git diffs and plan commits       |     [ ]     |             |
 | `flowai-skill-executor`   | Execute specific skills or prompts       |     [ ]     |             |
@@ -491,7 +491,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Desc:** When `user_sync: true` in `.flowai.yaml` and ≥2 IDEs configured, propagate user-created resources (non-`flowai-*`, non-framework) across IDE config dirs. Canonical source = newest mtime.
 - **Acceptance:**
   - [x] Scans skills/agents in each IDE dir, skips `flowai-*` prefix. Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/user_sync_test.ts:39-53`
-  - [x] Skips framework-bundled resources by name (e.g., `deep-research-worker`). Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/sync.ts:148-150`
+  - [x] Skips framework-bundled resources by name (e.g., `flowai-deep-research-worker`). Evidence: `cli/src/user_sync.ts:77-78`, `cli/src/sync.ts:148-150`
   - [x] Merges by `(type, name)` across IDEs, picks canonical by newest mtime. Evidence: `cli/src/user_sync.ts:284-293`
   - [x] Agent frontmatter transformed per IDE via `crossTransformAgent()`. Evidence: `cli/src/user_sync.ts:219-226`
   - [x] Invalid YAML frontmatter: copies as-is with warning (no crash). Evidence: `cli/src/transform.ts:113-128`, `cli/src/transform_test.ts`
@@ -1143,7 +1143,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Acceptance:**
   - [x] **FR-23.1.1** `pack.yaml` format: `name` (string), `version` (semver), `description` (string). Evidence: `framework/core/pack.yaml`, `framework/deno/pack.yaml`, `framework/devtools/pack.yaml`, `framework/engineering/pack.yaml`, `framework/typescript/pack.yaml`
   - [x] **FR-23.1.2** Skills stored as `framework/<pack>/skills/<name>/SKILL.md`. Evidence: `framework/core/skills/flowai-commit/SKILL.md`, `framework/engineering/skills/flowai-skill-deep-research/SKILL.md`
-  - [x] **FR-23.1.3** Agents stored as `framework/<pack>/agents/<name>.md`. Evidence: `framework/core/agents/flowai-console-expert.md`, `framework/engineering/agents/deep-research-worker.md`
+  - [x] **FR-23.1.3** Agents stored as `framework/<pack>/agents/<name>.md`. Evidence: `framework/core/agents/flowai-console-expert.md`, `framework/engineering/agents/flowai-deep-research-worker.md`
   - [x] **FR-23.1.4** No dependencies between packs — each pack is self-contained. Evidence: by design, no cross-pack imports or references.
   - [x] **FR-23.1.5** `framework/skills/` and `framework/agents/` removed. All resources live in packs. Evidence: directories deleted, `cli/src/source.ts:109` regex `^framework\/([^/]+)\/pack\.yaml$`
 
@@ -1186,7 +1186,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 ### 3.24 Hook Resources (FR-24)
 
 - **Description:** Packs contain hooks — Deno TS scripts triggered by IDE events (PostToolUse, PreToolUse). Hooks are IDE-agnostic: stored as `hook.yaml` + `run.ts`, installed by flowai with IDE-specific configuration generation. Claude Code naming as canonical; flowai transforms for other IDEs.
-- **Use case scenario:** Pack `core` contains `lint-on-write` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
+- **Use case scenario:** Pack `core` contains `flowai-lint-on-write` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
 - **Priority:** Medium (new resource type, depends on FR-23).
 
 #### FR-24.1 Hook Format
@@ -1196,7 +1196,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   - [x] **FR-24.1.1** `hook.yaml` fields: `event`, `matcher` (optional), `description`, `timeout` (optional, default 30/600). Evidence: `cli/src/types.ts:48-56`, `cli/src/hooks.ts:62-64`
   - [x] **FR-24.1.2** Supported events: PostToolUse, PreToolUse. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:18-28` (EVENT_MAP, TOOL_MAP)
   - [x] **FR-24.1.3** `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
-  - [x] **FR-24.1.4** 4 framework hooks: `lint-on-write` (core), `test-before-commit` (core), `skill-structure-validate` (devtools), `mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
+  - [x] **FR-24.1.4** 4 framework hooks: `flowai-lint-on-write` (core), `flowai-test-before-commit` (core), `flowai-skill-structure-validate` (devtools), `flowai-mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
 
 #### FR-24.2 IDE-Specific Installation
 

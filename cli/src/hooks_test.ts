@@ -62,14 +62,14 @@ Deno.test("transformHookForClaude: generates correct structure", () => {
   };
   const result = transformHookForClaude(
     hook,
-    ".claude/scripts/lint-on-write/run.ts",
+    ".claude/scripts/flowai-lint-on-write/run.ts",
   );
   assertEquals(result.event, "PostToolUse");
   assertEquals(result.matcher, "Write|Edit");
   assertEquals(result.hooks.length, 1);
   assertEquals(result.hooks[0].type, "command");
   assertStringIncludes(result.hooks[0].command, "deno run -A");
-  assertStringIncludes(result.hooks[0].command, "lint-on-write/run.ts");
+  assertStringIncludes(result.hooks[0].command, "flowai-lint-on-write/run.ts");
   assertEquals(result.hooks[0].timeout, 30);
 });
 
@@ -93,7 +93,7 @@ Deno.test("transformHookForCursor: transforms event and matcher", () => {
   };
   const result = transformHookForCursor(
     hook,
-    ".cursor/scripts/lint-on-write/run.ts",
+    ".cursor/scripts/flowai-lint-on-write/run.ts",
   );
   assertEquals(result.event, "postToolUse");
   assertEquals(result.matcher, "Write|StrReplace");
@@ -107,19 +107,19 @@ Deno.test("transformHookForCursor: transforms event and matcher", () => {
 Deno.test("generateOpenCodePlugin: contains expected content", () => {
   const hooks = [
     {
-      name: "lint-on-write",
+      name: "flowai-lint-on-write",
       hook: {
         event: "PostToolUse",
         matcher: "Write|Edit",
         description: "Auto-lint",
       } as HookDefinition,
-      scriptPath: ".opencode/scripts/lint-on-write/run.ts",
+      scriptPath: ".opencode/scripts/flowai-lint-on-write/run.ts",
     },
   ];
   const result = generateOpenCodePlugin(hooks);
   assertStringIncludes(result, "tool.execute.after");
   assertStringIncludes(result, "deno run -A");
-  assertStringIncludes(result, "lint-on-write/run.ts");
+  assertStringIncludes(result, "flowai-lint-on-write/run.ts");
   assertStringIncludes(result, "satisfies Plugin");
 });
 
@@ -143,7 +143,7 @@ Deno.test("mergeClaudeHooks: adds new hooks preserving user hooks", () => {
       hooks: [
         {
           type: "command" as const,
-          command: "deno run -A .claude/scripts/lint-on-write/run.ts",
+          command: "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
           timeout: 30,
         },
       ],
@@ -164,7 +164,8 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
           hooks: [
             {
               type: "command",
-              command: "deno run -A .claude/scripts/lint-on-write/run.ts",
+              command:
+                "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
               timeout: 30,
             },
           ],
@@ -179,7 +180,7 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
       hooks: [
         {
           type: "command" as const,
-          command: "deno run -A .claude/scripts/lint-on-write/run.ts",
+          command: "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
           timeout: 60,
         },
       ],
@@ -188,7 +189,7 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
   const manifest = {
     version: 1,
     hooks: {
-      "lint-on-write": {
+      "flowai-lint-on-write": {
         event: "PostToolUse",
         matcher: "Write|Edit",
         installedAt: "2026-01-01T00:00:00Z",
@@ -210,7 +211,7 @@ Deno.test("mergeCursorHooks: preserves version and merges", () => {
   const newHooks = [
     {
       event: "postToolUse",
-      command: "deno run -A .cursor/scripts/lint-on-write/run.ts",
+      command: "deno run -A .cursor/scripts/flowai-lint-on-write/run.ts",
       type: "command" as const,
       matcher: "Write|StrReplace",
       timeout: 30,
@@ -273,7 +274,7 @@ Deno.test("readManifest: valid JSON parsed correctly", () => {
   const json = JSON.stringify({
     version: 1,
     hooks: {
-      "lint-on-write": {
+      "flowai-lint-on-write": {
         event: "PostToolUse",
         matcher: "Write|Edit",
         installedAt: "2026-01-01T00:00:00Z",
@@ -281,7 +282,7 @@ Deno.test("readManifest: valid JSON parsed correctly", () => {
     },
   });
   const m = readManifest(json);
-  assertEquals(m.hooks["lint-on-write"].event, "PostToolUse");
+  assertEquals(m.hooks["flowai-lint-on-write"].event, "PostToolUse");
 });
 
 Deno.test("readManifest: invalid JSON returns empty", () => {
@@ -293,7 +294,7 @@ Deno.test("readManifest: invalid JSON returns empty", () => {
 Deno.test("buildManifest: creates manifest from hook defs", () => {
   const hookDefs = [
     {
-      name: "lint-on-write",
+      name: "flowai-lint-on-write",
       hook: {
         event: "PostToolUse",
         matcher: "Write|Edit",
@@ -301,7 +302,7 @@ Deno.test("buildManifest: creates manifest from hook defs", () => {
       } as HookDefinition,
     },
     {
-      name: "test-before-commit",
+      name: "flowai-test-before-commit",
       hook: {
         event: "PreToolUse",
         matcher: "Bash",
@@ -312,7 +313,7 @@ Deno.test("buildManifest: creates manifest from hook defs", () => {
   const m = buildManifest(hookDefs);
   assertEquals(m.version, 1);
   assertEquals(Object.keys(m.hooks).length, 2);
-  assertEquals(m.hooks["lint-on-write"].event, "PostToolUse");
-  assertEquals(m.hooks["lint-on-write"].matcher, "Write|Edit");
-  assertEquals(m.hooks["test-before-commit"].event, "PreToolUse");
+  assertEquals(m.hooks["flowai-lint-on-write"].event, "PostToolUse");
+  assertEquals(m.hooks["flowai-lint-on-write"].matcher, "Write|Edit");
+  assertEquals(m.hooks["flowai-test-before-commit"].event, "PreToolUse");
 });

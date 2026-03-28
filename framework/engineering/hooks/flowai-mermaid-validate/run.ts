@@ -1,7 +1,7 @@
 #!/usr/bin/env -S deno run --allow-run --allow-read
 
 /**
- * mermaid-validate hook: auto-validate Mermaid diagrams after .md/.mmd edits.
+ * flowai-mermaid-validate hook: auto-validate Mermaid diagrams after .md/.mmd edits.
  * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
  */
 

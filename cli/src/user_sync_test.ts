@@ -454,11 +454,14 @@ Deno.test("runUserSync - returns early with <2 IDEs", async () => {
 
 Deno.test("scanIdeResources - skips agents by frameworkNames set", async () => {
   const fs = new InMemoryFsAdapter();
-  fs.files.set("/cwd/.claude/agents/deep-research-worker.md", AGENT_CONTENT);
+  fs.files.set(
+    "/cwd/.claude/agents/flowai-deep-research-worker.md",
+    AGENT_CONTENT,
+  );
   fs.files.set("/cwd/.claude/agents/my-agent.md", AGENT_CONTENT);
   fs.dirs.add("/cwd/.claude/agents");
 
-  const fwNames = new Set(["deep-research-worker"]);
+  const fwNames = new Set(["flowai-deep-research-worker"]);
   const results = await scanIdeResources(
     "/cwd",
     KNOWN_IDES.claude,
@@ -473,15 +476,15 @@ Deno.test("scanIdeResources - skips agents by frameworkNames set", async () => {
 Deno.test("scanIdeResources - skips skills by frameworkNames set", async () => {
   const fs = new InMemoryFsAdapter();
   fs.files.set(
-    "/cwd/.claude/skills/deep-research-worker/SKILL.md",
+    "/cwd/.claude/skills/flowai-deep-research-worker/SKILL.md",
     SKILL_CONTENT,
   );
   fs.files.set("/cwd/.claude/skills/my-skill/SKILL.md", SKILL_CONTENT);
   fs.dirs.add("/cwd/.claude/skills");
-  fs.dirs.add("/cwd/.claude/skills/deep-research-worker");
+  fs.dirs.add("/cwd/.claude/skills/flowai-deep-research-worker");
   fs.dirs.add("/cwd/.claude/skills/my-skill");
 
-  const fwNames = new Set(["deep-research-worker"]);
+  const fwNames = new Set(["flowai-deep-research-worker"]);
   const results = await scanIdeResources(
     "/cwd",
     KNOWN_IDES.claude,
