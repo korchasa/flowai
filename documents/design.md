@@ -192,6 +192,7 @@ graph TD
 - **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `flowai-lint-on-write` (PostToolUse, ts/js/py linting), `flowai-test-before-commit` (PreToolUse, blocks commit w/o tests), `flowai-skill-structure-validate` (PostToolUse, SKILL.md validation), `flowai-mermaid-validate` (PostToolUse, Mermaid diagram validation).
 - **Script installation:** Copies to `.{ide}/scripts/` (simple file copy).
 - **Naming:** Pack directory names are the final installed names (e.g., `flowai-commit`, `flowai-skill-write-dep`). No name transformation at install time.
+- **Dev-only file exclusion:** Bundle and sync exclude dev-only files from distribution: benchmark scenarios (`/benchmarks/`) and test files (`_test.*`). Filtering at two levels: `bundle-framework.ts` (build time) and `readSkillFiles`/`readPackSkillFiles` in `sync.ts` (runtime).
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11

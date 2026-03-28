@@ -19,6 +19,8 @@ for await (
   const entry of walk(FRAMEWORK_DIR, { includeFiles: true, includeDirs: false })
 ) {
   const rel = `framework/${relative(FRAMEWORK_DIR, entry.path)}`;
+  // Skip dev-only files (benchmarks, tests) — not distributed to users
+  if (/\/benchmarks\//.test(rel) || /_test\.\w+$/.test(rel)) continue;
   bundle[rel] = await Deno.readTextFile(entry.path);
 }
 

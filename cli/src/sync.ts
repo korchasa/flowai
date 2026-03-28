@@ -488,8 +488,15 @@ export async function processPlan(
   result.errors.push(...writeResult.errors);
 }
 
+/** Check if a path is dev-only (benchmarks or test files) and should not be distributed */
+function isDevOnlyPath(path: string): boolean {
+  if (/\/benchmarks\//.test(path)) return true;
+  if (/_test\.\w+$/.test(path)) return true;
+  return false;
+}
+
 /** Read skill files from legacy flat framework/skills/ */
-async function readSkillFiles(
+export async function readSkillFiles(
   skillNames: string[],
   allPaths: string[],
   source: FrameworkSource,
@@ -497,7 +504,9 @@ async function readSkillFiles(
   const files: UpstreamFile[] = [];
   for (const name of skillNames) {
     const prefix = `framework/skills/${name}/`;
-    const paths = allPaths.filter((p) => p.startsWith(prefix));
+    const paths = allPaths.filter((p) =>
+      p.startsWith(prefix) && !isDevOnlyPath(p)
+    );
     for (const path of paths) {
       const content = await source.readFile(path);
       const relativePath = path.substring("framework/skills/".length);
@@ -508,7 +517,7 @@ async function readSkillFiles(
 }
 
 /** Read skill files from pack structure framework/<pack>/skills/ */
-async function readPackSkillFiles(
+export async function readPackSkillFiles(
   skillNames: string[],
   allPaths: string[],
   source: FrameworkSource,
@@ -516,11 +525,11 @@ async function readPackSkillFiles(
   const files: UpstreamFile[] = [];
   const nameSet = new Set(skillNames);
 
-  // Find all pack skill paths matching requested names
+  // Find all pack skill paths matching requested names (exclude dev-only files)
   const packSkillRegex = /^framework\/[^/]+\/skills\/([^/]+)\//;
   for (const path of allPaths) {
     const match = path.match(packSkillRegex);
-    if (match && nameSet.has(match[1])) {
+    if (match && nameSet.has(match[1]) && !isDevOnlyPath(path)) {
       const content = await source.readFile(path);
       // Extract relative path: strip framework/<pack>/skills/ → <name>/...
       const skillName = match[1];

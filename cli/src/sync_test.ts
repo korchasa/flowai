@@ -1,5 +1,11 @@
 import { assertEquals } from "@std/assert";
-import { filterNames, resolvePackResources } from "./sync.ts";
+import {
+  filterNames,
+  readPackSkillFiles,
+  readSkillFiles,
+  resolvePackResources,
+} from "./sync.ts";
+import { InMemoryFrameworkSource } from "./source.ts";
 import type { FlowConfig } from "./types.ts";
 
 Deno.test("filterNames - returns all when no include/exclude", () => {
@@ -115,4 +121,73 @@ Deno.test("resolvePackResources - packs: [core] only includes core scripts", () 
   const config = makeConfig({ packs: ["core"] });
   const result = resolvePackResources(PACK_PATHS_WITH_HOOKS_SCRIPTS, config);
   assertEquals(result.scriptNames, ["check.ts"]);
+});
+
+// --- Dev-only file exclusion tests (benchmarks + tests) ---
+
+Deno.test("readPackSkillFiles - excludes benchmarks and test files", async () => {
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      ["framework/core/skills/flowai-commit/SKILL.md", "# Commit"],
+      ["framework/core/skills/flowai-commit/prompt.md", "prompt"],
+      ["framework/core/skills/flowai-commit/scripts/helper.ts", "code"],
+      [
+        "framework/core/skills/flowai-commit/scripts/helper_test.ts",
+        "test code",
+      ],
+      [
+        "framework/core/skills/flowai-commit/benchmarks/basic/mod.ts",
+        "bench code",
+      ],
+      [
+        "framework/core/skills/flowai-commit/benchmarks/basic/fixture/file.md",
+        "fixture",
+      ],
+    ]),
+  );
+  const allPaths = [
+    "framework/core/skills/flowai-commit/SKILL.md",
+    "framework/core/skills/flowai-commit/prompt.md",
+    "framework/core/skills/flowai-commit/scripts/helper.ts",
+    "framework/core/skills/flowai-commit/scripts/helper_test.ts",
+    "framework/core/skills/flowai-commit/benchmarks/basic/mod.ts",
+    "framework/core/skills/flowai-commit/benchmarks/basic/fixture/file.md",
+  ];
+
+  const files = await readPackSkillFiles(["flowai-commit"], allPaths, source);
+  const paths = files.map((f) => f.path);
+
+  assertEquals(paths, [
+    "flowai-commit/SKILL.md",
+    "flowai-commit/prompt.md",
+    "flowai-commit/scripts/helper.ts",
+  ]);
+});
+
+Deno.test("readSkillFiles - excludes benchmarks and test files", async () => {
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      ["framework/skills/flowai-commit/SKILL.md", "# Commit"],
+      ["framework/skills/flowai-commit/scripts/run.ts", "code"],
+      ["framework/skills/flowai-commit/scripts/run_test.ts", "test"],
+      [
+        "framework/skills/flowai-commit/benchmarks/basic/mod.ts",
+        "bench code",
+      ],
+    ]),
+  );
+  const allPaths = [
+    "framework/skills/flowai-commit/SKILL.md",
+    "framework/skills/flowai-commit/scripts/run.ts",
+    "framework/skills/flowai-commit/scripts/run_test.ts",
+    "framework/skills/flowai-commit/benchmarks/basic/mod.ts",
+  ];
+
+  const files = await readSkillFiles(["flowai-commit"], allPaths, source);
+  const paths = files.map((f) => f.path);
+
+  assertEquals(paths, [
+    "flowai-commit/SKILL.md",
+    "flowai-commit/scripts/run.ts",
+  ]);
 });
