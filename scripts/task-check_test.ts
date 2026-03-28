@@ -17,7 +17,7 @@ Deno.test("buildCheckCommands returns expected steps", () => {
   );
   assertEquals(
     commands[4].args.join(" "),
-    "test -A --ignore=scripts/benchmarks/lib/integration.test.ts scripts",
+    "test -A --ignore=scripts/benchmarks/lib/integration_test.ts scripts",
   );
   assertEquals(commands[5].args.join(" "), "test -A cli/src");
   assertEquals(
