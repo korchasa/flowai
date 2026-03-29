@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.4](https://github.com/korchasa/flowai/compare/v0.4.3...v0.4.4) (2026-03-29)
+
+
+### Code Refactoring
+
+* **benchmarks:** expand benchmark coverage and compress docs to reference benchmarks ([11f5aa8](https://github.com/korchasa/flowai/commit/11f5aa8e39f00f7fdc5823f23a3d6883dcd039eb))
+
 ### [0.4.3](https://github.com/korchasa/flowai/compare/v0.4.2...v0.4.3) (2026-03-29)
 
 
