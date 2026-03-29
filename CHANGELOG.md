@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.2](https://github.com/korchasa/flowai/compare/v0.4.1...v0.4.2) (2026-03-28)
+
+
+### Bug Fixes
+
+* **cli:** exclude benchmarks and test files from skill distribution ([de91c21](https://github.com/korchasa/flowai/commit/de91c21d38fd8835dfa7e23fec950aad749b5bbb))
+
+
+### Code Refactoring
+
+* add flowai- prefix to all framework hooks and agents ([b2ab74e](https://github.com/korchasa/flowai/commit/b2ab74e84e51d67415bb56edba38f7ee9c52693c))
+
 ### [0.4.1](https://github.com/korchasa/flowai/compare/v0.4.0...v0.4.1) (2026-03-28)
 
 
