@@ -80,5 +80,17 @@ Keep answers brief and affirmative.`;
         "Did the agent correctly skip the /flowai-reflect suggestion? In a simple session without errors, retries, or user corrections, the agent must NOT suggest running /flowai-reflect.",
       critical: false,
     },
+    {
+      id: "two_phases_sequential",
+      description:
+        "Did the agent complete Phase 1 (review) fully BEFORE starting Phase 2 (commit)? Review findings must appear before any git commit.",
+      critical: true,
+    },
+    {
+      id: "transparency_both_results",
+      description:
+        "Did the agent report BOTH review results AND commit results to the user (FR-18.5)?",
+      critical: false,
+    },
   ];
 }();

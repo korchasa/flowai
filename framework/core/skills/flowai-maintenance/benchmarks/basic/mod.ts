@@ -36,5 +36,23 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
       description: "Did the report identify unusedExport?",
       critical: true,
     },
+    {
+      id: "constructive_fixes",
+      description:
+        "Does every identified issue in the report have a 'Proposed Fix' or recommendation?",
+      critical: false,
+    },
+    {
+      id: "report_path_format",
+      description:
+        "Is the report saved to 'documents/whiteboards/YYYY-MM-DD-maintenance.md' with a timestamped header?",
+      critical: false,
+    },
+    {
+      id: "file_length_check",
+      description:
+        "Did the report check for files exceeding 500 lines or functions exceeding 50 lines?",
+      critical: false,
+    },
   ];
 }();

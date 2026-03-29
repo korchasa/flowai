@@ -197,35 +197,15 @@ graph TD
 
 ### 3.6 Conventional Commits `agent:` Type — FR-11
 
-- **Purpose:** Dedicated commit type for AI agent/skill configuration changes.
-- **Integration point:** `flowai-commit` SKILL.md — added to recognized types list.
-- **Auto-detection logic:** If all staged files match patterns
-  (`framework/**`, `.claude/agents/**`, `.claude/skills/**`,
-  `AGENTS.md`) -> suggest `agent:` type.
-- **Affected components:** `flowai-commit` SKILL.md, `flowai-diff-specialist` agent.
+- **Purpose:** Dedicated commit type for AI agent/skill config changes.
+- **Behavioral requirements:** See benchmarks `flowai-commit-agent-type`.
 
 ### 3.7 flowai-init Multi-File Architecture + Diff-Based Updates — FR-12
 
-- **Purpose:** Preserve user edits during re-initialization. Eliminate monolithic
-  AGENTS.md. Enable agent-driven file generation.
-- **Architecture:** 3 AGENTS.md files:
-  - `./AGENTS.md` — core agent rules, project metadata, planning rules, TDD flow.
-  - `./documents/AGENTS.md` — documentation system rules (SRS/SDS/GODS formats).
-  - `./scripts/AGENTS.md` — development commands (standard interface, detected commands).
-- **Generation approach:** Agent reads template files from `assets/` as reference
-  and writes files directly. No manifest or script-driven rendering.
-- **Brownfield extraction:** Agent semantically identifies documentation and
-  script sections in existing `./AGENTS.md`, extracts them to subdirectory files,
-  and removes duplicates from root. Templates are fallbacks for greenfield only.
-- **Preservation:** User's custom project rules preserved. Extracted content takes
-  priority over template content.
-- **Diff-based update:** Agent shows diff per file, asks user for confirmation.
-- **Documents guard:** Skip existing files exceeding line thresholds (50 for SRS/SDS). Whiteboards directory created on first use by planning/answer skills.
+- **Purpose:** Preserve user edits during re-initialization. 3 AGENTS.md files
+  (`./`, `./documents/`, `./scripts/`). Agent-driven generation from templates.
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
-  Template rendering removed; agent handles generation natively.
-- **IDE compat:** Cursor, Claude Code support subdir AGENTS.md natively.
-  OpenCode needs `opencode.json` glob workaround (agent checks and warns).
-- **Deps:** Deno std via `jsr:` specifiers (`jsr:@std/path`). No bare specifiers.
+- **Behavioral requirements:** See benchmarks `flowai-init-*` (6 scenarios).
 
 ### 3.8 Python-to-Deno Migration — FR-13
 
@@ -244,36 +224,16 @@ graph TD
 
 ### 3.9 AI Devcontainer Setup — FR-20
 
-- **Purpose:** Generate `.devcontainer/` config optimized for AI IDE development.
-- **Architecture:** 7-step skill workflow (detect stack → discover features → detect
-  existing → determine capabilities → generate → write → verify). 4 reference docs
-  (`devcontainer-template`, `features-catalog`, `dockerfile-patterns`, `firewall-template`).
-- **Stack detection:** Scans project root for indicator files (`deno.json`,
-  `package.json`, `pyproject.toml`, `go.mod`, `Cargo.toml`). Maps to MCR base images.
-  Multi-stack → user picks primary, secondary added as features.
-- **Feature discovery:** Indicator→need mapping in `references/features-catalog.md`.
-  Categories: secondary runtimes (auto), build tools (auto), infra/cloud (suggest),
-  databases (suggest), testing (suggest). Always includes `common-utils` + `github-cli`.
-- **AI CLI support:** 4 CLIs via registry features (Claude Code, OpenCode, Cursor CLI,
-  Gemini CLI). Config persistence via Docker volumes. Global skills via read-only bind
-  mount to `*-host` path + `postStartCommand` sync with `cp -rL` (dereferences symlinks).
-- **Security hardening:** Optional `init-firewall.sh` with default-deny iptables +
-  stack-aware domain allowlist. Requires `NET_ADMIN`/`NET_RAW` capabilities + custom
-  Dockerfile.
-- **Idempotency:** Detects existing `.devcontainer/`, shows diff, asks per-file
-  confirmation.
-- **Integration:** Invoked standalone or delegated from `flowai-init` step 11.
+- **Purpose:** Generate `.devcontainer/` config for AI IDE development.
+- **Behavioral requirements:** See benchmarks `flowai-skill-setup-ai-ide-devcontainer-*` (5 scenarios).
 - **Deps:** None (pure SKILL.md, agent-driven generation).
 
 ### 3.10 Framework Update Skill — `flowai-update`
 
-- **Purpose:** Single entry point for updating framework + migrating scaffolded project artifacts.
-- **Location:** `framework/core/skills/flowai-update/SKILL.md`.
-- **Workflow:** 7 steps: update CLI → sync → parse sync output → migrate scaffolded artifacts → propose → confirm → commit.
-- **Scaffolded artifacts:** Files created once by setup skills, then owned by the project. Mapping declared in `pack.yaml` `scaffolds:` field (skill-name → artifact paths). `flowai sync` includes scaffolds info in its `>>> ACTIONS REQUIRED` output.
-- **Rich sync output:** `flowai sync` produces instruction-oriented output with `>>> ACTIONS REQUIRED` / `>>> NO ACTIONS REQUIRED` sections. Lists updated/created/deleted skills with inline scaffolded artifact paths. flowai-update parses this output instead of manual `git status` discovery.
-- **CLI integration:** `flowai` bare command is no-op inside IDE (env var check: `CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`). `flowai sync` required explicitly. See `cli/src/ide.ts:isInsideIDE()`.
-- **Deps:** None (pure SKILL.md, agent-driven migration).
+- **Purpose:** Single entry point for updating framework + migrating scaffolded artifacts.
+- **Scaffolded artifacts:** Mapping declared in `pack.yaml` `scaffolds:` field.
+- **CLI integration:** `flowai` bare command is no-op inside IDE. `flowai sync` required explicitly.
+- **Behavioral requirements:** See benchmarks `flowai-update-*` (4 scenarios).
 
 ## 4. Data and Storage
 

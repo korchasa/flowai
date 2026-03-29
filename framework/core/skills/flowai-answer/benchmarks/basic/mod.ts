@@ -30,5 +30,17 @@ export const AnswerBasicBench = new class extends BenchmarkSkillScenario {
         "Did the agent correctly identify that bcrypt is used for hashing as required?",
       critical: true,
     },
+    {
+      id: "read_only",
+      description:
+        "Did the agent keep repo files unchanged (no edits to source code, config, or other project files)?",
+      critical: true,
+    },
+    {
+      id: "cross_check",
+      description:
+        "Did the agent cross-check the implementation against the requirements (compare code with docs)?",
+      critical: false,
+    },
   ];
 }();

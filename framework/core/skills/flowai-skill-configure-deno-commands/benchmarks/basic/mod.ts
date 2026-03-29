@@ -84,5 +84,23 @@ export const ConfigureDenoCommandsBasicBench = new class
         "Does check.ts avoid external dependencies (no cliffy, no npm packages) — only Deno stdlib or built-in APIs?",
       critical: true,
     },
+    {
+      id: "check_sequential_prerequisites",
+      description:
+        "If the project has build/codegen steps, does check.ts ensure they complete before parallel checks start (sequential prerequisites)?",
+      critical: false,
+    },
+    {
+      id: "check_realtime_progress",
+      description:
+        "Does check.ts print a status line when each command starts and when it finishes (pass/fail) for real-time progress?",
+      critical: true,
+    },
+    {
+      id: "check_no_output_loss",
+      description:
+        "Does check.ts print ALL stdout and stderr from every check regardless of success/failure — no output is lost?",
+      critical: true,
+    },
   ];
 }();

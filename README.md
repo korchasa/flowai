@@ -149,7 +149,6 @@ Skill and agent authoring tools.
 - `flowai-skill-engineer-hook` — create/modify a hook
 - `flowai-skill-engineer-subagent` — create/modify a subagent
 - `flowai-skill-write-agent-benchmarks` — agent benchmarks
-- `flowai-skill-cursor-agent-integration` — cursor-agent CLI integration
 
 ### deno
 

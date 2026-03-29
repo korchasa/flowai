@@ -55,5 +55,17 @@ export const ReflectContextBench = new class extends BenchmarkSkillScenario {
         "Did the agent present corrective actions in a structured format (table or categorized list)?",
       critical: false,
     },
+    {
+      id: "no_file_changes",
+      description:
+        "Did the agent NOT modify any project files (reflect is analysis-only, no changes to agent instructions/rules)?",
+      critical: true,
+    },
+    {
+      id: "specific_references",
+      description:
+        "Did the agent cite specific files or commands when suggesting improvements?",
+      critical: false,
+    },
   ];
 }();

@@ -41,5 +41,16 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
         "Did the agent offer to critique the plan after detailing the solution?",
       critical: false,
     },
+    {
+      id: "no_code_changes",
+      description:
+        "Did the agent NOT modify any source code files (only whiteboard file in documents/whiteboards/)?",
+      critical: true,
+    },
+    {
+      id: "no_switch_mode",
+      description: "Did the logs NOT contain 'SwitchMode'?",
+      critical: true,
+    },
   ];
 }();
