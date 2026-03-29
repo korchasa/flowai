@@ -70,5 +70,33 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
         "Does the spec contain a '## Definition of Done' section with measurable criteria?",
       critical: true,
     },
+    {
+      id: "only_spec_file_modified",
+      description:
+        "Did the agent ONLY create/modify 'documents/spec-*.md' and NOT touch any source code files?",
+      critical: true,
+    },
+    {
+      id: "phase_size_guard",
+      description:
+        "Does each phase contain no more than 50 requirements/tasks?",
+      critical: false,
+    },
+    {
+      id: "task_file_target",
+      description: "Do individual tasks target 5 or fewer files each?",
+      critical: false,
+    },
+    {
+      id: "no_switch_mode",
+      description: "Did the logs NOT contain 'SwitchMode'?",
+      critical: true,
+    },
+    {
+      id: "dependency_ordering",
+      description:
+        "Do phases have dependency ordering with prerequisites (no circular dependencies)?",
+      critical: false,
+    },
   ];
 }();

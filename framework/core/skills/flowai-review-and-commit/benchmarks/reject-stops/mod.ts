@@ -63,5 +63,11 @@ NEVER ask the agent to fix anything. NEVER ask for another review. Just acknowle
         "Did the agent output review findings to the user explaining the issues?",
       critical: true,
     },
+    {
+      id: "gate_enforced",
+      description:
+        "Did the agent enforce the gate logic: after 'Request Changes' verdict, it stopped without proceeding to commit phase?",
+      critical: true,
+    },
   ];
 }();

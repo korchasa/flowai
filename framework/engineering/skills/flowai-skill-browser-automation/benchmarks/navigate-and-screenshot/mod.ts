@@ -44,5 +44,11 @@ export const BrowserAutomationNavigateBench = new class
         "Did the agent close the browser session (if one was opened)?",
       critical: false,
     },
+    {
+      id: "snapshot_first",
+      description:
+        "Did the agent observe the page (snapshot/DOM/content) BEFORE attempting interactions?",
+      critical: false,
+    },
   ];
 }();

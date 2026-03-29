@@ -53,5 +53,11 @@ export const CommitBasicBench = new class extends BenchmarkSkillScenario {
       description: "Is the final git status clean?",
       critical: true,
     },
+    {
+      id: "git_pager_cat",
+      description:
+        "Did the agent use GIT_PAGER=cat (or --no-pager) for git commands to avoid interactive pagers?",
+      critical: false,
+    },
   ];
 }();

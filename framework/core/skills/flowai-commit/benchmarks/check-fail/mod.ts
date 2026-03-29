@@ -37,5 +37,11 @@ export const CommitCheckFailBench = new class extends BenchmarkSkillScenario {
       description: "Did the agent ABORT the commit process (no new commits)?",
       critical: true,
     },
+    {
+      id: "error_stop_protocol",
+      description:
+        "Did the agent STOP after the check failure without auto-correcting the code (investigate, propose fix, STOP)?",
+      critical: true,
+    },
   ];
 }();

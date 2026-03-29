@@ -25,5 +25,17 @@ export const InvestigateBasicBench = new class extends BenchmarkSkillScenario {
         "Did the agent STOP after proposing hypotheses and ask the user to select one?",
       critical: true,
     },
+    {
+      id: "hypothesis_board",
+      description:
+        "Did the agent display a 'Hypothesis Board' with probabilities or confidence levels for each hypothesis?",
+      critical: false,
+    },
+    {
+      id: "no_production_changes",
+      description:
+        "Did the agent NOT make any production code changes (no file edits before user approval)?",
+      critical: true,
+    },
   ];
 }();

@@ -96,5 +96,11 @@ export const CommitConsolidateBench = new class extends BenchmarkSkillScenario {
       description: "Is the final git status clean?",
       critical: true,
     },
+    {
+      id: "no_user_prompt_for_split",
+      description:
+        "Did the agent commit automatically without asking the user whether to split or consolidate?",
+      critical: false,
+    },
   ];
 }();

@@ -56,89 +56,34 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
 ### 3.1 Command Execution (FR-1)
 
 - **Description:** The system must provide executable workflows for common
-  development tasks, accessible via chat commands.
-- **Use case scenario:** User types `/commit` to start a commit workflow. Agent
-  reads the command file and follows the steps.
-- **Acceptance criteria:**
-  - [x] Support for task commands including planning, execution, investigation,
-        review, and documentation. Evidence: `framework/skills/flowai-plan/SKILL.md:9`,
-        `framework/skills/flowai-commit/SKILL.md:7`,
-        `framework/skills/flowai-review/SKILL.md:7`,
-        `framework/skills/flowai-investigate/SKILL.md:7`,
-        `framework/skills/flowai-answer/SKILL.md:9`
-  - [x] Commands follow `/<command>` naming convention (file name without
-        `task-` prefix). Evidence: `framework/skills/flowai-plan/SKILL.md:2`,
-        `framework/skills/flowai-commit/SKILL.md:2`,
-        `framework/skills/flowai-investigate/SKILL.md:2`
-  - [x] Each command provides guided workflow with checklist. Evidence:
-        `framework/skills/flowai-plan/SKILL.md:36-63`,
-        `framework/skills/flowai-commit/SKILL.md:54-97`
-  - [x] flowai-init configures development commands via specialized skills (see FR-8).
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 10 "Configure Development Commands"
+  development tasks, accessible via chat commands (`/<command>`).
+- **Acceptance verified by benchmarks:** See Component Coverage Matrix (section 3.8) — all commands benchmarked.
 
 ### 3.2 Rule Enforcement (FR-2)
 
 - **Description:** The system must automatically apply development rules and
-  coding standards.
-- **Use case scenario:** Agent writes code. The system provides context on
-  coding style (e.g., TypeScript, Swift) and principles (e.g., Zen, TDD).
-- **Acceptance criteria:**
-  - [x] Code style rules (TS, Swift, etc.). Evidence:
-        `framework/skills/flowai-setup-agent-code-style-ts-deno/SKILL.md:17-35`,
-        `framework/skills/flowai-setup-agent-code-style-ts-strict/SKILL.md:17-105`
-  - [x] Development principles (Autonomous, Zen, TDD). Evidence:
-        `AGENTS.md:92-105`, `AGENTS.md:1-20`
-  - [x] Documentation standards. Evidence: `documents/AGENTS.md:1-127`,
-        `AGENTS.md:87-90`
-  - [x] Translation of all project documentation and benchmarks README to English.
-        Evidence: `AGENTS.md:9`, `documents/AGENTS.md:119`
+  coding standards (code style, TDD, documentation).
+- **Acceptance verified by benchmarks:** `flowai-setup-agent-code-style-ts-deno-basic`, `flowai-setup-agent-code-style-ts-strict-basic`
 
 ### 3.3 Documentation Management (FR-3)
 
-- **Description:** The system must define and enforce documentation schemas to
-  maintain project knowledge.
-- **Use case scenario:** Agent updates project documentation. The system ensures
-  it follows the RDS-SDS or Cline-bank schema.
-- **Acceptance criteria:**
-  - [x] Support for different documentation schemas. Evidence:
-        `documents/AGENTS.md:21-49` (SRS), `documents/AGENTS.md:50-76` (SDS)
-  - [x] Instructions for compact documentation. Evidence:
-        `documents/AGENTS.md:116-127`
+- **Description:** The system must define and enforce documentation schemas
+  (SRS/SDS) to maintain project knowledge.
+- **Acceptance:** Enforced by `documents/AGENTS.md` rules. Evidence: `documents/AGENTS.md`.
 
 ### 3.4 Automation & How-To (FR-4)
 
-- **Description:** The system must provide guides for complex or situational
-  tasks.
-- **Use case scenario:** User asks how to fix tests. Agent retrieves
-  `flowai-skill-fix-tests/SKILL.md` and follows the procedure.
-- **Acceptance criteria:**
-  - [x] Support for 19 how-to guides covering QA, testing, diagrams, prompts,
-        GitHub management, Deno tooling, research, benchmarks, and documentation.
-        Evidence: `framework/skills/flowai-skill-*/SKILL.md` (19 directories)
-  - [x] Guides follow `flowai-skill-*/` directory naming convention with `SKILL.md`
-        files. Evidence: `framework/skills/flowai-skill-conduct-qa-session/SKILL.md`,
-        `framework/skills/flowai-skill-draw-mermaid-diagrams/SKILL.md`,
-        `framework/skills/flowai-skill-deep-research/SKILL.md`
-  - [x] Each guide provides step-by-step instructions for specific scenarios.
-        Evidence: `framework/skills/flowai-skill-draw-mermaid-diagrams/SKILL.md:8-16`,
-        `framework/skills/flowai-skill-deep-research/SKILL.md:28-210`
+- **Description:** The system must provide guides (`flowai-skill-*`) for complex
+  or situational tasks (QA, testing, diagrams, prompts, research, etc.).
+- **Acceptance verified by benchmarks:** See Component Coverage Matrix (section 3.8) — all skills benchmarked.
 
 ### 3.5 Project Maintenance (FR-5)
 
-- **Description:** The system must provide automated project maintenance
-  capabilities through scripts.
-- **Use case scenario:** Developer runs `deno task check` to validate project
-  integrity. Tasks perform linting, testing, and other checks.
-- **Acceptance criteria:**
+- **Description:** The system must provide automated project maintenance via
+  `deno task check` (linting, testing, validation).
+- **Acceptance:**
   - [x] Deno tasks configured in `deno.json`. Evidence: `deno.json:11-18`
-  - [x] Task scripts stored in `./scripts/` and invoked via `deno task`. Evidence:
-        `scripts/task-check.ts`, `scripts/task-test.ts`, `scripts/task-dev.ts`,
-        `deno.json:12-17`
-  - [x] Support for check, test, and dev commands. Evidence: `deno.json:12-14`
-  - [x] Automated quality assurance workflows. Evidence:
-        `framework/skills/flowai-review/SKILL.md:56-140`
-  - [x] Development commands are set up during project initialization (see FR-8).
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 10 "Configure Development Commands"
+  - [x] Task scripts in `./scripts/`. Evidence: `scripts/task-check.ts`, `scripts/task-test.ts`
 
 ### 3.6 Developer Onboarding & Workflow Clarity (FR-6)
 
@@ -159,158 +104,25 @@ FR-10.9 defines cross-IDE resource mapping; open questions need user decisions b
 
 ### 3.7 Benchmarking (FR-7)
 
-- **Description:** The system must provide an evidence-based benchmarking system to
-  evaluate agent performance objectively.
-- **Use case scenario:** Developer runs `deno task bench` to see how well the
-  agent handles specific scenarios.
-- **Acceptance criteria:**
-- [x] Isolated sandbox execution for scenarios using `SpawnedAgent` (direct `Deno.Command` based).
-      Evidence: `scripts/benchmarks/lib/spawned_agent.ts:32`,
-      `scripts/benchmarks/lib/runner.ts:28-38`
-- [x] Evidence collection (git status, logs, file changes). Evidence:
-      `scripts/benchmarks/lib/runner.ts:286-330`,
-      `scripts/benchmarks/lib/trace.ts:984-996`
-- [x] LLM-based Judge for semantic verification. Evidence:
-      `scripts/benchmarks/lib/judge.ts:4-124`,
-      `scripts/benchmarks/lib/runner.ts:332-340`
-- [x] Financial cost calculation per scenario and per run. Evidence:
-      `scripts/benchmarks/lib/types.ts:117`,
-      `scripts/task-bench.ts:163-178`, `scripts/task-bench.ts:304-306`
-- [x] Detailed token usage breakdown (Input, Output, Cache Read, Cache Write).
-      Evidence: `scripts/benchmarks/lib/usage.ts:4-16`,
-      `scripts/benchmarks/lib/usage.ts:54-141`,
-      `scripts/benchmarks/lib/runner.ts:267-275`
-- [x] **Parallel Execution Protection**: Prevents multiple benchmark processes from
-      running simultaneously using a lock file (`benchmarks/benchmarks.lock`).
-      Evidence: `scripts/task-bench.ts:63-92`
-- [x] Meaningful metrics: Errors, Warnings, Steps, Time, and Cost. Evidence:
-      `scripts/benchmarks/lib/types.ts:103-123`,
-      `scripts/task-bench.ts:261-324`
-- [x] Rich HTML tracing with step-by-step timeline and syntax highlighting. Evidence:
-      `scripts/benchmarks/lib/trace.ts:31-868`,
-      `scripts/benchmarks/lib/trace.ts:229-234`,
-      `scripts/benchmarks/lib/trace.ts:438-444`
-- [x] Unified data block UI with smart blur, line numbering, and word wrap. Evidence:
-      `scripts/benchmarks/lib/trace.ts:48-61`,
-      `scripts/benchmarks/lib/trace.ts:677-731`
-- [x] JSON-based configuration for model presets. Evidence:
-      `benchmarks/config.json:1-25`,
-      `scripts/benchmarks/lib/llm.ts:16-39`
-  - [x] **Support for direct model names**: Allows using model names directly if no
-        preset matches. Evidence: `scripts/benchmarks/lib/llm.ts:41-65`
-  - [x] **Simplified Model Selection**: Replaced presets with direct model selection
-        in `deno task bench` via `-m, --model` flag. Evidence:
-        `scripts/task-bench.ts:55`, `scripts/task-bench.ts:96-99`
-  - [x] **Native Context Discovery**: Benchmarks rely on `cursor-agent`'s native
-        context discovery by ensuring the sandbox structure mimics a real project
-        (including `.cursor/` folder). Evidence:
-        `scripts/benchmarks/lib/runner.ts:118-134`
-- [x] **Agent Under Test**: Benchmarks execute the `cursor-agent` binary in headless
-      CLI mode within a dedicated sandbox environment, with interaction via standard
-      input/output and arguments (e.g., `--resume` for multi-turn conversations).
-      Evidence: `scripts/benchmarks/lib/spawned_agent.ts:168-216`
-- [x] **Single-Turn Benchmark**: User query is embedded in the system prompt to
-      simulate real-world single-turn agent invocation. Evidence:
-      `scripts/benchmarks/lib/runner.ts:235-249`,
-      `scripts/benchmarks/lib/spawned_agent.ts:211-213`
-- [x] **Mandatory agentsTemplateVars**: Every scenario MUST declare `agentsTemplateVars`
-      (required field in `BenchmarkScenario`). Runner generates `AGENTS.md` from
-      `flowai-init` templates at runtime (single source of truth). Legacy mechanisms
-      (`agentsMarkdown` string, fixture `AGENTS.md` files) are removed. Scenarios
-      without `agentsTemplateVars` fail at compile time (TypeScript) and at runtime
-      (explicit error in runner). Evidence: `scripts/benchmarks/lib/types.ts`,
-      `scripts/benchmarks/lib/runner.ts`
-- [x] **Secure Execution**: Benchmarks run in an isolated environment (Docker or
-      local process). Evidence: `scripts/benchmarks/lib/runner.ts:27-40`,
-      `scripts/benchmarks/lib/spawned_agent.ts:171-173`
-- [x] **Simulated User**: Support for interactive flows via `UserEmulator` LLM.
-      Evidence: `scripts/benchmarks/lib/user_emulator.ts:10-62`,
-      `scripts/benchmarks/lib/runner.ts:237-253`
-- [x] **Environment Management**: `.env` support for API keys in benchmarks. Evidence:
-      `scripts/benchmarks/lib/llm.ts:2-61`, `.env`
-- [x] **FR-7.1 Co-located Benchmarks**: Benchmark scenarios MUST be stored alongside
-      the skills they test, inside `framework/skills/<skill-name>/benchmarks/` instead
-      of the top-level `benchmarks/<skill-name>/`. This keeps scenarios, fixtures, and
-      the skill definition in a single SPOT, simplifies discovery, and ensures benchmarks
-      are distributed/versioned together with their skill.
-      Evidence: `framework/skills/*/benchmarks/*/mod.ts` (all scenarios moved),
-      `scripts/task-bench.ts:32-34` (discovery walks `framework/skills/`),
-      `benchmarks/AGENTS.md` (updated responsibility docs)
-- [x] **FR-7.2 Pack-Scoped Sandbox**: Benchmark sandbox contains only primitives
-      from the tested skill's pack (+ core), not all packs. Core benchmark → core only;
-      non-core benchmark → core + that pack. Cross-pack references validated by TS test.
-      Evidence: `scripts/benchmarks/lib/types.ts` (`pack?: string` field),
-      `scripts/task-bench.ts` (`scenario.pack = packEntry.name`),
-      `scripts/benchmarks/lib/utils.ts` (`allowedPacks` parameter in `copyFrameworkToIdeDir`),
-      `scripts/benchmarks/lib/runner.ts` (pack filter logic),
-      `scripts/check-pack-refs.ts` + `scripts/check-pack-refs_test.ts` (cross-pack validation)
-- [x] **FR-7.3 Claude CLI Judge**: Judge and user emulator use Claude CLI (`cliChatCompletion`)
-      instead of OpenRouter API. Eliminates `OPENROUTER_API_KEY` dependency. Uses
-      `--output-format json` + `--json-schema` for structured judge output.
-      Evidence: `scripts/benchmarks/lib/llm.ts` (`cliChatCompletion()`),
-      `scripts/benchmarks/lib/judge.ts` (imports `cliChatCompletion`),
-      `scripts/benchmarks/lib/user_emulator.ts` (imports `cliChatCompletion`)
+- **Description:** Evidence-based benchmarking system to evaluate agent skill
+  execution quality. `deno task bench`.
+- **Key capabilities:** Isolated sandbox execution (`SpawnedAgent`), LLM-based
+  Judge, evidence collection, interactive flows (`UserEmulator`), cost/token
+  tracking, HTML tracing, parallel execution protection.
+- **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/`),
+  pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory
+  `agentsTemplateVars` (compile-time enforced).
+- **Implementation:** `scripts/benchmarks/lib/` (runner, judge, spawned_agent,
+  user_emulator, trace, types, utils).
 
-### 3.8 Component Coverage Matrix
+### 3.8 Component Coverage
 
-The benchmarking system must cover all core flowai components to ensure reliability across all workflows.
+All 38 skills have at least one benchmark scenario. Coverage is the source of
+truth: `find framework -name "mod.ts" -path "*/benchmarks/*" | wc -l`.
+Agents (4 canonical definitions) are not benchmarked individually — they are
+exercised as subagents within skill benchmarks.
 
-#### Skills (`framework/skills/`)
-
-| Skill ID                                   | Description                          | Benchmarked | Scenario ID              |
-| :----------------------------------------- | :----------------------------------- | :---------: | :----------------------- |
-| **Commands (`flowai-*`)**                  |                                      |             |                          |
-| `flowai-answer`                              | Answering user questions             |     [ ]     |                          |
-| `flowai-commit`                              | Atomic commits and QA                |     [x]     | `flowai-commit-*`          |
-| `flowai-init`                                | Project initialization               |     [x]     | `flowai-init-*`            |
-| `flowai-investigate`                         | Code investigation/debugging         |     [ ]     |                          |
-| `flowai-maintenance`                         | Periodic project health checks       |     [ ]     |                          |
-| `flowai-plan`                                | Task planning (GODS)                 |     [x]     | `flowai-plan-*`            |
-| `flowai-review`                              | QA + code review of changes          |     [ ]     |                          |
-| `flowai-review-and-commit`                   | Review quality then commit           |     [x]     | `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject` |
-| `flowai-reflect`                             | Self-reflection on task              |     [x]     | `flowai-reflect-*`         |
-| `flowai-spec`                                | Feature specification (phased)       |     [ ]     |                          |
-| **Setup (`flowai-setup-agent-*`)**           |                                      |             |                          |
-| `flowai-setup-agent-code-style-ts-deno`            | Setup Deno/TS code style             |     [ ]     |                          |
-| `flowai-setup-agent-code-style-ts-strict`          | Setup strict TypeScript              |     [ ]     |                          |
-| **Skills (`flowai-skill-*`)**                |                                      |             |                          |
-| `flowai-skill-engineer-command`              | Creating new AF commands             |     [ ]     |                          |
-| `flowai-skill-engineer-hook`                 | Creating hooks                       |     [x]     | `flowai-skill-engineer-hook-*` |
-| `flowai-skill-engineer-rule`                 | Creating rules                       |     [ ]     |                          |
-| `flowai-skill-engineer-skill`               | Creating skills                      |     [ ]     |                          |
-| `flowai-skill-engineer-subagent`            | Creating subagents                   |     [ ]     |                          |
-| `flowai-skill-analyze-context`              | Analyze token usage in context       |     [x]     |                          |
-| `flowai-skill-conduct-qa-session`           | Conducting QA sessions               |     [ ]     |                          |
-| `flowai-skill-configure-deno-commands`      | Configure Deno development commands  |     [ ]     |                          |
-| `flowai-skill-cursor-agent-integration`     | Integration with cursor-agent CLI    |     [x]     |                          |
-| `flowai-skill-deep-research`                | Multi-directional web-based research |     [ ]     |                          |
-| `flowai-skill-deno-cli`                     | Manage Deno via CLI                  |     [ ]     |                          |
-| `flowai-skill-deno-deploy`                  | Manage Deno Deploy                   |     [ ]     |                          |
-| `flowai-skill-draw-mermaid-diagrams`        | Drawing Mermaid diagrams             |     [ ]     |                          |
-| `flowai-skill-engineer-prompts-for-instant` | Prompt engineering (Instant models)  |     [ ]     |                          |
-| `flowai-skill-engineer-prompts-for-reasoning` | Prompt engineering (Reasoning models) | [ ]     |                          |
-| `flowai-skill-fix-tests`                    | Fixing broken tests                  |     [ ]     |                          |
-| `flowai-skill-setup-ai-ide-devcontainer`    | AI devcontainer setup                |     [x]     | `flowai-skill-setup-ai-ide-devcontainer-*` |
-| `flowai-skill-manage-github-tickets-by-mcp` | Managing GitHub via MCP              |     [ ]     |                          |
-| `flowai-skill-playwright-cli`               | Browser automation via CLI           |     [ ]     |                          |
-| `flowai-skill-write-agent-benchmarks`       | Writing agent benchmarks             |     [x]     |                          |
-| `flowai-skill-write-dep`                    | Writing DEP documents                |     [ ]     |                          |
-| `flowai-skill-write-gods-tasks`             | Writing GODS tasks                   |     [ ]     |                          |
-| `flowai-skill-write-in-informational-style` | Writing in info style                |     [ ]     |                          |
-| `flowai-skill-write-prd`                    | Writing PRDs                         |     [ ]     |                          |
-
-#### Agents (`framework/agents/`)
-
-Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, shared body. IDE-specific transformation handled by flowai.
-
-| Agent ID                | Description                              | Benchmarked | Scenario ID |
-| :---------------------- | :--------------------------------------- | :---------: | :---------- |
-| `flowai-deep-research-worker`  | Single-direction research worker         |     [ ]     |             |
-| `flowai-console-expert`   | Complex console tasks without code edits |     [ ]     |             |
-| `flowai-diff-specialist`  | Analyze git diffs and plan commits       |     [ ]     |             |
-| `flowai-skill-executor`   | Execute specific skills or prompts       |     [ ]     |             |
-
-### 3.8 Project Initialization — flowai-init (FR-8)
+### 3.9 Project Initialization (FR-8)
 
 - **Description:** The `flowai-init` skill bootstraps AI agent understanding of a
   project by analyzing codebase, generating 3 AGENTS.md files (root,
@@ -322,94 +134,13 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   judgment, interviews user (Greenfield) or reverse-engineers architecture
   (Brownfield), generates 3 AGENTS.md files, documentation (SRS, SDS,
   whiteboard), and configures development commands.
-- **Acceptance criteria:**
-  - [x] **FR-8.1 Agent-driven Greenfield/Brownfield detection**: Script
-        (`generate_agents.ts`) outputs `is_new` flag but SKILL.md explicitly
-        instructs the agent to NOT rely on it. Agent determines project type
-        based on file count, stack, file tree, and presence of config files.
-        Evidence: `framework/skills/flowai-init/scripts/generate_agents.ts:93-96`,
-        `framework/skills/flowai-init/SKILL.md` rule 4 "Greenfield/Brownfield Detection", step 2 "Analyze Project"
-  - [x] **FR-8.2 Scripts are read-only (Deno/TS)**: Single script
-        `generate_agents.ts` (command: `analyze`) only reads filesystem and
-        outputs JSON to stdout. No file creation/modification. Evidence:
-        `framework/skills/flowai-init/scripts/generate_agents.ts:5-9`,
-        `framework/skills/flowai-init/scripts/generate_agents.ts:110`,
-        `framework/skills/flowai-init/SKILL.md` rule 5 "Scripts are read-only"
-  - [x] **FR-8.3 No rule copying**: SKILL.md rule 6 explicitly prohibits
-        copying rules to IDE-specific directories. Rule management outside
-        flowai-init scope. Evidence: `framework/skills/flowai-init/SKILL.md` rule 6 "No rule copying"
-  - [x] **FR-8.4 Auto-generation of missing documentation**: SKILL.md step 8
-        generates `documents/requirements.md` (SRS), `documents/design.md`
-        (SDS), `documents/whiteboards/` (brownfield: init-context file) from
-        actual project data using LLM capabilities. Skips existing files
-        exceeding line thresholds (50 for SRS/SDS). Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 9 "Generate Documentation"
-  - [x] **FR-8.5 Greenfield workflow**: SKILL.md step 3 defines structured
-        interview collecting 10 data points (project name, vision, audience,
-        problem, solution, risks, stack, architecture, key decisions, Deno
-        tooling preference). Returns JSON for template filling. Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 3 "Greenfield Workflow (Interview)"
-  - [x] **FR-8.6 Brownfield workflow**: SKILL.md step 4 defines discovery
-        (read config files, infer architecture/decisions) and extraction
-        (semantically identify doc/script sections in existing `./AGENTS.md`,
-        move to subdirectory files, remove from root). Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 4 "Brownfield Workflow (Discovery & Extraction)"
-  - [x] **FR-8.7 Multi-file architecture**: Produces 3 AGENTS.md files:
-        `./AGENTS.md` (core rules, project metadata), `./documents/AGENTS.md`
-        (documentation system rules), `./scripts/AGENTS.md` (development
-        commands). Templates in `assets/` directory (3 files with
-        `{{PLACEHOLDER}}` variables). Evidence:
-        `framework/skills/flowai-init/assets/AGENTS.template.md`,
-        `framework/skills/flowai-init/assets/AGENTS.documents.template.md`,
-        `framework/skills/flowai-init/assets/AGENTS.scripts.template.md`,
-        `framework/skills/flowai-init/SKILL.md` step 6 "Generate AGENTS.md Files"
-  - [x] **FR-8.8 Per-file diff confirmation**: SKILL.md rules 3 and 8 require
-        showing diffs and asking per-file confirmation before applying changes
-        to existing files. Never silently overwrite. Evidence:
-        `framework/skills/flowai-init/SKILL.md` rule 3 "Idempotency",
-        rule 8 "Per-File Diff Confirmation",
-        step 6 "For each file"
-  - [x] **FR-8.9 User content preservation**: SKILL.md rule 9 requires
-        preserving user's existing instructions in brownfield. Extracted
-        content takes priority over template content. Templates are fallbacks
-        for greenfield only. Evidence:
-        `framework/skills/flowai-init/SKILL.md` rule 9 "Preserve User Content",
-        step 4 "Important: extracted content...takes priority"
-  - [x] **FR-8.10 Configure development commands**: SKILL.md step 10 detects
-        stack, looks up specialized skills (e.g., `flowai-skill-configure-deno-commands`),
-        creates standard command interface (`check`, `test`, `dev`, `prod`).
-        Verifies `check` command works. Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 10 "Configure Development Commands"
-  - [x] **FR-8.11 Cleanup**: SKILL.md step 12 removes temporary files
-        (`project_info.json`, `interview_data.json`), verifies all 3
-        AGENTS.md files exist, verifies no duplication between root and
-        subdirectory files. Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 11 "Cleanup & Verify"
-  - [x] **FR-8.16 CLAUDE.md symlink**: Create `./CLAUDE.md` symlink to
-        `./AGENTS.md` for Claude Code compatibility (see FR-19).
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 7 "Claude Code Compatibility"
-  - [x] **FR-8.12 OpenCode compatibility check**: SKILL.md step 8 checks
-        `opencode.json` for subdirectory AGENTS.md glob entries, warns if
-        missing. Evidence: `framework/skills/flowai-init/SKILL.md` step 8 "OpenCode Compatibility Check"
+- **Acceptance verified by benchmarks:** `flowai-init-greenfield`, `flowai-init-brownfield`, `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`, `flowai-init-vision-integration`, `flowai-init-claude-md-symlinks`
+- **Infrastructure acceptance (code/scripts):**
   - [x] **FR-8.13 Stack detection**: `generate_agents.ts` detects 6 stacks
-        (Node.js, Deno, Go, Rust, Python, Swift) via marker files. Skips 11
-        directories (`.git`, `node_modules`, `.cursor`, `.claude`, `.opencode`,
-        `dist`, `build`, `coverage`, `.dev`, `__pycache__`, `vendor`). Evidence:
-        `framework/skills/flowai-init/scripts/generate_agents.ts:76-92`
-  - [x] **FR-8.14 Unit tests**: `generate_agents.test.ts` covers 8 scenarios
-        (Deno/Node.js/Go detection, empty project, README reading, directory
-        skipping, multi-stack, type exports). Evidence:
-        `framework/skills/flowai-init/scripts/generate_agents.test.ts`
-  - [x] **FR-8.15 Benchmark coverage**: 5 benchmark scenarios: `greenfield`
-        (interview flow), `brownfield` (discovery from scratch), `brownfield-update`
-        (re-run with diffs and user content preservation), `brownfield-idempotent`
-        (preserve files when user declines changes), `vision-integration`
-        (pre-filled interview data). Evidence:
-        `framework/skills/flowai-init/benchmarks/greenfield/mod.ts`,
-        `framework/skills/flowai-init/benchmarks/brownfield/mod.ts`,
-        `framework/skills/flowai-init/benchmarks/brownfield-update/mod.ts`,
-        `framework/skills/flowai-init/benchmarks/brownfield-idempotent/mod.ts`,
-        `framework/skills/flowai-init/benchmarks/vision-integration/mod.ts`
+        via marker files. Evidence:
+        `framework/core/skills/flowai-init/scripts/generate_agents.ts:76-92`
+  - [x] **FR-8.14 Unit tests**: `generate_agents.test.ts` covers 8 scenarios.
+        Evidence: `framework/core/skills/flowai-init/scripts/generate_agents.test.ts`
 
 ### 3.9 Multi-IDE Dev Resource Distribution (FR-9)
 
@@ -565,21 +296,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 - **Use case scenario:** Developer modifies a skill's `SKILL.md` or updates an agent
   definition. On commit, the message is prefixed with `agent:` (e.g.,
   `agent: update flowai-commit skill with atomic grouping rules`).
-- **Acceptance criteria:**
-  - [x] **FR-11.1 New type recognized**: `flowai-commit` skill recognizes `agent:` as a
-        valid Conventional Commits type. Evidence:
-        `framework/skills/flowai-commit/SKILL.md:37-38`
-  - [x] **FR-11.2 Scope**: `agent:` type applies to changes in: `framework/agents/`,
-        `framework/skills/`, `.claude/agents/`, `.claude/skills/`, `**/AGENTS.md`,
-        `**/CLAUDE.md`. Evidence:
-        `framework/skills/flowai-commit/SKILL.md:39`
-  - [x] **FR-11.3 Auto-detection**: `flowai-commit` SKILL.md rule 4 instructs agent to
-        auto-select `agent:` when ALL staged files match scope paths. Mixed changes
-        (agent + app code) use the application type. Evidence:
-        `framework/skills/flowai-commit/SKILL.md:40-41`
-  - [x] **FR-11.4 Documentation**: The `agent:` type is documented in `flowai-commit`
-        SKILL.md rule 4 (scope, auto-detection, examples) and in step 4 type list.
-        Evidence: `framework/skills/flowai-commit/SKILL.md:37-42`
+- **Acceptance verified by benchmarks:** `flowai-commit-agent-type`
 
 ### 3.12 flowai-init Idempotency with User Edit Preservation (FR-12)
 
@@ -591,36 +308,7 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
   `AGENTS.md` with custom rules added by the user. The agent updates
   framework-generated sections (e.g., templates, stack info) but preserves all
   user-added content.
-- **Acceptance criteria:**
-  - [x] **FR-12.1 Multi-file architecture**: `AGENTS.md` split into 3 domain-scoped
-        files: `./AGENTS.md` (core rules + project metadata), `./documents/AGENTS.md`
-        (doc system rules), `./scripts/AGENTS.md` (dev commands). Agent reads templates
-        from `assets/` and generates files directly (no manifest). Evidence:
-        `framework/skills/flowai-init/SKILL.md` Context "File Structure",
-        `framework/skills/flowai-init/assets/AGENTS.template.md`,
-        `framework/skills/flowai-init/assets/AGENTS.documents.template.md`,
-        `framework/skills/flowai-init/assets/AGENTS.scripts.template.md`
-  - [x] **FR-12.2 No data loss**: In brownfield, agent semantically extracts
-        documentation/script sections from existing `./AGENTS.md` into subdirectory
-        files. Per-file diff shown before applying. User confirms each file
-        individually. Evidence: `framework/skills/flowai-init/SKILL.md`
-        rule 3 "Idempotency", rule 8 "Per-File Diff Confirmation",
-        step 6 "For each file"
-  - [x] **FR-12.3 Documents preservation**: Existing files exceeding line thresholds
-        (50 for SRS/SDS, 10 for whiteboard) are not overwritten. Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 9 "Generate Documentation"
-  - [x] **FR-12.4 Diff-based update**: Agent shows diff per file, asks for
-        confirmation. Evidence: `framework/skills/flowai-init/SKILL.md`
-        step 6 "For each file", step 5 "Report findings to user"
-  - [ ] **FR-12.5 Idempotent re-run**: Running `flowai-init` twice in a row with no
-        manual changes produces no modifications on the second run.
-  - [x] **FR-12.6 Deno/TS scripts**: `generate_agents.ts` — analyze-only (Deno).
-        Template rendering removed; agent handles generation natively. Evidence:
-        `framework/skills/flowai-init/scripts/generate_agents.ts:1-10`,
-        `framework/skills/flowai-init/scripts/generate_agents.ts:126-138`
-  - [x] **FR-12.7 OpenCode compatibility**: Agent checks `opencode.json` for
-        subdirectory AGENTS.md glob entries. Warns if missing. Evidence:
-        `framework/skills/flowai-init/SKILL.md` step 8 "OpenCode Compatibility Check"
+- **Acceptance verified by benchmarks:** `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`
 
 ### 3.13 Migrate Framework-Specific Python Scripts to Deno/TypeScript (FR-13)
 
@@ -671,260 +359,48 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 ### 3.14 Cross-IDE Hook/Plugin Format Transformation (FR-14)
 
-- **Description:** All three supported IDEs have hook/plugin systems with
-  different formats: Cursor hooks (`.cursor/hooks.json`), Claude Code hooks
-  (`settings.json`, 18 event types), and OpenCode plugins
-  (`.opencode/plugins/*.ts` with `plugin()` API). The framework provides
-  comprehensive cross-IDE documentation in `flowai-skill-engineer-hook` SKILL.md
-  with IDE-specific reference files, enabling AI agents to generate correct
-  hook configurations from natural language requests.
-- **Use case scenario:** Developer asks the agent to create a hook. The agent
-  detects the IDE, reads the corresponding reference file, and generates
-  the correct IDE-native configuration using documented templates and examples.
-- **Design decision:** Canonical format = documented templates in SKILL.md with
-  IDE-specific reference files, not a separate schema. Rationale: LLMs reliably
-  follow template patterns; a separate canonical schema adds maintenance burden
-  without benefit and cannot capture the fundamental architectural differences
-  (declarative JSON vs programmatic TS modules).
-- **Acceptance criteria:**
-  - [x] **FR-14.1 Canonical format**: IDE-agnostic hook documentation with
-        cross-IDE mapping tables, type availability matrix, and per-IDE
-        reference files in `flowai-skill-engineer-hook/references/`. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:33-68` (mapping table,
-        availability matrix),
-        `framework/skills/flowai-skill-engineer-hook/references/hooks_api.md`,
-        `framework/skills/flowai-skill-engineer-hook/references/claude_code_hooks_api.md`,
-        `framework/skills/flowai-skill-engineer-hook/references/opencode_plugins_api.md`
-  - [x] **FR-14.2 Cursor output**: SKILL.md + reference provide templates for
-        generating correct Cursor `hooks.json` configuration. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:80-104` (Cursor section),
-        `framework/skills/flowai-skill-engineer-hook/references/hooks_api.md`
-  - [x] **FR-14.3 Claude Code output**: SKILL.md + reference provide templates
-        for generating correct Claude Code `settings.json` hooks section.
-        Cover all 18 event types. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:106-147` (Claude Code section),
-        `framework/skills/flowai-skill-engineer-hook/references/claude_code_hooks_api.md`,
-        `framework/skills/flowai-skill-engineer-hook/benchmarks/basic-claude-code/mod.ts` (benchmark PASSED)
-  - [x] **FR-14.4 OpenCode output**: SKILL.md + reference provide templates
-        for generating correct OpenCode plugin `.ts` files using `Plugin` type
-        and `tool()` helper. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:149-184` (OpenCode section),
-        `framework/skills/flowai-skill-engineer-hook/references/opencode_plugins_api.md`
-  - [x] **FR-14.5 Hook types**: Documentation covers `command` (script-based),
-        `prompt` (LLM-based), `agent` (subagent-based), `http` (webhook), and
-        programmatic (OpenCode) hook types with availability matrix per IDE.
-        Evidence: `framework/skills/flowai-skill-engineer-hook/SKILL.md:33-41`
+- **Description:** Three IDEs have different hook/plugin formats. The framework
+  provides cross-IDE documentation in `flowai-skill-engineer-hook` SKILL.md with
+  IDE-specific reference files, enabling agents to generate correct configs.
+- **Design decision:** Canonical format = documented templates with IDE-specific
+  reference files (not a separate schema). LLMs reliably follow template patterns.
+- **Acceptance verified by benchmarks:** `flowai-skill-engineer-hook-basic-claude-code`
 
 ### 3.15 Update `flowai-skill-engineer-hook` for Cross-IDE Support (FR-15)
 
-- **Description:** The `flowai-skill-engineer-hook` skill currently documents hook
-  creation primarily for Cursor. It must be updated to cover Claude Code's
-  expanded hook system (17+ events, three hook types: command/prompt/agent)
-  and OpenCode's plugin system.
-- **Use case scenario:** User asks to create a hook. The skill guides them
-  through authoring for their target IDE, covering all available event types
-  and hook mechanisms.
-- **Acceptance criteria:**
-  - [x] **FR-15.1 Claude Code hooks**: Document all 18 event types, four hook
-        types (command, prompt, agent, http), and `settings.json` configuration.
-        Evidence: `framework/skills/flowai-skill-engineer-hook/references/claude_code_hooks_api.md`
-        (277 lines, all events with I/O schemas, 4 hook types with examples)
-  - [x] **FR-15.2 OpenCode plugins**: Document `.opencode/plugins/*.ts` format,
-        `tool()` helper, event API, and npm package distribution. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/references/opencode_plugins_api.md`
-        (207 lines, 17 hooks, 22+ system events, tool() helper, npm distribution)
-  - [x] **FR-15.3 Cursor hooks**: Retain existing Cursor hook documentation.
-        Evidence: `framework/skills/flowai-skill-engineer-hook/SKILL.md:80-104`,
-        `framework/skills/flowai-skill-engineer-hook/references/hooks_api.md` (updated
-        with failClosed, loop_limit, env vars, Claude Code compatibility),
-        `framework/skills/flowai-skill-engineer-hook/assets/hook_template.sh`
-  - [x] **FR-15.4 Cross-IDE guidance**: Skill provides IDE-specific examples
-        and notes which events/types are available per IDE. Evidence:
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:33-68` (event mapping
-        table + type availability matrix),
-        `framework/skills/flowai-skill-engineer-hook/SKILL.md:106-184` (same hook
-        "block rm -rf" shown in all 3 IDE formats)
+- **Description:** `flowai-skill-engineer-hook` covers Claude Code (18 events,
+  4 hook types), Cursor hooks, and OpenCode plugins.
+- **Acceptance verified by benchmarks:** `flowai-skill-engineer-hook-basic-claude-code`
 
 ### 3.16 Update `flowai-skill-engineer-command` for Claude Code Unification (FR-16)
 
-- **Description:** Claude Code has unified commands and skills under a single
-  namespace — `.claude/commands/` and `.claude/skills/` are now merged, with
-  skills as the recommended format. The `flowai-skill-engineer-command` skill must
-  reflect this change.
-- **Use case scenario:** User asks to create a command for Claude Code. The skill
-  informs them that Claude Code uses skills (SKILL.md) as the unified format
-  and guides them accordingly.
-- **Acceptance criteria:**
-  - [x] **FR-16.1 Documentation update**: `flowai-skill-engineer-command/SKILL.md` notes
-        that Claude Code commands = skills (unified namespace). Evidence:
-        `framework/skills/flowai-skill-engineer-command/SKILL.md:37` (Note about
-        `.claude/commands/` legacy vs `.claude/skills/` recommended)
-  - [x] **FR-16.2 IDE-specific guidance**: Skill provides correct path and format
-        for each IDE (Cursor: `.cursor/commands/`, Claude Code: `.claude/skills/`,
-        OpenCode: `.opencode/commands/`). Evidence:
-        `framework/skills/flowai-skill-engineer-command/SKILL.md:31-37`
-  - [x] **FR-16.3 No breaking changes**: Existing command creation workflow for
-        Cursor and OpenCode remains unchanged. Scripts are IDE-agnostic, operate
-        on generic directory paths. Evidence:
-        `framework/skills/flowai-skill-engineer-command/scripts/init_command.ts`,
-        `framework/skills/flowai-skill-engineer-command/scripts/validate_command.ts`,
-        `framework/skills/flowai-skill-engineer-command/scripts/package_command.ts`
+- **Description:** Claude Code unified commands and skills under `.claude/skills/`.
+  `flowai-skill-engineer-command` reflects this: Claude Code uses SKILL.md format.
+- **Acceptance verified by benchmarks:** `flowai-skill-engineer-command-create`
 
 ### 3.17 Resolve IDE Support Scope (FR-17)
 
-- **Description:** Root `AGENTS.md` line 25 lists 5 IDEs (Cursor, Claude Code,
-  Antigravity, OpenAI Codex, OpenCode) but all infrastructure (scripts, agent
-  directories, flowai) supports only 3 (Cursor, Claude Code, OpenCode).
-  Several skill SKILL.md files and their Python scripts reference Codex and
-  Antigravity paths. This inconsistency must be resolved.
-- **Use case scenario:** A contributor reads AGENTS.md, expects Codex/Antigravity
-  support, but finds no corresponding agent directories or install logic.
-- **Acceptance criteria:**
-  - [x] **FR-17.1 Decision**: Codex and Antigravity are **unsupported**. Supported
-        IDEs: Cursor, Claude Code, OpenCode. Evidence: removed from all SKILL.md
-        files, scripts, and detection logic in `flowai-skill-engineer-rule/`,
-        `flowai-skill-engineer-skill/`.
-  - [x] **FR-17.2 AGENTS.md alignment**: Root `AGENTS.md` IDE list narrowed to
-        3 supported IDEs (Cursor, Claude Code, OpenCode). Evidence:
-        `AGENTS.md:25`, `AGENTS.md:37`, `AGENTS.md:73`
-  - [x] **FR-17.3 Skill references**: `flowai-skill-engineer-rule`, `flowai-skill-engineer-skill`
-        SKILL.md files and their scripts updated to 3-IDE scope. Antigravity/Codex
-        columns, sections, detection logic, and IDE options removed.
-        `flowai-skill-engineer-command` had no Codex/Antigravity references.
-        Legacy Python scripts (`init_rule.py`, `validate_rule.py`) deleted.
-        Evidence: `flowai-skill-engineer-rule/SKILL.md`, `flowai-skill-engineer-rule/scripts/init_rule.ts`,
-        `flowai-skill-engineer-rule/scripts/validate_rule.ts`,
-        `flowai-skill-engineer-rule/references/examples.md`,
-        `flowai-skill-engineer-skill/SKILL.md`
-  - [x] **FR-17.4 Design doc**: `design.md` replaced "Cursor" with generic
-        "IDE/Agent" terminology in algorithms section. Evidence:
-        `documents/design.md:14-23`, `documents/design.md:26`,
-        `documents/design.md:38`
+- **Description:** Supported IDEs narrowed to 3: Cursor, Claude Code, OpenCode.
+  Codex and Antigravity removed from all SKILL.md files, scripts, and detection logic.
+- **Acceptance verified by benchmarks:** `flowai-skill-engineer-skill-basic`, `flowai-skill-engineer-rule-basic-conditional`, `flowai-skill-engineer-subagent-basic`
 
 ### 3.18 Review-and-Commit Workflow — `flowai-review-and-commit` (FR-18)
 
-- **Description:** A composite command that first performs a quality review of the
-  current implementation (using `flowai-review` logic) and then, if the review passes,
-  automatically invokes `flowai-commit` to create atomic commits. Combines the review
-  and commit steps into a single user action.
-- **Use case scenario:** User completes a task and runs `/flowai-review-and-commit`.
-  The agent reviews the diff for task completion and code quality. If the review
-  verdict is **Approve**, the agent proceeds to the commit workflow. If
-  **Request Changes** or **Needs Discussion**, the agent reports findings and stops
-  without committing.
-- **Acceptance criteria:**
-  - [x] **FR-18.1 Review phase**: Executes the full `flowai-review` workflow (QA +
-        code review) on current changes. Evidence:
-        `framework/skills/flowai-review-and-commit/SKILL.md:55-58`
-  - [x] **FR-18.2 Gate logic**: Proceeds to commit ONLY if the review verdict is
-        **Approve** (no critical issues). Stops and reports findings otherwise.
-        Evidence: `framework/skills/flowai-review-and-commit/SKILL.md:60-68`
-  - [x] **FR-18.3 Commit phase**: Invokes `flowai-commit` workflow (documentation
-        audit, pre-commit verification, atomic grouping, commit execution).
-        Evidence: `framework/skills/flowai-review-and-commit/SKILL.md:70-73`
-  - [x] **FR-18.4 Single command**: Available as `/flowai-review-and-commit` chat
-        command. User does not need to run review and commit separately.
-        Evidence: `framework/skills/flowai-review-and-commit/SKILL.md:1-4`
-  - [x] **FR-18.5 Transparency**: Reports both review results and commit results
-        to the user in a single output.
-        Evidence: `framework/skills/flowai-review-and-commit/SKILL.md:75-78`
+- **Description:** Composite command: review → gate (Approve only) → commit.
+  Stops on Request Changes/Needs Discussion.
+- **Acceptance verified by benchmarks:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`
 
 ### 3.19 CLAUDE.md Symlink in flowai-init (FR-19)
 
-- **Description:** `flowai-init` must create a `CLAUDE.md` symlink pointing to
-  `./AGENTS.md` in the project root. This ensures Claude Code reads the same
-  rules as other IDEs (SPOT — single point of truth). The project itself uses
-  this pattern: `CLAUDE.md -> ./AGENTS.md`.
-- **Use case scenario:** User runs `/flowai-init` on a project that uses Claude Code.
-  In addition to the 3 `AGENTS.md` files, the agent creates a `./CLAUDE.md`
-  symlink to `./AGENTS.md` so Claude Code picks up the project rules natively.
-- **Acceptance criteria:**
-  - [x] **FR-19.1 Symlink creation**: `flowai-init` creates `./CLAUDE.md` as a
-        relative symlink to `./AGENTS.md` (both Greenfield and Brownfield).
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 7 "Claude Code Compatibility"
-  - [x] **FR-19.2 Idempotency**: If `./CLAUDE.md` already exists as a correct
-        symlink, skip silently. If it exists as a regular file or wrong symlink,
-        warn the user and ask for confirmation before replacing.
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 7 "If CLAUDE.md exists..."
-  - [x] **FR-19.3 Verification**: Cleanup step verifies `./CLAUDE.md` symlink
-        exists and points to `./AGENTS.md`.
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 11 "Cleanup & Verify"
+- **Description:** `flowai-init` creates `CLAUDE.md` symlink → `AGENTS.md` for
+  Claude Code compatibility (SPOT).
+- **Acceptance verified by benchmarks:** `flowai-init-claude-md-symlinks`, `flowai-init-greenfield`, `flowai-init-brownfield`
 
 ### 3.20 AI Devcontainer Setup — flowai-skill-setup-ai-ide-devcontainer (FR-20)
 
-- **Description:** `flowai-skill-setup-ai-ide-devcontainer` skill creates a `.devcontainer/`
-  configuration optimized for AI IDE development. Can be invoked by the agent
-  or delegated from `flowai-init` step 11. Generates `devcontainer.json` (and optionally
-  `Dockerfile` + `init-firewall.sh`) based on detected tech stack, with Claude Code CLI
-  integration, secrets handling, and optional global skills mounting.
-- **Use case scenario:** User runs `/flowai-skill-setup-ai-ide-devcontainer` on any project. The agent
-  detects the stack, asks about AI CLI, global skills, and security hardening, then
-  generates `.devcontainer/` configuration. Also invoked from `flowai-init` when user
-  agrees to devcontainer setup.
-- **Acceptance criteria:**
-  - [x] **FR-20.1 User consent**: Agent asks the user before creating devcontainer
-        files. Devcontainer is NOT created without explicit user agreement.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md` Step 4 "Determine Capabilities",
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/node-basic/mod.ts` (userPersona confirms prompts)
-  - [x] **FR-20.2 Stack-aware generation**: `devcontainer.json` references a base
-        image matching the detected stack (e.g., `mcr.microsoft.com/devcontainers/typescript-node`
-        for Node/TS, community Deno feature for Deno). Extensions list includes
-        relevant IDE extensions for the stack.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md` Step 1 "Detect Project Stack",
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md:152-176` (Stack Reference tables)
-  - [x] **FR-20.3 Idempotency**: If `.devcontainer/` already exists, the agent shows
-        diff and asks for per-file confirmation before overwriting (same pattern as
-        other brownfield files).
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md` Step 3 "Detect Existing Configuration",
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/brownfield-existing/mod.ts`
-  - [x] **FR-20.4 Greenfield interview integration**: For greenfield projects via
-        flowai-init, the devcontainer question is included in the interview (step 3).
-        flowai-init delegates to flowai-skill-setup-ai-ide-devcontainer when user agrees.
-        Evidence: `framework/skills/flowai-init/SKILL.md` step 3 (interview includes `use_devcontainer`),
-        `framework/skills/flowai-init/SKILL.md` step 11 (delegation to devcontainer skill)
-  - [x] **FR-20.5 Verification**: Generated `.devcontainer/devcontainer.json` is
-        valid JSON. Dockerfile (if generated) has valid `FROM` line. No hardcoded
-        secrets in any generated file.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md` Step 7 "Verify"
-  - [x] **FR-20.6 AI CLI integration**: When Claude Code selected, configures native
-        installer or npm install, config persistence volume, and `ANTHROPIC_API_KEY`
-        via `remoteEnv` with `${localEnv:}` (no hardcoded values).
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md:207-268` (AI CLI Setup Reference),
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/opencode-multi-cli/mod.ts` (multi-CLI coverage)
-  - [x] **FR-20.7 Global skills mounting**: Host `~/.claude/` is bind-mounted
-        read-only to `~/.claude-host`. `~/.claude` itself is a Docker volume
-        (isolates container state from host). `postStartCommand` syncs global
-        user skills/commands from host into container on every start:
-        `cp -rL ~/.claude-host/skills ~/.claude/skills` (dereferences symlinks
-        into real files). Skills update on container restart, not real-time.
-        Documents that bind mounts do not work in Codespaces.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md:248-253` (Global Skills Mount Rules),
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (global_skills_mount check)
-  - [x] **FR-20.8 Security hardening**: Optional firewall (`init-firewall.sh`) with
-        default-deny policy, stack-aware domain allowlist, and verification tests.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/references/firewall-template.md`,
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (firewall_script check)
-  - [x] **FR-20.9 Sync timing**: Global skill/command sync MUST happen in
-        `postStartCommand` (not `postCreateCommand`), so updates from host
-        are picked up on every container restart without rebuild.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md:286-293` (Lifecycle Hooks Reference),
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (global_skills_sync_in_post_start check)
-  - [x] **FR-20.10 Symlink dereferencing**: `cp -rL` MUST be used (not `cp -r`)
-        because host skills may be symlinks with host-relative paths that are
-        unresolvable inside the container.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md:252` (cp -rL in Global Skills Mount Rules),
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/deno-with-claude/mod.ts` (symlink_dereference check)
-  - [x] **FR-20.11 Feature discovery**: Agent scans project files for indicators
-        (lockfiles, config files, dependency manifests) and suggests relevant
-        devcontainer features from the catalog (`references/features-catalog.md`).
-        High-confidence matches (secondary runtimes, build tools) are auto-added;
-        optional/heavy features (databases, Docker-in-Docker, cloud CLIs) are
-        presented to the user for confirmation. Features already covered by the
-        base image are excluded. The user sees a grouped list with detection
-        rationale before generation.
-        Evidence: `framework/skills/flowai-skill-setup-ai-ide-devcontainer/SKILL.md` Step 2 "Discover Relevant Features",
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/references/features-catalog.md`,
-        `framework/skills/flowai-skill-setup-ai-ide-devcontainer/benchmarks/feature-discovery/mod.ts`
+- **Description:** Generates `.devcontainer/` config optimized for AI IDE development.
+  Stack detection, AI CLI integration, global skills mounting, security hardening.
+- **Acceptance verified by benchmarks:** `flowai-skill-setup-ai-ide-devcontainer-node-basic`, `flowai-skill-setup-ai-ide-devcontainer-deno-with-claude`, `flowai-skill-setup-ai-ide-devcontainer-brownfield-existing`, `flowai-skill-setup-ai-ide-devcontainer-feature-discovery`, `flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli`
 
 ### 3.21 Universal Skill & Script Requirements (FR-21)
 
@@ -1064,72 +540,10 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 ### 3.22 Framework Update — `flowai-update` (FR-22)
 
-- **Description:** Single entry point for updating the flowai framework in a
-  project. Handles CLI update, skill/agent sync via `flowai sync`, and migration
-  of scaffolded project artifacts using template diffs as migration source.
-- **Use case scenario:** A new flowai version changes TDD conventions in
-  `flowai-init` templates. The developer runs `/flowai-update`. The skill updates the
-  CLI, syncs skills/agents, detects the convention drift in the project's
-  `AGENTS.md`, shows a diff, and applies the change after confirmation.
-- **Priority:** High (ensures projects stay aligned with framework conventions).
-
-#### FR-22.1 CLI Update
-
-- **Acceptance criteria:**
-  - [x] **FR-22.1.1 Auto-update check**: `flowai-update` runs `flowai sync` which
-        checks JSR for newer CLI version and offers to update. Evidence:
-        `framework/skills/flowai-update/SKILL.md:42-47` step 1 "Sync framework"
-        delegates to `flowai sync`, which has built-in update check
-        (`cli/src/cli.ts:50-79`).
-  - [x] **FR-22.1.2 Sync execution**: After CLI update, skills and agents are
-        re-synced into IDE config directories. Evidence:
-        `framework/skills/flowai-update/SKILL.md:43` runs `flowai sync` which
-        performs full sync (`cli/src/sync.ts`).
-
-#### FR-22.2 Scaffolded Artifact Migration
-
-- **Acceptance criteria:**
-  - [x] **FR-22.2.1 Drift detection**: Compares changed framework templates
-        against scaffolded project artifacts (AGENTS.md, .devcontainer/,
-        deno.json tasks, scripts/check.ts, documents/). Evidence:
-        `framework/core/skills/flowai-update/SKILL.md` step 2 runs
-        `flowai sync`; step 3 parses `>>> ACTIONS REQUIRED` output;
-        step 4 migrates scaffolded artifacts listed in sync output
-        (scaffolds declared in `pack.yaml`).
-  - [x] **FR-22.2.2 Per-file confirmation**: Shows diff and asks user before
-        modifying each scaffolded artifact. Never silently overwrites. Evidence:
-        `framework/skills/flowai-update/SKILL.md:30` rule 2 "Per-file
-        confirmation"; step 6 (`SKILL.md:75-78`) "Show per-file diff...
-        Wait for user approval/rejection".
-  - [x] **FR-22.2.3 User content preservation**: Only updates
-        framework-originated sections. Project-specific customizations are
-        preserved. Evidence: `framework/skills/flowai-update/SKILL.md:31`
-        rule 3 "Preserve user content"; step 5 (`SKILL.md:71`)
-        "Proposed update (preserving project-specific content)".
-  - [x] **FR-22.2.4 Evidence-based changes**: Only proposes migrations when
-        template diffs show relevant convention changes. Evidence:
-        `framework/skills/flowai-update/SKILL.md:32` rule 4 "No changes
-        without evidence"; step 3 (`SKILL.md:54-57`) parses template diffs
-        before proposing.
-
-#### FR-22.3 Cross-IDE Support
-
-- **Acceptance criteria:**
-  - [x] **FR-22.3.1 IDE detection**: Works for Cursor, Claude Code, and OpenCode
-        projects. Detects IDE config dirs or reads `.flowai.yaml` `ides` field.
-        Evidence: `framework/skills/flowai-update/SKILL.md:33` rule 5
-        "Cross-IDE: Must work for Cursor, Claude Code, and OpenCode";
-        step 2 (`SKILL.md:50`) checks `.claude/`, `.cursor/`, `.opencode/`
-        or `.flowai.yaml`.
-
-#### FR-22.4 Commit
-
-- **Acceptance criteria:**
-  - [x] **FR-22.4.1 Atomic commit**: Stages synced files + migrated artifacts
-        together in one commit with message
-        `chore(framework): update flowai framework`. Evidence:
-        `framework/skills/flowai-update/SKILL.md:35` rule 7 "Atomic commit";
-        step 7 (`SKILL.md:80-83`) stages all + commits with specified message.
+- **Description:** Single entry point for updating the flowai framework. Handles
+  CLI update, skill/agent sync via `flowai sync`, and migration of scaffolded
+  project artifacts using template diffs as migration source.
+- **Acceptance verified by benchmarks:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
 
 ### 3.23 Pack System — Modular Resource Installation (FR-23)
 
@@ -1236,20 +650,9 @@ Canonical agent definitions (IDE-agnostic). `name` + `description` frontmatter, 
 
 ### 3.27 Reflection with Session History Search (FR-27)
 
-- **Description:** Reflection skills (`flowai-reflect`) must search the current
-  project's session history for similar errors/mistakes before producing
-  conclusions. The agent autonomously determines search depth (number of past
-  sessions to inspect) based on error severity and recurrence signals.
-- **Use case scenario:** After completing a task, the agent runs reflection. It
-  scans prior session transcripts/logs for analogous failures, identifies
-  patterns (repeated mistakes, recurring misunderstandings), and includes
-  findings in the reflection output.
-- **Priority:** Medium.
-- **Acceptance:**
-  - [ ] **FR-27.1** Reflection skill navigates project session history and searches for errors similar to the current one.
-  - [ ] **FR-27.2** Search depth (number of sessions) is determined autonomously by the agent — not hardcoded or user-configured.
-  - [ ] **FR-27.3** Reflection output includes a "Historical patterns" section listing matched past errors with session references.
-  - [ ] **FR-27.4** If no similar errors found in history, the section states "No similar errors found" explicitly.
+- **Description:** Reflection skills (`flowai-reflect`) must search session history
+  for similar errors/mistakes, identify patterns, and include findings in output.
+- **Acceptance verified by benchmarks:** `flowai-reflect-session-history-pattern`, `flowai-reflect-context-inefficiency`, `flowai-reflect-process-loop`
 
 ### 3.28 CI/CD Pipeline Security (FR-28)
 

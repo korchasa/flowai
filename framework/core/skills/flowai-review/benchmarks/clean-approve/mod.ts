@@ -74,5 +74,17 @@ Keep answers brief and affirmative.`;
         "The agent did NOT commit any changes (review only, not commit)?",
       critical: true,
     },
+    {
+      id: "severity_tags",
+      description:
+        "Are findings tagged with severity levels like [critical], [warning], or [nit]?",
+      critical: false,
+    },
+    {
+      id: "verdict_first_line",
+      description:
+        "Is the verdict (Approve/Request Changes/Needs Discussion) on the first line of the report?",
+      critical: false,
+    },
   ];
 }();

@@ -83,5 +83,23 @@ Keep answers brief and direct.`;
         "The agent did NOT commit any changes (review only, not commit)?",
       critical: true,
     },
+    {
+      id: "severity_tags",
+      description:
+        "Are findings tagged with severity levels like [critical], [warning], or [nit]?",
+      critical: false,
+    },
+    {
+      id: "verdict_first_line",
+      description:
+        "Is the verdict (Request Changes) on the first line of the report?",
+      critical: false,
+    },
+    {
+      id: "diff_first_references",
+      description:
+        "Does every finding reference a specific file and line from the diff?",
+      critical: false,
+    },
   ];
 }();

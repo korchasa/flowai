@@ -66,5 +66,17 @@ Always confirm when asked to apply diffs.`;
         "Were development commands configured with real scripts (not just stub echo commands)?",
       critical: false,
     },
+    {
+      id: "no_hallucinations",
+      description:
+        "Does AGENTS.md only document tooling and architecture explicitly provided by user (Deno, TypeScript, Monolith) — no invented frameworks or tools?",
+      critical: true,
+    },
+    {
+      id: "temp_files_cleaned",
+      description:
+        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-8.11)",
+      critical: false,
+    },
   ];
 }();

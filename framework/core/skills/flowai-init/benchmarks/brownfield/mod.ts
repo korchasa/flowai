@@ -80,5 +80,29 @@ Keep answers brief and affirmative.`;
         "Does deno.json contain tasks pointing to scripts/ (check, test, dev)?",
       critical: true,
     },
+    {
+      id: "no_hallucinations",
+      description:
+        "Does AGENTS.md only document tooling and architecture that actually exists in the project (no invented tools or frameworks)?",
+      critical: true,
+    },
+    {
+      id: "no_duplication",
+      description:
+        "Are documentation sections NOT duplicated between root AGENTS.md and subdirectory AGENTS.md files?",
+      critical: false,
+    },
+    {
+      id: "temp_files_cleaned",
+      description:
+        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-8.11)",
+      critical: false,
+    },
+    {
+      id: "opencode_compat_check",
+      description:
+        "Did the agent check for OpenCode compatibility (opencode.json glob entries for subdirectory AGENTS.md)? (FR-8.12)",
+      critical: false,
+    },
   ];
 }();

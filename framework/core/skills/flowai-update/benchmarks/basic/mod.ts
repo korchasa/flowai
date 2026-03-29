@@ -133,6 +133,18 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
         "Did the agent explain WHY the change is recommended (e.g., new CHECK step ensures code quality)?",
       critical: false,
     },
+    {
+      id: "per_file_confirmation",
+      description:
+        "Did the agent ask for user confirmation before applying changes to AGENTS.md?",
+      critical: false,
+    },
+    {
+      id: "atomic_commit",
+      description:
+        "If the agent committed changes, were all synced files and migrated artifacts staged together in ONE commit? (FR-22.4.1)",
+      critical: false,
+    },
   ];
 }();
 
