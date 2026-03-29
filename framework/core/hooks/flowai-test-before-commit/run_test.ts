@@ -39,6 +39,22 @@ Deno.test("isGitCommit: 'git commit --amend' returns true", () => {
   assertEquals(isGitCommit("git commit --amend"), true);
 });
 
+Deno.test("isGitCommit: leading whitespace returns true", () => {
+  assertEquals(isGitCommit("  git commit -m test"), true);
+});
+
+Deno.test("isGitCommit: subshell (git commit) returns true", () => {
+  assertEquals(isGitCommit("(git commit -m test)"), true);
+});
+
+Deno.test("isGitCommit: git -c ... commit returns true", () => {
+  assertEquals(isGitCommit('git -c user.name="x" commit -m test'), true);
+});
+
+Deno.test("isGitCommit: quoted git commit in echo returns false", () => {
+  assertEquals(isGitCommit('echo "foo; git commit"'), false);
+});
+
 // --- detectRunner ---
 
 Deno.test("detectRunner: dir with deno.json returns deno task check", async () => {
