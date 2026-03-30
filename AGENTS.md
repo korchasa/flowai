@@ -132,3 +132,5 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - One scenario per distinct capability or edge case. Do not overload a single scenario.
 - Run ALL benchmarks for the affected skill/agent before finishing, not just the new one.
 - Skills use `BenchmarkSkillScenario` (field: `skill`). Agents use `BenchmarkAgentScenario` (field: `agent`).
+- **No test-fitting.** If a benchmark fails, first determine whether the problem is in the skill/agent or in the benchmark. Signs of test-fitting: userQuery hints at the correct approach, simulatedUser/persona scripts the exact answer, mocks leak internal logic, setup pre-creates artifacts the skill should produce. Fix the skill/agent first; adjust the benchmark only if the scenario itself is wrong.
+- **Mocks are static.** The hooks-based mock mechanism returns the same `reason` string for ALL invocations of the mocked tool. Do NOT use conditional logic (`if`/`case`/`$`) in mock values — it will be shown as raw text, not executed. One mock = one response.

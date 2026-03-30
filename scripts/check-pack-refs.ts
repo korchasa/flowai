@@ -84,7 +84,10 @@ export function findCrossPackRefs(
       if (refPack === filePack) continue;
       if (refPack === "core" && filePack !== "core") continue;
 
-      // Match backtick-quoted or bare references (word boundary)
+      // Match word-boundary references in any context (code, prose, comments).
+      // NOTE: This catches references in prose text too, not just code/imports.
+      // To avoid false positives, do not mention other packs' skill/agent names
+      // verbatim — use generic descriptions instead.
       const pattern = new RegExp(`\\b${escapeRegex(name)}\\b`);
       if (pattern.test(line)) {
         errors.push({
