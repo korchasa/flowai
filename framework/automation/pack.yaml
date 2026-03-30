@@ -1,0 +1,3 @@
+name: automation
+version: "1.0.0"
+description: SDLC pipeline automation with role-specific subagents, reflection memory, and artifact validation.
