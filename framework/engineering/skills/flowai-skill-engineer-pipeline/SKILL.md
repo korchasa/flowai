@@ -1,5 +1,5 @@
 ---
-name: flow-skill-engineer-pipeline
+name: flowai-skill-engineer-pipeline
 description: "Guide for creating custom SDLC pipelines with orchestrator skills and role-specific subagents"
 ---
 
@@ -110,7 +110,7 @@ For pipelines that run repeatedly, add reflection memory:
 - **History** (`.flow/memory/<agent>-history.md`): Append-only log, <=20 entries
 - **Lifecycle:** orchestrator calls reflection read before subagent, reflection write after
 
-See the automation pack's reflection protocol agent for the full protocol.
+See the pipeline pack's reflection protocol agent for the full protocol.
 
 ## HITL (Human-in-the-Loop)
 
@@ -135,6 +135,6 @@ if all iterations FAIL: rollback
 
 ## Example: Standard SDLC Pipeline
 
-See the automation pack's SDLC pipeline skill for a complete
-reference implementation with 6 roles:
-- PM -> Architect -> Tech Lead -> Developer + QA (loop <=3) -> Review
+For a complete reference implementation, see the SDLC pipeline skill
+in the pipeline pack (6 roles):
+- Specification -> Architect -> Tech Lead -> Developer + QA (loop <=3) -> Review

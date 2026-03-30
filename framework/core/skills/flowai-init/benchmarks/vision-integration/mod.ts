@@ -41,9 +41,8 @@ export const InitVisionIntegrationBench = new class
     );
   }
 
-  // Instruct the agent to use the existing data and VERIFY the results
   userQuery =
-    "/flowai-init. I have already prepared 'interview_data.json'. Please skip the interview and proceed directly to generating the assets. AFTER generation, run 'cat AGENTS.md' and 'ls -R documents/' to verify the results.";
+    "/flowai-init. I have already prepared 'interview_data.json'. Please skip the interview and proceed directly to generating the assets.";
 
   checklist = [
     {

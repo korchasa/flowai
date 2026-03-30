@@ -1,18 +1,18 @@
 #!/usr/bin/env -S deno run --allow-read
 
 /**
- * validate-agent-structure hook: validates that automation pack agents
+ * validate-agent-structure hook: validates that pipeline pack agents
  * contain required sections (Permissions, Output Schema).
  * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
  */
 
-/** Required sections for automation pack agents. */
+/** Required sections for pipeline pack agents. */
 const REQUIRED_SECTIONS = ["## Permissions", "## Output Schema"];
 
-/** Check if a file is an automation pack agent. */
-export function isAutomationAgent(filePath: string): boolean {
+/** Check if a file is a pipeline pack agent. */
+export function isPipelineAgent(filePath: string): boolean {
   if (!filePath) return false;
-  return /framework\/automation\/agents\/agent-.*\.md$/.test(filePath) ||
+  return /framework\/pipeline\/agents\/agent-.*\.md$/.test(filePath) ||
     /\.claude\/agents\/agent-.*\.md$/.test(filePath);
 }
 
@@ -34,7 +34,7 @@ if (import.meta.main) {
   const input = JSON.parse(await new Response(Deno.stdin.readable).text());
   const filePath: string = input?.tool_input?.file_path ??
     input?.tool_input?.file ?? "";
-  if (!filePath || !isAutomationAgent(filePath)) Deno.exit(0);
+  if (!filePath || !isPipelineAgent(filePath)) Deno.exit(0);
 
   let content: string;
   try {
@@ -50,7 +50,7 @@ if (import.meta.main) {
       additionalContext:
         `[validate-agent-structure] Agent ${filePath} is missing required sections: ${
           result.missing.join(", ")
-        }. All automation pack agents MUST include Permissions and Output Schema sections.`,
+        }. All pipeline pack agents MUST include Permissions and Output Schema sections.`,
     }));
   }
 }

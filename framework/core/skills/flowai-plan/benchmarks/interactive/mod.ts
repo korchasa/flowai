@@ -13,10 +13,10 @@ export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
 
   userQuery = "/flowai-plan Plan a simple CLI tool that prints 'Hello World'.";
 
-  userPersona = `You are a developer who always picks the simplest option.
-IMPORTANT: The agent speaks Russian. When you see a question ending with '?' or asking you to choose (e.g. 'Какой вариант', 'выбираете', 'предпочитаете', 'подтвердите'), you MUST respond.
-When asked to choose between variants, always respond with exactly: 'I choose variant A (the simplest one). Please update the whiteboard file with the Solution section now.'
-When asked for confirmation, always respond with: 'Yes, confirmed. Please proceed and fill the Solution section in the whiteboard.'`;
+  userPersona = `You are a developer who prefers simplicity.
+IMPORTANT: The agent may speak Russian. When you see a question ending with '?' or asking you to choose (e.g. 'Какой вариант', 'выбираете', 'предпочитаете', 'подтвердите'), you MUST respond.
+When asked to choose between variants, pick the one that seems simplest and say so briefly.
+When asked for confirmation, agree and ask to proceed.`;
 
   interactive = true;
 

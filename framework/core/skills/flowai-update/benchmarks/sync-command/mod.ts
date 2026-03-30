@@ -27,27 +27,11 @@ export const FlowUpdateSyncCommandBench = new class
     TOOLING_STACK: "- TypeScript\n- Deno",
   };
 
-  // Mock flowai: bare command prints IDE message, `sync` subcommand succeeds
+  // Mock flowai: static response (hooks mechanism returns same reason for all calls).
+  // The skill itself must instruct the agent to use `flowai sync` subcommand.
   mocks: Record<string, string> = {
-    flowai: `#!/bin/bash
-if [ "$1" = "sync" ]; then
-  echo "Sync plan:"
-  echo "  IDEs: claude"
-  echo "  Skills: all"
-  echo "  Agents: all"
-  echo ""
-  echo "Sync complete:"
-  echo "  Written: 3"
-  echo "  Unchanged: 86"
-  exit 0
-elif [ "$1" = "--version" ]; then
-  echo "flowai 0.3.5"
-  exit 0
-else
-  echo "IDE context detected. Run \\\`flowai sync\\\` explicitly or use \\\`/flowai-update\\\` skill."
-  exit 0
-fi
-`,
+    flowai:
+      "Sync complete: Written: 3, Unchanged: 86. IDEs: claude. Skills: all. Agents: all.",
   };
 
   override sandboxState = {
@@ -91,12 +75,6 @@ fi
       id: "sync_succeeded",
       description:
         "Did the sync complete successfully (agent received 'Sync complete' output)?",
-      critical: true,
-    },
-    {
-      id: "no_ide_context_error",
-      description:
-        "Did the agent NOT get stuck on 'IDE context detected' message (i.e., did not use bare `flowai`)?",
       critical: true,
     },
     {

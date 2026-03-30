@@ -12,9 +12,9 @@ import { join } from "@std/path";
  */
 export const PipelineInitStructureBench = new class
   extends BenchmarkSkillScenario {
-  id = "sdlc-pipeline-init-structure";
+  id = "pipeline-github-sdlc-init-structure";
   name = "Pipeline Creates Correct Run Directory Structure";
-  skill = "sdlc-pipeline";
+  skill = "pipeline-github-sdlc";
   stepTimeoutMs = 180_000;
   totalTimeoutMs = 300_000;
   maxSteps = 10;
@@ -37,7 +37,7 @@ export const PipelineInitStructureBench = new class
   }
 
   userQuery =
-    "/sdlc-pipeline Start a new SDLC pipeline run. If issue triage fails, stop and report what was initialized.";
+    "/pipeline-github-sdlc Start a new SDLC pipeline run. If issue triage fails, stop and report what was initialized.";
 
   checklist = [
     {

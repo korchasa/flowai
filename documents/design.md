@@ -49,7 +49,7 @@
     hooks/<name>/          # hook.yaml + run.sh (optional)
     scripts/<name>         # utility scripts (optional)
   ```
-- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific), `automation` (SDLC pipeline with role-specific subagents, reflection memory, artifact validation).
+- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific), `pipeline` (GitHub-driven SDLC pipeline with role-specific subagents, reflection memory, artifact validation).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs are the full installed names (e.g., `flowai-commit/`, `flowai-skill-write-dep/`). flowai copies them as-is — no name transformation at install time.

@@ -1,32 +1,32 @@
 import { assertEquals } from "@std/assert";
-import { isAutomationAgent, validateSections } from "./run.ts";
+import { isPipelineAgent, validateSections } from "./run.ts";
 
-Deno.test("isAutomationAgent: matches framework automation agents", () => {
+Deno.test("isPipelineAgent: matches framework pipeline agents", () => {
   assertEquals(
-    isAutomationAgent("framework/automation/agents/agent-pm.md"),
+    isPipelineAgent("framework/pipeline/agents/agent-pm.md"),
     true,
   );
   assertEquals(
-    isAutomationAgent("framework/automation/agents/agent-qa.md"),
-    true,
-  );
-});
-
-Deno.test("isAutomationAgent: matches installed agents", () => {
-  assertEquals(isAutomationAgent(".claude/agents/agent-pm.md"), true);
-  assertEquals(
-    isAutomationAgent(".claude/agents/agent-developer.md"),
+    isPipelineAgent("framework/pipeline/agents/agent-qa.md"),
     true,
   );
 });
 
-Deno.test("isAutomationAgent: rejects non-automation agents", () => {
+Deno.test("isPipelineAgent: matches installed agents", () => {
+  assertEquals(isPipelineAgent(".claude/agents/agent-pm.md"), true);
   assertEquals(
-    isAutomationAgent("framework/core/agents/flowai-console-expert.md"),
+    isPipelineAgent(".claude/agents/agent-developer.md"),
+    true,
+  );
+});
+
+Deno.test("isPipelineAgent: rejects non-pipeline agents", () => {
+  assertEquals(
+    isPipelineAgent("framework/core/agents/flowai-console-expert.md"),
     false,
   );
-  assertEquals(isAutomationAgent("shared-rules.md"), false);
-  assertEquals(isAutomationAgent(""), false);
+  assertEquals(isPipelineAgent("shared-rules.md"), false);
+  assertEquals(isPipelineAgent(""), false);
 });
 
 Deno.test("validateSections: all sections present", () => {

@@ -1,13 +1,14 @@
 ---
-name: sdlc-pipeline
-description: "SDLC pipeline: PM -> Architect -> Tech Lead -> Developer+QA loop -> Review"
+name: pipeline-github-sdlc
+description: "GitHub-driven SDLC pipeline (via gh CLI): Specification -> Architect -> Tech Lead -> Developer+QA loop -> Review"
 ---
 
 # SDLC Pipeline Orchestrator
 
 You are orchestrating a full SDLC pipeline. Follow these steps EXACTLY in order.
-Each step launches a subagent via the Agent tool. Before each step, check if the
-expected artifact already exists — if it does, SKIP that step.
+Step 1 (Specification) is performed directly by the orchestrator.
+Steps 2–6 launch subagents via the Agent tool.
+Before each step, check if the expected artifact already exists — if it does, SKIP that step.
 
 ## Initialization
 
@@ -37,7 +38,7 @@ If valid, extract `issue` and SKIP to Step 2. If file exists but invalid, DELETE
 
 ### Issue Tracker: Select Issue
 
-Before launching the PM agent, select the issue to work on:
+Select the issue to work on:
 
 ```
 gh issue list --state open --json number,title,labels --limit 20
@@ -70,25 +71,54 @@ Fetch issue data:
 gh issue view <N> --json body,title,labels --jq '{title,body,labels}'
 ```
 
-### Launch PM Agent
+### Branch Check
 
+Run `git branch --show-current`. If NOT on `main` — log warning and proceed anyway.
+
+### Analyze Issue
+
+Using the fetched issue data (title, body, labels):
+- Extract key requirements from the issue body
+- Identify scope: `engine`, `sdlc`, or `engine+sdlc`
+- Assess feasibility and flag contradictions
+- **HARD STOP — NEVER SUBSTITUTE THE ORIGINAL TASK.** The spec MUST faithfully
+  address the requirements stated in the issue. Do NOT create surrogate
+  or alternative tasks to work around scope limitations.
+
+If requirements are ambiguous and you need human input:
+1. Write the question to `<run_dir>/specification/hitl-question.txt`
+2. Report: "HITL required — question written to hitl-question.txt"
+3. Follow the HITL procedure (see HITL section below).
+
+### Write Specification
+
+`mkdir -p <run_dir>/specification` (if not yet created), then write `<run_dir>/specification/01-spec.md`.
+
+The file MUST begin with YAML frontmatter:
+
+```yaml
+---
+issue: <issue_number>
+scope: <engine|sdlc|engine+sdlc>
+---
 ```
-Agent(
-  description: "PM: triage and specify",
-  subagent_type: "agent-pm",
-  prompt: "You are the PM agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
-    - Issue data: <PASTE ISSUE TITLE, BODY, LABELS HERE>
-    - Write specification artifact to: <run_dir>/specification/01-spec.md
-    - Node output directory: <run_dir>/specification/
-    - Run ID: <run_id>
-    Follow your agent definition for exact steps."
-)
-```
+
+Then MUST contain exactly these sections (Markdown H2 headings):
+
+- **`## Problem Statement`** — What is the user/system need. Why it matters (business/technical value).
+- **`## Affected Requirements`** — Reference by ID if applicable. Briefly explain how each is affected (new, modified, impacted).
+- **`## Scope Boundaries`** — Explicitly list related but excluded work. Mention any deferred decisions or future follow-ups.
+- **`## Summary`** — 3-5 lines: issue selected, changes described, key scope exclusions.
+
+**Spec rules:**
+- No implementation details. No data structures, APIs, code.
+- Compressed style.
+- YAML frontmatter required: `01-spec.md` MUST start with `---`.
+- Fail fast: if the issue contradicts existing requirements, state it explicitly rather than guessing.
 
 ### Issue Tracker: Post Progress
 
-After PM completes:
+After specification is written:
 ```
 gh issue comment <issue_number> --body "**[Pipeline · PM]** Specification phase completed."
 ```
@@ -116,7 +146,7 @@ Agent(
   subagent_type: "agent-architect",
   model: "opus",
   prompt: "You are the Architect agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
+    - Read shared-rules and reflection-protocol from framework/pipeline/agents/
     - Read specification at: <run_dir>/specification/01-spec.md
     - Explore the codebase to understand affected areas
     - Write implementation plan with 2-3 variants to: <run_dir>/design/02-plan.md
@@ -147,7 +177,7 @@ Agent(
   subagent_type: "agent-tech-lead",
   model: "opus",
   prompt: "You are the Tech Lead agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
+    - Read shared-rules and reflection-protocol from framework/pipeline/agents/
     - Read specification at: <run_dir>/specification/01-spec.md
     - Read plan at: <run_dir>/design/02-plan.md
     - Select a variant, produce task breakdown, create branch
@@ -204,7 +234,7 @@ Agent(
   description: "Developer: implement iter-<iter>",
   subagent_type: "agent-developer",
   prompt: "You are the Developer agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
+    - Read shared-rules and reflection-protocol from framework/pipeline/agents/
     - Read decision at: <run_dir>/decision/03-decision.md
     - Implement code changes following TDD
     - Write implementation summary to: <run_dir>/build/iter-<iter>/04-impl-summary.md
@@ -227,7 +257,7 @@ Agent(
   description: "QA: verify iter-<iter>",
   subagent_type: "agent-qa",
   prompt: "You are the QA agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
+    - Read shared-rules and reflection-protocol from framework/pipeline/agents/
     - Read specification at: <run_dir>/specification/01-spec.md
     - Read decision at: <run_dir>/decision/03-decision.md
     - Read implementation summary at: <run_dir>/build/iter-<iter>/04-impl-summary.md
@@ -295,7 +325,7 @@ Agent(
   description: "Tech Lead Review: final review",
   subagent_type: "agent-tech-lead-review",
   prompt: "You are the Tech Lead Review agent. Your task:
-    - Read shared-rules and reflection-protocol from framework/automation/agents/
+    - Read shared-rules and reflection-protocol from framework/pipeline/agents/
     - Read specification at: <run_dir>/specification/01-spec.md
     - Read decision at: <run_dir>/decision/03-decision.md (if exists)
     - Review the diff: git diff main...HEAD
@@ -330,7 +360,7 @@ gh issue comment <issue_number> --body "**[Pipeline · Review]** PR left open wi
 
 ## HITL (Human-in-the-Loop)
 
-If any subagent writes a `hitl-question.txt` file in its node output directory:
+If a `hitl-question.txt` file is written in a step's output directory (by the orchestrator in Step 1, or by a subagent in later steps):
 1. Read the question from the file
 2. Post it to the issue tracker:
    ```
@@ -341,13 +371,18 @@ If any subagent writes a `hitl-question.txt` file in its node output directory:
    .flow/scripts/hitl-check.sh <issue_number> '<timestamp>'
    ```
    Or use the `hitl-check.ts` script if available.
-4. After receiving reply, pass it to the subagent and resume.
+4. After receiving reply, resume the step (continue directly for Step 1, or pass to subagent for later steps).
 
 ## Error Handling
 
-- If any subagent fails (Agent tool returns error): log the error, proceed to
-  Step 5 (Rollback) + Step 6 (Review).
-- If a validation hook blocks a Write: the subagent receives the hook's error
+- **Issue Tracker commands fail (gh):** If a `gh` command fails, log the error
+  and stop the pipeline. Report which step failed and why. Do NOT proceed to
+  the next step — issue tracker integration is required for pipeline operation.
+- **Step 1 (orchestrator) fails:** If specification cannot be written (e.g.,
+  issue data unavailable, contradictions found), log the error and stop.
+- **Subagent fails (Steps 2–6):** If the Agent tool returns an error, log it
+  and proceed to Step 5 (Rollback) + Step 6 (Review).
+- **Validation hook blocks a Write:** The subagent receives the hook's error
   message and should fix the artifact automatically (native continuation).
 
 ## Resume
