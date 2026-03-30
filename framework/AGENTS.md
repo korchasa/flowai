@@ -13,6 +13,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `core` — Base commands (commit, plan, review, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, fix-tests, etc.).
+- `automation` — SDLC pipeline with role-specific subagents, reflection memory, artifact validation.
 - `deno` — Deno-specific skills.
 - `typescript` — TypeScript-specific setup skills.
 
