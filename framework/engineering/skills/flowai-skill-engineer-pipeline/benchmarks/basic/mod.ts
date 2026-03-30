@@ -8,9 +8,9 @@ import { join } from "@std/path";
  */
 export const EngineerPipelineBasicBench = new class
   extends BenchmarkSkillScenario {
-  id = "flow-skill-engineer-pipeline-basic";
+  id = "flowai-skill-engineer-pipeline-basic";
   name = "Create a Custom Review Pipeline Using Guide";
-  skill = "flow-skill-engineer-pipeline";
+  skill = "flowai-skill-engineer-pipeline";
   stepTimeoutMs = 300_000;
   maxSteps = 15;
   agentsTemplateVars = {
@@ -44,7 +44,7 @@ export const EngineerPipelineBasicBench = new class
   }
 
   userQuery =
-    "/flow-skill-engineer-pipeline I want to create a custom pipeline for automated code review. It should have 3 steps: (1) Reviewer agent finds issues, (2) Fixer agent resolves issues, (3) Verifier agent checks fixes. Help me create the orchestrator skill and agent definitions.";
+    "/flowai-skill-engineer-pipeline I want to create a custom pipeline for automated code review. It should have 3 steps: (1) Reviewer agent finds issues, (2) Fixer agent resolves issues, (3) Verifier agent checks fixes. Help me create the orchestrator skill and agent definitions.";
 
   checklist = [
     {

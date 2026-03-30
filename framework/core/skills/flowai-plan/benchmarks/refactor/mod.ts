@@ -46,15 +46,4 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
       critical: true,
     },
   ];
-
-  simulatedUser = {
-    responses: [
-      {
-        trigger:
-          /I will (now|begin to) (apply|implement|modify|update|refactor)/i,
-        response:
-          "Wait, you are a planner. You must NOT modify any files except files in documents/whiteboards/. Please just finish the plan.",
-      },
-    ],
-  };
 }();

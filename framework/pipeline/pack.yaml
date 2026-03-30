@@ -1,0 +1,3 @@
+name: pipeline
+version: "1.0.0"
+description: GitHub-driven SDLC pipeline with role-specific subagents, reflection memory, and artifact validation.

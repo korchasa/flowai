@@ -4,13 +4,13 @@ import { join } from "@std/path";
 /**
  * Tests that the pipeline validates artifact frontmatter.
  * Pre-condition: An invalid spec artifact exists (missing required 'scope' field).
- * Pipeline should detect the invalid artifact and re-run the PM step.
+ * Pipeline should detect the invalid artifact and re-run Step 1 (specification).
  */
 export const PipelineArtifactValidationBench = new class
   extends BenchmarkSkillScenario {
-  id = "sdlc-pipeline-artifact-validation";
+  id = "pipeline-github-sdlc-artifact-validation";
   name = "Pipeline Detects Invalid Artifact and Re-runs Step";
-  skill = "sdlc-pipeline";
+  skill = "pipeline-github-sdlc";
   stepTimeoutMs = 300_000;
   totalTimeoutMs = 600_000;
   maxSteps = 15;
@@ -58,7 +58,7 @@ Incomplete spec without scope field.
   }
 
   userQuery =
-    "/sdlc-pipeline Resume the pipeline from run 20260201T120000. Check existing artifacts. If a subagent or gh command fails, stop gracefully and report what you found.";
+    "/pipeline-github-sdlc Resume the pipeline from run 20260201T120000. Check existing artifacts. If a subagent or gh command fails, stop gracefully and report what you found.";
 
   checklist = [
     {
@@ -70,7 +70,7 @@ Incomplete spec without scope field.
     {
       id: "spec_rerun_or_delete",
       description:
-        "Did the agent delete the invalid artifact or re-run the PM/specification step to fix it?",
+        "Did the agent delete the invalid artifact or re-run the specification step (Step 1) to fix it?",
       critical: true,
     },
     {

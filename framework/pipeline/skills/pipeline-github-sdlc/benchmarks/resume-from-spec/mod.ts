@@ -6,19 +6,20 @@ import { join } from "@std/path";
  * pipeline should skip PM step and proceed to Architect step.
  *
  * Pre-condition: .flow/runs/<run_id>/specification/01-spec.md exists with valid
- * frontmatter. Pipeline should detect it and skip to Step 2.
+ * frontmatter. Pipeline should detect it and skip Step 1 (specification),
+ * proceeding directly to Step 2 (Architect).
  *
  * Note: This scenario mocks gh commands since no real GitHub repo is available.
  * The focus is on resume detection, not full pipeline execution.
  */
 export const PipelineResumeFromSpecBench = new class
   extends BenchmarkSkillScenario {
-  id = "sdlc-pipeline-resume-from-spec";
+  id = "pipeline-github-sdlc-resume-from-spec";
   name = "Resume Pipeline from Existing Spec";
-  skill = "sdlc-pipeline";
-  stepTimeoutMs = 600_000;
-  totalTimeoutMs = 1_800_000;
-  maxSteps = 25;
+  skill = "pipeline-github-sdlc";
+  stepTimeoutMs = 300_000;
+  totalTimeoutMs = 600_000;
+  maxSteps = 15;
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
@@ -72,13 +73,14 @@ Selected issue #1. Implementing feature X for engine performance improvement.
   }
 
   userQuery =
-    "/sdlc-pipeline Resume the pipeline. The latest run is 20260101T000000 in .flow/runs/. If a subagent or gh command fails, stop gracefully and report progress.";
+    "/pipeline-github-sdlc Resume the pipeline. The latest run is 20260101T000000 in .flow/runs/. " +
+    "If a subagent or gh command fails, stop gracefully and report progress.";
 
   checklist = [
     {
       id: "spec_skip_detected",
       description:
-        "Did the agent detect that 01-spec.md already exists and skip the PM/specification step?",
+        "Did the agent detect that 01-spec.md already exists and skip the specification step (Step 1)?",
       critical: true,
     },
     {

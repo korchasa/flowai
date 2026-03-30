@@ -59,7 +59,7 @@ Do NOT re-search files already in context via Bash.
 ## Reflection Memory
 
 Follow the reflection protocol defined in
-`framework/automation/agents/reflection-protocol.md`. Memory + history paths
+`framework/pipeline/agents/reflection-protocol.md`. Memory + history paths
 are specified in each agent's prompt.
 
 ## Issue Tracker Agnosticism

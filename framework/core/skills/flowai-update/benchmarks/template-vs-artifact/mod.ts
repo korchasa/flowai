@@ -231,7 +231,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
   }
 
   userQuery =
-    "/flowai-update I already ran `flowai sync` and it updated some skills. Please skip the CLI update and sync steps. Start from step 3: detect what changed in .claude/ via git, analyze diffs, compare templates against project artifacts, and propose migrations.";
+    "/flowai-update I already ran `flowai sync` and it updated some skills. Please skip the CLI update and sync steps. Analyze the changes and propose any needed migrations to the project.";
 
   checklist = [
     {
