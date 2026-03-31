@@ -57,11 +57,10 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - Overwrite the `Solution` section placeholder with concrete implementation steps for the selected variant (follow `### GODS Format` from AGENTS.md).
    - The Solution section MUST contain: files to create/modify, implementation approach, code structure, dependencies, error handling strategy (especially for async/callback conversions), and verification commands.
    - **CRITICAL**: You MUST write the updated content to the whiteboard file. Never leave Solution as a placeholder or comment.
-6. **Critique**
-   - Present the plan to the user in chat and offer to critique it before finalizing.
-   - If user agrees: critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat.
+6. **Critique** — execute immediately, no permission needed
+   - Critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat.
 7. **Refine**
-   - Ask the user which critique points to address.
+   - Ask the user which critique points to address (or skip if none).
    - Update the whiteboard file with accepted improvements.
 8. **TOTAL STOP**
    </step_by_step>
