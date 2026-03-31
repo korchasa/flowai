@@ -9,7 +9,7 @@ Deno.test("getArtifactSchema: matches spec artifact", () => {
   const schema = getArtifactSchema(
     ".flow/runs/20260101T000000/specification/01-spec.md",
   );
-  assertEquals(schema, ["issue", "scope"]);
+  assertEquals(schema, ["scope"]);
 });
 
 Deno.test("getArtifactSchema: matches decision artifact", () => {

@@ -8,7 +8,7 @@
 
 /** Artifact schemas: filename pattern -> required frontmatter fields. */
 const ARTIFACT_SCHEMAS: Record<string, string[]> = {
-  "01-spec.md": ["issue", "scope"],
+  "01-spec.md": ["scope"],
   "03-decision.md": ["variant", "tasks"],
   "05-qa-report.md": ["verdict", "high_confidence_issues"],
 };
