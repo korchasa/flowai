@@ -85,6 +85,10 @@ export function buildCheckCommands(): CommandSpec[] {
       cmd: "deno",
       args: ["run", "-A", "scripts/check-pack-refs.ts"],
     },
+    {
+      cmd: "deno",
+      args: ["run", "-A", "scripts/check-naming-prefix.ts"],
+    },
   ];
 }
 
