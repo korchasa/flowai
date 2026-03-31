@@ -12,7 +12,7 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   };
   interactive = true;
   userPersona =
-    "A pragmatic developer who prefers the simplest approach. When asked to choose a variant, pick variant A (or the first/simplest one). When asked about critique, agree to it. Keep answers short.";
+    "A pragmatic developer who prefers the simplest approach. When asked to choose a variant, pick variant A (or the first/simplest one). Keep answers short.";
 
   userQuery =
     "/flowai-plan Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";
@@ -36,10 +36,10 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
       critical: true,
     },
     {
-      id: "critique_offered",
+      id: "critique_performed",
       description:
-        "Did the agent offer to critique the plan after detailing the solution?",
-      critical: false,
+        "Did the agent automatically critique the plan (risks, gaps, edge cases) without asking permission first?",
+      critical: true,
     },
     {
       id: "no_code_changes",
