@@ -30,7 +30,12 @@ export function parseFrontmatter(
 ): Record<string, unknown> | null {
   const match = content.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return null;
-  const data = parseYaml(match[1]);
+  let data: unknown;
+  try {
+    data = parseYaml(match[1]);
+  } catch {
+    return null;
+  }
   if (typeof data !== "object" || data === null || Array.isArray(data)) {
     return null;
   }
