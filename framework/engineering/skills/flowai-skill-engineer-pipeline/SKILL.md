@@ -79,7 +79,7 @@ Subagents should NOT contain full implementation logic. Instead:
 - Required fields: [<field list>]
 ```
 
-These sections are validated by the `validate-agent-structure` hook.
+These sections are validated by the `flowai-validate-agent-structure` hook.
 
 ### Comment Identification
 
@@ -92,7 +92,7 @@ Examples: `[PM · specify]`, `[QA · verify]`, `[Developer · implement]`
 ## Artifact Validation
 
 Each artifact type has a schema (filename pattern -> required YAML frontmatter fields).
-The `validate-artifact` hook checks these automatically after Write/Edit.
+The `flowai-validate-artifact` hook checks these automatically after Write/Edit.
 
 Define schemas in the hook:
 ```typescript
