@@ -1,7 +1,7 @@
 ---
 name: flowai-update
 description: >-
-  Update flowai framework: sync skills/agents, adapt skills to project specifics, and migrate scaffolded project artifacts (AGENTS.md, devcontainer, deno.json, scripts/).
+  Update flowai framework: sync skills/agents, adapt skills to project specifics, and migrate scaffolded project artifacts.
 disable-model-invocation: true
 ---
 
@@ -16,7 +16,7 @@ Single entry point for updating the flowai framework in a project. Handles CLI u
 <context>
 flowai generates two types of outputs:
 - **Synced** (skills/, agents/) — updated automatically by `flowai sync`, then adapted to the project
-- **Scaffolded** (AGENTS.md, .devcontainer/, deno.json tasks, scripts/check.ts, documents/) — created once by setup skills (flowai-init, flowai-setup-agent-*, flowai-skill-configure-deno-commands), then owned by the project
+- **Scaffolded** (AGENTS.md, .devcontainer/, documents/, project-specific configs and scripts) — created once by setup skills (flowai-init, flowai-setup-agent-*, stack-specific configure-commands skills), then owned by the project. Exact artifact list varies by project stack and is declared in each pack's `pack.yaml` `scaffolds:` field.
 
 `flowai sync` overwrites skills with upstream versions. This skill detects the overwrite via `git diff HEAD` and re-adapts, merging upstream changes with previous project customizations. Adaptation state is tracked entirely through git history — no extra frontmatter fields needed.
 

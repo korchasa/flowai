@@ -42,7 +42,7 @@ Rules work across multiple IDEs but use different file formats and locations. Be
 | IDE | Always-Apply Rules | Conditional Rules | Format |
 |-----|-------------------|-------------------|--------|
 | **Cursor** | `.cursor/rules/*/RULE.md` with `alwaysApply: true` | `.cursor/rules/*/RULE.md` with `globs:` | YAML frontmatter + Markdown |
-| **Claude Code** | `CLAUDE.md`, `.claude/rules/*.md` | `.claude/rules/*.md` with `paths:` | YAML frontmatter + Markdown |
+| **Claude Code** | `CLAUDE.md`, `.claude/rules/*.md` (no `paths:` frontmatter) | `.claude/rules/*.md` with `paths:` (array of globs, no `description`/`alwaysApply`) | YAML frontmatter (`paths` only) + Markdown |
 | **OpenCode** | `AGENTS.md`, `opencode.json` `instructions` | `opencode.json` `instructions` (globs) | `AGENTS.md`: Plain Markdown; `opencode.json`: JSON array of paths/globs/URLs |
 
 ### Detection Strategy
@@ -102,12 +102,14 @@ Rule content here...
 
 ### Claude Code
 
-Rules in `.claude/rules/*.md` with frontmatter:
+Rules in `.claude/rules/*.md` with frontmatter. The only supported frontmatter field is `paths` (array of glob strings). There is **no** `description` or `alwaysApply` field — these are Cursor-specific.
+
+**Conditional rule** (applies when matching files are in context):
 
 ```markdown
 ---
-description: TypeScript conventions
-paths: src/**/*.ts
+paths:
+  - "src/**/*.ts"
 ---
 
 # Rule Title
@@ -115,7 +117,18 @@ paths: src/**/*.ts
 Rule content here...
 ```
 
-Or project-wide in `CLAUDE.md` (no frontmatter, always applies).
+**Multiple glob patterns:**
+
+```markdown
+---
+paths:
+  - "src/**/*.ts"
+  - "lib/**/*.{ts,tsx}"
+  - "tests/**/*.test.ts"
+---
+```
+
+**Always-apply rule:** omit `paths` frontmatter entirely, or use `CLAUDE.md` (project root / subdirectory).
 
 ### OpenCode
 
@@ -190,7 +203,7 @@ deno run -A scripts/validate_rule.ts <path/to/rule-file-or-directory>
 
 Checklist:
 - [ ] Correct file format for target IDE
-- [ ] Frontmatter configured correctly (description, globs/paths, alwaysApply)
+- [ ] Frontmatter configured correctly for target IDE (Cursor: `description`, `globs`, `alwaysApply`; Claude Code: `paths` only)
 - [ ] Content under 500 lines (prefer under 50)
 - [ ] Includes concrete examples
 - [ ] One concern per rule

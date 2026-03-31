@@ -8,8 +8,13 @@
 /** Check if the command is a git commit (not echoed or printed). */
 export function isGitCommit(command: string): boolean {
   if (!command) return false;
-  // Match git commit at start of string or after command separator (&&, ;, |)
-  return /(?:^|[;&|]\s*)git\s+commit\b/.test(command);
+
+  // Strip quoted strings to avoid matching git commit inside echo/printf args
+  const stripped = command.replace(/"[^"]*"|'[^']*'/g, '""');
+
+  // Match: optional leading whitespace or separators (&&, ;, |, subshell),
+  // then git with optional -c flags, then commit subcommand
+  return /(?:^|\(|[;&|])\s*git\s+(?:-c\s+\S+\s+)*commit\b/.test(stripped);
 }
 
 /** Detect test runner by project markers. Returns command + marker or null. */
