@@ -364,6 +364,48 @@ Verified empirically (2026-03-22, `scripts/detect-ide-env.sh`):
 
 Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested envs), then `CLAUDECODE`, then `OPENCODE`.
 
+### 3.10 Session/Conversation History Storage
+
+#### Cursor [^28][^29]
+
+**Format**: SQLite (`state.vscdb`, schema `ItemTable(key TEXT, value TEXT)` with JSON blobs) + JSON (agent transcripts).
+
+**Scope**: Per-workspace (SQLite) + per-project (agent transcripts).
+
+**Paths**:
+- macOS: `~/Library/Application Support/Cursor/User/globalStorage/state.vscdb`, `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/state.vscdb`
+- Linux: `~/.config/Cursor/User/globalStorage/state.vscdb`, `~/.config/Cursor/User/workspaceStorage/<hash>/state.vscdb`
+- Windows: `%APPDATA%\Cursor\User\globalStorage\state.vscdb`, `%APPDATA%\Cursor\User\workspaceStorage\<hash>\state.vscdb`
+- Agent transcripts (newer): `~/.cursor/projects/{project_name}/agent-transcripts/`
+
+**SQLite keys**: `composer.composerData` (current), migrated from `aichat` keys.
+
+#### Claude Code [^30]
+
+**Format**: JSONL (one JSON object per line per message).
+
+**Scope**: Per-project + global index.
+
+**Paths** (all OS, Unix notation):
+- Global index: `~/.claude/history.jsonl` (prompt text, timestamp, project path, session ID per line)
+- Per-project: `~/.claude/projects/{project-path-with-dashes}/` — `.jsonl` session files + `sessions-index.json`
+- Windows: `%USERPROFILE%\.claude\` (assumed, not officially confirmed)
+
+#### OpenCode [^31]
+
+**Format**: SQLite (`opencode.db`, Drizzle ORM).
+
+**Scope**: Per-project (tied to `ProjectID`).
+
+**Paths**:
+- Linux/macOS: `~/.local/share/opencode/opencode.db` (XDG standard)
+- Windows: not documented
+- Auth: `~/.local/share/opencode/auth.json`
+
+**Env vars**: `OPENCODE_DATA_DIR` (unconfirmed).
+
+**Data**: Messages, cost summaries, timestamps per session.
+
 ---
 
 ## 4. Comparative Summary
@@ -382,6 +424,7 @@ Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested 
 | **Plugin Bundles** | `.cursor-plugin/` [^26] | `.claude-plugin/` [^27] | npm packages |
 | **Marketplace** | cursor.com/marketplace | claude.ai (~101 plugins) | npm |
 | **MCP Config** | `.cursor/mcp.json` | `.mcp.json` | `opencode.jsonc` |
+| **Session Storage** | SQLite `state.vscdb` + `agent-transcripts/` [^28] | JSONL `~/.claude/projects/` [^30] | SQLite `opencode.db` [^31] |
 
 ---
 
@@ -404,3 +447,7 @@ Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested 
 [^25]: https://docs.github.com/en/copilot/how-tos/configure-content-exclusion/exclude-content-from-copilot — GitHub Copilot content exclusion
 [^26]: https://cursor.com/docs/plugins — Cursor plugins: .cursor-plugin/plugin.json manifest, Marketplace (manual security review)
 [^27]: https://code.claude.com/docs/en/plugins — Claude Code plugins: .claude-plugin/plugin.json manifest, Anthropic Marketplace (~101 plugins)
+[^28]: https://dasarpai.com/dsblog/cursor-chat-architecture-data-flow-storage/ — Cursor chat architecture, SQLite schema, storage paths
+[^29]: https://github.com/specstoryai/docs/blob/main/faqs.mdx — SpecStory FAQ: cross-IDE storage path comparison
+[^30]: https://kentgigger.com/posts/claude-code-conversation-history — Claude Code conversation history: JSONL format, per-project paths
+[^31]: https://deepwiki.com/sst/opencode/2.1-session-management — OpenCode session management: SQLite with Drizzle ORM
