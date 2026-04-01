@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.7](https://github.com/korchasa/flowai/compare/v0.4.6...v0.4.7) (2026-03-31)
+
+
+### Bug Fixes
+
+* **devtools:** correct Claude Code rule format in engineer-rule skill ([c99d54f](https://github.com/korchasa/flowai/commit/c99d54faf4080b6bced1a73aba00d86a5e6f412d))
+
 ### [0.4.6](https://github.com/korchasa/flowai/compare/v0.4.5...v0.4.6) (2026-03-30)
 
 
