@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.9](https://github.com/korchasa/flowai/compare/v0.4.8...v0.4.9) (2026-04-01)
+
+
+### Features
+
+* **cli:** add --local sync mode; stop tracking .claude/ in git ([8fba6ac](https://github.com/korchasa/flowai/commit/8fba6acde7d9dcb60ea7b5792d89dd27c4ddf57f))
+
+
+### Agent Changes
+
+* **core:** add dynamic doc discovery, whiteboard context, and parallel delegation benchmarks ([e74a11c](https://github.com/korchasa/flowai/commit/e74a11c82389b0a18381f840be511d365f9f604d))
+* **flowai-commit:** add missing CLAUDE.md symlink in dynamic-doc-list fixture ([8436259](https://github.com/korchasa/flowai/commit/8436259d40c667ee3e3f85536f7d7da77f1c9862))
+
 ### [0.4.8](https://github.com/korchasa/flowai/compare/v0.4.7...v0.4.8) (2026-04-01)
 
 
