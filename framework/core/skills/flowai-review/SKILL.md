@@ -74,6 +74,27 @@ Input sources:
      If these files do not exist, rely on conventions visible in the diff
      and surrounding code.
 
+   **Parallel Delegation** (after gathering context):
+   - **Small diff shortcut**: If `git diff --stat` shows < 50 changed lines,
+     skip delegation — run all steps inline (overhead not justified).
+   - Otherwise, delegate **3 independent tasks in parallel** (via subagents,
+     background tasks, or IDE-specific parallel execution — e.g., `Task`,
+     `Agent`, `parallel`):
+     - **SA1**: Run the project check command (`deno task check`, `npm run
+       lint`, `make check`, etc.). Delegate to a console/shell-capable agent
+       (e.g., `flowai-console-expert`). Return pass/fail + full output.
+     - **SA2**: Run hygiene grep scan on diff output — search for `TODO`,
+       `FIXME`, `HACK`, `XXX`, `console.log`, `temp_*`, `*.tmp`, `*.bak`,
+       hardcoded secrets patterns. Delegate to a console/shell-capable agent.
+       Return findings list.
+     - **SA3**: Analyze diff for atomic commit grouping. Delegate to
+       `flowai-diff-specialist` (or equivalent diff analysis agent). Return
+       JSON with proposed commits.
+   - **Fallback rule**: If any delegated task fails or times out, the main
+     agent performs that step inline. No hard dependency on delegation success.
+   - Continue with steps 3, 5, 6, 7 (main agent review) while delegated
+     tasks run.
+
 3. **QA: Task Completion**
    - Map each requirement/plan item to concrete changes in the diff.
    - Flag requirements with no corresponding changes as `[critical] Missing`.
@@ -81,7 +102,10 @@ Input sources:
      `[critical] Phantom completion`.
    - Check for regressions: do changed files break existing functionality?
 
-4. **QA: Hygiene**
+4. **QA: Hygiene** _(use SA2 result if available; otherwise run inline)_
+   - If SA2 completed: review its findings, deduplicate with own Code Review
+     findings, and merge into the report.
+   - If SA2 failed/timed out or skipped (small diff): perform inline:
    - **Temp artifacts**: New `temp_*`, `*.tmp`, `*.bak`, debug `console.log`/
      `print` statements, hardcoded secrets or localhost URLs.
    - **Unfinished markers**: New `TODO`, `FIXME`, `HACK`, `XXX` introduced in
@@ -125,7 +149,9 @@ Input sources:
      one-liners, overly compact expressions. Explicit code is preferred over
      clever short forms.
 
-8. **Run Automated Checks**
+8. **Run Automated Checks** _(collect SA1 result if available; otherwise run inline)_
+   - If SA1 completed: use its pass/fail result and output. Do NOT re-run.
+   - If SA1 failed/timed out or skipped (small diff): run inline:
    - If the project has a check command (`deno task check`, `npm run lint`,
      `make check`, etc.), run it and include results.
    - If no check command is found, explicitly note "No automated checks

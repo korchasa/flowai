@@ -85,6 +85,111 @@ export async function runCommandsInParallel(
 }
 
 /**
+ * Result of a single buffered command execution.
+ */
+type BufferedResult = {
+  command: CommandSpec;
+  success: boolean;
+  code: number;
+  stdout: string;
+  stderr: string;
+};
+
+/**
+ * Runs multiple commands in parallel with buffered output.
+ * - Prints progress lines as commands start/finish
+ * - Buffers stdout/stderr per command (no interleaving)
+ * - After all finish, prints output: passed first, then failed
+ * - Throws Error listing all failed commands if any fail
+ */
+export async function runCommandsInParallelBuffered(
+  commands: CommandSpec[],
+): Promise<void> {
+  const dim = ansi("\x1b[2m");
+  const green = ansi("\x1b[32m");
+  const red = ansi("\x1b[31m");
+  const reset = ansi("\x1b[0m");
+
+  const promises = commands.map(async (command): Promise<BufferedResult> => {
+    const label = formatCommand(command);
+    console.log(`${dim}[started]${reset} ${label}`);
+
+    const proc = new Deno.Command(command.cmd, {
+      args: command.args,
+      cwd: command.cwd,
+      stdin: "null",
+      stdout: "piped",
+      stderr: "piped",
+    }).spawn();
+
+    const collectStream = async (
+      stream: ReadableStream<Uint8Array>,
+    ): Promise<Uint8Array> => {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      const total = chunks.reduce((sum, c) => sum + c.length, 0);
+      const result = new Uint8Array(total);
+      let offset = 0;
+      for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+      }
+      return result;
+    };
+
+    const [status, stdoutBytes, stderrBytes] = await Promise.all([
+      proc.status,
+      collectStream(proc.stdout),
+      collectStream(proc.stderr),
+    ]);
+
+    const decoder = new TextDecoder();
+    const result: BufferedResult = {
+      command,
+      success: status.success,
+      code: status.code ?? 1,
+      stdout: decoder.decode(stdoutBytes),
+      stderr: decoder.decode(stderrBytes),
+    };
+
+    if (result.success) {
+      console.log(`${green}[done]${reset} ${label}`);
+    } else {
+      console.log(`${red}[failed]${reset} ${label}`);
+    }
+
+    return result;
+  });
+
+  const results = await Promise.allSettled(promises);
+  const settled = results.map((r) => {
+    if (r.status === "fulfilled") return r.value;
+    throw r.reason;
+  });
+
+  // Print output: passed first, then failed
+  const passed = settled.filter((r) => r.success);
+  const failed = settled.filter((r) => !r.success);
+
+  for (const r of [...passed, ...failed]) {
+    const label = formatCommand(r.command);
+    const statusTag = r.success ? `${green}PASS${reset}` : `${red}FAIL${reset}`;
+    console.log(`\n=== ${statusTag} ${label} ===`);
+    if (r.stdout) Deno.stdout.writeSync(new TextEncoder().encode(r.stdout));
+    if (r.stderr) Deno.stderr.writeSync(new TextEncoder().encode(r.stderr));
+  }
+
+  if (failed.length > 0) {
+    const summary = failed
+      .map((r) => `  ${formatCommand(r.command)} (exit ${r.code})`)
+      .join("\n");
+    throw new Error(`${failed.length} command(s) failed:\n${summary}`);
+  }
+}
+
+/**
  * Moves a file and cleans up empty parent directories.
  */
 export async function moveFileWithCleanup(

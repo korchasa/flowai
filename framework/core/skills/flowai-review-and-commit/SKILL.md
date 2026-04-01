@@ -67,6 +67,27 @@ the other.
      If these files do not exist, rely on conventions visible in the diff
      and surrounding code.
 
+   **Parallel Delegation** (after gathering context):
+   - **Small diff shortcut**: If `git diff --stat` shows < 50 changed lines,
+     skip delegation — run all steps inline (overhead not justified).
+   - Otherwise, delegate **3 independent tasks in parallel** (via subagents,
+     background tasks, or IDE-specific parallel execution — e.g., `Task`,
+     `Agent`, `parallel`):
+     - **SA1**: Run the project check command (`deno task check`, `npm run
+       lint`, `make check`, etc.). Delegate to a console/shell-capable agent
+       (e.g., `flowai-console-expert`). Return pass/fail + full output.
+     - **SA2**: Run hygiene grep scan on diff output — search for `TODO`,
+       `FIXME`, `HACK`, `XXX`, `console.log`, `temp_*`, `*.tmp`, `*.bak`,
+       hardcoded secrets patterns. Delegate to a console/shell-capable agent.
+       Return findings list.
+     - **SA3**: Analyze diff for atomic commit grouping. Delegate to
+       `flowai-diff-specialist` (or equivalent diff analysis agent). Return
+       JSON with proposed commits.
+   - **Fallback rule**: If any delegated task fails or times out, the main
+     agent performs that step inline. No hard dependency on delegation success.
+   - Continue with steps 3, 5, 6, 7 (main agent review) while delegated
+     tasks run.
+
 3. **QA: Task Completion**
    - Map each requirement/plan item to concrete changes in the diff.
    - Flag requirements with no corresponding changes as `[critical] Missing`.
@@ -74,7 +95,10 @@ the other.
      `[critical] Phantom completion`.
    - Check for regressions: do changed files break existing functionality?
 
-4. **QA: Hygiene**
+4. **QA: Hygiene** _(use SA2 result if available; otherwise run inline)_
+   - If SA2 completed: review its findings, deduplicate with own Code Review
+     findings, and merge into the report.
+   - If SA2 failed/timed out or skipped (small diff): perform inline:
    - **Temp artifacts**: New `temp_*`, `*.tmp`, `*.bak`, debug `console.log`/
      `print` statements, hardcoded secrets or localhost URLs.
    - **Unfinished markers**: New `TODO`, `FIXME`, `HACK`, `XXX` introduced in
@@ -118,7 +142,9 @@ the other.
      one-liners, overly compact expressions. Explicit code is preferred over
      clever short forms.
 
-8. **Run Automated Checks**
+8. **Run Automated Checks** _(collect SA1 result if available; otherwise run inline)_
+   - If SA1 completed: use its pass/fail result and output. Do NOT re-run.
+   - If SA1 failed/timed out or skipped (small diff): run inline:
    - If the project has a check command (`deno task check`, `npm run lint`,
      `make check`, etc.), run it and include results.
    - If no check command is found, explicitly note "No automated checks
@@ -187,12 +213,17 @@ After completing the review report above:
      - AGENTS.md: [updated | no changes — <reason>]
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
-3. **Pre-commit Verification**
-   - Check for project check command: `deno task check`, `npm run lint`, `make check`, etc. (inspect `deno.json`, `package.json`, `Makefile`).
-   - If found, run it. If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
+3. **Pre-commit Verification** _(reuse SA1 result from Phase 1 if available)_
+   - If SA1 result is available from Phase 1 AND no **code** files were
+     modified since Phase 1 (doc-only edits don't invalidate linter/test
+     results): reuse cached result. Skip re-running.
+   - Otherwise: check for project check command (`deno task check`,
+     `npm run lint`, `make check`, etc.) and run it.
+   - If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
    - If no check command found, note "No automated checks configured" and proceed.
-4. **Atomic Grouping Strategy (Subagent)**
-   - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
+4. **Atomic Grouping Strategy (Subagent)** _(reuse SA3 result from Phase 1 if available)_
+   - If SA3 result is available from Phase 1: use it directly. Skip re-launching.
+   - Otherwise: use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
    - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
    - The subagent will return a JSON structure with proposed commits.
    - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
