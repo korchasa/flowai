@@ -75,12 +75,17 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      - AGENTS.md: [updated | no changes — <reason>]
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
-3. **Pre-commit Verification**
-   - Check for project check command: `deno task check`, `npm run lint`, `make check`, etc. (inspect `deno.json`, `package.json`, `Makefile`).
-   - If found, run it. If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
+3. **Pre-commit Verification** _(reuse SA1 result from Phase 1 if available)_
+   - If SA1 result is available from Phase 1 AND no **code** files were
+     modified since Phase 1 (doc-only edits don't invalidate linter/test
+     results): reuse cached result. Skip re-running.
+   - Otherwise: check for project check command (`deno task check`,
+     `npm run lint`, `make check`, etc.) and run it.
+   - If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
    - If no check command found, note "No automated checks configured" and proceed.
-4. **Atomic Grouping Strategy (Subagent)**
-   - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
+4. **Atomic Grouping Strategy (Subagent)** _(reuse SA3 result from Phase 1 if available)_
+   - If SA3 result is available from Phase 1: use it directly. Skip re-launching.
+   - Otherwise: use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
    - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
    - The subagent will return a JSON structure with proposed commits.
    - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
