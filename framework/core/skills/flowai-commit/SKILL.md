@@ -58,10 +58,18 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - Run `git status` to identify ALL changes: modified (unstaged), staged, and **untracked** files.
    - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
 2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
-   - **Check each doc file against the diff** (if `./documents` exists):
-     - `requirements.md` — check diff for new/changed/removed functional or non-functional requirements. If found → update. If not → note "no requirement changes".
-     - `design.md` — check diff for new/changed/removed components, data structures, APIs, or architecture decisions. If found → update. If not → note "no design changes".
-     - `AGENTS.md` — check diff for changes to project rules, agent definitions, or conventions. If found → update. If not → note "no agent rule changes".
+   - **Gather change context** from three sources:
+     1. **Git diff**: `git diff` (unstaged) + `git diff --cached` (staged). Primary source of WHAT changed.
+     2. **Active whiteboard**: If the user referenced a whiteboard or plan in this session, read that specific file from `documents/whiteboards/`. Use it to understand the WHY behind changes. Do NOT scan all whiteboards — only read one explicitly linked to the current task.
+     3. **Session context**: User messages in this conversation explaining intent, decisions, or requirements.
+   - **Discover document list** (if `./documents` exists):
+     - If `documents/AGENTS.md` exists → read its `## Hierarchy` section → extract all document paths listed there.
+     - Classify each document: `READ-ONLY` (explicitly marked), `derived` (e.g. README — "Derived from..."), or `editable` (default).
+     - If `documents/AGENTS.md` does not exist → use default list: `requirements.md`, `design.md`, `AGENTS.md` (all editable).
+   - **Audit each editable document** against the combined context (diff + whiteboard + session):
+     - For each document: does the change context reveal new/changed/removed information relevant to this document's scope? If yes → update. If no → note reason.
+     - For `derived` documents (e.g. README.md): update only when changes are significant (new public API, changed installation steps, new features).
+     - Skip `READ-ONLY` documents entirely.
    - **Apply Compression Rules**:
      - Use **combined extractive + abstractive summarization** (preserve all facts, minimize words).
      - Use compact formats: lists, tables, YAML, or Mermaid diagrams.
@@ -70,11 +78,10 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Output Documentation Audit Report** (always, even if no updates needed):
      ```
      ### Documentation Audit
-     - requirements.md: [updated | no changes — <reason>]
-     - design.md: [updated | no changes — <reason>]
-     - AGENTS.md: [updated | no changes — <reason>]
+     - <doc-name>: [updated | no changes — <reason>] (for each discovered document)
+     - Whiteboard context: [used <filename> | none found]
      ```
-   - **Gate**: If code changes exist but zero documents were updated, re-examine the diff — new exports, new functions, changed signatures, or new modules almost always require a `design.md` update. Only proceed without updates if you can justify it in the audit report.
+   - **Gate**: If code changes exist but zero documents were updated, re-examine — new exports, functions, changed signatures, or new modules almost always require an update. Only proceed without updates if justified in the audit report.
 3. **Pre-commit Verification** _(reuse SA1 result from Phase 1 if available)_
    - If SA1 result is available from Phase 1 AND no **code** files were
      modified since Phase 1 (doc-only edits don't invalidate linter/test
