@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.8](https://github.com/korchasa/flowai/compare/v0.4.7...v0.4.8) (2026-04-01)
+
+
+### Features
+
+* **checks:** add naming prefix validator (NP-1: all primitives must use flowai- prefix) ([84d1fcf](https://github.com/korchasa/flowai/commit/84d1fcf1e6b0fdbed3116bb46095663b34935591))
+* **cli,update:** complete sync output for all primitive actions + frontmatter validation ([4d456b6](https://github.com/korchasa/flowai/commit/4d456b61fce82d44480a20e9a3906a33c1e0b474))
+* **core:** add flowai-reflect-by-history skill ([d4fc2a5](https://github.com/korchasa/flowai/commit/d4fc2a5853793f8e2d4b67036e39a3994fbcce56))
+* **core:** add parallel execution to deno task check and review/commit skills ([bee2762](https://github.com/korchasa/flowai/commit/bee2762646eca601044dbf002d0250e90e81039a))
+* **pipeline:** add flowai-pipeline-sdlc — local SDLC pipeline without GitHub ([c78fd09](https://github.com/korchasa/flowai/commit/c78fd09b79dbb3760e21b9b3c59a70f4198ffc0d))
+
+
+### Bug Fixes
+
+* **plan:** make critique step automatic instead of asking permission ([0c091d3](https://github.com/korchasa/flowai/commit/0c091d31785d8bc200158c81d5b43d3a1e5615bf))
+* **update:** handle invalid YAML in parseFrontmatter gracefully ([fd7cf59](https://github.com/korchasa/flowai/commit/fd7cf599e2d5413511a38749c9b347256e3d9065))
+
+
+### Chores
+
+* **framework:** update flowai framework ([55faa2f](https://github.com/korchasa/flowai/commit/55faa2f34bda65a57ebe3ab1d232a0ec43a02743))
+
+
+### Documentation
+
+* **ides:** add session/conversation history storage comparison ([12a9374](https://github.com/korchasa/flowai/commit/12a9374908d45f36cdd2a94562c6546367062bd2))
+
+
+### Code Refactoring
+
+* **core:** remove flowai-skill-executor agent ([4b2b265](https://github.com/korchasa/flowai/commit/4b2b2651f96823ffda6e800452372f61cd051304))
+* **pipeline:** add flowai- prefix to all pipeline pack primitives ([3d86322](https://github.com/korchasa/flowai/commit/3d86322ab9217af0cf23a9832898d371aaba01fd))
+
 ### [0.4.7](https://github.com/korchasa/flowai/compare/v0.4.6...v0.4.7) (2026-03-31)
 
 
