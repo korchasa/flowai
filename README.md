@@ -113,7 +113,6 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-console-expert` — complex console tasks and command execution
 - `flowai-diff-specialist` — git diff analysis and atomic commit preparation
 - `flowai-skill-adapter` — adapts skills to project specifics after upstream update
-- `flowai-skill-executor` — executes specific skills by request
 
 ### engineering
 
