@@ -1,0 +1,12 @@
+{"type":"queue-operation","operation":"enqueue","timestamp":"2026-03-05T10:00:00.000Z","sessionId":"sess-01"}
+{"type":"queue-operation","operation":"dequeue","timestamp":"2026-03-05T10:00:00.001Z","sessionId":"sess-01"}
+{"parentUuid":"none","type":"user","message":{"role":"user","content":"Add a health check endpoint to the API"},"uuid":"u1","timestamp":"2026-03-05T10:00:01.000Z","sessionId":"sess-01"}
+{"type":"ai-title","sessionId":"sess-01","aiTitle":"Add health check endpoint"}
+{"parentUuid":"u1","type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"I'll add a /health endpoint. Let me check the existing routes."}]},"uuid":"a1","timestamp":"2026-03-05T10:00:05.000Z","sessionId":"sess-01"}
+{"parentUuid":"a1","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Read","input":{"file_path":"routes/index.ts"}}]},"uuid":"a2","timestamp":"2026-03-05T10:00:06.000Z","sessionId":"sess-01"}
+{"parentUuid":"a2","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"1\timport { Router } from 'express';\n2\texport const router = Router();\n3\trouter.get('/api/status', (req, res) => res.json({ ok: true }));"}]},"uuid":"u2","timestamp":"2026-03-05T10:00:08.000Z","sessionId":"sess-01"}
+{"parentUuid":"u2","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Edit","input":{"file_path":"routes/index.ts","old_string":"router.get('/api/status'","new_string":"router.get('/health', (req, res) => res.json({ status: 'ok', uptime: process.uptime() }));\nrouter.get('/api/status'"}}]},"uuid":"a3","timestamp":"2026-03-05T10:00:12.000Z","sessionId":"sess-01"}
+{"parentUuid":"a3","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"File edited successfully."}]},"uuid":"u3","timestamp":"2026-03-05T10:00:13.000Z","sessionId":"sess-01"}
+{"parentUuid":"u3","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Bash","input":{"command":"deno test"}}]},"uuid":"a4","timestamp":"2026-03-05T10:00:14.000Z","sessionId":"sess-01"}
+{"parentUuid":"a4","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"ok | 5 passed | 0 failed"}]},"uuid":"u4","timestamp":"2026-03-05T10:00:18.000Z","sessionId":"sess-01"}
+{"parentUuid":"u4","type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Health check endpoint added at /health. All tests pass."}]},"uuid":"a5","timestamp":"2026-03-05T10:00:20.000Z","sessionId":"sess-01"}

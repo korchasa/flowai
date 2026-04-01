@@ -1,0 +1,11 @@
+{"type":"queue-operation","operation":"enqueue","timestamp":"2026-03-08T14:00:00.000Z","sessionId":"sess-02"}
+{"type":"queue-operation","operation":"dequeue","timestamp":"2026-03-08T14:00:00.001Z","sessionId":"sess-02"}
+{"parentUuid":"none","type":"user","message":{"role":"user","content":"Fix the 404 on /api/users/:id endpoint"},"uuid":"u1","timestamp":"2026-03-08T14:00:01.000Z","sessionId":"sess-02"}
+{"type":"ai-title","sessionId":"sess-02","aiTitle":"Fix 404 on user detail endpoint"}
+{"parentUuid":"u1","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Read","input":{"file_path":"routes/users.ts"}}]},"uuid":"a1","timestamp":"2026-03-08T14:00:05.000Z","sessionId":"sess-02"}
+{"parentUuid":"a1","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"1\trouter.get('/api/users', handler);\n2\t// Missing :id route"}]},"uuid":"u2","timestamp":"2026-03-08T14:00:07.000Z","sessionId":"sess-02"}
+{"parentUuid":"u2","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Edit","input":{"file_path":"routes/users.ts","old_string":"// Missing :id route","new_string":"router.get('/api/users/:id', getUserById);"}}]},"uuid":"a2","timestamp":"2026-03-08T14:00:10.000Z","sessionId":"sess-02"}
+{"parentUuid":"a2","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"File edited successfully."}]},"uuid":"u3","timestamp":"2026-03-08T14:00:11.000Z","sessionId":"sess-02"}
+{"parentUuid":"u3","type":"assistant","message":{"role":"assistant","content":[{"type":"tool_use","name":"Bash","input":{"command":"deno test"}}]},"uuid":"a3","timestamp":"2026-03-08T14:00:12.000Z","sessionId":"sess-02"}
+{"parentUuid":"a3","type":"user","message":{"role":"user","content":[{"type":"tool_result","content":"ok | 6 passed | 0 failed"}]},"uuid":"u4","timestamp":"2026-03-08T14:00:16.000Z","sessionId":"sess-02"}
+{"parentUuid":"u4","type":"assistant","message":{"role":"assistant","content":[{"type":"text","text":"Fixed. Added the missing /api/users/:id route. All tests pass."}]},"uuid":"a4","timestamp":"2026-03-08T14:00:18.000Z","sessionId":"sess-02"}
