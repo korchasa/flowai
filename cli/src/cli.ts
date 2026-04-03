@@ -8,7 +8,6 @@ import {
   generateConfigNonInteractive,
 } from "./config_generator.ts";
 import { isInsideIDE } from "./ide.ts";
-import { LocalSource } from "./source.ts";
 import type { PlanItem, ResourceAction } from "./types.ts";
 import { sync, type SyncOptions, type SyncResult } from "./sync.ts";
 import {
@@ -29,22 +28,16 @@ function withSyncOptions<T extends Command<any>>(cmd: T): T {
       "--skip-update-check",
       "Skip checking for newer versions on JSR",
       { default: false },
-    )
-    .option(
-      "--local",
-      "Read from local framework/ directory instead of bundled.json (for framework development)",
-      { default: false },
     ) as T;
 }
 
 /** Extract sync options from parsed cliffy options */
 function extractSyncOptions(
   options: Record<string, unknown>,
-): { yes: boolean; skipUpdateCheck: boolean; local: boolean } {
+): { yes: boolean; skipUpdateCheck: boolean } {
   return {
     yes: options.yes as boolean,
     skipUpdateCheck: options.skipUpdateCheck as boolean,
-    local: options.local as boolean,
   };
 }
 
@@ -52,11 +45,10 @@ function extractSyncOptions(
 async function runSync(options: {
   yes: boolean;
   skipUpdateCheck: boolean;
-  local: boolean;
 }): Promise<void> {
   const cwd = Deno.cwd();
   const fs = new DenoFsAdapter();
-  const { yes, skipUpdateCheck, local } = options;
+  const { yes, skipUpdateCheck } = options;
 
   // 0. Check for updates (before sync, fail-open)
   if (!skipUpdateCheck) {
@@ -137,7 +129,6 @@ async function runSync(options: {
 
   const syncOptions: SyncOptions = {
     yes,
-    source: local ? new LocalSource(`${cwd}/framework`) : undefined,
     onProgress: (msg) => {
       spinner.text = msg;
     },

@@ -80,7 +80,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -d .claude/skills/flowai-commit || deno run -A cli/src/main.ts sync --local --yes --skip-update-check",
+            "command": "test -d .claude/skills/flowai-commit || deno task sync-local",
             "timeout": 60
           }
         ]
@@ -91,7 +91,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "deno run -A cli/src/main.ts sync --local --yes --skip-update-check",
+            "command": "deno task sync-local",
             "timeout": 30
           }
         ]

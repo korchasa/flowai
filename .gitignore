@@ -10,8 +10,9 @@ framework/**/flowai-skill-example/
 __pycache__/
 _research_tmp/
 .claude/flowai-hooks.json
+.claude/settings.local.json
 
-# Synced from framework/ via `flowai sync --local` (dev-only, not tracked)
+# Synced from framework/ via `deno task sync-local` (dev-only, not tracked)
 .claude/skills/
 .claude/agents/
 .claude/scripts/

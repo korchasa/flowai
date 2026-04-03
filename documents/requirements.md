@@ -145,10 +145,10 @@ exercised as subagents within skill benchmarks.
 ### 3.9 Multi-IDE Dev Resource Distribution (FR-9)
 
 - **Description:** Dev resources (skills, agents, scripts) in `.claude/` are generated
-  by `flowai sync --local` from `framework/` directly. NOT tracked in git. Auto-synced
+  by `deno task sync-local` from `framework/` directly. NOT tracked in git. Auto-synced
   via SessionStart (bootstrap) and SessionEnd (persist changes) hooks.
 - **Use case scenario:** Developer clones project. SessionStart hook detects empty
-  `.claude/skills/` and runs `flowai sync --local --yes` to populate from `framework/`.
+  `.claude/skills/` and runs `deno task sync-local` to populate from `framework/`.
   Changes to `framework/` are re-synced on each SessionEnd.
 - **Acceptance criteria:**
   - [x] `.claude/skills/`, `.claude/agents/`, `.claude/scripts/` gitignored. Evidence:
@@ -157,8 +157,8 @@ exercised as subagents within skill benchmarks.
         `.claude/settings.json` (`SessionStart` hook)
   - [x] SessionEnd hook re-syncs `.claude/` from `framework/` after each session. Evidence:
         `.claude/settings.json` (`SessionEnd` hook)
-  - [x] `flowai sync --local` uses `LocalSource` (reads `framework/` on disk). Evidence:
-        `cli/src/source.ts` (`LocalSource`), `cli/src/cli.ts` (`--local` flag)
+  - [x] `deno task sync-local` uses `LocalSource` (reads `framework/` on disk). Evidence:
+        `cli/src/source.ts` (`LocalSource`), `scripts/task-sync-local.ts`
   - [x] `check-skills.ts` validates `.claude/skills/` (dev skills). Evidence:
         `scripts/check-skills.ts:308-311`
 
