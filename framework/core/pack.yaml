@@ -13,3 +13,4 @@ scaffolds:
     - .devcontainer/devcontainer.json
     - .devcontainer/Dockerfile
     - .devcontainer/init-firewall.sh
+    - .devcontainer/setup-container.sh

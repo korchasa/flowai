@@ -19,6 +19,7 @@ export const SetupDevcontainerBrownfield = new class
   userPersona =
     `You are a developer with an existing (outdated) devcontainer who wants to modernize it.
 When asked about AI CLI, choose Claude Code.
+When asked about auth method, choose OAuth (auth forwarding from macOS Keychain). Do NOT provide an API key.
 When asked about global skills, decline.
 When asked about security hardening/firewall, decline.
 When asked about custom Dockerfile, decline.
@@ -60,9 +61,15 @@ When shown diffs of existing files, confirm the overwrite.`;
       critical: true,
     },
     {
-      id: "anthropic_api_key_env",
+      id: "no_anthropic_api_key_in_remote_env",
       description:
-        "Does remoteEnv reference ANTHROPIC_API_KEY via ${localEnv:ANTHROPIC_API_KEY}?",
+        "Does remoteEnv NOT contain ANTHROPIC_API_KEY? When using OAuth (auth forwarding from macOS Keychain), an empty ANTHROPIC_API_KEY breaks OAuth. It should only be included if the user explicitly provides an API key.",
+      critical: true,
+    },
+    {
+      id: "volume_ownership_fix",
+      description:
+        "Does postCreateCommand include `sudo chown` for the ~/.claude/ volume BEFORE Claude Code CLI installation? Docker named volumes are created as root.",
       critical: true,
     },
     {

@@ -34,14 +34,14 @@
   },
 
   "remoteEnv": {
-    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    // IMPORTANT: Do NOT include ANTHROPIC_API_KEY here by default.
+    // An empty string (unset on host) triggers API-key auth mode and breaks OAuth.
+    // Only add ANTHROPIC_API_KEY if the user explicitly provides an API key.
     "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   },
 
   "secrets": {
-    "ANTHROPIC_API_KEY": {
-      "description": "API key for Claude Code CLI (console.anthropic.com)"
-    },
+    // Add ANTHROPIC_API_KEY here ONLY if the user chose API-key auth (not OAuth)
     "GITHUB_TOKEN": {
       "description": "GitHub PAT for gh CLI"
     }
@@ -56,7 +56,15 @@
   // Runs on HOST before container creation (macOS only — extracts Keychain tokens)
   "initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json",
 
-  "postCreateCommand": "{{dependency_install_command}}",
+  // Object form — each key runs in parallel. Order within a key is sequential.
+  // Volume ownership: Docker named volumes are created as root. Must chown BEFORE CLI install/auth writes.
+  "postCreateCommand": {
+    "deps": "{{dependency_install_command}}",
+    // Add per-CLI entries below only for selected AI CLIs:
+    // "claude-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.claude",
+    // "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
+    // "claude-auth": ".devcontainer/setup-container.sh"  // see setup-container.sh generation below
+  },
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "remoteUser": "{{remote_user}}"
 }
@@ -169,29 +177,58 @@ Add only mounts for selected AI CLIs.
 
 ### Volume ownership fix
 
-Docker named volumes are created with root ownership before `remoteUser` takes effect. AI CLI installers and extensions fail to write config/auth tokens without this fix. Each CLI install command in `postCreateCommand` MUST chain `sudo chown` first:
-```jsonc
-"postCreateCommand": {
-  "claude-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.claude && curl -fsSL https://claude.ai/install.sh | bash",
-  "claude-auth": "[ ! -f ~/.claude/.credentials.json ] && [ -s ~/.claude-auth-staging.json ] && cp ~/.claude-auth-staging.json ~/.claude/.credentials.json && chmod 600 ~/.claude/.credentials.json || true",
-  "opencode-cli": "sudo chown {{remote_user}}:{{remote_user}} ~/.config/opencode && curl -fsSL https://opencode.ai/install | bash"
-}
+Docker named volumes are created with root ownership before `remoteUser` takes effect. AI CLI installers and auth token writes fail without this fix.
+
+**This is integrated into the main template** via `postCreateCommand` object form. Each AI CLI gets a chown entry that runs BEFORE the CLI install entry. See main template above.
+
+### Auth forwarding (Claude Code) via setup-container.sh
+
+Auth tokens live in `~/.claude/.credentials.json` inside the config volume. On first container creation (empty volume), tokens are copied from the host Keychain staging file.
+
+Instead of fragile inline shell one-liners, generate a **setup-container.sh** script:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Copy auth tokens from host Keychain staging file into the config volume.
+# Runs in postCreateCommand after volume chown.
+STAGING="$HOME/.claude-auth-staging.json"
+TARGET="$HOME/.claude/.credentials.json"
+
+if [ ! -s "$STAGING" ]; then
+  echo "[setup-container] No auth staging file or empty — skipping auth copy."
+  echo "[setup-container] You can authenticate manually: claude login"
+  exit 0
+fi
+
+# Always copy from staging (overwrite stale/corrupt tokens from previous attempts)
+cp "$STAGING" "$TARGET"
+chmod 600 "$TARGET"
+echo "[setup-container] Auth tokens copied from host Keychain staging."
 ```
 
-### Auth forwarding (Claude Code)
+Place this script at `.devcontainer/setup-container.sh` and make it executable (`chmod +x`).
 
-Auth tokens live in `~/.claude/.credentials.json` inside the config volume. On first container creation (empty volume), tokens are copied from the host Keychain staging file. On subsequent rebuilds, the volume already has tokens — copy is skipped.
+**postCreateCommand** references:
+```jsonc
+"postCreateCommand": {
+  "deps": "{{dependency_install_command}}",
+  "claude-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.claude",
+  "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
+  "claude-auth": ".devcontainer/setup-container.sh",
+  "opencode-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.config/opencode",
+  "opencode-cli": "curl -fsSL https://opencode.ai/install | bash"
+}
+```
 
 **initializeCommand** (runs on host, macOS only):
 ```jsonc
 "initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json"
 ```
 
-**postCreateCommand** (copy once if volume is empty):
-```jsonc
-"claude-auth": "[ ! -f ~/.claude/.credentials.json ] && [ -s ~/.claude-auth-staging.json ] && cp ~/.claude-auth-staging.json ~/.claude/.credentials.json && chmod 600 ~/.claude/.credentials.json || true"
-```
-
 See [auth-forwarding.md](auth-forwarding.md) for full architecture details and warnings.
 
 **WARNING**: Do NOT set `CLAUDE_CONFIG_DIR` in `remoteEnv` — it redirects where Claude looks for `.credentials.json`, breaking the volume auth strategy.
+
+**WARNING**: Do NOT set `ANTHROPIC_API_KEY` to empty string in `remoteEnv` — Claude Code interprets it as API-key auth attempt and fails. Only include `ANTHROPIC_API_KEY` if the user explicitly provides an API key. See [auth-forwarding.md](auth-forwarding.md) § Critical Warnings.

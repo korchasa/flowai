@@ -74,9 +74,9 @@ Confirm any file creation prompts.`;
       critical: true,
     },
     {
-      id: "anthropic_api_key_env",
+      id: "no_anthropic_api_key_in_remote_env",
       description:
-        "Does remoteEnv reference ANTHROPIC_API_KEY via ${localEnv:ANTHROPIC_API_KEY}?",
+        "Does remoteEnv NOT contain ANTHROPIC_API_KEY? When using OAuth (auth forwarding), an empty ANTHROPIC_API_KEY breaks OAuth by triggering API-key auth mode. It should only be included if the user explicitly provides an API key.",
       critical: true,
     },
     {
@@ -124,13 +124,19 @@ Confirm any file creation prompts.`;
     {
       id: "auth_copy_in_post_create",
       description:
-        "Does postCreateCommand include a conditional copy of auth staging file to `~/.claude/.credentials.json` (only if .credentials.json doesn't already exist in volume)?",
+        "Does postCreateCommand include copying auth staging file to `~/.claude/.credentials.json`? Must use proper error handling (set -euo pipefail or explicit checks with meaningful error messages), NOT silent `|| true` that masks failures.",
       critical: true,
     },
     {
       id: "no_claude_config_dir_env",
       description:
         "Does remoteEnv NOT contain CLAUDE_CONFIG_DIR? Setting it breaks the volume auth strategy.",
+      critical: true,
+    },
+    {
+      id: "volume_ownership_fix",
+      description:
+        "Does postCreateCommand include `sudo chown` for the ~/.claude/ volume BEFORE Claude Code CLI installation? Docker named volumes are created as root — without chown, CLI install and auth token writes fail.",
       critical: true,
     },
   ];
