@@ -230,7 +230,8 @@ Place this script at `.devcontainer/setup-container.sh` and make it executable (
   "claude-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.claude",
   "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
   "opencode-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.config/opencode",
-  "opencode-cli": "curl -fsSL https://opencode.ai/install | bash"
+  "opencode-cli": "curl -fsSL https://opencode.ai/install | bash",
+  "flowai-cli": "deno install -g -A -f jsr:@korchasa/flowai"
 }
 ```
 
@@ -244,6 +245,8 @@ See [auth-forwarding.md](auth-forwarding.md) for full architecture details and w
 **WARNING**: Do NOT set `CLAUDE_CONFIG_DIR` in `remoteEnv` — it redirects where Claude looks for `.credentials.json`, breaking the volume auth strategy.
 
 **WARNING**: Do NOT set `ANTHROPIC_API_KEY` to empty string in `remoteEnv` — Claude Code interprets it as API-key auth attempt and fails. Only include `ANTHROPIC_API_KEY` if the user explicitly provides an API key. See [auth-forwarding.md](auth-forwarding.md) § Critical Warnings.
+
+**NOTE**: flowai needs no mounts or volumes — it reads `.flowai.yaml` from the project workspace. For non-Deno stacks, add `ghcr.io/devcontainers-extra/features/deno:latest` to the features block.
 
 ### GitHub CLI auth and git credential helper
 

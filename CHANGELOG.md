@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.13](https://github.com/korchasa/flowai/compare/v0.4.12...v0.4.13) (2026-04-03)
+
+
+### Chores
+
+* gitignore pipeline runs and update flowai config ([79e673d](https://github.com/korchasa/flowai/commit/79e673d531373a9f15957eab2d7a5f63108980d2))
+* remove .flowai/runs/ from tracking ([e7dc61b](https://github.com/korchasa/flowai/commit/e7dc61bbb20160aa0eb8db01a5de32e7fee872da))
+
+
+### Styles
+
+* reformat HTML assets for Deno 2.7.11 fmt rules ([180ef95](https://github.com/korchasa/flowai/commit/180ef9557426ecba82a58ecb4d785a8696b3b6fd))
+
+
+### Build System
+
+* **ci:** pin Deno to 2.7.4 and revert HTML formatting ([e7a1673](https://github.com/korchasa/flowai/commit/e7a167323ef411b95956e143ffac5643b64b5692))
+* **ci:** pin Deno version to 2.7.11 ([7f792f5](https://github.com/korchasa/flowai/commit/7f792f52672d51c4ef0d0ed0713be2da2743ee13))
+
+### [0.4.12](https://github.com/korchasa/flowai/compare/v0.4.11...v0.4.12) (2026-04-03)
+
+
+### Features
+
+* **pipeline:** add compact SDLC pipeline with Design and Review agents ([820d9f8](https://github.com/korchasa/flowai/commit/820d9f80457da39045831d282328f9eee4dbc6ed))
+
 ### [0.4.11](https://github.com/korchasa/flowai/compare/v0.4.9...v0.4.11) (2026-04-03)
 
 
