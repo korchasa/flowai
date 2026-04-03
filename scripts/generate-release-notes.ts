@@ -22,12 +22,22 @@ function parseCommit(
   return { scope: match[1] ?? "", description: match[2] };
 }
 
+async function resolveRef(ref: string): Promise<string> {
+  const { success } = await new Deno.Command("git", {
+    args: ["rev-parse", "--verify", ref],
+    stdout: "null",
+    stderr: "null",
+  }).output();
+  return success ? ref : "HEAD";
+}
+
 async function getCommitSubjects(
   fromTag: string,
   toTag: string,
 ): Promise<string[]> {
+  const resolvedTo = await resolveRef(toTag);
   const { success, code, stdout } = await new Deno.Command("git", {
-    args: ["log", "--pretty=format:%s", `${fromTag}..${toTag}`],
+    args: ["log", "--pretty=format:%s", `${fromTag}..${resolvedTo}`],
   }).output();
 
   if (!success) {
