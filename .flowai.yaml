@@ -7,12 +7,21 @@ packs:
   - devtools
   - engineering
   - typescript
+  - pipeline
 skills:
   include: []
-  exclude: []
+  exclude:
+    - flowai-pipeline-github-sdlc
+    - flowai-pipeline-sdlc
+    - flowai-skill-engineer-pipeline
 agents:
   include: []
-  exclude: []
+  exclude:
+    - flowai-agent-architect
+    - flowai-agent-pm
+    - flowai-agent-qa
+    - flowai-agent-tech-lead
+    - flowai-agent-tech-lead-review
 commands:
   include: []
   exclude: []

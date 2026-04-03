@@ -19,3 +19,5 @@ _research_tmp/
 # Generated artifacts (cli)
 cli/src/bundled.json
 cli/src/_version.ts
+
+.flowai/runs/
