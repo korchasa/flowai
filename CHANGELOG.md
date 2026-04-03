@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.12](https://github.com/korchasa/flowai/compare/v0.4.11...v0.4.12) (2026-04-03)
+
+
+### Features
+
+* **pipeline:** add compact SDLC pipeline with Design and Review agents ([820d9f8](https://github.com/korchasa/flowai/commit/820d9f80457da39045831d282328f9eee4dbc6ed))
+
 ### [0.4.11](https://github.com/korchasa/flowai/compare/v0.4.9...v0.4.11) (2026-04-03)
 
 
