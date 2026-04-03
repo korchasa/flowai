@@ -91,5 +91,11 @@ Confirm any file creation prompts.`;
         "Does remoteEnv NOT contain CLAUDE_CONFIG_DIR? Setting it breaks the volume auth strategy.",
       critical: true,
     },
+    {
+      id: "gh_auth_setup",
+      description:
+        "Does postCreateCommand (or setup-container.sh) configure gh CLI authentication AND git credential helper? Must include: (1) `gh auth login --with-token` using GITHUB_TOKEN, (2) `gh auth setup-git` to register credential helper for HTTPS git operations.",
+      critical: true,
+    },
   ];
 }();

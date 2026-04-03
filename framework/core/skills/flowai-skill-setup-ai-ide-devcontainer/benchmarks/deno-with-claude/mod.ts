@@ -139,5 +139,11 @@ Confirm any file creation prompts.`;
         "Does postCreateCommand include `sudo chown` for the ~/.claude/ volume BEFORE Claude Code CLI installation? Docker named volumes are created as root — without chown, CLI install and auth token writes fail.",
       critical: true,
     },
+    {
+      id: "gh_auth_setup",
+      description:
+        "Does postCreateCommand (or setup-container.sh) configure gh CLI authentication AND git credential helper? Must include: (1) `gh auth login --with-token` using GITHUB_TOKEN, (2) `gh auth setup-git` to register credential helper for HTTPS git operations. Both `gh` CLI commands and HTTPS git push/pull depend on this.",
+      critical: true,
+    },
   ];
 }();

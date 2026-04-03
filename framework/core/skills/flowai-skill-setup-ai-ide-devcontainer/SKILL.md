@@ -114,12 +114,12 @@ Key structure:
   },
   "mounts": [ /* global config mount if enabled */ ],
   // Object form for parallel execution. Volume chown MUST precede CLI install.
-  // For Claude Code auth: generate .devcontainer/setup-container.sh (see references/devcontainer-template.md)
+  // setup-container.sh handles gh auth + Claude auth (see references/devcontainer-template.md)
   "postCreateCommand": {
     "deps": "<dependency-install-command>",
+    "setup": ".devcontainer/setup-container.sh",
     "claude-chown": "sudo chown -R <user>:<user> ~/.claude",
-    "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
-    "claude-auth": ".devcontainer/setup-container.sh"
+    "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash"
   },
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
   "remoteUser": "<non-root-user>"
@@ -140,7 +140,7 @@ Generate only when user chose firewall in step 4.3. See [references/firewall-tem
 2. Write `.devcontainer/devcontainer.json`
 3. Write `.devcontainer/Dockerfile` (if custom)
 4. Write `.devcontainer/init-firewall.sh` (if firewall), make executable
-5. Write `.devcontainer/setup-container.sh` (if Claude Code selected), make executable. See [references/devcontainer-template.md](references/devcontainer-template.md) § Auth forwarding via setup-container.sh
+5. Write `.devcontainer/setup-container.sh` (if Claude Code selected or github-cli feature included), make executable. See [references/devcontainer-template.md](references/devcontainer-template.md) § Auth forwarding via setup-container.sh
 
 ### Step 7: Verify
 
@@ -151,13 +151,23 @@ Generate only when user chose firewall in step 4.3. See [references/firewall-tem
 - [ ] `remoteUser` matches the user in the base image (e.g., `node` for Node images, `vscode` for mcr base images)
 - [ ] No secrets/API keys hardcoded in any generated file
 - [ ] `remoteEnv` does NOT contain `ANTHROPIC_API_KEY` unless user explicitly chose API-key auth
+- [ ] If `setup-container.sh` includes gh auth: `GITHUB_TOKEN` is in `remoteEnv` (required for `gh auth login --with-token`)
+- [ ] If `setup-container.sh` includes gh auth: script calls both `gh auth login --with-token` AND `gh auth setup-git` (the latter registers credential helper for HTTPS git operations)
 - [ ] **End-to-end (if devcontainer CLI available)**: Run `devcontainer up --workspace-folder .` and verify container starts. If Claude Code was selected, run `devcontainer exec --workspace-folder . claude auth status` to verify auth works. This catches volume ownership, auth forwarding, and permission issues that static checks miss.
 
 ### Step 8: Post-Setup Notes
 
-If Claude Code was selected, display this note to the user after generation:
+Display relevant notes to the user after generation:
+
+If Claude Code was selected:
 
 > **Claude Code auth**: After the container starts, open a terminal inside it and run `claude` to log in via OAuth. Auth forwarding from macOS Keychain may handle this automatically, but if Claude Code reports auth errors, a manual `claude login` in the container terminal will fix it. Credentials are persisted in the config volume and survive container rebuilds.
+
+Always (github-cli feature is always included):
+
+> **GitHub CLI & git auth**: `setup-container.sh` automatically runs `gh auth login` + `gh auth setup-git` using `GITHUB_TOKEN` from `remoteEnv`. This enables both `gh` CLI commands (`gh pr`, `gh issue`, etc.) and git credential helper for HTTPS operations (`git push`, `git pull`). If `GITHUB_TOKEN` is not set on the host, run `gh auth login` manually in the container.
+>
+> **SSH vs HTTPS remotes**: The git credential helper configured by `gh auth setup-git` works only with HTTPS URLs. If the repository was cloned on the host via SSH (`git@github.com:user/repo.git`), git operations inside the container may still work via VS Code's SSH agent forwarding. However, if SSH agent forwarding is unavailable, switch the remote to HTTPS: `git remote set-url origin https://github.com/user/repo.git`
 
 ---
 
@@ -272,7 +282,7 @@ For other AI CLIs, use devcontainer registry features where available (see [refe
 
 ```jsonc
 {
-  // GitHub (always)
+  // GitHub (always) — required for gh CLI auth + git credential helper (setup-container.sh)
   "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   // ANTHROPIC_API_KEY — add ONLY if user explicitly provides an API key.
   // WARNING: An empty value (unset on host) breaks OAuth by triggering API-key auth mode.
