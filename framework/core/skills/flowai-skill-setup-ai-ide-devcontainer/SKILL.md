@@ -69,6 +69,7 @@ Ask the user (skip items already answered in prior context):
    - Claude Code — via `postCreateCommand` install script (see Claude Code § Install) + config volume + `ANTHROPIC_API_KEY`
    - OpenCode — via registry feature + config volume + `ANTHROPIC_API_KEY` (or other provider key)
    - Cursor CLI, Gemini CLI — via registry features
+   - flowai — via `deno install` in `postCreateCommand` (requires Deno runtime; auto-added as feature for non-Deno stacks)
    - Both/multiple — installs and configures all selected
    - None — skip AI CLI setup
 2. **Global skills**: "Mount host AI config directories into the container for access to global skills/settings? (read-only)"
@@ -168,6 +169,10 @@ Always (github-cli feature is always included):
 > **GitHub CLI & git auth**: `setup-container.sh` automatically runs `gh auth login` + `gh auth setup-git` using `GITHUB_TOKEN` from `remoteEnv`. This enables both `gh` CLI commands (`gh pr`, `gh issue`, etc.) and git credential helper for HTTPS operations (`git push`, `git pull`). If `GITHUB_TOKEN` is not set on the host, run `gh auth login` manually in the container.
 >
 > **SSH vs HTTPS remotes**: The git credential helper configured by `gh auth setup-git` works only with HTTPS URLs. If the repository was cloned on the host via SSH (`git@github.com:user/repo.git`), git operations inside the container may still work via VS Code's SSH agent forwarding. However, if SSH agent forwarding is unavailable, switch the remote to HTTPS: `git remote set-url origin https://github.com/user/repo.git`
+
+If flowai was selected:
+
+> **flowai CLI**: flowai is installed globally via Deno. Run `flowai sync` in the container terminal to sync skills/agents. The `.flowai.yaml` config is read from the project workspace root.
 
 ---
 
@@ -270,6 +275,18 @@ For other AI CLIs, use devcontainer registry features where available (see [refe
 |---|---|
 | **Install (feature)** | `ghcr.io/stu-bell/devcontainer-features/cursor-cli:0` |
 | **Extension** | N/A (Cursor is the IDE host itself) |
+
+### flowai
+
+| Aspect | Details |
+|---|---|
+| **Install** | `postCreateCommand`: `deno install -g -A -f jsr:@korchasa/flowai` |
+| **Config dir** | None (reads `.flowai.yaml` from the project workspace) |
+| **Config volume** | None |
+| **Global skills mount** | None |
+| **Env vars** | None |
+| **Extension** | None (CLI-only) |
+| **Note** | Requires Deno. For non-Deno stacks, add `ghcr.io/devcontainers-extra/features/deno:latest` to features. |
 
 ### Global Skills Mount Rules
 
