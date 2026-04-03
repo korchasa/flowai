@@ -24,7 +24,7 @@ All output comments MUST start with `**[PM · specify]**`.
 ## Permissions
 
 - Bash whitelist: [git branch --show-current, mkdir -p]
-- Allowed files: [01-spec.md in node output directory, .flow/memory/flowai-agent-pm.md, .flow/memory/flowai-agent-pm-history.md]
+- Allowed files: [01-spec.md in node output directory, .flowai/memory/flowai-agent-pm.md, .flowai/memory/flowai-agent-pm-history.md]
 - Denied files: [.env, credentials.*, source code files]
 
 ## Output Schema
@@ -100,5 +100,5 @@ Then MUST contain exactly these sections (Markdown H2 headings):
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-pm.md`
-- History: `.flow/memory/flowai-agent-pm-history.md`
+- Memory: `.flowai/memory/flowai-agent-pm.md`
+- History: `.flowai/memory/flowai-agent-pm-history.md`

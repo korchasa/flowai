@@ -186,13 +186,13 @@ Deno.test("processData is deterministic", () => {
 
   userQuery = `You are the QA agent. Your task:
     - Read flowai-shared-rules and flowai-reflection-protocol from the agents directory
-    - Read specification at: .flow/runs/test/specification/01-spec.md
-    - Read decision at: .flow/runs/test/decision/03-decision.md
-    - Read implementation summary at: .flow/runs/test/build/iter-1/04-impl-summary.md
+    - Read specification at: .flowai/runs/test/specification/01-spec.md
+    - Read decision at: .flowai/runs/test/decision/03-decision.md
+    - Read implementation summary at: .flowai/runs/test/build/iter-1/04-impl-summary.md
     - Issue data: Title: "Add caching layer for processData function", Body: "Add in-memory cache with 5-minute TTL"
     - Run project checks (deno task check) and review changed files
-    - Write QA report to: .flow/runs/test/verify/iter-1/05-qa-report.md
-    - Node output directory: .flow/runs/test/verify/iter-1/
+    - Write QA report to: .flowai/runs/test/verify/iter-1/05-qa-report.md
+    - Node output directory: .flowai/runs/test/verify/iter-1/
     - Issue number: 42
     - Iteration: 1
     Follow your agent definition for exact steps.`;
@@ -201,7 +201,7 @@ Deno.test("processData is deterministic", () => {
     {
       id: "qa_report_created",
       description:
-        "Did the agent create 05-qa-report.md in .flow/runs/test/verify/iter-1/?",
+        "Did the agent create 05-qa-report.md in .flowai/runs/test/verify/iter-1/?",
       critical: true,
     },
     {

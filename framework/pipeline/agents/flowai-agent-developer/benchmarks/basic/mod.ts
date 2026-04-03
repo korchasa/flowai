@@ -99,10 +99,10 @@ Deno.test("processData returns string", () => {
 
   userQuery = `You are the Developer agent. Your task:
     - Read flowai-shared-rules and flowai-reflection-protocol from the agents directory
-    - Read decision at: .flow/runs/test/decision/03-decision.md
+    - Read decision at: .flowai/runs/test/decision/03-decision.md
     - Implement code changes following TDD (tests first, then implementation)
-    - Write implementation summary to: .flow/runs/test/build/iter-1/04-impl-summary.md
-    - Node output directory: .flow/runs/test/build/iter-1/
+    - Write implementation summary to: .flowai/runs/test/build/iter-1/04-impl-summary.md
+    - Node output directory: .flowai/runs/test/build/iter-1/
     - Issue number: 42
     - Iteration: 1
     Follow your agent definition for exact steps.`;
@@ -128,7 +128,7 @@ Deno.test("processData returns string", () => {
     {
       id: "impl_summary_created",
       description:
-        "Did the agent create 04-impl-summary.md in .flow/runs/test/build/iter-1/?",
+        "Did the agent create 04-impl-summary.md in .flowai/runs/test/build/iter-1/?",
       critical: true,
     },
     {

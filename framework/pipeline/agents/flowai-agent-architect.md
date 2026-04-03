@@ -20,7 +20,7 @@ All output comments MUST start with `**[Architect · plan]**`.
 ## Permissions
 
 - Bash whitelist: [mkdir -p, ls]
-- Allowed files: [02-plan.md in node output directory, .flow/memory/flowai-agent-architect.md, .flow/memory/flowai-agent-architect-history.md]
+- Allowed files: [02-plan.md in node output directory, .flowai/memory/flowai-agent-architect.md, .flowai/memory/flowai-agent-architect-history.md]
 - Denied files: [.env, credentials.*, source code files (read-only access)]
 
 ## Output Schema
@@ -82,5 +82,5 @@ variant count, key trade-off, recommended direction.
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-architect.md`
-- History: `.flow/memory/flowai-agent-architect-history.md`
+- Memory: `.flowai/memory/flowai-agent-architect.md`
+- History: `.flowai/memory/flowai-agent-architect-history.md`

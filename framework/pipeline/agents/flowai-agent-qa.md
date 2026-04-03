@@ -27,7 +27,7 @@ All output comments MUST start with `**[QA · verify]**`.
 ## Permissions
 
 - Bash whitelist: [project check command (e.g. deno task check 2>&1), git diff main...HEAD --name-only, mkdir -p]
-- Allowed files: [QA report at path given in prompt, .flow/memory/flowai-agent-qa.md, .flow/memory/flowai-agent-qa-history.md]
+- Allowed files: [QA report at path given in prompt, .flowai/memory/flowai-agent-qa.md, .flowai/memory/flowai-agent-qa-history.md]
 - Denied files: [.env, credentials.*, ALL source code files (read-only)]
 
 ## Output Schema
@@ -105,5 +105,5 @@ high_confidence_issues: 0
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-qa.md`
-- History: `.flow/memory/flowai-agent-qa-history.md`
+- Memory: `.flowai/memory/flowai-agent-qa.md`
+- History: `.flowai/memory/flowai-agent-qa-history.md`

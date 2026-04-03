@@ -4,7 +4,7 @@ import { join } from "@std/path";
 /**
  * Tests that the local SDLC pipeline correctly initializes from a user-provided task:
  * - Generates run_id (timestamp format)
- * - Creates run directory structure under .flow/runs/
+ * - Creates run directory structure under .flowai/runs/
  * - Creates subdirectories for each pipeline phase
  * - Writes specification from user-provided task (no GitHub)
  */
@@ -41,7 +41,7 @@ export const PipelineLocalInitBench = new class extends BenchmarkSkillScenario {
     {
       id: "run_dir_created",
       description:
-        "Did the agent create a run directory under .flow/runs/ with a timestamp-based name (YYYYMMDDTHHMMSS format)?",
+        "Did the agent create a run directory under .flowai/runs/ with a timestamp-based name (YYYYMMDDTHHMMSS format)?",
       critical: true,
     },
     {

@@ -42,7 +42,7 @@ Always use `mkdir -p <dir>` before writing artifacts. Never hardcode run paths.
 
 ## Git: Run Artifacts
 
-`.flow/runs/` is gitignored. ALWAYS use `git add -f` for files in that
+`.flowai/runs/` is gitignored. ALWAYS use `git add -f` for files in that
 directory. Without `-f`, git add silently skips them.
 
 ## Bash

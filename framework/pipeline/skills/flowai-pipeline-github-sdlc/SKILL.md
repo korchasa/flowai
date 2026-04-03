@@ -14,7 +14,7 @@ Before each step, check if the expected artifact already exists — if it does, 
 
 1. Generate `run_id` as current UTC timestamp: `YYYYMMDDTHHMMSS` format.
    Run: `date -u +"%Y%m%dT%H%M%S"`
-2. Set `run_dir` = `.flow/runs/<run_id>`
+2. Set `run_dir` = `.flowai/runs/<run_id>`
 3. Create the run directory structure:
    ```
    mkdir -p <run_dir>/specification <run_dir>/design <run_dir>/decision <run_dir>/tech-lead-review
@@ -24,7 +24,7 @@ Before each step, check if the expected artifact already exists — if it does, 
 ## Variables (track these throughout)
 
 - `run_id`: timestamp-based run identifier
-- `run_dir`: `.flow/runs/<run_id>`
+- `run_dir`: `.flowai/runs/<run_id>`
 - `issue_number`: extracted from `01-spec.md` frontmatter after Step 1
 - `max_iterations`: 3
 
@@ -368,7 +368,7 @@ If a `hitl-question.txt` file is written in a step's output directory (by the or
    ```
 3. Poll for reply (every 60s):
    ```
-   .flow/scripts/hitl-check.sh <issue_number> '<timestamp>'
+   .flowai/scripts/hitl-check.sh <issue_number> '<timestamp>'
    ```
    Or use the `hitl-check.ts` script if available.
 4. After receiving reply, resume the step (continue directly for Step 1, or pass to subagent for later steps).
@@ -389,12 +389,12 @@ If a `hitl-question.txt` file is written in a step's output directory (by the or
 
 This pipeline supports resume. The resume logic works by checking artifact
 existence before each step. If you are resuming a previous run, determine
-the `run_id` from the most recent directory in `.flow/runs/` and continue
+the `run_id` from the most recent directory in `.flowai/runs/` and continue
 from the first step whose artifact is missing.
 
 To find the latest run on resume:
 ```
-ls -1 .flow/runs/ | sort | tail -1
+ls -1 .flowai/runs/ | sort | tail -1
 ```
 
 ## Issue Tracker Integration

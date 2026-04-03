@@ -62,7 +62,7 @@ export const PipelineSpecCreationBench = new class
     {
       id: "spec_created",
       description:
-        "Did the orchestrator create 01-spec.md in .flow/runs/20260301T100000/specification/?",
+        "Did the orchestrator create 01-spec.md in .flowai/runs/20260301T100000/specification/?",
       critical: true,
     },
     {

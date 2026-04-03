@@ -39,8 +39,8 @@ export const AgentPmBasicBench = new class extends BenchmarkAgentScenario {
       Title: "Add caching layer for processData function"
       Body: "The processData function is called frequently and is slow. We need to add an in-memory cache to speed things up. Cache should expire after 5 minutes."
       Labels: ["enhancement", "priority: high"]
-    - Write specification artifact to: .flow/runs/test/specification/01-spec.md
-    - Node output directory: .flow/runs/test/specification/
+    - Write specification artifact to: .flowai/runs/test/specification/01-spec.md
+    - Node output directory: .flowai/runs/test/specification/
     - Run ID: test
     - Issue number: 42
     Follow your agent definition for exact steps.`;
@@ -49,7 +49,7 @@ export const AgentPmBasicBench = new class extends BenchmarkAgentScenario {
     {
       id: "spec_created",
       description:
-        "Did the agent create 01-spec.md in .flow/runs/test/specification/?",
+        "Did the agent create 01-spec.md in .flowai/runs/test/specification/?",
       critical: true,
     },
     {

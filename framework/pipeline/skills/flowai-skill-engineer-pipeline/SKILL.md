@@ -30,7 +30,7 @@ user-invocable: true
 
 ## Initialization
 - Generate run_id (timestamp)
-- Create run directory: .flow/runs/<run_id>/
+- Create run directory: .flowai/runs/<run_id>/
 
 ## Variables
 - run_id, run_dir, max_iterations
@@ -48,7 +48,7 @@ Launch subagent:
 
 ## Resume
 - Check artifact existence before each step
-- Find latest run: ls -1 .flow/runs/ | sort | tail -1
+- Find latest run: ls -1 .flowai/runs/ | sort | tail -1
 ```
 
 ### Key Principles
@@ -106,8 +106,8 @@ const ARTIFACT_SCHEMAS: Record<string, string[]> = {
 ## Reflection Memory
 
 For pipelines that run repeatedly, add reflection memory:
-- **Memory** (`.flow/memory/<agent>.md`): Edit-in-place snapshot, <=50 lines
-- **History** (`.flow/memory/<agent>-history.md`): Append-only log, <=20 entries
+- **Memory** (`.flowai/memory/<agent>.md`): Edit-in-place snapshot, <=50 lines
+- **History** (`.flowai/memory/<agent>-history.md`): Append-only log, <=20 entries
 - **Lifecycle:** orchestrator calls reflection read before subagent, reflection write after
 
 See the pipeline pack's reflection protocol agent for the full protocol.

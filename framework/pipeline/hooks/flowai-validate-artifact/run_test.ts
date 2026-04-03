@@ -7,21 +7,21 @@ import {
 
 Deno.test("getArtifactSchema: matches spec artifact", () => {
   const schema = getArtifactSchema(
-    ".flow/runs/20260101T000000/specification/01-spec.md",
+    ".flowai/runs/20260101T000000/specification/01-spec.md",
   );
   assertEquals(schema, ["scope"]);
 });
 
 Deno.test("getArtifactSchema: matches decision artifact", () => {
   const schema = getArtifactSchema(
-    ".flow/runs/20260101T000000/decision/03-decision.md",
+    ".flowai/runs/20260101T000000/decision/03-decision.md",
   );
   assertEquals(schema, ["variant", "tasks"]);
 });
 
 Deno.test("getArtifactSchema: matches qa report", () => {
   const schema = getArtifactSchema(
-    ".flow/runs/20260101T000000/verify/iter-1/05-qa-report.md",
+    ".flowai/runs/20260101T000000/verify/iter-1/05-qa-report.md",
   );
   assertEquals(schema, ["verdict", "high_confidence_issues"]);
 });

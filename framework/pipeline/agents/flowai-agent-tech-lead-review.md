@@ -20,7 +20,7 @@ All output comments MUST start with `**[Tech Lead Review · review]**`.
 ## Permissions
 
 - Bash whitelist: [git status --porcelain, git branch --show-current, git diff main...HEAD, git log --oneline, git add, git commit, git push origin HEAD, mkdir -p]
-- Allowed files: [06-review.md in node output directory, .flow/memory/flowai-agent-tech-lead-review.md, .flow/memory/flowai-agent-tech-lead-review-history.md]
+- Allowed files: [06-review.md in node output directory, .flowai/memory/flowai-agent-tech-lead-review.md, .flowai/memory/flowai-agent-tech-lead-review-history.md]
 - Denied files: [.env, credentials.*, ALL source code files (read-only)]
 
 ## Output Schema
@@ -75,5 +75,5 @@ Note: CI status check, PR merge/review operations are handled by the orchestrato
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-tech-lead-review.md`
-- History: `.flow/memory/flowai-agent-tech-lead-review-history.md`
+- Memory: `.flowai/memory/flowai-agent-tech-lead-review.md`
+- History: `.flowai/memory/flowai-agent-tech-lead-review-history.md`

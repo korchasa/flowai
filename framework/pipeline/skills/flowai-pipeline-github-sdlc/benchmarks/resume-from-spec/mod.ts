@@ -5,7 +5,7 @@ import { join } from "@std/path";
  * Tests pipeline resume logic: when specification artifact already exists,
  * pipeline should skip PM step and proceed to Architect step.
  *
- * Pre-condition: .flow/runs/<run_id>/specification/01-spec.md exists with valid
+ * Pre-condition: .flowai/runs/<run_id>/specification/01-spec.md exists with valid
  * frontmatter. Pipeline should detect it and skip Step 1 (specification),
  * proceeding directly to Step 2 (Architect).
  *
@@ -73,7 +73,7 @@ Selected issue #1. Implementing feature X for engine performance improvement.
   }
 
   userQuery =
-    "/flowai-pipeline-github-sdlc Resume the pipeline. The latest run is 20260101T000000 in .flow/runs/. " +
+    "/flowai-pipeline-github-sdlc Resume the pipeline. The latest run is 20260101T000000 in .flowai/runs/. " +
     "If a subagent or gh command fails, stop gracefully and report progress.";
 
   checklist = [
@@ -98,7 +98,7 @@ Selected issue #1. Implementing feature X for engine performance improvement.
     {
       id: "run_dir_preserved",
       description:
-        "Did the agent use the existing run directory (.flow/runs/20260101T000000) instead of creating a new one?",
+        "Did the agent use the existing run directory (.flowai/runs/20260101T000000) instead of creating a new one?",
       critical: true,
     },
     {

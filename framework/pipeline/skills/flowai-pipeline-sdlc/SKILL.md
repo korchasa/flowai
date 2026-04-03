@@ -16,7 +16,7 @@ Before each step, check if the expected artifact already exists — if it does, 
 
 1. Generate `run_id` as current UTC timestamp: `YYYYMMDDTHHMMSS` format.
    Run: `date -u +"%Y%m%dT%H%M%S"`
-2. Set `run_dir` = `.flow/runs/<run_id>`
+2. Set `run_dir` = `.flowai/runs/<run_id>`
 3. Create the run directory structure:
    ```
    mkdir -p <run_dir>/specification <run_dir>/design <run_dir>/decision <run_dir>/tech-lead-review
@@ -26,7 +26,7 @@ Before each step, check if the expected artifact already exists — if it does, 
 ## Variables (track these throughout)
 
 - `run_id`: timestamp-based run identifier
-- `run_dir`: `.flow/runs/<run_id>`
+- `run_dir`: `.flowai/runs/<run_id>`
 - `task_description`: the user-provided task text
 - `max_iterations`: 3
 
@@ -274,10 +274,10 @@ No external communication channels (issue tracker comments, etc.) are used.
 
 This pipeline supports resume. The resume logic works by checking artifact
 existence before each step. If you are resuming a previous run, determine
-the `run_id` from the most recent directory in `.flow/runs/` and continue
+the `run_id` from the most recent directory in `.flowai/runs/` and continue
 from the first step whose artifact is missing.
 
 To find the latest run on resume:
 ```
-ls -1 .flow/runs/ | sort | tail -1
+ls -1 .flowai/runs/ | sort | tail -1
 ```

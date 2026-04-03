@@ -80,11 +80,11 @@ Deno.test("processData works", () => { processData("test"); });
 
   userQuery = `You are the Tech Lead agent. Your task:
     - Read flowai-shared-rules and flowai-reflection-protocol from the agents directory
-    - Read specification at: .flow/runs/test/specification/01-spec.md
-    - Read plan at: .flow/runs/test/design/02-plan.md
+    - Read specification at: .flowai/runs/test/specification/01-spec.md
+    - Read plan at: .flowai/runs/test/design/02-plan.md
     - Select a variant, produce task breakdown, create branch sdlc/issue-42
-    - Write decision artifact to: .flow/runs/test/decision/03-decision.md
-    - Node output directory: .flow/runs/test/decision/
+    - Write decision artifact to: .flowai/runs/test/decision/03-decision.md
+    - Node output directory: .flowai/runs/test/decision/
     - Issue number: 42
     Follow your agent definition for exact steps.`;
 
@@ -92,7 +92,7 @@ Deno.test("processData works", () => { processData("test"); });
     {
       id: "decision_created",
       description:
-        "Did the agent create 03-decision.md in .flow/runs/test/decision/?",
+        "Did the agent create 03-decision.md in .flowai/runs/test/decision/?",
       critical: true,
     },
     {

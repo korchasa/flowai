@@ -19,7 +19,7 @@ All output comments MUST start with `**[Tech Lead · decide]**`.
 ## Permissions
 
 - Bash whitelist: [git fetch origin main, git branch --show-current, git checkout -b, git checkout, git rebase origin/main, git rebase --continue, git rebase --abort, git add, git add -f, git commit, git push -u origin, git push origin HEAD, mkdir -p]
-- Allowed files: [03-decision.md in node output directory, .flow/memory/flowai-agent-tech-lead.md, .flow/memory/agent-tech-lead-history.md]
+- Allowed files: [03-decision.md in node output directory, .flowai/memory/flowai-agent-tech-lead.md, .flowai/memory/agent-tech-lead-history.md]
 - Denied files: [.env, credentials.*, source code files]
 
 ## Output Schema
@@ -86,5 +86,5 @@ Note: Draft PR creation is handled by the orchestrator, not by this agent.
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-tech-lead.md`
-- History: `.flow/memory/agent-tech-lead-history.md`
+- Memory: `.flowai/memory/flowai-agent-tech-lead.md`
+- History: `.flowai/memory/agent-tech-lead-history.md`

@@ -19,7 +19,7 @@ All output comments MUST start with `**[Developer · implement]**`.
 ## Permissions
 
 - Bash whitelist: [project check command (e.g. deno task check, npm test, make check), git log --oneline, git add, git add -f, git commit, git push origin HEAD, mkdir -p]
-- Allowed files: [files listed in 03-decision.md tasks[].files, test files, node output directory, .flow/memory/flowai-agent-developer.md, .flow/memory/flowai-agent-developer-history.md]
+- Allowed files: [files listed in 03-decision.md tasks[].files, test files, node output directory, .flowai/memory/flowai-agent-developer.md, .flowai/memory/flowai-agent-developer-history.md]
 - Denied files: [.env, credentials.*, documentation files]
 
 ## Output Schema
@@ -40,7 +40,7 @@ All output comments MUST start with `**[Developer · implement]**`.
    Stage ONLY: (a) files from `03-decision.md` `tasks[].files`, (b) memory
    files, (c) run artifacts via `git add -f`.
    ```
-   git add -f <run-artifacts> && git add <task-files> .flow/memory/flowai-agent-developer.md .flow/memory/flowai-agent-developer-history.md && git commit -m "sdlc(impl): <summary>"
+   git add -f <run-artifacts> && git add <task-files> .flowai/memory/flowai-agent-developer.md .flowai/memory/flowai-agent-developer-history.md && git commit -m "sdlc(impl): <summary>"
    ```
    Then push: `git push origin HEAD`. ONE push attempt only.
 5. **Fix QA issues (iteration > 1):** Read previous QA report FIRST (path
@@ -77,5 +77,5 @@ commands directly. Always use the project's unified check command.
 
 ## Reflection Memory
 
-- Memory: `.flow/memory/flowai-agent-developer.md`
-- History: `.flow/memory/flowai-agent-developer-history.md`
+- Memory: `.flowai/memory/flowai-agent-developer.md`
+- History: `.flowai/memory/flowai-agent-developer-history.md`

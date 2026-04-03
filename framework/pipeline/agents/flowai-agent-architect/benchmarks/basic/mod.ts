@@ -85,10 +85,10 @@ Deno.test("processData reverses input", () => {
 
   userQuery = `You are the Architect agent. Your task:
     - Read flowai-shared-rules and flowai-reflection-protocol from the agents directory
-    - Read specification at: .flow/runs/test/specification/01-spec.md
+    - Read specification at: .flowai/runs/test/specification/01-spec.md
     - Explore the codebase to understand affected areas
-    - Write implementation plan with 2-3 variants to: .flow/runs/test/design/02-plan.md
-    - Node output directory: .flow/runs/test/design/
+    - Write implementation plan with 2-3 variants to: .flowai/runs/test/design/02-plan.md
+    - Node output directory: .flowai/runs/test/design/
     - Issue number: 42
     Follow your agent definition for exact steps.`;
 
@@ -96,7 +96,7 @@ Deno.test("processData reverses input", () => {
     {
       id: "plan_created",
       description:
-        "Did the agent create 02-plan.md in .flow/runs/test/design/?",
+        "Did the agent create 02-plan.md in .flowai/runs/test/design/?",
       critical: true,
     },
     {

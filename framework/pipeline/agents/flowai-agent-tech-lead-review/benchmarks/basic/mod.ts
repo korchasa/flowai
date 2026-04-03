@@ -97,13 +97,13 @@ export function processData(input: string): string {
 
   userQuery = `You are the Tech Lead Review agent. Your task:
     - Read flowai-shared-rules and flowai-reflection-protocol from the agents directory
-    - Read specification at: .flow/runs/test/specification/01-spec.md
-    - Read decision at: .flow/runs/test/decision/03-decision.md
+    - Read specification at: .flowai/runs/test/specification/01-spec.md
+    - Read decision at: .flowai/runs/test/decision/03-decision.md
     - Review the diff: git diff main...HEAD (or git log/diff to see changes)
     - Check clean working tree: git status --porcelain
     - Decide: MERGE or OPEN
-    - Write review report to: .flow/runs/test/tech-lead-review/06-review.md
-    - Node output directory: .flow/runs/test/tech-lead-review/
+    - Write review report to: .flowai/runs/test/tech-lead-review/06-review.md
+    - Node output directory: .flowai/runs/test/tech-lead-review/
     - Pipeline status: success
     Follow your agent definition for exact steps.`;
 
@@ -111,7 +111,7 @@ export function processData(input: string): string {
     {
       id: "review_created",
       description:
-        "Did the agent create 06-review.md in .flow/runs/test/tech-lead-review/?",
+        "Did the agent create 06-review.md in .flowai/runs/test/tech-lead-review/?",
       critical: true,
     },
     {
