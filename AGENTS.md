@@ -82,6 +82,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - **Verification Steps**: Plan MUST include specific verification commands (tests, validation tools, connectivity checks).
 - **Functionality Preservation**: Refactoring/modifications → run existing tests before/after; add new tests if coverage missing.
 - **Data-First**: Integration with external APIs/processes → inspect protocol & data formats BEFORE planning.
+- **Reference-First**: When spec/whiteboard lists reference files (existing implementations, examples, format specs) → READ THEM before writing code. Do not assume data formats — verify from reference source.
 - **Architectural Validation**: Complex logic changes → visualize event sequence (sequence diagram/pseudocode).
 - **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks per variant + Trade-offs across variants. Quality > quantity. 1 variant OK if path is clear.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
