@@ -7,9 +7,12 @@
     <style>
       :root {
         --font:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        --mono:
-          "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+        --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         --bg: #fff;
         --surface: #f9fafb;
         --code-bg: #f3f4f6;
@@ -746,8 +749,7 @@ kubectl exec -it &lt;pod&gt; -- sh</pre>
           from: "terminating",
           to: "succeeded",
           label: "",
-          description:
-            "All containers exited cleanly within the grace period.",
+          description: "All containers exited cleanly within the grace period.",
           details:
             `<p>If containers don't exit within <code>terminationGracePeriodSeconds</code>, they receive SIGKILL. The exit is still recorded as terminated, not succeeded.</p>`,
         },
@@ -950,9 +952,7 @@ kubectl exec -it &lt;pod&gt; -- sh</pre>
         const g = draw.group().addClass("edge-group");
         const path = g.path(d).fill("none").addClass("edge-path")
           .marker("end", arr);
-        g.path(d).fill("none").addClass("edge-hit").click(() =>
-          selectEdge(i)
-        );
+        g.path(d).fill("none").addClass("edge-hit").click(() => selectEdge(i));
 
         if (edge.label) {
           const t = 0.5, u = 1 - t;
@@ -988,9 +988,7 @@ kubectl exec -it &lt;pod&gt; -- sh</pre>
           g.plain(label).attr({ x, y }).addClass("node-text");
         } else if (type === "decision") {
           g.polygon(
-            `${x},${y - DH} ${x + DW},${y} ${x},${y + DH} ${
-              x - DW
-            },${y}`,
+            `${x},${y - DH} ${x + DW},${y} ${x},${y + DH} ${x - DW},${y}`,
           ).addClass("node-rect");
           g.plain(label).attr({ x, y }).addClass("node-text");
         } else if (type === "start") {
