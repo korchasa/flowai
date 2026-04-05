@@ -33,6 +33,8 @@ export interface FlowConfig {
   };
   /** Cross-IDE user resource propagation (default: false) */
   userSync?: boolean;
+  /** Model tier overrides per IDE: { claude: { smart: "opus" }, cursor: { smart: "slow" } } */
+  models?: Record<string, Record<string, string>>;
 }
 
 /** Downloaded file in memory */

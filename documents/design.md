@@ -95,17 +95,26 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   Frontmatter contains universal superset of all IDE fields; body is the shared system prompt.
 - **Canonical Format:** Universal frontmatter — superset of all IDE-specific fields:
   `name`, `description` (required), `tools` (string, Claude), `disallowedTools` (string, Claude),
-  `readonly` (bool, Cursor), `mode` (string, OpenCode), `opencode_tools` (map, OpenCode).
-  `flowai` extracts IDE-relevant fields at install time via `transformAgent()`.
+  `readonly` (bool, Cursor), `mode` (string, OpenCode), `opencode_tools` (map, OpenCode),
+  `model` (tier: `max`/`smart`/`fast`/`cheap`/`inherit`), `effort` (string, Claude),
+  `maxTurns` (int, Claude; renamed `steps` for OpenCode), `background` (bool, Claude), `isolation` (string, Claude),
+  `color` (string, Claude/OpenCode).
+  `flowai` extracts IDE-relevant fields and resolves model tiers at install time via `transformAgent()`.
+- **Model Tiers:** Abstract quality/cost intent. Resolved to IDE-native values at install time:
+  - Default maps: `claude: {max: opus, smart: sonnet, fast: haiku, cheap: haiku}`,
+    `cursor: {max: slow, smart: slow, fast: fast, cheap: fast}`, `opencode: {}` (user configures).
+  - User overrides via `.flowai.yaml` `models:` section.
+  - `inherit` or absent → field omitted (IDE uses parent model).
 - **Key Agents (4 canonical files):**
   - `engineering/agents/flowai-deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flowai-skill-deep-research` orchestrator.
   - `core/agents/console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `core/agents/diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
 - **Distribution:** `flowai` transforms canonical agents into IDE-specific format at install time.
 - **Reference: IDE frontmatter formats** (transformation rules owned by flowai):
-  - **Claude Code:** `name`, `description` (req), `tools` (list: Read, Grep, etc.), `disallowedTools`, `model` (sonnet/opus/haiku/inherit).
-  - **Cursor:** `name`, `description` (req), `model` (inherit/fast/slow), `readonly` (bool).
-  - **OpenCode:** `description` (req), `mode: subagent`, `model` (provider/model-id), `tools` (map: write/edit/bash→bool). Filename = agent name.
+  - **Universal (canonical):** `model` uses abstract tiers (`max`/`smart`/`fast`/`cheap`/`inherit`). Resolved by flowai at install time.
+  - **Claude Code:** `name`, `description` (req), `tools`, `disallowedTools`, `model` (resolved: opus/sonnet/haiku), `effort` (low/medium/high/max), `maxTurns` (int), `background` (bool), `isolation` (worktree/remote), `color`.
+  - **Cursor:** `name`, `description` (req), `model` (resolved: slow/fast), `readonly` (bool).
+  - **OpenCode:** `description` (req), `mode: subagent`, `model` (resolved from .flowai.yaml or omitted), `tools` (map: write/edit/bash→bool), `color`. Filename = agent name.
 
 ### 3.3 Project Documentation (`documents/`)
 

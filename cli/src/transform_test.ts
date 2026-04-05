@@ -3,6 +3,7 @@ import {
   crossTransformAgent,
   reverseTransformAgent,
   transformAgent,
+  transformSkillModel,
 } from "./transform.ts";
 
 const UNIVERSAL_FULL = `---
@@ -15,6 +16,12 @@ mode: subagent
 opencode_tools:
   write: false
   edit: false
+model: smart
+effort: low
+maxTurns: 5
+background: true
+isolation: worktree
+color: blue
 ---
 
 You are a test agent. Do test things.
@@ -29,9 +36,8 @@ mode: subagent
 You are a minimal agent.
 `;
 
-Deno.test("transformAgent - Claude: keeps name, description, tools, disallowedTools; drops readonly, mode, opencode_tools", () => {
+Deno.test("transformAgent - Claude: keeps fields and resolves model tier smart → sonnet", () => {
   const result = transformAgent(UNIVERSAL_FULL, "claude");
-  // Should contain Claude-relevant fields
   assertFrontmatterField(result, "name", "test-agent");
   assertFrontmatterField(
     result,
@@ -40,15 +46,19 @@ Deno.test("transformAgent - Claude: keeps name, description, tools, disallowedTo
   );
   assertFrontmatterField(result, "tools", "Read, Grep, Glob, Bash");
   assertFrontmatterField(result, "disallowedTools", "Write, Edit");
-  // Should NOT contain non-Claude fields
+  assertFrontmatterField(result, "model", "sonnet");
+  assertFrontmatterField(result, "effort", "low");
+  assertFrontmatterField(result, "maxTurns", "5");
+  assertFrontmatterField(result, "background", "true");
+  assertFrontmatterField(result, "isolation", "worktree");
+  assertFrontmatterField(result, "color", "blue");
   assertNoFrontmatterField(result, "readonly");
   assertNoFrontmatterField(result, "mode");
   assertNoFrontmatterField(result, "opencode_tools");
-  // Body preserved
   assertBodyContains(result, "You are a test agent. Do test things.");
 });
 
-Deno.test("transformAgent - Cursor: keeps name, description, readonly; drops tools, disallowedTools, mode, opencode_tools", () => {
+Deno.test("transformAgent - Cursor: keeps fields and resolves model tier smart → slow", () => {
   const result = transformAgent(UNIVERSAL_FULL, "cursor");
   assertFrontmatterField(result, "name", "test-agent");
   assertFrontmatterField(
@@ -57,14 +67,19 @@ Deno.test("transformAgent - Cursor: keeps name, description, readonly; drops too
     "A test agent for unit testing",
   );
   assertFrontmatterField(result, "readonly", "true");
+  assertFrontmatterField(result, "model", "slow");
   assertNoFrontmatterField(result, "tools");
   assertNoFrontmatterField(result, "disallowedTools");
   assertNoFrontmatterField(result, "mode");
   assertNoFrontmatterField(result, "opencode_tools");
+  assertNoFrontmatterField(result, "effort");
+  assertNoFrontmatterField(result, "maxTurns");
+  assertNoFrontmatterField(result, "background");
+  assertNoFrontmatterField(result, "isolation");
   assertBodyContains(result, "You are a test agent. Do test things.");
 });
 
-Deno.test("transformAgent - OpenCode: keeps description, mode; renames opencode_tools to tools; drops name, tools(string), disallowedTools", () => {
+Deno.test("transformAgent - OpenCode: model omitted, maxTurns renamed to steps", () => {
   const result = transformAgent(UNIVERSAL_FULL, "opencode");
   assertNoFrontmatterField(result, "name");
   assertFrontmatterField(
@@ -73,6 +88,12 @@ Deno.test("transformAgent - OpenCode: keeps description, mode; renames opencode_
     "A test agent for unit testing",
   );
   assertFrontmatterField(result, "mode", "subagent");
+  // OpenCode has no default model map → model omitted
+  assertNoFrontmatterField(result, "model");
+  assertFrontmatterField(result, "color", "blue");
+  // maxTurns → steps
+  assertNoFrontmatterField(result, "maxTurns");
+  assertFrontmatterField(result, "steps", "5");
   assertNoFrontmatterField(result, "disallowedTools");
   assertNoFrontmatterField(result, "readonly");
   assertNoFrontmatterField(result, "opencode_tools");
@@ -81,6 +102,99 @@ Deno.test("transformAgent - OpenCode: keeps description, mode; renames opencode_
   assertFrontmatterContains(result, "write: false");
   assertFrontmatterContains(result, "edit: false");
   assertBodyContains(result, "You are a test agent. Do test things.");
+});
+
+Deno.test("transformAgent - OpenCode with custom model map resolves tier", () => {
+  const result = transformAgent(UNIVERSAL_FULL, "opencode", {
+    smart: "claude-sonnet-4-5-20250514",
+    fast: "gpt-4o-mini",
+  });
+  assertFrontmatterField(result, "model", "claude-sonnet-4-5-20250514");
+});
+
+Deno.test("transformAgent - model tier max → opus for Claude", () => {
+  const content = `---
+name: max-agent
+description: Agent using max tier
+model: max
+---
+
+Body.
+`;
+  const result = transformAgent(content, "claude");
+  assertFrontmatterField(result, "model", "opus");
+});
+
+Deno.test("transformAgent - model tier fast → haiku for Claude", () => {
+  const content = `---
+name: fast-agent
+description: Agent using fast tier
+model: fast
+---
+
+Body.
+`;
+  const result = transformAgent(content, "claude");
+  assertFrontmatterField(result, "model", "haiku");
+});
+
+Deno.test("transformAgent - model tier cheap → haiku for Claude", () => {
+  const content = `---
+name: cheap-agent
+description: Agent using cheap tier
+model: cheap
+---
+
+Body.
+`;
+  const result = transformAgent(content, "claude");
+  assertFrontmatterField(result, "model", "haiku");
+});
+
+Deno.test("transformAgent - model tier fast → fast for Cursor", () => {
+  const content = `---
+name: fast-agent
+description: Agent using fast tier
+model: fast
+---
+
+Body.
+`;
+  const result = transformAgent(content, "cursor");
+  assertFrontmatterField(result, "model", "fast");
+});
+
+Deno.test("transformAgent - model inherit → field omitted", () => {
+  const content = `---
+name: inherit-agent
+description: Agent inheriting model
+model: inherit
+---
+
+Body.
+`;
+  const result = transformAgent(content, "claude");
+  assertNoFrontmatterField(result, "model");
+});
+
+Deno.test("transformAgent - absent model → field omitted", () => {
+  const result = transformAgent(UNIVERSAL_MINIMAL, "claude");
+  assertNoFrontmatterField(result, "model");
+});
+
+Deno.test("transformAgent - custom model map overrides defaults", () => {
+  const content = `---
+name: custom-agent
+description: Agent with custom map
+model: smart
+---
+
+Body.
+`;
+  const result = transformAgent(content, "claude", {
+    smart: "claude-opus-4-6-20260401",
+  });
+  assertFrontmatterField(result, "model", "claude-opus-4-6-20260401");
 });
 
 Deno.test("transformAgent - minimal agent (no restrictions): Claude gets only name + description", () => {
@@ -156,9 +270,115 @@ Body.
 `;
   const result = transformAgent(content, "claude");
   assertFrontmatterField(result, "name", "edge-agent");
-  // Description should be preserved (exact format may vary due to YAML re-serialization)
   assertFrontmatterContains(result, "description:");
   assertBodyContains(result, "Body.");
+});
+
+// --- transformSkillModel ---
+
+Deno.test("transformSkillModel - resolves tier smart → sonnet for Claude", () => {
+  const content = `---
+name: my-skill
+description: A skill
+model: smart
+effort: high
+---
+
+# Skill body
+`;
+  const result = transformSkillModel(content, "claude");
+  assertFrontmatterField(result, "model", "sonnet");
+  assertFrontmatterField(result, "effort", "high");
+  assertBodyContains(result, "# Skill body");
+});
+
+Deno.test("transformSkillModel - resolves tier cheap → haiku for Claude", () => {
+  const content = `---
+name: my-skill
+description: A skill
+model: cheap
+---
+
+Body.
+`;
+  const result = transformSkillModel(content, "claude");
+  assertFrontmatterField(result, "model", "haiku");
+});
+
+Deno.test("transformSkillModel - OpenCode without map omits model", () => {
+  const content = `---
+name: my-skill
+description: A skill
+model: smart
+---
+
+Body.
+`;
+  const result = transformSkillModel(content, "opencode");
+  assertNoFrontmatterField(result, "model");
+});
+
+Deno.test("transformSkillModel - OpenCode with custom map resolves", () => {
+  const content = `---
+name: my-skill
+description: A skill
+model: smart
+---
+
+Body.
+`;
+  const result = transformSkillModel(content, "opencode", {
+    smart: "gpt-4o",
+  });
+  assertFrontmatterField(result, "model", "gpt-4o");
+});
+
+Deno.test("transformSkillModel - preserves multiline YAML formatting", () => {
+  const content = `---
+name: my-skill
+description: >-
+  A long multiline
+  description with special: chars
+model: smart
+effort: high
+---
+
+# Skill body
+`;
+  const result = transformSkillModel(content, "claude");
+  // Verify the multiline description is NOT re-serialized
+  assertFrontmatterContains(result, "description: >-");
+  assertFrontmatterContains(result, "  A long multiline");
+  assertFrontmatterField(result, "model", "sonnet");
+});
+
+Deno.test("transformSkillModel - no frontmatter returns content unchanged", () => {
+  const content = "# No frontmatter\nJust body.";
+  assertEquals(transformSkillModel(content, "claude"), content);
+});
+
+Deno.test("transformSkillModel - no model field returns content unchanged", () => {
+  const content = `---
+name: my-skill
+description: A skill
+---
+
+Body.
+`;
+  assertEquals(transformSkillModel(content, "claude"), content);
+});
+
+Deno.test("transformSkillModel - inherit tier removes model field", () => {
+  const content = `---
+name: my-skill
+description: A skill
+model: inherit
+---
+
+Body.
+`;
+  const result = transformSkillModel(content, "claude");
+  assertNoFrontmatterField(result, "model");
 });
 
 // --- Helpers ---
@@ -248,9 +468,74 @@ tools: Read,Grep
 Body.
 `;
   const result = reverseTransformAgent(opencode, "opencode");
-  // tools is a string (not object), so NOT renamed to opencode_tools
   assertFrontmatterField(result, "tools", "Read,Grep");
   assertNoFrontmatterField(result, "opencode_tools");
+});
+
+Deno.test("reverseTransformAgent - claude: model opus → tier max", () => {
+  const claude = `---
+name: my-agent
+description: My agent
+model: opus
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(claude, "claude");
+  assertFrontmatterField(result, "model", "max");
+});
+
+Deno.test("reverseTransformAgent - claude: model sonnet → tier smart", () => {
+  const claude = `---
+name: my-agent
+description: My agent
+model: sonnet
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(claude, "claude");
+  assertFrontmatterField(result, "model", "smart");
+});
+
+Deno.test("reverseTransformAgent - cursor: model slow → tier smart", () => {
+  const cursor = `---
+name: my-agent
+description: My agent
+model: slow
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(cursor, "cursor");
+  assertFrontmatterField(result, "model", "smart");
+});
+
+Deno.test("reverseTransformAgent - opencode: steps (number) → maxTurns", () => {
+  const opencode = `---
+description: My agent
+mode: subagent
+steps: 10
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(opencode, "opencode");
+  assertFrontmatterField(result, "maxTurns", "10");
+  assertNoFrontmatterField(result, "steps");
+});
+
+Deno.test("reverseTransformAgent - unknown model kept as-is (lossy)", () => {
+  const claude = `---
+name: my-agent
+description: My agent
+model: claude-custom-model-id
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(claude, "claude");
+  assertFrontmatterField(result, "model", "claude-custom-model-id");
 });
 
 Deno.test("reverseTransformAgent - claude: all fields pass through as-is", () => {
@@ -316,7 +601,6 @@ Body.
     "opencode",
     (m) => logs.push(m),
   );
-  // opencode keeps description, mode; drops name, tools(string), disallowedTools
   assertFrontmatterField(result, "description", "My agent");
   assertNoFrontmatterField(result, "name");
   assertNoFrontmatterField(result, "disallowedTools");
@@ -369,10 +653,8 @@ Body.
     "claude",
     (m) => logs.push(m),
   );
-  // claude keeps name, description, tools(string), disallowedTools
-  // opencode_tools (from reverse) has no claude equivalent → dropped
   assertFrontmatterField(result, "description", "My agent");
-  assertNoFrontmatterField(result, "mode"); // claude doesn't keep mode
+  assertNoFrontmatterField(result, "mode");
   assertBodyContains(result, "Body.");
   assertEquals(logs.length > 0, true, "Should log transform warning");
 });

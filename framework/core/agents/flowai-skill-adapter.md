@@ -3,6 +3,9 @@ name: flowai-skill-adapter
 description: Adapts a single skill to project specifics after upstream update. Merges upstream changes with previous project adaptations. Use when flowai-update detects updated skills that need project-specific adaptation.
 tools: Bash
 mode: subagent
+model: smart
+effort: medium
+maxTurns: 15
 opencode_tools:
   write: false
   edit: false

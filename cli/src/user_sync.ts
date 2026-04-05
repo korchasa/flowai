@@ -2,7 +2,7 @@
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { resolveIDEs } from "./ide.ts";
 import { processPlan, type SyncOptions, type SyncResult } from "./sync.ts";
-import { crossTransformAgent } from "./transform.ts";
+import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
 import type { FlowConfig, IDE, PlanItem } from "./types.ts";
 
 /** A single file version of a user resource as it exists in one IDE */
@@ -208,6 +208,7 @@ export function computeUserSyncPlan(
   ides: IDE[],
   cwd: string,
   log: (msg: string) => void,
+  config?: FlowConfig,
 ): Map<string, PlanItem[]> {
   const plans = new Map<string, PlanItem[]>();
   for (const ide of ides) {
@@ -245,11 +246,16 @@ export function computeUserSyncPlan(
         // Content for this target IDE (transformed from canonical source)
         const getContent = (): string => {
           if (resource.type === "agent" && canonical.ideName !== ide.name) {
+            const targetModelMap = {
+              ...(DEFAULT_MODEL_MAPS[ide.name] ?? {}),
+              ...(config?.models?.[ide.name] ?? {}),
+            };
             return crossTransformAgent(
               canonical.content,
               canonical.ideName,
               ide.name,
               warnOnce,
+              targetModelMap,
             );
           }
           return canonical.content;
@@ -364,7 +370,7 @@ export async function runUserSync(
     return result;
   }
 
-  const plans = computeUserSyncPlan(resources, resolvedIdes, cwd, log);
+  const plans = computeUserSyncPlan(resources, resolvedIdes, cwd, log, config);
 
   for (const ide of resolvedIdes) {
     const plan = plans.get(ide.name) ?? [];

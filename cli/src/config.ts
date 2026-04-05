@@ -83,7 +83,32 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
   // Parse packs (v1.1+). undefined = legacy mode (all resources).
   const packs = Array.isArray(data.packs) ? data.packs.map(String) : undefined;
 
-  return { version, ides, packs, skills, agents, commands, userSync };
+  // Parse models (optional): Record<string, Record<string, string>>
+  let models: Record<string, Record<string, string>> | undefined;
+  if (
+    data.models && typeof data.models === "object" &&
+    !Array.isArray(data.models)
+  ) {
+    models = {};
+    for (
+      const [ide, mapping] of Object.entries(
+        data.models as Record<string, unknown>,
+      )
+    ) {
+      if (mapping && typeof mapping === "object" && !Array.isArray(mapping)) {
+        models[ide] = {};
+        for (
+          const [tier, model] of Object.entries(
+            mapping as Record<string, unknown>,
+          )
+        ) {
+          models[ide][tier] = String(model);
+        }
+      }
+    }
+  }
+
+  return { version, ides, packs, skills, agents, commands, userSync, models };
 }
 
 /** Migrate v1 config to v1.1 by adding packs: (all available packs) */
@@ -118,6 +143,9 @@ export async function saveConfig(
   data.commands = config.commands;
   if (config.userSync) {
     data.user_sync = config.userSync;
+  }
+  if (config.models && Object.keys(config.models).length > 0) {
+    data.models = config.models;
   }
   const yaml = stringify(data);
   await fs.writeFile(configPath, yaml);

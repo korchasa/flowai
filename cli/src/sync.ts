@@ -16,7 +16,11 @@ import {
   hasPacks,
 } from "./source.ts";
 import { syncClaudeSymlinks } from "./symlinks.ts";
-import { transformAgent } from "./transform.ts";
+import {
+  DEFAULT_MODEL_MAPS,
+  transformAgent,
+  transformSkillModel,
+} from "./transform.ts";
 import { runUserSync } from "./user_sync.ts";
 import type {
   FlowConfig,
@@ -39,6 +43,16 @@ import {
   transformHookForClaude,
   transformHookForCursor,
 } from "./hooks.ts";
+
+/** Merge default model map with user overrides from .flowai.yaml */
+function mergeModelMap(
+  ideName: string,
+  config: FlowConfig,
+): Record<string, string> {
+  const defaults = DEFAULT_MODEL_MAPS[ideName] ?? {};
+  const overrides = config.models?.[ideName] ?? {};
+  return { ...defaults, ...overrides };
+}
 
 /** Sync options */
 export interface SyncOptions {
@@ -231,12 +245,26 @@ export async function sync(
     for (const ide of ides) {
       log(`\nSyncing to ${ide.name}...`);
 
+      const modelMap = mergeModelMap(ide.name, config);
+
       // Skills
       const skillTargetDir = join(cwd, ide.configDir, "skills");
       if (skillNames.length > 0) {
         const skillFiles = usePacks
-          ? await readPackSkillFiles(skillNames, allPaths, source)
-          : await readSkillFiles(skillNames, allPaths, source);
+          ? await readPackSkillFiles(
+            skillNames,
+            allPaths,
+            source,
+            ide.name,
+            modelMap,
+          )
+          : await readSkillFiles(
+            skillNames,
+            allPaths,
+            source,
+            ide.name,
+            modelMap,
+          );
         const skillPlan = await computePlan(
           skillFiles,
           skillTargetDir,
@@ -281,8 +309,20 @@ export async function sync(
       const agentTargetDir = join(cwd, ide.configDir, "agents");
       if (agentNames.length > 0) {
         const agentFiles = usePacks
-          ? await readPackAgentFiles(agentNames, ide.name, allPaths, source)
-          : await readAgentFiles(agentNames, ide.name, allPaths, source);
+          ? await readPackAgentFiles(
+            agentNames,
+            ide.name,
+            allPaths,
+            source,
+            modelMap,
+          )
+          : await readAgentFiles(
+            agentNames,
+            ide.name,
+            allPaths,
+            source,
+            modelMap,
+          );
         const agentPlan = await computePlan(
           agentFiles,
           agentTargetDir,
@@ -500,6 +540,8 @@ export async function readSkillFiles(
   skillNames: string[],
   allPaths: string[],
   source: FrameworkSource,
+  ideName?: string,
+  modelMap?: Record<string, string>,
 ): Promise<UpstreamFile[]> {
   const files: UpstreamFile[] = [];
   for (const name of skillNames) {
@@ -508,7 +550,11 @@ export async function readSkillFiles(
       p.startsWith(prefix) && !isDevOnlyPath(p)
     );
     for (const path of paths) {
-      const content = await source.readFile(path);
+      let content = await source.readFile(path);
+      // Transform model tier in SKILL.md files
+      if (ideName && path.endsWith("/SKILL.md")) {
+        content = transformSkillModel(content, ideName, modelMap);
+      }
       const relativePath = path.substring("framework/skills/".length);
       files.push({ path: relativePath, content });
     }
@@ -521,6 +567,8 @@ export async function readPackSkillFiles(
   skillNames: string[],
   allPaths: string[],
   source: FrameworkSource,
+  ideName?: string,
+  modelMap?: Record<string, string>,
 ): Promise<UpstreamFile[]> {
   const files: UpstreamFile[] = [];
   const nameSet = new Set(skillNames);
@@ -530,7 +578,11 @@ export async function readPackSkillFiles(
   for (const path of allPaths) {
     const match = path.match(packSkillRegex);
     if (match && nameSet.has(match[1]) && !isDevOnlyPath(path)) {
-      const content = await source.readFile(path);
+      let content = await source.readFile(path);
+      // Transform model tier in SKILL.md files
+      if (ideName && path.endsWith("/SKILL.md")) {
+        content = transformSkillModel(content, ideName, modelMap);
+      }
       // Extract relative path: strip framework/<pack>/skills/ → <name>/...
       const skillName = match[1];
       const prefixEnd = path.indexOf(`/skills/${skillName}/`) +
@@ -548,13 +600,14 @@ async function readAgentFiles(
   ideName: string,
   allPaths: string[],
   source: FrameworkSource,
+  modelMap?: Record<string, string>,
 ): Promise<UpstreamFile[]> {
   const files: UpstreamFile[] = [];
   for (const name of agentNames) {
     const agentPath = `framework/agents/${name}.md`;
     if (allPaths.includes(agentPath)) {
       const raw = await source.readFile(agentPath);
-      const content = transformAgent(raw, ideName);
+      const content = transformAgent(raw, ideName, modelMap);
       files.push({ path: `${name}.md`, content });
     }
   }
@@ -567,6 +620,7 @@ async function readPackAgentFiles(
   ideName: string,
   allPaths: string[],
   source: FrameworkSource,
+  modelMap?: Record<string, string>,
 ): Promise<UpstreamFile[]> {
   const files: UpstreamFile[] = [];
   const nameSet = new Set(agentNames);
@@ -576,7 +630,7 @@ async function readPackAgentFiles(
     const match = path.match(packAgentRegex);
     if (match && nameSet.has(match[1])) {
       const raw = await source.readFile(path);
-      const content = transformAgent(raw, ideName);
+      const content = transformAgent(raw, ideName, modelMap);
       files.push({ path: `${match[1]}.md`, content });
     }
   }

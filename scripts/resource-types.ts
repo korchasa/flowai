@@ -27,11 +27,19 @@ const descriptionField = z.string()
 
 // --- Skill schema ---
 
+/** Abstract model tiers — IDE-agnostic quality/cost intent */
+const modelTierField = z.enum(["max", "smart", "fast", "cheap", "inherit"])
+  .optional();
+
 export const SkillFrontmatterSchema = z.object({
   name: nameField,
   description: descriptionField,
   "disable-model-invocation": z.boolean().optional(),
   license: z.string().optional(),
+  model: modelTierField,
+  effort: z.enum(["low", "medium", "high", "max"]).optional(),
+  "argument-hint": z.string().optional(),
+  "allowed-tools": z.string().optional(),
 }).strict();
 
 export type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>;
@@ -46,6 +54,12 @@ export const AgentFrontmatterSchema = z.object({
   readonly: z.boolean().optional(),
   mode: z.string().optional(),
   opencode_tools: z.record(z.string(), z.boolean()).optional(),
+  model: modelTierField,
+  effort: z.enum(["low", "medium", "high", "max"]).optional(),
+  maxTurns: z.number().int().positive().optional(),
+  background: z.boolean().optional(),
+  isolation: z.enum(["worktree", "remote"]).optional(),
+  color: z.string().optional(),
 }).strict();
 
 export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>;

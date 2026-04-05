@@ -5,6 +5,8 @@ description: >-
   Produces documents/spec-{name}.md with dependency-ordered phases, atomic tasks,
   explicit boundaries, and per-phase status tracking.
 disable-model-invocation: true
+argument-hint: feature name or description
+effort: high
 ---
 
 # Feature Specification

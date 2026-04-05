@@ -4,6 +4,8 @@ description: >-
   Create critiqued plan in documents/whiteboards/ using GODS framework with
   proactive uncertainty resolution
 disable-model-invocation: true
+argument-hint: task description or issue URL
+effort: high
 ---
 
 # Task Planning

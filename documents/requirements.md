@@ -246,7 +246,7 @@ exercised as subagents within skill benchmarks.
 | **Command** (user-invoked only) | `.cursor/commands/foo.md` — flat md, no frontmatter | `.claude/commands/foo.md` — flat md, optional frontmatter (`allowed-tools`, `model`) | `.opencode/commands/foo.md` — flat md, `$ARGUMENTS` + shell interpolation |
 | **Skill** (model-invocable) | `.cursor/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.claude/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.opencode/skills/foo/SKILL.md` — dir, same format |
 | **Skill-command** (user-invoked skill) | `.cursor/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.claude/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.opencode/skills/foo/SKILL.md` with `disable-model-invocation: true` |
-| **Agent** | `.cursor/agents/foo.md` — frontmatter: `name`, `description`, `readonly` | `.claude/agents/foo.md` — frontmatter: `name`, `description`, `tools`, `disallowedTools` | `.opencode/agents/foo.md` — frontmatter: `description`, `mode`, `tools` (map) |
+| **Agent** | `.cursor/agents/foo.md` — frontmatter: `name`, `description`, `readonly`, `model` | `.claude/agents/foo.md` — frontmatter: `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color` | `.opencode/agents/foo.md` — frontmatter: `description`, `mode`, `model`, `color`, `steps`, `tools` (map) |
 
 **Agent frontmatter field mapping (universal → IDE):**
 
@@ -259,7 +259,25 @@ exercised as subagents within skill benchmarks.
 | `readonly` | kept | dropped | dropped |
 | `mode` | dropped | dropped | kept |
 | `opencode_tools` (map) | dropped | dropped | renamed → `tools` |
+| `model` (tier) | resolved to IDE-native | resolved to IDE-native | resolved from .flowai.yaml or omitted |
+| `effort` | dropped | kept | dropped |
+| `maxTurns` | dropped | kept | renamed → `steps` |
+| `background` | dropped | kept | dropped |
+| `isolation` | dropped | kept | dropped |
+| `color` | dropped | kept | kept |
 | unknown fields | pass-through | pass-through | pass-through |
+
+**Skill frontmatter fields (universal, no IDE transform):**
+
+| Field | Claude Code | Cursor | OpenCode | Purpose |
+|:---|:---|:---|:---|:---|
+| `name` | yes | yes | yes | Skill identifier |
+| `description` | yes | yes | yes | Skill purpose |
+| `disable-model-invocation` | yes | yes | yes | User-invoked only |
+| `allowed-tools` | yes | — | — | Pre-approve tools |
+| `model` | yes (tier → resolved) | — | yes (tier → resolved) | Override model (tier: max/smart/fast/cheap/inherit) |
+| `effort` | yes | — | — | Reasoning effort level |
+| `argument-hint` | yes | — | — | Argument placeholder |
 
 **Cross-IDE sync transformations (user_sync):**
 
@@ -267,9 +285,9 @@ exercised as subagents within skill benchmarks.
 |:---|:---|:---|
 | Skill (any IDE pair) | skill | Copy dir as-is (format identical across IDEs) |
 | Skill with extra files (references/, scripts/) | skill | Copy entire dir tree |
-| Agent (cursor → claude) | agent | Frontmatter: keep `name`+`description`+`tools`+`disallowedTools`, drop `readonly` |
-| Agent (claude → cursor) | agent | Frontmatter: keep `name`+`description`+`readonly`, drop `tools`+`disallowedTools` |
-| Agent (any → opencode) | agent | Frontmatter: keep `description`+`mode`, rename `opencode_tools`→`tools`, drop rest |
+| Agent (cursor → claude) | agent | Frontmatter: keep `name`+`description`+`tools`+`disallowedTools`+`model`+`effort`+`maxTurns`+`background`+`isolation`+`color`, drop `readonly` |
+| Agent (claude → cursor) | agent | Frontmatter: keep `name`+`description`+`readonly`+`model`, drop `tools`+`disallowedTools`+`effort`+`maxTurns`+`background`+`isolation`+`color` |
+| Agent (any → opencode) | agent | Frontmatter: keep `description`+`mode`+`model`+`color`, rename `opencode_tools`→`tools` + `maxTurns`→`steps`, drop rest |
 | Agent (invalid YAML) | agent | Copy as-is, log warning |
 | Command (cursor → claude) | command | Copy `.cursor/commands/foo.md` → `.claude/commands/foo.md` as-is |
 | Command (cursor → opencode) | command | Copy `.cursor/commands/foo.md` → `.opencode/commands/foo.md` as-is |

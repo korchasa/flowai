@@ -5,6 +5,9 @@ tools: Read, Grep, Glob, Bash
 disallowedTools: Write, Edit
 readonly: true
 mode: subagent
+model: cheap
+effort: low
+maxTurns: 10
 opencode_tools:
   write: false
   edit: false

@@ -166,6 +166,10 @@ Deno.test("SKILL_SCHEMA: valid full skill passes", () => {
       description: "A valid skill",
       "disable-model-invocation": true,
       license: "MIT",
+      model: "smart",
+      effort: "high",
+      "argument-hint": "task description",
+      "allowed-tools": "Bash(deno:*)",
     },
     SkillFrontmatterSchema,
     "my-skill",
@@ -210,6 +214,12 @@ Deno.test("AGENT_SCHEMA: valid full agent passes", () => {
       readonly: true,
       mode: "subagent",
       opencode_tools: { write: false, edit: false },
+      model: "cheap",
+      effort: "low",
+      maxTurns: 10,
+      background: false,
+      isolation: "worktree",
+      color: "blue",
     },
     AgentFrontmatterSchema,
     "test-agent",
@@ -266,6 +276,73 @@ Deno.test("AGENT_SCHEMA: unknown field is error", () => {
   }, AgentFrontmatterSchema);
   assertHasMessage(errors, "Unrecognized key");
 });
+
+Deno.test("AGENT_SCHEMA: invalid effort value is error", () => {
+  const errors = validateFrontmatter("test-agent", "AG", {
+    name: "test-agent",
+    description: "desc",
+    effort: "ultra",
+  }, AgentFrontmatterSchema);
+  assertHasMessage(errors, "Invalid enum");
+});
+
+Deno.test("AGENT_SCHEMA: maxTurns as string is error", () => {
+  const errors = validateFrontmatter("test-agent", "AG", {
+    name: "test-agent",
+    description: "desc",
+    maxTurns: "10",
+  }, AgentFrontmatterSchema);
+  assertHasMessage(errors, "number");
+});
+
+Deno.test("SKILL_SCHEMA: invalid effort value is error", () => {
+  const errors = validateFrontmatter("my-skill", "FR", {
+    name: "my-skill",
+    description: "desc",
+    effort: "ultra",
+  }, SkillFrontmatterSchema);
+  assertHasMessage(errors, "Invalid enum");
+});
+
+Deno.test("SKILL_SCHEMA: concrete model name (sonnet) is error — must use tiers", () => {
+  const errors = validateFrontmatter("my-skill", "FR", {
+    name: "my-skill",
+    description: "desc",
+    model: "sonnet",
+  }, SkillFrontmatterSchema);
+  assertHasMessage(errors, "Invalid enum");
+});
+
+Deno.test("AGENT_SCHEMA: concrete model name (opus) is error — must use tiers", () => {
+  const errors = validateFrontmatter("test-agent", "AG", {
+    name: "test-agent",
+    description: "desc",
+    model: "opus",
+  }, AgentFrontmatterSchema);
+  assertHasMessage(errors, "Invalid enum");
+});
+
+// --- Model tier validation: every valid tier passes ---
+
+for (const tier of ["max", "smart", "fast", "cheap", "inherit"]) {
+  Deno.test(`SKILL_SCHEMA: model tier '${tier}' is valid`, () => {
+    const errors = validateFrontmatter("my-skill", "FR", {
+      name: "my-skill",
+      description: "desc",
+      model: tier,
+    }, SkillFrontmatterSchema);
+    assertEquals(errors, []);
+  });
+
+  Deno.test(`AGENT_SCHEMA: model tier '${tier}' is valid`, () => {
+    const errors = validateFrontmatter("test-agent", "AG", {
+      name: "test-agent",
+      description: "desc",
+      model: tier,
+    }, AgentFrontmatterSchema);
+    assertEquals(errors, []);
+  });
+}
 
 // --- Helper ---
 
