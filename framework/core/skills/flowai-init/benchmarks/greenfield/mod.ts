@@ -75,7 +75,7 @@ Always confirm when asked to apply diffs.`;
     {
       id: "temp_files_cleaned",
       description:
-        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-8.11)",
+        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-INIT.CLEANUP)",
       critical: false,
     },
   ];

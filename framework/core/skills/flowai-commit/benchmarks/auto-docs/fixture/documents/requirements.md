@@ -2,4 +2,4 @@
 
 ## Functional Requirements
 
-- FR-1: Project must have a math utility module.
+- FR-CMD-EXEC: Project must have a math utility module.

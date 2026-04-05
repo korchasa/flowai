@@ -1,4 +1,4 @@
-// FR-20.4 (greenfield interview integration) is NOT tested here.
+// FR-DEVCONTAINER.INTERVIEW (greenfield interview integration) is NOT tested here.
 // That path (flowai-init → devcontainer delegation) belongs to flowai-init benchmarks,
 // not to devcontainer skill benchmarks. The skill itself is tested standalone.
 
