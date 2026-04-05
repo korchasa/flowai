@@ -27,7 +27,7 @@
 - **Context:**
 - **Assumptions/Constraints:**
 ## 3. Functional Reqs
-### 3.1 FR-1
+### 3.1 FR-CMD-EXEC
 - **Desc:**
 - **Scenario:**
 - **Acceptance:**

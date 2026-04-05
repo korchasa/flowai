@@ -92,7 +92,7 @@ export type ResourceError = {
  * Validates frontmatter data against a Zod schema.
  *
  * @param resource - Resource identifier (directory name or file stem)
- * @param criterion - Criterion code for errors (e.g. "FR-21.1.2", "AG-1")
+ * @param criterion - Criterion code for errors (e.g. "FR-UNIVERSAL.FRONTMATTER", "AG-1")
  * @param data - Parsed frontmatter object
  * @param schema - Zod schema to validate against
  * @param nameMatchTarget - If provided, checks that `name` equals this value

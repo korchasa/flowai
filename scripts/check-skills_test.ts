@@ -26,9 +26,9 @@ Deno.test("parseFrontmatter returns null for missing frontmatter", () => {
   assertEquals(parseFrontmatter("# No frontmatter"), null);
 });
 
-// --- validateStructure (FR-21.1.1) ---
+// --- validateStructure (FR-UNIVERSAL.STRUCT) ---
 
-Deno.test("FR-21.1.1: valid structure passes", () => {
+Deno.test("FR-UNIVERSAL.STRUCT: valid structure passes", () => {
   const entries = [
     { name: "SKILL.md", isDirectory: false, isFile: true },
     { name: "scripts", isDirectory: true, isFile: false },
@@ -39,20 +39,20 @@ Deno.test("FR-21.1.1: valid structure passes", () => {
   assertEquals(validateStructure("my-skill", entries), []);
 });
 
-Deno.test("FR-21.1.1: SKILL.md only is valid", () => {
+Deno.test("FR-UNIVERSAL.STRUCT: SKILL.md only is valid", () => {
   const entries = [{ name: "SKILL.md", isDirectory: false, isFile: true }];
   assertEquals(validateStructure("my-skill", entries), []);
 });
 
-Deno.test("FR-21.1.1: missing SKILL.md is error", () => {
+Deno.test("FR-UNIVERSAL.STRUCT: missing SKILL.md is error", () => {
   const entries = [{ name: "scripts", isDirectory: true, isFile: false }];
   const errors = validateStructure("my-skill", entries);
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-21.1.1");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.STRUCT");
   assertEquals(errors[0].message, "Missing SKILL.md");
 });
 
-Deno.test("FR-21.1.1: non-standard file at root is error", () => {
+Deno.test("FR-UNIVERSAL.STRUCT: non-standard file at root is error", () => {
   const entries = [
     { name: "SKILL.md", isDirectory: false, isFile: true },
     { name: "README.md", isDirectory: false, isFile: true },
@@ -65,7 +65,7 @@ Deno.test("FR-21.1.1: non-standard file at root is error", () => {
   );
 });
 
-Deno.test("FR-21.1.1: non-standard directory at root is error", () => {
+Deno.test("FR-UNIVERSAL.STRUCT: non-standard directory at root is error", () => {
   const entries = [
     { name: "SKILL.md", isDirectory: false, isFile: true },
     { name: "examples", isDirectory: true, isFile: false },
@@ -78,20 +78,20 @@ Deno.test("FR-21.1.1: non-standard directory at root is error", () => {
   );
 });
 
-// --- validateSkillFrontmatter (FR-21.1.2) ---
+// --- validateSkillFrontmatter (FR-UNIVERSAL.FRONTMATTER) ---
 
-Deno.test("FR-21.1.2: valid frontmatter passes", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: valid frontmatter passes", () => {
   const fm = { name: "my-skill", description: "Does things" };
   assertEquals(validateSkillFrontmatter("my-skill", fm), []);
 });
 
-Deno.test("FR-21.1.2: name mismatch is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: name mismatch is error", () => {
   const fm = { name: "other-name", description: "Does things" };
   const errors = validateSkillFrontmatter("my-skill", fm);
   assertEquals(errors.some((e) => e.message.includes("does not match")), true);
 });
 
-Deno.test("FR-21.1.2: name with leading hyphen is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: name with leading hyphen is error", () => {
   const errors = validateSkillFrontmatter("-bad", {
     name: "-bad",
     description: "x",
@@ -102,7 +102,7 @@ Deno.test("FR-21.1.2: name with leading hyphen is error", () => {
   );
 });
 
-Deno.test("FR-21.1.2: name with consecutive hyphens is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: name with consecutive hyphens is error", () => {
   const errors = validateSkillFrontmatter("my--skill", {
     name: "my--skill",
     description: "x",
@@ -113,7 +113,7 @@ Deno.test("FR-21.1.2: name with consecutive hyphens is error", () => {
   );
 });
 
-Deno.test("FR-21.1.2: name exceeding 64 chars is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: name exceeding 64 chars is error", () => {
   const longName = "a".repeat(65);
   const errors = validateSkillFrontmatter(longName, {
     name: longName,
@@ -122,7 +122,7 @@ Deno.test("FR-21.1.2: name exceeding 64 chars is error", () => {
   assertEquals(errors.some((e) => e.message.includes("≤64")), true);
 });
 
-Deno.test("FR-21.1.2: description exceeding 1024 chars is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: description exceeding 1024 chars is error", () => {
   const longDesc = "x".repeat(1025);
   const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
@@ -131,7 +131,7 @@ Deno.test("FR-21.1.2: description exceeding 1024 chars is error", () => {
   assertEquals(errors.some((e) => e.message.includes("≤1024")), true);
 });
 
-Deno.test("FR-21.1.2: missing description is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: missing description is error", () => {
   const errors = validateSkillFrontmatter("my-skill", { name: "my-skill" });
   assertEquals(
     errors.some((e) => e.message.includes("Required")),
@@ -139,7 +139,7 @@ Deno.test("FR-21.1.2: missing description is error", () => {
   );
 });
 
-Deno.test("FR-21.1.2: description at exactly 1024 chars passes", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: description at exactly 1024 chars passes", () => {
   const desc = "x".repeat(1024);
   const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
@@ -148,7 +148,7 @@ Deno.test("FR-21.1.2: description at exactly 1024 chars passes", () => {
   assertEquals(errors.length, 0);
 });
 
-Deno.test("FR-21.1.2: unknown field is error", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: unknown field is error", () => {
   const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
     description: "desc",
@@ -160,7 +160,7 @@ Deno.test("FR-21.1.2: unknown field is error", () => {
   );
 });
 
-Deno.test("FR-21.1.2: valid optional fields pass", () => {
+Deno.test("FR-UNIVERSAL.FRONTMATTER: valid optional fields pass", () => {
   const errors = validateSkillFrontmatter("my-skill", {
     name: "my-skill",
     description: "desc",
@@ -170,29 +170,29 @@ Deno.test("FR-21.1.2: valid optional fields pass", () => {
   assertEquals(errors, []);
 });
 
-// --- validateProgressiveDisclosure (FR-21.1.3) ---
+// --- validateProgressiveDisclosure (FR-UNIVERSAL.DISCLOSURE) ---
 
-Deno.test("FR-21.1.3: small file passes", () => {
+Deno.test("FR-UNIVERSAL.DISCLOSURE: small file passes", () => {
   const content = "line\n".repeat(100);
   const fm = { name: "x", description: "y" };
   assertEquals(validateProgressiveDisclosure("s", content, fm), []);
 });
 
-Deno.test("FR-21.1.3: file at 500+ lines is error", () => {
+Deno.test("FR-UNIVERSAL.DISCLOSURE: file at 500+ lines is error", () => {
   const content = "x\n".repeat(500);
   const fm = { name: "x", description: "y" };
   const errors = validateProgressiveDisclosure("s", content, fm);
   assertEquals(errors.some((e) => e.message.includes("lines")), true);
 });
 
-Deno.test("FR-21.1.3: file exceeding 5000 tokens is error", () => {
+Deno.test("FR-UNIVERSAL.DISCLOSURE: file exceeding 5000 tokens is error", () => {
   const content = "x".repeat(20001); // 20001 chars / 4 = 5001 tokens
   const fm = { name: "x", description: "y" };
   const errors = validateProgressiveDisclosure("s", content, fm);
   assertEquals(errors.some((e) => e.message.includes("tokens")), true);
 });
 
-Deno.test("FR-21.1.3: catalog metadata exceeding 100 tokens is error", () => {
+Deno.test("FR-UNIVERSAL.DISCLOSURE: catalog metadata exceeding 100 tokens is error", () => {
   const content = "short";
   // name(5) + description(396) = 401 chars / 4 = ~101 tokens
   const fm = { name: "skill", description: "x".repeat(396) };
@@ -203,61 +203,61 @@ Deno.test("FR-21.1.3: catalog metadata exceeding 100 tokens is error", () => {
   );
 });
 
-// --- validatePathResolution (FR-21.2) ---
+// --- validatePathResolution (FR-UNIVERSAL.XIDE-PATHS) ---
 
-Deno.test("FR-21.2.2: content with <this-skill-dir> is error", () => {
+Deno.test("FR-UNIVERSAL.PLACEHOLDERS: content with <this-skill-dir> is error", () => {
   const content = "Run `deno run -A <this-skill-dir>/scripts/validate.ts`";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-21.2.2");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.PLACEHOLDERS");
   assertEquals(
     errors[0].message.includes("<this-skill-dir>"),
     true,
   );
 });
 
-Deno.test("FR-21.2.3: content with ${CLAUDE_SKILL_DIR} is error", () => {
+Deno.test("FR-UNIVERSAL.IDE-VARS: content with ${CLAUDE_SKILL_DIR} is error", () => {
   const content = "Run `deno run -A ${CLAUDE_SKILL_DIR}/scripts/validate.ts`";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-21.2.3");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.IDE-VARS");
 });
 
-Deno.test("FR-21.2.3: content with ${CURSOR_SKILL_DIR} is error", () => {
+Deno.test("FR-UNIVERSAL.IDE-VARS: content with ${CURSOR_SKILL_DIR} is error", () => {
   const content = "Run `${CURSOR_SKILL_DIR}/scripts/run.sh`";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-21.2.3");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.IDE-VARS");
 });
 
-Deno.test("FR-21.2.3: content with ${SKILL_DIR} is error", () => {
+Deno.test("FR-UNIVERSAL.IDE-VARS: content with ${SKILL_DIR} is error", () => {
   const content = "Run `${SKILL_DIR}/scripts/run.sh`";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-21.2.3");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.IDE-VARS");
 });
 
-Deno.test("FR-21.2.1: content with relative paths passes", () => {
+Deno.test("FR-UNIVERSAL.REL-PATHS: content with relative paths passes", () => {
   const content = "Run `deno run -A scripts/validate.ts path/to/dir`";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors, []);
 });
 
-Deno.test("FR-21.2: content with no script references passes", () => {
+Deno.test("FR-UNIVERSAL.XIDE-PATHS: content with no script references passes", () => {
   const content = "# My Skill\n\nThis skill does things.";
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors, []);
 });
 
-Deno.test("FR-21.2: multiple violations reported separately", () => {
+Deno.test("FR-UNIVERSAL.XIDE-PATHS: multiple violations reported separately", () => {
   const content = [
     "Run `<this-skill-dir>/scripts/a.ts`",
     "Also `${CLAUDE_SKILL_DIR}/scripts/b.ts`",
   ].join("\n");
   const errors = validatePathResolution("my-skill", content);
   assertEquals(errors.length, 2);
-  assertEquals(errors[0].criterion, "FR-21.2.2");
-  assertEquals(errors[1].criterion, "FR-21.2.3");
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.PLACEHOLDERS");
+  assertEquals(errors[1].criterion, "FR-UNIVERSAL.IDE-VARS");
 });
 
 // --- ALLOWED_SUBDIRS ---

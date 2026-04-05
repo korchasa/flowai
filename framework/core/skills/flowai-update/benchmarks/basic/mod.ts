@@ -142,7 +142,7 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "atomic_commit",
       description:
-        "If the agent committed changes, were all synced files and migrated artifacts staged together in ONE commit? (FR-22.4.1)",
+        "If the agent committed changes, were all synced files and migrated artifacts staged together in ONE commit? (FR-UPDATE.ATOMIC-COMMIT)",
       critical: false,
     },
   ];
