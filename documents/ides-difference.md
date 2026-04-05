@@ -8,16 +8,20 @@
 ## 1. Built-in Tools Comparison
 
 ### Cursor
-- **Files**: `read_file`, `Write`, `StrReplace`, `delete_file`, `Glob`, `grep`, `codebase_search`, `read_lints`.
+- **Files**: `Read`, `Write`, `StrReplace`, `Delete`, `Glob`, `Grep`, `SemanticSearch`, `ReadLints`, `EditNotebook`.
 - **System**: `Shell` (git, deno, etc.).
-- **Process**: `todo_write`, `Task` (subagents), `SwitchMode` (Plan).
-- **Other**: `AskQuestion`, `web_search`, `WebFetch`, `generate_image` [^1]
+- **Process**: `TodoWrite`, `Task` (subagents).
+- **Other**: `WebSearch`, `WebFetch`, `list_mcp_resources`, `fetch_mcp_resource`.
+- **GUI-only** (not available in headless/CLI): `SwitchMode` (Plan), `AskQuestion`, `generate_image`. [^1] [^34]
 
 ### Claude Code
 - **Files**: `Read` (img/PDF/NB), `Write`, `Edit`, `Glob`, `Grep`, `NotebookEdit`.
-- **System**: `Bash` (persistent session).
-- **Process**: `EnterPlanMode`/`ExitPlanMode`, `TaskCreate`/`Get`/`Update`/`List`, `Task` (subagents), `TaskOutput`/`Stop`.
-- **Other**: `AskUserQuestion`, `WebSearch`, `WebFetch`, `Skill` [^11]
+- **System**: `Bash` (CWD persists between commands, shell state — env vars, aliases — does not), `PowerShell` (Windows).
+- **Process**: `EnterPlanMode`/`ExitPlanMode`, `TaskCreate`/`Get`/`Update`/`List`, `Agent` (subagents), `TaskOutput`/`TaskStop`, `SendMessage`/`ListPeers` (multi-agent), `EnterWorktree`/`ExitWorktree`.
+- **Scheduling**: `CronCreate`/`CronDelete`/`CronList`, `RemoteTrigger`.
+- **Context**: `TodoWrite`, `ToolSearch` (deferred tool loading), `ListMcpResources`/`ReadMcpResource`, `Snip`.
+- **Other**: `AskUserQuestion`, `WebSearch`, `WebFetch`, `Skill`, `PushNotification`, `SubscribePR`, `TerminalCapture` [^11] [^33]
+- **Note**: 19 always-present + 30+ feature-gated = ~49 total tools. Many conditional on feature flags (GrowthBook).
 
 ### OpenCode
 - **Files**: `read`, `glob`, `grep`, `list`, `edit`, `write`, `patch`, `multiedit`.
@@ -32,17 +36,17 @@
 
 ### 2.1 Persistent Instructions
 - **Cursor**: `AGENTS.md` (root/subdir), `.cursor/rules/` (`alwaysApply: true`).[^21]
-- **Claude Code**: `CLAUDE.md` (root/subdir), `~/.claude/CLAUDE.md` (global).[^2]
+- **Claude Code**: `CLAUDE.md` (root/subdir), `.claude/CLAUDE.md`, `~/.claude/CLAUDE.md` (global), `CLAUDE.local.md` (gitignored, project-local), managed paths (`/etc/claude-code/CLAUDE.md`, MDM plist/registry). `@include` directive (max 5 levels). 40K char/file limit. `omitClaudeMd` agent flag to skip hierarchy.[^2] [^33]
 - **OpenCode**: `AGENTS.md` > `CLAUDE.md`. `opencode.json` (`instructions`).[^3]
 
 ### 2.2 Conditional Instructions
 - **Cursor**: `.cursor/rules/` (`globs`, `description`).[^21]
-- **Claude Code**: `.claude/rules/` (`paths`). Triggers on `Read` only (not `Write`/`Edit`). `globs:` field silently ignored. `description:` alone does not scope (becomes always-apply). Subdirectory rules (`.claude/rules/subdir/*.md`) discovered recursively.[^2] [^32]
+- **Claude Code**: `.claude/rules/` (`paths`). Triggers on `Read` only (not `Write`/`Edit`). `globs:` field silently ignored. `description:` alone does not scope (becomes always-apply). Subdirectory rules (`.claude/rules/subdir/*.md`) discovered recursively. Limits: 200 lines / 4 KB per file, ~5 files per turn (~20 KB aggregate). Truncated files include note to use Read tool. [^2] [^32] [^33]
 - **OpenCode**: `opencode.json` (`instructions` with globs).[^3]
 
 ### 2.3 Custom Commands (`/command`)
 - **Cursor**: `.cursor/commands/*.md`. Arguments passed in free form.
-- **Claude Code**: `.claude/commands/*.md`, `.claude/commands/<namespace>/*.md`. Supports `$1`–`$N` args. Frontmatter: `allowed-tools`, `argument-hint`, `description`, `model`, `disable-model-invocation`.[^2]
+- **Claude Code**: `.claude/commands/*.md`, `.claude/commands/<namespace>/*.md` (merged into skill loader). Supports `$0`–`$N` positional args. Shell execution in prompt: `` !`command` `` (inline), ` ```! block ``` ` (multi-line; disabled for MCP skills). `${CLAUDE_SKILL_DIR}`, `${CLAUDE_SESSION_ID}` placeholders. Full frontmatter: `name`, `description`, `argument-hint`, `when_to_use`, `allowed-tools` (permission rule syntax), `model` (`sonnet`/`opus`/`haiku`/`inherit`), `effort` (`low`/`medium`/`high`/`max` or integer), `context` (`inline`/`fork`), `agent` (agent type for fork), `paths` (conditional activation), `hooks`, `shell` (`bash`/`powershell`), `type` (`user`/`feedback`/`project`/`reference`), `disable-model-invocation`, `user-invocable`, `hide-from-slash-command-tool`, `version`. [^2] [^33]
 - **OpenCode**: `.opencode/commands/*.md`. Supports `$ARGUMENTS`, `$1`–`$N`, `` !`shell` ``, `@filepath`. Frontmatter: `description`, `agent`, `model`, `subtask` (boolean).[^3]
 
 ### 2.4 Event Hooks / Plugins
@@ -79,15 +83,18 @@
 { "hooks": { "<Event>": [{ "matcher": "regex", "hooks": [{ "type": "command", "command": "script.sh", "timeout": 600, "statusMessage": "...", "async": false }] }] } }
 ```
 
-**Hook types** (4):
+**Hook types** (4 persisted + 1 runtime):
 - `command` — shell script; stdin JSON, exit 0/2. `async: true` for background.
 - `http` — POST to URL; `headers` with `$VAR` interpolation, `allowedEnvVars`.
 - `prompt` — single-turn LLM evaluation; `$ARGUMENTS` placeholder. Returns `{ ok, reason }`.
 - `agent` — spawns subagent with tools (Read, Grep, Glob); multi-turn verification.
+- `function` — runtime-only JS callback (not persisted in config, not user-configurable).
 
 Note: `prompt`/`agent` only on: `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `PreToolUse`, `Stop`, `SubagentStop`, `TaskCompleted`, `UserPromptSubmit`. Others: `command` only.
 
-**Events** (22): `SessionStart`, `InstructionsLoaded`, `UserPromptSubmit`, `PreToolUse`, `PermissionRequest`, `PostToolUse`, `PostToolUseFailure`, `Notification`, `SubagentStart`, `SubagentStop`, `Stop`, `StopFailure`, `TeammateIdle`, `TaskCompleted`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `PreCompact`, `PostCompact`, `Elicitation`, `ElicitationResult`, `SessionEnd`.
+**Hook features**: `async: true` (fire-and-forget), `asyncRewake: true` (background + wake model on exit 2), `once: true` (remove after first run), `if: "Tool(pattern)"` (conditional filter via permission rule syntax), `timeout` (seconds, default 10 min), `statusMessage` (custom spinner text).
+
+**Events** (27): `SessionStart`, `SessionEnd`, `InstructionsLoaded`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionRequest`, `PermissionDenied`, `Notification`, `SubagentStart`, `SubagentStop`, `Stop`, `StopFailure`, `Setup`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`, `ConfigChange`, `WorktreeCreate`, `WorktreeRemove`, `PreCompact`, `PostCompact`, `Elicitation`, `ElicitationResult`, `CwdChanged`, `FileChanged`. [^33]
 
 **Matcher**: Regex on tool name (`Bash`, `Edit|Write`, `mcp__.*`), session source, notification type, agent type, compaction trigger, config source. Some events have no matcher (`UserPromptSubmit`, `Stop`, etc.).
 
@@ -134,12 +141,12 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 
 ### 2.5 Skills (SKILL.md)
 - **Cursor**: `.cursor/skills/<name>/SKILL.md`; also `.claude/skills/`, `.codex/skills/` (compat).[^10]
-- **Claude Code**: `~/.claude/skills/`, `.claude/skills/` (project).[^11]
+- **Claude Code**: `~/.claude/skills/`, `.claude/skills/` (project), managed/policy path (`${getManagedFilePath()}/.claude/skills/`). Also loads `.claude/commands/` (merged into skill loader). Conditional activation via `paths:` frontmatter (gitignore-style). Skill listing budget: 1% of context window, 250 char/skill cap. [^11] [^33]
 - **OpenCode**: `.opencode/skills/` (fallbacks: `.claude/skills/`, `.agents/skills/`). Frontmatter: `name`, `description` (required); `license`, `compatibility`, `metadata` (optional). Name regex: `^[a-z0-9]+(-[a-z0-9]+)*$`, 1–64 chars, must match dir name.[^12]
 
 ### 2.6 MCP Integration
 - **Cursor**: `.cursor/mcp.json` (project/user). Transports: stdio, SSE, Streamable HTTP. OAuth. Config interpolation (`${env:NAME}`, `${workspaceFolder}`). MCP Marketplace (one-click install).[^1]
-- **Claude Code**: `.mcp.json` (project), `~/.claude.json` (user/local), `managed-mcp.json` (org). Transports: HTTP (recommended), SSE (deprecated), stdio. OAuth 2.0. Tool Search (auto >10% context). `claude mcp serve` (self as MCP server). Channels (push messages). Plugins can bundle MCP servers.[^15]
+- **Claude Code**: `.mcp.json` (project), `~/.claude.json` (user/local), `managed-mcp.json` (org). Config scopes: local, user, project, dynamic, enterprise, claudeai, managed. Transports: HTTP (recommended), SSE (deprecated), stdio, ws, sse-ide, ws-ide, sdk, claudeai-proxy. OAuth 2.0. Tool Search (auto >10% context). `claude mcp serve` (self as MCP server). Channels (push messages). Plugins can bundle MCP servers. Per-agent MCP via `mcpServers` field. [^15] [^33]
 - **OpenCode**: `opencode.jsonc` (`mcp` field). Types: local (command) and remote (URL). OAuth (RFC 7591). Glob-based tool permissions. CLI: `opencode mcp auth|list|logout|debug`.[^3]
 
 ### 2.7 Context Ignoring
@@ -158,13 +165,18 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 
 ### 2.8 Custom Agents (Subagents)
 - **Cursor**: `~/.cursor/agents/*.md`, `.cursor/agents/*.md`.
-- **Claude Code**: `.claude/agents/*.md` (project), `~/.claude/agents/*.md` (user). Built-in: Explore (Haiku, read-only), Plan (inherit, read-only), general-purpose. Frontmatter: `tools`, `disallowedTools`, `model`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`, `background`, `effort`, `isolation` (worktree). No subagent nesting.[^23]
+- **Claude Code**: `.claude/agents/*.md` (project), `~/.claude/agents/*.md` (user). Built-in (6, dynamically gated): `general-purpose` (always), `statusline-setup` (always), `Explore` (Haiku, read-only, `omitClaudeMd`; gated), `Plan` (inherit, read-only, `omitClaudeMd`; gated), `claude-code-guide` (non-SDK only), `verification` (feature-flagged). Frontmatter: `tools`, `disallowedTools`, `model` (`sonnet`/`opus`/`haiku`/`inherit`), `effort` (integer or `low`/`medium`/`high`/`max`), `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory` (`user`/`project`/`local`), `background`, `isolation` (`worktree`/`remote`), `omitClaudeMd`, `initialPrompt`, `color`. Agents CAN delegate to other agents (nesting supported). [^23] [^33]
 - **OpenCode**: `~/.config/opencode/agents/*.md`, `.opencode/agents/*.md`. Frontmatter: `description`, `mode` (`primary`/`subagent`/`all`), `model`, `temperature`, `top_p`, `steps`, `tools`, `permission`, `color`, `hidden`, `disable`.[^3]
 
-### 2.9 Custom Tools
+### 2.9 Permission Modes
+- **Cursor**: Accept/reject per-tool. No named modes. `.cursor/rules/` can restrict tool use.
+- **Claude Code**: Named modes: `default` (ask outside CWD), `plan` (read-only), `acceptEdits` (auto-accept file edits), `bypassPermissions` (auto-approve all), `auto` (ML classifier, feature-gated). Per-agent override via `permissionMode` frontmatter. Permission rules syntax: `Tool(pattern)` (e.g. `Bash(git *)`, `Write(*.ts)`). Dangerous pattern detection strips interpreter/shell allow-rules at auto-mode entry (`dangerousPatterns.ts`); dangerous command detection via yolo classifier (`rm -rf`, `git reset --hard`, etc.). [^33]
+- **OpenCode**: `permission` field in agent frontmatter (`auto`/`ask`/`deny`). No permission rule syntax.
+
+### 2.10 Custom Tools
 - **OpenCode**: `.opencode/tools/*.{ts,js}` (project), `~/.config/opencode/tools/` (user). Uses `tool()` from `@opencode-ai/plugin`. Filename = tool name. Multiple exports create `<filename>_<exportname>`. Can override built-in tools by using same name.[^3]
 
-### 2.10 Plugin Bundles & Distribution
+### 2.11 Plugin Bundles & Distribution
 
 Plugins = packaging format that bundles multiple primitives (skills, agents, hooks, MCP servers, etc.) into a single distributable unit.
 
@@ -210,6 +222,27 @@ Plugins = packaging format that bundles multiple primitives (skills, agents, hoo
 
 **SDKs**: JS/TS, Go, Python.
 
+
+### 2.12 Execution Mode Differences (Claude Code specific)
+
+Claude Code `--agent` flag behaves differently in headless (`-p`) vs interactive (REPL) modes: [^33]
+
+| Context channel | Content | Headless `-p` + `--agent` | Interactive + `--agent` |
+| :--- | :--- | :--- | :--- |
+| systemPrompt | Agent body replaces ~17 default sections | Yes | Yes |
+| systemContext | Git status (branch, commits) | **No** (skipped) | Yes |
+| userContext | CLAUDE.md + date | Yes | Yes |
+| tools | Tool schemas + descriptions | Yes | Yes |
+
+**Implications for skill/agent authors:**
+- Headless agents don't see git status — must read it explicitly if needed.
+- Agent body **replaces** all default prompt sections (safety, tone, tools usage rules). Agent authors must include own safety/behavioral instructions.
+- `--agent` requires registered name (from `.claude/agents/`), not file path. File paths silently fall through to default mode.
+- `--append-system-prompt` always appended regardless of mode.
+
+**Deferred tools (ToolSearch):** Tools with `shouldDefer: true` are not included in system prompt. Model requests schema via `ToolSearch` on demand. Saves ~10% context. Always-loaded tools use `alwaysLoad: true`.
+
+**Fork subagent:** When `subagent_type` omitted in Agent tool call, fork mode activates — inherits full parent context with prompt cache optimization (`FORK_PLACEHOLDER_RESULT`). Different from isolated subagent (separate conversation).
 
 ---
 
@@ -268,7 +301,7 @@ Frontmatter transform:
 | `model: fast` | `model: haiku` | Cursor "fast" = haiku-class |
 | `readonly: true` | `disallowedTools: Write, Edit, NotebookEdit` | Or `permissionMode: plan` |
 
-Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory`.
+Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory` (`user`/`project`/`local`), `effort`, `isolation` (`worktree`), `omitClaudeMd`, `initialPrompt`, `background`, `color`. Agents support nesting (subagent can spawn subagents).
 
 ### 3.6 Hooks
 
@@ -315,6 +348,11 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 | — | `ConfigChange` | Cursor lacks equivalent |
 | — | `WorktreeCreate` | Cursor lacks equivalent |
 | — | `WorktreeRemove` | Cursor lacks equivalent |
+| — | `PermissionDenied` | Cursor lacks equivalent |
+| — | `Setup` | Cursor lacks equivalent |
+| — | `TaskCreated` | Cursor lacks equivalent |
+| — | `CwdChanged` | Cursor lacks equivalent |
+| — | `FileChanged` | Cursor lacks equivalent |
 
 **Hook type mapping:**
 
@@ -333,6 +371,18 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 | `{ "decision": "deny" }` | `exit 2` + message to stderr |
 | `{ "decision": "ask" }` | `hookSpecificOutput.permissionDecision: "ask"` |
 | `{ "updated_input": {...} }` | `hookSpecificOutput.updatedInput: {...}` |
+| — | `hookSpecificOutput.additionalContext` (inject context to model) |
+| — | `hookSpecificOutput.initialUserMessage` (SessionStart: prepend message) |
+| — | `hookSpecificOutput.watchPaths` (SessionStart: register FileChanged watchers) |
+| — | `hookSpecificOutput.updatedMCPToolOutput` (PostToolUse: modify MCP output) |
+
+**Exit code semantics (Claude Code):** [^33]
+
+| Exit Code | Behavior |
+| :--- | :--- |
+| 0 | Success: stdout shown to model |
+| 2 | Blocking: stderr to model, prevents tool execution |
+| Other | Non-blocking error: stderr to user only, continues |
 
 **Env var mapping:**
 
@@ -342,7 +392,9 @@ Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode
 | `CURSOR_VERSION` | — |
 | `CURSOR_USER_EMAIL` | — |
 | — | `CLAUDE_PLUGIN_ROOT` |
-| — | `CLAUDE_ENV_FILE` |
+| — | `CLAUDE_PLUGIN_DATA` |
+| — | `CLAUDE_PLUGIN_OPTION_*` (plugin user config) |
+| — | `CLAUDE_ENV_FILE` (SessionStart/Setup/CwdChanged/FileChanged only) |
 
 Script paths: `.cursor/hooks/` → `.claude/hooks/`.
 
@@ -362,29 +414,36 @@ Claude Code respects `.gitignore` by default (`respectGitignore: true`). Migrati
 
 ## 3.9 IDE Detection (Environment Variables)
 
-Verified empirically (2026-03-22, `scripts/detect-ide-env.sh`):
+Verified empirically (2026-03-22 + 2026-04-05 cursor-agent v2026.03.20):
 
 - **Claude Code**: `CLAUDECODE=1`
-- **Cursor Agent**: `CURSOR_AGENT=1`
+- **Cursor Agent**: `CURSOR_AGENT=1` + `CURSOR_INVOKED_AS=cursor-agent`
 - **OpenCode**: `OPENCODE=1`
 
 Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested envs), then `CLAUDECODE`, then `OPENCODE`.
 
+**Important**: Cursor Agent (CLI) is built on Claude Agent SDK. Sets BOTH `CURSOR_AGENT=1` AND `CLAUDECODE=1` + `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_CODE_ENTRYPOINT=claude-vscode`, `CLAUDE_CODE_EXECPATH` (points to Claude Code binary). Detection MUST check `CURSOR_AGENT` before `CLAUDECODE` to distinguish. [^34]
+
 ### 3.10 Session/Conversation History Storage
 
-#### Cursor [^28][^29]
+#### Cursor [^28][^29][^34]
 
-**Format**: SQLite (`state.vscdb`, schema `ItemTable(key TEXT, value TEXT)` with JSON blobs) + JSON (agent transcripts).
+**Format (GUI)**: SQLite (`state.vscdb`, schema `ItemTable(key TEXT, value TEXT)` with JSON blobs).
 
-**Scope**: Per-workspace (SQLite) + per-project (agent transcripts).
+**Format (CLI agent)**: SQLite per-chat: `~/.cursor/chats/<workspace-hash>/<chat-uuid>/store.db`. Schema: `blobs(id TEXT PK, data BLOB)` (compressed binary), `meta(key TEXT PK, value TEXT)` (hex-encoded JSON: `agentId`, `name`, `mode`, `createdAt`). [^34]
+
+**Scope**: Per-workspace (GUI SQLite) + per-chat (CLI agent SQLite) + per-project (agent transcripts).
 
 **Paths**:
-- macOS: `~/Library/Application Support/Cursor/User/globalStorage/state.vscdb`, `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/state.vscdb`
-- Linux: `~/.config/Cursor/User/globalStorage/state.vscdb`, `~/.config/Cursor/User/workspaceStorage/<hash>/state.vscdb`
-- Windows: `%APPDATA%\Cursor\User\globalStorage\state.vscdb`, `%APPDATA%\Cursor\User\workspaceStorage\<hash>\state.vscdb`
-- Agent transcripts (newer): `~/.cursor/projects/{project_name}/agent-transcripts/`
+- GUI macOS: `~/Library/Application Support/Cursor/User/globalStorage/state.vscdb`, `~/Library/Application Support/Cursor/User/workspaceStorage/<hash>/state.vscdb`
+- GUI Linux: `~/.config/Cursor/User/globalStorage/state.vscdb`, `~/.config/Cursor/User/workspaceStorage/<hash>/state.vscdb`
+- GUI Windows: `%APPDATA%\Cursor\User\globalStorage\state.vscdb`, `%APPDATA%\Cursor\User\workspaceStorage\<hash>\state.vscdb`
+- CLI agent: `~/.cursor/chats/<hash>/<uuid>/store.db`
+- Agent transcripts: `~/.cursor/projects/{project_name}/agent-transcripts/`
+- CLI config: `~/.cursor/cli-config.json` (auth, permissions, model, sandbox)
+- CLI worktrees: `~/.cursor/worktrees/<reponame>/<name>/`
 
-**SQLite keys**: `composer.composerData` (current), migrated from `aichat` keys.
+**SQLite keys (GUI)**: `composer.composerData` (current), migrated from `aichat` keys.
 
 #### Claude Code [^30]
 
@@ -421,16 +480,17 @@ Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested 
 | **Global Rules** | — | `~/.claude/CLAUDE.md` | `~/.config/opencode/AGENTS.md` |
 | **Project Rules** | `AGENTS.md` | `CLAUDE.md` | `AGENTS.md` |
 | **Folder Rules** | `subdir/AGENTS.md` | `subdir/CLAUDE.md` | — |
-| **Hooks** | `hooks.json` (20 events, 2 types) | `settings.json` (22 events, 4 types) | `.opencode/plugins/` (30+ events, code) |
+| **Hooks** | `hooks.json` (20 events, 2 types) | `settings.json` (27 events, 4+1 types) | `.opencode/plugins/` (30+ events, code) |
 | **Skills** | Yes [^10] | Yes [^11] | Yes [^12] |
 | **Subagents** | `Task` | `Task` | `task` |
 | **Custom Tools** | MCP | MCP | `.opencode/tools/` + MCP |
 | **Custom Agents** | `.cursor/agents/` | `.claude/agents/` | `.opencode/agents/` |
 | **Commands** | `.cursor/commands/` | `.claude/commands/` | `.opencode/commands/` |
+| **Permission Modes** | Per-tool accept/reject | 5 named modes + rule syntax [^33] | `auto`/`ask`/`deny` |
 | **Plugin Bundles** | `.cursor-plugin/` [^26] | `.claude-plugin/` [^27] | npm packages |
 | **Marketplace** | cursor.com/marketplace | claude.ai (~101 plugins) | npm |
 | **MCP Config** | `.cursor/mcp.json` | `.mcp.json` | `opencode.jsonc` |
-| **Session Storage** | SQLite `state.vscdb` + `agent-transcripts/` [^28] | JSONL `~/.claude/projects/` [^30] | SQLite `opencode.db` [^31] |
+| **Session Storage** | SQLite `state.vscdb` (GUI) + `store.db` (CLI) + `agent-transcripts/` [^28][^34] | JSONL `~/.claude/projects/` [^30] | SQLite `opencode.db` [^31] |
 
 ---
 
@@ -458,3 +518,5 @@ Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested 
 [^30]: https://kentgigger.com/posts/claude-code-conversation-history — Claude Code conversation history: JSONL format, per-project paths
 [^31]: https://deepwiki.com/sst/opencode/2.1-session-management — OpenCode session management: SQLite with Drizzle ORM
 [^32]: Empirical verification of Claude Code `paths:` behavior (v2.1.91, macOS, 2026-04-04). 12 test cases: all `paths:` syntax variants (YAML array quoted/unquoted, single value, CSV) work correctly; scoping triggers on Read only (not Write/Edit); `globs:` field silently ignored; nested `.claude/rules/subdir/` discovered. See `documents/whiteboards/2026-04-04-claude-code-glob-rules.md`.
+[^33]: Claude Code CLI experiments
+[^34]: Empirical verification of Cursor Agent CLI (cursor-agent v2026.03.20, macOS arm64, 2026-04-05). Headless mode (`-p --trust --yolo`). Tool list: `SemanticSearch`, `Shell`, `Grep`, `Delete`, `WebSearch`, `WebFetch`, `ReadLints`, `EditNotebook`, `TodoWrite`, `StrReplace`, `Write`, `Read`, `Glob`, `Task`, `list_mcp_resources`, `fetch_mcp_resource`. Env vars: `CURSOR_AGENT=1`, `CURSOR_INVOKED_AS=cursor-agent`, `CLAUDECODE=1`, `CLAUDE_AGENT_SDK_VERSION=0.2.92`, `CLAUDE_CODE_ENTRYPOINT=claude-vscode`. Chat storage: `~/.cursor/chats/<hash>/<uuid>/store.db` (SQLite: `blobs` + `meta` tables). Auth: Keychain (`cursor-access-token`) for GUI, `~/.cursor/cli-config.json` (`authInfo`) for CLI. See `documents/whiteboards/2026-04-05-cursor-agent-cli.md`.
