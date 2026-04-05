@@ -63,14 +63,13 @@ the other.
      `git status` output from step 1 — for each untracked file, read its
      content directly and include it in the review scope.
    - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
-   - Look for project conventions in `AGENTS.md` and config files.
-     If these files do not exist, rely on conventions visible in the diff
-     and surrounding code.
+   - Look for project conventions in config files (linter, formatter configs).
+     Rely on conventions visible in the diff and surrounding code.
 
    **Parallel Delegation** (after gathering context):
    - **Small diff shortcut**: If `git diff --stat` shows < 50 changed lines,
      skip delegation — run all steps inline (overhead not justified).
-   - Otherwise, delegate **3 independent tasks in parallel** (via subagents,
+   - Otherwise, delegate **2 independent tasks in parallel** (via subagents,
      background tasks, or IDE-specific parallel execution — e.g., `Task`,
      `Agent`, `parallel`):
      - **SA1**: Run the project check command (`deno task check`, `npm run
@@ -80,9 +79,6 @@ the other.
        `FIXME`, `HACK`, `XXX`, `console.log`, `temp_*`, `*.tmp`, `*.bak`,
        hardcoded secrets patterns. Delegate to a console/shell-capable agent.
        Return findings list.
-     - **SA3**: Analyze diff for atomic commit grouping. Delegate to
-       `flowai-diff-specialist` (or equivalent diff analysis agent). Return
-       JSON with proposed commits.
    - **Fallback rule**: If any delegated task fails or times out, the main
      agent performs that step inline. No hard dependency on delegation success.
    - Continue with steps 3, 5, 6, 7 (main agent review) while delegated
@@ -220,17 +216,8 @@ After completing the review report above:
      - Whiteboard context: [used <filename> | none found]
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine — new exports, functions, changed signatures, or new modules almost always require an update. Only proceed without updates if justified in the audit report.
-3. **Pre-commit Verification** _(reuse SA1 result from Phase 1 if available)_
-   - If SA1 result is available from Phase 1 AND no **code** files were
-     modified since Phase 1 (doc-only edits don't invalidate linter/test
-     results): reuse cached result. Skip re-running.
-   - Otherwise: check for project check command (`deno task check`,
-     `npm run lint`, `make check`, etc.) and run it.
-   - If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
-   - If no check command found, note "No automated checks configured" and proceed.
-4. **Atomic Grouping Strategy (Subagent)** _(reuse SA3 result from Phase 1 if available)_
-   - If SA3 result is available from Phase 1: use it directly. Skip re-launching.
-   - Otherwise: use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
+3. **Atomic Grouping Strategy (Subagent)**
+   - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
    - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
    - The subagent will return a JSON structure with proposed commits.
    - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
@@ -240,11 +227,17 @@ After completing the review report above:
      - Documentation describing a code change goes in the same commit as that code.
       - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
    - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
-5. **Commit Execution Loop**
+4. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
+5. **Whiteboard Cleanup** _(only if a whiteboard was used in step 2)_
+   - If the user referenced a whiteboard and it contains a `## Definition of Done` (or similar checklist):
+     a. Compare each DoD item against the committed changes.
+     b. If **all** DoD items are satisfied by the committed code and documentation → delete the whiteboard file (`git rm`) and include the deletion in the commit (amend the last commit or create a separate `docs: remove completed whiteboard` commit).
+     c. If **any** DoD item is NOT satisfied → ask the user: "The whiteboard has incomplete items: [list]. Delete it anyway or keep for next session?" Act on the user's answer.
+   - If the whiteboard has no DoD section → ask the user whether the planned work is complete and whether to delete the whiteboard.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
    - If uncommitted changes remain, investigate and report to the user.
@@ -272,9 +265,9 @@ Output a combined summary:
 [ ] Review phase completed with structured report.
 [ ] Verdict gate enforced: only Approve proceeds to commit.
 [ ] Documentation audit performed and files updated.
-[ ] Pre-commit verification passed (if configured).
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
+[ ] Whiteboard cleanup: completed whiteboards deleted, partial whiteboards confirmed with user.
 [ ] Session complexity check performed; `/flowai-reflect` suggested if signals detected.
 [ ] Both review and commit results reported to user.
 </verification>

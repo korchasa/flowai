@@ -82,17 +82,8 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      - Whiteboard context: [used <filename> | none found]
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine — new exports, functions, changed signatures, or new modules almost always require an update. Only proceed without updates if justified in the audit report.
-3. **Pre-commit Verification** _(reuse SA1 result from Phase 1 if available)_
-   - If SA1 result is available from Phase 1 AND no **code** files were
-     modified since Phase 1 (doc-only edits don't invalidate linter/test
-     results): reuse cached result. Skip re-running.
-   - Otherwise: check for project check command (`deno task check`,
-     `npm run lint`, `make check`, etc.) and run it.
-   - If verification **fails**, report the error and **STOP**. Do NOT proceed to commit.
-   - If no check command found, note "No automated checks configured" and proceed.
-4. **Atomic Grouping Strategy (Subagent)** _(reuse SA3 result from Phase 1 if available)_
-   - If SA3 result is available from Phase 1: use it directly. Skip re-launching.
-   - Otherwise: use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
+3. **Atomic Grouping Strategy (Subagent)**
+   - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
    - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
    - The subagent will return a JSON structure with proposed commits.
    - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
@@ -102,11 +93,17 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      - Documentation describing a code change goes in the same commit as that code.
       - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
    - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
-5. **Commit Execution Loop**
+4. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
+5. **Whiteboard Cleanup** _(only if a whiteboard was used in step 2)_
+   - If the user referenced a whiteboard and it contains a `## Definition of Done` (or similar checklist):
+     a. Compare each DoD item against the committed changes.
+     b. If **all** DoD items are satisfied by the committed code and documentation → delete the whiteboard file (`git rm`) and include the deletion in the commit (amend the last commit or create a separate `docs: remove completed whiteboard` commit).
+     c. If **any** DoD item is NOT satisfied → ask the user: "The whiteboard has incomplete items: [list]. Delete it anyway or keep for next session?" Act on the user's answer.
+   - If the whiteboard has no DoD section → ask the user whether the planned work is complete and whether to delete the whiteboard.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
    - If uncommitted changes remain, investigate and report to the user.
@@ -126,9 +123,9 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 <verification>
 - [ ] Documentation audit performed and files updated in `./documents`.
 - [ ] Compression rules applied (facts preserved, content minimized).
-- [ ] Pre-commit verification passed (if configured).
 - [ ] Changes grouped by logical purpose (no mixed independent concerns).
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.
+- [ ] Whiteboard cleanup: completed whiteboards deleted, partial whiteboards confirmed with user.
 - [ ] Session complexity check performed; `/flowai-reflect` suggested if signals detected.
 </verification>

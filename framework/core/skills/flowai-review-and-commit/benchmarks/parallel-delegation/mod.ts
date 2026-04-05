@@ -68,9 +68,9 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
-      id: "no_duplicate_checks",
+      id: "no_checks_in_commit_phase",
       description:
-        "Did the agent avoid re-running automated checks in Phase 2 (commit) by reusing Phase 1 results? The agent should NOT run the project check command twice.",
+        "Did the agent avoid running automated checks (deno task check, npm run lint, etc.) in Phase 2 (commit)? Verification is review's responsibility — commit must NOT run checks.",
       critical: true,
     },
     {

@@ -70,14 +70,13 @@ Input sources:
      `git status` output from step 1 — for each untracked file, read its
      content directly and include it in the review scope.
    - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
-   - Look for project conventions in `AGENTS.md` and config files.
-     If these files do not exist, rely on conventions visible in the diff
-     and surrounding code.
+   - Look for project conventions in config files (linter, formatter configs).
+     Rely on conventions visible in the diff and surrounding code.
 
    **Parallel Delegation** (after gathering context):
    - **Small diff shortcut**: If `git diff --stat` shows < 50 changed lines,
      skip delegation — run all steps inline (overhead not justified).
-   - Otherwise, delegate **3 independent tasks in parallel** (via subagents,
+   - Otherwise, delegate **2 independent tasks in parallel** (via subagents,
      background tasks, or IDE-specific parallel execution — e.g., `Task`,
      `Agent`, `parallel`):
      - **SA1**: Run the project check command (`deno task check`, `npm run
@@ -87,9 +86,6 @@ Input sources:
        `FIXME`, `HACK`, `XXX`, `console.log`, `temp_*`, `*.tmp`, `*.bak`,
        hardcoded secrets patterns. Delegate to a console/shell-capable agent.
        Return findings list.
-     - **SA3**: Analyze diff for atomic commit grouping. Delegate to
-       `flowai-diff-specialist` (or equivalent diff analysis agent). Return
-       JSON with proposed commits.
    - **Fallback rule**: If any delegated task fails or times out, the main
      agent performs that step inline. No hard dependency on delegation success.
    - Continue with steps 3, 5, 6, 7 (main agent review) while delegated

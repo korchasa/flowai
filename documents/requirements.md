@@ -392,7 +392,7 @@ exercised as subagents within skill benchmarks.
 
 - **Description:** Composite command: review → gate (Approve only) → commit.
   Stops on Request Changes/Needs Discussion.
-- **Acceptance verified by benchmarks:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`
+- **Acceptance verified by benchmarks:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`, `flowai-review-and-commit-parallel-delegation`
 
 ### 3.19 CLAUDE.md Symlink in flowai-init (FR-19)
 
@@ -717,6 +717,19 @@ exercised as subagents within skill benchmarks.
 - **Acceptance:**
   - [ ] **FR-29.6.1** Hang workaround: 30s grace after result event → SIGKILL.
   - [ ] **FR-29.6.2** `deno task check` passes.
+
+### 3.30 Whiteboard Cleanup on Commit (FR-30)
+
+- **Description:** `flowai-commit` deletes referenced whiteboard after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale whiteboards from accumulating.
+- **Acceptance verified by benchmarks:** `flowai-commit-whiteboard-cleanup`, `flowai-commit-whiteboard-cleanup-partial`
+
+### 3.31 Responsibility Separation: Review vs Commit (FR-31)
+
+- **Description:** Clear separation of concerns between `flowai-review` and `flowai-commit`:
+  - Review owns: project checks (lint/test), hygiene scan, code quality verdict
+  - Commit owns: documentation audit, atomic grouping, commit execution, whiteboard cleanup
+  - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks.
+- **Acceptance verified by benchmarks:** `flowai-commit-no-checks`, `flowai-review-no-grouping`
 
 ## 4. Non-functional requirements
 

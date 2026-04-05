@@ -1,9 +1,9 @@
 import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const CommitCheckBench = new class extends BenchmarkSkillScenario {
-  id = "flowai-commit-check";
-  name = "Pre-flight Check";
+export const CommitNoChecksBench = new class extends BenchmarkSkillScenario {
+  id = "flowai-commit-no-checks";
+  name = "Commit must NOT run project checks (review's responsibility)";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -15,12 +15,10 @@ export const CommitCheckBench = new class extends BenchmarkSkillScenario {
     commits: [],
     modified: ["file.ts"],
     expectedOutcome:
-      "Agent runs 'deno task check' before committing and commits the change",
+      "Agent commits file.ts WITHOUT running 'deno task check' — verification is review's responsibility, not commit's",
   };
 
   override async setup(sandboxPath: string) {
-    // Runner already committed everything as "init".
-    // Modify file.ts to create a tracked-but-changed state.
     await Deno.writeTextFile(join(sandboxPath, "file.ts"), "const x = 2;");
   }
 
@@ -28,9 +26,15 @@ export const CommitCheckBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "check_executed",
-      description: "Did the agent run 'deno task check'?",
-      critical: false,
+      id: "no_check_executed",
+      description:
+        "Did the agent skip running 'deno task check' (or any project verification command)? Commit must NOT run checks — that is review's responsibility.",
+      critical: true,
+    },
+    {
+      id: "file_committed",
+      description: "Is `file.ts` present in the last commit?",
+      critical: true,
     },
     {
       id: "clean_status",
