@@ -1,13 +1,13 @@
 /**
- * Validates all skill directories against FR-21.1 and FR-21.2 (agentskills.io compliance).
+ * Validates all skill directories against FR-UNIVERSAL.AGENTSKILLS and FR-UNIVERSAL.XIDE-PATHS (agentskills.io compliance).
  *
  * Checks:
- * - FR-21.1.1: Directory structure (only SKILL.md + allowed subdirs)
- * - FR-21.1.2: Frontmatter (Zod schema validation via resource-types.ts)
- * - FR-21.1.3: Progressive disclosure (line/token limits)
- * - FR-21.1.4: File references (no nested subdirs in allowed dirs)
- * - FR-21.2.2: No custom path placeholders (<this-skill-dir>)
- * - FR-21.2.3: No IDE-specific path variables (${...SKILL_DIR})
+ * - FR-UNIVERSAL.STRUCT: Directory structure (only SKILL.md + allowed subdirs)
+ * - FR-UNIVERSAL.FRONTMATTER: Frontmatter (Zod schema validation via resource-types.ts)
+ * - FR-UNIVERSAL.DISCLOSURE: Progressive disclosure (line/token limits)
+ * - FR-UNIVERSAL.REFS: File references (no nested subdirs in allowed dirs)
+ * - FR-UNIVERSAL.PLACEHOLDERS: No custom path placeholders (<this-skill-dir>)
+ * - FR-UNIVERSAL.IDE-VARS: No IDE-specific path variables (${...SKILL_DIR})
  *
  * Exits with code 1 if any violation is found.
  */
@@ -48,7 +48,7 @@ const SKILL_MAX_TOKENS = 5000;
 const FRONTMATTER_MAX_TOKENS = 100;
 
 /**
- * FR-21.1.1: Validates directory structure.
+ * FR-UNIVERSAL.STRUCT: Validates directory structure.
  * Only SKILL.md and allowed subdirectories permitted at skill root.
  */
 export function validateStructure(
@@ -61,7 +61,7 @@ export function validateStructure(
   if (!hasSkillMd) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.1",
+      criterion: "FR-UNIVERSAL.STRUCT",
       message: "Missing SKILL.md",
     });
   }
@@ -71,7 +71,7 @@ export function validateStructure(
     if (entry.isDirectory && ALLOWED_SUBDIRS.has(entry.name)) continue;
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.1",
+      criterion: "FR-UNIVERSAL.STRUCT",
       message: `Non-standard entry at skill root: ${entry.name}`,
     });
   }
@@ -80,7 +80,7 @@ export function validateStructure(
 }
 
 /**
- * FR-21.1.2: Validates frontmatter fields via Zod schema.
+ * FR-UNIVERSAL.FRONTMATTER: Validates frontmatter fields via Zod schema.
  */
 export function validateSkillFrontmatter(
   dirName: string,
@@ -88,7 +88,7 @@ export function validateSkillFrontmatter(
 ): SkillError[] {
   return validateFrontmatter(
     dirName,
-    "FR-21.1.2",
+    "FR-UNIVERSAL.FRONTMATTER",
     frontmatter,
     SkillFrontmatterSchema,
     dirName,
@@ -96,7 +96,7 @@ export function validateSkillFrontmatter(
 }
 
 /**
- * FR-21.1.3: Validates progressive disclosure limits.
+ * FR-UNIVERSAL.DISCLOSURE: Validates progressive disclosure limits.
  * - SKILL.md: <500 lines, <5000 tokens (chars/4 approximation)
  * - Catalog metadata (name+description): <100 tokens per agentskills.io spec
  */
@@ -119,14 +119,14 @@ export function validateProgressiveDisclosure(
   if (lines >= SKILL_MAX_LINES) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.3",
+      criterion: "FR-UNIVERSAL.DISCLOSURE",
       message: `SKILL.md has ${lines} lines (limit: ${SKILL_MAX_LINES})`,
     });
   }
   if (tokens >= SKILL_MAX_TOKENS) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.3",
+      criterion: "FR-UNIVERSAL.DISCLOSURE",
       message:
         `SKILL.md has ~${tokens} tokens (limit: ${SKILL_MAX_TOKENS}, approximated as chars/4)`,
     });
@@ -134,7 +134,7 @@ export function validateProgressiveDisclosure(
   if (catalogTokens >= FRONTMATTER_MAX_TOKENS) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.3",
+      criterion: "FR-UNIVERSAL.DISCLOSURE",
       message:
         `Catalog metadata (name+description) has ~${catalogTokens} tokens (limit: ${FRONTMATTER_MAX_TOKENS}, approximated as chars/4)`,
     });
@@ -143,16 +143,16 @@ export function validateProgressiveDisclosure(
   return errors;
 }
 
-/** FR-21.2.2: Custom path placeholder pattern. */
+/** FR-UNIVERSAL.PLACEHOLDERS: Custom path placeholder pattern. */
 const CUSTOM_PLACEHOLDER_PATTERN = /<this-skill-dir>/;
-/** FR-21.2.3: IDE-specific path variable pattern (e.g. ${CLAUDE_SKILL_DIR}, ${CURSOR_SKILL_DIR}). */
+/** FR-UNIVERSAL.IDE-VARS: IDE-specific path variable pattern (e.g. ${CLAUDE_SKILL_DIR}, ${CURSOR_SKILL_DIR}). */
 const IDE_PATH_VAR_PATTERN = /\$\{[A-Z_]*SKILL_DIR\}/;
 
 /**
- * FR-21.2: Validates cross-IDE script path resolution.
- * - FR-21.2.2: No custom placeholders like <this-skill-dir>
- * - FR-21.2.3: No IDE-specific path variables like ${CLAUDE_SKILL_DIR}
- * (FR-21.2.1 relative paths are ensured implicitly by absence of placeholders/variables.)
+ * FR-UNIVERSAL.XIDE-PATHS: Validates cross-IDE script path resolution.
+ * - FR-UNIVERSAL.PLACEHOLDERS: No custom placeholders like <this-skill-dir>
+ * - FR-UNIVERSAL.IDE-VARS: No IDE-specific path variables like ${CLAUDE_SKILL_DIR}
+ * (FR-UNIVERSAL.REL-PATHS relative paths are ensured implicitly by absence of placeholders/variables.)
  */
 export function validatePathResolution(
   dirName: string,
@@ -163,7 +163,7 @@ export function validatePathResolution(
   if (CUSTOM_PLACEHOLDER_PATTERN.test(content)) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.2.2",
+      criterion: "FR-UNIVERSAL.PLACEHOLDERS",
       message:
         "Uses <this-skill-dir> placeholder. Migrate to relative paths (e.g., scripts/validate.ts)",
     });
@@ -172,7 +172,7 @@ export function validatePathResolution(
   if (IDE_PATH_VAR_PATTERN.test(content)) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.2.3",
+      criterion: "FR-UNIVERSAL.IDE-VARS",
       message:
         "Uses IDE-specific path variable (${...SKILL_DIR}). Use relative paths instead",
     });
@@ -182,7 +182,7 @@ export function validatePathResolution(
 }
 
 /**
- * FR-21.1.4: Validates file reference depth.
+ * FR-UNIVERSAL.REFS: Validates file reference depth.
  * No subdirectories inside allowed dirs (one level deep only).
  */
 export async function validateReferenceDepth(
@@ -202,7 +202,7 @@ export async function validateReferenceDepth(
         if (entry.isDirectory) {
           errors.push({
             skill: dirName,
-            criterion: "FR-21.1.4",
+            criterion: "FR-UNIVERSAL.REFS",
             message:
               `Nested directory '${entry.name}' inside ${subdir}/ (must be one level deep)`,
           });
@@ -218,7 +218,7 @@ export async function validateReferenceDepth(
 }
 
 /**
- * Validates a single skill directory against all FR-21.1 criteria.
+ * Validates a single skill directory against all FR-UNIVERSAL.AGENTSKILLS criteria.
  */
 export async function validateSkill(
   skillsDir: string,
@@ -237,7 +237,7 @@ export async function validateSkill(
     });
   }
 
-  // FR-21.1.1: Structure
+  // FR-UNIVERSAL.STRUCT: Structure
   errors.push(...validateStructure(dirName, entries));
 
   // Read SKILL.md
@@ -254,22 +254,22 @@ export async function validateSkill(
   if (!fm) {
     errors.push({
       skill: dirName,
-      criterion: "FR-21.1.2",
+      criterion: "FR-UNIVERSAL.FRONTMATTER",
       message: "Invalid or missing YAML frontmatter",
     });
     return errors;
   }
 
-  // FR-21.1.2: Frontmatter (Zod schema)
+  // FR-UNIVERSAL.FRONTMATTER: Frontmatter (Zod schema)
   errors.push(...validateSkillFrontmatter(dirName, fm.data));
 
-  // FR-21.1.3: Progressive disclosure
+  // FR-UNIVERSAL.DISCLOSURE: Progressive disclosure
   errors.push(...validateProgressiveDisclosure(dirName, content, fm.data));
 
-  // FR-21.2: Cross-IDE script path resolution
+  // FR-UNIVERSAL.XIDE-PATHS: Cross-IDE script path resolution
   errors.push(...validatePathResolution(dirName, content));
 
-  // FR-21.1.4: Reference depth
+  // FR-UNIVERSAL.REFS: Reference depth
   errors.push(...await validateReferenceDepth(skillPath, dirName));
 
   return errors;
@@ -325,7 +325,7 @@ async function discoverSkillsDirs(
 
 if (import.meta.main) {
   console.log(
-    "Checking skills (FR-21.1, FR-21.2 agentskills.io compliance)...",
+    "Checking skills (FR-UNIVERSAL.AGENTSKILLS, FR-UNIVERSAL.XIDE-PATHS agentskills.io compliance)...",
   );
 
   const packSkillsDirs = await discoverSkillsDirs("framework");
@@ -341,6 +341,8 @@ if (import.meta.main) {
     console.error(`\n${errors.length} violation(s) found.`);
     Deno.exit(1);
   } else {
-    console.log("✅ All skills pass FR-21.1, FR-21.2 compliance checks.");
+    console.log(
+      "✅ All skills pass FR-UNIVERSAL.AGENTSKILLS, FR-UNIVERSAL.XIDE-PATHS compliance checks.",
+    );
   }
 }

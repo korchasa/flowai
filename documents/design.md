@@ -124,7 +124,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   2. `documents/requirements.md` (SRS) — functional and non-functional requirements. Source of truth for "what" and "why".
   3. `documents/design.md` (SDS) — architecture and implementation details. Depends on SRS.
   4. `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` — temporary plans and notes in GODS format. One file per task/session. Directory is gitignored.
-  5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-14–FR-17.
+  5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-HOOK-DOCS–FR-IDE-SCOPE.
   6. `documents/benchmarking.md` — benchmark results and analysis.
 - **Rules:**
   - Every `[x]` acceptance criterion in SRS must include file-path evidence.
@@ -154,7 +154,7 @@ When a dev skill in `.claude/skills/` has the same name as a framework skill in 
   - **Interactive Flows**: `UserEmulator` simulates user responses via LLM for multi-turn scenarios (persona-driven).
   - **Multi-Turn Benchmarking**: `SpawnedAgent` + `runner.ts` support automatic session resumption (`--resume`) when `UserEmulator` provides input.
 
-### 3.5 Global Framework Distribution — FR-10 (`cli/`)
+### 3.5 Global Framework Distribution — FR-DIST (`cli/`)
 
 - **Purpose:** Install/update flowai framework skills/agents into project-local IDE config dirs.
 - **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flowai`.
@@ -187,7 +187,7 @@ graph TD
   - `cli/src/writer.ts` — writes plan items to IDE config dirs
   - `cli/src/transform.ts` — transforms universal agent frontmatter into IDE-specific format
   - `cli/src/ide.ts` — IDE detection by config dir presence + `isInsideIDE()` env var check (`CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`)
-  - `cli/src/symlinks.ts` — `CLAUDE.md -> AGENTS.md` symlinks (FR-10.4)
+  - `cli/src/symlinks.ts` — `CLAUDE.md -> AGENTS.md` symlinks (FR-DIST.SYMLINKS)
   - `cli/src/version.ts` — self-update check against JSR registry (fail-open)
   - `cli/src/adapters/fs.ts` — `FsAdapter` abstraction + `DenoFsAdapter` + `InMemoryFsAdapter`
   - `cli/scripts/bundle-framework.ts` — generates `src/bundled.json` from `../framework/`
@@ -210,19 +210,19 @@ graph TD
 - **Dev-only file exclusion:** Bundle and sync exclude dev-only files from distribution: benchmark scenarios (`/benchmarks/`) and test files (`_test.*`). Filtering at two levels: `bundle-framework.ts` (build time) and `readSkillFiles`/`readPackSkillFiles` in `sync.ts` (runtime).
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 
-### 3.6 Conventional Commits `agent:` Type — FR-11
+### 3.6 Conventional Commits `agent:` Type — FR-AGENT-COMMIT
 
 - **Purpose:** Dedicated commit type for AI agent/skill config changes.
 - **Behavioral requirements:** See benchmarks `flowai-commit-agent-type`.
 
-### 3.7 flowai-init Multi-File Architecture + Diff-Based Updates — FR-12
+### 3.7 flowai-init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT
 
 - **Purpose:** Preserve user edits during re-initialization. 3 AGENTS.md files
   (`./`, `./documents/`, `./scripts/`). Agent-driven generation from templates.
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
 - **Behavioral requirements:** See benchmarks `flowai-init-*` (6 scenarios).
 
-### 3.8 Python-to-Deno Migration — FR-13
+### 3.8 Python-to-Deno Migration — FR-PY-MIGRATE
 
 - **Purpose:** Eliminate Python runtime dependency by rewriting all 12 `.py` scripts
   to TypeScript (Deno).
@@ -237,7 +237,7 @@ graph TD
 - **SKILL.md updates:** All `python3 scripts/*.py` invocations replaced with
   `deno run -A scripts/*.ts`.
 
-### 3.9 AI Devcontainer Setup — FR-20
+### 3.9 AI Devcontainer Setup — FR-DEVCONTAINER
 
 - **Purpose:** Generate `.devcontainer/` config for AI IDE development.
 - **Behavioral requirements:** See benchmarks `flowai-skill-setup-ai-ide-devcontainer-*` (5 scenarios).
@@ -250,7 +250,7 @@ graph TD
 - **CLI integration:** `flowai` bare command is no-op inside IDE. `flowai sync` required explicitly.
 - **Behavioral requirements:** See benchmarks `flowai-update-*` (4 scenarios).
 
-### 3.11 Loop Command — Non-Interactive Runner — FR-29 (`cli/src/loop.ts`)
+### 3.11 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`)
 
 - **Purpose:** Launch Claude Code non-interactively with a prompt. Base automation primitive.
 - **CLI:** `flowai loop [OPTIONS] <prompt>`. Flags: `--agent`, `--model`, `--cwd`, `--yolo`, `--timeout`, `--interval`, `--max-iterations`. Skills invoked via prompt (e.g. `"/flowai-commit msg"`).
@@ -311,4 +311,4 @@ graph TD
 
 ## 9. Future Extensions
 
-- Hook format transformation — tracked as FR-14 (cross-IDE hook/plugin format transformation) and FR-24 (hook resources in packs).
+- Hook format transformation — tracked as FR-HOOK-DOCS (cross-IDE hook/plugin format transformation) and FR-HOOK-RESOURCES (hook resources in packs).

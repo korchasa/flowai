@@ -1,7 +1,7 @@
 import { type FsAdapter, join } from "./adapters/fs.ts";
 
 /**
- * FR-4: When claude IDE is configured, create CLAUDE.md -> AGENTS.md symlinks
+ * FR-HOWTO: When claude IDE is configured, create CLAUDE.md -> AGENTS.md symlinks
  * wherever AGENTS.md exists in the project (root and subdirs).
  */
 export async function syncClaudeSymlinks(
