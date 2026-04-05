@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.15](https://github.com/korchasa/flowai/compare/v0.4.14...v0.4.15) (2026-04-05)
+
+
+### Features
+
+* extend frontmatter for skills and agents with model tiers ([d7c6059](https://github.com/korchasa/flowai/commit/d7c60597a8b1fc5c82bf0aff209114143b339faf))
+* **hooks:** add flowai-session-init-docs SessionStart hook ([02f1cdd](https://github.com/korchasa/flowai/commit/02f1cdd4c76f855914dd1b3859d1d719f3e8c79b))
+
+
+### Agent Changes
+
+* **commit-review:** separate responsibilities between review and commit, add whiteboard cleanup ([7217be5](https://github.com/korchasa/flowai/commit/7217be557d06d819a5c460401775e722b30c657f))
+
+
+### Documentation
+
+* update IDE differences with Cursor Agent CLI findings and Claude Code details ([d7f6953](https://github.com/korchasa/flowai/commit/d7f695391ef94b6cec0868c6339232f1d531efb4))
+
+
+### Chores
+
+* add session-init-docs hook config, format memory files ([eebdf7b](https://github.com/korchasa/flowai/commit/eebdf7b1f6aed3e46563a9b99dffe3db24ce5cc7))
+
 ### [0.4.14](https://github.com/korchasa/flowai/compare/v0.4.13...v0.4.14) (2026-04-04)
 
 
