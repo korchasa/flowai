@@ -1,0 +1,3 @@
+event: SessionStart
+description: "Inject project docs (configured in .flowai.yaml sessionDocs) into session context"
+timeout: 10

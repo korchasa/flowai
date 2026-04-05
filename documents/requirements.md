@@ -630,9 +630,9 @@ exercised as subagents within skill benchmarks.
 - **Desc:** Hook = directory with `hook.yaml` (metadata) + `run.ts` (Deno script). Located at `framework/<pack>/hooks/<name>/`.
 - **Acceptance:**
   - [x] **FR-24.1.1** `hook.yaml` fields: `event`, `matcher` (optional), `description`, `timeout` (optional, default 30/600). Evidence: `cli/src/types.ts:48-56`, `cli/src/hooks.ts:62-64`
-  - [x] **FR-24.1.2** Supported events: PostToolUse, PreToolUse. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:18-28` (EVENT_MAP, TOOL_MAP)
-  - [x] **FR-24.1.3** `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
-  - [x] **FR-24.1.4** 4 framework hooks: `flowai-lint-on-write` (core), `flowai-test-before-commit` (core), `flowai-skill-structure-validate` (devtools), `flowai-mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
+  - [x] **FR-24.1.2** Supported events: PostToolUse, PreToolUse, SessionStart. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:10-17` (EVENT_MAP, TOOL_MAP)
+  - [x] **FR-24.1.3** `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. SessionStart hooks output `hookSpecificOutput.additionalContext`. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
+  - [x] **FR-24.1.4** 5 framework hooks: `flowai-lint-on-write` (core), `flowai-test-before-commit` (core), `flowai-session-init-docs` (core), `flowai-skill-structure-validate` (devtools), `flowai-mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
 
 #### FR-24.2 IDE-Specific Installation
 

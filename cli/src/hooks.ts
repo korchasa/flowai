@@ -9,10 +9,15 @@ import type { HookDefinition } from "./types.ts";
 
 export const EVENT_MAP: Record<string, Record<string, string>> = {
   claude: {}, // canonical = Claude Code, no transform
-  cursor: { PostToolUse: "postToolUse", PreToolUse: "preToolUse" },
+  cursor: {
+    PostToolUse: "postToolUse",
+    PreToolUse: "preToolUse",
+    SessionStart: "sessionStart",
+  },
   opencode: {
     PostToolUse: "tool.execute.after",
     PreToolUse: "tool.execute.before",
+    // TODO: verify OpenCode session start event name
   },
 };
 

@@ -35,6 +35,9 @@ export interface FlowConfig {
   userSync?: boolean;
   /** Model tier overrides per IDE: { claude: { smart: "opus" }, cursor: { smart: "slow" } } */
   models?: Record<string, Record<string, string>>;
+  /** Project docs injected at session start by flowai-session-init-docs hook.
+   *  Paths relative to project root. Empty by default; flowai-init populates this. */
+  sessionDocs?: string[];
 }
 
 /** Downloaded file in memory */
