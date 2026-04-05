@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.14](https://github.com/korchasa/flowai/compare/v0.4.13...v0.4.14) (2026-04-04)
+
+
+### Features
+
+* **cli:** add `flowai loop` command for non-interactive Claude Code execution ([d3332f0](https://github.com/korchasa/flowai/commit/d3332f006feb9a3df43c53fbbcda3f59aec68a40))
+* **engineer-rule:** update Claude Code rule semantics based on experimental verification ([5c1ffed](https://github.com/korchasa/flowai/commit/5c1ffed8c3171a868925cac49aedb025f6ccf2b9))
+
+
+### Styles
+
+* reformat HTML assets for current Deno fmt rules ([7542918](https://github.com/korchasa/flowai/commit/75429186b69f64820a8897edb7f0725b5c0924e5))
+
+
+### Documentation
+
+* add Reference-First planning rule to AGENTS.md ([03f4fc6](https://github.com/korchasa/flowai/commit/03f4fc6b8ebd7a7f5806c5add77ba1acd4a2b9e8))
+
+
+### Code Refactoring
+
+* remove pipeline pack and all references ([dd07b48](https://github.com/korchasa/flowai/commit/dd07b48bb12ba4f3a0c183a41c1f8a84a56f5c43))
+
+
+### Build System
+
+* **ci:** pin Deno to 2.7.11 to fix fmt mismatch ([c42a418](https://github.com/korchasa/flowai/commit/c42a41890017f5cf0a98eb5aef40e38a15471e74))
+
 ### [0.4.13](https://github.com/korchasa/flowai/compare/v0.4.12...v0.4.13) (2026-04-03)
 
 
