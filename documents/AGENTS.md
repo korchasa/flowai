@@ -20,6 +20,10 @@
   Without evidence, criterion stays `[ ]`.
 
 ## SRS Format (`documents/requirements.md`)
+
+- **Requirement numbering**: Exactly 2 levels — `FR-x` and `FR-x.y`. No `FR-x.y.z`.
+  Acceptance criteria under `FR-x.y` are plain bullet items (no FR prefix).
+
 ```markdown
 # SRS
 ## 1. Intro

@@ -36,14 +36,14 @@ Dependencies between unclosed requirements define execution order:
 2. **FR-24** Hook Resources — depends on FR-23 (pack structure)
 3. **FR-25** Script Resources — depends on FR-23 (pack structure)
 4. **FR-26** Skill Renaming — depends on FR-23 (migration)
-5. **FR-21.3–21.6** Universal Skill & Script Requirements — standardize before distribution
+5. **FR-21** Universal Skill & Script Requirements — standardize before distribution
 6. **FR-12.5** flowai-init idempotent re-run — independent, can run in parallel with 5
 7. **FR-7.1** Co-locate benchmarks with skills — can run in parallel with 5–6
 
 ```
 FR-23 (pack system)
   → FR-24 (hooks), FR-25 (scripts), FR-26 (renaming) — parallel after FR-23
-FR-21.3–21.6 (parallel with above)
+FR-21 (parallel with above)
 FR-12.5 (parallel)
 FR-7.1 (parallel)
 FR-10.9 open questions (parallel)
@@ -434,96 +434,96 @@ exercised as subagents within skill benchmarks.
   supported IDEs without modification.
 - **Priority:** High (foundational for multi-IDE support).
 
-#### FR-21.1 agentskills.io Compliance
+**agentskills.io Compliance**
 
 - **Acceptance criteria:**
-  - [x] **FR-21.1.1 Directory structure**: Every skill is a directory with
+  - [x] **Directory structure**: Every skill is a directory with
         `SKILL.md` (required) and optional `scripts/`, `references/`, `assets/`,
         `evals/` subdirectories. No other top-level conventions (README.md, CHANGELOG.md).
         Enforced by `scripts/check-skills.ts`.
-  - [x] **FR-21.1.2 Frontmatter**: `name` (required, max 64 chars, `[a-z0-9-]`,
+  - [x] **Frontmatter**: `name` (required, max 64 chars, `[a-z0-9-]`,
         must match parent directory name) and `description` (required, max 1024
         chars). Optional: `license`, `compatibility`, `metadata`,
         `allowed-tools` (experimental), `disable-model-invocation`.
         Enforced by `scripts/check-skills.ts`.
-  - [x] **FR-21.1.3 Progressive disclosure**: Metadata (~100 tokens) loaded at
+  - [x] **Progressive disclosure**: Metadata (~100 tokens) loaded at
         startup; full SKILL.md (<5000 tokens, <500 lines) on activation;
         scripts/references/assets loaded only when required.
         Enforced by `scripts/check-skills.ts`.
-  - [x] **FR-21.1.4 File references**: One level deep from SKILL.md. No nested
+  - [x] **File references**: One level deep from SKILL.md. No nested
         reference chains.
         Enforced by `scripts/check-skills.ts`.
 
-#### FR-21.2 Cross-IDE Script Path Resolution
+**Cross-IDE Script Path Resolution**
 
 - **Acceptance criteria:**
-  - [x] **FR-21.2.1 Relative paths**: SKILL.md MUST reference scripts using
+  - [x] **Relative paths**: SKILL.md MUST reference scripts using
         relative paths from the skill root (e.g., `scripts/validate.ts`,
         `python3 scripts/process.py`). Per agentskills.io client
         implementation guide, the IDE resolves relative paths against the
         skill's directory and converts to absolute paths in tool calls.
         All framework SKILL.md files migrated to relative paths.
-  - [x] **FR-21.2.2 No custom path placeholders**: Do NOT use custom
+  - [x] **No custom path placeholders**: Do NOT use custom
         placeholders like `<this-skill-dir>` in framework skills. The
         agentskills.io standard defines relative paths as the canonical
         mechanism; IDEs are responsible for resolution. Existing skills
         using `<this-skill-dir>` MUST be migrated to plain relative paths.
         Enforced by `scripts/check-skills.ts`.
-  - [x] **FR-21.2.3 No IDE-specific path variables**: Do NOT use
+  - [x] **No IDE-specific path variables**: Do NOT use
         `${CLAUDE_SKILL_DIR}` or other IDE-specific variables in framework
         skills. These are IDE extensions, not part of the agentskills.io
         standard, and break portability.
         Enforced by `scripts/check-skills.ts`.
 
-#### FR-21.3 Script Requirements
+**Script Requirements**
 
 - **Acceptance criteria:**
-  - [x] **FR-21.3.1 Non-interactive**: Scripts MUST NOT use interactive prompts
+  - [x] **Non-interactive**: Scripts MUST NOT use interactive prompts
         (stdin confirmation, interactive menus). All input via CLI flags, env
         vars, or stdin piping. Agents run in non-interactive shells.
         All 17 scripts use CLI args/env/stdin piping; none use interactive prompts.
-  - [x] **FR-21.3.2 Structured output**: Scripts MUST output structured data
+  - [x] **Structured output**: Scripts MUST output structured data
         (JSON preferred) to stdout. Diagnostics/progress to stderr. This
         enables reliable parsing by any agent implementation.
         All framework scripts output `{ "ok": bool, "result": {...} }` JSON to stdout. Diagnostics go to stderr via `console.error()`.
-  - [x] **FR-21.3.3 Self-contained dependencies**: Scripts MUST declare
+  - [x] **Self-contained dependencies**: Scripts MUST declare
         dependencies inline (PEP 723 for Python, `npm:`/`jsr:` imports for
         Deno/TS). No implicit global installs required.
         All framework scripts use `jsr:` specifiers. No bare `@std/` imports remain in `framework/skills/`.
-  - [N/A] **FR-21.3.4 Help output**: Scripts SHOULD implement `--help` flag as
+  - [N/A] **Help output**: Scripts SHOULD implement `--help` flag as
         the primary way agents learn the script interface.
         Dropped: agents read SKILL.md for script interface; `--help` duplicates SKILL.md and adds maintenance burden.
-  - [x] **FR-21.3.5 Meaningful exit codes**: Exit 0 on success, non-zero on
+  - [x] **Meaningful exit codes**: Exit 0 on success, non-zero on
         failure. Scripts SHOULD use distinct codes for different error types.
         All 17 scripts exit 0/non-zero correctly. Verified across `scripts/` and `framework/skills/*/scripts/`.
-  - [x] **FR-21.3.6 Read-only by default**: Analysis/validation scripts MUST
+  - [x] **Read-only by default**: Analysis/validation scripts MUST
         NOT create, write, or modify project files. File creation is the
         agent's responsibility unless the script's explicit purpose is
         generation.
         Analysis scripts (`generate_agents.ts`, `check-skills.ts`, `check-agents.ts`) are read-only.
-  - [x] **FR-21.3.7 Idempotent**: Scripts MUST be safe to run multiple times
+  - [x] **Idempotent**: Scripts MUST be safe to run multiple times
         with the same input producing the same output.
         Validation/check scripts are inherently idempotent (read-only). Init scripts support `--skip-existing` flag for idempotent mode; default is fail-fast on conflict.
-  - [x] **FR-21.3.8 Error messages**: Scripts MUST provide clear, actionable
+  - [x] **Error messages**: Scripts MUST provide clear, actionable
         error messages to stderr. Include what failed, why, and how to fix.
         All 17 scripts write diagnostics to stderr via `console.error()`.
-  - [x] **FR-21.3.9 Dry-run support**: Scripts performing destructive
+  - [x] **Dry-run support**: Scripts performing destructive
         operations SHOULD support `--dry-run` flag.
         N/A — no framework scripts perform destructive operations. All are analysis/validation/symlink tools.
 
-#### FR-21.4 Script Language Policy
+**Script Language Policy**
 
 - **Acceptance criteria:**
-  - [x] **FR-21.4.1 Framework scripts in Deno/TS**: All framework product
+  - [x] **Framework scripts in Deno/TS**: All framework product
         scripts (`framework/skills/*/scripts/`) MUST be written in
         Deno/TypeScript. Supersedes FR-13.2: the two remaining Python scripts
         (`count_tokens.py`, `validate.py`) must be migrated to Deno/TS.
         All 8 Python scripts removed. `count_tokens.ts` and `validate.ts` (Mermaid) written as replacements. Zero `.py` files in `framework/skills/`.
-  - [x] **FR-21.4.2 General-purpose utilities in Python**: Utility scripts
+  - [x] **General-purpose utilities in Python**: Utility scripts
         outside the framework product directory MAY use Python. Scripts inside
-        `framework/skills/*/scripts/` MUST be Deno/TS per FR-21.4.1.
+        `framework/skills/*/scripts/` MUST be Deno/TS per FR-21.4.
         Policy documented in SDS (section 3.1.2 "Script Language Policy"). Project uses Deno/TS exclusively — no Python.
-  - [x] **FR-21.4.3 User-facing skills are language-agnostic**: The
+  - [x] **User-facing skills are language-agnostic**: The
         agentskills.io standard allows any language. Framework documentation
         (e.g., `flowai-skill-engineer-skill`) MUST NOT restrict users to a single
         language. Common options: Python, Bash, JavaScript/TypeScript.
@@ -532,16 +532,16 @@ exercised as subagents within skill benchmarks.
 #### FR-21.5 Script Execution Model
 
 - **Acceptance criteria:**
-  - [x] **FR-21.5.1 Agent-driven execution**: Scripts are NOT auto-executed.
+  - [x] **Agent-driven execution**: Scripts are NOT auto-executed.
         The agent reads SKILL.md instructions and decides when to run scripts
         using its standard code execution tool (Bash/terminal). This is
         consistent across all three IDEs.
         All SKILL.md files use imperative instructions ("Run…", "Execute…") directing the agent; no auto-execution hooks.
-  - [x] **FR-21.5.2 No dedicated script runner**: There is no special "script
+  - [x] **No dedicated script runner**: There is no special "script
         runner" tool in any supported IDE. All script execution goes through
         the generic Bash/terminal tool.
         Confirmed: all three IDEs (Cursor, Claude Code, OpenCode) use Bash/terminal for script execution.
-  - [x] **FR-21.5.3 allowed-tools hint**: Skills MAY use the `allowed-tools`
+  - [x] **allowed-tools hint**: Skills MAY use the `allowed-tools`
         frontmatter field (experimental) to pre-approve tools needed for
         script execution (e.g., `Bash(deno:*)`). This reduces permission
         prompts but is not guaranteed across all IDEs.
@@ -550,13 +550,13 @@ exercised as subagents within skill benchmarks.
 #### FR-21.6 Skill Discovery Paths
 
 - **Acceptance criteria:**
-  - [x] **FR-21.6.1 Framework distribution**: Framework skills distributed
+  - [x] **Framework distribution**: Framework skills distributed
         from `framework/skills/` to IDE directories via flowai. See FR-10.
         Evidence: `cli/`, `cli/src/sync.ts`
-  - [x] **FR-21.6.2 Cross-IDE discovery**: Skills discoverable by IDEs via
+  - [x] **Cross-IDE discovery**: Skills discoverable by IDEs via
         IDE-specific config dirs (e.g., `.claude/skills/`). flowai handles
         placement per IDE.
-  - [x] **FR-21.6.3 Name collision**: Project-level skills override user-level
+  - [x] **Name collision**: Project-level skills override user-level
         skills when names collide (per agentskills.io client implementation
         guide). flowai overwrites on sync. Documented in SDS (section 3.1.4).
 
@@ -577,47 +577,47 @@ exercised as subagents within skill benchmarks.
 
 - **Desc:** Each pack is a directory under `framework/<name>/` containing `pack.yaml` manifest and resource subdirectories (`skills/`, `agents/`, `hooks/`, `scripts/`). Resources discovered by convention (directory scan), not listed in manifest.
 - **Acceptance:**
-  - [x] **FR-23.1.1** `pack.yaml` format: `name` (string), `version` (semver), `description` (string). Evidence: `framework/core/pack.yaml`, `framework/deno/pack.yaml`, `framework/devtools/pack.yaml`, `framework/engineering/pack.yaml`, `framework/typescript/pack.yaml`
-  - [x] **FR-23.1.2** Skills stored as `framework/<pack>/skills/<name>/SKILL.md`. Evidence: `framework/core/skills/flowai-commit/SKILL.md`, `framework/engineering/skills/flowai-skill-deep-research/SKILL.md`
-  - [x] **FR-23.1.3** Agents stored as `framework/<pack>/agents/<name>.md`. Evidence: `framework/core/agents/flowai-console-expert.md`, `framework/engineering/agents/flowai-deep-research-worker.md`
-  - [x] **FR-23.1.4** No dependencies between packs — each pack is self-contained. Evidence: by design, no cross-pack imports or references.
-  - [x] **FR-23.1.5** `framework/skills/` and `framework/agents/` removed. All resources live in packs. Evidence: directories deleted, `cli/src/source.ts:109` regex `^framework\/([^/]+)\/pack\.yaml$`
+  - [x] `pack.yaml` format: `name` (string), `version` (semver), `description` (string). Evidence: `framework/core/pack.yaml`, `framework/deno/pack.yaml`, `framework/devtools/pack.yaml`, `framework/engineering/pack.yaml`, `framework/typescript/pack.yaml`
+  - [x] Skills stored as `framework/<pack>/skills/<name>/SKILL.md`. Evidence: `framework/core/skills/flowai-commit/SKILL.md`, `framework/engineering/skills/flowai-skill-deep-research/SKILL.md`
+  - [x] Agents stored as `framework/<pack>/agents/<name>.md`. Evidence: `framework/core/agents/flowai-console-expert.md`, `framework/engineering/agents/flowai-deep-research-worker.md`
+  - [x] No dependencies between packs — each pack is self-contained. Evidence: by design, no cross-pack imports or references.
+  - [x] `framework/skills/` and `framework/agents/` removed. All resources live in packs. Evidence: directories deleted, `cli/src/source.ts:109` regex `^framework\/([^/]+)\/pack\.yaml$`
 
 #### FR-23.2 Config v1.1
 
 - **Desc:** `.flowai.yaml` version `"1.1"` adds `packs:` field. `skills.include/exclude` applies after pack expansion.
 - **Acceptance:**
-  - [x] **FR-23.2.1** `packs:` field: list of pack names to install. Evidence: `cli/src/types.ts:19`, `cli/src/config.ts:84-86`
-  - [x] **FR-23.2.2** `packs: []` (empty) = install only `core` pack. Evidence: `cli/src/sync.ts:69`, `cli/src/sync_test.ts` "packs: [] defaults to core only"
-  - [x] **FR-23.2.3** `packs` absent + `version: "1.0"` = all resources (backward compat). Evidence: `cli/src/sync.ts:67-68`, `cli/src/sync_test.ts` "packs: undefined (v1 legacy) selects all"
-  - [x] **FR-23.2.4** `skills.exclude`/`skills.include` applied AFTER pack expansion. Evidence: `cli/src/sync.ts:83-95`, `cli/src/sync_test.ts` "applies skills.exclude after pack expansion"
+  - [x] `packs:` field: list of pack names to install. Evidence: `cli/src/types.ts:19`, `cli/src/config.ts:84-86`
+  - [x] `packs: []` (empty) = install only `core` pack. Evidence: `cli/src/sync.ts:69`, `cli/src/sync_test.ts` "packs: [] defaults to core only"
+  - [x] `packs` absent + `version: "1.0"` = all resources (backward compat). Evidence: `cli/src/sync.ts:67-68`, `cli/src/sync_test.ts` "packs: undefined (v1 legacy) selects all"
+  - [x] `skills.exclude`/`skills.include` applied AFTER pack expansion. Evidence: `cli/src/sync.ts:83-95`, `cli/src/sync_test.ts` "applies skills.exclude after pack expansion"
 
 #### FR-23.3 Automigration v1 → v1.1
 
 - **Desc:** `flowai sync` auto-migrates v1 config to v1.1 format, adding `packs:` with all packs listed (preserving current behavior).
 - **Acceptance:**
-  - [x] **FR-23.3.1** v1 config auto-migrated to v1.1 on `flowai sync`. Evidence: `cli/src/sync.ts` automigration block, `cli/src/config.ts:92-102`
-  - [x] **FR-23.3.2** Migrated config lists all packs (equivalent to v1 "install everything"). Evidence: `cli/src/config.ts:100`, `cli/src/config_test.ts` "migrateV1ToV1_1 - adds all packs to v1 config"
-  - [x] **FR-23.3.3** `flowai-update` skill can update `.flowai.yaml` structure. Evidence: `framework/core/skills/flowai-update/SKILL.md` step 3 parses CONFIG MIGRATED action; agent can edit `.flowai.yaml` directly.
+  - [x] v1 config auto-migrated to v1.1 on `flowai sync`. Evidence: `cli/src/sync.ts` automigration block, `cli/src/config.ts:92-102`
+  - [x] Migrated config lists all packs (equivalent to v1 "install everything"). Evidence: `cli/src/config.ts:100`, `cli/src/config_test.ts` "migrateV1ToV1_1 - adds all packs to v1 config"
+  - [x] `flowai-update` skill can update `.flowai.yaml` structure. Evidence: `framework/core/skills/flowai-update/SKILL.md` step 3 parses CONFIG MIGRATED action; agent can edit `.flowai.yaml` directly.
 
 #### FR-23.4 Pack Versioning
 
 - **Desc:** `flowai sync` displays version changes informionally. No pinning — always installs latest from bundle.
 - **Acceptance:**
-  - [x] **FR-23.4.1** `flowai sync` output shows pack versions. Evidence: `cli/src/sync.ts` `readPackVersions()` + display loop
+  - [x] `flowai sync` output shows pack versions. Evidence: `cli/src/sync.ts` `readPackVersions()` + display loop
 
 #### FR-23.5 Bundle Update
 
 - **Desc:** `scripts/bundle-framework.ts` updated to scan `framework/*/` instead of `framework/skills/` + `framework/agents/`.
 - **Acceptance:**
-  - [x] **FR-23.5.1** Bundle includes pack definitions and all pack resources. Evidence: `cli/scripts/bundle-framework.ts` walks `framework/` recursively, bundle contains 298 files with `framework/<pack>/` paths
-  - [x] **FR-23.5.2** Existing tests updated for new bundle structure. Evidence: `cli/src/source_test.ts` pack-aware tests, `cli/src/sync_test.ts` resolvePackResources tests
+  - [x] Bundle includes pack definitions and all pack resources. Evidence: `cli/scripts/bundle-framework.ts` walks `framework/` recursively, bundle contains 298 files with `framework/<pack>/` paths
+  - [x] Existing tests updated for new bundle structure. Evidence: `cli/src/source_test.ts` pack-aware tests, `cli/src/sync_test.ts` resolvePackResources tests
 
 #### FR-23.6 Default Packs
 
 - **Desc:** `flowai init` (interactive config generation) defaults to all packs.
 - **Acceptance:**
-  - [x] **FR-23.6.1** Generated `.flowai.yaml` includes all available packs. Evidence: `cli/src/config_generator.ts:55` `selectedPacks = [...availablePacks]`, version set to `PACKS_VERSION`
+  - [x] Generated `.flowai.yaml` includes all available packs. Evidence: `cli/src/config_generator.ts:55` `selectedPacks = [...availablePacks]`, version set to `PACKS_VERSION`
 
 ### 3.24 Hook Resources (FR-24)
 
@@ -629,29 +629,29 @@ exercised as subagents within skill benchmarks.
 
 - **Desc:** Hook = directory with `hook.yaml` (metadata) + `run.ts` (Deno script). Located at `framework/<pack>/hooks/<name>/`.
 - **Acceptance:**
-  - [x] **FR-24.1.1** `hook.yaml` fields: `event`, `matcher` (optional), `description`, `timeout` (optional, default 30/600). Evidence: `cli/src/types.ts:48-56`, `cli/src/hooks.ts:62-64`
-  - [x] **FR-24.1.2** Supported events: PostToolUse, PreToolUse, SessionStart. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:10-17` (EVENT_MAP, TOOL_MAP)
-  - [x] **FR-24.1.3** `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. SessionStart hooks output `hookSpecificOutput.additionalContext`. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
-  - [x] **FR-24.1.4** 5 framework hooks: `flowai-lint-on-write` (core), `flowai-test-before-commit` (core), `flowai-session-init-docs` (core), `flowai-skill-structure-validate` (devtools), `flowai-mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
+  - [x] `hook.yaml` fields: `event`, `matcher` (optional), `description`, `timeout` (optional, default 30/600). Evidence: `cli/src/types.ts:48-56`, `cli/src/hooks.ts:62-64`
+  - [x] Supported events: PostToolUse, PreToolUse, SessionStart. Event/tool name mapping per IDE. Evidence: `cli/src/hooks.ts:10-17` (EVENT_MAP, TOOL_MAP)
+  - [x] `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. SessionStart hooks output `hookSpecificOutput.additionalContext`. Evidence: `cli/src/hooks.ts:118-150` (generateOpenCodePlugin)
+  - [x] 5 framework hooks: `flowai-lint-on-write` (core), `flowai-test-before-commit` (core), `flowai-session-init-docs` (core), `flowai-skill-structure-validate` (devtools), `flowai-mermaid-validate` (engineering). Evidence: `framework/core/hooks/`, `framework/devtools/hooks/`, `framework/engineering/hooks/`
 
 #### FR-24.2 IDE-Specific Installation
 
 - **Desc:** flowai reads `hook.yaml` and generates IDE-specific configuration. Manifest tracks installed hooks for clean deinstallation.
 - **Acceptance:**
-  - [x] **FR-24.2.1** Claude Code: 3-level nested entry in `settings.json` hooks section. Evidence: `cli/src/hooks.ts:78-96` (transformHookForClaude), `cli/src/sync.ts:793-822` (writeHookConfig)
-  - [x] **FR-24.2.2** Cursor: flat entry in `.cursor/hooks.json`. Evidence: `cli/src/hooks.ts:99-113` (transformHookForCursor), `cli/src/sync.ts:823-849`
-  - [x] **FR-24.2.3** OpenCode: generated plugin file `.opencode/plugins/flowai-hooks.ts`. Evidence: `cli/src/hooks.ts:116-150` (generateOpenCodePlugin), `cli/src/sync.ts:850-863`
-  - [x] **FR-24.2.4** Manifest `.{ide}/flowai-hooks.json` tracks installed hooks. Removed hooks cleaned from IDE config. Evidence: `cli/src/hooks.ts:258-322` (cleanupRemovedHooks, readManifest, buildManifest)
-  - [x] **FR-24.2.5** Merge preserves user hooks (not in manifest). Evidence: `cli/src/hooks.ts:155-206` (mergeClaudeHooks, mergeCursorHooks), `cli/src/hooks_test.ts`
+  - [x] Claude Code: 3-level nested entry in `settings.json` hooks section. Evidence: `cli/src/hooks.ts:78-96` (transformHookForClaude), `cli/src/sync.ts:793-822` (writeHookConfig)
+  - [x] Cursor: flat entry in `.cursor/hooks.json`. Evidence: `cli/src/hooks.ts:99-113` (transformHookForCursor), `cli/src/sync.ts:823-849`
+  - [x] OpenCode: generated plugin file `.opencode/plugins/flowai-hooks.ts`. Evidence: `cli/src/hooks.ts:116-150` (generateOpenCodePlugin), `cli/src/sync.ts:850-863`
+  - [x] Manifest `.{ide}/flowai-hooks.json` tracks installed hooks. Removed hooks cleaned from IDE config. Evidence: `cli/src/hooks.ts:258-322` (cleanupRemovedHooks, readManifest, buildManifest)
+  - [x] Merge preserves user hooks (not in manifest). Evidence: `cli/src/hooks.ts:155-206` (mergeClaudeHooks, mergeCursorHooks), `cli/src/hooks_test.ts`
 
 #### FR-24.3 Hook Sync Infrastructure
 
 - **Desc:** flowai discovers, reads, copies hook files, generates IDE config, and tracks actions in SyncResult.
 - **Acceptance:**
-  - [x] **FR-24.3.1** Hook discovery: `extractPackHookNames()` extracts hooks from `framework/<pack>/hooks/`. Evidence: `cli/src/source.ts:159-172`, `cli/src/source_test.ts:201-213`
-  - [x] **FR-24.3.2** Hook files copied to `.{ide}/scripts/` during sync. Evidence: `cli/src/sync.ts:322-362`
-  - [x] **FR-24.3.3** `resolvePackResources()` includes `hookNames` in return. Evidence: `cli/src/sync.ts:62`, `cli/src/sync_test.ts:101-106`
-  - [x] **FR-24.3.4** `SyncResult.hookActions` tracks per-hook actions. Evidence: `cli/src/sync.ts:69`, `cli/src/cli.ts:231-251`
+  - [x] Hook discovery: `extractPackHookNames()` extracts hooks from `framework/<pack>/hooks/`. Evidence: `cli/src/source.ts:159-172`, `cli/src/source_test.ts:201-213`
+  - [x] Hook files copied to `.{ide}/scripts/` during sync. Evidence: `cli/src/sync.ts:322-362`
+  - [x] `resolvePackResources()` includes `hookNames` in return. Evidence: `cli/src/sync.ts:62`, `cli/src/sync_test.ts:101-106`
+  - [x] `SyncResult.hookActions` tracks per-hook actions. Evidence: `cli/src/sync.ts:69`, `cli/src/cli.ts:231-251`
 
 ### 3.25 Script Resources (FR-25)
 
@@ -695,46 +695,46 @@ exercised as subagents within skill benchmarks.
 
 - **Desc:** `flowai loop [OPTIONS] <prompt>` with flags: `--agent`, `--model`, `--cwd`, `--yolo`, `--timeout`, `--interval`, `--max-iterations`. `<prompt>` is required (skills invoked via prompt, e.g. `"/flowai-commit msg"`).
 - **Acceptance:**
-  - [ ] **FR-29.1.1** `<prompt>` required positional arg. `--agent` optional (passed as `--agent` to claude).
-  - [ ] **FR-29.1.2** Always adds `--output-format stream-json --verbose -p` to claude args.
-  - [ ] **FR-29.1.3** Defaults: `--interval` 0 (no pause), `--max-iterations` infinite, `--timeout` no limit, `--cwd` current dir.
+  - [ ] `<prompt>` required positional arg. `--agent` optional (passed as `--agent` to claude).
+  - [ ] Always adds `--output-format stream-json --verbose -p` to claude args.
+  - [ ] Defaults: `--interval` 0 (no pause), `--max-iterations` infinite, `--timeout` no limit, `--cwd` current dir.
 
 #### FR-29.2 Command Building
 
 - **Desc:** Pure function `buildClaudeArgs(options)` constructs claude CLI argument array.
 - **Acceptance:**
-  - [ ] **FR-29.2.1** Prompt mode: `claude -p --output-format stream-json --verbose "<prompt>"`.
-  - [ ] **FR-29.2.2** Agent mode: adds `--agent <name>` before prompt.
-  - [ ] **FR-29.2.3** Tests cover all flag combinations.
+  - [ ] Prompt mode: `claude -p --output-format stream-json --verbose "<prompt>"`.
+  - [ ] Agent mode: adds `--agent <name>` before prompt.
+  - [ ] Tests cover all flag combinations.
 
 #### FR-29.3 Output Handling
 
 - **Desc:** stream-json NDJSON real-time parsing. `StreamFormatter` tracks agent nesting depth — subagent events indented. Text labels: `[init]`, `[call]`, `[text]`, `[result]`, `[ok]`/`[error]`, `[agent:start]`, `[agent:call]`, `[agent:done]`.
 - **Acceptance:**
-  - [ ] **FR-29.3.1** `StreamFormatter.format()` handles system/assistant/user/result events with depth-based indentation.
-  - [ ] **FR-29.3.2** `processNDJSONStream()` handles partial lines, malformed JSON, and missing result events.
-  - [ ] **FR-29.3.3** Tests for StreamFormatter nesting and processNDJSONStream.
+  - [ ] `StreamFormatter.format()` handles system/assistant/user/result events with depth-based indentation.
+  - [ ] `processNDJSONStream()` handles partial lines, malformed JSON, and missing result events.
+  - [ ] Tests for StreamFormatter nesting and processNDJSONStream.
 
 #### FR-29.4 Exit Code Propagation
 
 - **Desc:** Exit code priority: resultEvent.is_error → process exit code → 1 (no result).
 - **Acceptance:**
-  - [ ] **FR-29.4.1** Result event `is_error` determines exit code.
-  - [ ] **FR-29.4.2** Fallback to process exit code when no result event.
+  - [ ] Result event `is_error` determines exit code.
+  - [ ] Fallback to process exit code when no result event.
 
 #### FR-29.5 Loop Mode
 
 - **Desc:** Runs infinitely by default. `--interval` adds pause between iterations. Stops on `--max-iterations`, Ctrl+C, or non-zero exit.
 - **Acceptance:**
-  - [ ] **FR-29.5.1** `parseInterval()` parses `30s`, `5m`, `1h` to milliseconds.
-  - [ ] **FR-29.5.2** `--timeout` kills process via SIGTERM after specified seconds.
+  - [ ] `parseInterval()` parses `30s`, `5m`, `1h` to milliseconds.
+  - [ ] `--timeout` kills process via SIGTERM after specified seconds.
 
 #### FR-29.6 Process Spawn
 
 - **Desc:** `Deno.Command("claude", { stdin: "null", env: { CLAUDECODE: "" } })` — stdin null prevents terminal read, CLAUDECODE="" allows running inside IDE session.
 - **Acceptance:**
-  - [ ] **FR-29.6.1** Hang workaround: 30s grace after result event → SIGKILL.
-  - [ ] **FR-29.6.2** `deno task check` passes.
+  - [ ] Hang workaround: 30s grace after result event → SIGKILL.
+  - [ ] `deno task check` passes.
 
 ### 3.30 Whiteboard Cleanup on Commit (FR-30)
 
