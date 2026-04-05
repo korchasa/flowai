@@ -344,3 +344,60 @@ Deno.test("generateConfigNonInteractive - empty filters by default", async () =>
   assertEquals(config.agents, { include: [], exclude: [] });
   assertEquals(config.commands, { include: [], exclude: [] });
 });
+
+// --- sessionDocs tests ---
+
+Deno.test("parseConfigData - parses sessionDocs", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    sessionDocs: ["documents/requirements.md", "documents/design.md"],
+  });
+  assertEquals(config.sessionDocs, [
+    "documents/requirements.md",
+    "documents/design.md",
+  ]);
+});
+
+Deno.test("parseConfigData - sessionDocs undefined when absent", () => {
+  const config = parseConfigData({ version: "1.0" });
+  assertEquals(config.sessionDocs, undefined);
+});
+
+Deno.test("parseConfigData - sessionDocs filters non-strings", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    sessionDocs: ["valid.md", 42, null, "also-valid.md"],
+  });
+  assertEquals(config.sessionDocs, ["valid.md", "also-valid.md"]);
+});
+
+Deno.test("saveConfig - writes sessionDocs", async () => {
+  const fs = new InMemoryFsAdapter();
+  await saveConfig("/project", {
+    version: "1.1",
+    ides: ["claude"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+    sessionDocs: ["documents/requirements.md"],
+  }, fs);
+
+  const content = await fs.readFile("/project/.flowai.yaml");
+  assertEquals(content.includes("sessionDocs:"), true);
+  assertEquals(content.includes("documents/requirements.md"), true);
+});
+
+Deno.test("saveConfig - omits sessionDocs when empty", async () => {
+  const fs = new InMemoryFsAdapter();
+  await saveConfig("/project", {
+    version: "1.1",
+    ides: ["claude"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+    sessionDocs: [],
+  }, fs);
+
+  const content = await fs.readFile("/project/.flowai.yaml");
+  assertEquals(content.includes("sessionDocs"), false);
+});

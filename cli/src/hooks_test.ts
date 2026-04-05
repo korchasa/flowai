@@ -102,6 +102,21 @@ Deno.test("transformHookForCursor: transforms event and matcher", () => {
   assertStringIncludes(result.command, "deno run -A");
 });
 
+Deno.test("transformHookForCursor: maps SessionStart event", () => {
+  const hook: HookDefinition = {
+    event: "SessionStart",
+    description: "Inject docs",
+    timeout: 10,
+  };
+  const result = transformHookForCursor(
+    hook,
+    ".cursor/scripts/flowai-session-init-docs/run.ts",
+  );
+  assertEquals(result.event, "sessionStart");
+  assertEquals(result.matcher, undefined);
+  assertEquals(result.timeout, 10);
+});
+
 // --- generateOpenCodePlugin ---
 
 Deno.test("generateOpenCodePlugin: contains expected content", () => {
