@@ -7,9 +7,9 @@ Deno.test("buildCheckPlan: prerequisites has bundle as only entry", () => {
   assertEquals(plan.prerequisites[0].args, ["task", "bundle"]);
 });
 
-Deno.test("buildCheckPlan: parallel has 12 independent checks", () => {
+Deno.test("buildCheckPlan: parallel has 13 independent checks", () => {
   const plan = buildCheckPlan();
-  assertEquals(plan.parallel.length, 12);
+  assertEquals(plan.parallel.length, 13);
 
   // Verify key checks are present
   const labels = plan.parallel.map((c) => c.args.join(" "));

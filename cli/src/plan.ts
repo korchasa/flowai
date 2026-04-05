@@ -1,3 +1,4 @@
+// FR-DIST.SYNC — idempotent plan computation
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type {
   PlanAction,

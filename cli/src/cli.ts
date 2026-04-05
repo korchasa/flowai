@@ -1,3 +1,5 @@
+// FR-DIST.SYNC — CLI entry point for flowai sync
+// FR-DIST.UPDATE — self-update check
 import { Command } from "@cliffy/command";
 import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";

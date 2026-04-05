@@ -1,3 +1,4 @@
+// FR-DIST.DETECT — IDE auto-detection by config dir presence
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { type IDE, KNOWN_IDES } from "./types.ts";
 

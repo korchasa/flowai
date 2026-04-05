@@ -1,3 +1,5 @@
+// FR-DIST.CONFIG — interactive/non-interactive config generation
+// FR-PACKS.DEFAULTS — default pack selection
 /** Config generation — interactive and non-interactive modes */
 import { Checkbox, Confirm } from "@cliffy/prompt";
 import type { FsAdapter } from "./adapters/fs.ts";

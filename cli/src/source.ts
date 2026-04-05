@@ -1,5 +1,7 @@
+// FR-DIST.BUNDLE — BundledSource reads bundled.json
+// FR-HOOK-RESOURCES.SYNC-INFRA — hook/script name extraction
+// FR-SCRIPTS — script name extraction
 import { DEFAULT_GIT_URL } from "./types.ts";
-
 /** Framework source abstraction — provides file listing and content reading */
 export interface FrameworkSource {
   /** List all file paths under given prefix (relative to repo root) */

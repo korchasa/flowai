@@ -1,3 +1,5 @@
+# FR-CICD — CI/CD pipeline
+# FR-CICD.PIN — SHA-pinned third-party actions
 name: CI/CD
 
 on:

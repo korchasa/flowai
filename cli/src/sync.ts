@@ -1,3 +1,8 @@
+// FR-DIST.SYNC — sync orchestrator
+// FR-DIST.FILTER — selective sync via include/exclude
+// FR-PACKS — pack-based resource resolution
+// FR-HOOK-RESOURCES.INSTALL — hook config generation
+// FR-SCRIPTS — script copy to IDE dirs
 /** Sync orchestrator — resolves IDEs, reads bundled framework, computes plan, writes files */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { migrateV1ToV1_1, saveConfig } from "./config.ts";

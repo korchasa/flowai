@@ -14,10 +14,14 @@
 - **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
 - **Workflow**: New/Updated req -> Update SRS -> Update SDS -> Implement.
 - **Status**: `[x]` = implemented, `[ ]` = pending.
-- **Evidence**: Every `[x]` acceptance criterion MUST include evidence — file
-  paths with line numbers proving implementation. Format:
-  `- [x] Criterion text. Evidence: \`path/to/file.ts:42\`, \`other/file.md:10\``
-  Without evidence, criterion stays `[ ]`.
+- **Traceability**: Code references requirements, not the reverse. Three mechanisms:
+  1. **Code-evidenced**: Source files contain `// FR-<ID>` (TS/JS) or `# FR-<ID>` (YAML/shell)
+     comments near implementing logic. Validated by `deno task check` (`check-traceability.ts`).
+  2. **Benchmark-evidenced**: SRS states "Acceptance verified by benchmarks: <list>".
+     No code comments needed — benchmarks ARE the evidence.
+  3. **Structural**: Requirement proven by file/directory existence.
+     No code comments needed — `[x]` status + description is sufficient.
+- **No `Evidence:` paths in SRS.** Traceability lives in code, not in docs.
 
 ## SRS Format (`documents/requirements.md`)
 

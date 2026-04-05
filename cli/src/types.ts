@@ -1,3 +1,6 @@
+// FR-DIST.DETECT — IDE type definitions
+// FR-PACKS.CONFIG — FlowConfig with packs field
+// FR-HOOK-RESOURCES.FORMAT — HookDefinition type
 /** IDE definition */
 export interface IDE {
   name: string;

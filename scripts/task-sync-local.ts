@@ -1,3 +1,4 @@
+// FR-DEV-SYNC — dev resource distribution from framework/
 /** Dev-only: sync framework/ → IDE config dirs directly (no bundle step) */
 import { DenoFsAdapter } from "../cli/src/adapters/fs.ts";
 import { loadConfig } from "../cli/src/config.ts";

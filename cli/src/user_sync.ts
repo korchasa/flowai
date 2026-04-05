@@ -1,3 +1,4 @@
+// FR-DIST.USER-SYNC — cross-IDE user resource propagation
 /** Cross-IDE user resource propagation — scans, compares, and syncs user skills/agents across IDEs */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { resolveIDEs } from "./ide.ts";
