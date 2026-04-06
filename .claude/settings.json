@@ -74,15 +74,6 @@
             "timeout": 60
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "deno run -A .claude/scripts/flowai-session-init-docs/run.ts",
-            "timeout": 10
-          }
-        ]
       }
     ],
     "SessionEnd": [

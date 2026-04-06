@@ -151,12 +151,6 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
        - For **Brownfield**: Create `documents/whiteboards/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
        - For **Greenfield**: Directory will be created on first use by planning/answer skills. No need to initialize.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
-   - **Session Docs Config**: After generating SRS/SDS, add `sessionDocs` field to `.flowai.yaml` listing the created doc paths. This enables the `flowai-session-init-docs` hook to auto-inject these docs into every AI session:
-     ```yaml
-     sessionDocs:
-       - documents/requirements.md
-       - documents/design.md
-     ```
 
 10. **Configure Development Commands**
    - Read analysis output to get detected stack.

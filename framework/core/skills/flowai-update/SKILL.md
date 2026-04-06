@@ -68,7 +68,6 @@ flowai generates two types of outputs:
      - **AGENTS CREATED**: Note for commit message (new agents installed).
      - **AGENTS DELETED**: Note for commit message. Check if deleted agents are referenced in project docs.
      - **HOOKS INSTALLED**: Note for commit message (new hooks auto-configured).
-       - If `flowai-session-init-docs` appears in HOOKS INSTALLED and `.flowai.yaml` has no `sessionDocs` field: prompt the user to configure it. Suggest paths like `documents/requirements.md`, `documents/design.md`. Write the user's answer to `.flowai.yaml` `sessionDocs` field.
      - **HOOKS UPDATED**: Note for commit message.
      - **HOOKS DELETED**: Note for commit message (hooks removed from IDE config).
      - **ERRORS**: Report to user and stop if critical.

@@ -16,6 +16,3 @@ agents:
 commands:
   include: []
   exclude: []
-sessionDocs:
-  - documents/requirements.md
-  - documents/design.md
