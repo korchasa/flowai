@@ -1,7 +1,6 @@
 # YOU MUST
 
 - STRICTLY FOLLOW YOUR ROLE
-- PROJECT DOCS (SRS, SDS) MUST BE READ AT SESSION START: documents/requirements.md, documents/design.md.
 - AFTER END OF SESSION, REVIEW ALL DOCUMENTS AND MAKE SURE THEY ARE ACCURATE AND UP TO DATE.
 - ALWAYS CHECK THE CHANGES MADE BY RUNNING THE APPROPRIATE TESTS OR SCRIPTS.
 - ALWAYS KEEP THE PROJECT IN WORKING CONDITION: WITHOUT ERRORS, WARNINGS, AND PROBLEMS IN THE FORMATER AND LINTER OUTPUT
@@ -10,9 +9,10 @@
 - IF YOU SEE CONTRADICTIONS IN THE REQUEST OR CONTEXT, SAY ABOUT THEM, ASK THE NECESSARY QUESTIONS AND STOP.
 - DO NOT USE STUBS, "CRUTCHES", DECEPTIONS, OR OTHER PREMODS TO BYPASS CHECKS.
 - THE CODE MUST FOLLOW THE "FAIL FAST, FAIL CLEARLY" STRATEGY UNLESS THE USER HAS REQUESTED OTHERWISE.
-- IF A FIX ATTEMPT FAILS, APPLY "5 WHY" ANALYSIS TO FIND THE ROOT CAUSE BEFORE RETRYING.
-- IF ROOT CAUSE IS UNFIXABLE OR OUTSIDE CONTROL: STOP. DO NOT USE WORKAROUNDS. ASK USER FOR HELP.
-- IF ISSUE PERSISTS AFTER 2 ATTEMPTS: STOP. OUTPUT "STOP-ANALYSIS REPORT" (STATE, EXPECTED, 5-WHY CHAIN, ROOT CAUSE, HYPOTHESES). WAIT FOR USER HELP.
+- IF A FIX ATTEMPT FAILS → APPLY "5 WHY" ANALYSIS TO FIND THE ROOT CAUSE.
+- IF ROOT CAUSE IS UNFIXABLE OR OUTSIDE CONTROL → STOP. DO NOT USE WORKAROUNDS. ASK USER FOR HELP.
+- IF ROOT CAUSE IS FIXABLE → APPLY FIX, RETRY.
+- IF SECOND FIX ATTEMPT FAILS → STOP. OUTPUT "STOP-ANALYSIS REPORT" (STATE, EXPECTED, 5-WHY CHAIN, ROOT CAUSE, HYPOTHESES). WAIT FOR USER HELP.
 - WHEN EDITING CI/CD, ALWAYS CHECK LOCALLY FIRST.
 - BE PRECISE IN YOUR WORDING. USE A SCIENTIFIC APPROACH. ACCOMPANY HIGHLY SPECIALIZED TERMS AND ABBREVIATIONS WITH SHORT HINTS IN PARENTHESES
 - PROVIDE EVIDENCE FOR YOUR CLAIMS
@@ -76,6 +76,13 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - Centralize verification through `deno task check`
 - Dev resources in `.claude/` (skills, agents). Framework resources installed by flowai
 
+## Documentation Hierarchy
+1. **`AGENTS.md`**: Project vision, constraints, mandatory rules. READ-ONLY reference.
+2. **SRS** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements.
+3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
+4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes per task.
+5. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
+
 ## Planning Rules
 
 - **Environment Side-Effects**: Changes to infra/DB/external services → plan MUST include migration/sync/deploy steps.
@@ -135,3 +142,5 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 - Skills use `BenchmarkSkillScenario` (field: `skill`). Agents use `BenchmarkAgentScenario` (field: `agent`).
 - **No test-fitting.** If a benchmark fails, first determine whether the problem is in the skill/agent or in the benchmark. Signs of test-fitting: userQuery hints at the correct approach, simulatedUser/persona scripts the exact answer, mocks leak internal logic, setup pre-creates artifacts the skill should produce. Fix the skill/agent first; adjust the benchmark only if the scenario itself is wrong.
 - **Mocks are static.** The hooks-based mock mechanism returns the same `reason` string for ALL invocations of the mocked tool. Do NOT use conditional logic (`if`/`case`/`$`) in mock values — it will be shown as raw text, not executed. One mock = one response.
+
+> **BEFORE YOU START:** If you haven't read `documents/requirements.md` (SRS) and `documents/design.md` (SDS) in this session — read them now. They contain project requirements and architecture that inform every task.

@@ -1,21 +1,20 @@
 # Documentation Rules
 
-**CRITICAL:** MEMORY RESETS. DOCS = ONLY LINK TO PAST. MAINTAIN ACCURACY.
+Your memory resets between sessions. Documentation is the only link to past decisions and context. Keeping it accurate is not optional — stale docs actively mislead future sessions.
 
 ## Hierarchy
-1. **`AGENTS.md`**: "Why" & "For Whom". Long-term goal/value. READ-ONLY.
-2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth. Depends on VISION.
+1. **`AGENTS.md`**: "Why" & "For Whom". Long-term goal and value proposition. Read-only reference.
+2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements. Depends on vision.
 3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
-4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes. One file per task/session.
+4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans and notes. One file per task or session.
 
 ## Rules
-- **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
-- **Workflow**: New/Updated req -> Update SRS -> Update SDS -> Implement.
-- **Status**: `[x]` = implemented, `[ ]` = pending.
-- **Evidence**: Every `[x]` acceptance criterion MUST include evidence — file
-  paths with line numbers proving implementation. Format:
+- Follow AGENTS.md, SRS, and SDS strictly — they define what the project is and how it works.
+- Workflow for changes: new or updated requirement → update SRS → update SDS → implement. Skipping steps leads to docs-code drift.
+- Status markers: `[x]` = implemented, `[ ]` = pending.
+- Every `[x]` acceptance criterion must include evidence — file paths with line numbers proving implementation. Format:
   `- [x] Criterion text. Evidence: \`path/to/file.ts:42\`, \`other/file.md:10\``
-  Without evidence, criterion stays `[ ]`.
+  Without evidence, the criterion stays `[ ]` — claims without proof are assumptions.
 
 ## SRS Format (`documents/requirements.md`)
 ```markdown
@@ -76,10 +75,10 @@
 
 ## Whiteboards (`documents/whiteboards/`)
 
-- One file per task/session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, ≤40 chars).
+- One file per task or session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
 - Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`.
-- Do NOT reuse another session's whiteboard. Create a new file.
-- Issue or plan in GODS format.
+- Do not reuse another session's whiteboard — create a new file. Old whiteboards provide context but may contain outdated decisions.
+- Use GODS format (see below) for issues and plans.
 - Directory is gitignored. Files accumulate — this is expected.
 
 ### GODS Format
@@ -117,13 +116,10 @@
 
 ## Compressed Style Rules (All Docs)
 
-- **No History**: No changelogs.
-- **English Only(Except whiteboards)**.
-- **Summarize**: Extract facts -> compress. No loss of facts.
-- **Essential Info**: No fluff. High-info words.
-- **Compact**: Lists, tables, YAML, Mermaid.
-- **Lexicon**: No stopwords. Short synonyms.
-- **Entities**: Abbreviate after 1st use.
-- **Direct**: No filler.
-- **Structure**: Headings/sections.
-- **Symbols**: Replace words with symbols/nums.
+- No changelogs — docs reflect current state, not history.
+- English only (except whiteboards, which may use the user's language).
+- Summarize by extracting facts and compressing — no loss of information, just fewer words.
+- Every word must carry meaning — no filler, no fluff, no stopwords where a shorter synonym works.
+- Prefer compact formats: lists, tables, YAML, Mermaid diagrams.
+- Abbreviate terms after first use — define once, abbreviate everywhere.
+- Use symbols and numbers to replace words where unambiguous (e.g., `→` instead of "leads to").

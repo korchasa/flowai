@@ -62,6 +62,7 @@ Input sources:
      report "No changes to review" and STOP.
 
 2. **Gather Context**
+   - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
    - Create a review plan in the task management tool.
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
