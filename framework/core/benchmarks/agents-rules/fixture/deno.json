@@ -1,0 +1,90 @@
+{
+  "name": "@korchasa/ai-skel-ts",
+  "version": "0.8.9",
+  "license": "MIT",
+  "exports": {
+    ".": "./mod.ts",
+    "./llm": "./src/llm/llm.ts",
+    "./openrouter": "./src/openrouter/openrouter.ts",
+    "./agent": "./src/agent/agent.ts",
+    "./fetch-content": "./src/fetchers/local-fetcher/fetch-content.ts",
+    "./jina-scraper": "./src/fetchers/jina-fetcher/jina-scraper.ts",
+    "./brave-fetcher": "./src/fetchers/brave-fetcher/brave-search.ts",
+    "./cost-tracker": "./src/cost-tracker/cost-tracker.ts",
+    "./logger": "./src/logger/logger.ts",
+    "./llm-session-compactor": "./src/llm-session-compactor/compactor.ts",
+    "./run-context": "./src/run-context/run-context.ts"
+  },
+  "imports": {
+    "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic@~3.0.9",
+    "@ai-sdk/google": "npm:@ai-sdk/google@~3.0.6",
+    "@ai-sdk/openai": "npm:@ai-sdk/openai@~3.0.7",
+    "@modelcontextprotocol/sdk": "npm:@modelcontextprotocol/sdk@^1.26.0",
+    "@mozilla/readability": "npm:@mozilla/readability@^0.6.0",
+    "@openrouter/sdk": "npm:@openrouter/sdk@0.8.0",
+    "ai": "npm:ai@~6.0.27",
+    "cheerio": "npm:cheerio@^1.1.2",
+    "js-yaml": "npm:js-yaml@^4.1.1",
+    "jsdom": "npm:jsdom@~27.4.0",
+    "metascraper": "npm:metascraper@~5.49.15",
+    "metascraper-audio": "npm:metascraper-audio@~5.49.15",
+    "metascraper-author": "npm:metascraper-author@~5.49.15",
+    "metascraper-date": "npm:metascraper-date@~5.49.15",
+    "metascraper-description": "npm:metascraper-description@~5.49.15",
+    "metascraper-image": "npm:metascraper-image@~5.49.15",
+    "metascraper-lang": "npm:metascraper-lang@~5.49.15",
+    "metascraper-logo": "npm:metascraper-logo@~5.49.15",
+    "metascraper-publisher": "npm:metascraper-publisher@~5.49.15",
+    "metascraper-title": "npm:metascraper-title@~5.49.15",
+    "metascraper-url": "npm:metascraper-url@~5.49.15",
+    "metascraper-video": "npm:metascraper-video@~5.49.15",
+    "zod": "npm:zod@^4.0.0",
+    "@std/expect": "jsr:@std/expect@^1.0.13",
+    "@std/testing": "jsr:@std/testing@^1.0.9",
+    "dotenv": "npm:dotenv@^17.2.3"
+  },
+  "agents": {
+    "skills": [
+      {
+        "name": "ai-skel-ts-usage",
+        "path": "./skills/ai-skel-ts-usage"
+      }
+    ]
+  },
+  "publish": {
+    "exclude": [
+      ".github",
+      "scripts",
+      "hooks",
+      "documents",
+      "**/*.test.ts",
+      "src/fetchers/local-fetcher/fixtures"
+    ]
+  },
+  "fmt": {
+    "exclude": [
+      "**/*.md",
+      ".cursor/",
+      ".claude/"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      ".claude/"
+    ]
+  },
+  "tasks": {
+    "check": "deno lint && deno test -A",
+    "test": "deno test -A",
+    "lint": "deno lint",
+    "release": "deno run -A npm:standard-version --skip.tag"
+  },
+  "compilerOptions": {
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "dom.asynciterable",
+      "deno.ns"
+    ]
+  }
+}

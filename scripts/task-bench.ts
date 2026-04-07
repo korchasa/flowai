@@ -103,6 +103,13 @@ async function discoverScenarios(): Promise<BenchmarkScenario[]> {
       packEntry.name,
       scenarios,
     );
+
+    // Discover pack-level benchmarks: framework/<pack>/benchmarks/*/mod.ts
+    await importScenariosFromDir(
+      join(frameworkDir, packEntry.name, "benchmarks"),
+      packEntry.name,
+      scenarios,
+    );
   }
 
   return scenarios;

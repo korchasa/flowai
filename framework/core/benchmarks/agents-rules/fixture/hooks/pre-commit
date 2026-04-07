@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e
+
+# Pre-commit hook to run quality checks
+# This ensures code quality before committing
+
+echo "--- RUNNING PRE-COMMIT CHECKS ---"
+
+# Run the project's check command
+deno task check
+
+echo "--- PRE-COMMIT CHECKS PASSED ---"

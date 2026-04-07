@@ -7,6 +7,8 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `<pack>/pack.yaml` — Pack manifest (name, version, description, scaffolds).
 - `<pack>/skills/` — Product skills (`SKILL.md` directories). Categories: `flowai-*` (commands), `flowai-skill-*` (capabilities). Benchmark scenarios co-located in `<pack>/skills/<skill>/benchmarks/`.
 - `<pack>/agents/` — Canonical agent definitions (flat `.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by flowai at install time. Benchmark scenarios co-located in `<pack>/agents/<agent-name>/benchmarks/` (directory sits next to the flat `.md` file).
+- `<pack>/assets/` — Shared templates (AGENTS.md templates) used by multiple skills and the benchmark runner.
+- `<pack>/benchmarks/` — Pack-level benchmark scenarios (e.g., AGENTS.md rules verification) with shared fixtures.
 
 ## Packs
 

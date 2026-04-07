@@ -143,6 +143,12 @@ export async function copyFrameworkToIdeDir(
       }
     } catch { /* no agents/ in pack */ }
 
+    // Copy assets: framework/<pack>/assets/ → dest/assets/
+    const assetsDir = join(packDir, "assets");
+    try {
+      await copyRecursive(assetsDir, join(ideConfigDir, "assets"), skipDirs);
+    } catch { /* no assets/ in pack */ }
+
     // Copy hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/
     const hooksDir = join(packDir, "hooks");
     try {
