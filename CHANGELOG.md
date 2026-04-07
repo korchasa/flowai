@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.16](https://github.com/korchasa/flowai/compare/v0.4.15...v0.4.16) (2026-04-07)
+
+
+### Features
+
+* **cli:** add source override for installing from git branch or local path ([e8b7f10](https://github.com/korchasa/flowai/commit/e8b7f106356d62a53e9db9d38355b693b0fc3773))
+
+
+### Documentation
+
+* update SRS format with requirement numbering and acceptance criteria structure ([88f0aa1](https://github.com/korchasa/flowai/commit/88f0aa126537de9ccf37e1a47bf77f1e777d92ce))
+
 ### [0.4.15](https://github.com/korchasa/flowai/compare/v0.4.14...v0.4.15) (2026-04-05)
 
 
