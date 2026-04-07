@@ -108,7 +108,7 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-INIT: Project Initialization
 
-- **Description:** The `flowai-init` skill bootstraps AI agent understanding of a project by analyzing codebase, generating 3 AGENTS.md files (root, `documents/`, `scripts/`), and scaffolding documentation. Uses `generate_agents.ts` (Deno/TS, read-only) for project analysis and template files from `assets/` as reference for agent-driven file generation.
+- **Description:** The `flowai-init` skill bootstraps AI agent understanding of a project by analyzing codebase, generating 3 AGENTS.md files (root, `documents/`, `scripts/`) from pack-level asset templates, and scaffolding documentation (CLAUDE.md, SRS, SDS). Uses `generate_agents.ts` (Deno/TS, read-only) for project analysis. AGENTS.md templates are pack-level assets (not flowai-init scaffolds) — their updates are tracked independently via `assets:` in `pack.yaml`.
 - **Use case scenario:** User runs `/flowai-init` on existing or new project. Agent runs the analysis script, determines Greenfield vs Brownfield by its own judgment, interviews user (Greenfield) or reverse-engineers architecture (Brownfield), generates 3 AGENTS.md files, documentation (SRS, SDS, whiteboard), and configures development commands.
 - **Acceptance verified by benchmarks:** `flowai-init-greenfield`, `flowai-init-brownfield`, `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`, `flowai-init-vision-integration`, `flowai-init-claude-md-symlinks`
 - **Infrastructure acceptance (code/scripts):**
@@ -145,7 +145,7 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Idempotent: safe on repeated runs.
   - [x] `--yes` / `-y` flag for non-interactive mode.
   - [x] `-y` without config → non-interactive config generation (auto-detect IDEs, all packs).
-  - [x] Core-level assets (`framework/<pack>/assets/`) synced to `{ide_dir}/assets/`.
+  - [x] Core-level assets (`framework/<pack>/assets/`) synced to `{ide_dir}/assets/`. Asset changes reported as `ASSETS UPDATED` in sync output with mapped project artifact paths (from `pack.yaml` `assets:` field).
 
 #### FR-DIST.CONFIG Config Generation
 - **Desc:** Interactive `.flowai.yaml` creation when config missing.
@@ -379,7 +379,7 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-UPDATE: Framework Update — `flowai-update`
 
-- **Description:** Single entry point for updating the flowai framework. Handles CLI update, skill/agent sync via `flowai sync`, and migration of scaffolded project artifacts using template diffs as migration source.
+- **Description:** Single entry point for updating the flowai framework. Handles CLI update, skill/agent sync via `flowai sync`, migration of asset-mapped artifacts (AGENTS.md files from pack-level templates), and migration of scaffolded project artifacts using template diffs as migration source.
 - **Acceptance verified by benchmarks:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
 
 ### FR-PACKS: Pack System — Modular Resource Installation

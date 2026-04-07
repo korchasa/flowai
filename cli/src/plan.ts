@@ -57,6 +57,11 @@ function extractName(path: string, type: PlanItemType): string {
     const filename = path.split("/").pop() ?? path;
     return filename;
   }
+  if (type === "asset") {
+    // assets/{filename} → filename (keep extension for mapping lookup)
+    const filename = path.split("/").pop() ?? path;
+    return filename;
+  }
   // agents/{name}.md or commands/{name}.md → name
   const filename = path.split("/").pop() ?? path;
   return filename.replace(/\.md$/, "");

@@ -25,6 +25,7 @@ function baseSyncResult(): SyncResult {
     skillActions: [],
     agentActions: [],
     hookActions: [],
+    assetActions: [],
   };
 }
 
@@ -146,4 +147,51 @@ Deno.test("renderSyncOutput - shows deleted hooks", () => {
   const output = captureOutput(() => renderSyncOutput(result));
   assertStringIncludes(output, "HOOKS DELETED (1)");
   assertStringIncludes(output, "old-hook");
+});
+
+Deno.test("renderSyncOutput - shows updated assets with artifacts", () => {
+  const result = baseSyncResult();
+  result.assetActions = [
+    {
+      name: "AGENTS.template.md",
+      action: "update",
+      scaffolds: ["AGENTS.md"],
+    },
+    {
+      name: "AGENTS.documents.template.md",
+      action: "update",
+      scaffolds: ["documents/AGENTS.md"],
+    },
+    {
+      name: "AGENTS.scripts.template.md",
+      action: "ok",
+      scaffolds: ["scripts/AGENTS.md"],
+    },
+  ];
+
+  const output = captureOutput(() => renderSyncOutput(result));
+  assertStringIncludes(output, ">>> ACTIONS REQUIRED:");
+  assertStringIncludes(output, "ASSETS UPDATED (2)");
+  assertStringIncludes(output, "AGENTS.template.md (artifacts: AGENTS.md)");
+  assertStringIncludes(
+    output,
+    "AGENTS.documents.template.md (artifacts: documents/AGENTS.md)",
+  );
+  assertStringIncludes(output, "compare the template");
+  assertStringIncludes(output, "1 assets unchanged");
+});
+
+Deno.test("renderSyncOutput - shows created assets", () => {
+  const result = baseSyncResult();
+  result.assetActions = [
+    {
+      name: "NEW.template.md",
+      action: "create",
+      scaffolds: ["NEW.md"],
+    },
+  ];
+
+  const output = captureOutput(() => renderSyncOutput(result));
+  assertStringIncludes(output, "ASSETS CREATED (1)");
+  assertStringIncludes(output, "NEW.template.md (artifacts: NEW.md)");
 });
