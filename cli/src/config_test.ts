@@ -344,7 +344,6 @@ Deno.test("generateConfigNonInteractive - empty filters by default", async () =>
   assertEquals(config.commands, { include: [], exclude: [] });
 });
 
-
 // --- source field tests ---
 
 Deno.test("parseConfigData - parses source with ref only", () => {
