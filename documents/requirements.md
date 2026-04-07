@@ -83,8 +83,24 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 - **Description:** Evidence-based benchmarking system to evaluate agent skill execution quality. `deno task bench`.
 - **Key capabilities:** Isolated sandbox execution (`SpawnedAgent`), LLM-based Judge, evidence collection, interactive flows (`UserEmulator`), cost/token tracking, HTML tracing, parallel execution protection.
-- **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
+- **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/`), pack-level scenarios (`framework/<pack>/benchmarks/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
 - **Implementation:** `scripts/benchmarks/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
+
+### FR-BENCH.RULES: AGENTS.md Rules Benchmarks
+
+- **Description:** Pack-level benchmarks (`framework/core/benchmarks/agents-rules-*/`) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). Templates stored at `framework/core/assets/`.
+- **Acceptance verified by benchmarks:**
+  - [x] `agents-rules-tdd-cycle` — TDD RED→GREEN→REFACTOR→CHECK
+  - [x] `agents-rules-fail-fast` — no stubs, fix source not test, stop on missing config
+  - [x] `agents-rules-stop-analysis` — 5-WHY, STOP on unfixable problem
+  - [x] `agents-rules-contradictions` — contradiction detection, ask and stop
+  - [x] `agents-rules-functionality-preservation` — run tests before/after refactoring
+  - [x] `agents-rules-evidence-claims` — read code before fixing, cite evidence
+- **Open (not yet implemented):**
+  - [ ] `agents-rules-variant-analysis` — propose variants with pros/cons before coding
+  - [ ] `agents-rules-proactive-resolution` — find answers in codebase, don't ask user
+  - [ ] `agents-rules-no-silent-fallbacks` — don't add defaults/fallbacks without asking
+  - [ ] `agents-rules-run-all-tests` — run full test suite, not just changed files
 
 ### FR-COMPONENT: Component Coverage
 

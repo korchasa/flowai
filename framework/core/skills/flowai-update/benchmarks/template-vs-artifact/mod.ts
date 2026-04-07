@@ -43,9 +43,9 @@ export const FlowUpdateTemplateVsArtifactBench = new class
         files: [
           "documents/AGENTS.md",
           "scripts/AGENTS.md",
-          ".claude/skills/flowai-init/assets/AGENTS.template.md",
-          ".claude/skills/flowai-init/assets/AGENTS.documents.template.md",
-          ".claude/skills/flowai-init/assets/AGENTS.scripts.template.md",
+          ".claude/assets/AGENTS.template.md",
+          ".claude/assets/AGENTS.documents.template.md",
+          ".claude/assets/AGENTS.scripts.template.md",
           ".claude/skills/flowai-reflect/SKILL.md",
           ".claude/skills/flowai-review/SKILL.md",
           ".claude/skills/flowai-commit/SKILL.md",
@@ -53,9 +53,9 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       },
     ],
     modified: [
-      ".claude/skills/flowai-init/assets/AGENTS.template.md",
-      ".claude/skills/flowai-init/assets/AGENTS.documents.template.md",
-      ".claude/skills/flowai-init/assets/AGENTS.scripts.template.md",
+      ".claude/assets/AGENTS.template.md",
+      ".claude/assets/AGENTS.documents.template.md",
+      ".claude/assets/AGENTS.scripts.template.md",
       ".claude/skills/flowai-reflect/SKILL.md",
       ".claude/skills/flowai-review/SKILL.md",
       ".claude/skills/flowai-commit/SKILL.md",
@@ -137,12 +137,11 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
     // --- Prepare "old" template versions (baseline) ---
     const skillsBase = join(sandboxPath, ".claude", "skills");
+    const assetsBase = join(sandboxPath, ".claude", "assets");
 
     // 1. AGENTS.template.md — remove "Proactive Resolution" + add formatting noise
     const mainTemplatePath = join(
-      skillsBase,
-      "flowai-init",
-      "assets",
+      assetsBase,
       "AGENTS.template.md",
     );
     const newMainTemplate = await Deno.readTextFile(mainTemplatePath);
@@ -156,9 +155,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
     // 2. AGENTS.documents.template.md — formatting-only changes
     const docsTemplatePath = join(
-      skillsBase,
-      "flowai-init",
-      "assets",
+      assetsBase,
       "AGENTS.documents.template.md",
     );
     const newDocsTemplate = await Deno.readTextFile(docsTemplatePath);
@@ -172,9 +169,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
     // 3. AGENTS.scripts.template.md — formatting-only changes
     const scriptsTemplatePath = join(
-      skillsBase,
-      "flowai-init",
-      "assets",
+      assetsBase,
       "AGENTS.scripts.template.md",
     );
     const newScriptsTemplate = await Deno.readTextFile(scriptsTemplatePath);

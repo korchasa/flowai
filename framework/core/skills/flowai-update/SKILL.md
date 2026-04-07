@@ -93,10 +93,10 @@ flowai generates two types of outputs:
      a. Run `git diff` on the skill directory (e.g., `.claude/skills/flowai-init/`) to understand what changed in the template.
      b. For each scaffolded artifact path listed:
         - **MUST read** the actual project artifact file (e.g., `./AGENTS.md`, `./documents/design.md`).
-        - **MUST read** the framework template (e.g., `.claude/skills/flowai-init/assets/AGENTS.template.md`).
+        - **MUST read** the framework template (e.g., `.claude/assets/AGENTS.template.md`).
         - Compare line-by-line using `git diff --no-index`:
           ```
-          git diff --no-index -- .claude/skills/flowai-init/assets/AGENTS.template.md ./AGENTS.md
+          git diff --no-index -- .claude/assets/AGENTS.template.md ./AGENTS.md
           ```
         - Primary comparison is **template content vs project artifact**, not just template git history.
      c. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).

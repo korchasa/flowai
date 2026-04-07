@@ -9,7 +9,7 @@ import { runGit } from "@bench/utils.ts";
  * In setup(), .claude/ already contains the full framework.
  *
  * Strategy:
- * 1. Read real AGENTS.template.md from .claude/skills/flowai-init/assets/
+ * 1. Read real AGENTS.template.md from .claude/assets/
  * 2. Create an "old" version by stripping the CHECK step
  * 3. Commit everything (old template = baseline, "previous sync")
  * 4. Restore real version → only this template shows as modified in git
@@ -33,10 +33,10 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
     commits: [
       {
         message: "Initial sync (baseline)",
-        files: [".claude/skills/flowai-init/assets/AGENTS.template.md"],
+        files: [".claude/assets/AGENTS.template.md"],
       },
     ],
-    modified: [".claude/skills/flowai-init/assets/AGENTS.template.md"],
+    modified: [".claude/assets/AGENTS.template.md"],
     expectedOutcome:
       "Agent detects template change, maps flowai-init to AGENTS.md, proposes adding CHECK step to TDD Flow section",
   };
@@ -68,8 +68,6 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
     const templatePath = join(
       sandboxPath,
       ".claude",
-      "skills",
-      "flowai-init",
       "assets",
       "AGENTS.template.md",
     );
@@ -90,7 +88,7 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
     // Restore real (new) version — simulates "flowai sync" bringing updates
     await Deno.writeTextFile(templatePath, newContent);
 
-    // Now only .claude/skills/flowai-init/assets/AGENTS.template.md is modified
+    // Now only .claude/assets/AGENTS.template.md is modified
   }
 
   userQuery =

@@ -3,8 +3,6 @@ import { join } from "@std/path";
 const TEMPLATE_DIR = join(
   "framework",
   "core",
-  "skills",
-  "flowai-init",
   "assets",
 );
 

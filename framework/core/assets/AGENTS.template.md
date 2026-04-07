@@ -6,7 +6,6 @@
 - Follow the TDD flow described below. Skipping it leads to untested code and regressions.
 - Write all documentation in English, compressed style. Brevity preserves context window.
 - If you see contradictions in the request or context, raise them explicitly, ask clarifying questions, and stop. Do not guess which interpretation is correct.
-- Do not use stubs, workarounds, or deceptions to bypass checks — they hide real problems and create false confidence in passing tests.
 - Code should follow "fail fast, fail clearly" — surface errors immediately with clear messages rather than silently propagating bad state. Unless the user requests otherwise.
 - When editing CI/CD pipelines, always validate locally first — broken CI is visible to the whole team and slow to debug remotely.
 - Provide evidence for your claims — link to code, docs, or tool output. Unsupported assertions erode trust.
@@ -43,32 +42,19 @@
 
 - **Environment Side-Effects**: When changes touch infra, databases, or external services, the plan must include migration, sync, or deploy steps — otherwise the change works locally but breaks in production.
 - **Verification Steps**: Every plan must include specific verification commands (tests, validation tools, connectivity checks) — a plan without verification is just a wish.
-- **Functionality Preservation**: Before refactoring or modifying existing code, run existing tests. Run them again after. Add new tests if coverage is missing — regressions hide in untested paths.
+- **Functionality Preservation**: Before editing any file for refactoring, run existing tests and confirm they pass — this is a prerequisite, not a suggestion. Without a green baseline you cannot detect regressions. Run tests again after all edits. Add new tests if coverage is missing.
 - **Data-First**: When integrating with external APIs or processes, inspect the actual protocol and data formats before planning — assumptions about data shape are the #1 source of integration bugs.
 - **Architectural Validation**: For complex logic changes, visualize the event sequence (sequence diagram or pseudocode) — it catches race conditions and missing edges that prose descriptions miss.
 - **Variant Analysis**: When the path is non-obvious, propose variants with Pros/Cons/Risks per variant and trade-offs across them. Quality over quantity — one well-reasoned variant is fine if the path is clear.
-- **User Decision Gate**: Do not detail the implementation plan until the user explicitly selects a variant — detailed planning on a rejected variant wastes tokens and time.
 - **Plan Persistence**: After variant selection, save the detailed plan to `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` using GODS format — chat-only plans are lost between sessions.
 - **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, web) to find the answer autonomously — unnecessary questions slow the workflow and signal lack of initiative.
-
-## Error Fixing Protocol
-
-1. Fix attempt failed → apply "5 WHY" analysis to find the root cause.
-2. Root cause is unfixable or outside control → STOP. Do not use workarounds. Ask user for help.
-3. Root cause is fixable → apply fix, retry.
-4. Second fix attempt failed → STOP. Output "STOP-ANALYSIS REPORT" (state, expected, 5-why chain, root cause, hypotheses). Wait for user help.
-
-## Code Documentation
-
-- **Module level**: each module gets an `AGENTS.md` describing its responsibility and key decisions.
-- **Code level**: JSDoc/GoDoc for classes, methods, and functions. Focus on *why* and *how*, not *what*. Skip trivial comments — they add noise without value.
 
 ## TDD Flow
 
 1. **RED**: Write a failing test (`test <id>`) for new or changed logic.
 2. **GREEN**: Write minimal code to pass the test.
 3. **REFACTOR**: Improve code and tests without changing behavior. Re-run `test <id>`.
-4. **CHECK**: Run `check` command. Fix all warnings and errors before proceeding.
+4. **CHECK**: Run `fmt`, `lint`, and full test suite. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
 
 ### Test Rules
 
@@ -77,5 +63,23 @@
 - Write code only to fix failing tests or reported issues — no speculative implementations.
 - No stubs or mocks for internal code. Use real implementations — stubs hide integration bugs.
 - Run all tests before finishing, not just the ones you changed.
+- When a test fails, fix the source code — not the test. Do not modify a failing test to make it pass, do not add error swallowing or skip logic.
+- Do not create source files with guessed or fabricated data to satisfy imports — if the data source is missing, that is a blocker (see Diagnosing Failures).
+
+## Diagnosing Failures
+
+The goal is to identify the root cause, not to suppress the symptom. A quick workaround that hides the root cause is worse than an unresolved issue with a correct diagnosis.
+
+1. Read the relevant code and error output before making any changes.
+2. Apply "5 WHY" analysis to find the root cause.
+3. Root cause is fixable → apply the fix, retry.
+4. Second fix attempt failed → STOP. Output "STOP-ANALYSIS REPORT" (state, expected, 5-why chain, root cause, hypotheses). Wait for user help.
+
+When the root cause is outside your control (missing API keys/URLs, missing generator scripts, unavailable external services, wrong environment configuration) → STOP immediately and ask the user for the correct values. Do not guess, do not invent replacements, do not create workarounds.
+
+## Code Documentation
+
+- **Module level**: each module gets an `AGENTS.md` describing its responsibility and key decisions.
+- **Code level**: JSDoc/GoDoc for classes, methods, and functions. Focus on *why* and *how*, not *what*. Skip trivial comments — they add noise without value.
 
 > **Before you start:** read `documents/requirements.md` (SRS) and `documents/design.md` (SDS) if you haven't in this session. They contain project requirements and architecture that inform every task.

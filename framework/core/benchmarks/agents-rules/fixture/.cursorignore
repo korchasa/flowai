@@ -1,0 +1,14 @@
+# 1. First, allow the folder structure so Cursor can access them
+!node_modules/
+!node_modules/**/
+
+# 2. Ignore ABSOLUTELY ALL files inside node_modules
+# (Important: use *.* to catch files with extensions)
+node_modules/**/*.*
+# And files without extensions (like LICENSE)
+node_modules/**/[A-Z]*
+
+# 3. AND NOW selectively allow what we need
+!node_modules/**/*.ts
+!node_modules/**/*.d.ts
+!node_modules/**/*.md
