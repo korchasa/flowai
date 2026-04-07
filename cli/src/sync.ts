@@ -102,6 +102,8 @@ export interface SyncResult {
   agentActions: ResourceAction[];
   /** Per-hook action breakdown */
   hookActions: ResourceAction[];
+  /** Per-asset action breakdown (template changes with project artifact mappings) */
+  assetActions: ResourceAction[];
 }
 
 /** Resolve which skills, agents, hooks, and scripts to sync based on packs and filters */
@@ -190,6 +192,7 @@ export async function sync(
     skillActions: [],
     agentActions: [],
     hookActions: [],
+    assetActions: [],
   };
 
   // 1. Resolve IDEs
@@ -215,11 +218,12 @@ export async function sync(
     const allPaths = await source.listFiles("framework/");
     const usePacks = hasPacks(allPaths);
 
-    // 2a. Read pack definitions (versions + scaffolds)
+    // 2a. Read pack definitions (versions + scaffolds + assets)
     const packDefs = usePacks
       ? await readPackDefinitions(allPaths, source)
       : [];
     const scaffoldsIndex = buildScaffoldsIndex(packDefs);
+    const assetsIndex = buildAssetsIndex(packDefs);
 
     // 2b. Automigrate v1 → v1.1 if pack structure detected
     if (usePacks && config.packs === undefined) {
@@ -464,8 +468,15 @@ export async function sync(
             "asset",
             fs,
           );
-          if (isFirstIde && assetPlan.some((i) => i.action !== "ok")) {
-            log(`  Assets: ${assetFiles.length} file(s)`);
+          if (isFirstIde) {
+            if (assetPlan.some((i) => i.action !== "ok")) {
+              log(`  Assets: ${assetFiles.length} file(s)`);
+            }
+            result.assetActions = extractResourceActions(
+              assetPlan,
+              assetFiles.map((f) => f.path.replace(/^assets\//, "")),
+              assetsIndex,
+            );
           }
           await processPlan(assetPlan, fs, options, result, log);
         }
@@ -806,11 +817,25 @@ async function readPackDefinitions(
       }
     }
 
+    // Parse assets: Record<string, string>
+    let assets: Record<string, string> | undefined;
+    if (data.assets && typeof data.assets === "object") {
+      assets = {};
+      for (
+        const [template, artifactPath] of Object.entries(
+          data.assets as Record<string, unknown>,
+        )
+      ) {
+        assets[template] = String(artifactPath);
+      }
+    }
+
     packs.push({
       name: String(data.name ?? ""),
       version: String(data.version ?? "0.0.0"),
       description: String(data.description ?? ""),
       scaffolds,
+      assets,
     });
   }
   return packs.sort((a, b) => a.name.localeCompare(b.name));
@@ -825,6 +850,21 @@ function buildScaffoldsIndex(
     if (!pack.scaffolds) continue;
     for (const [skill, paths] of Object.entries(pack.scaffolds)) {
       index.set(skill, paths);
+    }
+  }
+  return index;
+}
+
+/** Build asset mapping index: template-name → [project artifact path]
+ * Uses the same Map<string, string[]> shape as scaffoldsIndex for reuse with extractResourceActions */
+function buildAssetsIndex(
+  packs: PackDefinition[],
+): Map<string, string[]> {
+  const index = new Map<string, string[]>();
+  for (const pack of packs) {
+    if (!pack.assets) continue;
+    for (const [template, artifactPath] of Object.entries(pack.assets)) {
+      index.set(template, [artifactPath]);
     }
   }
   return index;

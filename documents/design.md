@@ -45,11 +45,12 @@
 - **Structure:**
   ```
   framework/<pack-name>/
-    pack.yaml              # name, version (semver), description, scaffolds (optional)
+    pack.yaml              # name, version (semver), description, scaffolds, assets (optional)
     skills/<name>/SKILL.md # skills (full installed name, e.g. flowai-commit/)
     agents/<name>.md       # agents (optional)
     hooks/<name>/          # hook.yaml + run.sh (optional)
     scripts/<name>         # utility scripts (optional)
+    assets/                # shared templates (optional, e.g. AGENTS.md templates)
   ```
 - **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
@@ -190,12 +191,12 @@ graph TD
 - **Data entities:**
   - `FlowConfig`: `{ version, ides, packs, skills: {include, exclude}, agents: {include, exclude}, source? }` (`source`: git branch/local path override)
   - `SourceConfig`: `{ git?, ref?, path? }` — `ref` = branch/tag (default URL: `DEFAULT_GIT_URL`); `git` = custom repo URL (requires `ref`); `path` = local dir (mutually exclusive with `ref`)
-  - `PackDefinition`: `{ name, version, description, scaffolds?: Record<skill, paths[]> }` (parsed from `pack.yaml`)
+  - `PackDefinition`: `{ name, version, description, scaffolds?: Record<skill, paths[]>, assets?: Record<template, artifactPath> }` (parsed from `pack.yaml`)
   - `HookDefinition`: `{ event, matcher?, description, timeout? }` (parsed from `hook.yaml`; timeout default: 30 PostToolUse, 600 PreToolUse)
   - `PlanItem`: `{ type: skill|agent|hook|script|asset, name, action: create|update|ok|conflict, sourcePath, targetPath, content }`
 - **Agent transformation rules** (per IDE): See 3.2 IDE frontmatter formats.
 - **Pack resolution flow:** Load config → expand `packs:` to resource lists (skills, agents, hooks, scripts from `framework/*/`) → apply `skills.include/exclude` filter → compute plan → write. `resolvePackResources()` returns `hookNames` and `scriptNames` alongside skills/agents.
-- **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, created/updated/deleted agents, installed/updated/deleted hooks) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]` with per-resource action and scaffolds. Post-sync frontmatter validation via `flowai-update/scripts/validate_frontmatter.ts` (scans IDE config dirs for skills + agents).
+- **Rich sync output:** `flowai sync` produces instruction-oriented output: `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, created/updated/deleted agents, installed/updated/deleted hooks, updated/created assets with artifact mappings) or `>>> NO ACTIONS REQUIRED`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]`, `assetActions[]` with per-resource action and scaffolds/artifacts. Post-sync frontmatter validation via `flowai-update/scripts/validate_frontmatter.ts` (scans IDE config dirs for skills + agents).
 - **Hook installation:** Reads `hook.yaml`, generates IDE-specific config via `cli/src/hooks.ts`: Claude Code → 3-level nested `settings.json` hooks, Cursor → flat `.cursor/hooks.json`, OpenCode → generated `flowai-hooks.ts` plugin. Event/tool name mapping per IDE (`EVENT_MAP`, `TOOL_MAP`). Manifest `.{ide}/flowai-hooks.json` tracks installed hooks for deinstallation. Merge preserves user hooks not in manifest. 4 framework hooks: `flowai-lint-on-write` (PostToolUse, ts/js/py linting), `flowai-test-before-commit` (PreToolUse, blocks commit w/o tests), `flowai-skill-structure-validate` (PostToolUse, SKILL.md validation), `flowai-mermaid-validate` (PostToolUse, Mermaid diagram validation).
 - **Script installation:** Copies to `.{ide}/scripts/` (simple file copy).
 - **Naming:** Pack directory names are the final installed names (e.g., `flowai-commit`, `flowai-skill-write-dep`). No name transformation at install time.
@@ -210,7 +211,7 @@ graph TD
 ### 3.7 flowai-init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT
 
 - **Purpose:** Preserve user edits during re-initialization. 3 AGENTS.md files
-  (`./`, `./documents/`, `./scripts/`). Agent-driven generation from templates.
+  (`./`, `./documents/`, `./scripts/`). Agent-driven generation from pack-level asset templates. AGENTS.md template updates tracked independently via `pack.yaml` `assets:` field (not flowai-init scaffolds).
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
 - **Behavioral requirements:** See benchmarks `flowai-init-*` (6 scenarios).
 
@@ -222,8 +223,9 @@ graph TD
 
 ### 3.9 Framework Update Skill — `flowai-update`
 
-- **Purpose:** Single entry point for updating framework + migrating scaffolded artifacts.
-- **Scaffolded artifacts:** Mapping declared in `pack.yaml` `scaffolds:` field.
+- **Purpose:** Single entry point for updating framework + migrating asset-mapped and scaffolded artifacts.
+- **Asset artifacts:** AGENTS.md templates mapped via `pack.yaml` `assets:` field (template → project artifact). Tracked independently from skills — changes detected even when no skills are updated.
+- **Scaffolded artifacts:** Remaining artifacts mapped via `pack.yaml` `scaffolds:` field (skill → artifact paths).
 - **CLI integration:** `flowai` bare command is no-op inside IDE. `flowai sync` required explicitly.
 - **Behavioral requirements:** See benchmarks `flowai-update-*` (4 scenarios).
 
