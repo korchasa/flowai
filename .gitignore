@@ -13,10 +13,7 @@ _research_tmp/
 .claude/settings.local.json
 
 # Synced from framework/ via `deno task sync-local` (dev-only, not tracked)
-.claude/skills/
-.claude/agents/
-.claude/scripts/
-.claude/assets/
+.claude/
 
 # Generated artifacts (cli)
 cli/src/bundled.json
