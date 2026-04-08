@@ -170,9 +170,9 @@ description: Commit workflow
       critical: true,
     },
     {
-      id: "showed_diff_before_applying",
+      id: "showed_diff_before_confirmation",
       description:
-        "Did the agent show the proposed changes to the user before applying them?",
+        "Did the agent show the adaptation diff (via git diff or before/after) and ask for user confirmation before considering the changes final?",
       critical: true,
     },
     {

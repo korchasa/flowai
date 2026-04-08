@@ -96,9 +96,9 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "detected_skill_change",
+      id: "detected_asset_change",
       description:
-        "Did the agent detect that a file in `.claude/skills/flowai-init/` has changed (via git status or git diff)?",
+        "Did the agent detect that `.claude/assets/AGENTS.template.md` has changed (via git diff or git status)?",
       critical: true,
     },
     {
