@@ -1,7 +1,7 @@
 ---
 name: flowai-maintenance
 description: >-
-  Perform a comprehensive "Lead Engineer" audit: structure, consistency, code quality, technical debt, documentation coverage, and terminology checks.
+  Perform a comprehensive "Lead Engineer" audit: structure, consistency, code quality, technical debt, documentation coverage, terminology, instruction coherence, and tooling relevance checks.
 disable-model-invocation: true
 ---
 
@@ -9,10 +9,7 @@ disable-model-invocation: true
 
 ## Overview
 
-Execute a rigorous 7-point maintenance sweep to identify structural deviations,
-documentation inconsistencies, dead code, complexity hotspots, technical debt,
-missing code documentation, and terminology drift. All findings must be
-actionable and saved to a whiteboard in `documents/whiteboards/`.
+Execute a rigorous 9-point maintenance sweep to identify structural deviations, documentation inconsistencies, dead code, complexity hotspots, technical debt, missing code documentation, terminology drift, instruction coherence issues, and tooling relevance problems. All findings must be actionable and saved to a whiteboard in `documents/whiteboards/`.
 
 ## Context
 
@@ -26,6 +23,8 @@ It addresses:
 5.  **Debt**: Accumulated TODOs.
 6.  **Language**: Inconsistent terminology.
 7.  **Doc Coverage**: Missing explanations in code.
+8.  **Instruction Coherence**: Contradictions and ambiguities across project instructions.
+9.  **Tooling Relevance**: Skills, agents, rules, and hooks that don't match the project.
 </context>
 
 ## Rules & Constraints
@@ -35,7 +34,7 @@ It addresses:
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 3.  **Constructive**: Every "Issue" must have a "Proposed Fix".
 4.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
-5.  **Mandatory**: Use a task management tool (e.g., `todo_write`, `todowrite`) to track progress through the 7 phases.
+5.  **Mandatory**: Use a task management tool (e.g., `todo_write`, `todowrite`) to track progress through the 9 phases.
 6.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
 </rules>
 
@@ -44,7 +43,7 @@ It addresses:
 <step_by_step>
 
 1. **Initialize & Plan**
-   - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering the 7 phases below.
+   - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering the 9 phases below.
    - Check `documents/whiteboards/` for existing maintenance reports. Review prior reports for context, but
      always create a new report file.
    - Identify project's primary language and source directories.
@@ -95,7 +94,39 @@ It addresses:
    - **Scan**: primary source directories.
    - **Report**: List undocumented symbols.
 
-8. **Phase 7: Reporting**
+8. **Phase 7: Instruction Coherence**
+   - **Scope**: Read all instruction files that guide agent/developer behavior:
+     `CLAUDE.md` (root and nested), `AGENTS.md` files, `documents/requirements.md`,
+     `documents/design.md`, and any rules/conventions files.
+   - **Contradictions**: Identify mutually exclusive rules across or within files
+     (e.g., "use tabs" in one section vs. "use 2 spaces" in another; "never mock"
+     vs. "mock freely").
+   - **Ambiguities**: Flag vague or open-ended instructions that could be
+     interpreted in conflicting ways by different agents or sessions.
+   - **Redundancy**: Note duplicated rules across files that may diverge over time.
+   - **Scope conflicts**: Check that nested instruction files (`subdir/CLAUDE.md`)
+     don't silently override root-level rules without explicit justification.
+   - **Coherence verdict**: For each issue, state which files/sections conflict and
+     propose a resolution (keep one, merge, or clarify).
+
+9. **Phase 8: Tooling Relevance**
+   - **Scope**: Inventory all installed skills (`.claude/skills/`, `.cursor/skills/`),
+     agents/subagents (`.claude/agents/`, `.cursor/agents/`), hooks (`.claude/hooks/`,
+     `.cursor/hooks/`, `.husky/`), and rules files.
+   - **Stack match**: Compare each item against the project's declared tooling stack
+     (from `AGENTS.md` or `CLAUDE.md`) and actual source files. Flag items designed
+     for a different tech stack (e.g., Django skill in a TypeScript project, Python
+     linting hook in a Deno project).
+   - **Domain match**: Flag agents/skills targeting a domain absent from the project
+     (e.g., Kubernetes deployer agent in a project with no K8s manifests or Dockerfiles).
+   - **Stale tooling**: Identify skills/agents/hooks that reference tools, commands,
+     or frameworks not present in the project (e.g., hook calling `flake8` when no
+     Python files exist).
+   - **Verdict**: For each mismatch, state what the item expects vs. what the project
+     actually uses, and propose a fix (remove, replace with stack-appropriate
+     alternative, or add justification).
+
+10. **Phase 9: Reporting**
    - Compile all findings into the whiteboard file with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
@@ -121,6 +152,17 @@ It addresses:
 
      - [ ] `utils.*` - function `parseData` missing docs. (Fix: Add docs)
      - [ ] `ComplexClass` missing usage example. (Fix: Add example)
+
+     ## 6. Instruction Coherence
+
+     - [ ] CLAUDE.md: "use tabs" (Code Style) vs "use 2 spaces" (Error Handling). (Fix: Keep tabs, remove conflicting rule)
+     - [ ] CLAUDE.md vs AGENTS.md: Test policy differs. (Fix: Align on single policy in AGENTS.md)
+
+     ## 7. Tooling Relevance
+
+     - [ ] Skill `django-migrations` targets Python/Django, project is TypeScript/Deno. (Fix: Remove skill)
+     - [ ] Agent `kubernetes-deployer` references K8s, no K8s manifests in project. (Fix: Remove agent)
+     - [ ] Hook `pre-commit-python-lint.sh` runs flake8/black, no Python files exist. (Fix: Remove hook)
      ```
 
 </step_by_step>
@@ -134,5 +176,7 @@ It addresses:
 [ ] Aggregated all TODO/FIXME tags.
 [ ] Verified documentation terminology vs code usage.
 [ ] Checked for missing code documentation (File/Class/Method).
+[ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
+[ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
 [ ] Saved structured report to `documents/whiteboards/`.
 </verification>
