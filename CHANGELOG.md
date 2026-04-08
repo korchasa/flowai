@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.17](https://github.com/korchasa/flowai/compare/v0.4.16...v0.4.17) (2026-04-08)
+
+
+### Code Refactoring
+
+* remove flowai-session-init-docs hook and sessionDocs config ([5876920](https://github.com/korchasa/flowai/commit/587692005121a595838c9aae0952c109f739f39b))
+
 ### [0.4.16](https://github.com/korchasa/flowai/compare/v0.4.15...v0.4.16) (2026-04-07)
 
 
