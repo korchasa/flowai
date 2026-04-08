@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.18](https://github.com/korchasa/flowai/compare/v0.4.17...v0.4.18) (2026-04-08)
+
+
+### Features
+
+* **bench:** add pack-level AGENTS.md rules benchmarks and relocate templates ([247e43a](https://github.com/korchasa/flowai/commit/247e43a0f409cce978adf5be665e3aa3e3fe068d))
+* **cli:** decouple AGENTS.md templates from flowai-init scaffolds ([4a139e0](https://github.com/korchasa/flowai/commit/4a139e0a2ac0d7a054273df0e700041fd4be5723))
+* **cli:** sync core assets to IDE config dirs ([3463549](https://github.com/korchasa/flowai/commit/3463549342d4347e5d67a0df9eeb13c7cad5f017))
+* **traceability:** add FR-* code-to-SRS traceability with verification script ([228dbf2](https://github.com/korchasa/flowai/commit/228dbf23041a71b257853a0436264192275d8f02))
+* **traceability:** add FR-* code-to-SRS traceability with verification script ([c2ff7a6](https://github.com/korchasa/flowai/commit/c2ff7a664d1dd8a57fa2950a4b4746a15171df1c))
+
+
+### Bug Fixes
+
+* **config:** remove source reference from .flowai.yaml ([1031461](https://github.com/korchasa/flowai/commit/10314613ccc1d5c64a6ab84f9899c9b9d88385c7))
+* **fmt:** format benchmark file that broke CI ([4e9ed79](https://github.com/korchasa/flowai/commit/4e9ed797ed0fef0d6aa63cc6a9de85f9d5fd9432))
+* **skill:** make asset artifact verification unconditional in flowai-update ([e4048f9](https://github.com/korchasa/flowai/commit/e4048f941c2255548ec4a6ae510add79ccbdffc4))
+
+
+### Documentation
+
+* rename FR IDs from numeric to mnemonic format across codebase ([4fff581](https://github.com/korchasa/flowai/commit/4fff581e8d6e4ee2db9a8bd4d3a40c98860c7e30))
+* rename FR IDs from numeric to mnemonic format across codebase ([9c08aa9](https://github.com/korchasa/flowai/commit/9c08aa9028e5bbbc0510f396001f75f4b9de828d))
+* update SDS with traceability model and agent name corrections ([ba4aed8](https://github.com/korchasa/flowai/commit/ba4aed852909d3e6ca5bdeddff54a257b3a60e17))
+* update SDS with traceability model and agent name corrections ([8612843](https://github.com/korchasa/flowai/commit/86128431d429bd3353d54acfcdbfcd9e709af1a0))
+
+
+### Chores
+
+* configure sessionDocs for session-init-docs hook ([5e874e9](https://github.com/korchasa/flowai/commit/5e874e968b785146b0ea2a215efe3c247afe3858))
+* configure sessionDocs for session-init-docs hook ([87646db](https://github.com/korchasa/flowai/commit/87646db264d59565c3255a8aa3d55c4888ded4cb))
+* **framework:** update flowai framework ([526b23c](https://github.com/korchasa/flowai/commit/526b23c67cb69702318e75ef329ca4c76d64dcce))
+
+
+### Code Refactoring
+
+* remove flowai-session-init-docs hook and sessionDocs config ([f89c0d0](https://github.com/korchasa/flowai/commit/f89c0d0e96cee4611b615d87b5f3a8bb385b936b))
+* remove lint-on-write and test-before-commit from framework hooks ([09b0aa7](https://github.com/korchasa/flowai/commit/09b0aa771e4ed8ac8d1ee7edc0b38ecc814da10b))
+* remove lint-on-write and test-before-commit from framework hooks ([b586415](https://github.com/korchasa/flowai/commit/b586415fb6fb664e695baca607f46da91f4eb1b7))
+* remove settings.json to simplify configuration ([3422482](https://github.com/korchasa/flowai/commit/34224829f57d510ca714049f22480721d161b036))
+* replace session-start doc reading with per-skill lazy SRS/SDS instructions ([b5297a9](https://github.com/korchasa/flowai/commit/b5297a91468d3f41090fc01cb98ed11e29b61f43))
+* simplify .gitignore by consolidating .claude entries ([b9e3252](https://github.com/korchasa/flowai/commit/b9e32529f74946f365acfd9feec6e57c2b2ea6e3))
+
+
+### Styles
+
+* **cli:** fix formatting after merge conflict resolution ([f603693](https://github.com/korchasa/flowai/commit/f6036939793ecc0b658cfd27073524fb58b8b525))
+
 ### [0.4.17](https://github.com/korchasa/flowai/compare/v0.4.16...v0.4.17) (2026-04-08)
 
 
