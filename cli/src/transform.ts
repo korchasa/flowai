@@ -1,3 +1,4 @@
+// FR-DIST.MAPPING — agent frontmatter transformation per IDE
 /** Agent frontmatter transformation — extracts IDE-specific fields from universal format */
 import { parse, stringify } from "@std/yaml";
 

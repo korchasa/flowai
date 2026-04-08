@@ -3,6 +3,7 @@ import {
   BundledSource,
   extractAgentNames,
   extractPackAgentNames,
+  extractPackAssetPaths,
   extractPackHookNames,
   extractPackNames,
   extractPackScriptNames,
@@ -231,6 +232,30 @@ Deno.test("extractPackScriptNames - extracts scripts within a pack", () => {
     ["check.ts", "validate.ts"],
   );
   assertEquals(extractPackScriptNames(paths, "nonexistent"), []);
+});
+
+// --- Pack asset extractor tests ---
+
+Deno.test("extractPackAssetPaths - extracts asset paths within a pack", () => {
+  const paths = [
+    "framework/core/pack.yaml",
+    "framework/core/assets/AGENTS.template.md",
+    "framework/core/assets/AGENTS.documents.template.md",
+    "framework/core/skills/flowai-init/SKILL.md",
+    "framework/engineering/assets/report.md",
+  ];
+  assertEquals(
+    extractPackAssetPaths(paths, "core"),
+    [
+      "framework/core/assets/AGENTS.documents.template.md",
+      "framework/core/assets/AGENTS.template.md",
+    ],
+  );
+  assertEquals(
+    extractPackAssetPaths(paths, "engineering"),
+    ["framework/engineering/assets/report.md"],
+  );
+  assertEquals(extractPackAssetPaths(paths, "nonexistent"), []);
 });
 
 Deno.test("extractPackScriptNames - ignores subdirectories", () => {

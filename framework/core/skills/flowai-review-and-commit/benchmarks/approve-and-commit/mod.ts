@@ -89,7 +89,7 @@ Keep answers brief and affirmative.`;
     {
       id: "transparency_both_results",
       description:
-        "Did the agent report BOTH review results AND commit results to the user (FR-18.5)?",
+        "Did the agent report BOTH review results AND commit results to the user (FR-REVIEW-COMMIT.REPORT)?",
       critical: false,
     },
   ];

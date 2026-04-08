@@ -1,11 +1,12 @@
 name: core
 version: "1.0.0"
 description: Base commands for development workflows (commit, plan, review, init, etc.)
+assets:
+  AGENTS.template.md: AGENTS.md
+  AGENTS.documents.template.md: documents/AGENTS.md
+  AGENTS.scripts.template.md: scripts/AGENTS.md
 scaffolds:
   flowai-init:
-    - AGENTS.md
-    - documents/AGENTS.md
-    - scripts/AGENTS.md
     - CLAUDE.md
     - documents/requirements.md
     - documents/design.md

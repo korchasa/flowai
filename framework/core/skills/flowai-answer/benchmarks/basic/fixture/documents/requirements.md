@@ -2,7 +2,7 @@
 
 ## 3. Functional requirements
 
-### 3.1 Requirement FR-1: Authentication
+### FR-CMD-EXEC: Authentication
 
 - **Description:** Users must be able to log in using their email and password.
 - **Acceptance criteria:**

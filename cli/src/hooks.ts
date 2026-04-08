@@ -1,3 +1,5 @@
+// FR-HOOK-RESOURCES.FORMAT — hook.yaml parsing and event mapping
+// FR-HOOK-RESOURCES.INSTALL — IDE-specific config generation
 /**
  * Hook configuration generation for IDE-specific formats.
  * Transforms universal hook.yaml → Claude Code / Cursor / OpenCode configs.

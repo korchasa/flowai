@@ -7,17 +7,21 @@
 2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth. Depends on VISION.
 3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
 4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes. One file per task/session.
-5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs FR-14–FR-17.
+5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs FR-HOOK-DOCS–FR-IDE-SCOPE.
 6. **`README.md`**: Public-facing overview. Derived from AGENTS.md + SRS + SDS. Installation, usage, pack/skill catalog, project structure. Keep in sync with framework state.
 
 ## Rules
 - **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
 - **Workflow**: New/Updated req -> Update SRS -> Update SDS -> Implement.
 - **Status**: `[x]` = implemented, `[ ]` = pending.
-- **Evidence**: Every `[x]` acceptance criterion MUST include evidence — file
-  paths with line numbers proving implementation. Format:
-  `- [x] Criterion text. Evidence: \`path/to/file.ts:42\`, \`other/file.md:10\``
-  Without evidence, criterion stays `[ ]`.
+- **Traceability**: Code references requirements, not the reverse. Three mechanisms:
+  1. **Code-evidenced**: Source files contain `// FR-<ID>` (TS/JS) or `# FR-<ID>` (YAML/shell)
+     comments near implementing logic. Validated by `deno task check` (`check-traceability.ts`).
+  2. **Benchmark-evidenced**: SRS states "Acceptance verified by benchmarks: <list>".
+     No code comments needed — benchmarks ARE the evidence.
+  3. **Structural**: Requirement proven by file/directory existence.
+     No code comments needed — `[x]` status + description is sufficient.
+- **No `Evidence:` paths in SRS.** Traceability lives in code, not in docs.
 
 ## SRS Format (`documents/requirements.md`)
 
@@ -33,7 +37,7 @@
 - **Context:**
 - **Assumptions/Constraints:**
 ## 3. Functional Reqs
-### 3.1 FR-1
+### 3.1 FR-CMD-EXEC
 - **Desc:**
 - **Scenario:**
 - **Acceptance:**

@@ -1,3 +1,5 @@
+// FR-DIST.SYNC — CLI entry point for flowai sync
+// FR-DIST.UPDATE — self-update check
 import { Command } from "@cliffy/command";
 import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
@@ -290,6 +292,37 @@ export function renderSyncOutput(result: SyncResult): void {
     );
   }
 
+  // Asset actions
+  const assetsByAction = groupByAction(result.assetActions);
+  if (assetsByAction.update.length > 0) {
+    actionNum++;
+    const lines = assetsByAction.update.map((a) => {
+      const artifacts = a.scaffolds.length > 0
+        ? ` (artifacts: ${a.scaffolds.join(", ")})`
+        : "";
+      return `   - ${a.name}${artifacts}`;
+    });
+    actions.push(
+      `${actionNum}. ASSETS UPDATED (${assetsByAction.update.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   For each updated asset: compare the template against the project artifact.`,
+    );
+  }
+  if (assetsByAction.create.length > 0) {
+    actionNum++;
+    const lines = assetsByAction.create.map((a) => {
+      const artifacts = a.scaffolds.length > 0
+        ? ` (artifacts: ${a.scaffolds.join(", ")})`
+        : "";
+      return `   - ${a.name}${artifacts}`;
+    });
+    actions.push(
+      `${actionNum}. ASSETS CREATED (${assetsByAction.create.length}):\n` +
+        lines.join("\n") + "\n" +
+        `   New asset templates installed.`,
+    );
+  }
+
   // Errors
   if (result.errors.length > 0) {
     actionNum++;
@@ -309,10 +342,12 @@ export function renderSyncOutput(result: SyncResult): void {
   const okSkills = skillsByAction.ok.length;
   const okAgents = agentsByAction.ok.length;
   const okHooks = hooksByAction.ok.length;
+  const okAssets = assetsByAction.ok.length;
   const noActionParts: string[] = [];
   if (okSkills > 0) noActionParts.push(`${okSkills} skills unchanged`);
   if (okAgents > 0) noActionParts.push(`${okAgents} agents unchanged`);
   if (okHooks > 0) noActionParts.push(`${okHooks} hooks unchanged`);
+  if (okAssets > 0) noActionParts.push(`${okAssets} assets unchanged`);
 
   if (actions.length === 0) {
     console.log("\n>>> NO ACTIONS REQUIRED.");

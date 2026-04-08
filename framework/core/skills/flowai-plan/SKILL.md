@@ -40,8 +40,9 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 1. **Initialize**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan based on these steps.
 2. **Deep Context & Uncertainty Resolution**
-   - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, docs.
-   - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for gaps.
+   - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
+   - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
+   - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 3. **Draft Framework (G-O-D)**
    - Create Goal, Overview, Definition of Done in `documents/whiteboards/<date>-<slug>.md` following `### GODS Format` from AGENTS.md.

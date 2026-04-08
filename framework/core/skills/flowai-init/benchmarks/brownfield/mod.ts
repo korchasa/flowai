@@ -95,13 +95,13 @@ Keep answers brief and affirmative.`;
     {
       id: "temp_files_cleaned",
       description:
-        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-8.11)",
+        "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-INIT.CLEANUP)",
       critical: false,
     },
     {
       id: "opencode_compat_check",
       description:
-        "Did the agent check for OpenCode compatibility (opencode.json glob entries for subdirectory AGENTS.md)? (FR-8.12)",
+        "Did the agent check for OpenCode compatibility (opencode.json glob entries for subdirectory AGENTS.md)? (FR-INIT.OPENCODE)",
       critical: false,
     },
   ];

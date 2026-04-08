@@ -1,3 +1,4 @@
+// FR-DIST.UPDATE — self-update check against JSR
 import { greaterThan, parse } from "@std/semver";
 import { VERSION } from "./_version.ts";
 

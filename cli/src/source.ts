@@ -1,5 +1,7 @@
+// FR-DIST.BUNDLE — BundledSource reads bundled.json
+// FR-HOOK-RESOURCES.SYNC-INFRA — hook/script name extraction
+// FR-SCRIPTS — script name extraction
 import { DEFAULT_GIT_URL } from "./types.ts";
-
 /** Framework source abstraction — provides file listing and content reading */
 export interface FrameworkSource {
   /** List all file paths under given prefix (relative to repo root) */
@@ -305,6 +307,23 @@ export function extractPackScriptNames(
     }
   }
   return names.sort();
+}
+
+/** Extract asset file paths within a specific pack.
+ * Currently only core pack has shared assets (AGENTS.md templates). */
+// FR-DIST.SYNC
+export function extractPackAssetPaths(
+  paths: string[],
+  packName: string,
+): string[] {
+  const result: string[] = [];
+  const prefix = `framework/${packName}/assets/`;
+  for (const p of paths) {
+    if (p.startsWith(prefix)) {
+      result.push(p);
+    }
+  }
+  return result.sort();
 }
 
 /** Check if bundle uses pack structure (has pack.yaml files) */

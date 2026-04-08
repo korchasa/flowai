@@ -1,3 +1,5 @@
+// FR-DIST.CONFIG — .flowai.yaml loading/saving
+// FR-PACKS.CONFIG — v1.1 config with packs field
 import { parse, stringify } from "@std/yaml";
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import {

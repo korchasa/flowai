@@ -38,7 +38,8 @@
   },
   "lint": {
     "exclude": [
-      "framework/*/skills/*/benchmarks/"
+      "framework/*/skills/*/benchmarks/",
+      "framework/*/benchmarks/*/fixture/"
     ]
   },
   "fmt": {
@@ -47,7 +48,8 @@
       "**/*.md",
       ".cursor/",
       ".claude/",
-      ".flowai.yaml"
+      ".flowai.yaml",
+      "framework/*/benchmarks/*/fixture/"
     ]
   }
 }

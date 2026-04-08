@@ -1,3 +1,5 @@
+// FR-DIST.BUNDLE — bundle framework into bundled.json
+// FR-PACKS.BUNDLE — scan framework/*/ pack structure
 /** Bundle framework/ into cli/src/bundled.json + generate cli/src/_version.ts */
 import { walk } from "@std/fs/walk";
 import { relative } from "@std/path";

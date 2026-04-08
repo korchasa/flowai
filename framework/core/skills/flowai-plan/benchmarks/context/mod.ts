@@ -21,6 +21,11 @@ export const PlanContextBench = new class extends BenchmarkSkillScenario {
       critical: true,
     },
     {
+      id: "context_read_sds",
+      description: "Did the agent read 'documents/design.md'?",
+      critical: false,
+    },
+    {
       id: "whiteboard_context",
       description:
         "Does the plan in 'documents/whiteboards/' mention 'dark mode'?",

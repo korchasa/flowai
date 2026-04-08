@@ -1,0 +1,12 @@
+node_modules/
+dist/
+var/
+.env
+.env.*
+coverage/
+*.log
+.DS_Store
+reference
+deno.lock
+tmp/
+documents/whiteboard.md

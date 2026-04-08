@@ -90,6 +90,20 @@ Deno.test("filterActionable - excludes ok items", () => {
   assertEquals(items.length, 2);
 });
 
+Deno.test("computePlan - asset type keeps full filename as name", async () => {
+  const fs = new InMemoryFsAdapter();
+  const plan = await computePlan(
+    [{ path: "assets/AGENTS.template.md", content: "# Rules" }],
+    "/project/.claude",
+    "asset",
+    fs,
+  );
+
+  assertEquals(plan[0].name, "AGENTS.template.md");
+  assertEquals(plan[0].type, "asset");
+  assertEquals(plan[0].action, "create");
+});
+
 Deno.test("planSummary - counts actions", () => {
   const summary = planSummary([
     {

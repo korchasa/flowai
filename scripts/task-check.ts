@@ -1,3 +1,4 @@
+// FR-MAINT — project maintenance via deno task check
 import { runCommands, runCommandsInParallelBuffered } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
@@ -71,7 +72,7 @@ export function buildCheckPlan(): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=framework/*/skills/*/benchmarks",
+          "--ignore=framework/*/skills/*/benchmarks,framework/*/benchmarks/*/fixture",
           "framework",
         ],
       },
@@ -100,6 +101,10 @@ export function buildCheckPlan(): CheckPlan {
       {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-naming-prefix.ts"],
+      },
+      {
+        cmd: "deno",
+        args: ["run", "-A", "scripts/check-traceability.ts"],
       },
     ],
   };

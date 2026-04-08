@@ -1,3 +1,4 @@
+// FR-DIST.SYNC — idempotent plan computation
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type {
   PlanAction,
@@ -53,6 +54,11 @@ function extractName(path: string, type: PlanItemType): string {
   }
   if (type === "script") {
     // scripts/{filename} → filename
+    const filename = path.split("/").pop() ?? path;
+    return filename;
+  }
+  if (type === "asset") {
+    // assets/{filename} → filename (keep extension for mapping lookup)
     const filename = path.split("/").pop() ?? path;
     return filename;
   }

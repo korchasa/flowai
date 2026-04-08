@@ -1,6 +1,7 @@
 import { assertEquals } from "@std/assert";
 import {
   filterNames,
+  readPackAssetFiles,
   readPackSkillFiles,
   readSkillFiles,
   resolvePackResources,
@@ -190,4 +191,81 @@ Deno.test("readSkillFiles - excludes benchmarks and test files", async () => {
     "flowai-commit/SKILL.md",
     "flowai-commit/scripts/run.ts",
   ]);
+});
+
+// --- Pack asset sync tests ---
+
+Deno.test("readPackAssetFiles - reads assets from selected packs", async () => {
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/assets/AGENTS.template.md",
+        "# Core Rules\n{{PROJECT_RULES}}",
+      ],
+      [
+        "framework/core/assets/AGENTS.documents.template.md",
+        "# Documents",
+      ],
+      ["framework/engineering/assets/report.md", "# Report Template"],
+      ["framework/core/skills/flowai-init/SKILL.md", "# Init"],
+    ]),
+  );
+  const allPaths = [
+    "framework/core/pack.yaml",
+    "framework/core/assets/AGENTS.template.md",
+    "framework/core/assets/AGENTS.documents.template.md",
+    "framework/core/skills/flowai-init/SKILL.md",
+    "framework/engineering/pack.yaml",
+    "framework/engineering/assets/report.md",
+  ];
+
+  const files = await readPackAssetFiles(allPaths, source, ["core"]);
+  const paths = files.map((f) => f.path);
+
+  assertEquals(paths, [
+    "assets/AGENTS.documents.template.md",
+    "assets/AGENTS.template.md",
+  ]);
+  assertEquals(files[1].content, "# Core Rules\n{{PROJECT_RULES}}");
+});
+
+Deno.test("readPackAssetFiles - reads from multiple packs", async () => {
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      ["framework/core/assets/AGENTS.template.md", "# Core"],
+      ["framework/engineering/assets/report.md", "# Report"],
+    ]),
+  );
+  const allPaths = [
+    "framework/core/pack.yaml",
+    "framework/core/assets/AGENTS.template.md",
+    "framework/engineering/pack.yaml",
+    "framework/engineering/assets/report.md",
+  ];
+
+  const files = await readPackAssetFiles(allPaths, source, [
+    "core",
+    "engineering",
+  ]);
+  const paths = files.map((f) => f.path);
+
+  assertEquals(paths, [
+    "assets/AGENTS.template.md",
+    "assets/report.md",
+  ]);
+});
+
+Deno.test("readPackAssetFiles - returns empty for packs without assets", async () => {
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      ["framework/deno/skills/deno-cli/SKILL.md", "# Deno CLI"],
+    ]),
+  );
+  const allPaths = [
+    "framework/deno/pack.yaml",
+    "framework/deno/skills/deno-cli/SKILL.md",
+  ];
+
+  const files = await readPackAssetFiles(allPaths, source, ["deno"]);
+  assertEquals(files, []);
 });

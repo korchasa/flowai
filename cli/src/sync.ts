@@ -1,3 +1,8 @@
+// FR-DIST.SYNC — sync orchestrator
+// FR-DIST.FILTER — selective sync via include/exclude
+// FR-PACKS — pack-based resource resolution
+// FR-HOOK-RESOURCES.INSTALL — hook config generation
+// FR-SCRIPTS — script copy to IDE dirs
 /** Sync orchestrator — resolves IDEs, reads bundled framework, computes plan, writes files */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { migrateV1ToV1_1, saveConfig } from "./config.ts";
@@ -7,6 +12,7 @@ import {
   BundledSource,
   extractAgentNames,
   extractPackAgentNames,
+  extractPackAssetPaths,
   extractPackHookNames,
   extractPackNames,
   extractPackScriptNames,
@@ -96,6 +102,8 @@ export interface SyncResult {
   agentActions: ResourceAction[];
   /** Per-hook action breakdown */
   hookActions: ResourceAction[];
+  /** Per-asset action breakdown (template changes with project artifact mappings) */
+  assetActions: ResourceAction[];
 }
 
 /** Resolve which skills, agents, hooks, and scripts to sync based on packs and filters */
@@ -184,6 +192,7 @@ export async function sync(
     skillActions: [],
     agentActions: [],
     hookActions: [],
+    assetActions: [],
   };
 
   // 1. Resolve IDEs
@@ -209,11 +218,12 @@ export async function sync(
     const allPaths = await source.listFiles("framework/");
     const usePacks = hasPacks(allPaths);
 
-    // 2a. Read pack definitions (versions + scaffolds)
+    // 2a. Read pack definitions (versions + scaffolds + assets)
     const packDefs = usePacks
       ? await readPackDefinitions(allPaths, source)
       : [];
     const scaffoldsIndex = buildScaffoldsIndex(packDefs);
+    const assetsIndex = buildAssetsIndex(packDefs);
 
     // 2b. Automigrate v1 → v1.1 if pack structure detected
     if (usePacks && config.packs === undefined) {
@@ -440,6 +450,36 @@ export async function sync(
           log(`  Scripts: ${scriptNames.join(", ")}`);
         }
         await processPlan(scriptPlan, fs, options, result, log);
+      }
+
+      // Core assets (copy to .{ide}/assets/)
+      // FR-DIST.SYNC — only core pack has shared assets (AGENTS.md templates)
+      if (usePacks) {
+        const assetFiles = await readPackAssetFiles(
+          allPaths,
+          source,
+          ["core"],
+        );
+        if (assetFiles.length > 0) {
+          const assetTargetDir = join(cwd, ide.configDir);
+          const assetPlan = await computePlan(
+            assetFiles,
+            assetTargetDir,
+            "asset",
+            fs,
+          );
+          if (isFirstIde) {
+            if (assetPlan.some((i) => i.action !== "ok")) {
+              log(`  Assets: ${assetFiles.length} file(s)`);
+            }
+            result.assetActions = extractResourceActions(
+              assetPlan,
+              assetFiles.map((f) => f.path.replace(/^assets\//, "")),
+              assetsIndex,
+            );
+          }
+          await processPlan(assetPlan, fs, options, result, log);
+        }
       }
 
       isFirstIde = false;
@@ -693,6 +733,30 @@ async function readPackScriptFiles(
   return files;
 }
 
+/** Read asset files from pack structure framework/<pack>/assets/.
+ * Currently only core pack has shared assets (AGENTS.md templates). */
+// FR-DIST.SYNC
+export async function readPackAssetFiles(
+  allPaths: string[],
+  source: FrameworkSource,
+  selectedPacks: string[],
+): Promise<UpstreamFile[]> {
+  const files: UpstreamFile[] = [];
+
+  for (const pack of selectedPacks) {
+    const assetPaths = extractPackAssetPaths(allPaths, pack);
+    for (const path of assetPaths) {
+      const content = await source.readFile(path);
+      // Strip framework/<pack>/assets/ → assets/<filename>
+      const prefix = `framework/${pack}/assets/`;
+      const relativePath = "assets/" + path.substring(prefix.length);
+      files.push({ path: relativePath, content });
+    }
+  }
+
+  return files;
+}
+
 /** Compute delete plan for excluded framework resources that exist locally */
 export async function computeDeletePlan(
   allFrameworkNames: string[],
@@ -753,11 +817,25 @@ async function readPackDefinitions(
       }
     }
 
+    // Parse assets: Record<string, string>
+    let assets: Record<string, string> | undefined;
+    if (data.assets && typeof data.assets === "object") {
+      assets = {};
+      for (
+        const [template, artifactPath] of Object.entries(
+          data.assets as Record<string, unknown>,
+        )
+      ) {
+        assets[template] = String(artifactPath);
+      }
+    }
+
     packs.push({
       name: String(data.name ?? ""),
       version: String(data.version ?? "0.0.0"),
       description: String(data.description ?? ""),
       scaffolds,
+      assets,
     });
   }
   return packs.sort((a, b) => a.name.localeCompare(b.name));
@@ -772,6 +850,21 @@ function buildScaffoldsIndex(
     if (!pack.scaffolds) continue;
     for (const [skill, paths] of Object.entries(pack.scaffolds)) {
       index.set(skill, paths);
+    }
+  }
+  return index;
+}
+
+/** Build asset mapping index: template-name → [project artifact path]
+ * Uses the same Map<string, string[]> shape as scaffoldsIndex for reuse with extractResourceActions */
+function buildAssetsIndex(
+  packs: PackDefinition[],
+): Map<string, string[]> {
+  const index = new Map<string, string[]>();
+  for (const pack of packs) {
+    if (!pack.assets) continue;
+    for (const [template, artifactPath] of Object.entries(pack.assets)) {
+      index.set(template, [artifactPath]);
     }
   }
   return index;
