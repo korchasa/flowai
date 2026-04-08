@@ -22,6 +22,8 @@ flowai generates three types of outputs:
 `flowai sync` overwrites skills with upstream versions. This skill detects the overwrite via `git diff HEAD` and re-adapts, merging upstream changes with previous project customizations. Adaptation state is tracked entirely through git history — no extra frontmatter fields needed.
 
 `flowai sync` outputs an `>>> ACTIONS REQUIRED` section listing exactly which skills/assets changed and which artifacts they affect. This skill follows those instructions.
+
+**IMPORTANT**: `flowai sync` only compares templates with their cached copies in `.{ide}/assets/`. It does NOT check whether project artifacts (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md) match the templates. Artifacts can drift without sync detecting it. Therefore, asset artifact verification (step 6) runs **unconditionally** — even when sync reports "NO ACTIONS REQUIRED".
 </context>
 
 ## Rules & Constraints
@@ -59,7 +61,7 @@ flowai generates three types of outputs:
 
 4. **Parse sync output**
    - Look for `>>> ACTIONS REQUIRED:` section in the output.
-   - If `>>> NO ACTIONS REQUIRED` appears with no actions section — report "Framework is up to date" and stop.
+   - If `>>> NO ACTIONS REQUIRED` appears with no actions section — note it, but **do NOT stop**. Continue to step 6 (asset artifact verification always runs).
    - Extract each numbered action item:
      - **CONFIG MIGRATED**: Note that `.flowai.yaml` needs committing.
      - **SKILLS UPDATED**: Extract skill names and their `(scaffolds: ...)` lists.
@@ -91,18 +93,18 @@ flowai generates three types of outputs:
    - Review each adaptation result: show the diff (`git diff HEAD -- <skill-path>`) to the user.
    - Wait for user approval/rejection per skill. Revert rejected adaptations with `git checkout HEAD -- <skill-path>`.
 
-6. **Migrate asset artifacts**
-   - For each ASSETS UPDATED entry that has artifacts listed:
-     a. For each artifact path listed (e.g., `AGENTS.md`, `documents/AGENTS.md`, `scripts/AGENTS.md`):
-        - **MUST read** the actual project artifact file (e.g., `./AGENTS.md`).
-        - **MUST read** the framework template (e.g., `.claude/assets/AGENTS.template.md`).
-        - Compare line-by-line using `git diff --no-index`:
-          ```
-          git diff --no-index -- .claude/assets/AGENTS.template.md ./AGENTS.md
-          ```
-        - Primary comparison is **template content vs project artifact**, not just template git history.
-     b. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
-     c. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
+6. **Verify and migrate asset artifacts** *(runs unconditionally — even when sync reports no changes)*
+   - Read `pack.yaml` from each installed pack (e.g., `.{ide}/skills/flowai-update/../../pack.yaml` or discover via `.flowai.yaml`) to get the `assets:` mapping (template name → artifact path). If pack.yaml is unavailable, use the default mapping: `AGENTS.template.md` → `AGENTS.md`, `AGENTS.documents.template.md` → `documents/AGENTS.md`, `AGENTS.scripts.template.md` → `scripts/AGENTS.md`.
+   - For each template → artifact pair:
+     a. **MUST read** the actual project artifact file (e.g., `./AGENTS.md`).
+     b. **MUST read** the framework template (e.g., `.claude/assets/AGENTS.template.md`).
+     c. Compare using `git diff --no-index`:
+        ```
+        git diff --no-index -- .claude/assets/AGENTS.template.md ./AGENTS.md
+        ```
+     d. Primary comparison is **template content vs project artifact**, not just template git history.
+     e. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
+     f. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
    - If no gaps found in any artifact — proceed to scaffolded artifacts.
 
 7. **Migrate scaffolded artifacts**
