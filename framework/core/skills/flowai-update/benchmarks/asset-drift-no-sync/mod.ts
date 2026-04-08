@@ -23,8 +23,7 @@ import { runGit } from "@bench/utils.ts";
 export const FlowUpdateAssetDriftNoSyncBench = new class
   extends BenchmarkSkillScenario {
   id = "flowai-update-asset-drift-no-sync";
-  name =
-    "Detects artifact drift even when sync reports no asset changes";
+  name = "Detects artifact drift even when sync reports no asset changes";
   skill = "flowai-update";
   stepTimeoutMs = 300_000;
 
