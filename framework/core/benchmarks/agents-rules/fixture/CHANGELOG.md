@@ -644,12 +644,12 @@ parameters changed to support messages and tools.
 ### Chores
 
 * add .versionrc.js configuration for commit message types and URLs ([7c6c988](https://github.com/korchasa/ai-skel-ts/commit/7c6c98885f0eae4554885373a8484fa63565505f))
-* add whiteboard document to .gitignore ([596e41c](https://github.com/korchasa/ai-skel-ts/commit/596e41c31e17e7886243b558e4efddd73b2095a5))
+* add task file document to .gitignore ([596e41c](https://github.com/korchasa/ai-skel-ts/commit/596e41c31e17e7886243b558e4efddd73b2095a5))
 * clean up duplicate workflow files ([8e5c591](https://github.com/korchasa/ai-skel-ts/commit/8e5c5915107695d3397f8330b3cf176c25f18f73))
 * **release:** 0.2.1 ([1b140f0](https://github.com/korchasa/ai-skel-ts/commit/1b140f00c81a0a335ebe825f9fdbe0e2c586b355))
 * remove CHANGELOG.md file ([042941c](https://github.com/korchasa/ai-skel-ts/commit/042941cb4d73242c4f0b1430685db61a864f1548))
 * remove test file ([1c2b297](https://github.com/korchasa/ai-skel-ts/commit/1c2b2970499975c977570172b3dcb32f9fdeb562))
-* remove whiteboard document ([a07f0e5](https://github.com/korchasa/ai-skel-ts/commit/a07f0e57aff275a3d6c927b3ec30d46e5591265c))
+* remove task file document ([a07f0e5](https://github.com/korchasa/ai-skel-ts/commit/a07f0e57aff275a3d6c927b3ec30d46e5591265c))
 
 
 ### Documentation

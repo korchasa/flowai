@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 ## Overview
 
-Execute a rigorous 9-point maintenance sweep to identify structural deviations, documentation inconsistencies, dead code, complexity hotspots, technical debt, missing code documentation, terminology drift, instruction coherence issues, and tooling relevance problems. All findings must be actionable and saved to a whiteboard in `documents/whiteboards/`.
+Execute a rigorous 9-point maintenance sweep to identify structural deviations, documentation inconsistencies, dead code, complexity hotspots, technical debt, missing code documentation, terminology drift, instruction coherence issues, and tooling relevance problems. All findings must be actionable and saved to a task file in `documents/tasks/`.
 
 ## Context
 
@@ -30,7 +30,7 @@ It addresses:
 ## Rules & Constraints
 
 <rules>
-1.  **Output Target**: All findings MUST be written to `documents/whiteboards/<YYYY-MM-DD>-maintenance.md`. Start with a timestamped header.
+1.  **Output Target**: All findings MUST be written to `documents/tasks/<YYYY-MM-DD>-maintenance.md`. Start with a timestamped header.
 2.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 3.  **Constructive**: Every "Issue" must have a "Proposed Fix".
 4.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
@@ -44,7 +44,7 @@ It addresses:
 
 1. **Initialize & Plan**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering the 9 phases below.
-   - Check `documents/whiteboards/` for existing maintenance reports. Review prior reports for context, but
+   - Check `documents/tasks/` for existing maintenance reports. Review prior reports for context, but
      always create a new report file.
    - Identify project's primary language and source directories.
 
@@ -127,7 +127,7 @@ It addresses:
      alternative, or add justification).
 
 10. **Phase 9: Reporting**
-   - Compile all findings into the whiteboard file with the following format:
+   - Compile all findings into the task file with the following format:
      ```markdown
      # Maintenance Report (YYYY-MM-DD)
 
@@ -178,5 +178,5 @@ It addresses:
 [ ] Checked for missing code documentation (File/Class/Method).
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
-[ ] Saved structured report to `documents/whiteboards/`.
+[ ] Saved structured report to `documents/tasks/`.
 </verification>

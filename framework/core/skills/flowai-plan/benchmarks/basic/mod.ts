@@ -19,9 +19,9 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "whiteboard_created",
+      id: "task_file_created",
       description:
-        "Did the agent create/write to a file in 'documents/whiteboards/' directory?",
+        "Did the agent create/write to a file in 'documents/tasks/' directory?",
       critical: true,
     },
     {
@@ -44,7 +44,7 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "no_code_changes",
       description:
-        "Did the agent NOT modify any source code files (only whiteboard file in documents/whiteboards/)?",
+        "Did the agent NOT modify any source code files (only task file in documents/tasks/)?",
       critical: true,
     },
     {

@@ -26,7 +26,7 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "MyProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    KEY_DECISIONS: "- Save plans to documents/whiteboards/",
+    KEY_DECISIONS: "- Save plans to documents/tasks/",
   };
 
   override sandboxState = {
@@ -59,7 +59,7 @@ export const FlowUpdateBasicBench = new class extends BenchmarkSkillScenario {
         "3. **REFACTOR**: Improve code/tests. No behavior change.",
         "",
         "## Planning Rules",
-        "- Save plans to documents/whiteboards/",
+        "- Save plans to documents/tasks/",
         "",
       ].join("\n"),
     );

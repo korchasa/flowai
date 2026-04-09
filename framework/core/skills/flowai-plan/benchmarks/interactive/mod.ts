@@ -35,7 +35,7 @@ When asked for confirmation, agree and ask to proceed.`;
     {
       id: "solution_filled",
       description:
-        "Check the 'Solution' section in the whiteboard file in 'documents/whiteboards/'. It MUST contain concrete technical implementation details (not a placeholder, not a comment like '<!-- ... -->', not '_To be filled..._'). If the Solution section is empty, contains only a placeholder comment, or says 'to be filled', this check FAILS.",
+        "Check the 'Solution' section in the task file in 'documents/tasks/'. It MUST contain concrete technical implementation details (not a placeholder, not a comment like '<!-- ... -->', not '_To be filled..._'). If the Solution section is empty, contains only a placeholder comment, or says 'to be filled', this check FAILS.",
       critical: true,
     },
     {

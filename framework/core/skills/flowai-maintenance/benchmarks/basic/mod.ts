@@ -15,9 +15,9 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "whiteboard_report",
+      id: "task_file_report",
       description:
-        "Did the agent create a maintenance report in 'documents/whiteboards/'? (Check logs for whiteboard content)",
+        "Did the agent create a maintenance report in 'documents/tasks/'? (Check logs for task file content)",
       critical: true,
     },
     {
@@ -45,7 +45,7 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "report_path_format",
       description:
-        "Is the report saved to 'documents/whiteboards/YYYY-MM-DD-maintenance.md' with a timestamped header?",
+        "Is the report saved to 'documents/tasks/YYYY-MM-DD-maintenance.md' with a timestamped header?",
       critical: false,
     },
     {

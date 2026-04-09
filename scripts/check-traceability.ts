@@ -13,6 +13,12 @@ export type OrphanedRef = {
   line: number;
 };
 
+/** A task file reference to an FR-ID via `implements` frontmatter. */
+export type TaskRef = {
+  id: string;
+  file: string;
+};
+
 /** Comment-line FR reference: `// FR-*` or `# FR-*` at line start (with optional leading whitespace). */
 const CODE_REF_PATTERN =
   /^[ \t]*(?:\/\/|#)\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*)/;
@@ -122,6 +128,85 @@ async function scanCodeRefs(rootDir: string): Promise<OrphanedRef[]> {
   return allRefs;
 }
 
+/**
+ * Extracts FR-IDs from `implements` YAML frontmatter in a task/epic file.
+ * Frontmatter is delimited by `---` lines at the start of the file.
+ */
+export function extractImplementsFromTask(
+  filePath: string,
+  content: string,
+): TaskRef[] {
+  const lines = content.split("\n");
+  if (lines[0]?.trim() !== "---") return [];
+
+  // Find closing ---
+  let endIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (lines[i].trim() === "---") {
+      endIdx = i;
+      break;
+    }
+  }
+  if (endIdx === -1) return [];
+
+  // Parse implements from frontmatter (simple YAML list parser)
+  const refs: TaskRef[] = [];
+  let inImplements = false;
+  for (let i = 1; i < endIdx; i++) {
+    const line = lines[i];
+    if (
+      /^implements:\s*$/.test(line) || /^implements:\s*\[\s*\]\s*$/.test(line)
+    ) {
+      inImplements = true;
+      if (/\[\s*\]/.test(line)) {
+        inImplements = false; // empty array
+      }
+      continue;
+    }
+    if (inImplements) {
+      const match = line.match(
+        /^\s+-\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*)/,
+      );
+      if (match) {
+        refs.push({ id: match[1], file: filePath });
+      } else if (/^\S/.test(line)) {
+        // New top-level key — stop parsing implements
+        inImplements = false;
+      }
+    }
+  }
+  return refs;
+}
+
+/**
+ * Returns task refs whose FR-ID does not exist in the SRS set.
+ */
+export function validateTaskRefs(
+  srsIds: Set<string>,
+  taskRefs: TaskRef[],
+): TaskRef[] {
+  return taskRefs.filter((ref) => !srsIds.has(ref.id));
+}
+
+/**
+ * Scans documents/tasks/ for task files and extracts implements references.
+ */
+async function scanTaskRefs(tasksDir: string): Promise<TaskRef[]> {
+  const allRefs: TaskRef[] = [];
+  try {
+    for await (const entry of Deno.readDir(tasksDir)) {
+      if (!entry.isFile || !entry.name.endsWith(".md")) continue;
+      const fullPath = join(tasksDir, entry.name);
+      const content = await Deno.readTextFile(fullPath);
+      const relPath = `documents/tasks/${entry.name}`;
+      allRefs.push(...extractImplementsFromTask(relPath, content));
+    }
+  } catch {
+    // Directory doesn't exist or is empty — no task refs to validate
+  }
+  return allRefs;
+}
+
 if (import.meta.main) {
   console.log("Checking FR-* traceability (orphaned code references)...");
 
@@ -132,15 +217,41 @@ if (import.meta.main) {
   const codeRefs = await scanCodeRefs(Deno.cwd());
   const orphaned = findOrphanedRefs(srsIds, codeRefs);
 
+  let hasErrors = false;
+
   if (orphaned.length > 0) {
     for (const o of orphaned) {
       console.error(`[traceability] ${o.file}:${o.line}: ${o.id} not in SRS`);
     }
     console.error(`\n${orphaned.length} orphaned FR-* reference(s).`);
-    Deno.exit(1);
+    hasErrors = true;
   } else {
     console.log(
       `All ${codeRefs.length} code FR-* references match SRS (${srsIds.size} IDs).`,
     );
   }
+
+  // Reverse lookup: task files → SRS
+  const tasksDir = join(Deno.cwd(), "documents", "tasks");
+  const taskRefs = await scanTaskRefs(tasksDir);
+  if (taskRefs.length > 0) {
+    const invalidTaskRefs = validateTaskRefs(srsIds, taskRefs);
+    if (invalidTaskRefs.length > 0) {
+      for (const t of invalidTaskRefs) {
+        console.error(
+          `[traceability] ${t.file}: implements ${t.id} not in SRS`,
+        );
+      }
+      console.error(
+        `\n${invalidTaskRefs.length} invalid task implements reference(s).`,
+      );
+      hasErrors = true;
+    } else {
+      console.log(
+        `All ${taskRefs.length} task implements references match SRS.`,
+      );
+    }
+  }
+
+  if (hasErrors) Deno.exit(1);
 }

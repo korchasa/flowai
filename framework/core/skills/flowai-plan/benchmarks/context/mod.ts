@@ -26,9 +26,8 @@ export const PlanContextBench = new class extends BenchmarkSkillScenario {
       critical: false,
     },
     {
-      id: "whiteboard_context",
-      description:
-        "Does the plan in 'documents/whiteboards/' mention 'dark mode'?",
+      id: "task_file_context",
+      description: "Does the plan in 'documents/tasks/' mention 'dark mode'?",
       critical: true,
     },
   ];

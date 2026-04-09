@@ -101,7 +101,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **Extract from existing `./AGENTS.md`** (if it exists):
      - Read the entire file.
      - **Identify sections semantically**:
-       - Sections about **documentation rules**, doc hierarchy, SRS/SDS formats, writing style, whiteboard -> these belong in `./documents/AGENTS.md`.
+       - Sections about **documentation rules**, doc hierarchy, SRS/SDS formats, writing style, task file -> these belong in `./documents/AGENTS.md`.
        - Sections about **development commands**, build scripts, test commands, detected commands -> these belong in `./scripts/AGENTS.md`.
        - Everything else (project identity, vision, architecture, planning rules, TDD, code docs, custom project rules) -> stays in `./AGENTS.md`.
      - Save extracted content for use in step 6.
@@ -147,8 +147,8 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - Generate core documentation files in `documents/`:
      - `documents/requirements.md` (SRS): Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
      - `documents/design.md` (SDS): Create initial structure. Skip if file exists and has more than 50 lines.
-     - `documents/whiteboards/` directory:
-       - For **Brownfield**: Create `documents/whiteboards/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
+     - `documents/tasks/` directory:
+       - For **Brownfield**: Create `documents/tasks/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
        - For **Greenfield**: Directory will be created on first use by planning/answer skills. No need to initialize.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
 

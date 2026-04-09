@@ -3,7 +3,7 @@ import { BenchmarkSkillScenario } from "@bench/types.ts";
 export const AnswerLargeResponseBench = new class
   extends BenchmarkSkillScenario {
   id = "flowai-answer-large-response";
-  name = "Large Answer Saved to Whiteboard";
+  name = "Large Answer Saved to Task File";
   skill = "flowai-answer";
   stepTimeoutMs = 420_000;
   agentsTemplateVars = {
@@ -29,9 +29,9 @@ export const AnswerLargeResponseBench = new class
       critical: true,
     },
     {
-      id: "whiteboard_saved",
+      id: "task_file_saved",
       description:
-        "Did the agent save the analysis to a file in 'documents/whiteboards/' directory?",
+        "Did the agent save the analysis to a file in 'documents/tasks/' directory?",
       critical: true,
     },
     {

@@ -1,10 +1,9 @@
 import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const CommitWhiteboardCleanupBench = new class
-  extends BenchmarkSkillScenario {
-  id = "flowai-commit-whiteboard-cleanup";
-  name = "Whiteboard deleted after commit when work followed a whiteboard";
+export const CommitTaskCleanupBench = new class extends BenchmarkSkillScenario {
+  id = "flowai-commit-task-cleanup";
+  name = "Task file deleted after commit when work followed a task file";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -17,7 +16,7 @@ export const CommitWhiteboardCleanupBench = new class
     commits: [],
     untracked: ["api.ts"],
     expectedOutcome:
-      "Agent commits api.ts and deletes the referenced whiteboard file (documents/whiteboards/2026-03-28-add-users-api.md) as part of the commit, since the planned work is complete",
+      "Agent commits api.ts and deletes the referenced task file (documents/tasks/2026-03-28-add-users-api.md) as part of the commit, since the planned work is complete",
   };
 
   override async setup(sandboxPath: string) {
@@ -32,7 +31,7 @@ export const CommitWhiteboardCleanupBench = new class
   }
 
   userQuery =
-    "/flowai-commit Implemented the /users endpoint as planned in the whiteboard documents/whiteboards/2026-03-28-add-users-api.md. Commit the changes.";
+    "/flowai-commit Implemented the /users endpoint as planned in the task file documents/tasks/2026-03-28-add-users-api.md. Commit the changes.";
 
   checklist = [
     {
@@ -41,9 +40,9 @@ export const CommitWhiteboardCleanupBench = new class
       critical: true,
     },
     {
-      id: "whiteboard_deleted",
+      id: "task_file_deleted",
       description:
-        "Was the whiteboard file (documents/whiteboards/2026-03-28-add-users-api.md) deleted (via git rm or rm + git add) and included in the commit? The file should not exist on disk after the commit.",
+        "Was the task file (documents/tasks/2026-03-28-add-users-api.md) deleted (via git rm or rm + git add) and included in the commit? The file should not exist on disk after the commit.",
       critical: true,
     },
     {

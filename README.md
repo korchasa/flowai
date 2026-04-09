@@ -102,7 +102,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-maintenance` — project health check
 - `flowai-investigate` — deep bug investigation
 - `flowai-answer` — codebase questions without modifications
-- `flowai-spec` — structured feature specification
+- `flowai-epic` — structured feature specification
 - `flowai-update` — update flowai framework (sync skills/agents, migrate artifacts)
 
 **Setup:**
@@ -255,7 +255,7 @@ framework/              # THE PRODUCT — distributed to users via flowai CLI
 cli/                    # Distribution tool — published to JSR as @korchasa/flowai
   src/                  #   CLI source (BundledSource, sync, transform, plan)
   scripts/              #   Bundle script (generates bundled.json + _version.ts)
-documents/              # Project documentation (SRS, SDS, whiteboards)
+documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + benchmark infrastructure
 benchmarks/             # Benchmark runs, config, lock (scenarios in framework/skills/)
 deno.json               # Single config: JSR metadata, imports, tasks
@@ -273,7 +273,7 @@ Documentation is not optional — it is the only mechanism that preserves contex
 - **`AGENTS.md`** — project vision, constraints, mandatory rules
 - **`requirements.md` (SRS)** — functional and non-functional requirements
 - **`design.md` (SDS)** — architecture, components, data models
-- **`whiteboards/`** — task plans per session (GODS: Goal, Overview, Done, Solution)
+- **`tasks/`** — task plans per session (GODS: Goal, Overview, Done, Solution)
 
 The agent reads these at session start. If the docs are outdated, the agent works with wrong assumptions. Keep them accurate.
 
