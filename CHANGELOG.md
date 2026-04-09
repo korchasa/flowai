@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.20](https://github.com/korchasa/flowai/compare/v0.4.19...v0.4.20) (2026-04-09)
+
+
+### Features
+
+* **cli:** add migrate subcommand for one-way IDE primitives migration ([a42df1c](https://github.com/korchasa/flowai/commit/a42df1cf1383acd61e4a952336472f0a22285e73))
+
 ### [0.4.19](https://github.com/korchasa/flowai/compare/v0.4.18...v0.4.19) (2026-04-08)
 
 
