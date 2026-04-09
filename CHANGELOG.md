@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.21](https://github.com/korchasa/flowai/compare/v0.4.20...v0.4.21) (2026-04-09)
+
+
+### Features
+
+* **cli:** add `flowai update` self-update subcommand ([113af2a](https://github.com/korchasa/flowai/commit/113af2a2797459931948fd34d7de5f45e99e5bc1))
+* **skills:** add flowai-adapt command for standalone primitive adaptation ([4c2bde1](https://github.com/korchasa/flowai/commit/4c2bde1a262f464a473be3b63f84e8b84cc3b5ab))
+
+
+### Code Refactoring
+
+* rename whiteboards to tasks, flowai-spec to flowai-epic ([b7fc0ce](https://github.com/korchasa/flowai/commit/b7fc0ce04f0d1f506e31367733eb621806b8cb98))
+
+
+### Tests
+
+* **bench:** add adapt-all benchmark for full primitive adaptation ([f2c6df0](https://github.com/korchasa/flowai/commit/f2c6df0be681e58115e3b7d3ba0a59b8f45d7f63))
+
 ### [0.4.20](https://github.com/korchasa/flowai/compare/v0.4.19...v0.4.20) (2026-04-09)
 
 
