@@ -101,10 +101,11 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
     `cursor: {max: slow, smart: slow, fast: fast, cheap: fast}`, `opencode: {}` (user configures).
   - User overrides via `.flowai.yaml` `models:` section.
   - `inherit` or absent → field omitted (IDE uses parent model).
-- **Key Agents (4 canonical files):**
+- **Key Agents (5 canonical files):**
   - `core/agents/flowai-console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `core/agents/flowai-diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `core/agents/flowai-skill-adapter.md`: Adapts skills to project specifics after upstream updates.
+  - `core/agents/flowai-agent-adapter.md`: Adapts agent definitions to project specifics after upstream updates. Mirrors `flowai-skill-adapter` but for agent `.md` files — preserves YAML frontmatter, adapts body (system prompt).
   - `engineering/agents/flowai-deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `flowai-skill-deep-research` orchestrator.
 - **Distribution:** `flowai` transforms canonical agents into IDE-specific format at install time.
 - **IDE frontmatter formats** (transformation rules owned by flowai, see also 3.5 Agent transformation rules):
@@ -120,12 +121,12 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   1. `AGENTS.md` — project vision, constraints, mandatory rules (root-level, read-only reference).
   2. `documents/requirements.md` (SRS) — functional and non-functional requirements. Source of truth for "what" and "why".
   3. `documents/design.md` (SDS) — architecture and implementation details. Depends on SRS.
-  4. `documents/whiteboards/<YYYY-MM-DD>-<slug>.md` — temporary plans and notes in GODS format. One file per task/session. Directory is gitignored.
+  4. `documents/tasks/<YYYY-MM-DD>-<slug>.md` — temporary plans and notes in GODS format. One file per task/session. Directory is gitignored.
   5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-HOOK-DOCS–FR-IDE-SCOPE.
   6. `documents/benchmarking.md` — benchmark results and analysis.
 - **Rules:**
   - Traceability: code references FR-* IDs via comments (`// FR-<ID>` or `# FR-<ID>`). SRS has `[x]`/`[ ]` status without `Evidence:` paths. Validated by `scripts/check-traceability.ts` (part of `deno task check`).
-  - English only (except whiteboards). Compressed style (no fluff, high-info words).
+  - English only (except tasks). Compressed style (no fluff, high-info words).
   - Agent reads docs at session start; outdated docs = wrong assumptions.
 - **Deps:** None (plain Markdown files).
 
@@ -141,7 +142,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - **JSON Configuration**: `benchmarks/config.json` stores unified model presets.
   - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge via Claude CLI (`cliChatCompletion` in `llm.ts`). Uses `--output-format json` + `--json-schema` for structured verdicts. No external API key required. Judge retries once on failure before marking items failed.
-  - **Evidence Pipeline**: Raw NDJSON agent logs are converted to readable conversation format (`format_logs.ts`). Evidence (user query, agent logs, git diff/status/log, whiteboards, generated files) is written to `<runDir>/judge-evidence.md` and passed to Claude CLI via `--append-system-prompt-file`. This avoids E2BIG/stdin size limits for large traces (~250KB). The user message to judge contains only the checklist and evaluation instruction. Evidence files persist in run directory for debugging.
+  - **Evidence Pipeline**: Raw NDJSON agent logs are converted to readable conversation format (`format_logs.ts`). Evidence (user query, agent logs, git diff/status/log, task files, generated files) is written to `<runDir>/judge-evidence.md` and passed to Claude CLI via `--append-system-prompt-file`. This avoids E2BIG/stdin size limits for large traces (~250KB). The user message to judge contains only the checklist and evaluation instruction. Evidence files persist in run directory for debugging.
   - **Execution Stability**: `SpawnedAgent` per-step timeout + global scenario timeout (default 15 min, `totalTimeoutMs`). Kills agent and proceeds to judge with partial evidence on expiry.
   - **Skill Integration**: Framework skills are copied into sandbox IDE config dir (pack-scoped). Skills with `disable-model-invocation: true` are included but not auto-triggered.
   - **Project Instructions**: Scenarios MUST declare `agentsTemplateVars` (required field; PROJECT_NAME, TOOLING_STACK, etc.) — runner renders AGENTS.md from pack-level templates (`framework/<pack>/assets/`) at runtime (single source of truth). Optional `generateDocuments`/`scripts` flags generate `documents/AGENTS.md` and `scripts/AGENTS.md`. For Claude adapter, CLAUDE.md symlinks are created automatically. Legacy `agentsMarkdown` and fixture `AGENTS.md` are not supported.
@@ -261,6 +262,25 @@ graph TD
 - **Output:** Always stream-json. NDJSON real-time parsing + ANSI formatting. Subagent events (`task_started`/`task_progress`/`task_notification`) indented by nesting depth. 30s hang workaround after result event.
 - **Exit code:** resultEvent.is_error → process exit code → 1 (fallback).
 - **Defaults:** interval=0 (no pause), max-iterations=infinite, timeout=none.
+
+### 3.12 Standalone Primitive Adaptation — `flowai-adapt`
+
+- **Purpose:** On-demand adaptation of all installed framework primitives (skills, agents, AGENTS.md artifacts, hooks) to project specifics — independent of `flowai-update`.
+- **Skill:** `framework/core/skills/flowai-adapt/SKILL.md`. User-invoked only (`disable-model-invocation: true`).
+- **Subagents:**
+  - `flowai-skill-adapter` — adapts skill SKILL.md (reused from flowai-update).
+  - `flowai-agent-adapter` — adapts agent `.md` body, preserves YAML frontmatter.
+- **Workflow:**
+  1. Detect IDE config dirs (`.claude/`, `.cursor/`, `.opencode/`).
+  2. Parse args: type filter (`--skills`/`--agents`/`--assets`/`--hooks`) + optional name.
+  3. Adapt skills: scan `{ide}/skills/`, parallel subagents, diff + confirm.
+  4. Adapt agents: scan `{ide}/agents/`, parallel subagents, diff + confirm.
+  5. Verify AGENTS.md artifacts: template-vs-artifact comparison.
+  6. Adapt hooks: check for stack-specific commands, skip agnostic.
+  7. Summary.
+- **Git tracking:** Adaptation state tracked through git history. Working tree = current version; `git show HEAD:<path>` = previous adapted version. No extra metadata fields.
+- **Relation to flowai-update:** `flowai-update` ties adaptation to the sync cycle. `flowai-adapt` runs standalone — after first install, stack change, or selectively.
+- **Behavioral requirements:** See benchmarks `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`.
 
 ## 4. Data and Storage
 

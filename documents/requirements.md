@@ -104,12 +104,12 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 ### FR-COMPONENT: Component Coverage
 
-All 38 skills have at least one benchmark scenario. Coverage is the source of truth: `find framework -name "mod.ts" -path "*/benchmarks/*" | wc -l`. Agents (4 canonical definitions) are not benchmarked individually — they are exercised as subagents within skill benchmarks.
+All 41 skills have at least one benchmark scenario. Coverage is the source of truth: `find framework -name "mod.ts" -path "*/benchmarks/*" | wc -l`. Agents (4 canonical definitions) are not benchmarked individually — they are exercised as subagents within skill benchmarks.
 
 ### FR-INIT: Project Initialization
 
 - **Description:** The `flowai-init` skill bootstraps AI agent understanding of a project by analyzing codebase, generating 3 AGENTS.md files (root, `documents/`, `scripts/`) from pack-level asset templates, and scaffolding documentation (CLAUDE.md, SRS, SDS). Uses `generate_agents.ts` (Deno/TS, read-only) for project analysis. AGENTS.md templates are pack-level assets (not flowai-init scaffolds) — their updates are tracked independently via `assets:` in `pack.yaml`.
-- **Use case scenario:** User runs `/flowai-init` on existing or new project. Agent runs the analysis script, determines Greenfield vs Brownfield by its own judgment, interviews user (Greenfield) or reverse-engineers architecture (Brownfield), generates 3 AGENTS.md files, documentation (SRS, SDS, whiteboard), and configures development commands.
+- **Use case scenario:** User runs `/flowai-init` on existing or new project. Agent runs the analysis script, determines Greenfield vs Brownfield by its own judgment, interviews user (Greenfield) or reverse-engineers architecture (Brownfield), generates 3 AGENTS.md files, documentation (SRS, SDS, task file), and configures development commands.
 - **Acceptance verified by benchmarks:** `flowai-init-greenfield`, `flowai-init-brownfield`, `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`, `flowai-init-vision-integration`, `flowai-init-claude-md-symlinks`
 - **Infrastructure acceptance (code/scripts):**
   - [x] **FR-INIT.STACK Stack detection**: `generate_agents.ts` detects 6 stacks via marker files.
@@ -406,6 +406,46 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Description:** Single entry point for updating the flowai framework. Handles CLI update, skill/agent sync via `flowai sync`, migration of asset-mapped artifacts (AGENTS.md files from pack-level templates), and migration of scaffolded project artifacts using template diffs as migration source.
 - **Acceptance verified by benchmarks:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
 
+### FR-ADAPT: Standalone Primitive Adaptation — `flowai-adapt`
+
+- **Description:** On-demand adaptation of all installed framework primitives (skills, agents, AGENTS.md artifacts, hooks) to project specifics — independent of the update cycle. Uses `flowai-skill-adapter` subagent for skills and `flowai-agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
+- **Use case scenario:** Developer installs flowai on a Python project. All skills contain generic Deno examples. Runs `/flowai-adapt` to adapt all primitives to Python/pytest/ruff. Can also run `/flowai-adapt --skills flowai-commit` to adapt a single skill.
+- **Acceptance verified by benchmarks:** `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`
+
+#### FR-ADAPT.SKILLS Skill Adaptation
+
+- **Desc:** Scans `{ide}/skills/` for `flowai-*` directories, launches `flowai-skill-adapter` subagent per skill in parallel, shows diff, asks confirmation.
+- **Acceptance:**
+  - [ ] Scans installed skills in IDE config dirs.
+  - [ ] Launches parallel `flowai-skill-adapter` subagents.
+  - [ ] Shows diff per skill, asks user confirmation.
+  - [ ] Reverts rejected adaptations.
+
+#### FR-ADAPT.AGENTS Agent Adaptation
+
+- **Desc:** Scans `{ide}/agents/` for `flowai-*` files, launches `flowai-agent-adapter` subagent per agent in parallel, shows diff, asks confirmation. Frontmatter preserved as-is.
+- **Acceptance:**
+  - [ ] Scans installed agents in IDE config dirs.
+  - [ ] Launches parallel `flowai-agent-adapter` subagents.
+  - [ ] Shows diff per agent, asks user confirmation.
+  - [ ] Frontmatter unchanged after adaptation.
+
+#### FR-ADAPT.ASSETS AGENTS.md Artifact Verification
+
+- **Desc:** Compares pack-level templates (`{ide}/assets/`) with project artifacts (AGENTS.md), proposes updates for outdated framework sections.
+- **Acceptance:**
+  - [ ] Reads asset mapping from `pack.yaml` or uses default mapping.
+  - [ ] Compares template vs artifact using `git diff --no-index`.
+  - [ ] Proposes updates for outdated framework-originated sections.
+
+#### FR-ADAPT.HOOKS Hook Adaptation
+
+- **Desc:** Checks hook scripts in `{ide}/scripts/` for stack-specific commands, adapts if needed.
+- **Acceptance:**
+  - [ ] Scans hook scripts for stack-specific commands.
+  - [ ] Skips stack-agnostic hooks.
+  - [ ] Adapts stack-specific hooks with project commands.
+
 ### FR-PACKS: Pack System — Modular Resource Installation
 
 - **Description:** Reorganize framework resources into self-contained packs. Each pack is an autonomous directory containing skills, agents, hooks, and scripts. Users select packs in `.flowai.yaml` instead of listing individual resource names. Replaces flat `framework/skills/` and `framework/agents/` structure.
@@ -508,16 +548,16 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
   - [ ] **FR-CICD.INTEGRITY File integrity**: After third-party setup steps (`checkout`, `setup-deno`) and after `deno task check`, verify no unexpected file modifications via `git diff --exit-code` + untracked file check. Fail pipeline if integrity violated.
   - [ ] **FR-CICD.JOBS Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
 
-### FR-WB-CLEANUP: Whiteboard Cleanup on Commit
+### FR-WB-CLEANUP: Task File Cleanup on Commit
 
-- **Description:** `flowai-commit` deletes referenced whiteboard after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale whiteboards from accumulating.
-- **Acceptance verified by benchmarks:** `flowai-commit-whiteboard-cleanup`, `flowai-commit-whiteboard-cleanup-partial`
+- **Description:** `flowai-commit` deletes referenced task file after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale task files from accumulating.
+- **Acceptance verified by benchmarks:** `flowai-commit-task-cleanup`, `flowai-commit-task-cleanup-partial`
 
 ### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit
 
 - **Description:** Clear separation of concerns between `flowai-review` and `flowai-commit`:
   - Review owns: project checks (lint/test), hygiene scan, code quality verdict
-  - Commit owns: documentation audit, atomic grouping, commit execution, whiteboard cleanup
+  - Commit owns: documentation audit, atomic grouping, commit execution, task file cleanup
   - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks.
 - **Acceptance verified by benchmarks:** `flowai-commit-no-checks`, `flowai-review-no-grouping`
 
