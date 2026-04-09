@@ -1,5 +1,6 @@
 // FR-DIST.SYNC — CLI entry point for flowai sync
 // FR-DIST.UPDATE — self-update check
+// FR-DIST.MIGRATE — migrate subcommand
 import { Command } from "@cliffy/command";
 import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
@@ -11,6 +12,7 @@ import {
 } from "./config_generator.ts";
 import { isInsideIDE } from "./ide.ts";
 import { type LoopOptions, runLoop } from "./loop.ts";
+import { type MigrateOptions, runMigrate } from "./migrate.ts";
 import {
   DEFAULT_GIT_URL,
   type PlanItem,
@@ -483,6 +485,48 @@ export async function main(args: string[]): Promise<void> {
           };
           const exitCode = await runLoop(loopOpts);
           if (exitCode !== 0) Deno.exit(exitCode);
+        }),
+    )
+    .command(
+      "migrate",
+      new Command()
+        .description(
+          "One-way migration of all primitives (skills, agents, commands) from one IDE to another.",
+        )
+        .arguments("<from:string> <to:string>")
+        .option("-y, --yes", "Overwrite without prompt", { default: false })
+        .option(
+          "--dry-run",
+          "Print what would be migrated without writing files",
+          { default: false },
+        )
+        // deno-lint-ignore no-explicit-any
+        .action(async (options: any, from: string, to: string) => {
+          const migrateOpts: MigrateOptions = {
+            yes: options.yes as boolean,
+            dryRun: options.dryRun as boolean,
+            promptConflicts: options.yes
+              ? undefined
+              : async (conflicts: PlanItem[]) => {
+                console.log("\nConflicts detected:");
+                for (const c of conflicts) {
+                  console.log(`  - ${c.targetPath}`);
+                }
+                const overwrite = await Confirm.prompt({
+                  message: "Overwrite all?",
+                  default: true,
+                });
+                return overwrite ? conflicts.map((_, i) => i) : [];
+              },
+          };
+          await runMigrate(
+            Deno.cwd(),
+            from,
+            to,
+            new DenoFsAdapter(),
+            migrateOpts,
+            console.log,
+          );
         }),
     );
 

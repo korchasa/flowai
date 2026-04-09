@@ -200,6 +200,20 @@ All 38 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Skipped when <2 IDEs.
   - [x] Idempotent: repeated runs produce 0 writes.
 
+#### FR-DIST.MIGRATE One-Way IDE Migration
+
+- **Desc:** `flowai migrate <from> <to>` migrates all primitives (skills, agents, commands) from one IDE config dir to another in a single pass. Includes both framework (`flowai-*`) and user-created resources. Agent frontmatter transformed for target IDE. Rules and hooks excluded (format incompatible).
+- **Acceptance:**
+  - [x] `flowai migrate <from> <to>` subcommand available.
+  - [x] Skills copied as-is (full dir tree).
+  - [x] Agents transformed via `crossTransformAgent()` for target IDE.
+  - [x] Commands copied as-is.
+  - [x] No filter: both `flowai-*` and user resources migrated.
+  - [x] Conflict prompt in interactive mode; `--yes` overwrites.
+  - [x] `--dry-run`: prints plan, no files written.
+  - [x] Unknown IDE → error before FS operations.
+  - [x] Same from/to → error.
+
 #### FR-DIST.MAPPING Cross-IDE Resource Mapping (universal representation)
 
 - **Desc:** Defines how each logical resource type maps to IDE-specific paths and formats. flowai uses these mappings during framework sync (FR-DIST.SYNC) and user sync (FR-DIST.USER-SYNC).

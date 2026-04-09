@@ -203,25 +203,38 @@ graph TD
 - **Dev-only file exclusion:** Bundle and sync exclude dev-only files from distribution: benchmark scenarios (`/benchmarks/`) and test files (`_test.*`). Filtering at two levels: `bundle-framework.ts` (build time) and `readSkillFiles`/`readPackSkillFiles` in `sync.ts` (runtime).
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 
-### 3.6 Conventional Commits `agent:` Type — FR-AGENT-COMMIT
+### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`)
+
+- **Purpose:** One-way migration of all IDE primitives (skills, agents, commands) from one IDE config dir to another. Unlike `user_sync` (bidirectional, mtime-based, user resources only), `migrate` is explicit, one-directional, includes all resources (`flowai-*` + user-created), and requires no `.flowai.yaml`.
+- **CLI:** `flowai migrate <from> <to>`. Flags: `--yes` (overwrite without prompt), `--dry-run` (print plan, no writes). Known IDEs: `claude`, `cursor`, `opencode`.
+- **Components (`cli/src/migrate.ts`):**
+  - `ScannedResource` — `{ name, type: skill|agent|command, files: [{relPath, content}] }`
+  - `MigrateOptions` — `{ yes, dryRun, promptConflicts? }`
+  - `scanAllResources(cwd, fromIde, fs)` — scans `skills/`, `agents/`, `commands/` subdirs; no filter; uses `safeReadDir` (skips missing dirs).
+  - `buildMigratePlan(resources, fromIde, toIde, cwd, fs, modelMap, log)` — async; reads target files; classifies each item as `create/ok/conflict`; transforms agents via `crossTransformAgent()`.
+  - `runMigrate(cwd, from, to, fs, options, log)` — validates IDEs, scans, builds plan, applies via `processPlan` (or prints in dry-run mode).
+- **Reused from existing modules:** `crossTransformAgent` (`transform.ts`), `processPlan` (`sync.ts`), `DEFAULT_MODEL_MAPS` (`transform.ts`).
+- **Excluded from migration:** rules (`.cursor/rules/`, `.claude/rules/`) and hooks — fundamentally different formats across IDEs, no automated transform.
+
+### 3.7 Conventional Commits `agent:` Type — FR-AGENT-COMMIT
 
 - **Purpose:** Dedicated commit type for AI agent/skill config changes.
 - **Behavioral requirements:** See benchmarks `flowai-commit-agent-type`.
 
-### 3.7 flowai-init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT
+### 3.8 flowai-init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT
 
 - **Purpose:** Preserve user edits during re-initialization. 3 AGENTS.md files
   (`./`, `./documents/`, `./scripts/`). Agent-driven generation from pack-level asset templates. AGENTS.md template updates tracked independently via `pack.yaml` `assets:` field (not flowai-init scaffolds).
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
 - **Behavioral requirements:** See benchmarks `flowai-init-*` (6 scenarios).
 
-### 3.8 AI Devcontainer Setup — FR-DEVCONTAINER
+### 3.9 AI Devcontainer Setup — FR-DEVCONTAINER
 
 - **Purpose:** Generate `.devcontainer/` config for AI IDE development.
 - **Behavioral requirements:** See benchmarks `flowai-skill-setup-ai-ide-devcontainer-*` (5 scenarios).
 - **Deps:** None (pure SKILL.md, agent-driven generation).
 
-### 3.9 Framework Update Skill — `flowai-update`
+### 3.10 Framework Update Skill — `flowai-update`
 
 - **Purpose:** Single entry point for updating framework + migrating asset-mapped and scaffolded artifacts.
 - **Asset artifacts:** AGENTS.md templates mapped via `pack.yaml` `assets:` field (template → project artifact). Tracked independently from skills — changes detected even when no skills are updated.
@@ -229,7 +242,7 @@ graph TD
 - **CLI integration:** `flowai` bare command is no-op inside IDE. `flowai sync` required explicitly.
 - **Behavioral requirements:** See benchmarks `flowai-update-*` (4 scenarios).
 
-### 3.10 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`)
+### 3.11 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`)
 
 - **Purpose:** Launch Claude Code non-interactively with a prompt. Base automation primitive.
 - **CLI:** `flowai loop [OPTIONS] <prompt>`. Flags: `--agent`, `--model`, `--cwd`, `--yolo`, `--timeout`, `--interval`, `--max-iterations`. Skills invoked via prompt (e.g. `"/flowai-commit msg"`).
