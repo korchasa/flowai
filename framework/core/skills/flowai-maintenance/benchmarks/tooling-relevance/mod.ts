@@ -16,9 +16,9 @@ export const MaintenanceToolingRelevanceBench = new class
 
   checklist = [
     {
-      id: "whiteboard_report",
+      id: "task_file_report",
       description:
-        "Did the agent create a maintenance report in 'documents/whiteboards/'?",
+        "Did the agent create a maintenance report in 'documents/tasks/'?",
       critical: true,
     },
     {

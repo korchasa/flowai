@@ -1,9 +1,9 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const SpecReadsDocsBench = new class extends BenchmarkSkillScenario {
-  id = "flowai-spec-reads-docs";
-  name = "Spec reads SRS and SDS before spec creation";
-  skill = "flowai-spec";
+export const EpicReadsDocsBench = new class extends BenchmarkSkillScenario {
+  id = "flowai-epic-reads-docs";
+  name = "Epic reads SRS and SDS before epic creation";
+  skill = "flowai-epic";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
     PROJECT_NAME: "EcomAuth",
@@ -15,7 +15,7 @@ export const SpecReadsDocsBench = new class extends BenchmarkSkillScenario {
     "A pragmatic developer. When asked about phases, approve the proposed decomposition. Keep answers short.";
 
   userQuery =
-    "/flowai-spec User authentication system with OAuth2 and JWT tokens.";
+    "/flowai-epic User authentication system with OAuth2 and JWT tokens.";
 
   checklist = [
     {
@@ -29,9 +29,9 @@ export const SpecReadsDocsBench = new class extends BenchmarkSkillScenario {
       critical: true,
     },
     {
-      id: "spec_created",
+      id: "epic_created",
       description:
-        "Did the agent create a spec file in 'documents/' (e.g., 'documents/spec-*.md')?",
+        "Did the agent create an epic file in 'documents/tasks/' (e.g., 'documents/tasks/epic-*.md')?",
       critical: true,
     },
   ];

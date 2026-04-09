@@ -27,7 +27,7 @@ the entire project. Your two hats:
 Input sources:
 - Git diff (`git diff`, `git diff --cached`, `git diff <base>..HEAD`).
 - The original User Request (from chat history).
-- The Plan (task management tool or a whiteboard in `documents/whiteboards/`).
+- The Plan (task management tool or a task file in `documents/tasks/`).
 - Project conventions (`AGENTS.md`, linter/formatter configs).
 </context>
 
@@ -49,6 +49,11 @@ Input sources:
    improvement.
 7. **Output**: Final verdict is **Approve**, **Request Changes**, or
    **Needs Discussion** with actionable items.
+8. **Session Scope**: Compare current `git status` with the git status snapshot
+   from session start (available in system context). Files already
+   modified/untracked at session start are outside the review scope — note them
+   in the report but do not review their content. Focus on changes made in the
+   current session.
 </rules>
 
 ## Instructions
@@ -82,7 +87,7 @@ Input sources:
    - **Untracked files**: `git diff` does NOT show untracked files. Check
      `git status` output from step 1 — for each untracked file, read its
      content directly and include it in the review scope.
-   - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
+   - Read the original user request and the plan (task file in `documents/tasks/` / task list).
    - Look for project conventions in config files (linter, formatter configs).
      Rely on conventions visible in the diff and surrounding code.
 

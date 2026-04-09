@@ -42,6 +42,11 @@ the other.
 4. **Transparency**: Output both review findings and commit results to the user.
 5. **Planning**: Use a task management tool (e.g., `todo_write`, `todowrite`)
    to track steps.
+6. **Session Scope**: Compare current `git status` with the git status snapshot
+   from session start (available in system context). Files already
+   modified/untracked at session start are outside the review and commit scope —
+   note them but do not review or commit. Focus on changes made in the current
+   session. If unsure which changes are yours, ask the user before staging.
 </rules>
 
 ## Instructions
@@ -75,7 +80,7 @@ the other.
    - **Untracked files**: `git diff` does NOT show untracked files. Check
      `git status` output from step 1 — for each untracked file, read its
      content directly and include it in the review scope.
-   - Read the original user request and the plan (whiteboard in `documents/whiteboards/` / task list).
+   - Read the original user request and the plan (task file in `documents/tasks/` / task list).
    - Look for project conventions in config files (linter, formatter configs).
      Rely on conventions visible in the diff and surrounding code.
 
@@ -205,13 +210,13 @@ After completing the review report above:
 2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
    - **Gather change context** from three sources:
      1. **Git diff**: `git diff` (unstaged) + `git diff --cached` (staged). Primary source of WHAT changed.
-     2. **Active whiteboard**: If the user referenced a whiteboard or plan in this session, read that specific file from `documents/whiteboards/`. Use it to understand the WHY behind changes. Do NOT scan all whiteboards — only read one explicitly linked to the current task.
+     2. **Active task file**: If the user referenced a task file or plan in this session, read that specific file from `documents/tasks/`. Use it to understand the WHY behind changes. Do NOT scan all task files — only read one explicitly linked to the current task.
      3. **Session context**: User messages in this conversation explaining intent, decisions, or requirements.
    - **Discover document list** (if `./documents` exists):
      - If `documents/AGENTS.md` exists → read its `## Hierarchy` section → extract all document paths listed there.
      - Classify each document: `READ-ONLY` (explicitly marked), `derived` (e.g. README — "Derived from..."), or `editable` (default).
      - If `documents/AGENTS.md` does not exist → use default list: `requirements.md`, `design.md`, `AGENTS.md` (all editable).
-   - **Audit each editable document** against the combined context (diff + whiteboard + session):
+   - **Audit each editable document** against the combined context (diff + task file + session):
      - For each document: does the change context reveal new/changed/removed information relevant to this document's scope? If yes → update. If no → note reason.
      - For `derived` documents (e.g. README.md): update only when changes are significant (new public API, changed installation steps, new features).
      - Skip `READ-ONLY` documents entirely.
@@ -224,7 +229,7 @@ After completing the review report above:
      ```
      ### Documentation Audit
      - <doc-name>: [updated | no changes — <reason>] (for each discovered document)
-     - Whiteboard context: [used <filename> | none found]
+     - Task file context: [used <filename> | none found]
      ```
    - **Gate**: If code changes exist but zero documents were updated, re-examine — new exports, functions, changed signatures, or new modules almost always require an update. Only proceed without updates if justified in the audit report.
 3. **Atomic Grouping Strategy (Subagent)**
@@ -243,12 +248,12 @@ After completing the review report above:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
      3. Commit with a Conventional Commits message.
-5. **Whiteboard Cleanup** _(only if a whiteboard was used in step 2)_
-   - If the user referenced a whiteboard and it contains a `## Definition of Done` (or similar checklist):
+5. **Task file Cleanup** _(only if a task file was used in step 2)_
+   - If the user referenced a task file and it contains a `## Definition of Done` (or similar checklist):
      a. Compare each DoD item against the committed changes.
-     b. If **all** DoD items are satisfied by the committed code and documentation → delete the whiteboard file (`git rm`) and include the deletion in the commit (amend the last commit or create a separate `docs: remove completed whiteboard` commit).
-     c. If **any** DoD item is NOT satisfied → ask the user: "The whiteboard has incomplete items: [list]. Delete it anyway or keep for next session?" Act on the user's answer.
-   - If the whiteboard has no DoD section → ask the user whether the planned work is complete and whether to delete the whiteboard.
+     b. If **all** DoD items are satisfied by the committed code and documentation → delete the task file (`git rm`) and include the deletion in the commit (amend the last commit or create a separate `docs: remove completed task file` commit).
+     c. If **any** DoD item is NOT satisfied → ask the user: "The task file has incomplete items: [list]. Delete it anyway or keep for next session?" Act on the user's answer.
+   - If the task file has no DoD section → ask the user whether the planned work is complete and whether to delete the task file.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
    - If uncommitted changes remain, investigate and report to the user.
@@ -279,7 +284,7 @@ Output a combined summary:
 [ ] Documentation audit performed and files updated.
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
-[ ] Whiteboard cleanup: completed whiteboards deleted, partial whiteboards confirmed with user.
+[ ] Task file cleanup: completed task files deleted, partial task files confirmed with user.
 [ ] Session complexity check performed; `/flowai-reflect` suggested if signals detected.
 [ ] Both review and commit results reported to user.
 </verification>

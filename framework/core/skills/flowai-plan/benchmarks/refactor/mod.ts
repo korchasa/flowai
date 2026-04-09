@@ -42,7 +42,7 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
     {
       id: "no_implementation",
       description:
-        "Did the agent follow the rule to NOT modify any files except files in documents/whiteboards/?",
+        "Did the agent follow the rule to NOT modify any files except files in documents/tasks/?",
       critical: true,
     },
   ];

@@ -28,9 +28,8 @@ export const PlanReadsDocsBench = new class extends BenchmarkSkillScenario {
       critical: true,
     },
     {
-      id: "whiteboard_created",
-      description:
-        "Did the agent create a whiteboard file in 'documents/whiteboards/'?",
+      id: "task_file_created",
+      description: "Did the agent create a task file in 'documents/tasks/'?",
       critical: true,
     },
   ];

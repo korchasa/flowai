@@ -6,7 +6,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 1. **`AGENTS.md`**: "Why" & "For Whom". Long-term goal and value proposition. Read-only reference.
 2. **Software Requirements Specification (SRS)** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements. Depends on vision.
 3. **Software Design Specification (SDS)** (`documents/design.md`): "How". Implementation details. Depends on SRS.
-4. **Whiteboards** (`documents/whiteboards/<YYYY-MM-DD>-<slug>.md`): Temporary plans and notes. One file per task or session.
+4. **Tasks** (`documents/tasks/<YYYY-MM-DD>-<slug>.md`): Temporary plans and notes. One file per task or session.
 
 ## Rules
 - Follow AGENTS.md, SRS, and SDS strictly — they define what the project is and how it works.
@@ -73,17 +73,21 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - **Simplified/Deferred:**
 ````
 
-## Whiteboards (`documents/whiteboards/`)
+## Tasks (`documents/tasks/`)
 
 - One file per task or session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
 - Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`.
-- Do not reuse another session's whiteboard — create a new file. Old whiteboards provide context but may contain outdated decisions.
+- Do not reuse another session's task file — create a new file. Old tasks provide context but may contain outdated decisions.
 - Use GODS format (see below) for issues and plans.
 - Directory is gitignored. Files accumulate — this is expected.
 
 ### GODS Format
 
 ```markdown
+---
+implements:
+  - FR-XXX
+---
 # [Task Title]
 
 ## Goal
@@ -117,7 +121,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 ## Compressed Style Rules (All Docs)
 
 - No changelogs — docs reflect current state, not history.
-- English only (except whiteboards, which may use the user's language).
+- English only (except tasks, which may use the user's language).
 - Summarize by extracting facts and compressing — no loss of information, just fewer words.
 - Every word must carry meaning — no filler, no fluff, no stopwords where a shorter synonym works.
 - Prefer compact formats: lists, tables, YAML, Mermaid diagrams.

@@ -73,7 +73,7 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
         "- **Architectural Validation**: Complex logic changes → visualize event sequence.",
         "- **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks.",
         "- **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.",
-        "- **Plan Persistence**: After variant selection, save the detailed plan to documents/whiteboards/.",
+        "- **Plan Persistence**: After variant selection, save the detailed plan to documents/tasks/.",
         "",
         "## TDD Flow",
         "",

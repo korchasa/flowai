@@ -1,9 +1,9 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const SpecBasicBench = new class extends BenchmarkSkillScenario {
-  id = "flowai-spec-basic";
-  name = "Basic Spec Generation";
-  skill = "flowai-spec";
+export const EpicBasicBench = new class extends BenchmarkSkillScenario {
+  id = "flowai-epic-basic";
+  name = "Basic Epic Generation";
+  skill = "flowai-epic";
   stepTimeoutMs = 420_000;
   agentsTemplateVars = {
     PROJECT_NAME: "flowai",
@@ -14,7 +14,7 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
   };
 
   userQuery =
-    "/flowai-spec Create a specification for adding skill versioning to the project. Skills should have semver versions in frontmatter, and the framework should support loading specific versions. The project uses Deno/TypeScript, skills are in framework/skills/*/SKILL.md.";
+    "/flowai-epic Create an epic for adding skill versioning to the project. Skills should have semver versions in frontmatter, and the framework should support loading specific versions. The project uses Deno/TypeScript, skills are in framework/skills/*/SKILL.md.";
 
   interactive = true;
   userPersona =
@@ -23,33 +23,33 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "spec_file_created",
+      id: "epic_file_created",
       description:
-        "Did the agent create a spec file matching 'documents/spec-*.md'?",
+        "Did the agent create an epic file matching 'documents/tasks/epic-*.md'?",
       critical: true,
     },
     {
       id: "goal_section",
       description:
-        "Does the spec contain a '## Goal' section with business value?",
+        "Does the epic contain a '## Goal' section with business value?",
       critical: true,
     },
     {
       id: "non_goals_section",
       description:
-        "Does the spec contain a '## Non-Goals' section with at least one explicit exclusion?",
+        "Does the epic contain a '## Non-Goals' section with at least one explicit exclusion?",
       critical: true,
     },
     {
       id: "boundaries_section",
       description:
-        "Does the spec contain '## Architecture & Boundaries' with Always/Ask First/Never subsections?",
+        "Does the epic contain '## Architecture & Boundaries' with Always/Ask First/Never subsections?",
       critical: true,
     },
     {
       id: "phases_present",
       description:
-        "Does the spec contain at least 2 phases with Status, Prerequisites, Goal, Scope, Tasks, and Verification?",
+        "Does the epic contain at least 2 phases with Status, Prerequisites, Goal, Scope, Tasks, and Verification?",
       critical: true,
     },
     {
@@ -61,19 +61,19 @@ export const SpecBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "critique_offered",
       description:
-        "Did the agent offer to critique the spec after detailing phases?",
+        "Did the agent offer to critique the epic after detailing phases?",
       critical: false,
     },
     {
       id: "definition_of_done",
       description:
-        "Does the spec contain a '## Definition of Done' section with measurable criteria?",
+        "Does the epic contain a '## Definition of Done' section with measurable criteria?",
       critical: true,
     },
     {
-      id: "only_spec_file_modified",
+      id: "only_epic_file_modified",
       description:
-        "Did the agent ONLY create/modify 'documents/spec-*.md' and NOT touch any source code files?",
+        "Did the agent ONLY create/modify 'documents/tasks/epic-*.md' and NOT touch any source code files?",
       critical: true,
     },
     {

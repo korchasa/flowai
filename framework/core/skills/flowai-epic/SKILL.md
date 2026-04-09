@@ -1,26 +1,26 @@
 ---
-name: flowai-spec
+name: flowai-epic
 description: >-
-  Create structured specification for large features using phased decomposition.
-  Produces documents/spec-{name}.md with dependency-ordered phases, atomic tasks,
+  Create structured epic for large features using phased decomposition.
+  Produces documents/tasks/epic-{name}.md with dependency-ordered phases, atomic tasks,
   explicit boundaries, and per-phase status tracking.
 disable-model-invocation: true
 argument-hint: feature name or description
 effort: high
 ---
 
-# Feature Specification
+# Feature Epic
 
 ## Overview
 
-Create a structured, decomposed specification in `./documents/spec-{name}.md` for
+Create a structured, decomposed epic in `./documents/tasks/epic-{name}.md` for
 features too large for a single agent session.
 
 ## When to Use
 
-- Use `flowai-spec` when feature spans >3 files AND requires >2 sessions, OR has >5 phases
+- Use `flowai-epic` when feature spans >3 files AND requires >2 sessions, OR has >5 phases
 - Use `flowai-plan` for tasks completable within one agent session
-- When unsure: start with `flowai-plan`; if it outgrows a single whiteboard, upgrade to `flowai-spec`
+- When unsure: start with `flowai-plan`; if it outgrows a single task, upgrade to `flowai-epic`
 
 ## Context
 
@@ -33,16 +33,17 @@ documentation, web) to understand the problem before asking the user.
 ## Rules & Constraints
 
 <rules>
-1. **Pure Specification**: MUST NOT write code. Only `./documents/spec-{name}.md`. If the file does not exist, CREATE it.
+1. **Pure Specification**: MUST NOT write code. Only `./documents/tasks/epic-{name}.md`. If the file does not exist, CREATE it.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track execution steps.
 3. **Chat-First Reasoning**: Phase decomposition MUST be presented in CHAT first, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool.
 5. **Proactive Resolution**: Follow `Proactive Resolution` rule from `## Planning Rules` in AGENTS.md.
 6. **Stop-Analysis Protocol**: Follow Stop-Analysis rules from `# YOU MUST` in AGENTS.md.
 7. **AGENTS.md Planning Rules**: Follow all rules from `## Planning Rules` section in AGENTS.md.
-8. **Living Document**: Spec status fields are updated during implementation. Implementer MUST update Phase Status (`not-started` → `in-progress` → `done`) when starting/completing a phase.
+8. **Living Document**: Epic status fields are updated during implementation. Implementer MUST update Phase Status (`not-started` → `in-progress` → `done`) when starting/completing a phase.
 9. **Phase Size Guard**: Each phase SHOULD contain ≤50 requirements and target ≤5 files per task. If exceeded → split.
-10. **Implementation Hints Only in Notes**: Spec describes WHAT and WHY. HOW — only in Notes section as implementation hints (patterns, gotchas, references), not as code.
+10. **Implementation Hints Only in Notes**: Epic describes WHAT and WHY. HOW — only in Notes section as implementation hints (patterns, gotchas, references), not as code.
+11. **Traceability**: If task implements known FR-* requirements, add `implements:` YAML frontmatter with FR-* codes from SRS. Optional — omit if FR-* not yet defined.
 </rules>
 
 ## Instructions
@@ -59,7 +60,7 @@ documentation, web) to understand the problem before asking the user.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 
 3. **Draft Spec Header**
-   - Write to `documents/spec-{name}.md` the following sections:
+   - Write to `documents/tasks/epic-{name}.md` the following sections:
      - Title and metadata table (Status: Draft, Created/Updated dates)
      - Goal (business/user value — why are we building this?)
      - Overview (current state, why now, relevant context)
@@ -76,7 +77,7 @@ documentation, web) to understand the problem before asking the user.
    - Present to user. STOP and wait for approval/adjustments.
 
 5. **Detail Phases**
-   - Write approved phases into spec file. Each phase contains:
+   - Write approved phases into epic file. Each phase contains:
      - Status (not-started / in-progress / done)
      - Prerequisites (which phases must be done first)
      - Goal (what this phase achieves)
@@ -86,8 +87,8 @@ documentation, web) to understand the problem before asking the user.
      - Notes (implementation hints, gotchas, references)
 
 6. **Critique**
-   - Present spec to user in chat and offer to critique it before finalizing.
-   - If user agrees, critically analyze the spec for:
+   - Present epic to user in chat and offer to critique it before finalizing.
+   - If user agrees, critically analyze the epic for:
      - Missing phases or hidden dependencies
      - Tasks too large (should be split) or too small (should be merged)
      - Vague verification criteria
@@ -97,7 +98,7 @@ documentation, web) to understand the problem before asking the user.
 
 7. **Refine & Finalize**
    - Ask the user which critique points to address.
-   - Update `documents/spec-{name}.md` with accepted improvements.
+   - Update `documents/tasks/epic-{name}.md` with accepted improvements.
    - Update Status from "Draft" to "Ready".
 
 8. **TOTAL STOP**
@@ -107,7 +108,11 @@ documentation, web) to understand the problem before asking the user.
 ## Output Format
 
 ```markdown
-# Spec: {Feature Name}
+---
+implements:
+  - FR-XXX
+---
+# Epic: {Feature Name}
 
 | Field   | Value                       |
 |---------|-----------------------------|
@@ -186,7 +191,7 @@ documentation, web) to understand the problem before asking the user.
 ## Verification
 
 <verification>
-- [ ] ONLY `documents/spec-{name}.md` modified
+- [ ] ONLY `documents/tasks/epic-{name}.md` modified
 - [ ] Each phase has: Goal, Prerequisites, Scope, Tasks, Verification
 - [ ] Non-Goals section is non-empty
 - [ ] Boundaries (Always/Ask First/Never) are specified

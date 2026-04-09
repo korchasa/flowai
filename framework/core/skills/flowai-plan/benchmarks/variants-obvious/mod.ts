@@ -22,9 +22,9 @@ export const PlanVariantsObviousBench = new class
 
   checklist = [
     {
-      id: "whiteboard_created",
+      id: "task_file_created",
       description:
-        "Did the agent create/write to a file in 'documents/whiteboards/' directory (as required by the planning process)?",
+        "Did the agent create/write to a file in 'documents/tasks/' directory (as required by the planning process)?",
       critical: true,
     },
     {

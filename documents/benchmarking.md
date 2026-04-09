@@ -71,12 +71,12 @@ The trace is a structured HTML document designed for readability and detailed in
 | `flowai-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
 | `flowai-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
 | `flowai-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
-| `flowai-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include whiteboard.md in evidence |
+| `flowai-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include task file in evidence |
 | `flowai-plan-context` | PASSED | 0 | 0 | 25.5 | |
 | `flowai-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
 | `flowai-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
 | `flowai-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
 | `flowai-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
-| `flowai-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No whiteboard, no variants, no tradeoffs |
-| `flowai-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Whiteboard not created |
-| `flowai-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims whiteboard update but doesn't; missed TODO |
+| `flowai-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No task file, no variants, no tradeoffs |
+| `flowai-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Task file not created |
+| `flowai-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims task file update but doesn't; missed TODO |

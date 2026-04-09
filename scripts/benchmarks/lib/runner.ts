@@ -349,27 +349,27 @@ export async function runScenario(
       diffStr = "(git diff failed)";
     }
 
-    // Read whiteboards directory content if it exists
-    let whiteboardContent = "";
+    // Read tasks directory content if it exists
+    let taskFilesContent = "";
     try {
-      const whiteboardsDir = join(sandboxPath, "documents", "whiteboards");
-      for await (const entry of Deno.readDir(whiteboardsDir)) {
+      const tasksDir = join(sandboxPath, "documents", "tasks");
+      for await (const entry of Deno.readDir(tasksDir)) {
         if (entry.isFile && entry.name.endsWith(".md")) {
           const content = await Deno.readTextFile(
-            join(whiteboardsDir, entry.name),
+            join(tasksDir, entry.name),
           );
-          whiteboardContent += `\n--- ${entry.name} ---\n${content}\n`;
+          taskFilesContent += `\n--- ${entry.name} ---\n${content}\n`;
         }
       }
-      if (!whiteboardContent) whiteboardContent = "(no whiteboard files found)";
+      if (!taskFilesContent) taskFilesContent = "(no task files found)";
     } catch (_) {
-      // Fallback: try legacy whiteboard.md
+      // Fallback: try legacy task.md
       try {
-        whiteboardContent = await Deno.readTextFile(
-          join(sandboxPath, "documents", "whiteboard.md"),
+        taskFilesContent = await Deno.readTextFile(
+          join(sandboxPath, "documents", "task.md"),
         );
       } catch (_) {
-        whiteboardContent = "(no whiteboards found)";
+        taskFilesContent = "(no task files found)";
       }
     }
 
@@ -415,8 +415,8 @@ ${
         : diffStr
     }
 
---- DOCUMENTS/WHITEBOARDS ---
-${whiteboardContent}
+--- DOCUMENTS/TASKS ---
+${taskFilesContent}
 
 --- GENERATED FILES ---
 ${truncatedFiles}
