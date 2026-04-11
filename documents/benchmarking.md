@@ -62,6 +62,20 @@ Benchmarks support multiple IDEs (Cursor, Claude Code) via an adapter pattern.
   - `claude.ts`: `ClaudeAdapter` — wraps `claude` CLI with streaming JSON
   - `mod.ts`: factory `createAdapter(ide)` and `SUPPORTED_IDES` constant
 
+## 2.2 Sandbox Context Priors
+
+The benchmark runner injects `framework/core/assets/AGENTS.template.md` as the sandbox `AGENTS.md` (symlinked to `CLAUDE.md` for Claude Code). This template carries project-level rules that propagate into every scenario and can override local SKILL.md guidance when a skill's output resembles a "task artifact":
+
+- **Documentation Hierarchy** → `Tasks (documents/tasks/<YYYY-MM-DD>-<slug>.md): Temporary plans and notes. One file per task or session.`
+- **Planning Rules → Plan Persistence** → `save the detailed plan to documents/tasks/<...>.md — chat-only plans are lost between sessions.`
+
+**Effect on scenarios**: A skill whose final output looks task-like (structured report, timestamped header, categorized findings) can be pushed by these priors toward persisting to `documents/tasks/` even when the local SKILL.md says "inline only". Observed in practice: `flowai-maintenance-tooling-relevance` intermittently saved an audit file after an early refactor that added a `Do NOT save to file` rule but left the file-shaped example in Phase 9.
+
+**Two rules for scenario and skill authors**:
+
+- **Do not fight priors with prohibitions.** Adding `Do NOT save …` to a SKILL.md competes with `Plan Persistence` — an unreliable battle that fails intermittently. Instead, remove the priming source inside the skill itself: drop file-shaped examples (`#` headings, timestamped titles, checkbox lists), rename misleading section titles (`Reporting` → `Deliver findings`), and strip the `Output Target` rule entirely.
+- **Watch for intermittent leaks.** If a scenario passes once but judges mention "written file" or similar side effects, re-run it: the prior-driven behavior may be probabilistic, not deterministic.
+
 ## 3. Trace Log (`trace.html`)
 
 Each scenario run generates a `trace.html` file containing a comprehensive record of the session. This allows for post-mortem analysis of the agent's reasoning and actions.

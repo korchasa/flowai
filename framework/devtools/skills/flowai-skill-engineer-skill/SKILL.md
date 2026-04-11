@@ -224,6 +224,35 @@ For quality-critical tasks:
 - **Inconsistent terminology**: Pick one term, use throughout
 - **Vague names**: `code-review` not `helper` or `utils`
 
+## Priming: Output Shape Teaches The Agent
+
+Two lessons for authors changing a skill's output contract (what the final response should look like). Derived from debugging a skill whose output kept leaking into a file even after the `write to file` directive was removed.
+
+### Embedded examples are ground truth
+
+When SKILL.md contains an example output block, the agent treats the *shape* of that example as the imitation target. A directive like `"deliver findings inline in the response"` competes with an example that starts with `# Report Title (YYYY-MM-DD)` + `## 1. Section` + `- [ ] item` — and usually loses. That shape reads as "markdown file to save", and the agent saves it, regardless of the surrounding prose.
+
+**Rule**: when changing an output contract, audit the example block, not just the directives. Drop file-shaped scaffolding:
+
+- `#` / `##` headings → plain-text category labels (`1. Section Name`).
+- Timestamped titles (`# Report (YYYY-MM-DD)`) → remove; chat responses don't need titles.
+- `- [ ]` checkbox syntax → plain `-` bullets; checkboxes imply "tracked task file".
+
+The shape must match the target delivery medium. For inline chat output, the example should read like a chat message.
+
+### Remove the priming source, don't stack prohibitions
+
+When unwanted behavior is primed by a rule, example shape, or system-level context (e.g., project `AGENTS.md` rules imported by a benchmark runner), the instinct is to add a negative constraint like `Do NOT create files` or `Rule X does NOT apply to this skill`. These rarely beat a shape-level or system-level prior — the agent has to pick a winner, often inconsistently.
+
+**Better approach**: find the priming source inside the skill and remove it.
+
+- Directive rule pointing at a file (`Output Target: write to <path>`) → delete the rule entirely.
+- Section title with file connotations (`Reporting`, `Save report`, `Persist`) → rename (`Deliver findings`).
+- Prose using "report" as a directive noun → switch to "findings" or "output".
+- Example shaped like a document → reshape to chat-message form (see above).
+
+Add explicit prohibitions only as a last resort, after reframing fails.
+
 ## Skill Creation Process
 
 ### Phase 1: Discovery
