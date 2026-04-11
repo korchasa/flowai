@@ -2,6 +2,7 @@ import { assertEquals } from "@std/assert";
 import {
   ALLOWED_SUBDIRS,
   inferKind,
+  validateIdeNeutrality,
   validateKindInvariants,
   validatePathResolution,
   validateProgressiveDisclosure,
@@ -321,4 +322,57 @@ Deno.test("validateKindInvariants: skill WITH flag fails", () => {
   });
   assertEquals(errors.length, 1);
   assertEquals(errors[0].criterion, "FR-PACKS.SKILL-INVARIANT");
+});
+
+// --- validateIdeNeutrality (FR-UNIVERSAL.IDE-NEUTRAL) ---
+
+Deno.test("validateIdeNeutrality: generic body passes", () => {
+  const body = `---
+name: foo
+description: bar
+---
+
+# Body
+
+Use model tiers like max/smart/fast/cheap and let flowai resolve per IDE.
+`;
+  assertEquals(validateIdeNeutrality("foo", body), []);
+});
+
+Deno.test("validateIdeNeutrality: gpt-5 in body fails", () => {
+  const body = `---
+name: foo
+description: bar
+---
+
+Run with gpt-5.4 model.
+`;
+  const errors = validateIdeNeutrality("foo", body);
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-UNIVERSAL.IDE-NEUTRAL");
+});
+
+Deno.test("validateIdeNeutrality: claude-opus-4 in body fails", () => {
+  const body = `---
+name: foo
+description: bar
+---
+
+Configure claude-opus-4-6 as the default.
+`;
+  const errors = validateIdeNeutrality("foo", body);
+  assertEquals(errors.length, 1);
+});
+
+Deno.test("validateIdeNeutrality: frontmatter-only model tier is allowed", () => {
+  // Abstract tier `smart` in frontmatter must NOT trigger. Body is clean.
+  const body = `---
+name: foo
+description: bar
+model: smart
+---
+
+Call the configured model.
+`;
+  assertEquals(validateIdeNeutrality("foo", body), []);
 });

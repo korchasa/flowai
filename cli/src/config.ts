@@ -145,6 +145,19 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
     }
   }
 
+  // FR-DIST.CODEX-HOOKS — experimental feature flags (opt-in, default false).
+  let experimental: FlowConfig["experimental"];
+  if (
+    data.experimental && typeof data.experimental === "object" &&
+    !Array.isArray(data.experimental)
+  ) {
+    const expRaw = data.experimental as Record<string, unknown>;
+    const codexHooks = expRaw.codexHooks === true;
+    if (codexHooks) {
+      experimental = { codexHooks: true };
+    }
+  }
+
   return {
     version,
     ides,
@@ -155,6 +168,7 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
     source,
     userSync,
     models,
+    experimental,
   };
 }
 
@@ -196,6 +210,9 @@ export async function saveConfig(
   }
   if (config.models && Object.keys(config.models).length > 0) {
     data.models = config.models;
+  }
+  if (config.experimental && config.experimental.codexHooks) {
+    data.experimental = { codexHooks: true };
   }
   const yaml = stringify(data);
   await fs.writeFile(configPath, yaml);

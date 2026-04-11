@@ -1,7 +1,8 @@
-import { assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects } from "@std/assert";
 import { InMemoryFsAdapter } from "./adapters/fs.ts";
 import { KNOWN_IDES } from "./types.ts";
 import { buildMigratePlan, runMigrate, scanAllResources } from "./migrate.ts";
+import { parse as parseToml } from "@std/toml";
 
 const AGENT_CLAUDE = `---
 name: my-agent
@@ -332,4 +333,94 @@ Deno.test("runMigrate - conflict in --yes mode overwrites", async () => {
   // File was overwritten
   const written = await fs.readFile("/cwd/.claude/agents/my-agent.md");
   assertEquals(written.includes("my-agent"), true);
+});
+
+// --- FR-DIST.MIGRATE: Codex bridge (TO / FROM) ---
+
+Deno.test("runMigrate - claude → codex: agents land as TOML sidecars + [agents.X] block", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set(
+    "/cwd/.claude/agents/flowai-console-expert.md",
+    `---
+name: flowai-console-expert
+description: Console specialist
+tools: Bash, Read
+---
+
+Run commands. Report results.
+`,
+  );
+  // Add a skill so migrate has something else to copy (validates non-agent path).
+  fs.files.set(
+    "/cwd/.claude/skills/my-skill/SKILL.md",
+    "---\nname: my-skill\ndescription: x\n---\n\n# body",
+  );
+
+  const result = await runMigrate(
+    "/cwd",
+    "claude",
+    "codex",
+    fs,
+    { yes: true, dryRun: false },
+    noop,
+  );
+  assert(result.totalWritten > 0);
+
+  // Sidecar TOML written
+  const sidecar = await fs.readFile(
+    "/cwd/.codex/agents/flowai-console-expert.toml",
+  );
+  const parsedSidecar = parseToml(sidecar) as Record<string, unknown>;
+  assertEquals(parsedSidecar.name, "flowai-console-expert");
+  assertEquals(parsedSidecar.description, "Console specialist");
+  const instr = parsedSidecar.developer_instructions as string;
+  assert(instr.includes("Run commands."));
+
+  // config.toml has the registration
+  const config = await fs.readFile("/cwd/.codex/config.toml");
+  const parsedConfig = parseToml(config) as Record<string, unknown>;
+  const agents = parsedConfig.agents as Record<string, unknown>;
+  assert(agents?.["flowai-console-expert"]);
+
+  // Skill also copied to .codex/skills/
+  assert(await fs.exists("/cwd/.codex/skills/my-skill/SKILL.md"));
+});
+
+Deno.test("runMigrate - codex → claude: reconstructs agent markdown from TOML sidecar", async () => {
+  const fs = new InMemoryFsAdapter();
+  // Pre-seed a Codex workspace with an agent.
+  fs.files.set(
+    "/cwd/.codex/config.toml",
+    `[agents.flowai-console-expert]
+description = "Console specialist"
+config_file = "./agents/flowai-console-expert.toml"
+`,
+  );
+  fs.files.set(
+    "/cwd/.codex/agents/flowai-console-expert.toml",
+    `name = "flowai-console-expert"
+description = "Console specialist"
+developer_instructions = '''
+Run commands. Report results.
+'''
+`,
+  );
+
+  const result = await runMigrate(
+    "/cwd",
+    "codex",
+    "claude",
+    fs,
+    { yes: true, dryRun: false },
+    noop,
+  );
+  assert(result.totalWritten > 0);
+
+  // Markdown agent written in Claude format
+  const md = await fs.readFile(
+    "/cwd/.claude/agents/flowai-console-expert.md",
+  );
+  assert(md.includes("name: flowai-console-expert"));
+  assert(md.includes("description: Console specialist"));
+  assert(md.includes("Run commands."));
 });

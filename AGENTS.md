@@ -31,7 +31,7 @@ A collection of AI skills and agents, designed to standardize work across variou
 
 ### Target Audience
 
-Developers using AI-first IDEs (Cursor, Claude Code, OpenCode)
+Developers using AI-first IDEs (Cursor, Claude Code, OpenCode, OpenAI Codex)
 
 ### Problem Statement
 

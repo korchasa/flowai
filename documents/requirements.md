@@ -178,10 +178,11 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Skips existing regular files.
 
 #### FR-DIST.DETECT IDE Auto-Detection
-- **Desc:** Detect IDEs by config dir presence (`.cursor/`, `.claude/`, `.opencode/`).
+- **Desc:** Detect IDEs by config dir presence (`.cursor/`, `.claude/`, `.opencode/`, `.codex/`).
 - **Acceptance:**
-  - [x] Detects 3 IDEs.
+  - [x] Detects 4 IDEs (Cursor, Claude Code, OpenCode, OpenAI Codex).
   - [x] Used as default when `ides` not in `.flowai.yaml`.
+  - [x] `isInsideIDE()` recognises `CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`, plus `CODEX_THREAD_ID` / `CODEX_SANDBOX` (Codex sets these in every `codex exec` session).
 
 #### FR-DIST.UPDATE Self-Update Check
 - **Desc:** Before sync, checks JSR for newer version. Fail-open (network errors ignored).
@@ -241,31 +242,32 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 **Resource type mapping:**
 
-| Logical type | Cursor | Claude Code | OpenCode |
-|:---|:---|:---|:---|
-| **Command** (user-invoked only) | `.cursor/commands/foo.md` — flat md, no frontmatter | `.claude/commands/foo.md` — flat md, optional frontmatter (`allowed-tools`, `model`) | `.opencode/commands/foo.md` — flat md, `$ARGUMENTS` + shell interpolation |
-| **Skill** (model-invocable) | `.cursor/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.claude/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.opencode/skills/foo/SKILL.md` — dir, same format |
-| **Skill-command** (user-invoked skill) | `.cursor/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.claude/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.opencode/skills/foo/SKILL.md` with `disable-model-invocation: true` |
-| **Agent** | `.cursor/agents/foo.md` — frontmatter: `name`, `description`, `readonly`, `model` | `.claude/agents/foo.md` — frontmatter: `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color` | `.opencode/agents/foo.md` — frontmatter: `description`, `mode`, `model`, `color`, `steps`, `tools` (map) |
+| Logical type | Cursor | Claude Code | OpenCode | OpenAI Codex |
+|:---|:---|:---|:---|:---|
+| **Command** (user-invoked only) | `.cursor/commands/foo.md` — flat md, no frontmatter | `.claude/commands/foo.md` — flat md, optional frontmatter (`allowed-tools`, `model`) | `.opencode/commands/foo.md` — flat md, `$ARGUMENTS` + shell interpolation | Installed as skill-command in `.codex/skills/foo/SKILL.md` with `disable-model-invocation: true` (Codex has no dedicated commands dir) |
+| **Skill** (model-invocable) | `.cursor/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.claude/skills/foo/SKILL.md` — dir, frontmatter `name`+`description` | `.opencode/skills/foo/SKILL.md` — dir, same format | `.codex/skills/foo/SKILL.md` — dir, same format (Codex also auto-discovers `.agents/skills/` as fallback) |
+| **Skill-command** (user-invoked skill) | `.cursor/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.claude/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.opencode/skills/foo/SKILL.md` with `disable-model-invocation: true` | `.codex/skills/foo/SKILL.md` with `disable-model-invocation: true` |
+| **Agent** | `.cursor/agents/foo.md` — frontmatter: `name`, `description`, `readonly`, `model` | `.claude/agents/foo.md` — frontmatter: `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color` | `.opencode/agents/foo.md` — frontmatter: `description`, `mode`, `model`, `color`, `steps`, `tools` (map) | `.codex/agents/foo.toml` (sidecar) with `name`/`description`/`developer_instructions` + registered in `.codex/config.toml` as `[agents.foo] description=... config_file="./agents/foo.toml"` |
 
 **Agent frontmatter field mapping (universal → IDE):**
 
-| Universal field | Cursor | Claude Code | OpenCode |
-|:---|:---|:---|:---|
-| `name` | kept | kept | dropped |
-| `description` | kept | kept | kept |
-| `tools` (string) | dropped | kept | dropped |
-| `disallowedTools` | dropped | kept | dropped |
-| `readonly` | kept | dropped | dropped |
-| `mode` | dropped | dropped | kept |
-| `opencode_tools` (map) | dropped | dropped | renamed → `tools` |
-| `model` (tier) | resolved to IDE-native | resolved to IDE-native | resolved from .flowai.yaml or omitted |
-| `effort` | dropped | kept | dropped |
-| `maxTurns` | dropped | kept | renamed → `steps` |
-| `background` | dropped | kept | dropped |
-| `isolation` | dropped | kept | dropped |
-| `color` | dropped | kept | kept |
-| unknown fields | pass-through | pass-through | pass-through |
+| Universal field | Cursor | Claude Code | OpenCode | OpenAI Codex |
+|:---|:---|:---|:---|:---|
+| `name` | kept | kept | dropped | kept (sidecar `name`) |
+| `description` | kept | kept | kept | kept (TOML `description` in both config + sidecar) |
+| `tools` (string) | dropped | kept | dropped | dropped |
+| `disallowedTools` | dropped | kept | dropped | dropped |
+| `readonly` | kept | dropped | dropped | dropped |
+| `mode` | dropped | dropped | kept | dropped |
+| `opencode_tools` (map) | dropped | dropped | renamed → `tools` | dropped |
+| `model` (tier) | resolved to IDE-native | resolved to IDE-native | resolved from .flowai.yaml or omitted | dropped (Codex subagents inherit the session model) |
+| `effort` | dropped | kept | dropped | dropped |
+| `maxTurns` | dropped | kept | renamed → `steps` | dropped |
+| `background` | dropped | kept | dropped | dropped |
+| `isolation` | dropped | kept | dropped | dropped |
+| `color` | dropped | kept | kept | dropped |
+| agent body (markdown) | stored as file body | stored as file body | stored as file body | stored in sidecar as `developer_instructions = """..."""` (TOML multi-line string, escaped) |
+| unknown fields | pass-through | pass-through | pass-through | dropped (Codex TOML has a fixed schema) |
 
 **Skill frontmatter fields (universal, no IDE transform):**
 
@@ -309,6 +311,30 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Skill copy preserves dir structure with extra files.
   - [x] Framework resources excluded from user sync.
   - [ ] Command sync across IDEs (pending open question resolution)
+
+#### FR-DIST.CODEX-AGENTS OpenAI Codex Subagent Sync
+
+- **Desc:** Sync universal agent files (`framework/<pack>/agents/*.md`) to OpenAI Codex subagent format. Codex uses TOML configuration (`~/.codex/config.toml` or `<repo>/.codex/config.toml`) with `[agents.<name>]` tables that reference sidecar agent files via `config_file`. Agent prompt body lives in `<repo>/.codex/agents/<name>.toml` as `developer_instructions` (TOML multi-line string). Flowai owns only `[agents.<name>]` tables listed in `.codex/flowai-agents.json` manifest; user-authored tables are preserved.
+- **Scenario:** `flowai sync` with `ides: [codex]` and a set of universal agents writes each agent body to `.codex/agents/<name>.toml` (with `name`/`description`/`developer_instructions`) and merges `[agents.<name>]` entries into `.codex/config.toml` via `mergeCodexConfig`. Removing an agent from the sync set removes its table and sidecar on next run. Malformed TOML in `.codex/config.toml` throws a clear error naming the file path — does NOT silently overwrite user config.
+- **Acceptance:**
+  - [x] `mergeCodexConfig(tomlText, changes, manifest)` is pure (no FS) and only mutates `[agents.<name>]` tables listed in the manifest.
+  - [x] `writeCodexAgents(plan, fs, cwd)` in `cli/src/writer.ts` writes sidecars + TOML block + manifest atomically.
+  - [x] Running `sync` twice is idempotent for Codex (no diff on second run). Evidence: `cli/src/sync_test.ts` Codex idempotency case.
+  - [x] Removing an agent from `.flowai.yaml` removes the `[agents.<name>]` block and `.codex/agents/<name>.toml` on next sync.
+  - [x] User-hand-edited `[agents.user-agent]` tables survive a sync round-trip.
+  - [x] Malformed `.codex/config.toml` throws with file path + underlying parse error; file contents are preserved.
+  - [x] Manifest file `.codex/flowai-agents.json` tracks managed agent names (mirrors `flowai-hooks.json`).
+
+#### FR-DIST.CODEX-HOOKS OpenAI Codex Hook Sync (Experimental)
+
+- **Desc:** Sync universal `hook.yaml` definitions to OpenAI Codex `hooks.json` format (`~/.codex/hooks.json` or `<repo>/.codex/hooks.json`). Codex uses Claude-Code-compatible event names (`PreToolUse`, `PostToolUse`, `SessionStart`, `UserPromptSubmit`) and a nested `hooks` structure very similar to Claude. The Codex hook subsystem is feature-gated behind `codex_hooks` (stage: under development) and the flowai sync path is gated behind `experimental.codexHooks: true` in `.flowai.yaml`. When the flag is absent or false, hook sync for Codex is skipped with an info log. This requirement is experimental — tests are tagged `@flaky-until-probed` until a live probe against enabled `codex_hooks` confirms the schema.
+- **Scenario:** With `experimental.codexHooks: true`, `flowai sync` transforms each hook definition via `transformHookForCodex` and calls `mergeCodexHooks` to produce a `hooks.json` with the Claude-style nested shape (`{ "hooks": { "PreToolUse": [{ matcher, hooks: [{ type: "command", command, timeout }] }] } }`). User-added hooks outside the flowai manifest are preserved. Removing a hook from the flowai set removes only its manifest-tracked entries.
+- **Acceptance:**
+  - [ ] `transformHookForCodex(hook, scriptPath)` produces an entry matching the Codex wire schema captured from the binary (`PreToolUse`/`PostToolUse`/`SessionStart`/`UserPromptSubmit`, `matcher`, nested `hooks[]` with `type`/`command`/`timeout`). Tagged `@flaky-until-probed`.
+  - [ ] `mergeCodexHooks(existing, newHooks, manifest)` preserves user hooks not tracked by the manifest.
+  - [x] `sync` skips Codex hook install when `experimental.codexHooks` is absent or false; info-logs the skip reason.
+  - [x] `sync` installs hooks into `<cwd>/.codex/hooks.json` when flag is true.
+  - [x] `cleanupRemovedHooks` removes only manifest-tracked entries for Codex.
 
 #### FR-SOURCE-OVERRIDE: Source Override (git branch / local path)
 
@@ -377,6 +403,14 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] **Relative paths**: SKILL.md MUST reference scripts using relative paths from the skill root (e.g., `scripts/validate.ts`, `python3 scripts/process.py`). Per agentskills.io client implementation guide, the IDE resolves relative paths against the skill's directory and converts to absolute paths in tool calls. All framework SKILL.md files migrated to relative paths.
   - [x] **No custom path placeholders**: Do NOT use custom placeholders like `<this-skill-dir>` in framework skills. The agentskills.io standard defines relative paths as the canonical mechanism; IDEs are responsible for resolution. Existing skills using `<this-skill-dir>` MUST be migrated to plain relative paths. Enforced by `scripts/check-skills.ts`.
   - [x] **No IDE-specific path variables**: Do NOT use `${CLAUDE_SKILL_DIR}` or other IDE-specific variables in framework skills. These are IDE extensions, not part of the agentskills.io standard, and break portability. Enforced by `scripts/check-skills.ts`.
+
+#### FR-UNIVERSAL.IDE-NEUTRAL Framework IDE Neutrality
+
+- **Desc:** Framework SKILL.md bodies and command bodies MUST NOT name a specific IDE model ID or CLI binary. Model resolution happens at install time via `DEFAULT_MODEL_MAPS` and `resolveModelTier`; hard-coding `gpt-5.x`, `claude-opus-x`, or `claude-sonnet-x` breaks cross-IDE portability and drifts out of sync when IDE model catalogs change. Abstract tiers (`max`/`smart`/`fast`/`cheap`/`inherit`) are the only portable way to express intent.
+- **Acceptance:**
+  - [x] `scripts/check-skills.ts` validates `framework/<pack>/{skills,commands}/**/SKILL.md` bodies against forbidden patterns: `gpt-5(?:\.\d+)?(?:-\w+)?`, `claude-opus-\d(?:-\d+)?`, `claude-sonnet-\d(?:-\d+)?`. Violations fail the check with criterion tag `FR-UNIVERSAL.IDE-NEUTRAL`.
+  - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
+  - [x] Benchmarks directory (`framework/*/benchmarks/`) and `.claude/skills/` dev resources are exempt (not distributed).
 
 **Script Requirements**
 

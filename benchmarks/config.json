@@ -16,6 +16,14 @@
         "model": "claude-sonnet-4-6",
         "temperature": 0
       }
+    },
+    "codex": {
+      "agent_models": ["gpt-5.4", "gpt-5.3-codex", "gpt-5.4-mini"],
+      "default_agent_model": "gpt-5.3-codex",
+      "judge": {
+        "model": "claude-sonnet-4-6",
+        "temperature": 0
+      }
     }
   }
 }

@@ -5,6 +5,14 @@ import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
 import { processPlan, type SyncOptions, type SyncResult } from "./sync.ts";
 import { KNOWN_IDES } from "./types.ts";
 import type { IDE, PlanItem } from "./types.ts";
+import { parse as parseToml } from "@std/toml";
+import {
+  buildCodexAgentSidecar,
+  type CodexAgentChange,
+  mergeCodexConfig,
+  readCodexManifest,
+  writeCodexManifest,
+} from "./toml_merge.ts";
 
 /** Options for runMigrate */
 export interface MigrateOptions {
@@ -81,18 +89,28 @@ export async function scanAllResources(
     }
   }
 
-  // Agents: each *.md file under agents/
-  const agentsDir = join(cwd, fromIde.configDir, "agents");
-  for await (const entry of safeReadDir(agentsDir, fs)) {
-    if (!entry.isFile) continue;
-    if (!entry.name.endsWith(".md")) continue;
-    const filePath = join(agentsDir, entry.name);
-    const content = await fs.readFile(filePath);
-    resources.push({
-      name: entry.name.replace(/\.md$/, ""),
-      type: "agent",
-      files: [{ relPath: entry.name, content }],
-    });
+  // Agents.
+  // FR-DIST.MIGRATE — for Codex the on-disk agent format is `.codex/config.toml`
+  // `[agents.<name>]` tables pointing at sidecar `.codex/agents/<name>.toml`
+  // files (see FR-DIST.CODEX-AGENTS). Reconstruct a synthetic universal
+  // markdown representation from each sidecar so the rest of the migration
+  // pipeline (cross-IDE frontmatter transform) can operate uniformly.
+  if (fromIde.name === "codex") {
+    const codexAgents = await scanCodexAgents(cwd, fromIde, fs);
+    resources.push(...codexAgents);
+  } else {
+    const agentsDir = join(cwd, fromIde.configDir, "agents");
+    for await (const entry of safeReadDir(agentsDir, fs)) {
+      if (!entry.isFile) continue;
+      if (!entry.name.endsWith(".md")) continue;
+      const filePath = join(agentsDir, entry.name);
+      const content = await fs.readFile(filePath);
+      resources.push({
+        name: entry.name.replace(/\.md$/, ""),
+        type: "agent",
+        files: [{ relPath: entry.name, content }],
+      });
+    }
   }
 
   // Commands: each *.md file under commands/
@@ -241,9 +259,16 @@ export async function runMigrate(
     `  Found: ${skills.length} skills, ${agents.length} agents, ${commands.length} commands`,
   );
 
+  // FR-DIST.MIGRATE — when the target is Codex, agents take a separate
+  // TOML-sidecar path and must be excluded from the generic buildMigratePlan
+  // (which writes markdown to `<ide>/agents/<name>.md`).
+  const resourcesForPlan = toIde.name === "codex"
+    ? resources.filter((r) => r.type !== "agent")
+    : resources;
+
   const modelMap = DEFAULT_MODEL_MAPS[toIdeName] ?? {};
   const plan = await buildMigratePlan(
-    resources,
+    resourcesForPlan,
     fromIde,
     toIde,
     cwd,
@@ -284,8 +309,15 @@ export async function runMigrate(
   const result = emptyResult();
   await processPlan(plan, fs, syncOptions, result, log);
 
+  // Codex-specific agent dispatch: run after the generic plan has written
+  // skills/commands so the `.codex/` dir exists.
+  if (toIde.name === "codex" && agents.length > 0) {
+    await migrateAgentsToCodex(agents, fromIde, toIde, cwd, fs, log, result);
+  }
+
   // Per-type summary
   for (const type of ["skill", "agent", "command"] as const) {
+    if (type === "agent" && toIde.name === "codex") continue; // reported separately
     const typePlan = plan.filter((i) => i.type === type);
     if (typePlan.length === 0) continue;
     const created = typePlan.filter((i) => i.action === "create").length;
@@ -301,4 +333,171 @@ export async function runMigrate(
 
   log("\nDone.");
   return result;
+}
+
+/**
+ * Scan Codex config.toml for `[agents.<name>]` blocks and reconstruct each as
+ * a synthetic universal markdown ScannedResource (so downstream migration can
+ * route them through the standard frontmatter transform path).
+ *
+ * The synthetic markdown uses `name`/`description` from the TOML + the sidecar
+ * `.codex/agents/<name>.toml` file's `developer_instructions` as the body.
+ * When a sidecar is missing or unreadable, the agent is skipped with a warning.
+ */
+async function scanCodexAgents(
+  cwd: string,
+  fromIde: IDE,
+  fs: FsAdapter,
+): Promise<ScannedResource[]> {
+  const configPath = join(cwd, fromIde.configDir, "config.toml");
+  if (!(await fs.exists(configPath))) return [];
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = parseToml(await fs.readFile(configPath)) as Record<
+      string,
+      unknown
+    >;
+  } catch {
+    return [];
+  }
+  const agentsRaw = parsed.agents;
+  if (!agentsRaw || typeof agentsRaw !== "object" || Array.isArray(agentsRaw)) {
+    return [];
+  }
+  const out: ScannedResource[] = [];
+  for (
+    const [name, entryRaw] of Object.entries(
+      agentsRaw as Record<string, unknown>,
+    )
+  ) {
+    if (!entryRaw || typeof entryRaw !== "object") continue;
+    const entry = entryRaw as Record<string, unknown>;
+    const description = String(entry.description ?? "").trim();
+    const configFile = String(entry.config_file ?? "").trim();
+    if (!configFile) continue;
+
+    // Resolve sidecar path — config_file is relative to the config.toml dir.
+    const sidecarPath = configFile.startsWith("./")
+      ? join(cwd, fromIde.configDir, configFile.slice(2))
+      : join(cwd, fromIde.configDir, configFile);
+
+    if (!(await fs.exists(sidecarPath))) continue;
+    let sidecarParsed: Record<string, unknown>;
+    try {
+      sidecarParsed = parseToml(await fs.readFile(sidecarPath)) as Record<
+        string,
+        unknown
+      >;
+    } catch {
+      continue;
+    }
+    const body = String(sidecarParsed.developer_instructions ?? "").trimEnd();
+    const sidecarDescription = String(
+      sidecarParsed.description ?? description,
+    );
+    const sidecarName = String(sidecarParsed.name ?? name);
+
+    const markdown = [
+      "---",
+      `name: ${sidecarName}`,
+      `description: ${
+        /[:#\n]/.test(sidecarDescription)
+          ? `"${sidecarDescription.replace(/"/g, '\\"')}"`
+          : sidecarDescription
+      }`,
+      "---",
+      "",
+      body,
+      "",
+    ].join("\n");
+
+    out.push({
+      name,
+      type: "agent",
+      files: [{ relPath: `${name}.md`, content: markdown }],
+    });
+  }
+  return out;
+}
+
+/**
+ * Write agents to Codex-target via the sidecar + config.toml merge path.
+ * Mirrors `syncCodexAgents` in `sync.ts` but sourced from migrate's scanned
+ * universal markdown bodies (after `crossTransformAgent`). Preserves
+ * non-managed user tables.
+ */
+async function migrateAgentsToCodex(
+  agents: ScannedResource[],
+  fromIde: IDE,
+  toIde: IDE,
+  cwd: string,
+  fs: FsAdapter,
+  log: (msg: string) => void,
+  result: SyncResult,
+): Promise<void> {
+  const sidecarsDir = join(cwd, toIde.configDir, "agents");
+  const changes: CodexAgentChange[] = [];
+  let created = 0;
+  let skipped = 0;
+
+  for (const agent of agents) {
+    if (agent.files.length === 0) continue;
+    const rawContent = agent.files[0].content;
+    // Transform frontmatter fields for Codex (drops claude/cursor-only keys).
+    const transformed = crossTransformAgent(
+      rawContent,
+      fromIde.name,
+      "codex",
+      log,
+      DEFAULT_MODEL_MAPS.codex,
+    );
+    let sidecar: string;
+    let change: CodexAgentChange;
+    try {
+      const built = buildCodexAgentSidecar(transformed);
+      sidecar = built.sidecar;
+      change = built.change;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      log(`  Warning: skipping agent ${agent.name} — ${msg}`);
+      skipped++;
+      continue;
+    }
+    const sidecarPath = join(sidecarsDir, `${change.name}.toml`);
+    const currentContent = await fs.exists(sidecarPath)
+      ? await fs.readFile(sidecarPath)
+      : null;
+    if (currentContent !== sidecar) {
+      await fs.writeFile(sidecarPath, sidecar);
+      created++;
+      result.totalWritten++;
+    } else {
+      skipped++;
+    }
+    changes.push(change);
+  }
+
+  // Merge into config.toml.
+  const configPath = join(cwd, toIde.configDir, "config.toml");
+  const manifestPath = join(cwd, toIde.configDir, "flowai-agents.json");
+  const existingToml = await fs.exists(configPath)
+    ? await fs.readFile(configPath)
+    : "";
+  const existingManifest = readCodexManifest(
+    await fs.exists(manifestPath) ? await fs.readFile(manifestPath) : null,
+  );
+  const { content: newToml, manifest: newManifest } = mergeCodexConfig(
+    existingToml,
+    changes,
+    existingManifest,
+  );
+  if (newToml !== existingToml) {
+    await fs.writeFile(configPath, newToml);
+    result.totalWritten++;
+  }
+  await fs.writeFile(manifestPath, writeCodexManifest(newManifest));
+
+  log(
+    `  Agents (TOML sidecars): ${created} created, ${skipped} unchanged, 0 conflicts`,
+  );
 }

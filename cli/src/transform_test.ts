@@ -151,6 +151,81 @@ Body.
   assertFrontmatterField(result, "model", "haiku");
 });
 
+// FR-DIST.MAPPING — Codex model tier resolution
+Deno.test("transformAgent - model tier smart → gpt-5.3-codex for Codex", () => {
+  const content = `---
+name: smart-agent
+description: Agent using smart tier
+model: smart
+---
+
+Body.
+`;
+  const result = transformAgent(content, "codex");
+  assertFrontmatterField(result, "model", "gpt-5.3-codex");
+});
+
+Deno.test("transformAgent - model tier max → gpt-5.4 for Codex", () => {
+  const content = `---
+name: max-agent
+description: Max tier
+model: max
+---
+
+Body.
+`;
+  const result = transformAgent(content, "codex");
+  assertFrontmatterField(result, "model", "gpt-5.4");
+});
+
+Deno.test("transformAgent - model tier fast → gpt-5.4-mini for Codex", () => {
+  const content = `---
+name: fast-agent
+description: Fast tier
+model: fast
+---
+
+Body.
+`;
+  const result = transformAgent(content, "codex");
+  assertFrontmatterField(result, "model", "gpt-5.4-mini");
+});
+
+Deno.test("transformAgent - Codex drops Claude/Cursor-only fields", () => {
+  const result = transformAgent(UNIVERSAL_FULL, "codex");
+  assertFrontmatterField(result, "name", "test-agent");
+  assertFrontmatterField(
+    result,
+    "description",
+    "A test agent for unit testing",
+  );
+  // Dropped fields
+  assertNoFrontmatterField(result, "tools");
+  assertNoFrontmatterField(result, "disallowedTools");
+  assertNoFrontmatterField(result, "readonly");
+  assertNoFrontmatterField(result, "mode");
+  assertNoFrontmatterField(result, "opencode_tools");
+  assertNoFrontmatterField(result, "effort");
+  assertNoFrontmatterField(result, "maxTurns");
+  assertNoFrontmatterField(result, "background");
+  assertNoFrontmatterField(result, "isolation");
+  assertNoFrontmatterField(result, "color");
+  assertBodyContains(result, "You are a test agent. Do test things.");
+});
+
+Deno.test("reverseTransformAgent - codex: model gpt-5.3-codex → tier smart", () => {
+  const codex = `---
+name: my-agent
+description: My agent
+model: gpt-5.3-codex
+---
+
+Body.
+`;
+  const result = reverseTransformAgent(codex, "codex");
+  assertFrontmatterField(result, "model", "smart");
+});
+
 Deno.test("transformAgent - model tier fast → fast for Cursor", () => {
   const content = `---
 name: fast-agent

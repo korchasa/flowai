@@ -18,6 +18,7 @@
     "jsr:@std/assert@^1.0.19": "1.0.19",
     "jsr:@std/cli@*": "1.0.28",
     "jsr:@std/cli@^1.0.28": "1.0.28",
+    "jsr:@std/collections@^1.1.3": "1.1.6",
     "jsr:@std/dotenv@0.225": "0.225.6",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/flags@0.224": "0.224.0",
@@ -27,12 +28,15 @@
     "jsr:@std/fs@^1.0.17": "1.0.23",
     "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/io@~0.225.3": "0.225.3",
+    "jsr:@std/jsonc@1": "1.0.2",
     "jsr:@std/path@*": "1.1.4",
     "jsr:@std/path@1": "1.1.4",
     "jsr:@std/path@^1.1.4": "1.1.4",
     "jsr:@std/semver@1": "1.0.8",
     "jsr:@std/semver@^1.0.8": "1.0.8",
     "jsr:@std/text@^1.0.17": "1.0.17",
+    "jsr:@std/toml@*": "1.0.11",
+    "jsr:@std/toml@^1.0.2": "1.0.11",
     "jsr:@std/yaml@*": "1.0.12",
     "jsr:@std/yaml@1": "1.0.12",
     "jsr:@std/yaml@^1.0.12": "1.0.12",
@@ -128,6 +132,9 @@
         "jsr:@std/internal"
       ]
     },
+    "@std/collections@1.1.6": {
+      "integrity": "b458160ce65ea5ad35da05d0a5cbee4b583677c8b443a10d7beb0c4ac63f2baa"
+    },
     "@std/dotenv@0.225.6": {
       "integrity": "1d6f9db72f565bd26790fa034c26e45ecb260b5245417be76c2279e5734c421b"
     },
@@ -156,6 +163,9 @@
     "@std/io@0.225.3": {
       "integrity": "27b07b591384d12d7b568f39e61dff966b8230559122df1e9fd11cc068f7ddd1"
     },
+    "@std/jsonc@1.0.2": {
+      "integrity": "909605dae3af22bd75b1cbda8d64a32cf1fd2cf6efa3f9e224aba6d22c0f44c7"
+    },
     "@std/path@1.1.4": {
       "integrity": "1d2d43f39efb1b42f0b1882a25486647cb851481862dc7313390b2bb044314b5",
       "dependencies": [
@@ -167,6 +177,12 @@
     },
     "@std/text@1.0.17": {
       "integrity": "4b2c4ef67ae5b6c1dfd447c81c83a43718f52e3c7e748d8b33f694aba9895f95"
+    },
+    "@std/toml@1.0.11": {
+      "integrity": "e084988b872ca4bad6aedfb7350f6eeed0e8ba88e9ee5e1590621c5b5bb8f715",
+      "dependencies": [
+        "jsr:@std/collections"
+      ]
     },
     "@std/yaml@1.0.12": {
       "integrity": "7deabca4545bcedd07c5f69ea53acea71b8b4c67562f224e17b90d75944cb20c"
@@ -1209,6 +1225,7 @@
       "jsr:@std/fs@^1.0.17",
       "jsr:@std/path@^1.1.4",
       "jsr:@std/semver@1",
+      "jsr:@std/toml@^1.0.2",
       "jsr:@std/yaml@^1.0.12",
       "npm:zod@^3.25.76"
     ]

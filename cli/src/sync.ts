@@ -31,11 +31,20 @@ import {
   transformAgent,
   transformSkillModel,
 } from "./transform.ts";
+import {
+  buildCodexAgentSidecar,
+  type CodexAgentChange,
+  mergeCodexConfig,
+  readCodexManifest,
+  writeCodexManifest,
+} from "./toml_merge.ts";
 import { runUserSync } from "./user_sync.ts";
 import type {
   FlowConfig,
   HookDefinition,
+  IDE,
   PackDefinition,
+  PlanAction,
   PlanItem,
   PlanItemType,
   ResourceAction,
@@ -434,65 +443,88 @@ export async function sync(
         await processPlan(commandDeletePlan, fs, options, result, log);
       }
 
-      // Agents (transform per IDE)
-      const agentTargetDir = join(cwd, ide.configDir, "agents");
-      if (agentNames.length > 0) {
-        const agentFiles = usePacks
-          ? await readPackAgentFiles(
-            agentNames,
-            ide.name,
-            allPaths,
-            source,
-            modelMap,
-          )
-          : await readAgentFiles(
-            agentNames,
-            ide.name,
-            allPaths,
-            source,
-            modelMap,
+      // Agents (transform per IDE).
+      // FR-DIST.CODEX-AGENTS — Codex uses a TOML config + sidecar flow that
+      // bypasses the standard markdown agent writer. All other IDEs go through
+      // the per-file `{ide}/agents/<name>.md` path below.
+      if (ide.name === "codex") {
+        await syncCodexAgents(
+          cwd,
+          ide,
+          agentNames,
+          allAgentNames,
+          allPaths,
+          source,
+          fs,
+          isFirstIde,
+          result,
+          log,
+        );
+      } else {
+        const agentTargetDir = join(cwd, ide.configDir, "agents");
+        if (agentNames.length > 0) {
+          const agentFiles = usePacks
+            ? await readPackAgentFiles(
+              agentNames,
+              ide.name,
+              allPaths,
+              source,
+              modelMap,
+            )
+            : await readAgentFiles(
+              agentNames,
+              ide.name,
+              allPaths,
+              source,
+              modelMap,
+            );
+          const agentPlan = await computePlan(
+            agentFiles,
+            agentTargetDir,
+            "agent",
+            fs,
           );
-        const agentPlan = await computePlan(
-          agentFiles,
+
+          if (isFirstIde) {
+            result.agentActions = extractResourceActions(
+              agentPlan,
+              agentNames,
+              new Map(), // agents don't have scaffolds
+            );
+          }
+
+          await processPlan(agentPlan, fs, options, result, log);
+        }
+
+        // Delete excluded agents
+        const agentDeletePlan = await computeDeletePlan(
+          allAgentNames,
+          agentNames,
           agentTargetDir,
           "agent",
           fs,
         );
-
-        if (isFirstIde) {
-          result.agentActions = extractResourceActions(
-            agentPlan,
-            agentNames,
-            new Map(), // agents don't have scaffolds
-          );
-        }
-
-        await processPlan(agentPlan, fs, options, result, log);
-      }
-
-      // Delete excluded agents
-      const agentDeletePlan = await computeDeletePlan(
-        allAgentNames,
-        agentNames,
-        agentTargetDir,
-        "agent",
-        fs,
-      );
-      if (agentDeletePlan.length > 0) {
-        if (isFirstIde) {
-          for (const item of agentDeletePlan) {
-            result.agentActions.push({
-              name: item.name,
-              action: "delete",
-              scaffolds: [],
-            });
+        if (agentDeletePlan.length > 0) {
+          if (isFirstIde) {
+            for (const item of agentDeletePlan) {
+              result.agentActions.push({
+                name: item.name,
+                action: "delete",
+                scaffolds: [],
+              });
+            }
           }
+          await processPlan(agentDeletePlan, fs, options, result, log);
         }
-        await processPlan(agentDeletePlan, fs, options, result, log);
       }
 
-      // Hooks (copy files + generate IDE-specific config)
-      if (hookNames.length > 0 && usePacks) {
+      // Hooks (copy files + generate IDE-specific config).
+      // FR-DIST.CODEX-HOOKS — Codex hook install is experimental and gated
+      // behind `experimental.codexHooks: true` in `.flowai.yaml`. When the
+      // flag is absent or false, skip hook install for Codex with an info log.
+      const skipCodexHooks = ide.name === "codex" &&
+        !(config.experimental?.codexHooks === true);
+      if (hookNames.length > 0 && usePacks && !skipCodexHooks) {
         const hookFiles = await readPackHookFiles(hookNames, allPaths, source);
         const hookTargetDir = join(cwd, ide.configDir, "scripts");
         const hookPlan = await computePlan(
@@ -533,6 +565,12 @@ export async function sync(
         await fs.writeFile(
           manifestPath,
           JSON.stringify(newManifest, null, 2),
+        );
+      }
+
+      if (skipCodexHooks && hookNames.length > 0 && isFirstIde) {
+        log(
+          "  Hooks: Codex hook sync is experimental; enable via `experimental.codexHooks: true` in .flowai.yaml",
         );
       }
 
@@ -1242,5 +1280,154 @@ async function writeHookConfig(
     }));
     const content = generateOpenCodePlugin(openCodeHooks);
     await fs.writeFile(pluginPath, content);
+  } else if (ide.name === "codex") {
+    // FR-DIST.CODEX-HOOKS — Codex uses Claude-Code-compatible nested schema
+    // at <repo>/.codex/hooks.json. Handled by syncCodexHooks elsewhere (call
+    // site already gates on experimental.codexHooks).
+    const hooksPath = join(cwd, ide.configDir, "hooks.json");
+    const existingRaw = await fs.exists(hooksPath)
+      ? await fs.readFile(hooksPath)
+      : null;
+    let existing: Record<string, unknown> = {};
+    if (existingRaw) {
+      try {
+        existing = JSON.parse(existingRaw);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        throw new Error(
+          `Failed to parse existing ${hooksPath}: ${msg}. Fix the file by hand and re-run sync.`,
+        );
+      }
+    }
+
+    const activeNames = hookDefs.map((h) => h.name);
+    existing = cleanupRemovedHooks(
+      existing,
+      oldManifest,
+      activeNames,
+      "claude", // Codex uses the same nested shape as Claude Code
+    );
+
+    const codexHooks = hookDefs.map(({ name, hook }) =>
+      transformHookForClaude(
+        hook,
+        `${ide.configDir}/scripts/${name}/run.ts`,
+      )
+    );
+    const merged = mergeClaudeHooks(existing, codexHooks, oldManifest);
+    await fs.writeFile(hooksPath, JSON.stringify(merged, null, 2));
   }
+}
+
+/**
+ * FR-DIST.CODEX-AGENTS — Sync framework agents to Codex subagent format.
+ *
+ * Writes each agent as two artifacts:
+ * 1. `<cwd>/.codex/agents/<name>.toml` — sidecar with `name`, `description`,
+ *    `developer_instructions` (the agent body as a TOML multi-line literal).
+ * 2. `[agents.<name>]` block merged into `<cwd>/.codex/config.toml` with
+ *    `description` and `config_file` keys pointing at the sidecar.
+ *
+ * Idempotent. Removing an agent from `.flowai.yaml` removes both the sidecar
+ * and the `[agents.<name>]` block on next sync. User-hand-edited tables outside
+ * the flowai manifest survive untouched.
+ */
+async function syncCodexAgents(
+  cwd: string,
+  ide: IDE,
+  agentNames: string[],
+  allAgentNames: string[],
+  allPaths: string[],
+  source: FrameworkSource,
+  fs: FsAdapter,
+  isFirstIde: boolean,
+  result: SyncResult,
+  log: (msg: string) => void,
+): Promise<void> {
+  // 1. Read raw universal agent files and build sidecars + changes.
+  const sidecarsDir = join(cwd, ide.configDir, "agents");
+  const sidecarPlan: PlanItem[] = [];
+  const changes: CodexAgentChange[] = [];
+
+  // Find the raw source path for each agent — pack-based or legacy flat.
+  const packAgentRegex = /^framework\/[^/]+\/agents\/([^/]+)\.md$/;
+  const packAgentPaths = new Map<string, string>();
+  for (const p of allPaths) {
+    const m = p.match(packAgentRegex);
+    if (m) packAgentPaths.set(m[1], p);
+  }
+
+  for (const name of agentNames) {
+    const srcPath = packAgentPaths.get(name) ??
+      (allPaths.includes(`framework/agents/${name}.md`)
+        ? `framework/agents/${name}.md`
+        : null);
+    if (!srcPath) continue;
+    const raw = await source.readFile(srcPath);
+    const { sidecar, change } = buildCodexAgentSidecar(raw);
+    changes.push(change);
+    const sidecarPath = join(sidecarsDir, `${name}.toml`);
+    const action: PlanAction = await fs.exists(sidecarPath)
+      ? (await fs.readFile(sidecarPath)) === sidecar ? "ok" : "conflict"
+      : "create";
+    sidecarPlan.push({
+      type: "agent",
+      name,
+      action,
+      sourcePath: srcPath,
+      targetPath: sidecarPath,
+      content: sidecar,
+    });
+  }
+
+  // 2. Compute sidecars to delete (agents excluded from current sync but
+  //    still present on disk under our manifest).
+  const includedSet = new Set(agentNames);
+  const deletionCandidates = allAgentNames.filter((n) => !includedSet.has(n));
+  for (const name of deletionCandidates) {
+    const sidecarPath = join(sidecarsDir, `${name}.toml`);
+    if (await fs.exists(sidecarPath)) {
+      sidecarPlan.push({
+        type: "agent",
+        name,
+        action: "delete",
+        sourcePath: "",
+        targetPath: sidecarPath,
+        content: "",
+      });
+    }
+  }
+
+  if (isFirstIde) {
+    result.agentActions = extractResourceActions(
+      sidecarPlan,
+      agentNames,
+      new Map(),
+    );
+  }
+
+  // 3. Write sidecars via the shared writer (handles conflict prompts).
+  await processPlan(sidecarPlan, fs, { yes: true }, result, log);
+
+  // 4. Read existing config.toml + manifest, merge, write.
+  const configPath = join(cwd, ide.configDir, "config.toml");
+  const manifestPath = join(cwd, ide.configDir, "flowai-agents.json");
+  const existingToml = await fs.exists(configPath)
+    ? await fs.readFile(configPath)
+    : "";
+  const existingManifest = readCodexManifest(
+    await fs.exists(manifestPath) ? await fs.readFile(manifestPath) : null,
+  );
+
+  const { content: newToml, manifest: newManifest } = mergeCodexConfig(
+    existingToml,
+    changes,
+    existingManifest,
+  );
+
+  if (newToml !== existingToml) {
+    await fs.writeFile(configPath, newToml);
+    result.totalWritten++;
+  }
+  await fs.writeFile(manifestPath, writeCodexManifest(newManifest));
 }

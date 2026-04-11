@@ -11,6 +11,14 @@ export const DEFAULT_MODEL_MAPS: Record<string, Record<string, string>> = {
   claude: { max: "opus", smart: "sonnet", fast: "haiku", cheap: "haiku" },
   cursor: { max: "slow", smart: "slow", fast: "fast", cheap: "fast" },
   opencode: {}, // user must configure in .flowai.yaml
+  // FR-DIST.MAPPING — Codex model map. Verified 2026-04-11 from
+  // ~/.codex/models_cache.json in codex-cli 0.118.0.
+  codex: {
+    max: "gpt-5.4",
+    smart: "gpt-5.3-codex",
+    fast: "gpt-5.4-mini",
+    cheap: "gpt-5.4-mini",
+  },
 };
 
 /** Reverse maps for cross-IDE sync: IDE-native model → tier */
@@ -18,6 +26,11 @@ const REVERSE_MODEL_MAPS: Record<string, Record<string, string>> = {
   claude: { opus: "max", sonnet: "smart", haiku: "cheap" },
   cursor: { slow: "smart", fast: "fast" },
   opencode: {},
+  codex: {
+    "gpt-5.4": "max",
+    "gpt-5.3-codex": "smart",
+    "gpt-5.4-mini": "fast",
+  },
 };
 
 /** Universal agent frontmatter schema (superset of all IDE-specific fields) */
@@ -53,6 +66,10 @@ const IDE_FIELDS: Record<string, Set<string>> = {
   ]),
   cursor: new Set(["name", "description", "readonly", "model"]),
   opencode: new Set(["description", "mode", "model", "color"]),
+  // FR-DIST.CODEX-AGENTS — Codex only consumes name/description/model from
+  // agent frontmatter during transform; the markdown body later becomes
+  // `developer_instructions` in a TOML sidecar written by writer.ts.
+  codex: new Set(["name", "description", "model"]),
 };
 
 /** All known universal fields (used to identify pass-through/unknown fields) */

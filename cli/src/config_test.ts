@@ -16,6 +16,67 @@ Deno.test("loadConfig - returns null when no .flowai.yaml", async () => {
   assertEquals(config, null);
 });
 
+// FR-DIST.CODEX-HOOKS — experimental.codexHooks parse/write
+Deno.test("parseConfigData - parses experimental.codexHooks: true", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    ides: ["codex"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+    experimental: { codexHooks: true },
+  });
+  assertEquals(config.experimental?.codexHooks, true);
+});
+
+Deno.test("parseConfigData - experimental absent → undefined", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    ides: ["codex"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+  });
+  assertEquals(config.experimental, undefined);
+});
+
+Deno.test("parseConfigData - experimental.codexHooks: false → experimental undefined (no-op)", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    ides: ["codex"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+    experimental: { codexHooks: false },
+  });
+  assertEquals(config.experimental, undefined);
+});
+
+Deno.test("saveConfig - writes experimental.codexHooks when true", async () => {
+  const fs = new InMemoryFsAdapter();
+  await saveConfig("/project", {
+    version: "1.1",
+    ides: ["codex"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+    experimental: { codexHooks: true },
+  }, fs);
+  const yaml = await fs.readFile("/project/.flowai.yaml");
+  assertEquals(yaml.includes("codexHooks: true"), true);
+});
+
+Deno.test("parseConfigData - ides: [codex] parses cleanly", () => {
+  const config = parseConfigData({
+    version: "1.1",
+    ides: ["codex"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+  });
+  assertEquals(config.ides, ["codex"]);
+});
+
 Deno.test("loadConfig - parses valid .flowai.yaml", async () => {
   const fs = new InMemoryFsAdapter();
   await fs.writeFile(

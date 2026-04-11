@@ -50,7 +50,7 @@ On first run, `flowai` interactively creates `.flowai.yaml` to configure which p
 
 ### Quick Start Prompt
 
-Copy and paste the following prompt into your AI IDE (Claude Code, Cursor, OpenCode) to install and initialize flowai in your project:
+Copy and paste the following prompt into your AI IDE (Claude Code, Cursor, OpenCode, OpenAI Codex) to install and initialize flowai in your project:
 
 > Install the flowai framework in this project:
 > 1. Check if Deno v2.x is installed (`deno --version`). If not, ask the user which OS they are on and install Deno using the official method for their platform (macOS: `brew install deno` or `curl -fsSL https://deno.land/install.sh | sh`, Windows: `irm https://deno.land/install.ps1 | iex`, Linux: `curl -fsSL https://deno.land/install.sh | sh`).
@@ -69,7 +69,7 @@ Run `/flowai-update` in your AI IDE. It handles the full update cycle:
 
 ## How It Works
 
-flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, etc.) load into context to follow structured workflows.
+flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, OpenAI Codex, etc.) load into context to follow structured workflows.
 
 - **Commands** (`framework/<pack>/commands/<name>/SKILL.md`) — user-invoked workflows (e.g. `/flowai-commit`, `/flowai-plan`). The agent does not auto-discover them.
 - **Skills** (`framework/<pack>/skills/<name>/SKILL.md`) — agent-invocable capabilities. The agent picks them up automatically when relevant.
@@ -244,7 +244,7 @@ Every task follows the same supervised loop:
 2. **Explicit workflows** — every task type has a defined skill with clear steps
 3. **Persistent memory** — documentation in `documents/` bridges the gap between sessions
 4. **Single verification gate** — `deno task check` is the source of truth for project health
-5. **IDE-agnostic** — skills work across Cursor, Claude Code, OpenCode, and other AI-assisted editors
+5. **IDE-agnostic** — skills work across Cursor, Claude Code, OpenCode, OpenAI Codex, and other AI-assisted editors
 
 ## Project Structure
 

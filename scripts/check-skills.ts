@@ -346,9 +346,58 @@ export async function validateSkill(
   // FR-UNIVERSAL.XIDE-PATHS: Cross-IDE script path resolution
   errors.push(...validatePathResolution(dirName, content));
 
+  // FR-UNIVERSAL.IDE-NEUTRAL: framework skills/commands/agents must not name
+  // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
+  // Model IDs belong in cli/src/transform.ts `DEFAULT_MODEL_MAPS`, not in
+  // user-facing skill bodies.
+  if (skillsDir.replace(/\\/g, "/").includes("/framework/")) {
+    errors.push(...validateIdeNeutrality(dirName, content));
+  }
+
   // FR-UNIVERSAL.REFS: Reference depth
   errors.push(...await validateReferenceDepth(skillPath, dirName));
 
+  return errors;
+}
+
+/**
+ * Reject hardcoded IDE-specific model IDs or binary names in framework SKILL.md
+ * bodies. Skill text must stay generic; model resolution happens at install
+ * time via `DEFAULT_MODEL_MAPS` and `resolveModelTier`.
+ *
+ * The regex checks lower-case occurrences of `gpt-5`, the literal token
+ * `codex` as a standalone word (so we don't flag `codex` mentions inside
+ * cursor/claude descriptions if someone adds them to the list here), and
+ * specific Claude model slugs like `claude-opus-4-6`. This keeps the check
+ * strict enough to catch real violations but loose enough not to flag
+ * historical mentions of `codex` inside benchmark fixture paths (those live
+ * outside framework/, which is excluded above).
+ */
+export function validateIdeNeutrality(
+  dirName: string,
+  content: string,
+): SkillError[] {
+  const errors: SkillError[] = [];
+  // Strip frontmatter to avoid flagging `model: smart` tiers or descriptions.
+  const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");
+  const forbidden: Array<{ pattern: RegExp; label: string }> = [
+    { pattern: /\bgpt-5(?:\.\d+)?(?:-\w+)?\b/i, label: "gpt-5 model ID" },
+    { pattern: /\bclaude-opus-\d(?:-\d+)?\b/i, label: "Claude model ID" },
+    { pattern: /\bclaude-sonnet-\d(?:-\d+)?\b/i, label: "Claude model ID" },
+  ];
+  for (const { pattern, label } of forbidden) {
+    const match = body.match(pattern);
+    if (match) {
+      errors.push({
+        skill: dirName,
+        criterion: "FR-UNIVERSAL.IDE-NEUTRAL",
+        message:
+          `Framework SKILL.md body must not name a specific IDE model (${label}: "${
+            match[0]
+          }"). Use abstract tiers (max/smart/fast/cheap) and let flowai resolve per IDE.`,
+      });
+    }
+  }
   return errors;
 }
 

@@ -3,17 +3,30 @@ import { type FsAdapter, join } from "./adapters/fs.ts";
 import { type IDE, KNOWN_IDES } from "./types.ts";
 
 /**
- * IDE environment variable names.
+ * IDE environment variable names that MUST equal "1" to indicate IDE context.
  * Detection order: CURSOR_AGENT first (may co-exist with CLAUDECODE), then CLAUDECODE, then OPENCODE.
  * See documents/ides-difference.md §3.9.
  */
-const IDE_ENV_VARS = ["CURSOR_AGENT", "CLAUDECODE", "OPENCODE"] as const;
+const IDE_ENV_VARS_BOOL = ["CURSOR_AGENT", "CLAUDECODE", "OPENCODE"] as const;
+
+/**
+ * Codex environment variables. Unlike CURSOR_AGENT/CLAUDECODE/OPENCODE (which are
+ * set to "1"), Codex exports session-scoped values: `CODEX_THREAD_ID=<uuid>` and
+ * `CODEX_SANDBOX=seatbelt`. We treat any non-empty value as "inside Codex".
+ * Verified empirically against codex-cli 0.118.0 (2026-04-11).
+ */
+const IDE_ENV_VARS_PRESENCE = ["CODEX_THREAD_ID", "CODEX_SANDBOX"] as const;
 
 /** Check if running inside an IDE agent context via environment variables */
 export function isInsideIDE(
   env: { get(key: string): string | undefined } = Deno.env,
 ): boolean {
-  return IDE_ENV_VARS.some((v) => env.get(v) === "1");
+  if (IDE_ENV_VARS_BOOL.some((v) => env.get(v) === "1")) return true;
+  // FR-DIST.DETECT — Codex exports non-"1" values; any non-empty value counts.
+  return IDE_ENV_VARS_PRESENCE.some((v) => {
+    const value = env.get(v);
+    return value !== undefined && value !== "";
+  });
 }
 
 /** Detect IDEs by config dir presence in project cwd */

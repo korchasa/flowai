@@ -143,6 +143,7 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 - **Cursor**: `.cursor/skills/<name>/SKILL.md`; also `.claude/skills/`, `.codex/skills/` (compat).[^10]
 - **Claude Code**: `~/.claude/skills/`, `.claude/skills/` (project), managed/policy path (`${getManagedFilePath()}/.claude/skills/`). Also loads `.claude/commands/` (merged into skill loader). Conditional activation via `paths:` frontmatter (gitignore-style). Skill listing budget: 1% of context window, 250 char/skill cap. [^11] [^33]
 - **OpenCode**: `.opencode/skills/` (fallbacks: `.claude/skills/`, `.agents/skills/`). Frontmatter: `name`, `description` (required); `license`, `compatibility`, `metadata` (optional). Name regex: `^[a-z0-9]+(-[a-z0-9]+)*$`, 1–64 chars, must match dir name.[^12]
+- **OpenAI Codex**: Discovers skills from both `<repo>/.codex/skills/<name>/SKILL.md` and `<repo>/.agents/skills/<name>/SKILL.md` (verified 2026-04-11 with marker-skill probes). User-scope: `~/.codex/skills/<name>/`. Admin/system: `/etc/codex/skills/` + bundled skills at `~/.codex/skills/.system/`. flowai writes to `.codex/skills/`.
 
 ### 2.6 MCP Integration
 - **Cursor**: `.cursor/mcp.json` (project/user). Transports: stdio, SSE, Streamable HTTP. OAuth. Config interpolation (`${env:NAME}`, `${workspaceFolder}`). MCP Marketplace (one-click install).[^1]
@@ -167,6 +168,7 @@ export const MyPlugin: Plugin = async ({ project, client, $, directory, worktree
 - **Cursor**: `~/.cursor/agents/*.md`, `.cursor/agents/*.md`.
 - **Claude Code**: `.claude/agents/*.md` (project), `~/.claude/agents/*.md` (user). Built-in (6, dynamically gated): `general-purpose` (always), `statusline-setup` (always), `Explore` (Haiku, read-only, `omitClaudeMd`; gated), `Plan` (inherit, read-only, `omitClaudeMd`; gated), `claude-code-guide` (non-SDK only), `verification` (feature-flagged). Frontmatter: `tools`, `disallowedTools`, `model` (`sonnet`/`opus`/`haiku`/`inherit`), `effort` (integer or `low`/`medium`/`high`/`max`), `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory` (`user`/`project`/`local`), `background`, `isolation` (`worktree`/`remote`), `omitClaudeMd`, `initialPrompt`, `color`. Agents CAN delegate to other agents (nesting supported). [^23] [^33]
 - **OpenCode**: `~/.config/opencode/agents/*.md`, `.opencode/agents/*.md`. Frontmatter: `description`, `mode` (`primary`/`subagent`/`all`), `model`, `temperature`, `top_p`, `steps`, `tools`, `permission`, `color`, `hidden`, `disable`.[^3]
+- **OpenAI Codex**: `[agents.<name>]` TOML tables in `config.toml` (global `~/.codex/config.toml` or project `.codex/config.toml`). Keys: `description` (req), `developer_instructions` (inline prompt string) OR `config_file` (path to sidecar TOML with top-level `name`/`description`/`developer_instructions`); optional `nickname_candidates`. Built-in roles: `default`, `explorer`, `worker`. Referenced from root config via `approvals_reviewer = "guardian_subagent"`.
 
 ### 2.9 Permission Modes
 - **Cursor**: Accept/reject per-tool. No named modes. `.cursor/rules/` can restrict tool use.
@@ -243,6 +245,53 @@ Claude Code `--agent` flag behaves differently in headless (`-p`) vs interactive
 **Deferred tools (ToolSearch):** Tools with `shouldDefer: true` are not included in system prompt. Model requests schema via `ToolSearch` on demand. Saves ~10% context. Always-loaded tools use `alwaysLoad: true`.
 
 **Fork subagent:** When `subagent_type` omitted in Agent tool call, fork mode activates — inherits full parent context with prompt cache optimization (`FORK_PLACEHOLDER_RESULT`). Different from isolated subagent (separate conversation).
+
+### 2.13 OpenAI Codex (`codex` CLI)
+
+Verified empirically against `codex-cli 0.118.0` (2026-04-11).
+
+**CLI surface:**
+- Binary: `codex`. Subcommands: `exec`, `review`, `login`, `logout`, `mcp`, `mcp-server`, `app-server`, `app`, `completion`, `sandbox`, `debug`, `apply`, `resume`, `fork`, `cloud`, `features`.
+- Non-interactive: `codex exec [OPTIONS] [PROMPT]`. Flags: `-c key=value`, `--enable/--disable FEATURE`, `-m/--model`, `--oss`, `-s/--sandbox (read-only|workspace-write|danger-full-access)`, `-p/--profile`, `--full-auto`, `--dangerously-bypass-approvals-and-sandbox`, `-C/--cd DIR`, `--skip-git-repo-check`, `--add-dir DIR`, `--ephemeral`, `--output-schema FILE`, `--color auto|always|never`, `--json`, `-o/--output-last-message FILE`.
+- **Resume is a nested subcommand**, NOT a flag: `codex exec resume [SESSION_ID] [PROMPT] [--last] [--all]`. There is no `codex exec --resume`.
+- **Approval policy is NOT exposed on `codex exec`.** Top-level `codex -a` accepts `untrusted|on-failure|on-request|never`, but `codex exec` only honours `--full-auto` (on-request + workspace-write) or `--dangerously-bypass-approvals-and-sandbox`.
+
+**Config storage:**
+- File format: **TOML** (`config.toml`), not JSON/YAML. Paths: `~/.codex/config.toml` (global) or `<repo>/.codex/config.toml` (project). Override via `CODEX_HOME`.
+- Feature flags live under `[features]` (e.g. `[features] codex_hooks = true`). List via `codex features list`.
+- Model is a top-level string key: `model = "gpt-5.4"`. Reasoning effort: `model_reasoning_effort = "high"`.
+
+**Memory files:** `AGENTS.md` natively (same as OpenCode). Deeper directories override parent files. Fallback names via `project_doc_fallback_filenames` config key. `project_doc_max_bytes` limits size.
+
+**Skills discovery:** Agentskills.io-compliant. Codex recognises both `.codex/skills/<name>/SKILL.md` AND `.agents/skills/<name>/SKILL.md` (verified 2026-04-11 with marker-skill probes). System-bundled skills live at `~/.codex/skills/.system/`. **flowai writes Codex skills to `.codex/skills/`** because it aligns with `<configDir>/skills` (zero special-casing in `KNOWN_IDES`).
+
+**Custom commands:** No file-based commands directory exists. Slash commands (`/model`, `/plan`, `/permissions`, …) are in-session only. Flowai installs user-only primitives as skill-commands under `.codex/skills/<name>/SKILL.md` with `disable-model-invocation: true` (same pattern the CLI writer applies to commands across all IDEs).
+
+**Subagents (`[agents.<name>]`):**
+- Stored under `[agents.<name>]` tables in `config.toml`, one sub-table per agent.
+- Required key per agent: `description`. Either `developer_instructions = "..."` (inline prompt) OR `config_file = "./agents/<name>.toml"` (sidecar file containing `name`, `description`, `developer_instructions`). Optional: `nickname_candidates = [...]`.
+- Built-in roles: `default`, `explorer`, `worker`. Reference from config: `approvals_reviewer = "guardian_subagent"`.
+- **flowai approach (Branch A):** each universal agent becomes a sidecar `.codex/agents/<name>.toml` + a `[agents.<name>]` registration block in `.codex/config.toml` referencing it via `config_file`. Merge logic in `cli/src/toml_merge.ts` preserves user-authored tables outside the `.codex/flowai-agents.json` manifest.
+
+**Hooks (experimental, feature-gated):**
+- Feature flag: `codex_hooks` (stage: "under development" in 0.118.0). Enable via `--enable codex_hooks` or `[features] codex_hooks = true`.
+- File: `~/.codex/hooks.json` or `<repo>/.codex/hooks.json`.
+- Event names (wire): `PreToolUse`, `PostToolUse`, `SessionStart`, `UserPromptSubmit`. **Same names as Claude Code** — the structure in the binary shows nested `hooks: { PreToolUse: [{ matcher, hooks: [{ type, command, timeout }] }] }` with `hookSpecificOutput`, `permissionDecision` (allow/ask/block), etc. Handler types: `Command`, `Prompt`, `Agent`.
+- flowai sync for Codex hooks is gated behind `experimental.codexHooks: true` in `.flowai.yaml`. When the flag is absent/false, hook install is skipped with an info log.
+
+**MCP:** `mcp_servers` table in `config.toml`. Managed via `codex mcp` subcommand. Different schema from Cursor/Claude's `.mcp.json`.
+
+**Permission modes:** `sandbox_mode = "workspace-write"` + `approval_policy = "on-request"` defaults in `config.toml`. Sandbox engine: seatbelt on macOS (`CODEX_SANDBOX=seatbelt`).
+
+**Model catalog (2026-04-11):** `gpt-5.4` (frontier), `gpt-5.4-mini` (smaller), `gpt-5.3-codex` (Codex-optimized), `gpt-5.2` (long-running agents). Defaults cached at `~/.codex/models_cache.json`.
+
+**Tier map used by flowai:**
+- `max` → `gpt-5.4`
+- `smart` → `gpt-5.3-codex`
+- `fast` → `gpt-5.4-mini`
+- `cheap` → `gpt-5.4-mini`
+
+**Environment detection:** Every `codex exec` session exports `CODEX_THREAD_ID=<uuid>` and `CODEX_SANDBOX=seatbelt`. See §3.9.
 
 ---
 
@@ -414,13 +463,14 @@ Claude Code respects `.gitignore` by default (`respectGitignore: true`). Migrati
 
 ## 3.9 IDE Detection (Environment Variables)
 
-Verified empirically (2026-03-22 + 2026-04-05 cursor-agent v2026.03.20):
+Verified empirically (2026-03-22 + 2026-04-05 cursor-agent v2026.03.20 + 2026-04-11 codex-cli 0.118.0):
 
 - **Claude Code**: `CLAUDECODE=1`
 - **Cursor Agent**: `CURSOR_AGENT=1` + `CURSOR_INVOKED_AS=cursor-agent`
 - **OpenCode**: `OPENCODE=1`
+- **OpenAI Codex**: `CODEX_THREAD_ID=<uuid>`, `CODEX_SANDBOX=seatbelt`, `CODEX_SANDBOX_NETWORK_DISABLED=1`, `CODEX_CI=1`, `CODEX_MANAGED_BY_NPM=1`. Unlike the other CLIs, Codex does NOT export a `CODEX=1` boolean — detection checks for the presence of `CODEX_THREAD_ID` or `CODEX_SANDBOX` (non-empty) instead.
 
-Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested envs), then `CLAUDECODE`, then `OPENCODE`.
+Detection order: `CURSOR_AGENT` first (may co-exist with `CLAUDECODE` in nested envs), then `CLAUDECODE`, then `OPENCODE`, then Codex presence vars.
 
 **Important**: Cursor Agent (CLI) is built on Claude Agent SDK. Sets BOTH `CURSOR_AGENT=1` AND `CLAUDECODE=1` + `CLAUDE_AGENT_SDK_VERSION`, `CLAUDE_CODE_ENTRYPOINT=claude-vscode`, `CLAUDE_CODE_EXECPATH` (points to Claude Code binary). Detection MUST check `CURSOR_AGENT` before `CLAUDECODE` to distinguish. [^34]
 

@@ -42,6 +42,11 @@ export interface FlowConfig {
   source?: SourceConfig;
   /** Model tier overrides per IDE: { claude: { smart: "opus" }, cursor: { smart: "slow" } } */
   models?: Record<string, Record<string, string>>;
+  /** FR-DIST.CODEX-HOOKS — opt-in experimental feature flags. Default: all false. */
+  experimental?: {
+    /** Enable OpenAI Codex hook installation (experimental; gated on Codex's own `codex_hooks` feature flag). */
+    codexHooks?: boolean;
+  };
 }
 
 /** Downloaded file in memory */
@@ -101,6 +106,9 @@ export const KNOWN_IDES: Record<string, IDE> = {
   cursor: { name: "cursor", configDir: ".cursor" },
   claude: { name: "claude", configDir: ".claude" },
   opencode: { name: "opencode", configDir: ".opencode" },
+  // FR-DIST.DETECT — OpenAI Codex CLI. Skills land in `.codex/skills/`, which
+  // Codex discovers natively (verified 2026-04-11 against codex-cli 0.118.0).
+  codex: { name: "codex", configDir: ".codex" },
 };
 
 /** Default git URL for source.ref (official flowai repo) */

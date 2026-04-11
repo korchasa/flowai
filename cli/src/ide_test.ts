@@ -22,6 +22,25 @@ Deno.test("detectIDEs - detects multiple IDEs", async () => {
   assertEquals(names, ["claude", "cursor"]);
 });
 
+// FR-DIST.DETECT — Codex detection
+Deno.test("detectIDEs - detects codex by .codex/ dir", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.codex");
+
+  const ides = await detectIDEs("/project", fs);
+  assertEquals(ides.length, 1);
+  assertEquals(ides[0].name, "codex");
+  assertEquals(ides[0].configDir, ".codex");
+});
+
+Deno.test("resolveIDEs - accepts codex explicitly", async () => {
+  const fs = new InMemoryFsAdapter();
+  const ides = await resolveIDEs(["codex"], "/project", fs);
+  assertEquals(ides.length, 1);
+  assertEquals(ides[0].name, "codex");
+  assertEquals(ides[0].configDir, ".codex");
+});
+
 Deno.test("detectIDEs - returns empty if no IDE dirs", async () => {
   const fs = new InMemoryFsAdapter();
   const ides = await detectIDEs("/project", fs);
@@ -73,6 +92,21 @@ Deno.test("isInsideIDE - returns true for CURSOR_AGENT=1", () => {
 
 Deno.test("isInsideIDE - returns true for OPENCODE=1", () => {
   assertEquals(isInsideIDE(fakeEnv({ OPENCODE: "1" })), true);
+});
+
+// FR-DIST.DETECT — Codex env-var detection
+Deno.test("isInsideIDE - returns true when CODEX_THREAD_ID is set", () => {
+  assertEquals(
+    isInsideIDE(fakeEnv({ CODEX_THREAD_ID: "019d7d56-af20-7e02" })),
+    true,
+  );
+});
+
+Deno.test("isInsideIDE - returns true when CODEX_SANDBOX is set", () => {
+  assertEquals(
+    isInsideIDE(fakeEnv({ CODEX_SANDBOX: "seatbelt" })),
+    true,
+  );
 });
 
 Deno.test("isInsideIDE - returns false when no IDE env vars set", () => {

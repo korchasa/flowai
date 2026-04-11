@@ -2,7 +2,7 @@ import type { SessionUsage } from "../usage.ts";
 
 export interface AgentAdapter {
   /** IDE identifier */
-  readonly ide: "cursor" | "claude" | "opencode";
+  readonly ide: "cursor" | "claude" | "opencode" | "codex";
 
   /** Config directory name relative to sandbox (e.g. ".cursor", ".claude") */
   readonly configDir: string;
