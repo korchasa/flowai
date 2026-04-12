@@ -1,5 +1,4 @@
-# FR-CICD — CI/CD pipeline
-# FR-CICD.PIN — SHA-pinned third-party actions
+# FR-CICD, FR-CICD.PIN, FR-CICD.PRIV, FR-CICD.INTEGRITY, FR-CICD.JOBS
 name: CI/CD
 
 on:
@@ -10,8 +9,49 @@ on:
     branches: [main]
 
 jobs:
-  pipeline:
+  check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        with:
+          deno-version: v2.7.11
+
+      - name: Verify file integrity after setup
+        run: |
+          git diff --exit-code || { echo "::error::Unexpected file modifications after setup"; exit 1; }
+          [ -z "$(git ls-files --others --exclude-standard)" ] || { echo "::error::Unexpected untracked files after setup"; exit 1; }
+
+      - name: Run checks
+        run: deno task check
+
+      - name: Verify file integrity after checks
+        run: |
+          git diff --exit-code || { echo "::error::Unexpected file modifications after checks"; exit 1; }
+          [ -z "$(git ls-files --others --exclude-standard)" ] || { echo "::error::Unexpected untracked files after checks"; exit 1; }
+
+      - name: Verify CLI install
+        run: |
+          deno install --global -A --config deno.json --name flowai ./cli/src/main.ts
+          flowai --help
+
+  release:
+    needs: check
+    if: |
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      !contains(github.event.head_commit.message, 'chore(release):')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: release
+      cancel-in-progress: false
     permissions:
       contents: write
       id-token: write
@@ -27,88 +67,40 @@ jobs:
         with:
           deno-version: v2.7.11
 
-      - name: Run checks
-        run: deno task check
-
-      - name: Verify no files modified by checks
+      - name: Determine releasable
+        id: releasable
         run: |
-          if ! git diff --exit-code; then
-            echo "::error::Unexpected file modifications detected after checks"
-            git diff --stat
-            exit 1
-          fi
-          if [ -n "$(git ls-files --others --exclude-standard)" ]; then
-            echo "::error::Unexpected untracked files detected after checks"
-            git ls-files --others --exclude-standard
-            exit 1
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LATEST_TAG" ]; then
+            echo "should_release=true" >> $GITHUB_OUTPUT
+          else
+            COMMITS=$(git log --oneline ${LATEST_TAG}..HEAD --grep="^feat\|^fix\|^perf\|^break\|^refactor\|^build" | wc -l)
+            [ "$COMMITS" -gt 0 ] && echo "should_release=true" >> $GITHUB_OUTPUT || { echo "Nothing to release"; echo "should_release=false" >> $GITHUB_OUTPUT; }
           fi
 
-      - name: Verify CLI install
-        run: |
-          deno task bundle
-          deno install --global -A --config deno.json --name flowai ./cli/src/main.ts
-          flowai --help
-
-      - name: Verify no files modified before release
-        run: |
-          git checkout -- . 2>/dev/null || true
-          git clean -fd 2>/dev/null || true
-          if ! git diff --exit-code HEAD; then
-            echo "::error::Working tree is dirty before release step"
-            exit 1
-          fi
-
-      - name: Create release and push tags
+      - name: Create release
         id: create-release
-        if: |
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/main' &&
-          !contains(github.event.head_commit.message, 'chore(release):')
+        if: steps.releasable.outputs.should_release == 'true'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          echo "LATEST_TAG=${LATEST_TAG}"
-          if [ -z "$LATEST_TAG" ]; then
-            RELEASABLE=true
-          else
-            COMMITS=$(git log --oneline ${LATEST_TAG}..HEAD --grep="^feat\|^fix\|^perf\|^break\|^refactor\|^build" | wc -l)
-            if [ "$COMMITS" -gt 0 ]; then RELEASABLE=true; else RELEASABLE=false; fi
-          fi
-          echo "RELEASABLE=${RELEASABLE}"
-
-          if [ "$RELEASABLE" = "true" ]; then
-            deno task bundle
-            # Create release commit AND tag (no --skip.tag)
-            deno run -A npm:standard-version
-
-            NEW_VERSION=$(deno eval "console.log(JSON.parse(Deno.readTextFileSync('deno.json')).version)")
-            NEW_TAG="v${NEW_VERSION}"
-            echo "NEW_VERSION=${NEW_VERSION} NEW_TAG=${NEW_TAG}"
-
-            # Generate release notes BEFORE push (fail early)
-            NOTES_FILE=$(mktemp)
-            deno run -A scripts/generate-release-notes.ts "$LATEST_TAG" "$NEW_TAG" "${{ github.repository }}" > "$NOTES_FILE"
-
-            git push --follow-tags origin main
-
-            echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
-            echo "released=true" >> $GITHUB_OUTPUT
-            echo "notes_file=${NOTES_FILE}" >> $GITHUB_OUTPUT
-          else
-            echo "Nothing to release"
-            echo "released=false" >> $GITHUB_OUTPUT
-          fi
+          deno task bundle
+          deno run -A npm:standard-version
+          NEW_VERSION=$(deno eval "console.log(JSON.parse(Deno.readTextFileSync('deno.json')).version)")
+          NEW_TAG="v${NEW_VERSION}"
+          NOTES_FILE=$(mktemp)
+          deno run -A scripts/generate-release-notes.ts "$LATEST_TAG" "$NEW_TAG" "${{ github.repository }}" > "$NOTES_FILE"
+          git push --follow-tags origin main
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "notes_file=${NOTES_FILE}" >> $GITHUB_OUTPUT
 
       - name: Publish to JSR
-        if: steps.create-release.outputs.released == 'true'
-        run: |
-          deno task bundle
-          deno publish --allow-dirty
+        if: steps.releasable.outputs.should_release == 'true'
+        run: deno publish --allow-dirty
 
       - name: Create GitHub Release
-        if: steps.create-release.outputs.released == 'true'
+        if: steps.releasable.outputs.should_release == 'true'
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           tag_name: v${{ steps.create-release.outputs.version }}
