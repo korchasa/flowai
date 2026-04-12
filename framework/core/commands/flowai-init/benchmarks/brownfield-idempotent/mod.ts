@@ -23,8 +23,8 @@ export const InitBrownfieldIdempotentBench = new class
   userQuery = "/flowai-init";
 
   userPersona =
-    `You are a developer running flowai-init on a project that already has AGENTS.md, documents/AGENTS.md, and scripts/AGENTS.md.
-When the agent detects existing components, tell it to 'create missing components but preserve existing AGENTS.md files'.
+    `You are a developer running flowai-init on a project that already has AGENTS.md.
+When the agent detects existing components, tell it to 'create missing components but preserve existing AGENTS.md'.
 When shown diffs, decline all changes (say 'no' to applying diffs).
 Confirm all other actions like creating missing documents.`;
 
@@ -33,18 +33,6 @@ Confirm all other actions like creating missing documents.`;
       id: "agents_md_preserved",
       description:
         "Was the existing AGENTS.md preserved (contains 'CUSTOM CONTENT MARKER')?",
-      critical: true,
-    },
-    {
-      id: "documents_agents_md_preserved",
-      description:
-        "Was documents/AGENTS.md preserved (contains 'DOCS CUSTOM MARKER')?",
-      critical: true,
-    },
-    {
-      id: "scripts_agents_md_preserved",
-      description:
-        "Was scripts/AGENTS.md preserved (contains 'SCRIPTS CUSTOM MARKER')?",
       critical: true,
     },
     {

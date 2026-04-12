@@ -8,7 +8,6 @@ export const PlanMigrationBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "DataLoader",
     TOOLING_STACK: "- Node.js",
-    generateDocuments: true,
   };
 
   userQuery =

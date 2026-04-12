@@ -8,7 +8,6 @@ export const PlanRefactorBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript",
-    generateDocuments: true,
   };
 
   userQuery =

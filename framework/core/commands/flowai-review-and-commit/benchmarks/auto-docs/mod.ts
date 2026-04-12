@@ -11,7 +11,6 @@ export const ReviewAndCommitAutoDocsBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
   interactive = true;
 

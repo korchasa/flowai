@@ -34,17 +34,6 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
-      id: "documents_agents_md_created",
-      description:
-        "Was documents/AGENTS.md created with documentation structure rules?",
-      critical: true,
-    },
-    {
-      id: "scripts_agents_md_created",
-      description: "Was scripts/AGENTS.md created with development commands?",
-      critical: true,
-    },
-    {
       id: "architecture_discovered",
       description:
         "Does AGENTS.md contain architecture description inferred from the project (Express, TypeScript)?",
@@ -59,7 +48,7 @@ Keep answers brief and affirmative.`;
     {
       id: "doc_rules_present",
       description:
-        "Does documents/AGENTS.md contain the 'Documentation Rules' or DOCS STRUCTURE section?",
+        "Does root AGENTS.md contain a '## Documentation Rules' section?",
       critical: true,
     },
     {
@@ -87,21 +76,9 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
-      id: "no_duplication",
-      description:
-        "Are documentation sections NOT duplicated between root AGENTS.md and subdirectory AGENTS.md files?",
-      critical: false,
-    },
-    {
       id: "temp_files_cleaned",
       description:
         "Were temporary files (project_info.json, interview_data.json) removed during cleanup? (FR-INIT.CLEANUP)",
-      critical: false,
-    },
-    {
-      id: "opencode_compat_check",
-      description:
-        "Did the agent check for OpenCode compatibility (opencode.json glob entries for subdirectory AGENTS.md)? (FR-INIT.OPENCODE)",
       critical: false,
     },
   ];

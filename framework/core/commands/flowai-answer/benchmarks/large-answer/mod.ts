@@ -9,7 +9,6 @@ export const AnswerLargeResponseBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "AuthService",
     TOOLING_STACK: "- TypeScript",
-    generateDocuments: true,
   };
 
   userQuery =

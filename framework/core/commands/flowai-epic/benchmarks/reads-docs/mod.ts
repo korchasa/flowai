@@ -8,7 +8,6 @@ export const EpicReadsDocsBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "EcomAuth",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
   interactive = true;
   userPersona =

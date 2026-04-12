@@ -50,32 +50,10 @@ When asked about devcontainer, say no.`;
       critical: true,
     },
     {
-      id: "documents_agents_md_created",
-      description: "Was documents/AGENTS.md created?",
-      critical: true,
-    },
-    {
-      id: "scripts_agents_md_created",
-      description: "Was scripts/AGENTS.md created?",
-      critical: true,
-    },
-    {
       id: "claude_md_root_symlink",
       description:
         "Was CLAUDE.md created in the root directory (as a symlink to AGENTS.md or a standalone file)?",
       critical: true,
-    },
-    {
-      id: "claude_md_documents_symlink",
-      description:
-        "Was CLAUDE.md created in documents/ directory (as a symlink to documents/AGENTS.md or standalone)?",
-      critical: false,
-    },
-    {
-      id: "claude_md_scripts_symlink",
-      description:
-        "Was CLAUDE.md created in scripts/ directory (as a symlink to scripts/AGENTS.md or standalone)?",
-      critical: false,
     },
     {
       id: "no_hallucinations",

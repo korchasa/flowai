@@ -8,7 +8,6 @@ export const PlanInteractiveBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
 
   userQuery = "/flowai-plan Plan a simple CLI tool that prints 'Hello World'.";

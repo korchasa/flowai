@@ -8,8 +8,9 @@ description: Initialize project with AGENTS.md and rules, handling both Greenfie
 ## Overview
 
 Analyze the project, conduct an interview (for Greenfield projects), and
-generate 3 AGENTS.md files (root, documents/, scripts/), a `CLAUDE.md` symlink
+generate a single AGENTS.md file (root) with all project rules, a `CLAUDE.md` symlink
 (for Claude Code compatibility), rules, and scaffolding.
+Legacy three-file layouts (`documents/AGENTS.md`, `scripts/AGENTS.md`) are detected and collapsed into the single root file.
 The agent uses template files from `assets/` as reference and writes files directly.
 
 ## Context
@@ -17,12 +18,13 @@ The agent uses template files from `assets/` as reference and writes files direc
 <context>
 The user wants to bootstrap an AI agent's understanding of the project. The agent needs to autonomously explore the codebase, recognize the technology stack, understand the directory structure, and infer key architectural patterns.
 - **Greenfield (New Projects)**: Requires interviewing the user, creating scaffolding (`documents/`, configs), and setting up rules.
-- **Brownfield (Existing Projects)**: Requires discovery, reverse-engineering architecture, and **extracting existing instructions** from `./AGENTS.md` into the appropriate subdirectory files.
+- **Brownfield (Existing Projects)**: Requires discovery, reverse-engineering architecture, and **collapsing legacy multi-file layouts** into the single root file.
 
-**File Structure**: flowai-init produces 3 AGENTS.md files:
-- `./AGENTS.md` — core agent rules, project metadata, planning rules, TDD flow
-- `./documents/AGENTS.md` — documentation system rules (SRS/SDS/GODS formats, compressed style)
-- `./scripts/AGENTS.md` — development commands (standard interface, detected commands)
+**File Structure**: flowai-init produces a single `./AGENTS.md` file containing all sections:
+- Project rules, metadata, vision, architecture, key decisions
+- Documentation rules (SRS/SDS/GODS formats, compressed style, doc hierarchy)
+- Development commands (standard interface, detected commands)
+- Planning rules, TDD flow, code documentation rules
 </context>
 
 ## Rules & Constraints
@@ -37,7 +39,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 7. **Mandatory**: The agent MUST use a task management tool (e.g., todo write) to track the execution steps.
 8. **Per-File Diff Confirmation**: For existing files, always show the diff to the user and ask for confirmation before applying. Never silently overwrite.
 9. **Preserve User Content**: In brownfield, extract and preserve user's existing instructions. Templates are fallbacks for greenfield only.
-10. **Extract, Don't Duplicate**: In brownfield, if `./AGENTS.md` contains sections about documentation or development commands, these MUST be extracted into `./documents/AGENTS.md` and `./scripts/AGENTS.md` respectively, and REMOVED from `./AGENTS.md`.
+10. **Collapse, Don't Fragment**: In brownfield, if legacy `documents/AGENTS.md` or `scripts/AGENTS.md` exists, merge their unique content into the root `./AGENTS.md` and delete the originals after user confirmation.
 </rules>
 
 ## Instructions
@@ -97,50 +99,46 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
      - Infer:
        - **Architecture**: (e.g., "React SPA", "Express API", "CLI Tool").
        - **Key Decisions**: (e.g., "Tailwind for styling", "Jest for testing").
-   - **Extract from existing `./AGENTS.md`** (if it exists):
-     - Read the entire file.
-     - **Identify sections semantically**:
-       - Sections about **documentation rules**, doc hierarchy, SRS/SDS formats, writing style, task file -> these belong in `./documents/AGENTS.md`.
-       - Sections about **development commands**, build scripts, test commands, detected commands -> these belong in `./scripts/AGENTS.md`.
-       - Everything else (project identity, vision, architecture, planning rules, TDD, code docs, custom project rules) -> stays in `./AGENTS.md`.
-     - Save extracted content for use in step 6.
-     - **Important**: The extracted content from the user's existing file takes priority over template content. Templates are fallbacks only.
+   - **Collapse legacy layout** (if detected):
+     - Check `legacy_layout_detected` from the analyzer output.
+     - If legacy layout found (`documents/AGENTS.md` and/or `scripts/AGENTS.md` exist):
+       1. Read all existing files: `./AGENTS.md`, `./documents/AGENTS.md`, `./scripts/AGENTS.md`.
+       2. Merge by section into the root file: documentation rules content → `## Documentation Rules` section, scripts content → `## Development Commands` section, everything else stays in its existing root section.
+       3. Show the merged diff to the user and ask for confirmation.
+       4. Overwrite `./AGENTS.md` with the merged result.
+       5. `git rm` the two sub-files (`documents/AGENTS.md`, `scripts/AGENTS.md`) and their `CLAUDE.md` symlinks (`documents/CLAUDE.md`, `scripts/CLAUDE.md`) if they exist.
+     - If no legacy layout: proceed with normal brownfield discovery against `./AGENTS.md`.
+     - **Important**: The content from the user's existing files takes priority over template content. Templates are fallbacks only.
 
 5. **Component Inventory**
    - Use the `inventory` section from the analysis output (step 2) to check which components exist.
    - Report findings to user as a checklist.
    - For **Brownfield**: ask "Create missing components? Update existing via diff? [create missing / update all / select]"
 
-6. **Generate AGENTS.md Files**
-   - Read template files from `../../assets/` directory (pack-level shared assets):
-     - `AGENTS.template.md` — reference for `./AGENTS.md`
-     - `AGENTS.documents.template.md` — fallback for `./documents/AGENTS.md`
-     - `AGENTS.scripts.template.md` — fallback for `./scripts/AGENTS.md`
+6. **Generate AGENTS.md File**
+   - Read template file from `../../assets/` directory (pack-level shared assets):
+     - `AGENTS.template.md` — reference for `./AGENTS.md` (single file containing all sections)
 
-   - **For Greenfield**: Fill templates with interview data. Replace `{{PLACEHOLDERS}}` with actual values.
+   - **For Greenfield**: Fill template with interview data. Replace `{{PLACEHOLDERS}}` with actual values.
 
    - **For Brownfield**:
-     - `./AGENTS.md`: Use the template structure. Fill with data inferred from the project. Preserve user's custom project rules (content between `---` and the next `## ` heading). **Remove** any sections that were extracted for documents/ or scripts/.
-     - `./documents/AGENTS.md`: Use **extracted documentation sections** from the existing `./AGENTS.md`. If no documentation sections were found, use `AGENTS.documents.template.md` as fallback.
-     - `./scripts/AGENTS.md`: Use **extracted script/command sections** from the existing `./AGENTS.md`. If no command sections were found, use `AGENTS.scripts.template.md` as fallback, filling `{{DEVELOPMENT_COMMANDS}}` from detected stack and `{{COMMAND_SCRIPTS}}` from project config.
+     - `./AGENTS.md`: Use the template structure. Fill with data inferred from the project. Preserve user's custom PROJECT_RULES (content between `---` and the next `## ` heading). If legacy layout was collapsed in step 4, the merged content is already prepared — use it.
 
-   - **For each file**:
+   - **Output**: a single `./AGENTS.md` file.
      - If file does not exist: create it, report to user.
      - If file exists: show diff to user, ask for confirmation before writing.
 
-7. **Claude Code Compatibility (CLAUDE.md Symlinks)**
-   - Create relative symlinks `CLAUDE.md` -> `AGENTS.md` in **every directory** that has an `AGENTS.md`:
-     - `./CLAUDE.md` -> `./AGENTS.md`
-     - `./documents/CLAUDE.md` -> `./AGENTS.md`
-     - `./scripts/CLAUDE.md` -> `./AGENTS.md`
-   - For each symlink:
+7. **Claude Code Compatibility (CLAUDE.md Symlink)**
+   - Create a single relative symlink: `./CLAUDE.md` -> `./AGENTS.md`.
+   - Symlink handling:
      - **If `CLAUDE.md` does not exist**: create the symlink, report to user.
      - **If `CLAUDE.md` exists and is already a correct symlink to `AGENTS.md`**: skip silently.
      - **If `CLAUDE.md` exists as a regular file or wrong symlink**: warn the user, show the current content/target, and ask for confirmation before replacing with the symlink.
+   - **Legacy cleanup**: If legacy sub-directory `CLAUDE.md` symlinks exist (`documents/CLAUDE.md`, `scripts/CLAUDE.md`), they should already be deleted during the legacy-collapse step (step 4). If they still exist at this point, delete them now.
 
 8. **OpenCode Compatibility Check**
    - The `inventory` section from the analysis output (step 2) includes `opencode_json.exists` and `opencode_json.has_subdirectory_globs`.
-   - If `opencode_json.exists` is `true` and `has_subdirectory_globs` is `false`: warn user and propose adding `documents/AGENTS.md` and `scripts/AGENTS.md` to the `instructions` array in `opencode.json`.
+   - If `opencode_json.exists` is `true` and the `instructions` array contains references to `documents/AGENTS.md` or `scripts/AGENTS.md`: propose **removing only** those stale entries. Do NOT add an `AGENTS.md` replacement entry — OpenCode auto-loads the root file.
 
 9. **Generate Documentation**
    - Generate core documentation files in `documents/`:
@@ -178,7 +176,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
       ```
     - Check the `verification` section. If `passed` is false (exit code 1), fix the issues before proceeding.
     - Additionally verify: development commands are configured and the `check` command runs successfully.
-    - **Verify no duplication**: Confirm that documentation/script sections are NOT present in both `./AGENTS.md` and their respective subdirectory files.
+    - **Verify single file**: Confirm that only `./AGENTS.md` exists and no legacy `documents/AGENTS.md` or `scripts/AGENTS.md` remain.
 
 </step_by_step>
 
@@ -188,12 +186,12 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 [ ] Analysis script run and output read.
 [ ] Greenfield/Brownfield determined by agent judgment (not `is_new` flag).
 [ ] Interview conducted (Greenfield) or discovery performed (Brownfield).
-[ ] For Brownfield: documentation and script sections extracted from existing AGENTS.md.
+[ ] For Brownfield with legacy layout: three files collapsed into single root file, originals deleted.
 [ ] For existing files: diffs shown and per-file confirmation requested.
-[ ] Existing user content preserved (custom rules, extracted sections used as-is).
-[ ] 3 AGENTS.md files generated: root, documents/, scripts/.
-[ ] `CLAUDE.md` symlinks created in all directories with `AGENTS.md` (root, documents/, scripts/).
-[ ] No duplication: sections moved to subdirectories are removed from root AGENTS.md.
+[ ] Existing user content preserved (custom rules, merged sections used as-is).
+[ ] Single AGENTS.md file generated at root.
+[ ] `CLAUDE.md` symlink created at project root.
+[ ] No legacy sub-directory AGENTS.md or CLAUDE.md files remain.
 [ ] `documents/` folder populated with generated content from actual project data.
 [ ] Development commands configured (scripts created + config updated).
 [ ] OpenCode compatibility checked (if applicable) via `inventory` output.

@@ -8,7 +8,6 @@ export const PlanContextBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno\n- Prisma",
-    generateDocuments: true,
   };
 
   userQuery =

@@ -10,7 +10,6 @@ export const EpicBasicBench = new class extends BenchmarkSkillScenario {
     TOOLING_STACK: "- TypeScript\n- Deno",
     ARCHITECTURE:
       "- `framework/skills/*/SKILL.md` — Product skills\n- `documents/` — SRS/SDS documentation\n- `scripts/` — Build and verification tooling",
-    generateDocuments: true,
   };
 
   userQuery =

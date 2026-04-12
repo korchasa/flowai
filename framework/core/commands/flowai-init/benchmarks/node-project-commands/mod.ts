@@ -65,11 +65,5 @@ Keep answers brief and affirmative.`;
           "Did the agent correctly detect this as a Node.js/Express project (from package.json)?",
         critical: true,
       },
-      {
-        id: "scripts_agents_md_created",
-        description:
-          "Was scripts/AGENTS.md created with development commands documented?",
-        critical: false,
-      },
     ];
   })();

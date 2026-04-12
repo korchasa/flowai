@@ -10,7 +10,6 @@ export const PlanVariantsObviousBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
 
   async setup(sandboxPath: string) {

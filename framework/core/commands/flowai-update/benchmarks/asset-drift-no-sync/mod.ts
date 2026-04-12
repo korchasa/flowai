@@ -42,10 +42,6 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
         message: "Initial sync with all assets",
         files: [
           ".claude/assets/AGENTS.template.md",
-          ".claude/assets/AGENTS.documents.template.md",
-          ".claude/assets/AGENTS.scripts.template.md",
-          "documents/AGENTS.md",
-          "scripts/AGENTS.md",
         ],
       },
     ],
@@ -83,21 +79,6 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
         "4. **CHECK**: Run fmt, lint, and full test suite.",
         "",
       ].join("\n"),
-    );
-
-    // --- Write documents/AGENTS.md and scripts/AGENTS.md (matching templates) ---
-    const docsDir = join(sandboxPath, "documents");
-    await Deno.mkdir(docsDir, { recursive: true });
-    await Deno.writeTextFile(
-      join(docsDir, "AGENTS.md"),
-      "# Documentation Rules\n\nMatches template — no migration needed.\n",
-    );
-
-    const scriptsDir = join(sandboxPath, "scripts");
-    await Deno.mkdir(scriptsDir, { recursive: true });
-    await Deno.writeTextFile(
-      join(scriptsDir, "AGENTS.md"),
-      "# Development Commands\n\nMatches template — no migration needed.\n",
     );
 
     // .claude/assets/ already has templates (from framework copy by runner).
@@ -142,12 +123,6 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
       description:
         'Did the agent NOT stop at "no actions required" without comparing templates against artifacts?',
       critical: true,
-    },
-    {
-      id: "checked_other_artifacts",
-      description:
-        "Did the agent also check `documents/AGENTS.md` and `scripts/AGENTS.md` against their templates?",
-      critical: false,
     },
   ];
 }();

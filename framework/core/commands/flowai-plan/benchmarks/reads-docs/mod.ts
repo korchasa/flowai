@@ -8,7 +8,6 @@ export const PlanReadsDocsBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "TaskAPI",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
   interactive = true;
   userPersona =

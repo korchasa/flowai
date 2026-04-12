@@ -43,14 +43,11 @@ interface FileStatus {
 interface Inventory {
   root_agents_md: FileStatus;
   claude_md: FileStatus;
-  documents_agents_md: FileStatus;
-  documents_claude_md: FileStatus;
-  scripts_agents_md: FileStatus;
-  scripts_claude_md: FileStatus;
   documents_dir: boolean;
   scripts_dir: boolean;
   devcontainer_dir: boolean;
   opencode_json: { exists: boolean; has_subdirectory_globs: boolean };
+  legacy_layout_detected: boolean;
 }
 
 /** Single verification check. */
@@ -196,17 +193,18 @@ async function analyzeProject(rootDir: string): Promise<AnalysisResult> {
     }
   }
 
+  const legacyLayoutDetected =
+    existsSync(join(rootDir, "documents", "AGENTS.md")) ||
+    existsSync(join(rootDir, "scripts", "AGENTS.md"));
+
   const inventory: Inventory = {
     root_agents_md: fileStatus(join(rootDir, "AGENTS.md")),
     claude_md: fileStatus(join(rootDir, "CLAUDE.md")),
-    documents_agents_md: fileStatus(join(rootDir, "documents", "AGENTS.md")),
-    documents_claude_md: fileStatus(join(rootDir, "documents", "CLAUDE.md")),
-    scripts_agents_md: fileStatus(join(rootDir, "scripts", "AGENTS.md")),
-    scripts_claude_md: fileStatus(join(rootDir, "scripts", "CLAUDE.md")),
     documents_dir: dirExists(join(rootDir, "documents")),
     scripts_dir: dirExists(join(rootDir, "scripts")),
     devcontainer_dir: dirExists(join(rootDir, ".devcontainer")),
     opencode_json: opencodeResult,
+    legacy_layout_detected: legacyLayoutDetected,
   };
 
   // --- Verification ---
@@ -216,22 +214,6 @@ async function analyzeProject(rootDir: string): Promise<AnalysisResult> {
   checks.push({
     ok: rootAgents,
     message: rootAgents ? "./AGENTS.md exists" : "./AGENTS.md is missing",
-  });
-
-  const docsAgents = inventory.documents_agents_md.exists;
-  checks.push({
-    ok: docsAgents,
-    message: docsAgents
-      ? "./documents/AGENTS.md exists"
-      : "./documents/AGENTS.md is missing",
-  });
-
-  const scriptsAgents = inventory.scripts_agents_md.exists;
-  checks.push({
-    ok: scriptsAgents,
-    message: scriptsAgents
-      ? "./scripts/AGENTS.md exists"
-      : "./scripts/AGENTS.md is missing",
   });
 
   const claudeStatus = inventory.claude_md;
@@ -249,36 +231,6 @@ async function analyzeProject(rootDir: string): Promise<AnalysisResult> {
       : `./CLAUDE.md symlink points to "${claudeStatus.symlink_target}" instead of "AGENTS.md"`,
   });
 
-  const docsClaudeStatus = inventory.documents_claude_md;
-  const docsSymlinkOk = docsClaudeStatus.exists &&
-    docsClaudeStatus.is_symlink &&
-    docsClaudeStatus.symlink_target === "AGENTS.md";
-  checks.push({
-    ok: docsSymlinkOk,
-    message: docsSymlinkOk
-      ? "./documents/CLAUDE.md is a correct symlink to AGENTS.md"
-      : !docsClaudeStatus.exists
-      ? "./documents/CLAUDE.md is missing"
-      : !docsClaudeStatus.is_symlink
-      ? "./documents/CLAUDE.md exists but is not a symlink"
-      : `./documents/CLAUDE.md symlink points to "${docsClaudeStatus.symlink_target}" instead of "AGENTS.md"`,
-  });
-
-  const scriptsClaudeStatus = inventory.scripts_claude_md;
-  const scriptsSymlinkOk = scriptsClaudeStatus.exists &&
-    scriptsClaudeStatus.is_symlink &&
-    scriptsClaudeStatus.symlink_target === "AGENTS.md";
-  checks.push({
-    ok: scriptsSymlinkOk,
-    message: scriptsSymlinkOk
-      ? "./scripts/CLAUDE.md is a correct symlink to AGENTS.md"
-      : !scriptsClaudeStatus.exists
-      ? "./scripts/CLAUDE.md is missing"
-      : !scriptsClaudeStatus.is_symlink
-      ? "./scripts/CLAUDE.md exists but is not a symlink"
-      : `./scripts/CLAUDE.md symlink points to "${scriptsClaudeStatus.symlink_target}" instead of "AGENTS.md"`,
-  });
-
   const docsDir = inventory.documents_dir;
   checks.push({
     ok: docsDir,
@@ -286,6 +238,14 @@ async function analyzeProject(rootDir: string): Promise<AnalysisResult> {
       ? "./documents/ directory exists"
       : "./documents/ directory is missing",
   });
+
+  if (legacyLayoutDetected) {
+    checks.push({
+      ok: true,
+      message:
+        "Legacy three-file AGENTS.md layout detected — run /flowai-update to collapse.",
+    });
+  }
 
   const verification: Verification = {
     passed: checks.every((c) => c.ok),

@@ -12,14 +12,13 @@ import { runGit } from "@bench/utils.ts";
  * ever reading the actual project artifact (AGENTS.md) to compare.
  *
  * Scenario setup:
- * 1. Three templates changed (AGENTS.template.md, AGENTS.documents.template.md,
- *    AGENTS.scripts.template.md) — all with formatting noise
+ * 1. AGENTS.template.md changed — with formatting noise
  * 2. Several other skill SKILL.md files changed — formatting only (noise)
  * 3. ONE substantive change hidden in AGENTS.template.md: new "Proactive
  *    Resolution" planning rule
  * 4. Project AGENTS.md is missing that rule
  * 5. Agent must NOT dismiss everything as formatting — must compare
- *    templates against artifacts to find the gap
+ *    template against artifact to find the gap
  */
 export const FlowUpdateTemplateVsArtifactBench = new class
   extends BenchmarkSkillScenario {
@@ -41,11 +40,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       {
         message: "Initial sync (baseline)",
         files: [
-          "documents/AGENTS.md",
-          "scripts/AGENTS.md",
           ".claude/assets/AGENTS.template.md",
-          ".claude/assets/AGENTS.documents.template.md",
-          ".claude/assets/AGENTS.scripts.template.md",
           ".claude/skills/flowai-reflect/SKILL.md",
           ".claude/skills/flowai-review/SKILL.md",
           ".claude/skills/flowai-commit/SKILL.md",
@@ -54,8 +49,6 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     ],
     modified: [
       ".claude/assets/AGENTS.template.md",
-      ".claude/assets/AGENTS.documents.template.md",
-      ".claude/assets/AGENTS.scripts.template.md",
       ".claude/skills/flowai-reflect/SKILL.md",
       ".claude/skills/flowai-review/SKILL.md",
       ".claude/skills/flowai-commit/SKILL.md",
@@ -96,45 +89,6 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       ].join("\n"),
     );
 
-    // --- Create project artifacts ---
-    // documents/AGENTS.md (matches template — no migration needed)
-    const docsDir = join(sandboxPath, "documents");
-    await Deno.mkdir(docsDir, { recursive: true });
-    await Deno.writeTextFile(
-      join(docsDir, "AGENTS.md"),
-      `# Documentation Rules
-
-**CRITICAL:** MEMORY RESETS. DOCS = ONLY LINK TO PAST. MAINTAIN ACCURACY.
-
-## Hierarchy
-1. **\`AGENTS.md\`**: "Why" & "For Whom". Long-term goal/value. READ-ONLY.
-2. **SRS** (\`documents/requirements.md\`): "What" & "Why". Source of truth.
-3. **SDS** (\`documents/design.md\`): "How". Implementation details.
-4. **Tasks** (\`documents/tasks/<YYYY-MM-DD>-<slug>.md\`): Temporary plans/notes.
-
-## Rules
-- **STRICT COMPLIANCE**: AGENTS.md, SRS, SDS.
-- **Workflow**: New/Updated req -> Update SRS -> Update SDS -> Implement.
-`,
-    );
-
-    // scripts/AGENTS.md (matches template — no migration needed)
-    const scriptsDir = join(sandboxPath, "scripts");
-    await Deno.mkdir(scriptsDir, { recursive: true });
-    await Deno.writeTextFile(
-      join(scriptsDir, "AGENTS.md"),
-      `# Development Commands
-
-## Shell Environment
-- All project scripts auto-detect AI agent environments.
-
-## Standard Interface
-- \`check\` - Comprehensive project verification.
-- \`test <path>\` - Runs a single test.
-- \`dev\` - Development mode with watch.
-`,
-    );
-
     // --- Prepare "old" template versions (baseline) ---
     const skillsBase = join(sandboxPath, ".claude", "skills");
     const assetsBase = join(sandboxPath, ".claude", "assets");
@@ -153,31 +107,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       .replace("## Project Information\n", "\n## Project Information\n\n")
       .replace("## Key Decisions\n", "\n## Key Decisions\n\n");
 
-    // 2. AGENTS.documents.template.md — formatting-only changes
-    const docsTemplatePath = join(
-      assetsBase,
-      "AGENTS.documents.template.md",
-    );
-    const newDocsTemplate = await Deno.readTextFile(docsTemplatePath);
-    const oldDocsTemplate = newDocsTemplate
-      .replace("## Hierarchy\n", "## Hierarchy\n\n")
-      .replace("## Rules\n", "\n## Rules\n\n")
-      .replace(
-        "## Compressed Style Rules (All Docs)\n",
-        "\n## Compressed Style Rules (All Docs)\n\n",
-      );
-
-    // 3. AGENTS.scripts.template.md — formatting-only changes
-    const scriptsTemplatePath = join(
-      assetsBase,
-      "AGENTS.scripts.template.md",
-    );
-    const newScriptsTemplate = await Deno.readTextFile(scriptsTemplatePath);
-    const oldScriptsTemplate = newScriptsTemplate
-      .replace("## Standard Interface\n", "\n## Standard Interface\n\n")
-      .replace("## Detected Commands\n", "\n## Detected Commands\n\n");
-
-    // 4. Create additional formatting-only noise in other skills
+    // 2. Create additional formatting-only noise in other skills
     const noisySkills = [
       "flowai-reflect",
       "flowai-review",
@@ -202,27 +132,23 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       }
     }
 
-    // Write old versions of all templates
+    // Write old version of template
     await Deno.writeTextFile(mainTemplatePath, oldMainTemplate);
-    await Deno.writeTextFile(docsTemplatePath, oldDocsTemplate);
-    await Deno.writeTextFile(scriptsTemplatePath, oldScriptsTemplate);
 
     // Commit everything as "previous sync" baseline
     await runGit(sandboxPath, ["add", "-A"]);
     await runGit(sandboxPath, ["commit", "-m", "Initial sync (baseline)"]);
 
-    // --- Restore "new" versions (simulate flowai sync) ---
+    // --- Restore "new" version (simulate flowai sync) ---
     await Deno.writeTextFile(mainTemplatePath, newMainTemplate);
-    await Deno.writeTextFile(docsTemplatePath, newDocsTemplate);
-    await Deno.writeTextFile(scriptsTemplatePath, newScriptsTemplate);
 
     for (const [, { path, newContent }] of noisyOldVersions) {
       await Deno.writeTextFile(path, newContent);
     }
 
-    // Now `git status` shows ~6 changed files, `git diff` is mostly formatting.
+    // Now `git status` shows ~4 changed files, `git diff` is mostly formatting.
     // Only AGENTS.template.md has a substantive change (new planning rule).
-    // Agent must compare templates vs project artifacts to find the gap.
+    // Agent must compare template vs project artifact to find the gap.
   }
 
   userQuery =
@@ -258,18 +184,6 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       description:
         'Did the agent NOT dismiss all changes as "just formatting" or "cosmetic only — no migration needed" without comparing templates to project artifacts?',
       critical: true,
-    },
-    {
-      id: "checked_documents_agents_md",
-      description:
-        "Did the agent also check `documents/AGENTS.md` against its template (AGENTS.documents.template.md)?",
-      critical: false,
-    },
-    {
-      id: "correctly_no_migration_for_docs",
-      description:
-        "Did the agent correctly determine that `documents/AGENTS.md` and `scripts/AGENTS.md` do NOT need migration (they already match)?",
-      critical: false,
     },
   ];
 }();

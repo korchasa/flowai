@@ -10,7 +10,6 @@ export const PlanVariantsComplexBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "FinApp",
     TOOLING_STACK: "- TypeScript\n- Node.js\n- PostgreSQL",
-    generateDocuments: true,
   };
 
   async setup(sandboxPath: string) {

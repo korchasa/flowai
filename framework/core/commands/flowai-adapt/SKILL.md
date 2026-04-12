@@ -80,8 +80,7 @@ Two subagents handle the actual adaptation work:
    - Read `pack.yaml` from installed packs (via `.flowai.yaml`) to get the `assets:` mapping (template name -> artifact path).
    - If `pack.yaml` is unavailable, use default mapping:
      - `AGENTS.template.md` -> `AGENTS.md`
-     - `AGENTS.documents.template.md` -> `documents/AGENTS.md`
-     - `AGENTS.scripts.template.md` -> `scripts/AGENTS.md`
+   - If the project still has `documents/AGENTS.md` or `scripts/AGENTS.md`, defer to `flowai-update` or `flowai-init` to run the legacy-collapse procedure — do NOT handle collapse here.
    - For each template -> artifact pair:
      a. Read the framework template from `{ide}/assets/`.
      b. Read the project artifact.
@@ -111,7 +110,7 @@ Two subagents handle the actual adaptation work:
 [ ] Arguments parsed correctly (type filter + name filter).
 [ ] Skills adapted via `flowai-skill-adapter` subagents (parallel).
 [ ] Agents adapted via `flowai-agent-adapter` subagents (parallel).
-[ ] AGENTS.md artifacts compared template-vs-artifact.
+[ ] Root AGENTS.md artifact compared template-vs-artifact.
 [ ] Hook scripts checked for stack-specific commands.
 [ ] Diff shown and user confirmation obtained per resource.
 [ ] Rejected adaptations reverted.

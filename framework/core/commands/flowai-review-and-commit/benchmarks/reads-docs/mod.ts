@@ -10,7 +10,6 @@ export const ReviewAndCommitReadsDocsBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "FileTool",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
 
   override async setup(sandboxPath: string) {

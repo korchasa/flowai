@@ -8,7 +8,6 @@ export const PlanBasicBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- Node.js\n- Express",
-    generateDocuments: true,
   };
   interactive = true;
   userPersona =

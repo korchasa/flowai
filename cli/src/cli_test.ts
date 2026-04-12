@@ -71,7 +71,7 @@ Deno.test("renderSyncOutput - shows updated skills with scaffolds", () => {
     {
       name: "flowai-init",
       action: "update",
-      scaffolds: ["AGENTS.md", "documents/AGENTS.md"],
+      scaffolds: ["AGENTS.md"],
     },
     { name: "flowai-commit", action: "update", scaffolds: [] },
     { name: "flowai-plan", action: "ok", scaffolds: [] },
@@ -82,7 +82,7 @@ Deno.test("renderSyncOutput - shows updated skills with scaffolds", () => {
   assertStringIncludes(output, "SKILLS UPDATED (2)");
   assertStringIncludes(
     output,
-    "flowai-init (scaffolds: AGENTS.md, documents/AGENTS.md)",
+    "flowai-init (scaffolds: AGENTS.md)",
   );
   assertStringIncludes(output, "flowai-commit");
   assertStringIncludes(output, "compare the updated template");
@@ -157,28 +157,13 @@ Deno.test("renderSyncOutput - shows updated assets with artifacts", () => {
       action: "update",
       scaffolds: ["AGENTS.md"],
     },
-    {
-      name: "AGENTS.documents.template.md",
-      action: "update",
-      scaffolds: ["documents/AGENTS.md"],
-    },
-    {
-      name: "AGENTS.scripts.template.md",
-      action: "ok",
-      scaffolds: ["scripts/AGENTS.md"],
-    },
   ];
 
   const output = captureOutput(() => renderSyncOutput(result));
   assertStringIncludes(output, ">>> ACTIONS REQUIRED:");
-  assertStringIncludes(output, "ASSETS UPDATED (2)");
+  assertStringIncludes(output, "ASSETS UPDATED (1)");
   assertStringIncludes(output, "AGENTS.template.md (artifacts: AGENTS.md)");
-  assertStringIncludes(
-    output,
-    "AGENTS.documents.template.md (artifacts: documents/AGENTS.md)",
-  );
   assertStringIncludes(output, "compare the template");
-  assertStringIncludes(output, "1 assets unchanged");
 });
 
 Deno.test("renderSyncOutput - shows created assets", () => {

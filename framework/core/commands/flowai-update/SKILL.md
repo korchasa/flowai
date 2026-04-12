@@ -15,14 +15,14 @@ Single entry point for updating the flowai framework in a project. Handles CLI u
 <context>
 flowai generates three types of outputs:
 - **Synced** (skills/, agents/) — updated automatically by `flowai sync`, then adapted to the project
-- **Assets** (AGENTS.md templates) — pack-level templates synced to `.{ide}/assets/`. When templates change, project artifacts (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md) may need migration. Asset-to-artifact mapping declared in pack.yaml `assets:` field.
+- **Assets** (AGENTS.md template) — pack-level template synced to `.{ide}/assets/`. When the template changes, the project artifact (root AGENTS.md) may need migration. Asset-to-artifact mapping declared in pack.yaml `assets:` field.
 - **Scaffolded** (.devcontainer/, CLAUDE.md, documents/requirements.md, documents/design.md) — created once by setup skills (flowai-init, flowai-setup-agent-*, stack-specific configure-commands skills), then owned by the project. Exact artifact list varies by project stack and is declared in each pack's `pack.yaml` `scaffolds:` field.
 
 `flowai sync` overwrites skills with upstream versions. This skill detects the overwrite via `git diff HEAD` and re-adapts, merging upstream changes with previous project customizations. Adaptation state is tracked entirely through git history — no extra frontmatter fields needed.
 
 `flowai sync` outputs an `>>> ACTIONS REQUIRED` section listing exactly which skills/assets changed and which artifacts they affect. This skill follows those instructions.
 
-**IMPORTANT**: `flowai sync` only compares templates with their cached copies in `.{ide}/assets/`. It does NOT check whether project artifacts (AGENTS.md, documents/AGENTS.md, scripts/AGENTS.md) match the templates. Artifacts can drift without sync detecting it. Therefore, asset artifact verification (step 6) runs **unconditionally** — even when sync reports "NO ACTIONS REQUIRED".
+**IMPORTANT**: `flowai sync` only compares templates with their cached copies in `.{ide}/assets/`. It does NOT check whether the project artifact (root AGENTS.md) matches the template. The artifact can drift without sync detecting it. Therefore, asset artifact verification (step 6) runs **unconditionally** — even when sync reports "NO ACTIONS REQUIRED".
 </context>
 
 ## Rules & Constraints
@@ -69,7 +69,7 @@ flowai generates three types of outputs:
      - **AGENTS UPDATED**: Note for commit message.
      - **AGENTS CREATED**: Note for commit message (new agents installed).
      - **AGENTS DELETED**: Note for commit message. Check if deleted agents are referenced in project docs.
-     - **ASSETS UPDATED**: Extract template names and their `(artifacts: ...)` lists. These are pack-level templates (AGENTS.md) that changed — project artifacts need migration.
+     - **ASSETS UPDATED**: Extract template name and its `(artifacts: ...)` list. This is the pack-level template (AGENTS.md) that changed — the project artifact needs migration.
      - **ASSETS CREATED**: New asset templates installed. Check if corresponding project artifacts exist.
      - **HOOKS INSTALLED**: Note for commit message (new hooks auto-configured).
      - **HOOKS UPDATED**: Note for commit message.
@@ -93,9 +93,17 @@ flowai generates three types of outputs:
    - Wait for user approval/rejection per skill. Revert rejected adaptations with `git checkout HEAD -- <skill-path>`.
 
 6. **Verify and migrate asset artifacts** *(runs unconditionally — even when sync reports no changes)*
-   - Read `pack.yaml` from each installed pack (e.g., `.{ide}/skills/flowai-update/../../pack.yaml` or discover via `.flowai.yaml`) to get the `assets:` mapping (template name → artifact path). If pack.yaml is unavailable, use the default mapping: `AGENTS.template.md` → `AGENTS.md`, `AGENTS.documents.template.md` → `documents/AGENTS.md`, `AGENTS.scripts.template.md` → `scripts/AGENTS.md`.
+   - Read `pack.yaml` from each installed pack (e.g., `.{ide}/skills/flowai-update/../../pack.yaml` or discover via `.flowai.yaml`) to get the `assets:` mapping (template name → artifact path). If pack.yaml is unavailable, use the default mapping: `AGENTS.template.md` → `AGENTS.md` (single entry).
+
+   - **6a. Detect legacy layout** — check whether `documents/AGENTS.md` or `scripts/AGENTS.md` exists in the project root. If either file exists, this is a legacy three-file install:
+     a. Read all three files: `AGENTS.md`, `documents/AGENTS.md`, `scripts/AGENTS.md` (skip any that don't exist).
+     b. Merge non-root sections from `documents/AGENTS.md` and `scripts/AGENTS.md` into root `AGENTS.md`. Preserve existing root content; append sections that only exist in the subsidiary files.
+     c. Show the merged diff to the user and explain that the project is migrating from three AGENTS.md files to a single root file.
+     d. On user confirmation: overwrite root `AGENTS.md` with the merged content, then `git rm` the two old files (`documents/AGENTS.md`, `scripts/AGENTS.md`) plus their `CLAUDE.md` symlinks (`documents/CLAUDE.md`, `scripts/CLAUDE.md`) if they exist.
+     e. After legacy collapse, continue with the normal template-vs-artifact comparison below.
+
    - For each template → artifact pair:
-     a. **MUST read** the actual project artifact file (e.g., `./AGENTS.md`).
+     a. **MUST read** the actual project artifact file (`./AGENTS.md`).
      b. **MUST read** the framework template (e.g., `.claude/assets/AGENTS.template.md`).
      c. Compare using `git diff --no-index`:
         ```
@@ -104,7 +112,7 @@ flowai generates three types of outputs:
      d. Primary comparison is **template content vs project artifact**, not just template git history.
      e. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
      f. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
-   - If no gaps found in any artifact — proceed to scaffolded artifacts.
+   - If no gaps found — proceed to scaffolded artifacts.
 
 7. **Migrate scaffolded artifacts**
    - For each SKILLS UPDATED entry that has scaffolds listed:
@@ -155,7 +163,8 @@ flowai generates three types of outputs:
 [ ] Sync output parsed: all action types extracted (skills, agents, assets, hooks, errors).
 [ ] Updated skills adapted to project via `flowai-skill-adapter` subagents (parallel).
 [ ] Each skill adaptation shown to user and approved/rejected.
-[ ] Asset artifacts compared: template vs project artifact using `git diff --no-index`.
+[ ] Legacy layout detected and collapsed (if `documents/AGENTS.md` or `scripts/AGENTS.md` existed): merged into root AGENTS.md, old files removed.
+[ ] Asset artifact compared: AGENTS.template.md vs root AGENTS.md using `git diff --no-index`.
 [ ] Scaffolded artifacts compared for skills with scaffolds listed.
 [ ] Proposed changes shown with before/after for each affected artifact.
 [ ] User confirmed each change before applying.

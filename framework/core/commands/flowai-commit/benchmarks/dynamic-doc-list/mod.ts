@@ -10,20 +10,34 @@ export const CommitDynamicDocListBench = new class
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    // NOTE: generateDocuments is false — we provide a custom documents/AGENTS.md
-    // with an extra document (api-reference.md) in the Hierarchy.
   };
 
   override sandboxState = {
     commits: [],
     untracked: ["api.ts"],
     expectedOutcome:
-      "Agent discovers api-reference.md from documents/AGENTS.md Hierarchy and updates it with new API info",
+      "Agent discovers api-reference.md from AGENTS.md Documentation Hierarchy and updates it with new API info",
   };
 
   override async setup(sandboxPath: string) {
-    // Runner already committed everything (including custom documents/AGENTS.md
-    // with api-reference.md in Hierarchy) as "init".
+    // Inject a custom Documentation Hierarchy into root AGENTS.md that includes
+    // api-reference.md — the agent must discover it dynamically.
+    const agentsPath = join(sandboxPath, "AGENTS.md");
+    let content = await Deno.readTextFile(agentsPath);
+    content = content.replace(
+      /## Documentation Hierarchy\n[\s\S]*?(?=\n## )/,
+      `## Documentation Hierarchy
+1. **\`AGENTS.md\`**: Project vision, constraints, mandatory rules. READ-ONLY reference.
+2. **SRS** (\`documents/requirements.md\`): "What" & "Why". Source of truth for requirements.
+3. **SDS** (\`documents/design.md\`): "How". Architecture and implementation. Depends on SRS.
+4. **API Reference** (\`documents/api-reference.md\`): API endpoints, request/response formats, authentication.
+5. **Tasks** (\`documents/tasks/<YYYY-MM-DD>-<slug>.md\`): Temporary plans/notes per task.
+6. **\`README.md\`**: Public-facing overview.
+
+`,
+    );
+    await Deno.writeTextFile(agentsPath, content);
+
     // Create api.ts as untracked — contains new API endpoint code.
     const apiCode = `export function getUsers() {
   return [{ id: 1, name: "Alice" }];
@@ -43,7 +57,7 @@ export function getUserById(id: number) {
     {
       id: "custom_doc_discovered",
       description:
-        "Did the agent discover `api-reference.md` from `documents/AGENTS.md` Hierarchy section? Evidence: agent read documents/AGENTS.md and mentioned api-reference.md in its audit process.",
+        "Did the agent discover `api-reference.md` from root `AGENTS.md` Documentation Hierarchy section? Evidence: agent read AGENTS.md and mentioned api-reference.md in its audit process.",
       critical: true,
     },
     {

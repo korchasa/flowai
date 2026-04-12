@@ -44,20 +44,9 @@ Always confirm when asked to apply diffs.`;
       critical: true,
     },
     {
-      id: "documents_agents_md_created",
-      description:
-        "Was documents/AGENTS.md created with documentation rules (SRS/SDS formats, compressed style)?",
-      critical: true,
-    },
-    {
-      id: "scripts_agents_md_created",
-      description: "Was scripts/AGENTS.md created with development commands?",
-      critical: true,
-    },
-    {
       id: "doc_rules_present",
       description:
-        "Does documents/AGENTS.md contain 'Documentation Rules' or 'DOCS STRUCTURE'?",
+        "Does root AGENTS.md contain a '## Documentation Rules' section?",
       critical: true,
     },
     {

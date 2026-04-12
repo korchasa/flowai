@@ -227,9 +227,9 @@ After completing the review report above:
      2. **Active task file**: If the user referenced a task file or plan in this session, read that specific file from `documents/tasks/`. Use it to understand the WHY behind changes. Do NOT scan all task files — only read one explicitly linked to the current task.
      3. **Session context**: User messages in this conversation explaining intent, decisions, or requirements.
    - **Discover document list** (if `./documents` exists):
-     - If `documents/AGENTS.md` exists → read its `## Hierarchy` section → extract all document paths listed there.
+     - If `./AGENTS.md` exists → read its `## Documentation Hierarchy` section → extract all document paths listed there.
      - Classify each document: `READ-ONLY` (explicitly marked), `derived` (e.g. README — "Derived from..."), or `editable` (default).
-     - If `documents/AGENTS.md` does not exist → use default list: `requirements.md`, `design.md`, `AGENTS.md` (all editable).
+     - If `./AGENTS.md` does not exist → use default list: `requirements.md`, `design.md`, `AGENTS.md` (all editable).
    - **Audit each editable document** against the combined context (diff + task file + session):
      - For each document: does the change context reveal new/changed/removed information relevant to this document's scope? If yes → update. If no → note reason.
      - For `derived` documents (e.g. README.md): update only when changes are significant (new public API, changed installation steps, new features).

@@ -9,7 +9,6 @@ export const ReviewReadsDocsBench = new class extends BenchmarkSkillScenario {
   agentsTemplateVars = {
     PROJECT_NAME: "FileTool",
     TOOLING_STACK: "- TypeScript\n- Deno",
-    generateDocuments: true,
   };
 
   override async setup(sandboxPath: string) {

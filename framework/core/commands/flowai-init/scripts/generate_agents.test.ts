@@ -114,12 +114,11 @@ Deno.test("reports all missing in empty dir", async () => {
     const r = await analyzeProject(tmpDir);
     assertEquals(r.inventory.root_agents_md.exists, false);
     assertEquals(r.inventory.claude_md.exists, false);
-    assertEquals(r.inventory.documents_agents_md.exists, false);
-    assertEquals(r.inventory.scripts_agents_md.exists, false);
     assertEquals(r.inventory.documents_dir, false);
     assertEquals(r.inventory.scripts_dir, false);
     assertEquals(r.inventory.devcontainer_dir, false);
     assertEquals(r.inventory.opencode_json.exists, false);
+    assertEquals(r.inventory.legacy_layout_detected, false);
   } finally {
     await Deno.remove(tmpDir, { recursive: true });
   }
@@ -130,15 +129,11 @@ Deno.test("detects existing AGENTS.md files", async () => {
   try {
     await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
     await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "documents", "AGENTS.md"),
-      "# docs",
-    );
     const r = await analyzeProject(tmpDir);
     assertEquals(r.inventory.root_agents_md.exists, true);
     assertEquals(r.inventory.root_agents_md.is_symlink, false);
-    assertEquals(r.inventory.documents_agents_md.exists, true);
     assertEquals(r.inventory.documents_dir, true);
+    assertEquals(r.inventory.legacy_layout_detected, false);
   } finally {
     await Deno.remove(tmpDir, { recursive: true });
   }
@@ -203,37 +198,70 @@ Deno.test("detects missing opencode globs", async () => {
   }
 });
 
-Deno.test("detects documents/CLAUDE.md symlink", async () => {
+// ---------------------------------------------------------------------------
+// Legacy layout detection
+// ---------------------------------------------------------------------------
+
+Deno.test("detects legacy three-file layout", async () => {
   const tmpDir = await Deno.makeTempDir();
   try {
+    await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
+    await Deno.symlink("AGENTS.md", join(tmpDir, "CLAUDE.md"));
     await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
     await Deno.writeTextFile(
       join(tmpDir, "documents", "AGENTS.md"),
       "# docs",
     );
-    await Deno.symlink("AGENTS.md", join(tmpDir, "documents", "CLAUDE.md"));
-    const r = await analyzeProject(tmpDir);
-    assertEquals(r.inventory.documents_claude_md.exists, true);
-    assertEquals(r.inventory.documents_claude_md.is_symlink, true);
-    assertEquals(r.inventory.documents_claude_md.symlink_target, "AGENTS.md");
-  } finally {
-    await Deno.remove(tmpDir, { recursive: true });
-  }
-});
-
-Deno.test("detects scripts/CLAUDE.md symlink", async () => {
-  const tmpDir = await Deno.makeTempDir();
-  try {
     await Deno.mkdir(join(tmpDir, "scripts"), { recursive: true });
     await Deno.writeTextFile(
       join(tmpDir, "scripts", "AGENTS.md"),
       "# scripts",
     );
-    await Deno.symlink("AGENTS.md", join(tmpDir, "scripts", "CLAUDE.md"));
+
     const r = await analyzeProject(tmpDir);
-    assertEquals(r.inventory.scripts_claude_md.exists, true);
-    assertEquals(r.inventory.scripts_claude_md.is_symlink, true);
-    assertEquals(r.inventory.scripts_claude_md.symlink_target, "AGENTS.md");
+    assertEquals(r.inventory.legacy_layout_detected, true);
+    // Verification still passes — legacy layout is informational, not a blocker
+    assertEquals(r.verification.passed, true);
+    // Should contain an informational message about legacy layout
+    const legacyCheck = r.verification.checks.find((c) =>
+      c.message.includes("Legacy")
+    );
+    assertEquals(legacyCheck !== undefined, true);
+    assertEquals(legacyCheck?.ok, true);
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
+  }
+});
+
+Deno.test("detects legacy layout with only documents/AGENTS.md", async () => {
+  const tmpDir = await Deno.makeTempDir();
+  try {
+    await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
+    await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
+    await Deno.writeTextFile(
+      join(tmpDir, "documents", "AGENTS.md"),
+      "# docs",
+    );
+
+    const r = await analyzeProject(tmpDir);
+    assertEquals(r.inventory.legacy_layout_detected, true);
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
+  }
+});
+
+Deno.test("detects legacy layout with only scripts/AGENTS.md", async () => {
+  const tmpDir = await Deno.makeTempDir();
+  try {
+    await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
+    await Deno.mkdir(join(tmpDir, "scripts"), { recursive: true });
+    await Deno.writeTextFile(
+      join(tmpDir, "scripts", "AGENTS.md"),
+      "# scripts",
+    );
+
+    const r = await analyzeProject(tmpDir);
+    assertEquals(r.inventory.legacy_layout_detected, true);
   } finally {
     await Deno.remove(tmpDir, { recursive: true });
   }
@@ -258,55 +286,14 @@ Deno.test("verification fails on empty dir", async () => {
 Deno.test("verification passes with complete setup", async () => {
   const tmpDir = await Deno.makeTempDir();
   try {
+    // Only need root AGENTS.md + root CLAUDE.md symlink + documents/ directory
     await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
     await Deno.symlink("AGENTS.md", join(tmpDir, "CLAUDE.md"));
     await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "documents", "AGENTS.md"),
-      "# docs",
-    );
-    await Deno.symlink("AGENTS.md", join(tmpDir, "documents", "CLAUDE.md"));
-    await Deno.mkdir(join(tmpDir, "scripts"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "scripts", "AGENTS.md"),
-      "# scripts",
-    );
-    await Deno.symlink("AGENTS.md", join(tmpDir, "scripts", "CLAUDE.md"));
 
     const r = await analyzeProject(tmpDir);
     assertEquals(r.verification.passed, true);
     assertEquals(r.verification.checks.every((c) => c.ok), true);
-  } finally {
-    await Deno.remove(tmpDir, { recursive: true });
-  }
-});
-
-Deno.test("verification fails when subdirectory CLAUDE.md symlinks missing", async () => {
-  const tmpDir = await Deno.makeTempDir();
-  try {
-    await Deno.writeTextFile(join(tmpDir, "AGENTS.md"), "# rules");
-    await Deno.symlink("AGENTS.md", join(tmpDir, "CLAUDE.md"));
-    await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "documents", "AGENTS.md"),
-      "# docs",
-    );
-    await Deno.mkdir(join(tmpDir, "scripts"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "scripts", "AGENTS.md"),
-      "# scripts",
-    );
-
-    const r = await analyzeProject(tmpDir);
-    assertEquals(r.verification.passed, false);
-    const docCheck = r.verification.checks.find((c) =>
-      c.message.includes("documents/CLAUDE.md")
-    );
-    assertEquals(docCheck?.ok, false);
-    const scriptsCheck = r.verification.checks.find((c) =>
-      c.message.includes("scripts/CLAUDE.md")
-    );
-    assertEquals(scriptsCheck?.ok, false);
   } finally {
     await Deno.remove(tmpDir, { recursive: true });
   }
@@ -319,15 +306,6 @@ Deno.test("verification detects wrong CLAUDE.md symlink target", async () => {
     await Deno.writeTextFile(join(tmpDir, "OTHER.md"), "# other");
     await Deno.symlink("OTHER.md", join(tmpDir, "CLAUDE.md"));
     await Deno.mkdir(join(tmpDir, "documents"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "documents", "AGENTS.md"),
-      "# docs",
-    );
-    await Deno.mkdir(join(tmpDir, "scripts"), { recursive: true });
-    await Deno.writeTextFile(
-      join(tmpDir, "scripts", "AGENTS.md"),
-      "# scripts",
-    );
 
     const r = await analyzeProject(tmpDir);
     assertEquals(r.verification.passed, false);
