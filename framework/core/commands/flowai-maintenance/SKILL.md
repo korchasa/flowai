@@ -1,20 +1,24 @@
 ---
 name: flowai-maintenance
 description: >-
-  Perform a comprehensive "Lead Engineer" audit: structure, consistency, code quality, technical debt, documentation coverage, terminology, instruction coherence, and tooling relevance checks.
+  Two-phase "Lead Engineer" audit: full scan across 8 categories, then interactive issue-by-issue resolution with the user.
 ---
 
 # Task: Project Maintenance & Health Audit
 
 ## Overview
 
-Execute a rigorous 9-point maintenance sweep to identify structural deviations, documentation inconsistencies, dead code, complexity hotspots, technical debt, missing code documentation, terminology drift, instruction coherence issues, and tooling relevance problems. Present all findings inline in your response, grouped by category.
+Execute a rigorous 8-category maintenance sweep, then walk the user through each finding interactively. The process has two distinct phases:
+
+- **Scan Phase**: Run all checks silently, collecting findings into an internal list. No fixes during this phase.
+- **Resolution Phase**: Present the summary, then iterate through each finding — show details, propose a fix, ask the user for a decision, apply if approved.
 
 ## Context
 
 <context>
 This command is the "Garbage Collector" and "Building Inspector" for the project. It ensures the codebase remains maintainable, documented, and aligned with architectural standards.
-It addresses:
+
+Categories checked:
 1.  **Structure**: Files in wrong places.
 2.  **Consistency**: Docs vs. Code truth.
 3.  **Hygiene**: Dead code, unused imports, weak tests.
@@ -32,25 +36,31 @@ It addresses:
 1.  **Precision**: Use specific thresholds (e.g., File > 500 lines).
 2.  **Constructive**: Every issue must have a proposed fix.
 3.  **Holistic**: Scan `documents/`, `.cursor/`, and source code directories.
-4.  **Mandatory**: Use a task management tool (e.g., `todo_write`, `todowrite`) to track progress through the 9 phases.
+4.  **Mandatory**: Use a task management tool (e.g., `todo_write`, `todowrite`) to track progress through the phases.
 5.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
+6.  **No premature fixes**: Do NOT apply any changes during the Scan Phase. Only collect findings.
+7.  **User decides**: Every fix requires explicit user approval. Never apply fixes silently.
 </rules>
 
 ## Instructions
 
 <step_by_step>
 
+### SCAN PHASE
+
+Collect all findings into an internal list. Each finding has: category, file/symbol, problem description, proposed fix, severity (critical/warning).
+
 1. **Initialize & Plan**
-   - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering the 9 phases below.
+   - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering all scan categories below.
    - Identify project's primary language and source directories.
 
-2. **Phase 1: Structural Integrity**
+2. **Category 1: Structural Integrity**
    - **File placement**: Check that all source files reside in expected directories per project conventions (e.g., `src/`, `lib/`, `scripts/`). Flag files at wrong levels.
    - **Dead directories**: Identify empty or orphaned directories with no purpose.
    - **Naming conventions**: Verify file and directory names follow project conventions (case, separators).
    - **Config files**: Ensure project config files (`deno.json`, `package.json`, etc.) are at expected locations.
 
-3. **Phase 2: Code Hygiene & Dependencies**
+3. **Category 2: Code Hygiene & Dependencies**
    - **Dead Code**: Identify exported/public symbols in source directories that
      are never imported/called elsewhere.
    - **Unused Imports**: Scan source files for imports/includes that are not
@@ -61,26 +71,26 @@ It addresses:
      - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
      - Are commented out.
 
-4. **Phase 3: Complexity & Hotspots**
+4. **Category 3: Complexity & Hotspots**
    - **Files**: Flag any source file exceeding **500 lines**.
    - **Functions**: Scan for functions/methods exceeding **50 lines**.
    - **God Objects**: Identify classes/modules with mixed concerns (e.g.,
      logic + UI + database in one file).
 
-5. **Phase 4: Technical Debt Aggregation**
+5. **Category 4: Technical Debt Aggregation**
    - **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
    - **Group**: Organize by file/module.
    - **Analysis**: Flag any that look critical or like "temporary" fixes that
      became permanent.
 
-6. **Phase 5: Consistency (Docs vs. Code)**
+6. **Category 5: Consistency (Docs vs. Code)**
    - **Terminology**: Extract key terms from `README.md` and `documents/`. Check
      if code uses different synonyms (e.g., "User" in docs vs "Customer" in
      code).
    - **Drift**: Pick 3 major claims from `documents/*.md` (e.g., "The system
      handles X asynchronously"). Verify if the code actually does that.
 
-7. **Phase 6: Code Documentation Coverage**
+7. **Category 6: Code Documentation Coverage**
    - **Rule**: Every file, class, method, and exported function MUST have
      documentation (JSDoc, Docstring, Rustdoc, etc.).
    - **Check**:
@@ -90,7 +100,7 @@ It addresses:
    - **Scan**: primary source directories.
    - **Report**: List undocumented symbols.
 
-8. **Phase 7: Instruction Coherence**
+8. **Category 7: Instruction Coherence**
    - **Scope**: Read all instruction files that guide agent/developer behavior:
      `CLAUDE.md` (root and nested), `AGENTS.md` files, `documents/requirements.md`,
      `documents/design.md`, and any rules/conventions files.
@@ -105,7 +115,7 @@ It addresses:
    - **Coherence verdict**: For each issue, state which files/sections conflict and
      propose a resolution (keep one, merge, or clarify).
 
-9. **Phase 8: Tooling Relevance**
+9. **Category 8: Tooling Relevance**
    - **Scope**: Inventory all installed skills (`.claude/skills/`, `.cursor/skills/`),
      agents/subagents (`.claude/agents/`, `.cursor/agents/`), hooks (`.claude/hooks/`,
      `.cursor/hooks/`, `.husky/`), and rules files.
@@ -122,33 +132,45 @@ It addresses:
      actually uses, and propose a fix (remove, replace with stack-appropriate
      alternative, or add justification).
 
-10. **Phase 9: Deliver findings**
-   - Output all findings inline in your response, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings. Each issue line follows the shape `- <file/symbol>: <problem>. (Fix: <proposed fix>)`.
-   - Category order: Structural Issues, Hygiene & Quality, Technical Debt, Consistency, Documentation Coverage, Instruction Coherence, Tooling Relevance.
-   - Example of the inline shape (use plain-text labels, no `#` headings):
-     ```
-     1. Structural Issues
-     - src/oldfile.ts: located in root, should be in src/utils/. (Fix: Move file)
+### RESOLUTION PHASE
 
-     2. Hygiene & Quality
-     - utils.ts: unused export `myFunc`. (Fix: Delete)
-     - main.ts: 550 lines, exceeds 500-line limit. (Fix: Extract `processLogic` to a new file)
+10. **Present Summary**
+    - Output the full findings list, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings.
+    - Each issue line follows the shape: `- [N] <file/symbol>: <problem>. (Fix: <proposed fix>)`
+    - Number every finding sequentially across all categories (e.g., [1], [2], ..., [N]).
+    - At the end of the summary, show the total count per category and overall.
+    - Example:
+      ```
+      1. Structural Issues
+      - [1] src/oldfile.ts: located in root, should be in src/utils/. (Fix: Move file)
 
-     3. Technical Debt
-     - api.ts: 5 TODOs clustered around error handling. (Fix: Create a tracked issue and resolve together)
+      2. Hygiene & Quality
+      - [2] utils.ts: unused export `myFunc`. (Fix: Delete)
+      - [3] main.ts: 550 lines, exceeds 500-line limit. (Fix: Extract `processLogic` to a new file)
 
-     4. Consistency
-     - Docs say "User", code says "Client". (Fix: Standardize on User)
+      3. Technical Debt
+      - [4] api.ts: 5 TODOs clustered around error handling. (Fix: Create a tracked issue and resolve together)
 
-     5. Documentation Coverage
-     - utils.ts: function `parseData` missing JSDoc. (Fix: Add doc)
+      Total: 4 findings (Structural: 1, Hygiene: 2, Debt: 1)
+      ```
 
-     6. Instruction Coherence
-     - CLAUDE.md: "use tabs" (Code Style) conflicts with "use 2 spaces" (Error Handling). (Fix: Keep tabs, remove conflicting rule)
+11. **Ask User How to Proceed**
+    - After the summary, ask the user how they want to proceed. Offer these options:
+      - **"all"** — walk through every finding one by one
+      - **specific numbers** (e.g., "1, 3, 4") — resolve only selected findings
+      - **category name** (e.g., "Hygiene") — resolve all findings in that category
+      - **"done"** — stop, no fixes needed
 
-     7. Tooling Relevance
-     - .claude/skills/django-migrations: targets Python/Django in a TS/Deno project. (Fix: Remove skill)
-     ```
+12. **Interactive Resolution Loop**
+    - For each finding the user chose to resolve (in order):
+      1. Show the finding details: file, problem, and proposed fix.
+      2. Ask the user: **"Apply fix / Skip / Edit fix?"**
+         - **Apply**: Execute the proposed fix (edit file, move file, delete code, etc.).
+         - **Skip**: Move to the next finding.
+         - **Edit**: User provides an alternative fix — apply that instead.
+      3. After applying a fix, briefly confirm what was done.
+      4. Move to the next finding.
+    - After all selected findings are processed, show a brief summary of actions taken (N applied, M skipped, K edited).
 
 </step_by_step>
 
@@ -163,5 +185,8 @@ It addresses:
 [ ] Checked for missing code documentation (File/Class/Method).
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
-[ ] Presented all findings inline, grouped by category.
+[ ] Presented numbered summary of all findings, grouped by category.
+[ ] Asked the user how to proceed with resolution.
+[ ] Resolved selected findings interactively (apply/skip/edit per finding).
+[ ] Showed final resolution summary (applied/skipped/edited counts).
 </verification>

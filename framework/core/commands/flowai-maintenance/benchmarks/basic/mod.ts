@@ -2,9 +2,12 @@ import { BenchmarkSkillScenario } from "@bench/types.ts";
 
 export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
   id = "flowai-maintenance-basic";
-  name = "Basic Project Audit";
+  name = "Basic Project Audit (Interactive)";
   skill = "flowai-maintenance";
   stepTimeoutMs = 420_000;
+  interactive = true;
+  userPersona =
+    'You are a developer who wants to fix all issues. When asked how to proceed, say "all". When asked about individual fixes, say "Apply fix" for each one.';
   agentsTemplateVars = {
     PROJECT_NAME: "MaintenanceTarget",
     TOOLING_STACK: "- TypeScript",
@@ -15,9 +18,15 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
 
   checklist = [
     {
-      id: "inline_findings",
+      id: "numbered_summary",
       description:
-        "Did the agent present its findings inline in the chat response (grouped by category), without creating any audit/report file under 'documents/tasks/' or elsewhere?",
+        "Did the agent present a numbered summary of findings (e.g., [1], [2], ...) grouped by category, before asking the user how to proceed?",
+      critical: true,
+    },
+    {
+      id: "asks_how_to_proceed",
+      description:
+        'Did the agent ask the user how to proceed after the summary (offering options like "all", specific numbers, category name, or "done")?',
       critical: true,
     },
     {
@@ -34,6 +43,12 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "unused_export_found",
       description: "Did the findings identify unusedExport?",
+      critical: true,
+    },
+    {
+      id: "interactive_resolution",
+      description:
+        "Did the agent enter an interactive resolution loop, asking the user about individual findings (apply/skip/edit)?",
       critical: true,
     },
     {

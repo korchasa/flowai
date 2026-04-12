@@ -3,9 +3,12 @@ import { BenchmarkSkillScenario } from "@bench/types.ts";
 export const MaintenanceInstructionCoherenceBench = new class
   extends BenchmarkSkillScenario {
   id = "flowai-maintenance-instruction-coherence";
-  name = "Instruction Coherence Check";
+  name = "Instruction Coherence Check (Interactive)";
   skill = "flowai-maintenance";
   stepTimeoutMs = 420_000;
+  interactive = true;
+  userPersona =
+    'You are a developer who wants to fix coherence issues. When asked how to proceed, say "Instruction Coherence". When asked about individual fixes, say "Apply fix" for each one.';
   agentsTemplateVars = {
     PROJECT_NAME: "CoherenceTarget",
     TOOLING_STACK: "- TypeScript",
@@ -16,9 +19,15 @@ export const MaintenanceInstructionCoherenceBench = new class
 
   checklist = [
     {
-      id: "inline_findings",
+      id: "numbered_summary",
       description:
-        "Did the agent present its findings inline in the chat response (grouped by category), without creating any audit/report file under 'documents/tasks/' or elsewhere?",
+        "Did the agent present a numbered summary of findings grouped by category, before asking the user how to proceed?",
+      critical: true,
+    },
+    {
+      id: "asks_how_to_proceed",
+      description:
+        'Did the agent ask the user how to proceed after the summary (offering options like "all", specific numbers, category name, or "done")?',
       critical: true,
     },
     {
@@ -43,6 +52,12 @@ export const MaintenanceInstructionCoherenceBench = new class
       id: "coherence_section",
       description:
         "Does the report have a dedicated section for instruction coherence issues (contradictions, ambiguities)?",
+      critical: true,
+    },
+    {
+      id: "interactive_resolution",
+      description:
+        "Did the agent enter an interactive resolution loop for the coherence findings, asking the user about individual findings (apply/skip/edit)?",
       critical: true,
     },
     {
