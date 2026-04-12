@@ -8,11 +8,7 @@ import { formatAgentLogs } from "./format_logs.ts";
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
-import {
-  renderAgentsMd,
-  renderDocumentsMd,
-  renderScriptsMd,
-} from "./template.ts";
+import { renderAgentsMd } from "./template.ts";
 
 export interface RunnerOptions {
   agentModel: string;
@@ -173,7 +169,7 @@ export async function runScenario(
       // CLAUDE.md may not exist — that's fine
     }
 
-    // 1.8 Generate AGENTS.md from template (agentsTemplateVars is required)
+    // 1.8 Generate unified AGENTS.md from template (agentsTemplateVars is required)
     {
       const vars = scenario.agentsTemplateVars;
       const templateVars: Record<string, string> = {
@@ -183,37 +179,21 @@ export async function runScenario(
         TOOLING_STACK: vars.TOOLING_STACK ?? "",
         ARCHITECTURE: vars.ARCHITECTURE ?? "",
         KEY_DECISIONS: vars.KEY_DECISIONS ?? "",
+        DEVELOPMENT_COMMANDS: vars.DEVELOPMENT_COMMANDS ?? "",
+        COMMAND_SCRIPTS: vars.COMMAND_SCRIPTS ?? "",
       };
       const rootContent = await renderAgentsMd(templateVars);
       await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), rootContent);
-
-      if (vars.generateDocuments) {
-        await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
-        await Deno.writeTextFile(
-          join(sandboxPath, "documents", "AGENTS.md"),
-          await renderDocumentsMd(),
-        );
-      }
-
-      if (vars.scripts) {
-        await Deno.mkdir(join(sandboxPath, "scripts"), { recursive: true });
-        await Deno.writeTextFile(
-          join(sandboxPath, "scripts", "AGENTS.md"),
-          await renderScriptsMd(vars.scripts),
-        );
-      }
     }
 
-    // 2. Create CLAUDE.md symlinks for Claude Code compatibility
+    // 2. Create root CLAUDE.md symlink for Claude Code compatibility
     if (adapter.ide === "claude") {
-      for (const subdir of ["", "documents", "scripts"]) {
-        const agentsPath = join(sandboxPath, subdir, "AGENTS.md");
-        const claudePath = join(sandboxPath, subdir, "CLAUDE.md");
-        try {
-          await Deno.stat(agentsPath);
-          await Deno.symlink("AGENTS.md", claudePath);
-        } catch (_) { /* AGENTS.md doesn't exist in this subdir — skip */ }
-      }
+      const agentsPath = join(sandboxPath, "AGENTS.md");
+      const claudePath = join(sandboxPath, "CLAUDE.md");
+      try {
+        await Deno.stat(agentsPath);
+        await Deno.symlink("AGENTS.md", claudePath);
+      } catch (_) { /* AGENTS.md doesn't exist — skip */ }
     }
 
     // Setup mocks using IDE-specific hooks mechanism (before git init so hooks are committed)

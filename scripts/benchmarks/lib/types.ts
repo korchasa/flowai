@@ -104,9 +104,9 @@ export interface BenchmarkScenario {
   interactive?: boolean;
 
   /**
-   * Placeholder values for generating AGENTS.md from flowai-init templates.
-   * Required field — runner generates AGENTS.md from templates at runtime
-   * (single source of truth). Minimum: PROJECT_NAME.
+   * Placeholder values for generating the unified AGENTS.md from the pack-level template.
+   * Required field — runner generates AGENTS.md at runtime (single source of truth).
+   * Minimum: PROJECT_NAME.
    */
   agentsTemplateVars: {
     PROJECT_NAME: string;
@@ -115,13 +115,10 @@ export interface BenchmarkScenario {
     TOOLING_STACK?: string;
     ARCHITECTURE?: string;
     KEY_DECISIONS?: string;
-    /** Also generate documents/AGENTS.md from template */
-    generateDocuments?: boolean;
-    /** Also generate scripts/AGENTS.md; values fill template placeholders */
-    scripts?: {
-      DEVELOPMENT_COMMANDS?: string;
-      COMMAND_SCRIPTS?: string;
-    };
+    /** Fills {{DEVELOPMENT_COMMANDS}} in the Development Commands section */
+    DEVELOPMENT_COMMANDS?: string;
+    /** Fills {{COMMAND_SCRIPTS}} in the Development Commands section */
+    COMMAND_SCRIPTS?: string;
   };
 
   /**
