@@ -1,5 +1,6 @@
 import { join } from "@std/path";
 import { transformAgent } from "../../../cli/src/transform.ts";
+import { injectDisableModelInvocation } from "../../../cli/src/sync.ts";
 
 const TMP_DIR = join(Deno.cwd(), "tmp");
 
@@ -87,6 +88,9 @@ export async function copyRecursive(
  * Copies pack-structured framework/ into flat IDE config dir,
  * matching flowai CLI sync behavior:
  * - Skills: framework/<pack>/skills/<name>/ → dest/skills/<name>/ (as-is, skip benchmarks/runs/tmp)
+ * - Commands: framework/<pack>/commands/<name>/ → dest/skills/<name>/ (same
+ *   target as skills; SKILL.md gets `disable-model-invocation: true` injected
+ *   to mark the primitive as user-only, mirroring cli/src/sync.ts)
  * - Agents: framework/<pack>/agents/<name>.md → dest/agents/<name>.md (frontmatter transformed per IDE)
  * - Hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/ (when present)
  */
@@ -129,6 +133,41 @@ export async function copyFrameworkToIdeDir(
         );
       }
     } catch { /* no skills/ in pack */ }
+
+    // Copy commands: framework/<pack>/commands/<name>/ → dest/skills/<name>/
+    // Commands install into the SAME target dir as skills, but their SKILL.md
+    // must carry `disable-model-invocation: true`. Mirrors production sync
+    // (cli/src/sync.ts::readPackCommandFiles + injectDisableModelInvocation).
+    const commandsDir = join(packDir, "commands");
+    try {
+      for await (const command of Deno.readDir(commandsDir)) {
+        if (!command.isDirectory) continue;
+        const srcDir = join(commandsDir, command.name);
+        const dstDir = join(ideConfigDir, "skills", command.name);
+        await copyRecursive(srcDir, dstDir, skipDirs);
+        // Post-copy: inject the user-only flag into SKILL.md if present.
+        // copyRecursive cannot transform per-file, so we patch after copying.
+        const skillMdPath = join(dstDir, "SKILL.md");
+        let raw: string;
+        try {
+          raw = await Deno.readTextFile(skillMdPath);
+        } catch (e) {
+          if (e instanceof Deno.errors.NotFound) {
+            // No SKILL.md in this command dir — nothing to inject; validator
+            // (scripts/check-skills.ts) surfaces this at the source level.
+            continue;
+          }
+          throw e;
+        }
+        // Malformed frontmatter would throw here — let it bubble so the
+        // benchmark developer sees the issue loudly instead of silently
+        // installing a broken command.
+        await Deno.writeTextFile(
+          skillMdPath,
+          injectDisableModelInvocation(raw),
+        );
+      }
+    } catch { /* no commands/ in pack */ }
 
     // Copy agents with IDE-specific frontmatter transformation
     const agentsDir = join(packDir, "agents");
