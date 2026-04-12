@@ -327,4 +327,3 @@ export async function runMigrate(
   log("\nDone.");
   return result;
 }
-

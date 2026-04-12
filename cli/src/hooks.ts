@@ -123,7 +123,10 @@ export function transformHookForCursor(
 }
 
 // OpenCode tool hooks are top-level plugin properties; lifecycle events go through `event` handler.
-const OPENCODE_TOOL_HOOKS = new Set(["tool.execute.before", "tool.execute.after"]);
+const OPENCODE_TOOL_HOOKS = new Set([
+  "tool.execute.before",
+  "tool.execute.after",
+]);
 
 /** Generate OpenCode plugin file content. */
 export function generateOpenCodePlugin(
