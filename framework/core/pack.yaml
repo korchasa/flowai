@@ -13,3 +13,6 @@ scaffolds:
     - .devcontainer/Dockerfile
     - .devcontainer/init-firewall.sh
     - .devcontainer/setup-container.sh
+  flowai-skill-configure-deno-commands:
+    - deno.json
+    - scripts/check.ts

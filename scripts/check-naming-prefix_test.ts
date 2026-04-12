@@ -28,7 +28,7 @@ Deno.test("validateNamingPrefix: agent name flowai-* passes", () => {
 });
 
 Deno.test("validateNamingPrefix: hook name flowai-* passes", () => {
-  assertEquals(validateNamingPrefix("flowai-lint-on-write", "hook"), []);
+  assertEquals(validateNamingPrefix("flowai-test-hook", "hook"), []);
 });
 
 Deno.test("validateNamingPrefix: skill without prefix is error (NP-1)", () => {

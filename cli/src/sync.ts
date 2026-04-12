@@ -13,7 +13,6 @@ import {
   extractAgentNames,
   extractCommandNames,
   extractPackAgentNames,
-  extractPackAssetPaths,
   extractPackCommandNames,
   extractPackHookNames,
   extractPackNames,
@@ -26,42 +25,52 @@ import {
   LocalSource,
 } from "./source.ts";
 import { syncClaudeSymlinks } from "./symlinks.ts";
-import {
-  DEFAULT_MODEL_MAPS,
-  transformAgent,
-  transformSkillModel,
-} from "./transform.ts";
-import {
-  buildCodexAgentSidecar,
-  type CodexAgentChange,
-  mergeCodexConfig,
-  readCodexManifest,
-  writeCodexManifest,
-} from "./toml_merge.ts";
+import { DEFAULT_MODEL_MAPS } from "./transform.ts";
 import { runUserSync } from "./user_sync.ts";
 import type {
   FlowConfig,
-  HookDefinition,
-  IDE,
-  PackDefinition,
-  PlanAction,
   PlanItem,
   PlanItemType,
   ResourceAction,
-  UpstreamFile,
 } from "./types.ts";
 import { writeFiles } from "./writer.ts";
-import { parse as parseYaml } from "@std/yaml";
+import { buildManifest, readManifest } from "./hooks.ts";
 import {
-  buildManifest,
-  cleanupRemovedHooks,
-  generateOpenCodePlugin,
-  mergeClaudeHooks,
-  mergeCursorHooks,
-  readManifest,
-  transformHookForClaude,
-  transformHookForCursor,
-} from "./hooks.ts";
+  readAgentFiles,
+  readCommandFiles,
+  readHookDefinitions,
+  readPackAgentFiles,
+  readPackAssetFiles,
+  readPackCommandFiles,
+  readPackDefinitions,
+  readPackHookFiles,
+  readPackScriptFiles,
+  readPackSkillFiles,
+  readSkillFiles,
+} from "./resource_reader.ts";
+import {
+  buildAssetsIndex,
+  buildScaffoldsIndex,
+  extractResourceActions,
+  filterNames,
+} from "./resource_index.ts";
+import { writeHookConfig } from "./hook_writer.ts";
+import { syncCodexAgents } from "./codex_sync.ts";
+
+// Re-export for consumers that import from "./sync.ts"
+export {
+  injectDisableModelInvocation,
+  readCommandFiles,
+  readPackAssetFiles,
+  readPackCommandFiles,
+  readPackSkillFiles,
+  readSkillFiles,
+} from "./resource_reader.ts";
+export { filterNames } from "./resource_index.ts";
+
+/** Read agent files from legacy flat framework/agents/ — re-exported for migrate.ts */
+// readAgentFiles and readPackAgentFiles are not re-exported because they are
+// only used internally by sync() and codex_sync.ts.
 
 /** Merge default model map with user overrides from .flowai.yaml */
 function mergeModelMap(
@@ -203,7 +212,15 @@ export function resolvePackResources(
   };
 }
 
-/** Execute the full sync flow */
+/**
+ * Execute the full sync flow: resolve IDEs → load framework source →
+ * read pack definitions → resolve resource names (skills/commands/agents/
+ * hooks/scripts) with include/exclude filters → for each IDE: read upstream
+ * files, compute diff plan, write files, generate hook configs → run
+ * cross-IDE user-sync → create CLAUDE.md symlinks.
+ *
+ * Side effects: writes files to `.{ide}/` dirs, may auto-migrate `.flowai.yaml`.
+ */
 export async function sync(
   cwd: string,
   config: FlowConfig,
@@ -725,286 +742,6 @@ export async function processPlan(
   result.errors.push(...writeResult.errors);
 }
 
-/** Check if a path is dev-only (benchmarks or test files) and should not be distributed */
-function isDevOnlyPath(path: string): boolean {
-  if (/\/benchmarks\//.test(path)) return true;
-  if (/_test\.\w+$/.test(path)) return true;
-  return false;
-}
-
-/** Read skill files from legacy flat framework/skills/ */
-export async function readSkillFiles(
-  skillNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-  ideName?: string,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  for (const name of skillNames) {
-    const prefix = `framework/skills/${name}/`;
-    const paths = allPaths.filter((p) =>
-      p.startsWith(prefix) && !isDevOnlyPath(p)
-    );
-    for (const path of paths) {
-      let content = await source.readFile(path);
-      // Transform model tier in SKILL.md files
-      if (ideName && path.endsWith("/SKILL.md")) {
-        content = transformSkillModel(content, ideName, modelMap);
-      }
-      const relativePath = path.substring("framework/skills/".length);
-      files.push({ path: relativePath, content });
-    }
-  }
-  return files;
-}
-
-/** Read skill files from pack structure framework/<pack>/skills/ */
-export async function readPackSkillFiles(
-  skillNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-  ideName?: string,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  const nameSet = new Set(skillNames);
-
-  // Find all pack skill paths matching requested names (exclude dev-only files)
-  const packSkillRegex = /^framework\/[^/]+\/skills\/([^/]+)\//;
-  for (const path of allPaths) {
-    const match = path.match(packSkillRegex);
-    if (match && nameSet.has(match[1]) && !isDevOnlyPath(path)) {
-      let content = await source.readFile(path);
-      // Transform model tier in SKILL.md files
-      if (ideName && path.endsWith("/SKILL.md")) {
-        content = transformSkillModel(content, ideName, modelMap);
-      }
-      // Extract relative path: strip framework/<pack>/skills/ → <name>/...
-      const skillName = match[1];
-      const prefixEnd = path.indexOf(`/skills/${skillName}/`) +
-        "/skills/".length;
-      const relativePath = path.substring(prefixEnd);
-      files.push({ path: relativePath, content });
-    }
-  }
-  return files;
-}
-
-/**
- * Inject `disable-model-invocation: true` as the last key of the SKILL.md
- * frontmatter block. Directory placement under `commands/` is the single
- * source of truth for the user-only nature of a framework command; the flag
- * is added here so the installed file still carries the IDE signal without
- * authors needing to remember it.
- *
- * Idempotent — if the key is already present (any value), the content is
- * returned unchanged. Preserves CRLF line endings if the input uses them.
- *
- * Throws if the content has no leading frontmatter block — commands MUST
- * have a SKILL.md frontmatter; missing frontmatter is a validator failure
- * and should be surfaced at read time, not silently tolerated.
- */
-export function injectDisableModelInvocation(content: string): string {
-  // Detect line ending from the frontmatter region (first ~200 chars).
-  const head = content.slice(0, 200);
-  const crlf = /\r\n/.test(head);
-  const eol = crlf ? "\r\n" : "\n";
-
-  // Match opening `---` and closing `---` of the frontmatter block.
-  // [\s\S] to cross lines; non-greedy to stop at the first closing marker.
-  const fmRe = /^---\r?\n([\s\S]*?)\r?\n---/;
-  const match = content.match(fmRe);
-  if (!match) {
-    throw new Error(
-      "injectDisableModelInvocation: content has no frontmatter block",
-    );
-  }
-
-  const fmBody = match[1];
-  // Idempotent: if key already present (in any form), return unchanged.
-  if (/^\s*disable-model-invocation\s*:/m.test(fmBody)) {
-    return content;
-  }
-
-  const newFmBody = fmBody + eol + "disable-model-invocation: true";
-  const newFrontmatter = `---${eol}${newFmBody}${eol}---`;
-  return content.replace(fmRe, newFrontmatter);
-}
-
-/** Read command files from legacy flat framework/commands/. Symmetric with
- * `readSkillFiles` but injects `disable-model-invocation: true` into SKILL.md. */
-export async function readCommandFiles(
-  commandNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-  ideName?: string,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  for (const name of commandNames) {
-    const prefix = `framework/commands/${name}/`;
-    const paths = allPaths.filter((p) =>
-      p.startsWith(prefix) && !isDevOnlyPath(p)
-    );
-    for (const path of paths) {
-      let content = await source.readFile(path);
-      if (path.endsWith("/SKILL.md")) {
-        if (ideName) {
-          content = transformSkillModel(content, ideName, modelMap);
-        }
-        content = injectDisableModelInvocation(content);
-      }
-      const relativePath = path.substring("framework/commands/".length);
-      files.push({ path: relativePath, content });
-    }
-  }
-  return files;
-}
-
-/** Read command files from pack structure framework/<pack>/commands/.
- * Commands install into `.{ide}/skills/` alongside skills; the directory
- * `commands/` is the framework-level classifier, and the writer injects
- * `disable-model-invocation: true` into each command's SKILL.md at sync time. */
-export async function readPackCommandFiles(
-  commandNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-  ideName?: string,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  const nameSet = new Set(commandNames);
-
-  const packCommandRegex = /^framework\/[^/]+\/commands\/([^/]+)\//;
-  for (const path of allPaths) {
-    const match = path.match(packCommandRegex);
-    if (match && nameSet.has(match[1]) && !isDevOnlyPath(path)) {
-      let content = await source.readFile(path);
-      if (path.endsWith("/SKILL.md")) {
-        if (ideName) {
-          content = transformSkillModel(content, ideName, modelMap);
-        }
-        content = injectDisableModelInvocation(content);
-      }
-      const commandName = match[1];
-      const prefixEnd = path.indexOf(`/commands/${commandName}/`) +
-        "/commands/".length;
-      const relativePath = path.substring(prefixEnd);
-      files.push({ path: relativePath, content });
-    }
-  }
-  return files;
-}
-
-/** Read agent files from legacy flat framework/agents/ and transform for target IDE */
-async function readAgentFiles(
-  agentNames: string[],
-  ideName: string,
-  allPaths: string[],
-  source: FrameworkSource,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  for (const name of agentNames) {
-    const agentPath = `framework/agents/${name}.md`;
-    if (allPaths.includes(agentPath)) {
-      const raw = await source.readFile(agentPath);
-      const content = transformAgent(raw, ideName, modelMap);
-      files.push({ path: `${name}.md`, content });
-    }
-  }
-  return files;
-}
-
-/** Read agent files from pack structure framework/<pack>/agents/ */
-async function readPackAgentFiles(
-  agentNames: string[],
-  ideName: string,
-  allPaths: string[],
-  source: FrameworkSource,
-  modelMap?: Record<string, string>,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  const nameSet = new Set(agentNames);
-
-  const packAgentRegex = /^framework\/[^/]+\/agents\/([^/]+)\.md$/;
-  for (const path of allPaths) {
-    const match = path.match(packAgentRegex);
-    if (match && nameSet.has(match[1])) {
-      const raw = await source.readFile(path);
-      const content = transformAgent(raw, ideName, modelMap);
-      files.push({ path: `${match[1]}.md`, content });
-    }
-  }
-  return files;
-}
-
-/** Read hook files from pack structure framework/<pack>/hooks/<name>/ */
-async function readPackHookFiles(
-  hookNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  const nameSet = new Set(hookNames);
-
-  const packHookRegex = /^framework\/[^/]+\/hooks\/([^/]+)\/(.+)$/;
-  for (const path of allPaths) {
-    const match = path.match(packHookRegex);
-    if (match && nameSet.has(match[1])) {
-      const content = await source.readFile(path);
-      // Install as <hook-name>/<filename> (e.g., lint-on-edit/run.ts)
-      files.push({ path: `${match[1]}/${match[2]}`, content });
-    }
-  }
-  return files;
-}
-
-/** Read script files from pack structure framework/<pack>/scripts/<name> */
-async function readPackScriptFiles(
-  scriptNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-  const nameSet = new Set(scriptNames);
-
-  const packScriptRegex = /^framework\/[^/]+\/scripts\/([^/]+)$/;
-  for (const path of allPaths) {
-    const match = path.match(packScriptRegex);
-    if (match && nameSet.has(match[1])) {
-      const content = await source.readFile(path);
-      files.push({ path: match[1], content });
-    }
-  }
-  return files;
-}
-
-/** Read asset files from pack structure framework/<pack>/assets/.
- * Currently only core pack has shared assets (AGENTS.md templates). */
-// FR-DIST.SYNC
-export async function readPackAssetFiles(
-  allPaths: string[],
-  source: FrameworkSource,
-  selectedPacks: string[],
-): Promise<UpstreamFile[]> {
-  const files: UpstreamFile[] = [];
-
-  for (const pack of selectedPacks) {
-    const assetPaths = extractPackAssetPaths(allPaths, pack);
-    for (const path of assetPaths) {
-      const content = await source.readFile(path);
-      // Strip framework/<pack>/assets/ → assets/<filename>
-      const prefix = `framework/${pack}/assets/`;
-      const relativePath = "assets/" + path.substring(prefix.length);
-      files.push({ path: relativePath, content });
-    }
-  }
-
-  return files;
-}
-
 /** Compute delete plan for excluded framework resources that exist locally */
 export async function computeDeletePlan(
   allFrameworkNames: string[],
@@ -1035,399 +772,4 @@ export async function computeDeletePlan(
   }
 
   return plan;
-}
-
-/** Read pack.yaml definitions (with scaffolds) from bundle */
-async function readPackDefinitions(
-  allPaths: string[],
-  source: FrameworkSource,
-): Promise<PackDefinition[]> {
-  const packYamls = allPaths.filter((p) =>
-    /^framework\/[^/]+\/pack\.yaml$/.test(p)
-  );
-  const packs: PackDefinition[] = [];
-  for (const path of packYamls) {
-    const content = await source.readFile(path);
-    const data = parseYaml(content) as Record<string, unknown>;
-
-    // Parse scaffolds: Record<string, string[]>
-    let scaffolds: Record<string, string[]> | undefined;
-    if (data.scaffolds && typeof data.scaffolds === "object") {
-      scaffolds = {};
-      for (
-        const [skill, paths] of Object.entries(
-          data.scaffolds as Record<string, unknown>,
-        )
-      ) {
-        if (Array.isArray(paths)) {
-          scaffolds[skill] = paths.map(String);
-        }
-      }
-    }
-
-    // Parse assets: Record<string, string>
-    let assets: Record<string, string> | undefined;
-    if (data.assets && typeof data.assets === "object") {
-      assets = {};
-      for (
-        const [template, artifactPath] of Object.entries(
-          data.assets as Record<string, unknown>,
-        )
-      ) {
-        assets[template] = String(artifactPath);
-      }
-    }
-
-    packs.push({
-      name: String(data.name ?? ""),
-      version: String(data.version ?? "0.0.0"),
-      description: String(data.description ?? ""),
-      scaffolds,
-      assets,
-    });
-  }
-  return packs.sort((a, b) => a.name.localeCompare(b.name));
-}
-
-/** Build a flat scaffolds index: skill-name → artifact paths */
-function buildScaffoldsIndex(
-  packs: PackDefinition[],
-): Map<string, string[]> {
-  const index = new Map<string, string[]>();
-  for (const pack of packs) {
-    if (!pack.scaffolds) continue;
-    for (const [skill, paths] of Object.entries(pack.scaffolds)) {
-      index.set(skill, paths);
-    }
-  }
-  return index;
-}
-
-/** Build asset mapping index: template-name → [project artifact path]
- * Uses the same Map<string, string[]> shape as scaffoldsIndex for reuse with extractResourceActions */
-function buildAssetsIndex(
-  packs: PackDefinition[],
-): Map<string, string[]> {
-  const index = new Map<string, string[]>();
-  for (const pack of packs) {
-    if (!pack.assets) continue;
-    for (const [template, artifactPath] of Object.entries(pack.assets)) {
-      index.set(template, [artifactPath]);
-    }
-  }
-  return index;
-}
-
-/** Extract per-resource actions from a plan */
-function extractResourceActions(
-  plan: PlanItem[],
-  _allNames: string[],
-  scaffoldsIndex: Map<string, string[]>,
-): ResourceAction[] {
-  // Deduplicate by name (plan may have multiple files per skill dir)
-  const byName = new Map<string, ResourceAction>();
-  for (const item of plan) {
-    const existing = byName.get(item.name);
-    // Promote action: create > update > conflict > ok
-    const action = item.action === "conflict" ? "update" : item.action;
-    if (
-      !existing ||
-      actionPriority(action) > actionPriority(existing.action)
-    ) {
-      byName.set(item.name, {
-        name: item.name,
-        action: action as ResourceAction["action"],
-        scaffolds: scaffoldsIndex.get(item.name) ?? [],
-      });
-    }
-  }
-  return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
-}
-
-function actionPriority(action: string): number {
-  switch (action) {
-    case "create":
-      return 3;
-    case "update":
-      return 2;
-    case "delete":
-      return 1;
-    default:
-      return 0;
-  }
-}
-
-/** Filter names by include/exclude lists */
-export function filterNames(
-  all: string[],
-  include: string[],
-  exclude: string[],
-): string[] {
-  if (include.length > 0) {
-    return all.filter((n) => include.includes(n));
-  }
-  if (exclude.length > 0) {
-    return all.filter((n) => !exclude.includes(n));
-  }
-  return all;
-}
-
-/** Read hook.yaml definitions for all hook names from source */
-async function readHookDefinitions(
-  hookNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-): Promise<Array<{ name: string; hook: HookDefinition }>> {
-  const defs: Array<{ name: string; hook: HookDefinition }> = [];
-  const hookYamlRegex = /^framework\/[^/]+\/hooks\/([^/]+)\/hook\.yaml$/;
-
-  for (const path of allPaths) {
-    const match = path.match(hookYamlRegex);
-    if (match && hookNames.includes(match[1])) {
-      const content = await source.readFile(path);
-      const data = parseYaml(content) as Record<string, unknown>;
-      defs.push({
-        name: match[1],
-        hook: {
-          event: String(data.event ?? ""),
-          matcher: data.matcher ? String(data.matcher) : undefined,
-          description: String(data.description ?? ""),
-          timeout: data.timeout ? Number(data.timeout) : undefined,
-        },
-      });
-    }
-  }
-  return defs;
-}
-
-/** Write IDE-specific hook configuration files */
-async function writeHookConfig(
-  cwd: string,
-  ide: { name: string; configDir: string },
-  hookDefs: Array<{ name: string; hook: HookDefinition }>,
-  oldManifest: ReturnType<typeof readManifest>,
-  fs: FsAdapter,
-): Promise<void> {
-  const activeNames = hookDefs.map((d) => d.name);
-
-  if (ide.name === "claude") {
-    const settingsPath = join(cwd, ide.configDir, "settings.json");
-    let existing: Record<string, unknown> = {};
-    if (await fs.exists(settingsPath)) {
-      try {
-        existing = JSON.parse(await fs.readFile(settingsPath));
-      } catch {
-        // Invalid JSON — start fresh for hooks section
-      }
-    }
-
-    // Cleanup removed hooks
-    existing = cleanupRemovedHooks(
-      existing,
-      oldManifest,
-      activeNames,
-      "claude",
-    );
-
-    // Generate new hook entries
-    const claudeHooks = hookDefs.map(({ name, hook }) =>
-      transformHookForClaude(
-        hook,
-        `${ide.configDir}/scripts/${name}/run.ts`,
-      )
-    );
-
-    const merged = mergeClaudeHooks(existing, claudeHooks, oldManifest);
-    await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2));
-  } else if (ide.name === "cursor") {
-    const hooksPath = join(cwd, ide.configDir, "hooks.json");
-    let existing: Record<string, unknown> = {};
-    if (await fs.exists(hooksPath)) {
-      try {
-        existing = JSON.parse(await fs.readFile(hooksPath));
-      } catch {
-        // Invalid JSON
-      }
-    }
-
-    existing = cleanupRemovedHooks(
-      existing,
-      oldManifest,
-      activeNames,
-      "cursor",
-    );
-
-    const cursorHooks = hookDefs.map(({ name, hook }) =>
-      transformHookForCursor(
-        hook,
-        `${ide.configDir}/scripts/${name}/run.ts`,
-      )
-    );
-
-    const merged = mergeCursorHooks(existing, cursorHooks, oldManifest);
-    await fs.writeFile(hooksPath, JSON.stringify(merged, null, 2));
-  } else if (ide.name === "opencode") {
-    const pluginPath = join(
-      cwd,
-      ide.configDir,
-      "plugins",
-      "flowai-hooks.ts",
-    );
-    const openCodeHooks = hookDefs.map(({ name, hook }) => ({
-      name,
-      hook,
-      scriptPath: `${ide.configDir}/scripts/${name}/run.ts`,
-    }));
-    const content = generateOpenCodePlugin(openCodeHooks);
-    await fs.writeFile(pluginPath, content);
-  } else if (ide.name === "codex") {
-    // FR-DIST.CODEX-HOOKS — Codex uses Claude-Code-compatible nested schema
-    // at <repo>/.codex/hooks.json. Handled by syncCodexHooks elsewhere (call
-    // site already gates on experimental.codexHooks).
-    const hooksPath = join(cwd, ide.configDir, "hooks.json");
-    const existingRaw = await fs.exists(hooksPath)
-      ? await fs.readFile(hooksPath)
-      : null;
-    let existing: Record<string, unknown> = {};
-    if (existingRaw) {
-      try {
-        existing = JSON.parse(existingRaw);
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : String(e);
-        throw new Error(
-          `Failed to parse existing ${hooksPath}: ${msg}. Fix the file by hand and re-run sync.`,
-        );
-      }
-    }
-
-    const activeNames = hookDefs.map((h) => h.name);
-    existing = cleanupRemovedHooks(
-      existing,
-      oldManifest,
-      activeNames,
-      "claude", // Codex uses the same nested shape as Claude Code
-    );
-
-    const codexHooks = hookDefs.map(({ name, hook }) =>
-      transformHookForClaude(
-        hook,
-        `${ide.configDir}/scripts/${name}/run.ts`,
-      )
-    );
-    const merged = mergeClaudeHooks(existing, codexHooks, oldManifest);
-    await fs.writeFile(hooksPath, JSON.stringify(merged, null, 2));
-  }
-}
-
-/**
- * FR-DIST.CODEX-AGENTS — Sync framework agents to Codex subagent format.
- *
- * Writes each agent as two artifacts:
- * 1. `<cwd>/.codex/agents/<name>.toml` — sidecar with `name`, `description`,
- *    `developer_instructions` (the agent body as a TOML multi-line literal).
- * 2. `[agents.<name>]` block merged into `<cwd>/.codex/config.toml` with
- *    `description` and `config_file` keys pointing at the sidecar.
- *
- * Idempotent. Removing an agent from `.flowai.yaml` removes both the sidecar
- * and the `[agents.<name>]` block on next sync. User-hand-edited tables outside
- * the flowai manifest survive untouched.
- */
-async function syncCodexAgents(
-  cwd: string,
-  ide: IDE,
-  agentNames: string[],
-  allAgentNames: string[],
-  allPaths: string[],
-  source: FrameworkSource,
-  fs: FsAdapter,
-  isFirstIde: boolean,
-  result: SyncResult,
-  log: (msg: string) => void,
-): Promise<void> {
-  // 1. Read raw universal agent files and build sidecars + changes.
-  const sidecarsDir = join(cwd, ide.configDir, "agents");
-  const sidecarPlan: PlanItem[] = [];
-  const changes: CodexAgentChange[] = [];
-
-  // Find the raw source path for each agent — pack-based or legacy flat.
-  const packAgentRegex = /^framework\/[^/]+\/agents\/([^/]+)\.md$/;
-  const packAgentPaths = new Map<string, string>();
-  for (const p of allPaths) {
-    const m = p.match(packAgentRegex);
-    if (m) packAgentPaths.set(m[1], p);
-  }
-
-  for (const name of agentNames) {
-    const srcPath = packAgentPaths.get(name) ??
-      (allPaths.includes(`framework/agents/${name}.md`)
-        ? `framework/agents/${name}.md`
-        : null);
-    if (!srcPath) continue;
-    const raw = await source.readFile(srcPath);
-    const { sidecar, change } = buildCodexAgentSidecar(raw);
-    changes.push(change);
-    const sidecarPath = join(sidecarsDir, `${name}.toml`);
-    const action: PlanAction = await fs.exists(sidecarPath)
-      ? (await fs.readFile(sidecarPath)) === sidecar ? "ok" : "conflict"
-      : "create";
-    sidecarPlan.push({
-      type: "agent",
-      name,
-      action,
-      sourcePath: srcPath,
-      targetPath: sidecarPath,
-      content: sidecar,
-    });
-  }
-
-  // 2. Compute sidecars to delete (agents excluded from current sync but
-  //    still present on disk under our manifest).
-  const includedSet = new Set(agentNames);
-  const deletionCandidates = allAgentNames.filter((n) => !includedSet.has(n));
-  for (const name of deletionCandidates) {
-    const sidecarPath = join(sidecarsDir, `${name}.toml`);
-    if (await fs.exists(sidecarPath)) {
-      sidecarPlan.push({
-        type: "agent",
-        name,
-        action: "delete",
-        sourcePath: "",
-        targetPath: sidecarPath,
-        content: "",
-      });
-    }
-  }
-
-  if (isFirstIde) {
-    result.agentActions = extractResourceActions(
-      sidecarPlan,
-      agentNames,
-      new Map(),
-    );
-  }
-
-  // 3. Write sidecars via the shared writer (handles conflict prompts).
-  await processPlan(sidecarPlan, fs, { yes: true }, result, log);
-
-  // 4. Read existing config.toml + manifest, merge, write.
-  const configPath = join(cwd, ide.configDir, "config.toml");
-  const manifestPath = join(cwd, ide.configDir, "flowai-agents.json");
-  const existingToml = await fs.exists(configPath)
-    ? await fs.readFile(configPath)
-    : "";
-  const existingManifest = readCodexManifest(
-    await fs.exists(manifestPath) ? await fs.readFile(manifestPath) : null,
-  );
-
-  const { content: newToml, manifest: newManifest } = mergeCodexConfig(
-    existingToml,
-    changes,
-    existingManifest,
-  );
-
-  if (newToml !== existingToml) {
-    await fs.writeFile(configPath, newToml);
-    result.totalWritten++;
-  }
-  await fs.writeFile(manifestPath, writeCodexManifest(newManifest));
 }

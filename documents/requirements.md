@@ -556,7 +556,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-HOOK-RESOURCES: Hook Resources
 
 - **Description:** Packs contain hooks — Deno TS scripts triggered by IDE events (PostToolUse, PreToolUse). Hooks are IDE-agnostic: stored as `hook.yaml` + `run.ts`, installed by flowai with IDE-specific configuration generation. Claude Code naming as canonical; flowai transforms for other IDEs.
-- **Use case scenario:** Pack `core` contains `flowai-lint-on-write` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
+- **Use case scenario:** Pack `core` contains `flowai-skill-structure-validate` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
 - **Priority:** Medium (new resource type, depends on FR-PACKS).
 
 #### FR-HOOK-RESOURCES.FORMAT Hook Format

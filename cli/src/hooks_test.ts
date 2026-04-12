@@ -62,14 +62,14 @@ Deno.test("transformHookForClaude: generates correct structure", () => {
   };
   const result = transformHookForClaude(
     hook,
-    ".claude/scripts/flowai-lint-on-write/run.ts",
+    ".claude/scripts/flowai-test-hook/run.ts",
   );
   assertEquals(result.event, "PostToolUse");
   assertEquals(result.matcher, "Write|Edit");
   assertEquals(result.hooks.length, 1);
   assertEquals(result.hooks[0].type, "command");
   assertStringIncludes(result.hooks[0].command, "deno run -A");
-  assertStringIncludes(result.hooks[0].command, "flowai-lint-on-write/run.ts");
+  assertStringIncludes(result.hooks[0].command, "flowai-test-hook/run.ts");
   assertEquals(result.hooks[0].timeout, 30);
 });
 
@@ -93,7 +93,7 @@ Deno.test("transformHookForCursor: transforms event and matcher", () => {
   };
   const result = transformHookForCursor(
     hook,
-    ".cursor/scripts/flowai-lint-on-write/run.ts",
+    ".cursor/scripts/flowai-test-hook/run.ts",
   );
   assertEquals(result.event, "postToolUse");
   assertEquals(result.matcher, "Write|StrReplace");
@@ -110,7 +110,7 @@ Deno.test("transformHookForCursor: maps SessionStart event", () => {
   };
   const result = transformHookForCursor(
     hook,
-    ".cursor/scripts/flowai-lint-on-write/run.ts",
+    ".cursor/scripts/flowai-test-hook/run.ts",
   );
   assertEquals(result.event, "sessionStart");
   assertEquals(result.matcher, undefined);
@@ -122,20 +122,71 @@ Deno.test("transformHookForCursor: maps SessionStart event", () => {
 Deno.test("generateOpenCodePlugin: contains expected content", () => {
   const hooks = [
     {
-      name: "flowai-lint-on-write",
+      name: "flowai-test-hook",
       hook: {
         event: "PostToolUse",
         matcher: "Write|Edit",
         description: "Auto-lint",
       } as HookDefinition,
-      scriptPath: ".opencode/scripts/flowai-lint-on-write/run.ts",
+      scriptPath: ".opencode/scripts/flowai-test-hook/run.ts",
     },
   ];
   const result = generateOpenCodePlugin(hooks);
   assertStringIncludes(result, "tool.execute.after");
   assertStringIncludes(result, "deno run -A");
-  assertStringIncludes(result, "flowai-lint-on-write/run.ts");
+  assertStringIncludes(result, "flowai-test-hook/run.ts");
   assertStringIncludes(result, "satisfies Plugin");
+});
+
+Deno.test("generateOpenCodePlugin: SessionStart uses event handler", () => {
+  const hooks = [
+    {
+      name: "flowai-session-init",
+      hook: {
+        event: "SessionStart",
+        description: "Session init",
+      } as HookDefinition,
+      scriptPath: ".opencode/scripts/flowai-session-init/run.ts",
+    },
+  ];
+  const result = generateOpenCodePlugin(hooks);
+  // Must use the `event` hook, not a top-level "session.created" property
+  assertStringIncludes(result, "event: async");
+  assertStringIncludes(result, '"session.created"');
+  assertStringIncludes(result, "flowai-session-init/run.ts");
+  assertStringIncludes(result, "satisfies Plugin");
+  // Must NOT generate a top-level "session.created" key (that's not a valid plugin hook)
+  assertEquals(result.includes('"session.created": async (output)'), false);
+});
+
+Deno.test("generateOpenCodePlugin: mixed tool hooks and SessionStart", () => {
+  const hooks = [
+    {
+      name: "flowai-lint",
+      hook: {
+        event: "PostToolUse",
+        matcher: "Write|Edit",
+        description: "Auto-lint",
+      } as HookDefinition,
+      scriptPath: ".opencode/scripts/flowai-lint/run.ts",
+    },
+    {
+      name: "flowai-session-init",
+      hook: {
+        event: "SessionStart",
+        description: "Session init",
+      } as HookDefinition,
+      scriptPath: ".opencode/scripts/flowai-session-init/run.ts",
+    },
+  ];
+  const result = generateOpenCodePlugin(hooks);
+  // Tool hook as top-level property
+  assertStringIncludes(result, '"tool.execute.after"');
+  assertStringIncludes(result, "flowai-lint/run.ts");
+  // Lifecycle event via event handler
+  assertStringIncludes(result, "event: async");
+  assertStringIncludes(result, '"session.created"');
+  assertStringIncludes(result, "flowai-session-init/run.ts");
 });
 
 // --- mergeClaudeHooks ---
@@ -158,7 +209,7 @@ Deno.test("mergeClaudeHooks: adds new hooks preserving user hooks", () => {
       hooks: [
         {
           type: "command" as const,
-          command: "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
+          command: "deno run -A .claude/scripts/flowai-test-hook/run.ts",
           timeout: 30,
         },
       ],
@@ -179,8 +230,7 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
           hooks: [
             {
               type: "command",
-              command:
-                "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
+              command: "deno run -A .claude/scripts/flowai-test-hook/run.ts",
               timeout: 30,
             },
           ],
@@ -195,7 +245,7 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
       hooks: [
         {
           type: "command" as const,
-          command: "deno run -A .claude/scripts/flowai-lint-on-write/run.ts",
+          command: "deno run -A .claude/scripts/flowai-test-hook/run.ts",
           timeout: 60,
         },
       ],
@@ -204,7 +254,7 @@ Deno.test("mergeClaudeHooks: replaces old flowai hooks", () => {
   const manifest = {
     version: 1,
     hooks: {
-      "flowai-lint-on-write": {
+      "flowai-test-hook": {
         event: "PostToolUse",
         matcher: "Write|Edit",
         installedAt: "2026-01-01T00:00:00Z",
@@ -226,7 +276,7 @@ Deno.test("mergeCursorHooks: preserves version and merges", () => {
   const newHooks = [
     {
       event: "postToolUse",
-      command: "deno run -A .cursor/scripts/flowai-lint-on-write/run.ts",
+      command: "deno run -A .cursor/scripts/flowai-test-hook/run.ts",
       type: "command" as const,
       matcher: "Write|StrReplace",
       timeout: 30,
@@ -289,7 +339,7 @@ Deno.test("readManifest: valid JSON parsed correctly", () => {
   const json = JSON.stringify({
     version: 1,
     hooks: {
-      "flowai-lint-on-write": {
+      "flowai-test-hook": {
         event: "PostToolUse",
         matcher: "Write|Edit",
         installedAt: "2026-01-01T00:00:00Z",
@@ -297,7 +347,7 @@ Deno.test("readManifest: valid JSON parsed correctly", () => {
     },
   });
   const m = readManifest(json);
-  assertEquals(m.hooks["flowai-lint-on-write"].event, "PostToolUse");
+  assertEquals(m.hooks["flowai-test-hook"].event, "PostToolUse");
 });
 
 Deno.test("readManifest: invalid JSON returns empty", () => {
@@ -309,7 +359,7 @@ Deno.test("readManifest: invalid JSON returns empty", () => {
 Deno.test("buildManifest: creates manifest from hook defs", () => {
   const hookDefs = [
     {
-      name: "flowai-lint-on-write",
+      name: "flowai-test-hook",
       hook: {
         event: "PostToolUse",
         matcher: "Write|Edit",
@@ -328,7 +378,7 @@ Deno.test("buildManifest: creates manifest from hook defs", () => {
   const m = buildManifest(hookDefs);
   assertEquals(m.version, 1);
   assertEquals(Object.keys(m.hooks).length, 2);
-  assertEquals(m.hooks["flowai-lint-on-write"].event, "PostToolUse");
-  assertEquals(m.hooks["flowai-lint-on-write"].matcher, "Write|Edit");
+  assertEquals(m.hooks["flowai-test-hook"].event, "PostToolUse");
+  assertEquals(m.hooks["flowai-test-hook"].matcher, "Write|Edit");
   assertEquals(m.hooks["flowai-mermaid-validate"].event, "PostToolUse");
 });

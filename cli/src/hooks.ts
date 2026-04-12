@@ -19,7 +19,7 @@ export const EVENT_MAP: Record<string, Record<string, string>> = {
   opencode: {
     PostToolUse: "tool.execute.after",
     PreToolUse: "tool.execute.before",
-    // TODO: verify OpenCode session start event name
+    SessionStart: "session.created",
   },
 };
 
@@ -122,26 +122,31 @@ export function transformHookForCursor(
   return entry;
 }
 
+// OpenCode tool hooks are top-level plugin properties; lifecycle events go through `event` handler.
+const OPENCODE_TOOL_HOOKS = new Set(["tool.execute.before", "tool.execute.after"]);
+
 /** Generate OpenCode plugin file content. */
 export function generateOpenCodePlugin(
   hooks: Array<{ name: string; hook: HookDefinition; scriptPath: string }>,
 ): string {
-  const handlers: string[] = [];
+  const toolHandlers: string[] = [];
+  const eventBranches: string[] = [];
 
   for (const { hook, scriptPath } of hooks) {
     const event = transformEvent(hook.event, "opencode");
-    const matcher = hook.matcher
-      ? transformMatcher(hook.matcher, "opencode")
-      : undefined;
 
-    handlers.push(
-      `  // ${hook.description}
+    if (OPENCODE_TOOL_HOOKS.has(event)) {
+      const matcher = hook.matcher
+        ? transformMatcher(hook.matcher, "opencode")
+        : undefined;
+      toolHandlers.push(
+        `  // ${hook.description}
   "${event}": async (output) => {
     ${
-        matcher
-          ? `const tools = "${matcher}".split("|"); if (!tools.includes(output.tool)) return output;`
-          : ""
-      }
+          matcher
+            ? `const tools = "${matcher}".split("|"); if (!tools.includes(output.tool)) return output;`
+            : ""
+        }
     const input = JSON.stringify({ tool_name: output.tool, tool_input: output.args, tool_response: output.result });
     const result = await $\`echo \${input} | deno run -A ${scriptPath}\`.quiet();
     if (result.stdout.trim()) {
@@ -150,12 +155,29 @@ export function generateOpenCodePlugin(
     }
     return output;
   },`,
+      );
+    } else {
+      // Lifecycle event — routed through the `event` plugin hook
+      eventBranches.push(
+        `    // ${hook.description}
+    if (event.type === "${event}") {
+      await $\`deno run -A ${scriptPath}\`.quiet();
+    }`,
+      );
+    }
+  }
+
+  if (eventBranches.length > 0) {
+    toolHandlers.push(
+      `  event: async ({ event, $ }) => {
+${eventBranches.join("\n")}
+  },`,
     );
   }
 
   return `import type { Plugin } from "@opencode-ai/plugin"
 export default (async ({ directory, $ }) => ({
-${handlers.join("\n")}
+${toolHandlers.join("\n")}
 })) satisfies Plugin
 `;
 }

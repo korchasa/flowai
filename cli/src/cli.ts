@@ -154,152 +154,100 @@ export function renderSyncOutput(result: SyncResult): void {
   const actions: string[] = [];
   let actionNum = 0;
 
+  const push = (text: string) => {
+    actionNum++;
+    actions.push(`${actionNum}. ${text}`);
+  };
+
   // Config migration
   if (result.configMigrated) {
     const m = result.configMigrated;
-    actionNum++;
-    actions.push(
-      `${actionNum}. CONFIG MIGRATED (v${m.from} -> v${m.to}):\n` +
+    push(
+      `CONFIG MIGRATED (v${m.from} -> v${m.to}):\n` +
         `   .flowai.yaml updated with packs: ${m.packs.join(", ")}.\n` +
         `   Commit this file.`,
     );
   }
 
-  // Group skill actions by type
-  const skillsByAction = groupByAction(result.skillActions);
+  // Resource sections: skills, agents, hooks, assets
+  const sections: Array<{
+    label: string;
+    items: ResourceAction[];
+    artifactLabel: string;
+    hints: { update: string; create: string; delete: string };
+  }> = [
+    {
+      label: "SKILLS",
+      items: result.skillActions,
+      artifactLabel: "scaffolds",
+      hints: {
+        update:
+          "For each skill with scaffolds: compare the updated template against the project artifact using git diff on the skill directory.",
+        create: "No migration needed for new skills.",
+        delete: "Check if deleted skills are referenced in project docs.",
+      },
+    },
+    {
+      label: "AGENTS",
+      items: result.agentActions,
+      artifactLabel: "",
+      hints: {
+        update: "Check if agent prompts are referenced in project docs.",
+        create: "New agents installed.",
+        delete: "Check if deleted agents are referenced in project docs.",
+      },
+    },
+    {
+      label: "HOOKS",
+      items: result.hookActions,
+      artifactLabel: "",
+      hints: {
+        update: "",
+        create: "IDE hook configuration auto-generated.",
+        delete: "Removed from IDE hook configuration.",
+      },
+    },
+    {
+      label: "ASSETS",
+      items: result.assetActions,
+      artifactLabel: "artifacts",
+      hints: {
+        update:
+          "For each updated asset: compare the template against the project artifact.",
+        create: "New asset templates installed.",
+        delete: "",
+      },
+    },
+  ];
 
-  if (skillsByAction.update.length > 0) {
-    actionNum++;
-    const lines = skillsByAction.update.map((s) => {
-      const scaff = s.scaffolds.length > 0
-        ? ` (scaffolds: ${s.scaffolds.join(", ")})`
-        : "";
-      return `   - ${s.name}${scaff}`;
-    });
-    actions.push(
-      `${actionNum}. SKILLS UPDATED (${skillsByAction.update.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   For each skill with scaffolds: compare the updated template against the project artifact using git diff on the skill directory.`,
-    );
-  }
-
-  if (skillsByAction.create.length > 0) {
-    actionNum++;
-    const lines = skillsByAction.create.map((s) => `   - ${s.name}`);
-    actions.push(
-      `${actionNum}. SKILLS CREATED (${skillsByAction.create.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   No migration needed for new skills.`,
-    );
-  }
-
-  if (skillsByAction.delete.length > 0) {
-    actionNum++;
-    const lines = skillsByAction.delete.map((s) => `   - ${s.name}`);
-    actions.push(
-      `${actionNum}. SKILLS DELETED (${skillsByAction.delete.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   Check if deleted skills are referenced in project docs.`,
-    );
-  }
-
-  // Agent actions
-  const agentsByAction = groupByAction(result.agentActions);
-  if (agentsByAction.update.length > 0) {
-    actionNum++;
-    const lines = agentsByAction.update.map((a) => `   - ${a.name}`);
-    actions.push(
-      `${actionNum}. AGENTS UPDATED (${agentsByAction.update.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   Check if agent prompts are referenced in project docs.`,
-    );
-  }
-  if (agentsByAction.create.length > 0) {
-    actionNum++;
-    const lines = agentsByAction.create.map((a) => `   - ${a.name}`);
-    actions.push(
-      `${actionNum}. AGENTS CREATED (${agentsByAction.create.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   New agents installed.`,
-    );
-  }
-  if (agentsByAction.delete.length > 0) {
-    actionNum++;
-    const lines = agentsByAction.delete.map((a) => `   - ${a.name}`);
-    actions.push(
-      `${actionNum}. AGENTS DELETED (${agentsByAction.delete.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   Check if deleted agents are referenced in project docs.`,
-    );
-  }
-
-  // Hook actions
-  const hooksByAction = groupByAction(result.hookActions);
-  if (hooksByAction.create.length > 0) {
-    actionNum++;
-    const lines = hooksByAction.create.map((h) => `   - ${h.name}`);
-    actions.push(
-      `${actionNum}. HOOKS INSTALLED (${hooksByAction.create.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   IDE hook configuration auto-generated.`,
-    );
-  }
-  if (hooksByAction.update.length > 0) {
-    actionNum++;
-    const lines = hooksByAction.update.map((h) => `   - ${h.name}`);
-    actions.push(
-      `${actionNum}. HOOKS UPDATED (${hooksByAction.update.length}):\n` +
-        lines.join("\n"),
-    );
-  }
-  if (hooksByAction.delete.length > 0) {
-    actionNum++;
-    const lines = hooksByAction.delete.map((h) => `   - ${h.name}`);
-    actions.push(
-      `${actionNum}. HOOKS DELETED (${hooksByAction.delete.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   Removed from IDE hook configuration.`,
-    );
-  }
-
-  // Asset actions
-  const assetsByAction = groupByAction(result.assetActions);
-  if (assetsByAction.update.length > 0) {
-    actionNum++;
-    const lines = assetsByAction.update.map((a) => {
-      const artifacts = a.scaffolds.length > 0
-        ? ` (artifacts: ${a.scaffolds.join(", ")})`
-        : "";
-      return `   - ${a.name}${artifacts}`;
-    });
-    actions.push(
-      `${actionNum}. ASSETS UPDATED (${assetsByAction.update.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   For each updated asset: compare the template against the project artifact.`,
-    );
-  }
-  if (assetsByAction.create.length > 0) {
-    actionNum++;
-    const lines = assetsByAction.create.map((a) => {
-      const artifacts = a.scaffolds.length > 0
-        ? ` (artifacts: ${a.scaffolds.join(", ")})`
-        : "";
-      return `   - ${a.name}${artifacts}`;
-    });
-    actions.push(
-      `${actionNum}. ASSETS CREATED (${assetsByAction.create.length}):\n` +
-        lines.join("\n") + "\n" +
-        `   New asset templates installed.`,
-    );
+  for (const { label, items, artifactLabel, hints } of sections) {
+    const grouped = groupByAction(items);
+    for (
+      const action of ["update", "create", "delete"] as const
+    ) {
+      const list = grouped[action];
+      if (list.length === 0) continue;
+      const verb = action === "create" && label === "HOOKS"
+        ? "INSTALLED"
+        : action.toUpperCase() + "D";
+      const lines = list.map((r) => {
+        const suffix = artifactLabel && r.scaffolds.length > 0
+          ? ` (${artifactLabel}: ${r.scaffolds.join(", ")})`
+          : "";
+        return `   - ${r.name}${suffix}`;
+      });
+      const hint = hints[action];
+      push(
+        `${label} ${verb} (${list.length}):\n` + lines.join("\n") +
+          (hint ? "\n   " + hint : ""),
+      );
+    }
   }
 
   // Errors
   if (result.errors.length > 0) {
-    actionNum++;
     const lines = result.errors.map((e) => `   - ${e.path}: ${e.error}`);
-    actions.push(
-      `${actionNum}. ERRORS (${result.errors.length}):\n` + lines.join("\n"),
-    );
+    push(`ERRORS (${result.errors.length}):\n` + lines.join("\n"));
   }
 
   // Render
@@ -309,15 +257,13 @@ export function renderSyncOutput(result: SyncResult): void {
   }
 
   // No-action summary
-  const okSkills = skillsByAction.ok.length;
-  const okAgents = agentsByAction.ok.length;
-  const okHooks = hooksByAction.ok.length;
-  const okAssets = assetsByAction.ok.length;
   const noActionParts: string[] = [];
-  if (okSkills > 0) noActionParts.push(`${okSkills} skills unchanged`);
-  if (okAgents > 0) noActionParts.push(`${okAgents} agents unchanged`);
-  if (okHooks > 0) noActionParts.push(`${okHooks} hooks unchanged`);
-  if (okAssets > 0) noActionParts.push(`${okAssets} assets unchanged`);
+  for (const { label, items } of sections) {
+    const okCount = items.filter((a) => a.action === "ok").length;
+    if (okCount > 0) {
+      noActionParts.push(`${okCount} ${label.toLowerCase()} unchanged`);
+    }
+  }
 
   if (actions.length === 0) {
     console.log("\n>>> NO ACTIONS REQUIRED.");
@@ -331,9 +277,7 @@ export function renderSyncOutput(result: SyncResult): void {
   // Symlinks (informational)
   if (result.symlinkResult) {
     const sl = result.symlinkResult;
-    if (
-      sl.created.length > 0 || sl.updated.length > 0
-    ) {
+    if (sl.created.length > 0 || sl.updated.length > 0) {
       console.log(
         `\nCLAUDE.md symlinks: ${sl.created.length} created, ${sl.updated.length} updated.`,
       );

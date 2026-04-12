@@ -1,6 +1,6 @@
 # Core Project Rules
 - Follow your assigned role strictly — it defines scope and boundaries for your actions.
-- After finishing a session, review all project documents(readme.md, requirements.md, design.md, etc) to ensure they reflect the current state. Stale docs mislead future sessions.
+- After finishing a session, review all project documents (README.md, documents/requirements.md, documents/design.md, etc.) to ensure they reflect the current state. Stale docs mislead future sessions.
 - Verify every change by running appropriate tests or scripts — never assume correctness without evidence.
 - Keep the project in a clean state: no errors, warnings, or issues in formatter and linter output. A broken baseline blocks all future work.
 - Follow the TDD flow described below. Skipping it leads to untested code and regressions.
@@ -315,6 +315,9 @@ Build tooling, verification, and benchmark infrastructure for flowai.
 - `deno task test` (check deno.json)
 - `deno task dev` (check deno.json)
 - `deno task bench` (check deno.json)
+
+### CLI Test Caveat
+- CLI tests (`cli/src/`) require `-A` flag and MUST be run from **repo root**, not from `cli/` subdir. See `cli/CLAUDE.md` for details.
 
 ### `deno task check` Output Quirks
 

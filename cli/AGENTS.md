@@ -1,6 +1,6 @@
 # cli/ — flowai
 
-> Rules, TDD flow, planning rules, and code docs conventions are inherited from root `CLAUDE.md`. This file contains only CLI-specific context.
+> **Inheritance:** All rules from root `AGENTS.md` (TDD flow, planning, code docs, compressed style) apply here automatically. This file adds only CLI-specific context. When a rule here conflicts with root, this file wins for `cli/` scope.
 
 ## Purpose
 
