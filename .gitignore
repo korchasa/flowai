@@ -9,11 +9,12 @@ framework/**/flowai-skill-example/
 .env
 __pycache__/
 _research_tmp/
-.claude/flowai-hooks.json
-.claude/settings.local.json
 
 # Synced from framework/ via `deno task sync-local` (dev-only, not tracked)
-.claude/
+.claude/flowai-hooks.json
+.claude/settings.local.json
+.claude/*/flowai-*
+.claude/assets/
 
 # Generated artifacts (cli)
 cli/src/bundled.json
