@@ -73,10 +73,10 @@ Confirm any file creation prompts.`;
       critical: false,
     },
     {
-      id: "claude_code_as_feature",
+      id: "claude_code_via_install_script",
       description:
-        "Is Claude Code installed via a devcontainer registry feature (ghcr.io/.../claude-code) rather than raw curl/npm in postCreateCommand?",
-      critical: false,
+        "Is Claude Code installed via the official install script (`curl -fsSL https://claude.ai/install.sh | bash`) in `postCreateCommand` OR via `npm install -g @anthropic-ai/claude-code`, rather than via a registry feature like `ghcr.io/devcontainers-extra/features/claude-code` or `ghcr.io/stu-bell/devcontainer-features/claude-code`? The skill's guidance ([features-catalog.md](../../references/features-catalog.md)) explicitly forbids registry features for Claude Code because they ship outdated binaries with broken OAuth.",
+      critical: true,
     },
     {
       id: "node_base_image",

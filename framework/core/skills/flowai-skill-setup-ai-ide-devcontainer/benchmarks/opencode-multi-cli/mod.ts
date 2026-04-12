@@ -62,16 +62,10 @@ Confirm any file creation prompts.`;
       critical: true,
     },
     {
-      id: "anthropic_api_key_env",
-      description:
-        "Does remoteEnv reference ANTHROPIC_API_KEY via ${localEnv:ANTHROPIC_API_KEY}?",
-      critical: true,
-    },
-    {
       id: "post_start_skills_sync",
       description:
-        "Does postStartCommand sync global skills for BOTH Claude Code (cp -rL ~/.claude-host/skills ~/.claude/skills) and OpenCode (cp -rL ~/.config/opencode-host/skills ~/.config/opencode/skills)?",
-      critical: true,
+        "IF the generated config includes a skills-sync step, is it placed in `postStartCommand` (not `postCreateCommand`) AND does it use `cp -rL` (dereference symlinks) for BOTH Claude Code (`~/.claude-host/skills` → `~/.claude/skills`) and OpenCode (`~/.config/opencode-host/skills` → `~/.config/opencode/skills`)? Skills sync is optional per SKILL.md — this check grades placement and form ONLY IF sync was generated; absence is acceptable.",
+      critical: false,
     },
     {
       id: "no_hardcoded_secrets",
@@ -82,19 +76,19 @@ Confirm any file creation prompts.`;
     {
       id: "python_deps_install",
       description:
-        "Does postCreateCommand include `pip install` (or equivalent Python dependency install)?",
+        "Does `postCreateCommand` include `pip install` (or equivalent Python dependency install)?",
       critical: false,
     },
     {
-      id: "no_claude_config_dir_env",
+      id: "auth_policy_compliance",
       description:
-        "Does remoteEnv NOT contain CLAUDE_CONFIG_DIR? Setting it breaks the volume auth strategy.",
+        "Does the generated config strictly follow SKILL.md § Auth Policy? ALL must hold: (a) no `remoteEnv` auth vars (no `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `CLAUDE_CONFIG_DIR` via `${localEnv:...}`; empty `ANTHROPIC_API_KEY` breaks Claude OAuth, `CLAUDE_CONFIG_DIR` breaks the volume strategy); (b) no `secrets` block; (c) no `initializeCommand`; (d) no automation of `gh auth login`, `claude login`, or `opencode auth login` anywhere in postCreateCommand or setup-container.sh; (e) if `setup-container.sh` is generated, its body is strictly a chown loop — no credential writes.",
       critical: true,
     },
     {
-      id: "gh_auth_setup",
+      id: "stable_volume_names",
       description:
-        "Does postCreateCommand (or setup-container.sh) configure gh CLI authentication AND git credential helper? Must include: (1) `gh auth login --with-token` using GITHUB_TOKEN, (2) `gh auth setup-git` to register credential helper for HTTPS git operations.",
+        "Do named Docker volumes in `mounts` for both Claude Code and OpenCode use stable names derived from `${localWorkspaceFolderBasename}` (e.g. `${localWorkspaceFolderBasename}-claude-config`, `${localWorkspaceFolderBasename}-opencode-config`), NOT the `${devcontainerId}` suffix that rehashes on every config edit?",
       critical: true,
     },
   ];

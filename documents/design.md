@@ -240,7 +240,7 @@ graph TD
 ### 3.9 AI Devcontainer Setup — FR-DEVCONTAINER
 
 - **Purpose:** Generate `.devcontainer/` config for AI IDE development.
-- **Behavioral requirements:** See benchmarks `flowai-skill-setup-ai-ide-devcontainer-*` (5 scenarios).
+- **Behavioral requirements:** See benchmarks `flowai-skill-setup-ai-ide-devcontainer-*` (6 scenarios).
 - **Deps:** None (pure SKILL.md, agent-driven generation).
 
 ### 3.10 Framework Update Skill — `flowai-update`

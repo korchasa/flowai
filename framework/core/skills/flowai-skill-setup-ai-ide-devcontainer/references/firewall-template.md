@@ -85,7 +85,12 @@ iptables -A OUTPUT -p tcp --dport 80 -m set --match-set allowed_hosts dst -j ACC
 
 echo "Firewall initialized. Default-deny with $(ipset list allowed_hosts | grep -c '^[0-9]') allowed IPs."
 
-# Verification
+# Verification — WARN only, never fail the hook.
+# init-firewall.sh runs on every container start via postStartCommand.
+# A hard `exit 1` here would make every start fail in any environment where
+# a corporate proxy/captive portal answers example.com (or where the image
+# hasn't refreshed its resolver cache). Report inconsistencies and move on —
+# the real security boundary is iptables, not the self-check.
 echo "Verification:"
 if curl -sf --max-time 5 https://api.anthropic.com > /dev/null 2>&1; then
   echo "  [OK] anthropic API reachable"
@@ -93,12 +98,17 @@ else
   echo "  [WARN] anthropic API not reachable (may need IP refresh)"
 fi
 if curl -sf --max-time 5 https://example.com > /dev/null 2>&1; then
-  echo "  [FAIL] example.com should be blocked!"
-  exit 1
+  echo "  [WARN] example.com reachable — expected DROP. Check iptables/ipset state."
 else
   echo "  [OK] example.com blocked"
 fi
 ```
+
+## Limitations
+
+**DNS rotation**: The allowlist resolves domain names to IPs once at container start (`dig +short`). Domains behind CDNs (Cloudflare, Fastly) rotate IPs with short TTLs — resolved IPs may become stale during the session, causing intermittent connection failures. This is a best-effort egress filter, not a hard security boundary. If the user reports random timeouts to allowed domains, re-running `sudo /usr/local/bin/init-firewall.sh` refreshes the IP set.
+
+**`hash:ip` only**: The ipset stores individual IPs, not CIDR ranges. High-traffic CDN domains may resolve to dozens of IPs across requests; `dig +short` captures only the set visible at resolution time.
 
 ## Customization
 
@@ -114,6 +124,11 @@ When firewall is enabled, add to devcontainer.json:
 ```jsonc
 {
   "runArgs": ["--cap-add=NET_ADMIN", "--cap-add=NET_RAW"],
-  "postStartCommand": "sudo /usr/local/bin/init-firewall.sh"
+  // Object form — must preserve other postStartCommand entries (e.g. git safe.directory).
+  // See devcontainer-template.md § With Firewall for the full merged form.
+  "postStartCommand": {
+    "git-safe": "git config --global --add safe.directory ${containerWorkspaceFolder}",
+    "firewall": "sudo /usr/local/bin/init-firewall.sh"
+  }
 }
 ```

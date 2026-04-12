@@ -1,5 +1,7 @@
 # devcontainer.json Template Logic
 
+> Auth, `remoteEnv`, `secrets`, and `initializeCommand` rules come from SKILL.md § **Auth Policy**. This file only documents the positive structure of the generated config — it does not restate the prohibitions.
+
 ## Image-Based (default, no custom Dockerfile)
 
 ```jsonc
@@ -8,7 +10,9 @@
   "image": "{{base_image}}",
 
   "features": {
-    // Always include
+    // Always include. `configureZshAsDefaultShell` installs zsh AND makes it the
+    // login shell for remoteUser — drop that option (and/or `installZsh`) if the
+    // project relies on bash-specific shell integration (e.g. `bash -lc` init scripts).
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true
@@ -33,38 +37,25 @@
     }
   },
 
-  "remoteEnv": {
-    // IMPORTANT: Do NOT include ANTHROPIC_API_KEY here by default.
-    // An empty string (unset on host) triggers API-key auth mode and breaks OAuth.
-    // Only add ANTHROPIC_API_KEY if the user explicitly provides an API key.
-    // GITHUB_TOKEN is required for gh CLI auth + git credential helper (setup-container.sh).
-    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
-  },
-
-  "secrets": {
-    // Add ANTHROPIC_API_KEY here ONLY if the user chose API-key auth (not OAuth)
-    "GITHUB_TOKEN": {
-      "description": "GitHub PAT for gh CLI"
-    }
-  },
+  // NO `remoteEnv`, NO `secrets`, NO `initializeCommand`. See SKILL.md § Auth Policy.
 
   "mounts": [
-    // Config persistence volume
-    // Auth forwarding staging mount (if Claude Code selected)
-    // Global skills bind mount (if enabled)
+    // Named volume for container's own writable state (Claude Code writes .credentials.json here after `claude login`)
+    // Host IDE config bind mounts (read-only, separate *-host target, for host data visibility — sessions, history, skills)
+    // Bash history volume
   ],
 
-  // Runs on HOST before container creation (macOS only — extracts Keychain tokens)
-  "initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json",
-
-  // Object form — each key runs in parallel. Order within a key is sequential.
-  // Volume ownership: Docker named volumes are created as root. Must chown BEFORE CLI install/auth writes.
+  // Object form — each key runs in parallel (Promise.allSettled).
+  // Volume ownership: Docker named volumes are created root-owned. The
+  // chown is handled by setup-container.sh as a self-healing guard, so
+  // there is no ordering dependency between entries.
   "postCreateCommand": {
     "deps": "{{dependency_install_command}}",
-    // Always include — sets up gh auth + git credential helper using GITHUB_TOKEN:
+    // Always include — sole responsibility: chown named volumes so the user's
+    // later `claude login` / `gh auth login` / `opencode auth login` can write
+    // into ~/.claude/, ~/.config/opencode/, /commandhistory:
     "setup": ".devcontainer/setup-container.sh",
-    // Add per-CLI entries below only for selected AI CLIs:
-    // "claude-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.claude",
+    // Add CLI install entries below only for selected AI CLIs:
     // "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash"
   },
   "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}",
@@ -152,112 +143,117 @@ Add:
 
 ## Mounts Configuration
 
-Add only mounts for selected AI CLIs.
+Two distinct purposes — do not conflate:
+
+1. **Named volume (writable)** — container's own state. Claude Code writes `.credentials.json` here after the user runs `claude login` inside the container. Persists across restarts/rebuilds.
+2. **Host bind mount (read-only)** — exposes host IDE config so the agent inside can read session history, projects, skills, CLI history, etc. Mounted to a **separate** path (`~/.claude-host`) to avoid overwriting the writable volume.
 
 ### Claude Code (when selected)
 ```jsonc
-// Config persistence volume (auth tokens in .credentials.json survive here)
-"source=claude-config-${devcontainerId},target=/home/{{remote_user}}/.claude,type=volume"
-// Auth forwarding: host Keychain tokens staged here (macOS only, read-only)
-"source=${localEnv:HOME}/.claude-auth-staging.json,target=/home/{{remote_user}}/.claude-auth-staging.json,type=bind,readonly"
-// Global skills from host (if enabled, local dev only)
+// Writable volume: container's own .claude/ state (auth tokens written here by `claude login`)
+"source=${localWorkspaceFolderBasename}-claude-config,target=/home/{{remote_user}}/.claude,type=volume"
+// Read-only bind mount of host ~/.claude/ for session/projects/history analysis by the agent
 "source=${localEnv:HOME}/.claude,target=/home/{{remote_user}}/.claude-host,type=bind,readonly"
 ```
 
 ### OpenCode (when selected)
 ```jsonc
-// Config persistence volume
-"source=opencode-config-${devcontainerId},target=/home/{{remote_user}}/.config/opencode,type=volume"
-// Global skills from host (if enabled, local dev only)
+// Writable volume: container's own opencode state
+"source=${localWorkspaceFolderBasename}-opencode-config,target=/home/{{remote_user}}/.config/opencode,type=volume"
+// Read-only bind mount of host ~/.config/opencode/ for host data visibility
 "source=${localEnv:HOME}/.config/opencode,target=/home/{{remote_user}}/.config/opencode-host,type=bind,readonly"
 ```
 
 ### Bash history persistence (always)
 ```jsonc
-"source=bashhistory-${devcontainerId},target=/commandhistory,type=volume"
+"source=${localWorkspaceFolderBasename}-bashhistory,target=/commandhistory,type=volume"
 ```
+
+### Volume naming convention (MANDATORY)
+
+Use **stable names** of the form `${localWorkspaceFolderBasename}-<purpose>` for all named Docker volumes. Do NOT use the `${devcontainerId}` suffix that older templates used.
+
+- `${devcontainerId}` is recomputed from a hash of `devcontainer.json` every time the file changes meaningfully. Each edit orphans the previous volume and creates a new empty one, silently losing auth tokens, bash history, and any persisted state. Users usually discover this only when they are forced to re-authenticate after a trivial config change.
+- `${localWorkspaceFolderBasename}` resolves on the host to the workspace folder's basename (e.g. `flowai` for `~/www/tools/flowai`). It is stable across config edits, unique per checkout/worktree, and produces readable names in `docker volume ls` (e.g. `flowai-claude-config`).
+- Trade-off: two checkouts of the same repo at paths sharing a basename (rare) will share volumes. If per-checkout isolation is required, fall back to a hardcoded unique suffix — never `${devcontainerId}`.
+
+### Lifecycle matrix (with stable volume names)
+
+| Scenario | Volume survives? | Auth persists? | Action needed |
+|---|---|---|---|
+| Container restart | Yes | Yes | None |
+| Container rebuild (same workspace) | Yes | Yes | None |
+| `devcontainer.json` edited (any change) | Yes | Yes | None |
+| Rebuild Without Cache (same workspace) | Yes | Yes | None |
+| Workspace folder renamed (basename change) | **No** (different volume) | **No** | Re-auth: `claude login` inside new container |
+| Volume manually deleted (`docker volume rm`) | No | No | Re-auth: `claude login` inside new container |
+
+Row 3 ("any edit") is the main reason to prefer `${localWorkspaceFolderBasename}` over `${devcontainerId}` — the latter rehashes on every edit and converts restart/rebuild/edit into re-auth events.
+
+### Host bind mount: purpose and caveats
+
+The read-only mount of `${localEnv:HOME}/.claude` → `/home/{{remote_user}}/.claude-host` exists so the agent inside the container can read host IDE data (`projects/`, `sessions/`, `history.jsonl`, `skills/`, `commands/`) without interfering with container state. Rules come from SKILL.md § Auth Policy; the only additions specific to this mount:
+
+- **Privacy**: the container has read access to the entire host `~/.claude` tree (settings, plugin data, session transcripts). Acceptable for local dev; review before using with untrusted code.
+- **Codespaces**: `$HOME` bind mounts don't work — drop the mount or bake skills into the image.
 
 ### Volume ownership fix
 
-Docker named volumes are created with root ownership before `remoteUser` takes effect. AI CLI installers and auth token writes fail without this fix.
+Docker named volumes are created with root ownership before `remoteUser` takes effect. Any write into `~/.claude/`, `~/.config/opencode/`, or `/commandhistory` fails with `Permission denied` until ownership is fixed for the remoteUser — including the user's first `claude login`, `gh auth login`, or `opencode auth login` attempts.
 
-**This is integrated into the main template** via `postCreateCommand` object form. Each AI CLI gets a chown entry that runs BEFORE the CLI install entry. See main template above.
+**The chown MUST be recursive (`chown -R`).** A top-level chown leaves subdirs that the feature build stage may have created (e.g. `~/.claude/backups`, `~/.claude/downloads`) still root-owned, and subsequent writes into those subdirs fail.
 
-### Auth forwarding (Claude Code) via setup-container.sh
+**The chown MUST run inside `setup-container.sh`**, not as a separate `postCreateCommand` object entry. `postCreateCommand` object form runs entries in **parallel** (`Promise.allSettled`), so a separate chown entry races with any other entry that touches the config dirs. Put the chown as a self-healing `if [ ! -w ... ]` guard at the top of `setup-container.sh` and `postCreateCommand` stays a simple object without ordering assumptions.
 
-Auth tokens live in `~/.claude/.credentials.json` inside the config volume. On first container creation (empty volume), tokens are copied from the host Keychain staging file.
+**sudo dependency**: `setup-container.sh` uses `sudo chown -R` because the volumes are root-owned. Passwordless sudo is provided by the `ghcr.io/devcontainers/features/common-utils:2` feature (always included in the base template). If `common-utils` is removed, `sudo` will prompt for a password and `setup-container.sh` will fail on container creation. This is why `common-utils` is mandatory, not optional.
 
-Instead of fragile inline shell one-liners, generate a **setup-container.sh** script:
+### setup-container.sh
+
+Generate this script at `.devcontainer/setup-container.sh` (chmod +x). Its sole responsibility is to fix ownership of named Docker volumes so the user's manual `claude login`, `gh auth login`, `opencode auth login`, etc. can write to their config directories. It does NOT run any authentication — all auth is the user's responsibility and happens manually after first start.
 
 ```bash
 #!/usr/bin/env bash
 set -euo pipefail
 
-# --- Claude Code auth (if selected) ---
-# Copy auth tokens from host Keychain staging file into the config volume.
-STAGING="$HOME/.claude-auth-staging.json"
-TARGET="$HOME/.claude/.credentials.json"
-
-if [ -s "$STAGING" ]; then
-  cp "$STAGING" "$TARGET"
-  chmod 600 "$TARGET"
-  echo "[setup-container] Claude auth tokens copied from host Keychain staging."
-else
-  echo "[setup-container] No Claude auth staging file — authenticate manually: claude login"
-fi
-
-# --- GitHub CLI + git credential helper ---
-# gh auth login enables `gh` CLI commands (gh pr, gh issue, etc.)
-# gh auth setup-git registers credential helper for HTTPS git operations (push, pull, fetch)
-# Without this, HTTPS remotes fail with 401 and `gh` commands fail with "not logged in"
-if [ -n "${GITHUB_TOKEN:-}" ]; then
-  echo "$GITHUB_TOKEN" | gh auth login --with-token
-  gh auth setup-git
-  echo "[setup-container] gh CLI authenticated + git credential helper configured."
-else
-  echo "[setup-container] No GITHUB_TOKEN — gh CLI not authenticated."
-  echo "[setup-container] Run 'gh auth login' manually for gh commands and HTTPS git operations."
-fi
+# Fix named-volume ownership.
+#
+# Docker named volumes are created root-owned, so the remoteUser cannot
+# write into the mount target until this runs. All authentication in this
+# container is the user's responsibility — `claude login`, `gh auth login`,
+# `opencode auth login`, etc. are run manually inside the container terminal.
+# This script only ensures those commands have a writable config directory.
+#
+# Recursive chown is required: the devcontainer/feature build process may
+# have created subdirs (e.g. ~/.claude/backups) as root before remoteUser
+# takes effect. A top-level chown would leave those subdirs unwritable.
+for dir in "$HOME/.claude" "$HOME/.config/opencode" /commandhistory; do
+  if [ -d "$dir" ] && [ ! -w "$dir" ]; then
+    sudo chown -R "$(id -un):$(id -gn)" "$dir"
+  fi
+done
 ```
 
-Place this script at `.devcontainer/setup-container.sh` and make it executable (`chmod +x`).
+Include only the directories that actually exist — drop `$HOME/.claude` from the loop if Claude Code is not selected, `$HOME/.config/opencode` if OpenCode is not selected, `/commandhistory` if bash history volume is not generated. If none of the three apply, skip generating the script entirely and omit the `setup` entry from `postCreateCommand`.
 
-**postCreateCommand** references (example with Claude Code + OpenCode):
+**postCreateCommand** example (with Claude Code + OpenCode + flowai):
 ```jsonc
+// Object form runs entries in parallel. Volume chown lives inside
+// setup-container.sh, so there is no ordering dependency between entries.
+// CLI installers (claude.ai/install.sh, opencode.ai/install) only write
+// to ~/.local/bin/ — they do not race with `setup` on the config volumes.
 "postCreateCommand": {
   "deps": "{{dependency_install_command}}",
   "setup": ".devcontainer/setup-container.sh",
-  "claude-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.claude",
   "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
-  "opencode-chown": "sudo chown -R {{remote_user}}:{{remote_user}} ~/.config/opencode",
   "opencode-cli": "curl -fsSL https://opencode.ai/install | bash",
   "flowai-cli": "deno install -g -A -f jsr:@korchasa/flowai"
 }
 ```
 
-**initializeCommand** (runs on host, macOS only):
-```jsonc
-"initializeCommand": "security find-generic-password -s 'Claude Code-credentials' -w > ~/.claude-auth-staging.json 2>/dev/null || echo '{}' > ~/.claude-auth-staging.json"
-```
-
-See [auth-forwarding.md](auth-forwarding.md) for full architecture details and warnings.
-
-**WARNING**: Do NOT set `CLAUDE_CONFIG_DIR` in `remoteEnv` — it redirects where Claude looks for `.credentials.json`, breaking the volume auth strategy.
-
-**WARNING**: Do NOT set `ANTHROPIC_API_KEY` to empty string in `remoteEnv` — Claude Code interprets it as API-key auth attempt and fails. Only include `ANTHROPIC_API_KEY` if the user explicitly provides an API key. See [auth-forwarding.md](auth-forwarding.md) § Critical Warnings.
+> All prohibitions (`initializeCommand`, auth `remoteEnv`, `secrets`) are defined once in SKILL.md § Auth Policy. If a project genuinely needs a non-auth env var (e.g. `NODE_ENV=development`), add a minimal `remoteEnv` block containing only that.
 
 **NOTE**: flowai needs no mounts or volumes — it reads `.flowai.yaml` from the project workspace. For non-Deno stacks, add `ghcr.io/devcontainers-extra/features/deno:latest` to the features block.
 
-### GitHub CLI auth and git credential helper
+### Manual auth workflow
 
-The `github-cli:1` feature installs `gh` binary but does NOT configure authentication. Without explicit setup:
-- `gh` CLI commands (`gh pr`, `gh issue`) fail with "not logged in"
-- HTTPS git operations fail with 401 (no credential helper registered)
-
-`setup-container.sh` handles this automatically via `GITHUB_TOKEN`:
-1. `gh auth login --with-token` — authenticates `gh` CLI
-2. `gh auth setup-git` — registers `gh` as git credential helper for `https://github.com`
-
-**SSH vs HTTPS remote URLs**: `gh auth setup-git` registers a credential helper scoped to `https://github.com`. It does NOT affect SSH transport. If the repository on the host was cloned via SSH (`git@github.com:user/repo.git`), the remote URL is preserved in the container (bind mount shares `.git/config`). SSH operations rely on VS Code's SSH agent forwarding from the host. If agent forwarding is unavailable (no agent running, non-VS Code environment), the user must either:
-- Switch to HTTPS: `git remote set-url origin https://github.com/user/repo.git`
-- Or configure SSH keys inside the container
+See SKILL.md § **Step 8: Post-Setup Notes** for the user-facing instructions shown after generation (one-time `claude login` / `gh auth login` / `opencode auth login`, plus the SSH-vs-HTTPS remote URL caveat).

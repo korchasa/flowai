@@ -369,7 +369,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-DEVCONTAINER: AI Devcontainer Setup — flowai-skill-setup-ai-ide-devcontainer
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.
-- **Acceptance verified by benchmarks:** `flowai-skill-setup-ai-ide-devcontainer-node-basic`, `flowai-skill-setup-ai-ide-devcontainer-deno-with-claude`, `flowai-skill-setup-ai-ide-devcontainer-brownfield-existing`, `flowai-skill-setup-ai-ide-devcontainer-feature-discovery`, `flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli`
+- **Acceptance verified by benchmarks:** `flowai-skill-setup-ai-ide-devcontainer-node-basic`, `flowai-skill-setup-ai-ide-devcontainer-deno-with-claude`, `flowai-skill-setup-ai-ide-devcontainer-deno-flowai`, `flowai-skill-setup-ai-ide-devcontainer-brownfield-existing`, `flowai-skill-setup-ai-ide-devcontainer-feature-discovery`, `flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli`
 
 ### FR-UNIVERSAL: Universal Skill & Script Requirements
 

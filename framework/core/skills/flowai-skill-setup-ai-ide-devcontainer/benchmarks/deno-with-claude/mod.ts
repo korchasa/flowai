@@ -27,16 +27,17 @@ When asked about custom Dockerfile, agree (needed for Deno + firewall).
 Confirm any file creation prompts.`;
 
   checklist = [
+    // Positive functional checks — what the scenario asks for
     {
       id: "devcontainer_json_created",
       description:
-        "Was `.devcontainer/devcontainer.json` created and is it valid JSON?",
+        "Was `.devcontainer/devcontainer.json` created and is it valid JSON (JSONC parser — comments allowed)?",
       critical: true,
     },
     {
       id: "deno_support",
       description:
-        "Does the config include Deno support (deno feature from devcontainers-extra, or Deno in Dockerfile, or denoland base image)?",
+        "Does the config include Deno support (deno feature from devcontainers-extra, or Deno installed in the Dockerfile, or a denoland base image)?",
       critical: true,
     },
     {
@@ -47,25 +48,25 @@ Confirm any file creation prompts.`;
     {
       id: "claude_code_setup",
       description:
-        "Is Claude Code CLI installation configured (native installer or npm install in Dockerfile or postCreateCommand)?",
+        "Is Claude Code CLI installation configured via official install script (`curl -fsSL https://claude.ai/install.sh | bash`) or via `npm install -g @anthropic-ai/claude-code` — in Dockerfile or in postCreateCommand (NOT via a registry feature, per SKILL.md guidance)?",
       critical: true,
     },
     {
-      id: "global_skills_mount",
+      id: "host_claude_bind_mount_readonly_separate_path",
       description:
-        "Is there a bind mount for host ~/.claude/ (read-only) to a separate path like ~/.claude-host?",
+        "Is host `${localEnv:HOME}/.claude` mounted read-only at `/home/<user>/.claude-host` (a SEPARATE path from the writable volume target `/home/<user>/.claude`)? Shadowing the writable volume is the canonical mistake and must not happen.",
       critical: true,
     },
     {
       id: "firewall_script",
       description:
-        "Was `init-firewall.sh` created with default-deny policy and domain allowlist?",
+        "Was `init-firewall.sh` created with default-deny policy and a domain allowlist?",
       critical: true,
     },
     {
       id: "net_admin_cap",
       description:
-        "Does devcontainer.json include NET_ADMIN capability in runArgs?",
+        "Does devcontainer.json include NET_ADMIN capability in runArgs (required for iptables inside the container)?",
       critical: true,
     },
     {
@@ -74,76 +75,59 @@ Confirm any file creation prompts.`;
       critical: true,
     },
     {
-      id: "no_anthropic_api_key_in_remote_env",
-      description:
-        "Does remoteEnv NOT contain ANTHROPIC_API_KEY? When using OAuth (auth forwarding), an empty ANTHROPIC_API_KEY breaks OAuth by triggering API-key auth mode. It should only be included if the user explicitly provides an API key.",
-      critical: true,
-    },
-    {
       id: "deno_settings",
       description:
         "Does customizations.vscode.settings include `deno.enable: true`?",
       critical: false,
     },
+
+    // Persistence and volume correctness
+    {
+      id: "stable_volume_names",
+      description:
+        "Do named Docker volumes in `mounts` use stable names derived from `${localWorkspaceFolderBasename}` (e.g. `${localWorkspaceFolderBasename}-claude-config`), NOT the `${devcontainerId}` suffix which rehashes on every config edit?",
+      critical: true,
+    },
+    {
+      id: "volume_ownership_fix",
+      description:
+        "Is the `~/.claude/` volume chown handled INSIDE `setup-container.sh` as a self-healing `if [ ! -w ... ]; then sudo chown -R ...` guard, NOT as a separate parallel `postCreateCommand` object entry (which races with anything else touching `~/.claude/`)?",
+      critical: true,
+    },
+
+    // Single consolidated Auth Policy compliance check
+    // (replaces 9 overlapping legacy items: no_anthropic_api_key_in_remote_env, no_remote_env_auth_vars,
+    //  no_gh_auth_automation, setup_script_chown_only, setup_script_no_credentials_write, no_secrets_block,
+    //  no_initialize_command, no_auth_staging_mount, no_claude_config_dir_env)
+    {
+      id: "auth_policy_compliance",
+      description:
+        "Does the generated config strictly follow SKILL.md § Auth Policy? To pass, ALL of the following must hold: (a) no `remoteEnv` auth vars at all — no `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `CLAUDE_CONFIG_DIR`, or any API key via `${localEnv:...}` (empty-string `ANTHROPIC_API_KEY` breaks Claude OAuth; `CLAUDE_CONFIG_DIR` breaks the volume strategy); (b) no `secrets` block; (c) no `initializeCommand` (Keychain-extraction forwarder was removed); (d) no automation of `gh auth login`, `claude login`, or `opencode auth login` anywhere in postCreateCommand or setup-container.sh; (e) `setup-container.sh` body is strictly a recursive chown loop — no credential writes, no `cp` into `.credentials.json`, no staging-file reads; (f) no bind mount for `~/.claude-auth-staging.json` or similar Keychain staging files.",
+      critical: true,
+    },
+
+    // Non-auth hygiene
     {
       id: "no_hardcoded_secrets",
       description:
         "Are there no hardcoded API keys or tokens in any generated file?",
       critical: true,
     },
+
+    // Skills sync (optional per SKILL.md — graded only if generated)
     {
-      id: "global_skills_sync_in_post_start",
+      id: "global_skills_sync_placement",
       description:
-        "Is the global skills sync command (cp -rL from ~/.claude-host) placed in postStartCommand (NOT postCreateCommand), so it runs on every container restart?",
-      critical: true,
+        "IF the agent generated a global skills sync command, is it placed in `postStartCommand` (not `postCreateCommand`) and does it use `cp -rL` (dereference symlinks, since host skills may be symlinks with host-relative paths)? Skills sync is optional per SKILL.md — this check grades placement and form ONLY IF sync was generated; absence of a sync step is acceptable.",
+      critical: false,
     },
-    {
-      id: "symlink_dereference",
-      description:
-        "Does the skills sync command use `cp -rL` (with -L flag to dereference symlinks) rather than plain `cp -r`?",
-      critical: true,
-    },
+
+    // Feature discovery
     {
       id: "feature_discovery_performed",
       description:
-        "Did the agent scan for additional devcontainer features beyond the base stack (e.g., checking for databases, tools, secondary runtimes)?",
+        "Did the agent scan for additional devcontainer features beyond the base stack (databases, tools, secondary runtimes)?",
       critical: false,
-    },
-    {
-      id: "auth_forwarding_initialize_command",
-      description:
-        "Does devcontainer.json include an `initializeCommand` that extracts Claude Code tokens from macOS Keychain using `security find-generic-password -s 'Claude Code-credentials'`?",
-      critical: true,
-    },
-    {
-      id: "auth_staging_mount",
-      description:
-        "Is there a bind mount for the auth staging file (e.g., `~/.claude-auth-staging.json`) from host to container, read-only?",
-      critical: true,
-    },
-    {
-      id: "auth_copy_in_post_create",
-      description:
-        "Does postCreateCommand include copying auth staging file to `~/.claude/.credentials.json`? Must use proper error handling (set -euo pipefail or explicit checks with meaningful error messages), NOT silent `|| true` that masks failures.",
-      critical: true,
-    },
-    {
-      id: "no_claude_config_dir_env",
-      description:
-        "Does remoteEnv NOT contain CLAUDE_CONFIG_DIR? Setting it breaks the volume auth strategy.",
-      critical: true,
-    },
-    {
-      id: "volume_ownership_fix",
-      description:
-        "Does postCreateCommand include `sudo chown` for the ~/.claude/ volume BEFORE Claude Code CLI installation? Docker named volumes are created as root — without chown, CLI install and auth token writes fail.",
-      critical: true,
-    },
-    {
-      id: "gh_auth_setup",
-      description:
-        "Does postCreateCommand (or setup-container.sh) configure gh CLI authentication AND git credential helper? Must include: (1) `gh auth login --with-token` using GITHUB_TOKEN, (2) `gh auth setup-git` to register credential helper for HTTPS git operations. Both `gh` CLI commands and HTTPS git push/pull depend on this.",
-      critical: true,
     },
   ];
 }();

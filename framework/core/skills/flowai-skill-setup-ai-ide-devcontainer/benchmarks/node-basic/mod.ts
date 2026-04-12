@@ -41,15 +41,9 @@ Confirm any file creation prompts.`;
       critical: true,
     },
     {
-      id: "anthropic_api_key_env",
-      description:
-        "Does remoteEnv or containerEnv reference ANTHROPIC_API_KEY via ${localEnv:ANTHROPIC_API_KEY}?",
-      critical: true,
-    },
-    {
       id: "post_create_command",
       description:
-        "Does postCreateCommand include `npm install` (or equivalent dependency install)?",
+        "Does postCreateCommand include `npm install` (or equivalent dependency install matching the lockfile: `yarn install`, `pnpm install`)?",
       critical: true,
     },
     {
@@ -60,7 +54,8 @@ Confirm any file creation prompts.`;
     },
     {
       id: "remote_user_set",
-      description: "Is remoteUser set to a non-root user (e.g., 'node')?",
+      description:
+        "Is `remoteUser` set to a non-root user (e.g. `node` for node:* images, `vscode` for mcr images)?",
       critical: false,
     },
     {
@@ -70,9 +65,9 @@ Confirm any file creation prompts.`;
       critical: false,
     },
     {
-      id: "gh_auth_setup",
+      id: "auth_policy_compliance",
       description:
-        "Does postCreateCommand (or setup-container.sh) configure gh CLI authentication AND git credential helper? Must include: (1) `gh auth login --with-token` using GITHUB_TOKEN, (2) `gh auth setup-git` to register credential helper for HTTPS git operations.",
+        "Does the generated config strictly follow SKILL.md § Auth Policy? ALL must hold: (a) no `remoteEnv` auth vars (no `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `CLAUDE_CONFIG_DIR` via `${localEnv:...}` — forwarding `${localEnv:ANTHROPIC_API_KEY}` resolves to an empty string when unset and silently breaks Claude OAuth); (b) no `secrets` block; (c) no `initializeCommand`; (d) no automation of `gh auth login`, `claude login`, or any other CLI login in postCreateCommand; (e) if `setup-container.sh` is generated, its body is strictly a chown loop.",
       critical: true,
     },
     {

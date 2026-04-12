@@ -1,5 +1,7 @@
 # Dockerfile Patterns
 
+> `gh` (GitHub CLI) and common utilities are installed via the devcontainer features (`ghcr.io/devcontainers/features/github-cli:1`, `ghcr.io/devcontainers/features/common-utils:2`) that the skill always adds. Do NOT re-install them in the Dockerfile — double installation wastes layers and causes version skew with the feature's self-update path.
+
 ## Base Pattern (all stacks)
 
 ```dockerfile
@@ -16,7 +18,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     jq \
     && rm -rf /var/lib/apt/lists/*
 
-# Non-root user (skip if base image already has one)
+# Non-root user — ONLY create when the base image does NOT already provide one.
+# mcr.microsoft.com/devcontainers/* ships `vscode`; node:* ships `node`;
+# denoland/deno:* ships `deno`. In those cases, skip this RUN block and set
+# `ARG USERNAME=<existing>` to match the base image's user.
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
     && echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/$USERNAME \
@@ -25,22 +30,23 @@ RUN groupadd --gid $USER_GID $USERNAME \
 
 ## Deno Stack
 
+Preferred: use `mcr.microsoft.com/devcontainers/base:ubuntu` as base image + the
+`ghcr.io/devcontainers-extra/features/deno:latest` devcontainer feature (see SKILL.md § Step 1).
+The Dockerfile below is for cases where a custom Dockerfile is needed anyway
+(e.g. firewall packages, extra system deps):
+
 ```dockerfile
-FROM debian:bookworm-slim
+FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-# ... base pattern ...
+# ... base pattern (skip user creation — `vscode` user already exists) ...
 
-# Deno
+# Deno — install in Dockerfile only if NOT using the devcontainer feature.
+# Prefer the feature; this is a fallback for images without feature support.
 ENV DENO_INSTALL="/usr/local"
 RUN curl -fsSL https://deno.land/install.sh | sh -s -- --yes
 
-# GitHub CLI
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-    | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
-    | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt-get update && apt-get install -y gh \
-    && rm -rf /var/lib/apt/lists/*
+# gh CLI is provided by the ghcr.io/devcontainers/features/github-cli:1 feature —
+# do NOT re-install it here.
 ```
 
 ## AI CLI Installation (append for selected tools)
