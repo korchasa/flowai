@@ -26,12 +26,37 @@ async function findSkillDir(skillName: string): Promise<string> {
   );
 }
 
-const SOURCES = [
-  { skill: "flowai-review", phase: "Review Phase" },
-  { skill: "flowai-commit", phase: "Commit Phase" },
-] as const;
-
-const COMPOSITE = "flowai-review-and-commit";
+/** Sync-check pairs: each composite inlines step_by_step from its sources.
+ *  `allowedDivergentSteps` lists step numbers (1-based) that MAY differ
+ *  between source and composite — the composite has its own version of
+ *  those steps (e.g., Phase 2 step 1 skips diff re-reading). */
+const SYNC_CHECKS: Array<{
+  composite: string;
+  sources: Array<{
+    skill: string;
+    phase: string;
+    allowedDivergentSteps?: number[];
+  }>;
+}> = [
+  {
+    composite: "flowai-review-and-commit",
+    sources: [
+      { skill: "flowai-review", phase: "Review Phase" },
+      { skill: "flowai-commit", phase: "Commit Phase" },
+    ],
+  },
+  {
+    composite: "flowai-review-and-commit-beta",
+    sources: [
+      { skill: "flowai-review", phase: "Review Phase" },
+      {
+        skill: "flowai-commit-beta",
+        phase: "Commit Phase",
+        allowedDivergentSteps: [1],
+      },
+    ],
+  },
+];
 
 function extractStepByStep(content: string): string | null {
   const match = content.match(
@@ -40,48 +65,105 @@ function extractStepByStep(content: string): string | null {
   return match ? match[1].trim() : null;
 }
 
+/** Split step_by_step text into individual steps by numbered headings.
+ *  Returns array of { num, text } where text includes everything from
+ *  the step heading to the next step heading (or end). */
+function splitSteps(
+  stepByStep: string,
+): Array<{ num: number; text: string }> {
+  const steps: Array<{ num: number; text: string }> = [];
+  const regex = /^(\d+)\.\s+\*\*/gm;
+  const matches: Array<{ index: number; num: number }> = [];
+  let m;
+  while ((m = regex.exec(stepByStep)) !== null) {
+    matches.push({ index: m.index, num: parseInt(m[1]) });
+  }
+  for (let i = 0; i < matches.length; i++) {
+    const start = matches[i].index;
+    const end = i + 1 < matches.length ? matches[i + 1].index : undefined;
+    steps.push({
+      num: matches[i].num,
+      text: stepByStep.slice(start, end).trim(),
+    });
+  }
+  return steps;
+}
+
 let hasError = false;
 
-console.log("Checking skill sync: flowai-review-and-commit...");
-
-const compositeDir = await findSkillDir(COMPOSITE);
-const compositePath = `${compositeDir}/SKILL.md`;
-const compositeContent = await Deno.readTextFile(compositePath);
-
-for (const { skill, phase } of SOURCES) {
-  const sourceDir = await findSkillDir(skill);
-  const sourcePath = `${sourceDir}/SKILL.md`;
-  const sourceContent = await Deno.readTextFile(sourcePath);
-  const sourceSteps = extractStepByStep(sourceContent);
-
-  if (!sourceSteps) {
-    console.error(
-      `\n❌ ${sourcePath}: missing <step_by_step> section.\n` +
-        `   Every skill must have a <step_by_step> block with instructions.`,
-    );
-    hasError = true;
+for (const { composite, sources } of SYNC_CHECKS) {
+  let compositeDir: string;
+  try {
+    compositeDir = await findSkillDir(composite);
+  } catch {
+    // Composite not found — skip (e.g., beta not yet created)
     continue;
   }
 
-  if (!compositeContent.includes(sourceSteps)) {
-    console.error(
-      `\n❌ ${COMPOSITE} is out of sync with ${skill}.\n` +
-        `   The <step_by_step> content from ${sourcePath}\n` +
-        `   must appear verbatim inside ${compositePath} (${phase}).\n` +
-        `\n` +
-        `   WHY: ${COMPOSITE} inlines both workflows to avoid fragile\n` +
-        `   cross-skill delegation. When you change ${skill},\n` +
-        `   copy the updated <step_by_step> into the ${phase}\n` +
-        `   of ${compositePath}.`,
-    );
-    hasError = true;
+  console.log(`Checking skill sync: ${composite}...`);
+  const compositePath = `${compositeDir}/SKILL.md`;
+  const compositeContent = await Deno.readTextFile(compositePath);
+
+  for (const { skill, phase, allowedDivergentSteps } of sources) {
+    let sourceDir: string;
+    try {
+      sourceDir = await findSkillDir(skill);
+    } catch {
+      // Source not found — skip (e.g., beta not yet created)
+      continue;
+    }
+
+    const sourcePath = `${sourceDir}/SKILL.md`;
+    const sourceContent = await Deno.readTextFile(sourcePath);
+    const sourceSteps = extractStepByStep(sourceContent);
+
+    if (!sourceSteps) {
+      console.error(
+        `\n❌ ${sourcePath}: missing <step_by_step> section.\n` +
+          `   Every skill must have a <step_by_step> block with instructions.`,
+      );
+      hasError = true;
+      continue;
+    }
+
+    if (!allowedDivergentSteps || allowedDivergentSteps.length === 0) {
+      // Verbatim match (original behavior)
+      if (!compositeContent.includes(sourceSteps)) {
+        console.error(
+          `\n❌ ${composite} is out of sync with ${skill}.\n` +
+            `   The <step_by_step> content from ${sourcePath}\n` +
+            `   must appear verbatim inside ${compositePath} (${phase}).\n` +
+            `\n` +
+            `   WHY: ${composite} inlines both workflows to avoid fragile\n` +
+            `   cross-skill delegation. When you change ${skill},\n` +
+            `   copy the updated <step_by_step> into the ${phase}\n` +
+            `   of ${compositePath}.`,
+        );
+        hasError = true;
+      }
+    } else {
+      // Per-step comparison: steps NOT in allowedDivergentSteps must match
+      const sourceStepList = splitSteps(sourceSteps);
+      for (const step of sourceStepList) {
+        if (allowedDivergentSteps.includes(step.num)) continue;
+        if (!compositeContent.includes(step.text)) {
+          console.error(
+            `\n❌ ${composite} is out of sync with ${skill} (step ${step.num}).\n` +
+              `   Step ${step.num} from ${sourcePath} must appear verbatim\n` +
+              `   inside ${compositePath} (${phase}).\n` +
+              `   (Steps ${
+                allowedDivergentSteps.join(", ")
+              } are allowed to diverge.)`,
+          );
+          hasError = true;
+        }
+      }
+    }
   }
 }
 
 if (hasError) {
   Deno.exit(1);
 } else {
-  console.log(
-    "✅ flowai-review-and-commit is in sync with flowai-review and flowai-commit.",
-  );
+  console.log("✅ All composite skills are in sync with their sources.");
 }

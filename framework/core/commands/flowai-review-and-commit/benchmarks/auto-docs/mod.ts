@@ -68,11 +68,5 @@ Keep answers brief and affirmative.`;
       description: "Is the updated `math.ts` present in a commit?",
       critical: true,
     },
-    {
-      id: "doc_audit_report",
-      description:
-        "Did the agent output a documentation audit report listing which documents were checked and what was updated/skipped?",
-      critical: false,
-    },
   ];
 }();

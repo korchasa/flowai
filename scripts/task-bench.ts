@@ -139,6 +139,7 @@ Options:
     SUPPORTED_IDES.join(", ")
   }) (default: from config)
   -n, --runs <number>          Number of runs per scenario (default: 1)
+  -s, --skill-override <name>  Override skill name in filtered scenarios (A/B testing)
   -p, --parallel <number>      Max concurrent scenarios (default: 1, sequential)
   --lock <string>              Custom lock file name (default: benchmarks.lock)
   --help                       Show this help message
@@ -150,11 +151,20 @@ async function main() {
   const config = await loadConfig();
 
   const args = parse(Deno.args, {
-    string: ["filter", "runs", "model", "ide", "parallel", "lock"],
+    string: [
+      "filter",
+      "runs",
+      "model",
+      "ide",
+      "parallel",
+      "lock",
+      "skill-override",
+    ],
     boolean: ["help"],
     alias: {
       f: "filter",
       n: "runs",
+      s: "skill-override",
       h: "help",
       m: "model",
       i: "ide",
@@ -228,11 +238,39 @@ async function main() {
   const filter = args.filter;
   const runs = parseInt(args.runs || "1", 10);
   const parallel = parseInt(args.parallel || "1", 10);
+  const skillOverride = args["skill-override"] as string | undefined;
 
   const allScenarios = await discoverScenarios();
-  const scenariosToRun = filter
+  let scenariosToRun = filter
     ? allScenarios.filter((s) => s.id.includes(String(filter)))
     : allScenarios;
+
+  // Apply skill override: repoint filtered scenarios to a different skill.
+  // Useful for A/B testing (e.g., run flowai-commit benchmarks against flowai-commit-beta).
+  if (skillOverride) {
+    scenariosToRun = scenariosToRun
+      .filter((s) => s.skill) // only skill-based scenarios
+      .map((s) => {
+        const originalSkill = s.skill!;
+        // Shallow-clone to avoid mutating the original scenario object
+        const clone = Object.create(
+          Object.getPrototypeOf(s),
+          Object.getOwnPropertyDescriptors(s),
+        ) as typeof s;
+        clone.skill = skillOverride;
+        clone.id = s.id.replace(originalSkill, skillOverride);
+        clone.userQuery = s.userQuery.replace(
+          `/${originalSkill}`,
+          `/${skillOverride}`,
+        );
+        return clone;
+      });
+    console.log(
+      `Skill override: ${
+        scenariosToRun[0]?.skill ?? "?"
+      } (original skill replaced in ${scenariosToRun.length} scenarios)`,
+    );
+  }
 
   console.log(`Found ${scenariosToRun.length} scenarios.`);
   console.log(`Using IDE: ${adapter.ide}`);

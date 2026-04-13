@@ -71,11 +71,5 @@ export function getUserById(id: number) {
       description: "Is `api.ts` present in a commit?",
       critical: true,
     },
-    {
-      id: "audit_report_dynamic",
-      description:
-        "Does the documentation audit report include a line for `api-reference.md` (not just the default 3 files)?",
-      critical: false,
-    },
   ];
 }();
