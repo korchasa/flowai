@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.2](https://github.com/korchasa/flowai/compare/v0.8.1...v0.8.2) (2026-04-16)
+
+
+### Features
+
+* **core:** add --global sync mode for user-level framework install ([2ba4c2c](https://github.com/korchasa/flowai/commit/2ba4c2c068a2c933ebf61bbdc57da617f26bc477))
+* **core:** extend check-srs-evidence to validate line-number refs ([dbd6d65](https://github.com/korchasa/flowai/commit/dbd6d65fda83893e15923cf4cfb088ee14760d1d))
+* **core:** reflection follow-ups — SRS-evidence validator, InMemoryFs mkdir, authoring docs ([98f6b4e](https://github.com/korchasa/flowai/commit/98f6b4e376c4aa693720b5d0ade973b519ca3b19))
+* **skills:** auto-invoke flowai-reflect on session complexity ([0c77749](https://github.com/korchasa/flowai/commit/0c77749d178adf2b0315b57212895168bf4e757d))
+
+
+### Tests
+
+* **core:** benchmark auto-invoke reflect, drop redundant step-7 divergence ([bb895f8](https://github.com/korchasa/flowai/commit/bb895f8168abbfcedf1629b0dcebd2b155f6e987))
+
+
+### Chores
+
+* ignore .claude/scheduled_tasks.lock ([8ab6401](https://github.com/korchasa/flowai/commit/8ab64015b6c69f0be158d9cc514b9f9553f17e96))
+
 ### [0.8.1](https://github.com/korchasa/flowai/compare/v0.8.0...v0.8.1) (2026-04-16)
 
 
