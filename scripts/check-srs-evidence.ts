@@ -41,17 +41,24 @@ export type EvidenceClaim = {
 const EVIDENCE_LINE = /Evidence:/;
 
 /** On an evidence line, find every test-file reference (possibly with a
- * `::testName` suffix, possibly backticked). Runs independently of where
- * `Evidence:` appears in the line — so a line citing `foo.ts` AND
- * `bar_test.ts::x` produces one claim for `bar_test.ts::x`. */
-const TEST_REF = /`?([^`\s]+?_test\.(?:ts|tsx|js|mjs))(?:::([^`\n]+?))?`/g;
+ * `::testName` suffix or a `:lineno` / `:lineno-lineno` suffix, possibly
+ * backticked). Runs independently of where `Evidence:` appears in the line
+ * — so a line citing `foo.ts` AND `bar_test.ts::x` produces one claim for
+ * `bar_test.ts::x`.
+ *
+ * The suffix branches are mutually exclusive in a non-capturing group:
+ *   - `::name`    → group[2] = name (validate test exists inside file)
+ *   - `:123-456`  → group[2] = undefined (validate file exists only)
+ *   - (nothing)   → group[2] = undefined (validate file exists only) */
+const TEST_REF =
+  /`?([^`\s:]+?_test\.(?:ts|tsx|js|mjs))(?:::([^`\n]+?)|:\d+(?:-\d+)?)?`/g;
 
 /** Fallback for unbacktickled refs: same shape, terminated by period+EOL,
  * comma, or end-of-line. Test names CAN contain whitespace — the terminator
  * is terminal punctuation, not internal spacing. Example:
  *   `Evidence: cli/src/foo_test.ts::my multi word test.` → name="my multi word test". */
 const TEST_REF_UNQUOTED =
-  /(?<![\w`/])([\w./-]+?_test\.(?:ts|tsx|js|mjs))(?:::([^\n`]+?))?(?=[,;]|\.\s|\.$|$)/g;
+  /(?<![\w`/])([\w./-]+?_test\.(?:ts|tsx|js|mjs))(?:::([^\n`]+?)|:\d+(?:-\d+)?)?(?=[,;]|\.\s|\.$|$)/g;
 
 /** Extract all evidence claims from a markdown file. */
 export function extractEvidenceClaims(

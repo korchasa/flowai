@@ -30,6 +30,23 @@ Deno.test("extractEvidenceClaims - picks up file-only evidence", () => {
   assertEquals(claims[0].testName, null);
 });
 
+Deno.test("extractEvidenceClaims - picks up line-number ref (backticked)", () => {
+  const content = `Evidence: \`cli/src/source_test.ts:306-319\` covers it.`;
+  const claims = extractEvidenceClaims("doc.md", content);
+  assertEquals(claims.length, 1);
+  assertEquals(claims[0].targetFile, "cli/src/source_test.ts");
+  // Line-number form → file existence only; no test name to validate.
+  assertEquals(claims[0].testName, null);
+});
+
+Deno.test("extractEvidenceClaims - picks up single-line-number ref", () => {
+  const content = `Evidence: \`cli/src/foo_test.ts:42\` has it.`;
+  const claims = extractEvidenceClaims("doc.md", content);
+  assertEquals(claims.length, 1);
+  assertEquals(claims[0].targetFile, "cli/src/foo_test.ts");
+  assertEquals(claims[0].testName, null);
+});
+
 Deno.test("extractEvidenceClaims - ignores non-test files", () => {
   const content = `Evidence: cli/src/sync.ts:42 — the main path.`;
   const claims = extractEvidenceClaims("doc.md", content);
