@@ -181,8 +181,9 @@ graph TD
     FileWriter --> FS[Project FS]
 ```
 - **Components:**
-  - `cli/src/cli.ts` — CLI entry, `sync` subcommand, IDE context guard (`isInsideIDE`), @cliffy/command
-  - `cli/src/config.ts` — `.flowai.yaml` parser/writer, validation (include/exclude mutual exclusivity)
+  - `cli/src/cli.ts` — CLI entry, `sync` subcommand, `--global`/`-g` flag, IDE context guard (`isInsideIDE`; skipped when `--global` is set), @cliffy/command
+  - `cli/src/config.ts` — `.flowai.yaml` parser/writer, validation (include/exclude mutual exclusivity). Config path resolution honours scope (`<cwd>/.flowai.yaml` vs `~/.flowai.yaml`).
+  - `cli/src/scope.ts` — `SyncScope = "project" | "global"`. `resolveScope(flags)` reads the `--global` flag. `resolveConfigPath(scope, cwd, home)` returns `<cwd>/.flowai.yaml` or `~/.flowai.yaml`. `resolveIdeBaseDir(ide, scope, cwd, home, purpose?)` returns the target base dir per IDE per scope (purpose `"skills" | "agents"` used only to split Codex global paths: `~/.codex/` for agents, `~/.agents/skills/` for skills). Project mode maps 1:1 to `<cwd>/.{ide.configDir}`. Global mode maps to user-level native dirs: Claude `~/.claude/`, Cursor `~/.cursor/`, OpenCode `~/.config/opencode/`, Codex-agents `~/.codex/`, Codex-skills `~/.agents/skills/`.
   - `cli/src/config_generator.ts` — config creation: interactive (prompts via @cliffy/prompt) and non-interactive (auto-detect IDEs, all packs)
   - `cli/src/source.ts` — `FrameworkSource` interface, `BundledSource` (reads `bundled.json`), `GitSource` (clones repo to tmpdir, delegates to `LocalSource`), `LocalSource` (reads `framework/` dir, follows symlinks, excludes benchmarks/_test), `InMemoryFrameworkSource` (tests)
   - `cli/src/sync.ts` — orchestrates: `resolveSource()` (git/local/bundled) → filter skills/agents → compute plan → write files → symlinks
@@ -211,6 +212,15 @@ graph TD
 - **Naming:** Pack directory names are the final installed names (e.g., `flowai-commit`, `flowai-skill-write-dep`). No name transformation at install time.
 - **Dev-only file exclusion:** Bundle and sync exclude dev-only files from distribution: benchmark scenarios (`/benchmarks/`) and test files (`_test.*`). Filtering at two levels: `bundle-framework.ts` (build time) and `readSkillFiles`/`readPackSkillFiles` in `sync.ts` (runtime).
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
+- **Scope + global mode (FR-DIST.GLOBAL):** `SyncScope = "project" | "global"` threaded via `cli/src/scope.ts`. Project = default: config `<cwd>/.flowai.yaml`, targets `<cwd>/.{ide}/`, scaffolds + artifact sync enabled, hooks merged into `<cwd>/.claude/settings.json`. Global (`--global`): config `~/.flowai.yaml`, targets per IDE native user dir (see Components bullet for `scope.ts`), scaffolds + artifact sync SKIPPED (templates still install), hooks merged into `~/.claude/settings.json` (same manifest-based logic). Both configs may coexist; project wins when `--global` is absent and both exist. `resolvePackResources()` filters by the `scope:` frontmatter field: `project-only` primitives skipped in global mode, `global-only` primitives skipped in project mode, absent = both (FR-PACKS.SCOPE).
+
+### 3.5.1 AGENTS.md Re-Adaptation Skill — `flowai-adapt-instructions`
+
+- **Purpose:** Standalone skill (installable in both scopes) that re-adapts the project's AGENTS.md when the upstream template changes significantly. Reads the installed template (`{ide}/assets/AGENTS.template.md`, path resolved per scope), diffs against `<cwd>/AGENTS.md`, proposes a merge preserving project-specific sections, writes on user approval.
+- **Location:** `framework/core/commands/flowai-adapt-instructions/SKILL.md` + `benchmarks/basic/mod.ts` (user-invoked, so placed under `commands/` per FR-PACKS.STRUCT naming).
+- **No template duplication:** The skill does NOT carry its own copy of the AGENTS.md template. It relies on the pack-level asset installed by `flowai sync` into `{ide}/assets/`.
+- **Relation to `flowai-update`:** `flowai-update` (scope: `project-only`) delegates the AGENTS.md migration step to `/flowai-adapt-instructions` rather than re-implementing template diffing.
+- **Behavioral requirements:** See benchmark `flowai-adapt-instructions-basic`.
 
 ### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`)
 

@@ -1,4 +1,5 @@
 // FR-HOOK-RESOURCES.INSTALL — IDE-specific hook config generation
+// FR-DIST.GLOBAL — hook config resolves base dir via scope.
 /** Write hook configuration files for each IDE (Claude, Cursor, OpenCode, Codex) */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type { HookDefinition } from "./types.ts";
@@ -12,18 +13,25 @@ import {
   transformHookForCursor,
 } from "./hooks.ts";
 
-/** Write IDE-specific hook configuration files */
+/** Write IDE-specific hook configuration files. Accepts a pre-resolved
+ * `ideBaseDir` so the caller controls project vs global scope routing
+ * (e.g. `<cwd>/.claude` vs `~/.claude`). The `scriptPath` embedded in each
+ * generated hook entry is RELATIVE: `<ide.configDir>/scripts/<name>/run.ts`
+ * — unchanged by scope so the hook fires identically regardless of install
+ * location (Claude Code resolves relative paths against the config file). */
 export async function writeHookConfig(
   cwd: string,
   ide: { name: string; configDir: string },
   hookDefs: Array<{ name: string; hook: HookDefinition }>,
   oldManifest: ReturnType<typeof readManifest>,
   fs: FsAdapter,
+  ideBaseDir?: string,
 ): Promise<void> {
   const activeNames = hookDefs.map((d) => d.name);
+  const base = ideBaseDir ?? join(cwd, ide.configDir);
 
   if (ide.name === "claude") {
-    const settingsPath = join(cwd, ide.configDir, "settings.json");
+    const settingsPath = join(base, "settings.json");
     let existing: Record<string, unknown> = {};
     if (await fs.exists(settingsPath)) {
       try {
@@ -52,7 +60,7 @@ export async function writeHookConfig(
     const merged = mergeClaudeHooks(existing, claudeHooks, oldManifest);
     await fs.writeFile(settingsPath, JSON.stringify(merged, null, 2));
   } else if (ide.name === "cursor") {
-    const hooksPath = join(cwd, ide.configDir, "hooks.json");
+    const hooksPath = join(base, "hooks.json");
     let existing: Record<string, unknown> = {};
     if (await fs.exists(hooksPath)) {
       try {
@@ -79,12 +87,7 @@ export async function writeHookConfig(
     const merged = mergeCursorHooks(existing, cursorHooks, oldManifest);
     await fs.writeFile(hooksPath, JSON.stringify(merged, null, 2));
   } else if (ide.name === "opencode") {
-    const pluginPath = join(
-      cwd,
-      ide.configDir,
-      "plugins",
-      "flowai-hooks.ts",
-    );
+    const pluginPath = join(base, "plugins", "flowai-hooks.ts");
     const openCodeHooks = hookDefs.map(({ name, hook }) => ({
       name,
       hook,
@@ -94,9 +97,9 @@ export async function writeHookConfig(
     await fs.writeFile(pluginPath, content);
   } else if (ide.name === "codex") {
     // FR-DIST.CODEX-HOOKS — Codex uses Claude-Code-compatible nested schema
-    // at <repo>/.codex/hooks.json. Handled by syncCodexHooks elsewhere (call
+    // at <base>/hooks.json. Handled by syncCodexHooks elsewhere (call
     // site already gates on experimental.codexHooks).
-    const hooksPath = join(cwd, ide.configDir, "hooks.json");
+    const hooksPath = join(base, "hooks.json");
     const existingRaw = await fs.exists(hooksPath)
       ? await fs.readFile(hooksPath)
       : null;

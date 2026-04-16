@@ -1,6 +1,8 @@
 // FR-DIST.SYNC — resource file readers
+// FR-PACKS.SCOPE — scope-aware primitive filter
 /** Read skill/command/agent/hook/script/asset files from framework source */
 import { extractPackAssetPaths, type FrameworkSource } from "./source.ts";
+import type { SyncScope } from "./scope.ts";
 import { transformAgent, transformSkillModel } from "./transform.ts";
 import type { HookDefinition, PackDefinition, UpstreamFile } from "./types.ts";
 import { parse as parseYaml } from "@std/yaml";
@@ -10,6 +12,76 @@ export function isDevOnlyPath(path: string): boolean {
   if (/\/benchmarks\//.test(path)) return true;
   if (/_test\.\w+$/.test(path)) return true;
   return false;
+}
+
+/** FR-PACKS.SCOPE — read the `scope:` field out of a SKILL.md frontmatter.
+ * Returns `"project-only" | "global-only" | null` (null = absent / both modes).
+ * Invalid values return null — validator rejects them in a separate step.
+ *
+ * Cheap regex-based parse: matches `^scope:\s*(project-only|global-only)` in
+ * the first `---...---` block. Avoids a full YAML parse per skill at sync time.
+ */
+export function readSkillScopeField(
+  content: string,
+): "project-only" | "global-only" | null {
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fmMatch) return null;
+  const scopeMatch = fmMatch[1].match(
+    /^scope:\s*(project-only|global-only)\s*$/m,
+  );
+  if (!scopeMatch) return null;
+  return scopeMatch[1] as "project-only" | "global-only";
+}
+
+/** FR-PACKS.SCOPE — is a primitive installable under the given scope? */
+export function scopeAllowsPrimitive(
+  primitiveScope: "project-only" | "global-only" | null,
+  activeScope: SyncScope,
+): boolean {
+  if (primitiveScope === null) return true;
+  if (primitiveScope === "project-only") return activeScope === "project";
+  return activeScope === "global"; // "global-only"
+}
+
+/** FR-PACKS.SCOPE — read SKILL.md files for a list of names from framework
+ * source, filtering by scope. Used by the sync orchestrator to drop
+ * primitives that declare an incompatible scope before resource read.
+ *
+ * Returns the subset of `names` whose SKILL.md scope allows `activeScope`.
+ */
+export async function filterNamesByScope(
+  names: string[],
+  packSkillRegex: RegExp,
+  allPaths: string[],
+  source: FrameworkSource,
+  activeScope: SyncScope,
+): Promise<string[]> {
+  const result: string[] = [];
+  const nameSet = new Set(names);
+  // Find SKILL.md paths for each name (first match per name).
+  const skillMdByName = new Map<string, string>();
+  for (const path of allPaths) {
+    const match = path.match(packSkillRegex);
+    if (match && nameSet.has(match[1]) && path.endsWith("/SKILL.md")) {
+      if (!skillMdByName.has(match[1])) {
+        skillMdByName.set(match[1], path);
+      }
+    }
+  }
+  for (const name of names) {
+    const skillMdPath = skillMdByName.get(name);
+    if (!skillMdPath) {
+      // No SKILL.md found — let downstream error path handle it.
+      result.push(name);
+      continue;
+    }
+    const content = await source.readFile(skillMdPath);
+    const primitiveScope = readSkillScopeField(content);
+    if (scopeAllowsPrimitive(primitiveScope, activeScope)) {
+      result.push(name);
+    }
+  }
+  return result;
 }
 
 /**

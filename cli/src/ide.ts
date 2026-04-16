@@ -1,5 +1,7 @@
 // FR-DIST.DETECT — IDE auto-detection by config dir presence
+// FR-DIST.GLOBAL — scope-aware IDE enumeration (global mode = all KNOWN_IDES).
 import { type FsAdapter, join } from "./adapters/fs.ts";
+import type { SyncScope } from "./scope.ts";
 import { type IDE, KNOWN_IDES } from "./types.ts";
 
 /**
@@ -41,11 +43,19 @@ export async function detectIDEs(cwd: string, fs: FsAdapter): Promise<IDE[]> {
   return detected;
 }
 
-/** Resolve IDE list from config or auto-detect */
+/** Resolve IDE list from config or auto-detect.
+ *
+ * Global mode: auto-detection by cwd directory presence is meaningless
+ * because the target is the user-level dir, not the project. When
+ * `scope = "global"` and no explicit list is given, return all KNOWN_IDES
+ * — the user opts in to global mode explicitly via `--global`, so
+ * defaulting to every IDE matches the user intent of "install everywhere".
+ */
 export async function resolveIDEs(
   configIdes: string[] | undefined,
   cwd: string,
   fs: FsAdapter,
+  scope: SyncScope = "project",
 ): Promise<IDE[]> {
   if (configIdes && configIdes.length > 0) {
     const ides: IDE[] = [];
@@ -59,6 +69,9 @@ export async function resolveIDEs(
       ides.push(ide);
     }
     return ides;
+  }
+  if (scope === "global") {
+    return Object.values(KNOWN_IDES);
   }
   return await detectIDEs(cwd, fs);
 }

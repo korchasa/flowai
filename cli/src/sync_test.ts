@@ -739,3 +739,177 @@ Deno.test("sync - codex target: removes stale agent on second run when excluded"
     "agent block should be removed",
   );
 });
+
+// --- FR-DIST.GLOBAL — global sync mode ---
+
+/** Minimal framework fixture covering pack + skill + command + asset. */
+function makeMinimalFramework(): InMemoryFrameworkSource {
+  const files = new Map<string, string>();
+  files.set(
+    "framework/core/pack.yaml",
+    `name: core
+version: 1.0.0
+description: Core pack
+assets:
+  AGENTS.template.md: AGENTS.md
+`,
+  );
+  files.set(
+    "framework/core/skills/flowai-skill-demo/SKILL.md",
+    `---
+name: flowai-skill-demo
+description: Demo skill
+---
+Body.
+`,
+  );
+  files.set(
+    "framework/core/commands/flowai-project-cmd/SKILL.md",
+    `---
+name: flowai-project-cmd
+description: Project-only command
+scope: project-only
+---
+Body.
+`,
+  );
+  files.set(
+    "framework/core/commands/flowai-global-cmd/SKILL.md",
+    `---
+name: flowai-global-cmd
+description: Global-only command
+scope: global-only
+---
+Body.
+`,
+  );
+  files.set(
+    "framework/core/assets/AGENTS.template.md",
+    "# AGENTS template\n",
+  );
+  return new InMemoryFrameworkSource(files);
+}
+
+Deno.test("global mode installs templates", async () => {
+  const fs = new InMemoryFsAdapter();
+  const src = makeMinimalFramework();
+  await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, scope: "global", home: "/home/user", source: src },
+  );
+
+  // Template lands at ~/.claude/assets/AGENTS.template.md
+  assertEquals(
+    await fs.exists("/home/user/.claude/assets/AGENTS.template.md"),
+    true,
+  );
+});
+
+Deno.test("global mode skips artifact sync", async () => {
+  const fs = new InMemoryFsAdapter();
+  const src = makeMinimalFramework();
+  const result = await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, scope: "global", home: "/home/user", source: src },
+  );
+
+  // Global mode suppresses artifact path hints in assetActions.
+  // Every assetAction's scaffolds array must be empty (no project
+  // artifact mapping surfaced in global mode).
+  for (const action of result.assetActions) {
+    assertEquals(action.scaffolds, []);
+  }
+  // No <cwd>/CLAUDE.md symlink created.
+  assertEquals(await fs.exists("/project/CLAUDE.md"), false);
+  // No <cwd>/.claude/ directory written either.
+  assertEquals(
+    await fs.exists("/project/.claude/skills/flowai-skill-demo/SKILL.md"),
+    false,
+  );
+  // And the skill DID land globally.
+  assertEquals(
+    await fs.exists(
+      "/home/user/.claude/skills/flowai-skill-demo/SKILL.md",
+    ),
+    true,
+  );
+});
+
+Deno.test("scope filter respects global mode", async () => {
+  const fs = new InMemoryFsAdapter();
+  const src = makeMinimalFramework();
+  await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, scope: "global", home: "/home/user", source: src },
+  );
+
+  // project-only command is excluded in global mode.
+  assertEquals(
+    await fs.exists("/home/user/.claude/skills/flowai-project-cmd/SKILL.md"),
+    false,
+  );
+  // global-only command is installed in global mode.
+  assertEquals(
+    await fs.exists("/home/user/.claude/skills/flowai-global-cmd/SKILL.md"),
+    true,
+  );
+});
+
+Deno.test("scope filter respects project mode", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.claude");
+  const src = makeMinimalFramework();
+  await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, source: src },
+  );
+
+  // project-only command is installed in project mode.
+  assertEquals(
+    await fs.exists("/project/.claude/skills/flowai-project-cmd/SKILL.md"),
+    true,
+  );
+  // global-only command is excluded in project mode.
+  assertEquals(
+    await fs.exists("/project/.claude/skills/flowai-global-cmd/SKILL.md"),
+    false,
+  );
+});
+
+Deno.test("both modes coexist - independent targets", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.dirs.add("/project/.claude");
+  const src = makeMinimalFramework();
+
+  // Project sync writes to <cwd>/.claude.
+  await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, source: src },
+  );
+  // Global sync writes to ~/.claude.
+  await sync(
+    "/project",
+    makeConfig({ packs: ["core"], ides: ["claude"] }),
+    fs,
+    { yes: true, scope: "global", home: "/home/user", source: src },
+  );
+
+  assertEquals(
+    await fs.exists("/project/.claude/skills/flowai-skill-demo/SKILL.md"),
+    true,
+  );
+  assertEquals(
+    await fs.exists("/home/user/.claude/skills/flowai-skill-demo/SKILL.md"),
+    true,
+  );
+});

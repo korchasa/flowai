@@ -376,3 +376,44 @@ Call the configured model.
 `;
   assertEquals(validateIdeNeutrality("foo", body), []);
 });
+
+// --- FR-PACKS.SCOPE: scope frontmatter field ---
+
+Deno.test("validateScopeField: scope absent is valid (both modes)", () => {
+  const errors = validateSkillFrontmatter("foo", {
+    name: "foo",
+    description: "bar",
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("validateScopeField: scope: project-only is valid", () => {
+  const errors = validateSkillFrontmatter("foo", {
+    name: "foo",
+    description: "bar",
+    scope: "project-only",
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("validateScopeField: scope: global-only is valid", () => {
+  const errors = validateSkillFrontmatter("foo", {
+    name: "foo",
+    description: "bar",
+    scope: "global-only",
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("validateScopeField: invalid scope value is rejected", () => {
+  const errors = validateSkillFrontmatter("foo", {
+    name: "foo",
+    description: "bar",
+    scope: "both",
+  });
+  assertEquals(errors.length > 0, true);
+  assertEquals(
+    errors.some((e) => e.criterion === "FR-UNIVERSAL.FRONTMATTER"),
+    true,
+  );
+});

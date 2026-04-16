@@ -609,3 +609,42 @@ Deno.test("runUserSync - flowai-* agent not synced", async () => {
 
 // Re-export processPlan to ensure it's accessible (compile check)
 export { processPlan };
+
+// --- FR-DIST.GLOBAL — user_sync scans user-level dirs in global mode ---
+
+Deno.test("user_sync in global mode - scans home-level dirs", async () => {
+  const { scanIdeResources } = await import("./user_sync.ts");
+  const { InMemoryFsAdapter } = await import("./adapters/fs.ts");
+  const fs = new InMemoryFsAdapter();
+
+  // A user-created skill in the global claude skills dir. InMemoryFs only
+  // registers immediate parent dirs on writeFile, so pre-seed the grand-parent
+  // so scanIdeResources's fs.exists(skillsDir) check finds it.
+  fs.dirs.add("/home/user/.claude/skills");
+  await fs.writeFile(
+    "/home/user/.claude/skills/my-user-skill/SKILL.md",
+    "---\nname: my-user-skill\ndescription: test\n---\nbody",
+  );
+
+  const config = {
+    version: "1.1",
+    ides: ["claude"],
+    skills: { include: [], exclude: [] },
+    agents: { include: [], exclude: [] },
+    commands: { include: [], exclude: [] },
+  };
+  const ide = { name: "claude", configDir: ".claude" };
+
+  const resources = await scanIdeResources(
+    "/project",
+    ide,
+    config,
+    fs,
+    undefined,
+    "global",
+    "/home/user",
+  );
+  assertEquals(resources.length, 1);
+  assertEquals(resources[0].name, "my-user-skill");
+  assertEquals(resources[0].type, "skill");
+});

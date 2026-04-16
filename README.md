@@ -43,10 +43,22 @@ Requires [Deno](https://deno.land/) v2.x.
 
 ```sh
 deno install -g -A jsr:@korchasa/flowai
+
+# Recommended: install primitives once for all projects (user-level)
+flowai sync --global
+
+# Or install per-project (legacy, useful for team-wide or repo-tracked skills)
 flowai
 ```
 
-On first run, `flowai` interactively creates `.flowai.yaml` to configure which packs and skills to sync.
+### Global vs per-project
+
+- **Global (`flowai sync --global`)** — installs into IDE user-level dirs (`~/.claude/`, `~/.cursor/`, `~/.config/opencode/`, `~/.codex/`, `~/.agents/skills/`). Config at `~/.flowai.yaml`. One sync updates every project at once. Recommended default.
+- **Per-project (`flowai sync`)** — installs into `.{ide}/` in the current project. Config at `<cwd>/.flowai.yaml`. Use when you want team-wide skills tracked in the repo, or per-project overrides.
+
+Both modes can coexist. When both configs exist and no flag is passed, the project config wins. Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically (e.g. `/flowai-update` is `project-only` because it requires project context).
+
+On first run, `flowai` interactively creates the relevant `.flowai.yaml` to configure which packs and skills to sync.
 
 ### Quick Start Prompt
 

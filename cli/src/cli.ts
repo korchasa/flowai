@@ -1,4 +1,5 @@
 // FR-DIST.SYNC — CLI entry point for flowai sync
+// FR-DIST.GLOBAL — `--global` flag for user-level installs.
 // FR-DIST.UPDATE-CMD — self-update subcommand
 // FR-DIST.MIGRATE — migrate subcommand
 import { Command } from "@cliffy/command";
@@ -13,6 +14,7 @@ import {
 import { isInsideIDE } from "./ide.ts";
 import { type LoopOptions, runLoop } from "./loop.ts";
 import { type MigrateOptions, runMigrate } from "./migrate.ts";
+import { resolveHomeDir, type SyncScope } from "./scope.ts";
 import {
   DEFAULT_GIT_URL,
   type PlanItem,
@@ -33,16 +35,22 @@ function withSyncOptions<T extends Command<any>>(cmd: T): T {
       "--skip-update-check",
       "Skip checking for newer versions on JSR",
       { default: false },
+    )
+    .option(
+      "-g, --global",
+      "Install framework primitives into IDE user-level dirs (~/.claude/, ~/.cursor/, etc.) instead of project-local dirs. Uses ~/.flowai.yaml as config.",
+      { default: false },
     ) as T;
 }
 
 /** Extract sync options from parsed cliffy options */
 function extractSyncOptions(
   options: Record<string, unknown>,
-): { yes: boolean; skipUpdateCheck: boolean } {
+): { yes: boolean; skipUpdateCheck: boolean; global: boolean } {
   return {
     yes: options.yes as boolean,
     skipUpdateCheck: options.skipUpdateCheck as boolean,
+    global: options.global === true,
   };
 }
 
@@ -50,22 +58,25 @@ function extractSyncOptions(
 async function runSync(options: {
   yes: boolean;
   skipUpdateCheck: boolean;
+  global: boolean;
 }): Promise<void> {
   const cwd = Deno.cwd();
   const fs = new DenoFsAdapter();
-  const { yes, skipUpdateCheck } = options;
+  const { yes, skipUpdateCheck, global: isGlobal } = options;
+  const scope: SyncScope = isGlobal ? "global" : "project";
+  const home = isGlobal ? resolveHomeDir() : "";
 
   // 0. Check for updates (before sync, fail-open)
   if (await runSelfUpdate({ yes, skip: skipUpdateCheck })) return;
 
-  // 1. Load or generate config
-  let config = await loadConfig(cwd, fs);
+  // 1. Load or generate config (scope-aware path)
+  let config = await loadConfig(cwd, fs, scope, home);
   const isNewConfig = !config;
 
   if (!config) {
     config = yes
-      ? await generateConfigNonInteractive(cwd, fs)
-      : await generateConfig(cwd, fs);
+      ? await generateConfigNonInteractive(cwd, fs, undefined, scope, home)
+      : await generateConfig(cwd, fs, undefined, scope, home);
   }
 
   // 2. Show sync plan
@@ -117,6 +128,8 @@ async function runSync(options: {
 
   const syncOptions: SyncOptions = {
     yes,
+    scope,
+    home,
     onProgress: (msg) => {
       spinner.text = msg;
     },
@@ -340,15 +353,17 @@ export async function main(args: string[]): Promise<void> {
   )
     // deno-lint-ignore no-explicit-any
     .action(async (options: any) => {
-      // Inside IDE context: show sync hint instead of auto-syncing
-      if (isInsideIDE()) {
+      const opts = extractSyncOptions(options as Record<string, unknown>);
+      // FR-DIST.GLOBAL — --global bypasses the IDE-context guard (the user
+      // opts in explicitly, installing to user dirs has no project-cwd risk).
+      if (!opts.global && isInsideIDE()) {
         console.log(
           "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
         );
         return;
       }
 
-      await runSync(extractSyncOptions(options as Record<string, unknown>));
+      await runSync(opts);
     })
     .command("sync", syncSubcommand)
     .command(

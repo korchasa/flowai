@@ -382,3 +382,69 @@ Deno.test("buildManifest: creates manifest from hook defs", () => {
   assertEquals(m.hooks["flowai-test-hook"].matcher, "Write|Edit");
   assertEquals(m.hooks["flowai-mermaid-validate"].event, "PostToolUse");
 });
+
+// --- FR-DIST.GLOBAL — hook writer uses scope-aware base dir ---
+
+Deno.test("global merge preserves user hooks", async () => {
+  const { writeHookConfig } = await import("./hook_writer.ts");
+  const { InMemoryFsAdapter } = await import("./adapters/fs.ts");
+  const fs = new InMemoryFsAdapter();
+
+  // Pre-existing user hook in ~/.claude/settings.json unrelated to flowai.
+  const userSettings = {
+    otherKey: "preserve-me",
+    hooks: {
+      PreToolUse: [
+        {
+          matcher: "Bash",
+          hooks: [
+            {
+              type: "command",
+              command: "my-user-hook.sh",
+              timeout: 60,
+            },
+          ],
+        },
+      ],
+    },
+  };
+  await fs.writeFile(
+    "/home/user/.claude/settings.json",
+    JSON.stringify(userSettings),
+  );
+
+  const ide = { name: "claude", configDir: ".claude" };
+  const hookDefs: Array<{ name: string; hook: HookDefinition }> = [
+    {
+      name: "flowai-demo-hook",
+      hook: {
+        event: "PostToolUse",
+        description: "demo",
+        matcher: "Write",
+      },
+    },
+  ];
+
+  // Global scope → base dir is ~/.claude, not <cwd>/.claude.
+  await writeHookConfig(
+    "/project",
+    ide,
+    hookDefs,
+    readManifest(null),
+    fs,
+    "/home/user/.claude",
+  );
+
+  const written = JSON.parse(
+    await fs.readFile("/home/user/.claude/settings.json"),
+  );
+  // User key preserved.
+  assertEquals(written.otherKey, "preserve-me");
+  // User-added PreToolUse hook preserved (not tracked in flowai manifest).
+  assertEquals(
+    (written.hooks.PreToolUse as unknown[]).length >= 1,
+    true,
+  );
+  // flowai hook added.
+  assertEquals(Array.isArray(written.hooks.PostToolUse), true);
+});

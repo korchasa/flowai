@@ -518,3 +518,105 @@ agents:
   const config = await loadConfig("/project", fs);
   assertEquals(config!.source, { ref: "feat/branch" });
 });
+
+// --- FR-DIST.GLOBAL — scope-aware config path ---
+
+Deno.test("resolveConfigPath global mode - reads from home", async () => {
+  const fs = new InMemoryFsAdapter();
+  await fs.writeFile(
+    "/home/user/.flowai.yaml",
+    `version: "1.1"
+ides:
+  - claude
+skills:
+  include: []
+  exclude: []
+agents:
+  include: []
+  exclude: []
+commands:
+  include: []
+  exclude: []
+`,
+  );
+
+  const config = await loadConfig("/project", fs, "global", "/home/user");
+  assertEquals(config!.ides, ["claude"]);
+});
+
+Deno.test("resolveConfigPath global mode - returns null if missing at home", async () => {
+  const fs = new InMemoryFsAdapter();
+  // Project has a config, but global scope must NOT read it.
+  await fs.writeFile(
+    "/project/.flowai.yaml",
+    `version: "1.1"
+ides:
+  - cursor
+skills:
+  include: []
+  exclude: []
+agents:
+  include: []
+  exclude: []
+`,
+  );
+
+  const config = await loadConfig("/project", fs, "global", "/home/user");
+  assertEquals(config, null);
+});
+
+Deno.test("project config wins by default - no scope flag, both configs exist", async () => {
+  // Documents behavior: loadConfig called without flag loads from cwd.
+  // Caller is responsible for resolving scope before calling loadConfig.
+  const fs = new InMemoryFsAdapter();
+  await fs.writeFile(
+    "/project/.flowai.yaml",
+    `version: "1.1"
+ides:
+  - cursor
+skills:
+  include: []
+  exclude: []
+agents:
+  include: []
+  exclude: []
+`,
+  );
+  await fs.writeFile(
+    "/home/user/.flowai.yaml",
+    `version: "1.1"
+ides:
+  - claude
+skills:
+  include: []
+  exclude: []
+agents:
+  include: []
+  exclude: []
+`,
+  );
+
+  const config = await loadConfig("/project", fs);
+  // Project config wins.
+  assertEquals(config!.ides, ["cursor"]);
+});
+
+Deno.test("saveConfig - global scope writes to home", async () => {
+  const fs = new InMemoryFsAdapter();
+  await saveConfig(
+    "/project",
+    {
+      version: "1.1",
+      ides: ["claude"],
+      skills: { include: [], exclude: [] },
+      agents: { include: [], exclude: [] },
+      commands: { include: [], exclude: [] },
+    },
+    fs,
+    "global",
+    "/home/user",
+  );
+  const content = await fs.readFile("/home/user/.flowai.yaml");
+  assertEquals(content.includes("claude"), true);
+  assertEquals(await fs.exists("/project/.flowai.yaml"), false);
+});

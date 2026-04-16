@@ -1,6 +1,8 @@
 // FR-DIST.SYNC — sync orchestrator
 // FR-DIST.FILTER — selective sync via include/exclude
+// FR-DIST.GLOBAL — scope-aware path resolution, asset split, hook merge.
 // FR-PACKS — pack-based resource resolution
+// FR-PACKS.SCOPE — per-primitive scope filter (project-only / global-only).
 // FR-HOOK-RESOURCES.INSTALL — hook config generation
 // FR-SCRIPTS — script copy to IDE dirs
 /** Sync orchestrator — resolves IDEs, reads bundled framework, computes plan, writes files */
@@ -8,6 +10,7 @@ import { type FsAdapter, join } from "./adapters/fs.ts";
 import { migrateV1ToV1_1, saveConfig } from "./config.ts";
 import { resolveIDEs } from "./ide.ts";
 import { computePlan, planSummary } from "./plan.ts";
+import { resolveHomeDir, resolveIdeBaseDir, type SyncScope } from "./scope.ts";
 import {
   BundledSource,
   extractAgentNames,
@@ -36,6 +39,7 @@ import type {
 import { writeFiles } from "./writer.ts";
 import { buildManifest, readManifest } from "./hooks.ts";
 import {
+  filterNamesByScope,
   readAgentFiles,
   readCommandFiles,
   readHookDefinitions,
@@ -104,6 +108,10 @@ export interface SyncOptions {
   promptConflicts?: (conflicts: PlanItem[]) => Promise<number[]>;
   /** Callback for progress updates */
   onProgress?: (message: string) => void;
+  /** FR-DIST.GLOBAL — sync scope. Default: "project". */
+  scope?: SyncScope;
+  /** Home directory override (for testing). Default: resolved from env. */
+  home?: string;
 }
 
 /** Sync result */
@@ -228,6 +236,8 @@ export async function sync(
   options: SyncOptions,
 ): Promise<SyncResult> {
   const log = options.onProgress ?? console.log;
+  const scope: SyncScope = options.scope ?? "project";
+  const home = options.home ?? (scope === "global" ? resolveHomeDir() : "");
   const result: SyncResult = {
     totalWritten: 0,
     totalSkipped: 0,
@@ -245,15 +255,22 @@ export async function sync(
     config.ides.length > 0 ? config.ides : undefined,
     cwd,
     fs,
+    scope,
   );
 
   if (ides.length === 0) {
     throw new Error(
-      "No IDEs detected. Create .cursor/, .claude/, or .opencode/ directory first.",
+      scope === "global"
+        ? "No IDEs configured for global sync. Set `ides:` in ~/.flowai.yaml."
+        : "No IDEs detected. Create .cursor/, .claude/, or .opencode/ directory first.",
     );
   }
 
-  log(`Target IDEs: ${ides.map((i) => i.name).join(", ")}`);
+  log(
+    `Target IDEs: ${ides.map((i) => i.name).join(", ")}${
+      scope === "global" ? " (global mode)" : ""
+    }`,
+  );
 
   // 2. Load framework files from source (git, local path, or bundled)
   log("Loading framework files...");
@@ -267,15 +284,22 @@ export async function sync(
     const packDefs = usePacks
       ? await readPackDefinitions(allPaths, source)
       : [];
-    const scaffoldsIndex = buildScaffoldsIndex(packDefs);
-    const assetsIndex = buildAssetsIndex(packDefs);
+    // FR-DIST.GLOBAL — scaffolds + artifact diffs are project-only concepts.
+    // Global mode installs primitives and template assets; scaffold/artifact
+    // hints are suppressed because there is no <cwd> artifact to diff.
+    const scaffoldsIndex = scope === "global"
+      ? new Map<string, string[]>()
+      : buildScaffoldsIndex(packDefs);
+    const assetsIndex = scope === "global"
+      ? new Map<string, string[]>()
+      : buildAssetsIndex(packDefs);
 
     // 2b. Automigrate v1 → v1.1 if pack structure detected
     if (usePacks && config.packs === undefined) {
       const fromVersion = config.version;
       const allPackNames = extractPackNames(allPaths);
       config = migrateV1ToV1_1(config, allPackNames);
-      await saveConfig(cwd, config, fs);
+      await saveConfig(cwd, config, fs, scope, home);
       result.configMigrated = {
         from: fromVersion,
         to: config.version,
@@ -287,14 +311,36 @@ export async function sync(
     // 3. Resolve resources (pack-aware or legacy)
     const {
       allSkillNames,
-      skillNames,
+      skillNames: skillNamesRaw,
       allCommandNames,
-      commandNames,
+      commandNames: commandNamesRaw,
       allAgentNames,
       agentNames,
       hookNames,
       scriptNames,
     } = resolvePackResources(allPaths, config);
+
+    // FR-PACKS.SCOPE — filter primitives whose `scope:` frontmatter
+    // excludes the active sync scope. Only applies to pack-based layouts
+    // (legacy flat layout had no scope concept).
+    const skillNames = usePacks
+      ? await filterNamesByScope(
+        skillNamesRaw,
+        /^framework\/[^/]+\/skills\/([^/]+)\//,
+        allPaths,
+        source,
+        scope,
+      )
+      : skillNamesRaw;
+    const commandNames = usePacks
+      ? await filterNamesByScope(
+        commandNamesRaw,
+        /^framework\/[^/]+\/commands\/([^/]+)\//,
+        allPaths,
+        source,
+        scope,
+      )
+      : commandNamesRaw;
 
     // Collision guard: skills and commands land in the same target dir
     // (.{ide}/skills/), so their names MUST be disjoint. Disjointness is
@@ -339,9 +385,25 @@ export async function sync(
       log(`\nSyncing to ${ide.name}...`);
 
       const modelMap = mergeModelMap(ide.name, config);
+      // FR-DIST.GLOBAL — base dirs per IDE per scope. Codex global mode
+      // splits skills (~/.agents/skills/) from agents (~/.codex/).
+      const ideSkillsBase = resolveIdeBaseDir(
+        ide.name,
+        scope,
+        cwd,
+        home,
+        "skills",
+      );
+      const ideAgentsBase = resolveIdeBaseDir(
+        ide.name,
+        scope,
+        cwd,
+        home,
+        "agents",
+      );
 
       // Skills
-      const skillTargetDir = join(cwd, ide.configDir, "skills");
+      const skillTargetDir = join(ideSkillsBase, "skills");
       if (skillNames.length > 0) {
         const skillFiles = usePacks
           ? await readPackSkillFiles(
@@ -476,9 +538,10 @@ export async function sync(
           isFirstIde,
           result,
           log,
+          ideAgentsBase,
         );
       } else {
-        const agentTargetDir = join(cwd, ide.configDir, "agents");
+        const agentTargetDir = join(ideAgentsBase, "agents");
         if (agentNames.length > 0) {
           const agentFiles = usePacks
             ? await readPackAgentFiles(
@@ -543,7 +606,7 @@ export async function sync(
         !(config.experimental?.codexHooks === true);
       if (hookNames.length > 0 && usePacks && !skipCodexHooks) {
         const hookFiles = await readPackHookFiles(hookNames, allPaths, source);
-        const hookTargetDir = join(cwd, ide.configDir, "scripts");
+        const hookTargetDir = join(ideSkillsBase, "scripts");
         const hookPlan = await computePlan(
           hookFiles,
           hookTargetDir,
@@ -570,13 +633,20 @@ export async function sync(
           allPaths,
           source,
         );
-        const manifestPath = join(cwd, ide.configDir, "flowai-hooks.json");
+        const manifestPath = join(ideSkillsBase, "flowai-hooks.json");
         const manifestContent = await fs.exists(manifestPath)
           ? await fs.readFile(manifestPath)
           : null;
         const oldManifest = readManifest(manifestContent);
 
-        await writeHookConfig(cwd, ide, hookDefs, oldManifest, fs);
+        await writeHookConfig(
+          cwd,
+          ide,
+          hookDefs,
+          oldManifest,
+          fs,
+          ideSkillsBase,
+        );
 
         const newManifest = buildManifest(hookDefs);
         await fs.writeFile(
@@ -598,7 +668,7 @@ export async function sync(
           allPaths,
           source,
         );
-        const scriptTargetDir = join(cwd, ide.configDir, "scripts");
+        const scriptTargetDir = join(ideSkillsBase, "scripts");
         const scriptPlan = await computePlan(
           scriptFiles,
           scriptTargetDir,
@@ -620,7 +690,7 @@ export async function sync(
           ["core"],
         );
         if (assetFiles.length > 0) {
-          const assetTargetDir = join(cwd, ide.configDir);
+          const assetTargetDir = ideSkillsBase;
           const assetPlan = await computePlan(
             assetFiles,
             assetTargetDir,
@@ -656,6 +726,8 @@ export async function sync(
         options,
         log,
         fwNames,
+        scope,
+        home,
       );
       result.totalWritten += userResult.totalWritten;
       result.totalSkipped += userResult.totalSkipped;
@@ -663,9 +735,9 @@ export async function sync(
       result.errors.push(...userResult.errors);
     }
 
-    // 5b. CLAUDE.md symlinks
+    // 5b. CLAUDE.md symlinks (project-scoped only — creates <cwd>/CLAUDE.md)
     const hasClaudeIDE = ides.some((i) => i.name === "claude");
-    if (hasClaudeIDE) {
+    if (hasClaudeIDE && scope === "project") {
       log("\nSyncing CLAUDE.md symlinks...");
       const symlinkResult = await syncClaudeSymlinks(cwd, fs);
       result.symlinkResult = symlinkResult;

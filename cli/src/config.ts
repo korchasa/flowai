@@ -1,7 +1,9 @@
 // FR-DIST.CONFIG — .flowai.yaml loading/saving
 // FR-PACKS.CONFIG — v1.1 config with packs field
+// FR-DIST.GLOBAL — scope-aware config path (project vs home).
 import { parse, stringify } from "@std/yaml";
 import { type FsAdapter, join } from "./adapters/fs.ts";
+import { resolveConfigPath, type SyncScope } from "./scope.ts";
 import {
   DEFAULT_VERSION,
   type FlowConfig,
@@ -11,12 +13,23 @@ import {
 
 const CONFIG_FILENAME = ".flowai.yaml";
 
-/** Load and parse .flowai.yaml from cwd. Returns null if not found. */
+/** Load and parse .flowai.yaml from cwd (project) or home (global).
+ *
+ * Precedence when `scope = "project"` and no config exists locally:
+ * returns null (caller generates a new project config). When `scope =
+ * "global"`, looks for `<home>/.flowai.yaml` and returns null if absent.
+ *
+ * No fallback across scopes — mixing would be confusing.
+ */
 export async function loadConfig(
   cwd: string,
   fs: FsAdapter,
+  scope: SyncScope = "project",
+  home?: string,
 ): Promise<FlowConfig | null> {
-  const configPath = join(cwd, CONFIG_FILENAME);
+  const configPath = scope === "global" && home
+    ? resolveConfigPath(scope, cwd, home)
+    : join(cwd, CONFIG_FILENAME);
   if (!(await fs.exists(configPath))) {
     return null;
   }
@@ -185,13 +198,18 @@ export function migrateV1ToV1_1(
   };
 }
 
-/** Save FlowConfig to .flowai.yaml */
+/** Save FlowConfig to .flowai.yaml. Scope-aware: writes to `<cwd>/.flowai.yaml`
+ * for project scope, `<home>/.flowai.yaml` for global scope. */
 export async function saveConfig(
   cwd: string,
   config: FlowConfig,
   fs: FsAdapter,
+  scope: SyncScope = "project",
+  home?: string,
 ): Promise<void> {
-  const configPath = join(cwd, CONFIG_FILENAME);
+  const configPath = scope === "global" && home
+    ? resolveConfigPath(scope, cwd, home)
+    : join(cwd, CONFIG_FILENAME);
   const data: Record<string, unknown> = {
     version: config.version,
     ides: config.ides,

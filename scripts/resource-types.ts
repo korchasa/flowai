@@ -40,6 +40,10 @@ export const SkillFrontmatterSchema = z.object({
   effort: z.enum(["low", "medium", "high", "max"]).optional(),
   "argument-hint": z.string().optional(),
   "allowed-tools": z.string().optional(),
+  // FR-PACKS.SCOPE — controls sync-scope filter in cli/src/sync.ts.
+  // `project-only` → skipped in global mode; `global-only` → skipped in
+  // project mode; absent → installed in both modes.
+  scope: z.enum(["project-only", "global-only"]).optional(),
 }).strict();
 
 export type SkillFrontmatter = z.infer<typeof SkillFrontmatterSchema>;

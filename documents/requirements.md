@@ -144,10 +144,11 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Def/Abbr:** CLI = flowai, BundledSource = JSON artifact with all framework files baked at publish time.
 
 #### FR-DIST.SYNC Sync Command (`flowai`)
-- **Desc:** Single command `flowai` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs.
+- **Desc:** Single command `flowai` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs. Supports project scope (default) and global scope (`--global`) — scope drives config path, IDE target path, asset split, hook merge, and scope-field filter (see FR-DIST.GLOBAL and FR-PACKS.SCOPE).
 - **Scenario A (no config, interactive):** `flowai` without `.flowai.yaml` → interactive prompts (IDEs, packs) → generates `.flowai.yaml` → syncs.
 - **Scenario A2 (no config, non-interactive):** `flowai -y` without `.flowai.yaml` → auto-detect IDEs, select all packs → generates `.flowai.yaml` with defaults → syncs.
 - **Scenario B (with config):** `flowai` with `.flowai.yaml` → disclaimer → sync. Bundled files compared with local. Unchanged silently, locally modified → prompt.
+- **Scenario C (global):** `flowai sync --global` → loads/creates `~/.flowai.yaml`, installs primitives into user-level IDE dirs, skips scaffolds and artifact diffs.
 - **Acceptance:**
   - [x] Without `.flowai.yaml` → interactive config generation → sync.
   - [x] With `.flowai.yaml` → disclaimer → sync.
@@ -158,13 +159,68 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] `--yes` / `-y` flag for non-interactive mode.
   - [x] `-y` without config → non-interactive config generation (auto-detect IDEs, all packs).
   - [x] Core-level assets (`framework/<pack>/assets/`) synced to `{ide_dir}/assets/`. Asset changes reported as `ASSETS UPDATED` in sync output with mapped project artifact paths (from `pack.yaml` `assets:` field).
+  - [x] `--global` / `-g` flag switches scope to global; scope-aware filter excludes `scope: project-only` primitives in global mode and `scope: global-only` in project mode.
 
 #### FR-DIST.CONFIG Config Generation
-- **Desc:** Interactive `.flowai.yaml` creation when config missing.
+- **Desc:** Interactive `.flowai.yaml` creation when config missing. Path depends on scope: `<cwd>/.flowai.yaml` (project) or `~/.flowai.yaml` (global). Both files may coexist; project scope wins when both are present and no flag is passed.
 - **Acceptance:**
   - [x] Prompts: IDEs (auto-detected), skills include/exclude, agents include/exclude.
   - [x] Reads available skills/agents from BundledSource.
   - [x] Writes valid `.flowai.yaml`.
+  - [x] Global mode writes `~/.flowai.yaml`; project mode writes `<cwd>/.flowai.yaml`. When both exist and no flag is passed, project config wins.
+
+#### FR-DIST.GLOBAL Global Sync Mode
+
+- **Desc:** `flowai sync --global` (or `-g`) installs framework primitives into IDE user-level dirs, eliminating N×project maintenance burden. Scope drives every path resolution decision: config file location, IDE base dir per IDE, asset split (templates installed both modes; artifact diff project-only), scaffold sync (project-only), and hook merge path. Scope is also a filter key on the `scope:` frontmatter field of skills and commands (see FR-PACKS.SCOPE).
+- **Target paths per IDE** (see also SDS section 3.5):
+  - Claude Code: `~/.claude/`
+  - Cursor: `~/.cursor/`
+  - OpenCode: `~/.config/opencode/`
+  - Codex agents: `~/.codex/`
+  - Codex skills: `~/.agents/skills/` (distinct from agents; Codex user-skill convention)
+- **Asset split:** Template install (`assets/AGENTS.template.md` → `{ide}/assets/`) runs in **both** modes. Artifact sync (diff/merge `<cwd>/AGENTS.md` from template) runs in **project** mode only. Scaffolds (`.devcontainer/*`, SRS/SDS stubs) run in **project** mode only.
+- **Hook merge:** In global mode the hook writer resolves `~/.claude/settings.json` (and equivalent per IDE). The existing manifest-based merge already preserves user hooks not tracked by flowai; path change is the only new behavior.
+- **Coexistence:** `~/.flowai.yaml` and per-project `.flowai.yaml` may coexist. With no flag and both present, project wins.
+- **Not in scope:** Auto-migration from project to global; native marketplace plugin packaging.
+- **Acceptance:**
+  - [x] `--global` flag drives every scope-dependent path (config, IDE base, hooks, user_sync).
+    Evidence: `cli/src/scope.ts` (`resolveConfigPath`, `resolveIdeBaseDir`, `resolveScope`) + `cli/src/scope_test.ts`.
+  - [x] Global mode installs templates to `{home}/.{ide}/assets/AGENTS.template.md`.
+    Evidence: `cli/src/sync.ts` asset step runs in both scopes; `cli/src/sync_test.ts::global mode installs templates`.
+  - [x] Global mode skips artifact sync and scaffolds (no `<cwd>/AGENTS.md` diff).
+    Evidence: `cli/src/sync_test.ts::global mode skips artifact sync`.
+  - [x] Hook writer resolves global path when scope=global.
+    Evidence: `cli/src/hook_writer.ts` uses `resolveIdeBaseDir`; `cli/src/hooks_test.ts::global merge preserves user hooks`.
+  - [x] Per-project mode unchanged when `--global` is absent.
+    Evidence: existing `cli/src/sync_test.ts` suite continues to pass unmodified.
+  - [x] `user_sync` scans user-level dirs under global scope.
+    Evidence: `cli/src/user_sync.ts` threads scope; `cli/src/user_sync_test.ts::user_sync in global mode`.
+
+#### FR-PACKS.SCOPE Scope Frontmatter Field
+
+- **Desc:** SKILL.md frontmatter under `framework/<pack>/{commands,skills}/*/` MAY declare an optional `scope` field with values `project-only` | `global-only`. Absent = installable in both modes. The CLI filters primitives in `resolvePackResources()` based on the active scope.
+- **Usage:**
+  - `scope: project-only` on `flowai-update` — requires project context (CLI+sync+artifact migration).
+  - `scope: global-only` reserved for future primitives that make no sense per-project.
+  - Absent on `flowai-adapt-instructions` and others — installable in both modes.
+- **Acceptance:**
+  - [x] `scripts/resource-types.ts` Zod schema accepts `scope: "project-only" | "global-only"` (optional).
+    Evidence: `scripts/check-skills_test.ts::validateScopeField`.
+  - [x] CLI filter in `cli/src/sync.ts::resolvePackResources` excludes `scope: project-only` primitives when scope=global, excludes `scope: global-only` when scope=project.
+    Evidence: `cli/src/sync_test.ts::scope filter respects global mode` + `cli/src/sync_test.ts::scope filter respects project mode`.
+
+#### FR-ADAPT-INSTRUCTIONS Standalone AGENTS.md Re-Adaptation — `flowai-adapt-instructions`
+
+- **Desc:** Standalone skill that re-adapts the project's AGENTS.md when the upstream template changes significantly. Reads the installed template from `{ide}/assets/AGENTS.template.md` (path resolved per scope), diffs it against `<cwd>/AGENTS.md`, proposes a merge preserving project-specific sections, shows the diff, and writes on user approval. Installable in both scopes (no `scope:` field).
+- **Scenario:** User updates flowai → new template lands in `~/.claude/assets/AGENTS.template.md` (global) or `.claude/assets/AGENTS.template.md` (project). User invokes `/flowai-adapt-instructions` → agent reads template, diffs with project AGENTS.md, shows merged proposal, asks confirmation, writes on approval.
+- **Acceptance verified by benchmark:** `flowai-adapt-instructions-basic`.
+- **Acceptance criteria:**
+  - [x] Skill lives at `framework/core/commands/flowai-adapt-instructions/SKILL.md` (user-invoked, `flowai-*` prefix per FR-PACKS.STRUCT naming).
+    Evidence: file existence.
+  - [x] SKILL.md body references `{ide}/assets/AGENTS.template.md` (no template duplication inside the skill).
+    Evidence: `grep -n "AGENTS.template.md" framework/core/commands/flowai-adapt-instructions/SKILL.md`.
+  - [x] Benchmark `flowai-adapt-instructions-basic` verifies the read-template → diff → merge → confirm flow.
+    Evidence: `framework/core/commands/flowai-adapt-instructions/benchmarks/basic/mod.ts`.
 
 #### FR-DIST.FILTER Selective Sync
 - **Desc:** `.flowai.yaml` controls which skills/agents to sync.

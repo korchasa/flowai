@@ -12,18 +12,24 @@ import {
 } from "./source.ts";
 import { type FlowConfig, KNOWN_IDES, PACKS_VERSION } from "./types.ts";
 
-/** Non-interactive config generation: auto-detect IDEs, select all packs */
+/** Non-interactive config generation: auto-detect IDEs, select all packs.
+ * `scope`/`home` route the written config to `<cwd>/.flowai.yaml` (project)
+ * or `<home>/.flowai.yaml` (global). In global mode no IDE auto-detection
+ * by directory presence is possible — defaults to all KNOWN_IDES. */
 export async function generateConfigNonInteractive(
   cwd: string,
   fs: FsAdapter,
   sourceOverride?: FrameworkSource,
+  scope: "project" | "global" = "project",
+  home = "",
 ): Promise<FlowConfig> {
   console.log(
     "No .flowai.yaml found. Generating with defaults (non-interactive).\n",
   );
 
-  const detectedIDEs = await detectIDEs(cwd, fs);
-  const detectedNames = detectedIDEs.map((i) => i.name);
+  const detectedNames = scope === "global"
+    ? Object.keys(KNOWN_IDES)
+    : (await detectIDEs(cwd, fs)).map((i) => i.name);
 
   const fwSource = sourceOverride ?? await BundledSource.load();
   let availablePacks: string[] = [];
@@ -49,7 +55,7 @@ export async function generateConfigNonInteractive(
     commands: { include: [], exclude: [] },
   };
 
-  await saveConfig(cwd, config, fs);
+  await saveConfig(cwd, config, fs, scope, home);
   console.log(".flowai.yaml created successfully.\n");
 
   return config;
@@ -60,12 +66,15 @@ export async function generateConfig(
   cwd: string,
   fs: FsAdapter,
   sourceOverride?: FrameworkSource,
+  scope: "project" | "global" = "project",
+  home = "",
 ): Promise<FlowConfig> {
   console.log("No .flowai.yaml found. Let's create one.\n");
 
-  // Auto-detect IDEs
-  const detectedIDEs = await detectIDEs(cwd, fs);
-  const detectedNames = detectedIDEs.map((i) => i.name);
+  // Auto-detect IDEs (project only; global mode defaults to all)
+  const detectedNames = scope === "global"
+    ? Object.keys(KNOWN_IDES)
+    : (await detectIDEs(cwd, fs)).map((i) => i.name);
   const allIdeNames = Object.keys(KNOWN_IDES);
 
   const selectedIDEs = await Checkbox.prompt({
@@ -128,7 +137,7 @@ export async function generateConfig(
     commands: { include: [], exclude: [] },
   };
 
-  await saveConfig(cwd, config, fs);
+  await saveConfig(cwd, config, fs, scope, home);
   console.log("\n.flowai.yaml created successfully.\n");
 
   return config;

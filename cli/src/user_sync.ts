@@ -1,7 +1,9 @@
 // FR-DIST.USER-SYNC — cross-IDE user resource propagation
+// FR-DIST.GLOBAL — scope-aware base dirs when scanning user dirs.
 /** Cross-IDE user resource propagation — scans, compares, and syncs user skills/agents across IDEs */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { resolveIDEs } from "./ide.ts";
+import { resolveIdeBaseDir, type SyncScope } from "./scope.ts";
 import { processPlan, type SyncOptions, type SyncResult } from "./sync.ts";
 import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
 import type { FlowConfig, IDE, PlanItem } from "./types.ts";
@@ -73,13 +75,18 @@ export async function scanIdeResources(
   config: FlowConfig,
   fs: FsAdapter,
   frameworkNames?: Set<string>,
+  scope: SyncScope = "project",
+  home = "",
 ): Promise<UserResource[]> {
   const resources: UserResource[] = [];
   const isFramework = (name: string) =>
     name.startsWith("flowai-") || (frameworkNames?.has(name) ?? false);
 
+  const skillsBase = resolveIdeBaseDir(ide.name, scope, cwd, home, "skills");
+  const agentsBase = resolveIdeBaseDir(ide.name, scope, cwd, home, "agents");
+
   // Skills
-  const skillsDir = join(cwd, ide.configDir, "skills");
+  const skillsDir = join(skillsBase, "skills");
   if (await fs.exists(skillsDir)) {
     for await (const entry of fs.readDir(skillsDir)) {
       if (!entry.isDirectory) continue;
@@ -111,7 +118,7 @@ export async function scanIdeResources(
   }
 
   // Agents
-  const agentsDir = join(cwd, ide.configDir, "agents");
+  const agentsDir = join(agentsBase, "agents");
   if (await fs.exists(agentsDir)) {
     for await (const entry of fs.readDir(agentsDir)) {
       if (!entry.isFile) continue;
@@ -138,7 +145,7 @@ export async function scanIdeResources(
   }
 
   // Commands (flat .md files, same pattern as agents)
-  const commandsDir = join(cwd, ide.configDir, "commands");
+  const commandsDir = join(skillsBase, "commands");
   if (await fs.exists(commandsDir)) {
     for await (const entry of fs.readDir(commandsDir)) {
       if (!entry.isFile) continue;
@@ -176,6 +183,8 @@ export async function collectUserResources(
   config: FlowConfig,
   fs: FsAdapter,
   frameworkNames?: Set<string>,
+  scope: SyncScope = "project",
+  home = "",
 ): Promise<UserResource[]> {
   const map = new Map<string, UserResource>();
 
@@ -186,6 +195,8 @@ export async function collectUserResources(
       config,
       fs,
       frameworkNames,
+      scope,
+      home,
     );
     for (const r of ideResources) {
       const key = `${r.type}:${r.name}`;
@@ -210,6 +221,8 @@ export function computeUserSyncPlan(
   cwd: string,
   log: (msg: string) => void,
   config?: FlowConfig,
+  scope: SyncScope = "project",
+  home = "",
 ): Map<string, PlanItem[]> {
   const plans = new Map<string, PlanItem[]>();
   for (const ide of ides) {
@@ -241,7 +254,14 @@ export function computeUserSyncPlan(
 
       for (const ide of ides) {
         const idePlan = plans.get(ide.name)!;
-        const targetPath = join(cwd, ide.configDir, subDir, relPath);
+        const base = resolveIdeBaseDir(
+          ide.name,
+          scope,
+          cwd,
+          home,
+          resource.type === "agent" ? "agents" : "skills",
+        );
+        const targetPath = join(base, subDir, relPath);
         const targetVersion = versions.find((v) => v.ideName === ide.name);
 
         // Content for this target IDE (transformed from canonical source)
@@ -336,6 +356,8 @@ export async function runUserSync(
   options: SyncOptions,
   log: (msg: string) => void,
   frameworkNames?: Set<string>,
+  scope: SyncScope = "project",
+  home = "",
 ): Promise<SyncResult> {
   const result: SyncResult = {
     totalWritten: 0,
@@ -353,6 +375,7 @@ export async function runUserSync(
     config.ides.length > 0 ? config.ides : undefined,
     cwd,
     fs,
+    scope,
   );
 
   if (resolvedIdes.length < 2) {
@@ -366,13 +389,23 @@ export async function runUserSync(
     config,
     fs,
     frameworkNames,
+    scope,
+    home,
   );
   if (resources.length === 0) {
     log("  No user resources found");
     return result;
   }
 
-  const plans = computeUserSyncPlan(resources, resolvedIdes, cwd, log, config);
+  const plans = computeUserSyncPlan(
+    resources,
+    resolvedIdes,
+    cwd,
+    log,
+    config,
+    scope,
+    home,
+  );
 
   for (const ide of resolvedIdes) {
     const plan = plans.get(ide.name) ?? [];

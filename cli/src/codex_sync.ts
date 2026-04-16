@@ -1,12 +1,15 @@
 // FR-DIST.CODEX-AGENTS — Codex-specific agent sync
+// FR-DIST.GLOBAL — Codex agent sync resolves base dir via scope.
 /**
  * Sync framework agents to Codex subagent format.
  *
  * Writes each agent as two artifacts:
- * 1. `<cwd>/.codex/agents/<name>.toml` — sidecar with `name`, `description`,
+ * 1. `<codex-base>/agents/<name>.toml` — sidecar with `name`, `description`,
  *    `developer_instructions` (the agent body as a TOML multi-line literal).
- * 2. `[agents.<name>]` block merged into `<cwd>/.codex/config.toml` with
+ * 2. `[agents.<name>]` block merged into `<codex-base>/config.toml` with
  *    `description` and `config_file` keys pointing at the sidecar.
+ *
+ * `<codex-base>` = `<cwd>/.codex/` in project mode, `~/.codex/` in global mode.
  *
  * Idempotent. Removing an agent from `.flowai.yaml` removes both the sidecar
  * and the `[agents.<name>]` block on next sync. User-hand-edited tables outside
@@ -36,9 +39,11 @@ export async function syncCodexAgents(
   isFirstIde: boolean,
   result: SyncResult,
   log: (msg: string) => void,
+  codexBaseDir?: string,
 ): Promise<void> {
   // 1. Read raw universal agent files and build sidecars + changes.
-  const sidecarsDir = join(cwd, ide.configDir, "agents");
+  const base = codexBaseDir ?? join(cwd, ide.configDir);
+  const sidecarsDir = join(base, "agents");
   const sidecarPlan: PlanItem[] = [];
   const changes: CodexAgentChange[] = [];
 
@@ -103,8 +108,8 @@ export async function syncCodexAgents(
   await processPlan(sidecarPlan, fs, { yes: true }, result, log);
 
   // 4. Read existing config.toml + manifest, merge, write.
-  const configPath = join(cwd, ide.configDir, "config.toml");
-  const manifestPath = join(cwd, ide.configDir, "flowai-agents.json");
+  const configPath = join(base, "config.toml");
+  const manifestPath = join(base, "flowai-agents.json");
   const existingToml = await fs.exists(configPath)
     ? await fs.readFile(configPath)
     : "";
