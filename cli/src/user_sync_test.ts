@@ -617,10 +617,7 @@ Deno.test("user_sync in global mode - scans home-level dirs", async () => {
   const { InMemoryFsAdapter } = await import("./adapters/fs.ts");
   const fs = new InMemoryFsAdapter();
 
-  // A user-created skill in the global claude skills dir. InMemoryFs only
-  // registers immediate parent dirs on writeFile, so pre-seed the grand-parent
-  // so scanIdeResources's fs.exists(skillsDir) check finds it.
-  fs.dirs.add("/home/user/.claude/skills");
+  // A user-created skill in the global claude skills dir.
   await fs.writeFile(
     "/home/user/.claude/skills/my-user-skill/SKILL.md",
     "---\nname: my-user-skill\ndescription: test\n---\nbody",

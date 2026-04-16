@@ -78,9 +78,15 @@ export class InMemoryFsAdapter implements FsAdapter {
   }
 
   writeFile(path: string, content: string): Promise<void> {
-    const dir = path.substring(0, path.lastIndexOf("/"));
-    if (dir) {
-      this.dirs.add(dir);
+    // Mirror DenoFsAdapter's `mkdir(dir, { recursive: true })` so tests never
+    // hit the "grandparent dir missing" footgun — any scan/walk function
+    // guarded by `fs.exists(someAncestor)` works identically against both
+    // adapters.
+    const parts = path.split("/");
+    parts.pop(); // drop filename
+    for (let i = 1; i <= parts.length; i++) {
+      const ancestor = parts.slice(0, i).join("/");
+      if (ancestor) this.dirs.add(ancestor);
     }
     this.files.set(path, content);
     return Promise.resolve();

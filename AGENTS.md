@@ -169,6 +169,15 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Use GODS format (see below) for issues and plans.
 - Directory is gitignored. Files accumulate — this is expected.
 
+### Framework primitive placement
+
+When a task creates a new framework primitive, decide the subdir FIRST:
+
+- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with `flowai-*` or `flowai-setup-*` prefix. Examples: `/flowai-commit`, `/flowai-update`, `/flowai-adapt-instructions`.
+- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with `flowai-skill-*` prefix. Examples: `flowai-skill-fix-tests`, `flowai-skill-deep-research`.
+
+Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
+
 ### GODS Format
 
 ```markdown

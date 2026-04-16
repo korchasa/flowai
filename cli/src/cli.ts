@@ -17,6 +17,7 @@ import { type MigrateOptions, runMigrate } from "./migrate.ts";
 import { resolveHomeDir, type SyncScope } from "./scope.ts";
 import {
   DEFAULT_GIT_URL,
+  KNOWN_IDES,
   type PlanItem,
   type ResourceAction,
 } from "./types.ts";
@@ -74,6 +75,17 @@ async function runSync(options: {
   const isNewConfig = !config;
 
   if (!config) {
+    // Global-mode first-run notice: primitives go into IDE USER dirs for
+    // every known IDE by default, which surprises users who typed --global
+    // by mistake. Surface the blast radius before the non-interactive
+    // config writer proceeds.
+    if (scope === "global" && yes) {
+      console.log(
+        `Global mode: creating ${home}/.flowai.yaml and installing to IDE user dirs (all ${
+          Object.keys(KNOWN_IDES).length
+        } known IDEs). Edit the config \`ides:\` field to narrow.`,
+      );
+    }
     config = yes
       ? await generateConfigNonInteractive(cwd, fs, undefined, scope, home)
       : await generateConfig(cwd, fs, undefined, scope, home);
