@@ -24,3 +24,4 @@ cli/src/bundled.json
 cli/src/_version.ts
 
 .flowai/runs/
+.claude/scheduled_tasks.lock
