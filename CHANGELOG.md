@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.1](https://github.com/korchasa/flowai/compare/v0.8.0...v0.8.1) (2026-04-16)
+
+
+### Features
+
+* **core:** add streamlined commit-beta skills with targeted doc sync and benchmark A/B testing ([ff99b67](https://github.com/korchasa/flowai/commit/ff99b673366f2c43bcd9791d449b38457314dc12))
+* **core:** auto-apply critique in flowai-plan instead of gating refinement on user input ([decf6e7](https://github.com/korchasa/flowai/commit/decf6e76fa4a8161cfb80b5e2c3244e04359ff30))
+* **core:** replace terse Artifact/Fix/Evidence format with self-contained narrative sections in reflect skills ([869ab14](https://github.com/korchasa/flowai/commit/869ab1407c1ea4ef37902a25c002166ea35f81a8))
+* **rules:** replace evidence-in-SRS with two-type traceability placement ([85f8003](https://github.com/korchasa/flowai/commit/85f800349f5a16a7e637579e0c0eba1dc70ec946))
+
+
+### Code Refactoring
+
+* **ci:** split pipeline into check + release jobs ([977c353](https://github.com/korchasa/flowai/commit/977c353cadbfe0c5687d2486784ad7c468585ef4))
+
 ## 0.8.0 (2026-04-12)
 
 
