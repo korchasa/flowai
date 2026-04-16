@@ -61,10 +61,15 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - The Solution section MUST contain: files to create/modify, implementation approach, code structure, dependencies, error handling strategy (especially for async/callback conversions), and verification commands.
    - **CRITICAL**: You MUST write the updated content to the task file. Never leave Solution as a placeholder or comment.
 6. **Critique** — execute immediately, no permission needed
-   - Critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat.
-7. **Refine**
-   - Ask the user which critique points to address (or skip if none).
-   - Update the task file with accepted improvements.
+   - Critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat as a numbered list.
+7. **Triage & Auto-Apply Refinements** — execute immediately, no permission needed
+   - For EACH critique item from step 6, classify in chat with an explicit label (one of):
+     - **apply** — fold into the task file now.
+     - **discard** — over-engineering / speculative; one-sentence why.
+     - **defer** — out of scope for this plan; record under a "Follow-ups" section.
+   - Edit the task file to incorporate every **apply** item (update Solution, DoD, Overview, or Follow-ups as appropriate). The edit MUST happen AFTER the critique was emitted.
+   - Do NOT ask the user which items to address — the triage IS the answer. Do NOT prompt with phrases like "which would you like addressed", "should I apply", "do you want me to incorporate".
+   - Report the applied/discarded/deferred counts in chat so the user can override any classification on their next turn.
 8. **TOTAL STOP**
    </step_by_step>
 

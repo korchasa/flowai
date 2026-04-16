@@ -293,16 +293,6 @@ graph TD
 - File-based storage only. No database. Entities: Skill (Name, Content, Path), Agent (Name, Prompt, Capabilities).
 - Manual updates via git.
 
-## 5. Known Issues
-
-### 5.1 flowai-plan Benchmark Failures (pre-existing)
-
-3 of 8 flowai-plan benchmarks fail consistently. Root cause: agent behavioral issues unrelated to skill text.
-
-- **flowai-plan-interactive**: Agent skips variant presentation step, jumps to G-O-D draft. SimulatedUser responds before variants are shown. Likely cause: sonnet model doesn't reliably follow multi-step interactive protocol with single-turn timeout.
-- **flowai-plan-variants-obvious**: Agent presents 2 variants for trivial task ("create hello.txt") instead of 1. "Variant Analysis" rule says "1 variant OK if path is clear" but agent over-interprets.
-- **flowai-plan-variants-complex**: Agent exits with code 130 (timeout at 120s). Complex auth system task exceeds `stepTimeoutMs`. Agent spends time thinking internally but doesn't emit variants to chat before timeout.
-
-## 6. Future Extensions
+## 5. Future Extensions
 
 - Hook format transformation — tracked as FR-HOOK-DOCS (cross-IDE hook/plugin format transformation) and FR-HOOK-RESOURCES (hook resources in packs).
