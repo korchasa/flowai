@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.9.0](https://github.com/korchasa/flowai/compare/v0.8.2...v0.9.0) (2026-04-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** remove flowai-answer command
+
+### Bug Fixes
+
+* **ci:** bundle after version bump so _version.ts reflects release ([8f873f7](https://github.com/korchasa/flowai/commit/8f873f7dc9747d601d2c40c302910f696271a99a))
+
+
+### Chores
+
+* **core:** remove flowai-answer command ([5bee152](https://github.com/korchasa/flowai/commit/5bee15218f4c762c456b5ccf4b1263bf6a225095))
+
 ### [0.8.2](https://github.com/korchasa/flowai/compare/v0.8.1...v0.8.2) (2026-04-16)
 
 
