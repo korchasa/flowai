@@ -24,7 +24,7 @@ import {
   type ResourceAction,
 } from "./types.ts";
 import { sync, type SyncOptions, type SyncResult } from "./sync.ts";
-import { runSelfUpdate } from "./update.ts";
+import { notifyUpdateAvailable, runSelfUpdate } from "./update.ts";
 import { checkForUpdate, VERSION } from "./version.ts";
 
 /** Add shared sync options to a command (avoids duplication between root and sync subcommand) */
@@ -156,10 +156,10 @@ async function runSync(options: {
   const scope: SyncScope = isGlobal ? "global" : "project";
   const home = isGlobal ? resolveHomeDir() : "";
 
-  // 0. Check for updates (before sync, fail-open). Skip when dry-run so the
-  //    updater's own auto-relaunch doesn't run a real sync afterwards.
-  if (!dryRun && await runSelfUpdate({ yes, skip: skipUpdateCheck })) {
-    return 0;
+  // 0. Notify about a newer version (fail-open). Never installs — users run
+  //    `flowai update` to apply. Skipped under dry-run and `--skip-update-check`.
+  if (!dryRun) {
+    await notifyUpdateAvailable({ skip: skipUpdateCheck });
   }
 
   // 1. Load or generate config (scope-aware path). Dry-run must never write a

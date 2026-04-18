@@ -254,22 +254,25 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Used as default when `ides` not in `.flowai.yaml`.
   - [x] `isInsideIDE()` recognises `CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`, plus `CODEX_THREAD_ID` / `CODEX_SANDBOX` (Codex sets these in every `codex exec` session).
 
-#### FR-DIST.UPDATE Self-Update Check
-- **Desc:** Before sync, checks JSR for newer version. Fail-open (network errors ignored).
+#### FR-DIST.UPDATE Pre-Flight Update Notice
+- **Desc:** Before `flowai` / `flowai sync`, check JSR for a newer version and print a notice only. Never auto-install — users must run `flowai update` to apply. Fail-open (network errors ignored).
 - **Acceptance:**
   - [x] Fetches JSR meta, compares semver.
-  - [x] `--skip-update-check` flag.
-  - [x] 5s timeout, fail-open.
+  - [x] `--skip-update-check` flag bypasses the check entirely.
+  - [x] 5s timeout, fail-open (silent on network error).
+  - [x] Silent when already up to date (no spam on every sync).
+  - [x] On newer version: prints `Update available: X → Y. Run \`flowai update\` to install.`
+  - [x] Never spawns `deno install` from `flowai` / `flowai sync`.
 
 #### FR-DIST.UPDATE-CMD Self-Update Subcommand
-- **Desc:** `flowai update` subcommand checks JSR for a newer version and installs it automatically. Shared update logic used by both `flowai update` and `flowai sync` pre-flight check.
+- **Desc:** `flowai update` subcommand is the ONLY entry point that installs a newer binary. Checks JSR, prompts (or prints command in `-y` mode), installs via `deno install -g -A -f jsr:@korchasa/flowai@<ver>`.
 - **Acceptance:**
   - [x] `flowai update` subcommand registered in CLI.
   - [x] Prints "Already up to date" when current version is latest.
   - [x] Prints "Updated to X.Y.Z" and returns on successful install.
   - [x] Graceful message on network error, exits 0.
   - [x] `yes` mode: prints update command instead of prompting.
-  - [x] `runSelfUpdate()` shared by `flowai update` and `flowai sync`.
+  - [x] `runSelfUpdate()` used only by `flowai update`; `flowai` / `flowai sync` use notify-only `notifyUpdateAvailable()`.
 
 #### FR-DIST.BUNDLE Bundled Source
 - **Desc:** Framework files bundled into `cli/src/bundled.json` at publish time. No network dependency during sync.

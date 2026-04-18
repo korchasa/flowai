@@ -1,4 +1,5 @@
-// FR-DIST.UPDATE-CMD — standalone `flowai update` subcommand + shared update logic for sync
+// FR-DIST.UPDATE — pre-flight notify-only check for `flowai` / `flowai sync`
+// FR-DIST.UPDATE-CMD — standalone `flowai update` subcommand with auto-install
 import {
   buildUpdateCommand,
   checkForUpdate,
@@ -73,4 +74,37 @@ export async function runSelfUpdate(
 async function defaultPrompt(message: string): Promise<boolean> {
   const { Confirm } = await import("@cliffy/prompt");
   return Confirm.prompt({ message, default: true });
+}
+
+export interface NotifyUpdateOptions {
+  /** Skip the update check entirely (--skip-update-check flag) */
+  skip?: boolean;
+  /** Injectable version string for testability (defaults to VERSION) */
+  currentVersion?: string;
+  /** Injectable checkForUpdate function for testability */
+  checkFn?: (version: string) => Promise<VersionCheckResult | null>;
+  /** Injectable log function for testability */
+  log?: (message: string) => void;
+}
+
+/**
+ * Check JSR for a newer flowai version and print a notification only.
+ * Never installs — users must run `flowai update` to apply.
+ * Silent when up to date, network-failing, or skipped. Fail-open.
+ */
+export async function notifyUpdateAvailable(
+  options?: NotifyUpdateOptions,
+): Promise<void> {
+  if (options?.skip) return;
+
+  const version = options?.currentVersion ?? VERSION;
+  const checkFn = options?.checkFn ?? checkForUpdate;
+  const log = options?.log ?? console.log;
+
+  const update = await checkFn(version);
+  if (!update || !update.updateAvailable) return;
+
+  log(
+    `\nUpdate available: ${update.currentVersion} → ${update.latestVersion}. Run \`flowai update\` to install.\n`,
+  );
 }
