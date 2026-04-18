@@ -2,6 +2,7 @@
 /** Scan Codex agents from config.toml sidecars and migrate agents to Codex format */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
+import { resolveIdeBaseDir, type SyncScope } from "./scope.ts";
 import type { IDE } from "./types.ts";
 import type { SyncResult } from "./sync.ts";
 import type { ScannedResource } from "./migrate.ts";
@@ -27,8 +28,11 @@ export async function scanCodexAgents(
   cwd: string,
   fromIde: IDE,
   fs: FsAdapter,
+  scope: SyncScope = "project",
+  home: string = "",
 ): Promise<ScannedResource[]> {
-  const configPath = join(cwd, fromIde.configDir, "config.toml");
+  const base = resolveIdeBaseDir(fromIde.name, scope, cwd, home, "default");
+  const configPath = join(base, "config.toml");
   if (!(await fs.exists(configPath))) return [];
   let parsed: Record<string, unknown>;
   try {
@@ -59,8 +63,8 @@ export async function scanCodexAgents(
 
     // Resolve sidecar path — config_file is relative to the config.toml dir.
     const sidecarPath = configFile.startsWith("./")
-      ? join(cwd, fromIde.configDir, configFile.slice(2))
-      : join(cwd, fromIde.configDir, configFile);
+      ? join(base, configFile.slice(2))
+      : join(base, configFile);
 
     if (!(await fs.exists(sidecarPath))) continue;
     let sidecarParsed: Record<string, unknown>;
@@ -115,8 +119,11 @@ export async function migrateAgentsToCodex(
   fs: FsAdapter,
   log: (msg: string) => void,
   result: SyncResult,
+  scope: SyncScope = "project",
+  home: string = "",
 ): Promise<void> {
-  const sidecarsDir = join(cwd, toIde.configDir, "agents");
+  const toBase = resolveIdeBaseDir(toIde.name, scope, cwd, home, "default");
+  const sidecarsDir = join(toBase, "agents");
   const changes: CodexAgentChange[] = [];
   let created = 0;
   let skipped = 0;
@@ -159,8 +166,8 @@ export async function migrateAgentsToCodex(
   }
 
   // Merge into config.toml.
-  const configPath = join(cwd, toIde.configDir, "config.toml");
-  const manifestPath = join(cwd, toIde.configDir, "flowai-agents.json");
+  const configPath = join(toBase, "config.toml");
+  const manifestPath = join(toBase, "flowai-agents.json");
   const existingToml = await fs.exists(configPath)
     ? await fs.readFile(configPath)
     : "";

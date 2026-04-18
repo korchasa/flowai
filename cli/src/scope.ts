@@ -1,11 +1,15 @@
 // FR-DIST.GLOBAL — sync scope abstraction (project vs global mode).
 // Threads through config loading, IDE path resolution, and hook writer so
 // every scope-dependent path lives in one place.
-import { join } from "./adapters/fs.ts";
+import { type FsAdapter, join } from "./adapters/fs.ts";
 import { KNOWN_IDES } from "./types.ts";
 
 /** Sync scope: project-local install vs global (IDE user-level dirs) install. */
 export type SyncScope = "project" | "global";
+
+/** User-visible scope selection: `auto` defers to `resolveAutoScope`, the two
+ * explicit modes bypass the ladder. */
+export type ScopeMode = "global" | "local" | "auto";
 
 /** Purpose discriminator for `resolveIdeBaseDir`.
  * Codex global mode splits primitives across two user-level dirs:
@@ -14,9 +18,56 @@ export type SyncScope = "project" | "global";
  * Other IDEs return the same path regardless of purpose. */
 export type IdeTargetPurpose = "skills" | "agents" | "default";
 
-/** Read --global flag from a generic options bag. */
+/** Read --global flag from a generic options bag (legacy helper for explicit
+ * global-vs-project selection; see `resolveScopeMode` for the three-mode
+ * CLI surface). */
 export function resolveScope(flags: { global?: boolean }): SyncScope {
   return flags.global === true ? "global" : "project";
+}
+
+/** Translate CLI flags into the three-mode scope selector.
+ * - `--global` → `"global"`; `--local` → `"local"`; neither → `"auto"` (default).
+ * - Both flags set → throws (CLI surfaces the error; mutually exclusive). */
+export function resolveScopeMode(flags: {
+  global?: boolean;
+  local?: boolean;
+}): ScopeMode {
+  const g = flags.global === true;
+  const l = flags.local === true;
+  if (g && l) {
+    throw new Error(
+      "--global and --local are mutually exclusive; pass only one.",
+    );
+  }
+  if (g) return "global";
+  if (l) return "local";
+  return "auto";
+}
+
+/** Auto-resolve scope for the default (`--auto`) mode.
+ *
+ * Resolution ladder:
+ *   1. `<cwd>/.flowai.yaml` exists → `"project"` (repo opt-in wins).
+ *   2. `<home>/.flowai.yaml` exists → `"global"` (user-level install).
+ *   3. Neither exists → `null` (caller prompts or defaults to global in `-y`).
+ *
+ * The function makes no writes and throws on a missing fs adapter, which
+ * forces callers to use the real or in-memory adapter explicitly. */
+export function resolveAutoScope(
+  cwd: string,
+  home: string,
+  fs: FsAdapter,
+): Promise<SyncScope | null> {
+  if (!fs) {
+    return Promise.reject(
+      new Error("resolveAutoScope: fs adapter is required"),
+    );
+  }
+  return (async () => {
+    if (await fs.exists(join(cwd, ".flowai.yaml"))) return "project";
+    if (await fs.exists(join(home, ".flowai.yaml"))) return "global";
+    return null;
+  })();
 }
 
 /** Resolve the `.flowai.yaml` path for a given scope.

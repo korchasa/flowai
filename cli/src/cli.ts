@@ -15,7 +15,14 @@ import {
 import { isInsideIDE } from "./ide.ts";
 import { type LoopOptions, runLoop } from "./loop.ts";
 import { type MigrateOptions, runMigrate } from "./migrate.ts";
-import { resolveHomeDir, resolveIdeBaseDir, type SyncScope } from "./scope.ts";
+import {
+  resolveAutoScope,
+  resolveHomeDir,
+  resolveIdeBaseDir,
+  resolveScopeMode,
+  type ScopeMode,
+  type SyncScope,
+} from "./scope.ts";
 import {
   DEFAULT_GIT_URL,
   type FlowConfig,
@@ -41,7 +48,12 @@ function withSyncOptions<T extends Command<any>>(cmd: T): T {
     )
     .option(
       "-g, --global",
-      "Install framework primitives into IDE user-level dirs (~/.claude/, ~/.cursor/, etc.) instead of project-local dirs. Uses ~/.flowai.yaml as config.",
+      "Force global scope: install into IDE user-level dirs (~/.claude/, ~/.cursor/, etc.) using ~/.flowai.yaml. Mutually exclusive with --local.",
+      { default: false },
+    )
+    .option(
+      "-l, --local",
+      "Force project-local scope: install into <cwd>/.{ide}/ using <cwd>/.flowai.yaml. Mutually exclusive with --global.",
       { default: false },
     )
     .option(
@@ -58,12 +70,14 @@ function extractSyncOptions(
   yes: boolean;
   skipUpdateCheck: boolean;
   global: boolean;
+  local: boolean;
   dryRun: boolean;
 } {
   return {
     yes: options.yes as boolean,
     skipUpdateCheck: options.skipUpdateCheck as boolean,
     global: options.global === true,
+    local: options.local === true,
     dryRun: options.dryRun === true,
   };
 }
@@ -136,6 +150,40 @@ export function formatSyncPlan(
   return lines.join("\n");
 }
 
+/** Resolve the effective scope for `runSync` given the three-mode flag surface
+ * (`--global` / `--local` / `--auto`). Returns the resolved scope plus a flag
+ * indicating whether the caller must still prompt for scope (auto mode with
+ * no configs on disk).
+ *
+ * Kept exported for tests that cover the resolution matrix without spinning
+ * up the full `runSync` pipeline. */
+export async function resolveEffectiveScope(
+  mode: ScopeMode,
+  cwd: string,
+  home: string,
+  fs: DenoFsAdapter | import("./adapters/fs.ts").FsAdapter,
+): Promise<
+  { scope: SyncScope; needsPrompt: boolean; autoUsedGlobal: boolean }
+> {
+  if (mode === "global") {
+    return { scope: "global", needsPrompt: false, autoUsedGlobal: false };
+  }
+  if (mode === "local") {
+    return { scope: "project", needsPrompt: false, autoUsedGlobal: false };
+  }
+  const resolved = await resolveAutoScope(cwd, home, fs);
+  if (resolved === "project") {
+    return { scope: "project", needsPrompt: false, autoUsedGlobal: false };
+  }
+  if (resolved === "global") {
+    return { scope: "global", needsPrompt: false, autoUsedGlobal: true };
+  }
+  // Both configs missing: default to global so bare `flowai` in a fresh
+  // project doesn't silently litter `<cwd>` with a config. Caller can still
+  // prompt interactively — surfaced via `needsPrompt`.
+  return { scope: "global", needsPrompt: true, autoUsedGlobal: false };
+}
+
 /** Shared sync action used by both bare command (outside IDE) and `sync` subcommand.
  *
  * Returns exit code (0 = success, 1 = errors). Caller invokes `Deno.exit`. */
@@ -143,6 +191,7 @@ async function runSync(options: {
   yes: boolean;
   skipUpdateCheck: boolean;
   global: boolean;
+  local: boolean;
   dryRun: boolean;
 }): Promise<number> {
   const cwd = Deno.cwd();
@@ -151,10 +200,42 @@ async function runSync(options: {
     yes,
     skipUpdateCheck,
     global: isGlobal,
+    local: isLocal,
     dryRun,
   } = options;
-  const scope: SyncScope = isGlobal ? "global" : "project";
-  const home = isGlobal ? resolveHomeDir() : "";
+
+  // Validate mutually exclusive scope flags before any work.
+  let mode: ScopeMode;
+  try {
+    mode = resolveScopeMode({ global: isGlobal, local: isLocal });
+  } catch (err) {
+    console.error(red((err as Error).message, detectColor()));
+    return 1;
+  }
+
+  // Home is required for auto-probe and global targets; in forced project
+  // scope we still resolve it (cheap) so downstream global-bootstrap paths
+  // work consistently.
+  const home = resolveHomeDir();
+
+  const resolution = await resolveEffectiveScope(mode, cwd, home, fs);
+  let scope: SyncScope = resolution.scope;
+
+  if (resolution.autoUsedGlobal) {
+    console.log(`Using global config at ${home}/.flowai.yaml (--auto).`);
+  }
+  if (resolution.needsPrompt && !yes && !dryRun) {
+    const pickLocal = await Confirm.prompt({
+      message:
+        "No flowai config found. Create a project-local config (.flowai.yaml in this dir)? Answer 'no' to set up a global config instead.",
+      default: false,
+    });
+    if (pickLocal) {
+      scope = "project";
+    }
+  }
+  // Downstream functions expect `home` empty for project scope.
+  const effectiveHome = scope === "global" ? home : "";
 
   // 0. Notify about a newer version (fail-open). Never installs — users run
   //    `flowai update` to apply. Skipped under dry-run and `--skip-update-check`.
@@ -164,7 +245,7 @@ async function runSync(options: {
 
   // 1. Load or generate config (scope-aware path). Dry-run must never write a
   //    config either — if missing, print a hint and exit 0.
-  let config = await loadConfig(cwd, fs, scope, home);
+  let config = await loadConfig(cwd, fs, scope, effectiveHome);
   const isNewConfig = !config;
 
   if (!config) {
@@ -186,15 +267,21 @@ async function runSync(options: {
       );
     }
     config = yes
-      ? await generateConfigNonInteractive(cwd, fs, undefined, scope, home)
-      : await generateConfig(cwd, fs, undefined, scope, home);
+      ? await generateConfigNonInteractive(
+        cwd,
+        fs,
+        undefined,
+        scope,
+        effectiveHome,
+      )
+      : await generateConfig(cwd, fs, undefined, scope, effectiveHome);
   }
 
   // 2. Show sync plan (includes Target dirs in global mode)
   if (dryRun) {
     console.log("[DRY RUN] Previewing sync — no files will be written.");
   }
-  console.log(formatSyncPlan(config, { scope, home }));
+  console.log(formatSyncPlan(config, { scope, home: effectiveHome }));
 
   // Confirm only for newly generated configs (skipped under dry-run since
   // dry-run has no side effects to confirm).
@@ -217,7 +304,7 @@ async function runSync(options: {
   const syncOptions: SyncOptions = {
     yes,
     scope,
-    home,
+    home: effectiveHome,
     dryRun,
     onProgress: (msg) => {
       if (spinner) spinner.text = msg;
@@ -494,13 +581,20 @@ export async function main(args: string[]): Promise<void> {
     // deno-lint-ignore no-explicit-any
     .action(async (options: any) => {
       const opts = extractSyncOptions(options as Record<string, unknown>);
-      // FR-DIST.GLOBAL — --global bypasses the IDE-context guard (the user
-      // opts in explicitly, installing to user dirs has no project-cwd risk).
-      if (!opts.global && isInsideIDE()) {
-        console.log(
-          "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
-        );
-        return;
+      // FR-DIST.GLOBAL — IDE-context guard fires only when the resolved scope
+      // is project (auto-detected or forced via --local). Auto-resolution to
+      // global is safe inside an IDE (writes land in user dirs, not cwd).
+      if (isInsideIDE()) {
+        const willBeProject = opts.local ||
+          (!opts.global && await new DenoFsAdapter().exists(
+            `${Deno.cwd()}/.flowai.yaml`,
+          ));
+        if (willBeProject) {
+          console.log(
+            "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
+          );
+          return;
+        }
       }
 
       const code = await runSync(opts);
@@ -559,10 +653,20 @@ export async function main(args: string[]): Promise<void> {
       "migrate",
       new Command()
         .description(
-          "One-way migration of all primitives (skills, agents, commands) from one IDE to another.",
+          "One-way migration of all primitives (skills, agents, commands) from one IDE to another. Requires an explicit scope flag.",
         )
         .arguments("<from:string> <to:string>")
         .option("-y, --yes", "Overwrite without prompt", { default: false })
+        .option(
+          "-g, --global",
+          "Migrate between IDE user-level dirs (e.g. ~/.claude/ → ~/.cursor/). Mutually exclusive with --local.",
+          { default: false },
+        )
+        .option(
+          "-l, --local",
+          "Migrate between project-local IDE dirs (<cwd>/.{ide}/). Mutually exclusive with --global.",
+          { default: false },
+        )
         .option(
           "--dry-run",
           "Print what would be migrated without writing files",
@@ -570,9 +674,33 @@ export async function main(args: string[]): Promise<void> {
         )
         // deno-lint-ignore no-explicit-any
         .action(async (options: any, from: string, to: string) => {
+          const g = options.global === true;
+          const l = options.local === true;
+          if (g && l) {
+            console.error(
+              red(
+                "--global and --local are mutually exclusive; pass only one.",
+                detectColor(),
+              ),
+            );
+            Deno.exit(1);
+          }
+          if (!g && !l) {
+            console.error(
+              red(
+                "flowai migrate requires an explicit scope: pass --global or --local.",
+                detectColor(),
+              ),
+            );
+            Deno.exit(1);
+          }
+          const scope: SyncScope = g ? "global" : "project";
+          const home = g ? resolveHomeDir() : "";
           const migrateOpts: MigrateOptions = {
             yes: options.yes as boolean,
             dryRun: options.dryRun as boolean,
+            scope,
+            home,
             promptConflicts: options.yes
               ? undefined
               : async (conflicts: PlanItem[]) => {

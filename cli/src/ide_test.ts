@@ -177,10 +177,12 @@ Deno.test("CLI - bare command inside IDE prints message instead of syncing", asy
 });
 
 Deno.test("CLI - sync subcommand works even inside IDE", async () => {
-  // sync subcommand should attempt sync regardless of IDE env
-  // Run in a temp dir without .flowai.yaml so it fails cleanly
-  // and does NOT modify real project files
+  // sync subcommand should attempt sync regardless of IDE env.
+  // Run in a temp dir AND with a temp HOME so the subprocess doesn't create
+  // `~/.flowai.yaml` in the tester's real home directory (FR-DIST.GLOBAL auto
+  // mode defaults to global when both configs are missing).
   const tmpDir = await Deno.makeTempDir();
+  const tmpHome = await Deno.makeTempDir();
   try {
     const env: Record<string, string> = {};
     for (const [k, v] of Object.entries(Deno.env.toObject())) {
@@ -189,6 +191,8 @@ Deno.test("CLI - sync subcommand works even inside IDE", async () => {
       }
     }
     env["CLAUDECODE"] = "1";
+    env["HOME"] = tmpHome;
+    env["USERPROFILE"] = tmpHome;
 
     const cmd = new Deno.Command("deno", {
       args: [
@@ -198,6 +202,7 @@ Deno.test("CLI - sync subcommand works even inside IDE", async () => {
         "sync",
         "--yes",
         "--skip-update-check",
+        "--local",
       ],
       cwd: tmpDir,
       env,
@@ -213,7 +218,9 @@ Deno.test("CLI - sync subcommand works even inside IDE", async () => {
       !stdout.includes("IDE context detected"),
       "sync subcommand should not show IDE message",
     );
-    // Will fail with "No .flowai.yaml" since --yes requires config
+    // `--local --yes` writes a fresh project config in tmpDir, then prints
+    // the sync plan. Either a sync attempt or a config-related error is
+    // acceptable.
     assert(
       output.code !== 0 || stderr.includes(".flowai.yaml") ||
         stdout.includes("Sync"),
@@ -221,5 +228,6 @@ Deno.test("CLI - sync subcommand works even inside IDE", async () => {
     );
   } finally {
     await Deno.remove(tmpDir, { recursive: true });
+    await Deno.remove(tmpHome, { recursive: true });
   }
 });

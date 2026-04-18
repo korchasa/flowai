@@ -1,5 +1,10 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
-import { formatSyncPlan, renderSyncOutput } from "./cli.ts";
+import { InMemoryFsAdapter } from "./adapters/fs.ts";
+import {
+  formatSyncPlan,
+  renderSyncOutput,
+  resolveEffectiveScope,
+} from "./cli.ts";
 import type { SyncResult } from "./sync.ts";
 import type { FlowConfig } from "./types.ts";
 
@@ -321,4 +326,121 @@ Deno.test("formatSyncPlan - project mode does NOT list global Target dirs block"
     "project mode omits Target dirs block",
   );
   assertStringIncludes(text, "IDEs: claude, cursor");
+});
+
+// --- resolveEffectiveScope (FR-DIST.GLOBAL three-mode flow) ---
+
+Deno.test("resolveEffectiveScope - --global forces global without probing FS", async () => {
+  const fs = new InMemoryFsAdapter();
+  // Project config would normally win in auto, but --global must bypass.
+  fs.files.set("/project/.flowai.yaml", "version: '1.1'\nides: [claude]\n");
+  const r = await resolveEffectiveScope("global", "/project", "/home/u", fs);
+  assertEquals(r.scope, "global");
+  assertEquals(r.needsPrompt, false);
+  assertEquals(r.autoUsedGlobal, false);
+});
+
+Deno.test("resolveEffectiveScope - --local forces project", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set("/home/u/.flowai.yaml", "version: '1.1'\nides: [cursor]\n");
+  const r = await resolveEffectiveScope("local", "/project", "/home/u", fs);
+  assertEquals(r.scope, "project");
+  assertEquals(r.needsPrompt, false);
+});
+
+Deno.test("resolveEffectiveScope - auto: project config wins", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set("/project/.flowai.yaml", "version: '1.1'\nides: [claude]\n");
+  fs.files.set("/home/u/.flowai.yaml", "version: '1.1'\nides: [cursor]\n");
+  const r = await resolveEffectiveScope("auto", "/project", "/home/u", fs);
+  assertEquals(r.scope, "project");
+  assertEquals(r.autoUsedGlobal, false);
+});
+
+Deno.test("resolveEffectiveScope - auto: falls back to global with flag set", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set("/home/u/.flowai.yaml", "version: '1.1'\nides: [cursor]\n");
+  const r = await resolveEffectiveScope("auto", "/project", "/home/u", fs);
+  assertEquals(r.scope, "global");
+  assertEquals(r.needsPrompt, false);
+  assertEquals(r.autoUsedGlobal, true);
+});
+
+Deno.test("resolveEffectiveScope - auto: both missing signals needsPrompt", async () => {
+  const fs = new InMemoryFsAdapter();
+  const r = await resolveEffectiveScope("auto", "/project", "/home/u", fs);
+  assertEquals(r.scope, "global");
+  assertEquals(r.needsPrompt, true);
+  assertEquals(r.autoUsedGlobal, false);
+});
+
+// --- CLI integration: scope flag validation ---
+
+Deno.test("CLI - --global + --local exits 1 with clear error", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    // Use absolute path to main.ts so the temp cwd doesn't break resolution.
+    const mainPath = new URL("./main.ts", import.meta.url).pathname;
+    const cmd = new Deno.Command("deno", {
+      args: [
+        "run",
+        "-A",
+        mainPath,
+        "sync",
+        "--yes",
+        "--skip-update-check",
+        "--global",
+        "--local",
+      ],
+      cwd: tmp,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const output = await cmd.output();
+    const stderr = new TextDecoder().decode(output.stderr);
+    assertEquals(output.code, 1);
+    assertStringIncludes(stderr, "mutually exclusive");
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("CLI - migrate without scope flag exits 1", async () => {
+  const cmd = new Deno.Command("deno", {
+    args: [
+      "run",
+      "-A",
+      "cli/src/main.ts",
+      "migrate",
+      "claude",
+      "cursor",
+    ],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const output = await cmd.output();
+  const stderr = new TextDecoder().decode(output.stderr);
+  assertEquals(output.code, 1);
+  assertStringIncludes(stderr, "explicit scope");
+});
+
+Deno.test("CLI - migrate with --global + --local exits 1", async () => {
+  const cmd = new Deno.Command("deno", {
+    args: [
+      "run",
+      "-A",
+      "cli/src/main.ts",
+      "migrate",
+      "claude",
+      "cursor",
+      "--global",
+      "--local",
+    ],
+    stdout: "piped",
+    stderr: "piped",
+  });
+  const output = await cmd.output();
+  const stderr = new TextDecoder().decode(output.stderr);
+  assertEquals(output.code, 1);
+  assertStringIncludes(stderr, "mutually exclusive");
 });

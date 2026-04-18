@@ -1,9 +1,12 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
+import { InMemoryFsAdapter } from "./adapters/fs.ts";
 import {
+  resolveAutoScope,
   resolveConfigPath,
   resolveHomeDir,
   resolveIdeBaseDir,
   resolveScope,
+  resolveScopeMode,
 } from "./scope.ts";
 
 // --- resolveScope ---
@@ -135,5 +138,90 @@ Deno.test("resolveHomeDir - throws when neither is set", () => {
     () => resolveHomeDir(env),
     Error,
     "Cannot resolve home directory",
+  );
+});
+
+// --- resolveScopeMode ---
+
+Deno.test("resolveScopeMode - no flags yields auto", () => {
+  assertEquals(resolveScopeMode({}), "auto");
+  assertEquals(resolveScopeMode({ global: false, local: false }), "auto");
+});
+
+Deno.test("resolveScopeMode - --global yields global", () => {
+  assertEquals(resolveScopeMode({ global: true }), "global");
+});
+
+Deno.test("resolveScopeMode - --local yields local", () => {
+  assertEquals(resolveScopeMode({ local: true }), "local");
+});
+
+Deno.test("resolveScopeMode - --global + --local throws", () => {
+  assertThrows(
+    () => resolveScopeMode({ global: true, local: true }),
+    Error,
+    "mutually exclusive",
+  );
+});
+
+// --- resolveAutoScope ---
+
+Deno.test("resolveAutoScope - project config present wins", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set("/project/.flowai.yaml", "version: '1.1'\nides: [claude]\n");
+  const result = await resolveAutoScope("/project", "/home/user", fs);
+  assertEquals(result, "project");
+});
+
+Deno.test(
+  "resolveAutoScope - project missing, global present → global",
+  async () => {
+    const fs = new InMemoryFsAdapter();
+    fs.files.set(
+      "/home/user/.flowai.yaml",
+      "version: '1.1'\nides: [claude]\n",
+    );
+    const result = await resolveAutoScope("/project", "/home/user", fs);
+    assertEquals(result, "global");
+  },
+);
+
+Deno.test("resolveAutoScope - both configs present → project wins", async () => {
+  const fs = new InMemoryFsAdapter();
+  fs.files.set("/project/.flowai.yaml", "version: '1.1'\nides: [claude]\n");
+  fs.files.set(
+    "/home/user/.flowai.yaml",
+    "version: '1.1'\nides: [cursor]\n",
+  );
+  const result = await resolveAutoScope("/project", "/home/user", fs);
+  assertEquals(result, "project");
+});
+
+Deno.test("resolveAutoScope - both missing → null", async () => {
+  const fs = new InMemoryFsAdapter();
+  const result = await resolveAutoScope("/project", "/home/user", fs);
+  assertEquals(result, null);
+});
+
+// Ensure the function uses the fs adapter (never talks to real disk)
+Deno.test("resolveAutoScope - isolated from real filesystem", async () => {
+  const fs = new InMemoryFsAdapter();
+  // Even with cwd set to a definitely-real path with a likely .flowai.yaml,
+  // an empty adapter must return null.
+  const result = await resolveAutoScope(
+    "/nonexistent-sandbox",
+    "/home/ghost",
+    fs,
+  );
+  assertEquals(result, null);
+  // Compile-time guard: function returns a promise we can still reject on bad input.
+  await assertRejects(
+    () =>
+      resolveAutoScope(
+        "/project",
+        "/home/user",
+        null as unknown as InMemoryFsAdapter,
+      ),
+    Error,
   );
 });

@@ -2,16 +2,37 @@
 /** One-way migration of all primitives from one IDE config dir to another */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
+import {
+  type IdeTargetPurpose,
+  resolveIdeBaseDir,
+  type SyncScope,
+} from "./scope.ts";
 import { processPlan, type SyncOptions, type SyncResult } from "./sync.ts";
 import { KNOWN_IDES } from "./types.ts";
 import type { IDE, PlanItem } from "./types.ts";
 import { migrateAgentsToCodex, scanCodexAgents } from "./codex_migrate.ts";
 
-/** Options for runMigrate */
+/** Options for runMigrate. Scope + home are required so the migrate target
+ * dir resolution matches the same `resolveIdeBaseDir` surface used by sync
+ * (FR-DIST.GLOBAL). Default `scope = "project"` and `home = ""` keep legacy
+ * call sites working. */
 export interface MigrateOptions {
   yes: boolean;
   dryRun: boolean;
+  scope?: SyncScope;
+  home?: string;
   promptConflicts?: (conflicts: PlanItem[]) => Promise<number[]>;
+}
+
+/** Resolve the IDE base dir for migrate with project-defaulted scope/home. */
+export function migrateBaseDir(
+  ide: IDE,
+  cwd: string,
+  scope: SyncScope,
+  home: string,
+  purpose: IdeTargetPurpose = "default",
+): string {
+  return resolveIdeBaseDir(ide.name, scope, cwd, home, purpose);
 }
 
 /** A resource found in one IDE's config dir */
@@ -58,11 +79,16 @@ export async function scanAllResources(
   cwd: string,
   fromIde: IDE,
   fs: FsAdapter,
+  scope: SyncScope = "project",
+  home: string = "",
 ): Promise<ScannedResource[]> {
   const resources: ScannedResource[] = [];
+  const skillsBase = migrateBaseDir(fromIde, cwd, scope, home, "skills");
+  const agentsBase = migrateBaseDir(fromIde, cwd, scope, home, "agents");
+  const commandsBase = migrateBaseDir(fromIde, cwd, scope, home, "default");
 
   // Skills: each subdirectory under skills/
-  const skillsDir = join(cwd, fromIde.configDir, "skills");
+  const skillsDir = join(skillsBase, "skills");
   for await (const entry of safeReadDir(skillsDir, fs)) {
     if (!entry.isDirectory) continue;
     const skillDir = join(skillsDir, entry.name);
@@ -83,16 +109,17 @@ export async function scanAllResources(
   }
 
   // Agents.
-  // FR-DIST.MIGRATE — for Codex the on-disk agent format is `.codex/config.toml`
-  // `[agents.<name>]` tables pointing at sidecar `.codex/agents/<name>.toml`
-  // files (see FR-DIST.CODEX-AGENTS). Reconstruct a synthetic universal
-  // markdown representation from each sidecar so the rest of the migration
-  // pipeline (cross-IDE frontmatter transform) can operate uniformly.
+  // FR-DIST.MIGRATE — for Codex the on-disk agent format is
+  // `<base>/config.toml` `[agents.<name>]` tables pointing at sidecar
+  // `<base>/agents/<name>.toml` files (see FR-DIST.CODEX-AGENTS). Reconstruct
+  // a synthetic universal markdown representation from each sidecar so the
+  // rest of the migration pipeline (cross-IDE frontmatter transform) can
+  // operate uniformly.
   if (fromIde.name === "codex") {
-    const codexAgents = await scanCodexAgents(cwd, fromIde, fs);
+    const codexAgents = await scanCodexAgents(cwd, fromIde, fs, scope, home);
     resources.push(...codexAgents);
   } else {
-    const agentsDir = join(cwd, fromIde.configDir, "agents");
+    const agentsDir = join(agentsBase, "agents");
     for await (const entry of safeReadDir(agentsDir, fs)) {
       if (!entry.isFile) continue;
       if (!entry.name.endsWith(".md")) continue;
@@ -107,7 +134,7 @@ export async function scanAllResources(
   }
 
   // Commands: each *.md file under commands/
-  const commandsDir = join(cwd, fromIde.configDir, "commands");
+  const commandsDir = join(commandsBase, "commands");
   for await (const entry of safeReadDir(commandsDir, fs)) {
     if (!entry.isFile) continue;
     if (!entry.name.endsWith(".md")) continue;
@@ -129,6 +156,12 @@ const SUB_DIR_MAP = {
   command: "commands",
 } as const;
 
+const PURPOSE_MAP: Record<keyof typeof SUB_DIR_MAP, IdeTargetPurpose> = {
+  skill: "skills",
+  agent: "agents",
+  command: "default",
+};
+
 /**
  * Build PlanItem[] for the target IDE from scanned resources.
  * Reads existing target files to classify each item as create/ok/conflict.
@@ -142,6 +175,8 @@ export async function buildMigratePlan(
   fs: FsAdapter,
   modelMap: Record<string, string>,
   log: (msg: string) => void,
+  scope: SyncScope = "project",
+  home: string = "",
 ): Promise<PlanItem[]> {
   const plan: PlanItem[] = [];
   let warnedTransform = false;
@@ -154,9 +189,12 @@ export async function buildMigratePlan(
 
   for (const resource of resources) {
     const subDir = SUB_DIR_MAP[resource.type];
+    const purpose = PURPOSE_MAP[resource.type];
+    const fromBase = migrateBaseDir(fromIde, cwd, scope, home, purpose);
+    const toBase = migrateBaseDir(toIde, cwd, scope, home, purpose);
     for (const file of resource.files) {
-      const sourcePath = join(cwd, fromIde.configDir, subDir, file.relPath);
-      const targetPath = join(cwd, toIde.configDir, subDir, file.relPath);
+      const sourcePath = join(fromBase, subDir, file.relPath);
+      const targetPath = join(toBase, subDir, file.relPath);
 
       // Transform agent frontmatter for target IDE
       let content = file.content;
@@ -241,10 +279,14 @@ export async function runMigrate(
     throw new Error("Source and target IDE must differ");
   }
 
+  const scope: SyncScope = options.scope ?? "project";
+  const home: string = options.home ?? "";
   const prefix = options.dryRun ? "[DRY RUN] " : "";
-  log(`${prefix}Scanning ${fromIdeName} (${fromIde.configDir}/)...`);
+  const fromBaseDisplay = migrateBaseDir(fromIde, cwd, scope, home);
+  const toBaseDisplay = migrateBaseDir(toIde, cwd, scope, home);
+  log(`${prefix}Scanning ${fromIdeName} (${fromBaseDisplay}/)...`);
 
-  const resources = await scanAllResources(cwd, fromIde, fs);
+  const resources = await scanAllResources(cwd, fromIde, fs, scope, home);
   const skills = resources.filter((r) => r.type === "skill");
   const agents = resources.filter((r) => r.type === "agent");
   const commands = resources.filter((r) => r.type === "command");
@@ -268,10 +310,12 @@ export async function runMigrate(
     fs,
     modelMap,
     log,
+    scope,
+    home,
   );
 
   if (options.dryRun) {
-    log(`\nWould migrate to ${toIdeName} (${toIde.configDir}/):`);
+    log(`\nWould migrate to ${toIdeName} (${toBaseDisplay}/):`);
     for (const item of plan) {
       if (item.action === "ok") continue;
       const suffix = item.type === "agent" ? " (transformed)" : "";
@@ -292,11 +336,13 @@ export async function runMigrate(
     return emptyResult();
   }
 
-  log(`\nMigrating to ${toIdeName} (${toIde.configDir}/)...`);
+  log(`\nMigrating to ${toIdeName} (${toBaseDisplay}/)...`);
 
   const syncOptions: SyncOptions = {
     yes: options.yes,
     promptConflicts: options.promptConflicts,
+    scope,
+    home,
   };
 
   const result = emptyResult();
@@ -305,7 +351,17 @@ export async function runMigrate(
   // Codex-specific agent dispatch: run after the generic plan has written
   // skills/commands so the `.codex/` dir exists.
   if (toIde.name === "codex" && agents.length > 0) {
-    await migrateAgentsToCodex(agents, fromIde, toIde, cwd, fs, log, result);
+    await migrateAgentsToCodex(
+      agents,
+      fromIde,
+      toIde,
+      cwd,
+      fs,
+      log,
+      result,
+      scope,
+      home,
+    );
   }
 
   // Per-type summary

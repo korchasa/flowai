@@ -53,12 +53,20 @@ flowai
 
 ### Global vs per-project
 
-- **Global (`flowai sync --global`)** — installs into IDE user-level dirs (`~/.claude/`, `~/.cursor/`, `~/.config/opencode/`, `~/.codex/`, `~/.agents/skills/`). Config at `~/.flowai.yaml`. One sync updates every project at once. Recommended default.
-- **Per-project (`flowai sync`)** — installs into `.{ide}/` in the current project. Config at `<cwd>/.flowai.yaml`. Use when you want team-wide skills tracked in the repo, or per-project overrides.
+`flowai` / `flowai sync` select the install scope via three mutually exclusive flags:
 
-Both modes can coexist. When both configs exist and no flag is passed, the project config wins. Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically (e.g. `/flowai-update` is `project-only` because it requires project context).
+- `--global` / `-g` — force global install into IDE user-level dirs (`~/.claude/`, `~/.cursor/`, `~/.config/opencode/`, `~/.codex/`, `~/.agents/skills/`). Config at `~/.flowai.yaml`. One sync updates every project at once.
+- `--local` / `-l` — force project-local install into `<cwd>/.{ide}/`. Config at `<cwd>/.flowai.yaml`. Use when you want team-wide skills tracked in the repo, or per-project overrides.
+- `--auto` — default. Auto-resolves scope by probing config files:
+  1. `<cwd>/.flowai.yaml` exists → project scope.
+  2. Otherwise `~/.flowai.yaml` exists → global scope (CLI prints `Using global config at ~/.flowai.yaml`).
+  3. Neither exists → CLI asks which scope to set up (defaults to global in `-y`).
 
-On first run, `flowai` interactively creates the relevant `.flowai.yaml` to configure which packs and skills to sync.
+**Opting a project into local install:** create a `<cwd>/.flowai.yaml` (or run `flowai --local` to generate one). The mere presence of that file is the opt-in marker — subsequent runs without flags will use it.
+
+Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically (e.g. `/flowai-update` is `project-only` because it requires project context).
+
+`flowai migrate <from> <to>` requires an explicit `--global` or `--local` flag — it never auto-resolves, since cross-IDE migrations have different semantics in each scope.
 
 ### Quick Start Prompt
 

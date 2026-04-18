@@ -182,32 +182,53 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Writes valid `.flowai.yaml`.
   - [x] Global mode writes `~/.flowai.yaml`; project mode writes `<cwd>/.flowai.yaml`. When both exist and no flag is passed, project config wins.
 
-#### FR-DIST.GLOBAL Global Sync Mode
+#### FR-DIST.GLOBAL Scope Selection (Global / Local / Auto)
 
-- **Desc:** `flowai sync --global` (or `-g`) installs framework primitives into IDE user-level dirs, eliminating N×project maintenance burden. Scope drives every path resolution decision: config file location, IDE base dir per IDE, asset split (templates installed both modes; artifact diff project-only), scaffold sync (project-only), and hook merge path. Scope is also a filter key on the `scope:` frontmatter field of skills and commands (see FR-PACKS.SCOPE).
+- **Desc:** `flowai` / `flowai sync` select scope via one of three mutually exclusive flags: `--global` / `-g` (user-level install), `--local` / `-l` (project-local install), and `--auto` (default). In `--auto` the CLI prefers the project config when present and falls back to the global config, eliminating accidental project-local installs on top of an existing global setup. Scope drives every path resolution decision: config file location, IDE base dir per IDE, asset split (templates installed both modes; artifact diff project-only), scaffold sync (project-only), and hook merge path. Scope is also a filter key on the `scope:` frontmatter field of skills and commands (see FR-PACKS.SCOPE).
 - **Target paths per IDE** (see also SDS section 3.5):
   - Claude Code: `~/.claude/`
   - Cursor: `~/.cursor/`
   - OpenCode: `~/.config/opencode/`
   - Codex agents: `~/.codex/`
   - Codex skills: `~/.agents/skills/` (distinct from agents; Codex user-skill convention)
+- **Auto-resolution priority** (applied only when `--auto` is active):
+  1. `<cwd>/.flowai.yaml` exists → project scope.
+  2. Otherwise `~/.flowai.yaml` exists → global scope (CLI prints `Using global config at ~/.flowai.yaml`).
+  3. Neither exists → interactive prompt asking scope; in `-y` mode defaults to **global** (safer fallback for CI after initial setup).
+- **Explicit flag semantics:**
+  - `--global` / `-g` — force global; create `~/.flowai.yaml` if missing. Bypasses the auto-resolution ladder.
+  - `--local` / `-l` — force project; create `<cwd>/.flowai.yaml` if missing. Required to opt a project into per-repo primitives when a global config already exists.
+  - `--auto` — default; applies the resolution priority above.
+  - `--global` + `--local` together → CLI exits with a non-zero error explaining the conflict.
+- **`migrate` subcommand** accepts `--global` / `-g` and `--local` / `-l` (mutually exclusive, required to disambiguate target dirs).
+- **IDE guard:** the "IDE context detected" guard ([cli.ts]) fires only when auto-resolution selects the project scope inside an IDE (`isInsideIDE()`); in global scope the guard is bypassed (user dirs are not project-cwd).
 - **Asset split:** Template install (`assets/AGENTS.template.md` → `{ide}/assets/`) runs in **both** modes. Artifact sync (diff/merge `<cwd>/AGENTS.md` from template) runs in **project** mode only. Scaffolds (`.devcontainer/*`, SRS/SDS stubs) run in **project** mode only.
 - **Hook merge:** In global mode the hook writer resolves `~/.claude/settings.json` (and equivalent per IDE). The existing manifest-based merge already preserves user hooks not tracked by flowai; path change is the only new behavior.
-- **Coexistence:** `~/.flowai.yaml` and per-project `.flowai.yaml` may coexist. With no flag and both present, project wins.
+- **Coexistence:** `~/.flowai.yaml` and per-project `.flowai.yaml` may coexist. In `--auto`, project wins when both exist; explicit `--global`/`--local` flags always override.
 - **Not in scope:** Auto-migration from project to global; native marketplace plugin packaging.
 - **Acceptance:**
   - [x] `--global` flag drives every scope-dependent path (config, IDE base, hooks, user_sync).
     Evidence: `cli/src/scope.ts` (`resolveConfigPath`, `resolveIdeBaseDir`, `resolveScope`) + `cli/src/scope_test.ts`.
+  - [x] `--local` flag forces project scope even when `~/.flowai.yaml` exists.
+    Evidence: `cli/src/cli_test.ts::resolveEffectiveScope - --local forces project`.
+  - [x] `--auto` (default) resolves project→global→prompt per the priority ladder above.
+    Evidence: `cli/src/scope_test.ts::resolveAutoScope - project config present wins` + `cli/src/cli_test.ts::resolveEffectiveScope - auto: falls back to global with flag set` + `cli/src/cli_test.ts::resolveEffectiveScope - auto: both missing signals needsPrompt`.
+  - [x] `--global` + `--local` together surfaces an error and exits non-zero.
+    Evidence: `cli/src/cli_test.ts::CLI - --global + --local exits 1 with clear error`.
+  - [x] IDE guard bypassed when resolved scope is global.
+    Evidence: `cli/src/cli.ts` guard conditional on resolved scope; `cli/src/ide_test.ts::CLI - sync subcommand works even inside IDE`.
   - [x] Global mode installs templates to `{home}/.{ide}/assets/AGENTS.template.md`.
     Evidence: `cli/src/sync.ts` asset step runs in both scopes; `cli/src/sync_test.ts::global mode installs templates`.
   - [x] Global mode skips artifact sync and scaffolds (no `<cwd>/AGENTS.md` diff).
     Evidence: `cli/src/sync_test.ts::global mode skips artifact sync`.
   - [x] Hook writer resolves global path when scope=global.
     Evidence: `cli/src/hook_writer.ts` uses `resolveIdeBaseDir`; `cli/src/hooks_test.ts::global merge preserves user hooks`.
-  - [x] Per-project mode unchanged when `--global` is absent.
+  - [x] Per-project mode unchanged when `<cwd>/.flowai.yaml` exists.
     Evidence: existing `cli/src/sync_test.ts` suite continues to pass unmodified.
   - [x] `user_sync` scans user-level dirs under global scope.
     Evidence: `cli/src/user_sync.ts` threads scope; `cli/src/user_sync_test.ts::user_sync in global mode`.
+  - [x] `flowai migrate` requires explicit `--global` or `--local` (no auto-resolution).
+    Evidence: `cli/src/cli_test.ts::CLI - migrate without scope flag exits 1` + `cli/src/cli_test.ts::CLI - migrate with --global + --local exits 1`.
 
 #### FR-PACKS.SCOPE Scope Frontmatter Field
 
