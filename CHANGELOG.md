@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/korchasa/flowai/compare/v0.9.0...v0.10.0) (2026-04-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** make flowai-investigate autonomous
+
+### Features
+
+* **cli:** truthful sync output, --dry-run, global target-dirs preview ([45cf734](https://github.com/korchasa/flowai/commit/45cf734774f42a347089403b84fa3bcd43105f40))
+* **core:** make flowai-investigate autonomous ([6e052f5](https://github.com/korchasa/flowai/commit/6e052f5ae0219430624a59c653ca0a98120f88cd))
+
 ## [0.9.0](https://github.com/korchasa/flowai/compare/v0.8.2...v0.9.0) (2026-04-17)
 
 
