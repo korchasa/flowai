@@ -42,10 +42,14 @@ the other.
 5. **Planning**: Use a task management tool (e.g., `todo_write`, `todowrite`)
    to track steps.
 6. **Session Scope**: Compare current `git status` with the git status snapshot
-   from session start (available in system context). Files already
+   from session start (available in system context). By default, files already
    modified/untracked at session start are outside the review and commit scope —
-   note them but do not review or commit. Focus on changes made in the current
-   session. If unsure which changes are yours, ask the user before staging.
+   note them but do not review or commit. **Exception**: if the user's request
+   explicitly refers to a specific file, function, or feature (e.g. "review and
+   commit the sum function", "commit the new main.py utility"), include it in
+   both phases even if it predates the session. Focus on session changes plus
+   any explicitly requested files. If unsure which changes are yours, ask the
+   user before staging.
 </rules>
 
 ## Instructions

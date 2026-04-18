@@ -49,10 +49,13 @@ Input sources:
 7. **Output**: Final verdict is **Approve**, **Request Changes**, or
    **Needs Discussion** with actionable items.
 8. **Session Scope**: Compare current `git status` with the git status snapshot
-   from session start (available in system context). Files already
+   from session start (available in system context). By default, files already
    modified/untracked at session start are outside the review scope — note them
-   in the report but do not review their content. Focus on changes made in the
-   current session.
+   in the report but do not review their content. **Exception**: if the user's
+   request explicitly refers to a specific file, function, or feature (e.g.
+   "review the login function", "look at processor.ts", "the new sum function"),
+   include it in the review even if it predates the session. Focus on session
+   changes plus any explicitly requested files.
 </rules>
 
 ## Instructions
