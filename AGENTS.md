@@ -84,6 +84,31 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs FR-HOOK-DOCS–FR-IDE-SCOPE.
 6. **`README.md`**: Public-facing overview. Derived from AGENTS.md + SRS + SDS. Installation, usage, pack/skill catalog, project structure. Keep in sync with framework state.
 
+## Documentation Map
+
+Maps source-code paths to documentation sections that describe them. Used by
+`flowai-commit-beta` / `flowai-review-and-commit-beta` to find the section to
+compare-and-update when each file changes. If a change touches a path below and
+the mapped section contradicts new code → update the section.
+
+- `framework/<pack>/commands/<name>/SKILL.md` → README §Packs, SRS §FR-CMD-EXEC / any `FR-*<NAME>*` clause, SDS §3.1 Product Packs
+- `framework/<pack>/skills/<name>/SKILL.md` → README §Packs, SRS §FR-HOWTO / any `FR-*<NAME>*` clause, SDS §3.1 Product Packs
+- `framework/<pack>/agents/<name>.md` → SDS §3.2 Product Agents, README §Agents (if public-facing)
+- `framework/<pack>/hooks/` → SRS §FR-HOOK-*, SDS hook section
+- `framework/<pack>/pack.yaml` → SRS §FR-PACKS, SDS §3.1 Product Packs; README §Packs when a pack is added/removed
+- `framework/<pack>/assets/AGENTS.template.md` → SRS §FR-INIT (template variables); check README mentions
+- `cli/src/sync.ts` / `cli/src/writer.ts` / `cli/src/plan.ts` → SRS §FR-DIST.SYNC / FR-DIST.CONFIG / FR-DIST.FILTER, SDS §3.5 Global Framework Distribution, README §Usage (CLI flags)
+- `cli/src/migrate.ts` → SRS §FR-DIST.MIGRATE, SDS §3.6 Migrate Command
+- `cli/src/user_sync.ts` → SRS §FR-DIST.USER-SYNC, SDS §3.5
+- `cli/src/update.ts` → SRS §FR-DIST.UPDATE / FR-DIST.UPDATE-CMD, SDS §3.10 Framework Update
+- `cli/src/loop.ts` → SRS §FR-LOOP, SDS §3.11 Loop Command
+- `cli/src/adapt.ts` → SRS §FR-ADAPT-INSTRUCTIONS, SDS §3.5.1 + §3.12
+- `scripts/benchmarks/` → SRS §FR-BENCH*, SDS §3.4 Benchmark System
+- `scripts/check-*.ts` → SDS §5 Logic / validation rules; SRS where the rule is first defined
+- `scripts/task-*.ts` → README §Development Commands
+- `documents/ides-difference.md` is READ-ONLY reference for FR-HOOK-DOCS..FR-IDE-SCOPE — update only when IDE capabilities change.
+- Files whose changes NEVER require doc sync: `*_test.ts`, `**/benchmarks/*/mod.ts`, `**/benchmarks/*/fixture/**`, `.github/`, `.devcontainer/`, formatting-only edits, `deno.lock`.
+
 ## Documentation Rules
 
 Your memory resets between sessions. Documentation is the only link to past decisions and context. Keeping it accurate is not optional — stale docs actively mislead future sessions.
