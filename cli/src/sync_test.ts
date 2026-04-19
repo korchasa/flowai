@@ -255,6 +255,34 @@ Deno.test("readPackCommandFiles - reads commands from framework/<pack>/commands/
   ]);
 });
 
+Deno.test("readPackSkillFiles - does NOT inject disable-model-invocation into skills/", async () => {
+  // Regression guard for the commands->skills migration: the 10 primitives
+  // moved to framework/<pack>/skills/flowai-skill-*/ must install WITHOUT
+  // `disable-model-invocation: true`, so the model can auto-invoke them.
+  // The CLI writer injects the flag only for commands/; skills/ stays clean.
+  const source = new InMemoryFrameworkSource(
+    new Map([
+      [
+        "framework/core/skills/flowai-skill-plan/SKILL.md",
+        "---\nname: flowai-skill-plan\ndescription: Use when planning.\n---\n\n# Body\n",
+      ],
+    ]),
+  );
+  const allPaths = ["framework/core/skills/flowai-skill-plan/SKILL.md"];
+  const files = await readPackSkillFiles(
+    ["flowai-skill-plan"],
+    allPaths,
+    source,
+  );
+  const skillMd = files.find((f) => f.path === "flowai-skill-plan/SKILL.md");
+  assertEquals(skillMd !== undefined, true);
+  assertEquals(
+    /disable-model-invocation/.test(skillMd!.content),
+    false,
+    "skills/ MUST NOT carry disable-model-invocation — only commands/ get it",
+  );
+});
+
 Deno.test("readPackCommandFiles - injects disable-model-invocation into SKILL.md", async () => {
   const source = new InMemoryFrameworkSource(
     new Map([
