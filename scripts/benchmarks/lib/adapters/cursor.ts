@@ -1,6 +1,7 @@
 import { join } from "@std/path";
 import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 import { calculateSessionUsage, type SessionUsage } from "../usage.ts";
+import { probeCliVersion } from "./version.ts";
 
 interface CursorAgentOutput {
   session_id?: string;
@@ -155,5 +156,9 @@ MOCK_EOF
 
   async calculateUsage(sessionId: string): Promise<SessionUsage | null> {
     return await calculateSessionUsage(sessionId);
+  }
+
+  cliVersion(): Promise<string> {
+    return probeCliVersion(this.command);
   }
 }

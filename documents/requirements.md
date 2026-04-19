@@ -86,6 +86,28 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/` and `framework/<pack>/commands/<command>/benchmarks/`), pack-level scenarios (`framework/<pack>/benchmarks/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
 - **Implementation:** `scripts/benchmarks/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
 
+### FR-BENCH-CACHE: Benchmark Result Cache
+
+- **Desc:** Commit per-scenario benchmark verdicts to the repo; re-run only when a cache-key input changes. Makes `deno task bench` an incremental operation.
+- **Scenario:** Contributor runs `deno task bench`; unchanged scenarios hit the cache and return instantly with zero LLM calls. A touched primitive or fixture forces re-execution. `--cache-check` is a CI gate that fails when the cache is stale.
+- **Acceptance:**
+  - [x] Cache files live under `benchmarks/cache/<pack>/<scenario-id>/<ide>.json`, tracked by git (directory not excluded in `.gitignore`).
+  - [x] Cache hit: no agent/judge CLI is invoked; `runScenario` is skipped entirely.
+  - [x] Cache key covers: scenario `mod.ts` + `fixture/`, primitive directory (excluding `benchmarks/`), `framework/<pack>/pack.yaml`, `framework/core/assets/AGENTS.template.md`, `scripts/benchmarks/lib/**`, `scripts/task-bench.ts`, `cli/src/transform.ts`, `cli/src/sync.ts`, `scripts/utils.ts`, full `benchmarks/config.json`, CLI args (`ide`, `agentModel`, `runs`), and best-effort `<cli> --version`.
+  - [x] Flags `--no-cache`, `--refresh-cache`, `--cache-check`, `--cache-with-runs` parsed in `scripts/task-bench.ts` and documented in `--help`. First three are mutually exclusive (enforced at arg-parse time).
+  - [x] Failed runs never write cache (prevents freezing broken scenarios at green).
+  - [x] Skipped scenarios (`scenario.skip` set) bypass cache entirely.
+  - [x] Judge `reason` strings are truncated to 200 characters with a trailing `…` marker.
+  - [x] IDE CLI version probe fails open: timeout / missing binary / non-zero exit all yield `""` without crashing.
+  - [x] Cache-key algorithm documented in `scripts/benchmarks/lib/cache.ts` module docstring.
+  - [x] Drift guard: `cache_test.ts` parses `scripts/benchmarks/lib/**` imports and asserts every escaping import is whitelisted in `cache.ts`.
+- **Non-acceptance (explicit trade-offs):**
+  - RED-phase cost: the first failing scenario re-runs on every invocation until GREEN (no `--cache-failures` flag). Use `--no-cache` during tight RED/GREEN iteration if needed.
+  - Judge drift invisibility: the LLM judge is non-deterministic; cache stores the first green verdict and does not re-validate it. Use `--no-cache` or a scheduled full sweep as a sanity probe.
+  - Cold-start cost: first run on a fresh clone is a full sweep; a maintainer commits the warmed `benchmarks/cache/` once.
+- **Open (follow-up):**
+  - [ ] CI step `deno task bench --cache-check` that fails a PR when a primitive was touched without refreshing the cache.
+
 ### FR-BENCH.RULES: AGENTS.md Rules Benchmarks
 
 - **Description:** Pack-level benchmarks (`framework/core/benchmarks/agents-rules-*/`) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). Template stored at `framework/core/assets/AGENTS.template.md`.

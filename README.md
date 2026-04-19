@@ -301,7 +301,7 @@ cli/                    # Distribution tool — published to JSR as @korchasa/fl
   scripts/              #   Bundle script (generates bundled.json + _version.ts)
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + benchmark infrastructure
-benchmarks/             # Benchmark runs, config, lock (scenarios in framework/<pack>/{commands,skills}/*/benchmarks/)
+benchmarks/             # Benchmark runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/benchmarks/)
 deno.json               # Single config: JSR metadata, imports, tasks
 AGENTS.md               # Project vision, rules, agent instructions
 

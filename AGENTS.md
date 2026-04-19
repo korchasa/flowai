@@ -104,6 +104,7 @@ the mapped section contradicts new code → update the section.
 - `cli/src/loop.ts` → SRS §FR-LOOP, SDS §3.11 Loop Command
 - `cli/src/adapt.ts` → SRS §FR-ADAPT-INSTRUCTIONS, SDS §3.5.1 + §3.12
 - `scripts/benchmarks/` → SRS §FR-BENCH*, SDS §3.4 Benchmark System
+- `scripts/benchmarks/lib/cache.ts` / `benchmarks/cache/` → SRS §FR-BENCH-CACHE, SDS §3.4.1 Benchmark Result Cache
 - `scripts/check-*.ts` → SDS §5 Logic / validation rules; SRS where the rule is first defined
 - `scripts/task-*.ts` → README §Development Commands
 - `documents/ides-difference.md` is READ-ONLY reference for FR-HOOK-DOCS..FR-IDE-SCOPE — update only when IDE capabilities change.

@@ -26,6 +26,7 @@
 import { join } from "@std/path";
 import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 import type { SessionUsage } from "../usage.ts";
+import { probeCliVersion } from "./version.ts";
 
 interface CodexEvent {
   type?: string;
@@ -240,5 +241,9 @@ MOCK_EOF
     // not expose a public usage API. Defer until a follow-up task.
     await Promise.resolve();
     return null;
+  }
+
+  cliVersion(): Promise<string> {
+    return probeCliVersion(this.command);
   }
 }

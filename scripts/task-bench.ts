@@ -9,7 +9,7 @@
  *
  * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
  */
-import { dirname, join } from "@std/path";
+import { dirname, join, relative } from "@std/path";
 import { parse } from "@std/flags";
 import { existsSync, walk } from "@std/fs";
 import { ansi } from "./utils.ts";
@@ -28,6 +28,16 @@ import {
   SUPPORTED_IDES,
 } from "./benchmarks/lib/adapters/mod.ts";
 import { TraceLogger } from "./benchmarks/lib/trace.ts";
+import {
+  CACHE_SCHEMA_VERSION,
+  type CacheEntry,
+  cacheFilePath,
+  computeCacheKey,
+  readCache,
+  resultFromCache,
+  trimResultForCache,
+  writeCache,
+} from "./benchmarks/lib/cache.ts";
 
 /**
  * Imports benchmark scenario modules from a directory tree.
@@ -142,6 +152,10 @@ Options:
   -s, --skill-override <name>  Override skill name in filtered scenarios (A/B testing)
   -p, --parallel <number>      Max concurrent scenarios (default: 1, sequential)
   --lock <string>              Custom lock file name (default: benchmarks.lock)
+  --no-cache                   Bypass the committed result cache (no read, no write)
+  --refresh-cache              Always run; overwrite cache on success
+  --cache-check                Exit non-zero on any cache miss (CI gate)
+  --cache-with-runs            Opt-in to caching when -n > 1 (default: bypass)
   --help                       Show this help message
   `);
 }
@@ -160,7 +174,13 @@ async function main() {
       "lock",
       "skill-override",
     ],
-    boolean: ["help"],
+    boolean: [
+      "help",
+      "no-cache",
+      "refresh-cache",
+      "cache-check",
+      "cache-with-runs",
+    ],
     alias: {
       f: "filter",
       n: "runs",
@@ -179,6 +199,26 @@ async function main() {
       return true;
     },
   });
+
+  // Cache-mode flags are mutually exclusive: picking two contradicts intent.
+  const modeFlags = [
+    ["--no-cache", args["no-cache"]] as const,
+    ["--refresh-cache", args["refresh-cache"]] as const,
+    ["--cache-check", args["cache-check"]] as const,
+  ].filter(([, on]) => !!on).map(([n]) => n);
+  if (modeFlags.length > 1) {
+    console.error(
+      `Mutually exclusive cache flags: ${modeFlags.join(", ")}`,
+    );
+    Deno.exit(1);
+  }
+  const runsCount = parseInt(args.runs || "1", 10);
+  if (args["cache-check"] && runsCount > 1 && !args["cache-with-runs"]) {
+    console.error(
+      `--cache-check with -n > 1 requires --cache-with-runs (otherwise the cache is bypassed and every scenario is a miss).`,
+    );
+    Deno.exit(1);
+  }
 
   if (args.help) {
     printHelp("<per IDE>");
@@ -293,9 +333,67 @@ async function main() {
 
   let totalCostAll = 0;
 
+  // FR-BENCH-CACHE
+  // --- Cache layer -----------------------------------------------------
+  // Cache participation: bypassed when --no-cache is set, or when -n > 1
+  // without --cache-with-runs (multi-run is a statistical probe by design).
+  // --refresh-cache forces re-execution but still writes on success.
+  // --cache-check does read-only lookup; miss → exit 1 (CI gate).
+  const cacheEligibleForRuns = runs === 1 || args["cache-with-runs"];
+  const cacheEnabled = !args["no-cache"] && cacheEligibleForRuns;
+  const cacheWriteEnabled = cacheEnabled && !args["cache-check"];
+  const cacheReadEnabled = cacheEnabled && !args["refresh-cache"];
+  const ideCliVersion = cacheEnabled ? await adapter.cliVersion() : "";
+  const scenarioCacheKeys = new Map<string, string>();
+  const cachedScenarioIds = new Set<string>();
+  let cacheCheckMissed = false;
+
+  // Sandbox path used only to advertise where the cached result came from.
+  const scenariosPendingExec: BenchmarkScenario[] = [];
+  for (const scenario of scenariosToRun) {
+    if (!cacheEnabled || scenario.skip) {
+      scenariosPendingExec.push(scenario);
+      continue;
+    }
+    const key = await computeCacheKey({
+      scenario,
+      ide: adapter.ide,
+      agentModel,
+      runs,
+      ideCliVersion,
+    });
+    scenarioCacheKeys.set(scenario.id, key);
+
+    if (cacheReadEnabled) {
+      const entry = await readCache(scenario, adapter.ide);
+      if (entry && entry.key === key) {
+        cachedScenarioIds.add(scenario.id);
+        const cachedResult = resultFromCache(scenario, entry);
+        results.push(cachedResult);
+        const cachePath = cacheFilePath(scenario, adapter.ide);
+        console.log(
+          `  ${ansi("\x1b[32m")}[CACHED]${
+            ansi("\x1b[0m")
+          } ${scenario.id} (recorded ${entry.recordedAt}, key ${
+            key.slice(0, 12)
+          }…) — ${relative(Deno.cwd(), cachePath)}`,
+        );
+        continue;
+      }
+    }
+
+    if (args["cache-check"]) {
+      console.error(`CACHE-MISS: ${scenario.id}`);
+      cacheCheckMissed = true;
+      continue;
+    }
+
+    scenariosPendingExec.push(scenario);
+  }
+
   // Build flat list of tasks: (scenario, runIndex) pairs
   const tasks: { scenario: BenchmarkScenario; runIndex: number }[] = [];
-  for (const scenario of scenariosToRun) {
+  for (const scenario of scenariosPendingExec) {
     for (let i = 0; i < runs; i++) {
       tasks.push({ scenario, runIndex: i + 1 });
     }
@@ -404,6 +502,42 @@ async function main() {
 
     if (errors.length > 0) {
       console.error(`\n${errors.length} task(s) failed with errors.`);
+    }
+  }
+
+  // Cache write: for each scenario that was just executed (cache-miss), if
+  // ALL of its N runs passed, write a fresh cache entry. Failed runs are not
+  // cached — that would freeze a broken scenario in the green column.
+  if (cacheWriteEnabled) {
+    for (const scenario of scenariosPendingExec) {
+      if (scenario.skip) continue;
+      if (cachedScenarioIds.has(scenario.id)) continue;
+      const scenarioResults = results.filter((r) =>
+        r.scenarioId === scenario.id
+      );
+      if (scenarioResults.length === 0) continue;
+      const allPassed = scenarioResults.every((r) => r.success);
+      if (!allPassed) continue;
+      const key = scenarioCacheKeys.get(scenario.id);
+      if (!key) continue;
+      const entry: CacheEntry = {
+        schema: CACHE_SCHEMA_VERSION,
+        key,
+        scenarioId: scenario.id,
+        ide: adapter.ide,
+        agentModel,
+        recordedAt: new Date().toISOString(),
+        result: trimResultForCache(scenarioResults[0]),
+      };
+      try {
+        await writeCache(scenario, adapter.ide, entry);
+      } catch (e) {
+        console.warn(
+          `  Warning: failed to write cache for ${scenario.id}: ${
+            e instanceof Error ? e.message : e
+          }`,
+        );
+      }
     }
   }
 
@@ -554,6 +688,17 @@ async function main() {
 
   if (hasFailures) {
     console.log(`\n${ansi("\x1b[31m")}Some tests failed.${ansi("\x1b[0m")}`);
+    Deno.exit(1);
+  }
+
+  if (cacheCheckMissed) {
+    console.log(
+      `\n${
+        ansi("\x1b[31m")
+      }Cache check failed: one or more scenarios had no matching cache entry. Run \`deno task bench --refresh-cache\` and commit benchmarks/cache/.${
+        ansi("\x1b[0m")
+      }`,
+    );
     Deno.exit(1);
   }
 }

@@ -153,6 +153,30 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - **Interactive Flows**: `UserEmulator` simulates user responses via LLM for multi-turn scenarios (persona-driven).
   - **Multi-Turn Benchmarking**: `SpawnedAgent` + `runner.ts` support automatic session resumption (`--resume`) when `UserEmulator` provides input.
 
+### 3.4.1 Benchmark Result Cache — FR-BENCH-CACHE (`scripts/benchmarks/lib/cache.ts`)
+
+- **Purpose:** Content-addressed cache of per-scenario verdicts, committed under `benchmarks/cache/<pack>/<scenario-id>/<ide>.json`. Short-circuits the agent + judge CLIs when inputs have not changed, turning `deno task bench` into an incremental operation.
+- **Interfaces:**
+  - `computeCacheKey(inputs)` — pure async; sha-256 over a canonical-JSON payload. No side effects.
+  - `readCache(scenario, ide)` — returns `CacheEntry | null`; treats any failure (missing file, corrupt JSON, schema mismatch) as a miss.
+  - `writeCache(scenario, ide, entry)` — creates parent dirs; pretty-printed JSON.
+  - `trimResultForCache(r)` — projects `BenchmarkResult` onto the committed shape; drops `logs`/`evidence`; truncates judge `reason` at `MAX_REASON_LEN = 200` with `…`.
+  - `resultFromCache(scenario, entry)` — reconstructs a minimal `BenchmarkResult` for summary printing on hit.
+- **Deps:** `@std/path`, `@std/fs/walk`, Web Crypto `crypto.subtle.digest("SHA-256", ...)`. No new third-party deps.
+- **Data flow:**
+  ```
+  discoverScenarios → [per scenario]
+     computeCacheKey → readCache
+        hit  → resultFromCache → results[]         (skip runScenario)
+        miss → runScenario → writeCache if all runs success
+  ```
+- **Cache-key algorithm (v1):** sha-256 of canonical JSON `{ version, scenarioId, ide, ideCliVersion, agentModel, runs, inputs }` where `inputs` is a sorted map of `<prefix>:<relpath> → fileHash(path)`. Prefixes: `scenario:` (scenario dir), `primitive:` (primitive dir, `benchmarks/` skipped), `pack.yaml:`, `agents.template:`, `runner:` (`scripts/benchmarks/lib/**` + `scripts/task-bench.ts`), `cli:` (whitelisted cross-package imports — `cli/src/transform.ts`, `cli/src/sync.ts`, `scripts/utils.ts`), `config:full`. Missing files contribute nothing.
+- **CLI integration (`scripts/task-bench.ts`):** four flags — `--no-cache` (bypass read+write), `--refresh-cache` (skip read, force write on success), `--cache-check` (read-only, exit 1 on any miss), `--cache-with-runs` (opt-in to caching when `-n > 1`). First three are mutually exclusive. Cache is always bypassed when `scenario.skip` is set or when `-n > 1` without `--cache-with-runs`.
+- **Adapter hook:** `AgentAdapter.cliVersion()` → `probeCliVersion(command, 2s timeout)` → trimmed `--version` stdout or `""` on any failure. Stable empty string keeps the key reproducible across probe failures on the same host.
+- **Write policy:** write only when all N runs for a scenario return `success === true`. Failed runs never land in cache — protects against freezing broken scenarios at green.
+- **Drift guard:** `cache_test.ts` parses every `*.ts` under `scripts/benchmarks/lib/` for imports, resolves relative paths, and asserts any import that escapes `scripts/benchmarks/` appears in `whitelistedCrossPackageFiles`. Catches silent staleness introduced by new cross-package dependencies.
+- **Storage footprint:** One JSON file per (scenario, ide). Typical size ~1–3 KB. `logs` and `evidence` are dropped; full traces remain in the gitignored `benchmarks/runs/` directory.
+
 ### 3.4a Experiments Subsystem (RELOCATED) — FR-EXP
 
 Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). That repo owns: the experiment runner/judge/noise/report/tokens libs, the `claude-md-length` variants and committed results, the `deno task experiment` CLI, and the `writeMemoryFile`/`getCleanroomEnv` adapter extensions that were experiment-only. The `AgentAdapter` contract in `flow` returns to regression-benchmark responsibilities (no memory-file injection, no cleanroom env plumbing). `task-bench.ts` discovery was always scoped to `framework/<pack>/.../benchmarks/`, so no isolation logic changed.

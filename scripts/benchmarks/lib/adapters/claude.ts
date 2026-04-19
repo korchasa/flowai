@@ -1,6 +1,7 @@
 import { join } from "@std/path";
 import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 import type { SessionUsage } from "../usage.ts";
+import { probeCliVersion } from "./version.ts";
 
 interface ClaudeEvent {
   type?: string;
@@ -184,5 +185,9 @@ MOCK_EOF
     // Claude Code transcript parsing not implemented yet — return null
     await Promise.resolve();
     return null;
+  }
+
+  cliVersion(): Promise<string> {
+    return probeCliVersion(this.command);
   }
 }

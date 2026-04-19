@@ -33,6 +33,15 @@ export interface AgentAdapter {
 
   /** Calculate token usage for a session (best-effort, may return null) */
   calculateUsage(sessionId: string): Promise<SessionUsage | null>;
+
+  /**
+   * Best-effort probe of the installed CLI's `--version` output. Returns the
+   * trimmed stdout on success, or `""` when the binary is missing, times out,
+   * or exits non-zero. Consumed by the benchmark cache-key so an upgraded CLI
+   * invalidates stale results. Implementations should cap spawn time at a few
+   * seconds so a missing binary doesn't stall `deno task bench`.
+   */
+  cliVersion(): Promise<string>;
 }
 
 export interface ParsedAgentOutput {
