@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "d72cf5fc3ac857ac2600a2909f7819e3c6a6b064a5804aa8f23d69faa0cc9cc3",
+  "scenarioId": "flowai-skill-plan-interactive",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.605Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 155691.344875,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "variants_presented": {
+        "pass": true,
+        "reason": "The agent clearly presented two implementation variants in the chat: Variant A (Minimal single file) and Variant B (Module + entry point), each with Pros, Cons, Risks, and Best For sections, plus a T…"
+      },
+      "question_asked": {
+        "pass": true,
+        "reason": "At the end of the variants presentation, the agent explicitly asked: 'Какой вариант предпочитаете — A или B?' — directly prompting the user to select a variant."
+      },
+      "solution_filled": {
+        "pass": true,
+        "reason": "The Solution section in documents/tasks/2026-04-19-hello-world-cli.md contains concrete technical details: selected variant (A), full file contents for deno.json (with imports map and tasks), src/mai…"
+      },
+      "no_switch_mode": {
+        "pass": true,
+        "reason": "The agent logs contain no mention of 'SwitchMode' anywhere in the execution trace."
+      }
+    }
+  }
+}

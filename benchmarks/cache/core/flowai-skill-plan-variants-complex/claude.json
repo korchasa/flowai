@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "e2b2458363c46e17045a34810d03e97da9b45e8e9f9daaed40ee744df2cce6d0",
+  "scenarioId": "flowai-skill-plan-variants-complex",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.606Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 111334.469125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created the file 'documents/tasks/2026-04-19-auth-system.md' using the Write tool, confirmed by both the tool call in logs and the file content shown in the DOCUMENTS/TASKS and GENERATED FI…"
+      },
+      "multiple_variants": {
+        "pass": true,
+        "reason": "The agent presented 3 distinct implementation variants in the chat: Variant 1 (Stateless JWT + Refresh Token Rotation with PostgreSQL only), Variant 2 (Server-Side Sessions with PostgreSQL + Redis), …"
+      },
+      "tradeoffs_discussed": {
+        "pass": true,
+        "reason": "Each variant has explicit Pros, Cons, Risks, and Best For sections. Additionally, a Trade-off Summary table compares all three variants across 7 dimensions: instant revocation, infrastructure, DB hit…"
+      }
+    }
+  }
+}

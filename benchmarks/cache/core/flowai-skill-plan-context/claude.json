@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "624a6e0caaa17fdb2c9d9c7cf370880e445fced16b933c93c9c4d05451cfb79a",
+  "scenarioId": "flowai-skill-plan-context",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.599Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 66532.984375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "context_read": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path visible in logs: '.../sandbox/documents/requirements.md') early in its execution."
+      },
+      "context_read_sds": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path visible in logs: '.../sandbox/documents/design.md') as part of its exploration phase."
+      },
+      "task_file_context": {
+        "pass": true,
+        "reason": "The created file 'documents/tasks/2026-04-19-dark-mode-preference.md' is titled '# Dark Mode Preference Support' and mentions 'dark mode' multiple times throughout Goal, Overview, Definition of Done,…"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "key": "77b217c1353699ef65a073c676c1dd8911aed57e1fbd4bbb194d020de65696f7",
+  "scenarioId": "flowai-commit-task-context",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.710Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 84908.41641699994,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "docs_reflect_task_file": {
+        "pass": true,
+        "reason": "The agent read the task file (2026-03-28-add-users-api.md) which described the /users endpoint for user management, and used that context to update both documents/requirements.md (adding 'FR-USERS-AP…"
+      },
+      "code_committed": {
+        "pass": true,
+        "reason": "The git log shows commit d14af23d1098f3ee3d0545e6b0bb7a4004ad6171 'feat: add GET /users endpoint' which explicitly includes api.ts (6 insertions). The diff confirms api.ts was added with handleUsers(…"
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "cb2d0c6fd1ec71a68b05a193435877c10193010695ecfc49d70a0fbc40837168",
+  "scenarioId": "flowai-review-and-commit-non-deno-project",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:20:56.097Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 172183.995084,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_deno_lock_in_status": {
+        "pass": true,
+        "reason": "The FINAL GIT STATUS shows 'nothing to commit, working tree clean' — deno.lock is absent from the working tree entirely."
+      },
+      "no_deno_lock_in_commits": {
+        "pass": true,
+        "reason": "The GIT LOG and GIT DIFF show only 4 files in the agent's commit: README.md, documents/design.md, documents/requirements.md, and main.py. deno.lock does not appear in any commit."
+      },
+      "no_deno_commands_executed": {
+        "pass": true,
+        "reason": "Reviewing all Bash tool calls in the logs: git diff/status/add/commit, ls, mkdir, cat, and Write/Read tool calls. No 'deno *' command was executed at any point."
+      },
+      "stack_aware_check_or_skip": {
+        "pass": true,
+        "reason": "In the review report (Phase 1), the agent explicitly wrote: '[skipped] No `pyproject.toml`, `deno.json`, `package.json`, or `Makefile` found — no automated check command configured'. This satisfies t…"
+      },
+      "main_py_committed": {
+        "pass": true,
+        "reason": "The GIT LOG shows commit 2f697f5a includes 'main.py | 21 +++++++++++++++++++++' — main.py was committed in the agent's new commit after the 'Remove main.py from tracking' commit."
+      },
+      "clean_final_status": {
+        "pass": true,
+        "reason": "The FINAL GIT STATUS explicitly states 'nothing to commit, working tree clean' — no untracked, modified, staged files, or deno.lock present."
+      },
+      "review_completed_before_commit": {
+        "pass": true,
+        "reason": "The agent produced a structured review report with '## Review: Approve' verdict (including findings, automated checks, and summary) before any git add/commit commands were executed. The TodoWrite ent…"
+      }
+    }
+  }
+}

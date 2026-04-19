@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "a7658a6a73b9cf4ebee7c3274c3656b1d2e47c36f2275229b6c09937fb14c0d8",
+  "scenarioId": "flowai-skill-plan-auto-critique",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.605Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 218769.48108399997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/tasks/2026-04-19-add-health-endpoint.md' via the Write tool, confirmed by the GENERATED FILES section in file_diffs."
+      },
+      "critique_in_chat": {
+        "pass": true,
+        "reason": "The agent emitted an explicit '## Critique' block in chat with 6 numbered items covering: silent .catch(), missing commandTimeout, undocumented isStartupReady semantics, jest.mock ordering, missing .…"
+      },
+      "critique_classification_emitted": {
+        "pass": true,
+        "reason": "The '## Triage & Auto-Apply' section explicitly classifies each item: #1 apply, #2 apply, #3 apply, #4 apply, #5 defer, #6 apply. The Final Result also lists per-item labels: 'applied #1', 'applied #…"
+      },
+      "refinements_written_to_file": {
+        "pass": true,
+        "reason": "The task file was edited multiple times after the critique block. The final file concretely contains: 'commandTimeout: 500' (caps hanging PING on half-open socket — Redis-down handling), '.catch(err …"
+      },
+      "no_refine_gate_prompt": {
+        "pass": true,
+        "reason": "After the critique, the agent immediately proceeded with 'Применяю 5 найденных правок (#1, #2, #3, #4, #6)' and made the edits autonomously. No phrasing asking the user to choose, approve, or confirm…"
+      },
+      "no_code_changes": {
+        "pass": true,
+        "reason": "The git diff shows no source code changes. Only 'documents/' appears as untracked in git status. The agent only wrote and edited 'documents/tasks/2026-04-19-add-health-endpoint.md'."
+      },
+      "no_switch_mode": {
+        "pass": true,
+        "reason": "No 'SwitchMode' string appears anywhere in the agent logs."
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "e6cce1321758fd62cb7183e4020cff27932cae81b08fba2acc1f1870ffe7e874",
+  "scenarioId": "flowai-skill-plan-migration",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.605Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 85999.10170799997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "identify_deprecated": {
+        "pass": true,
+        "reason": "The plan explicitly identifies both deprecated patterns. In the task file Overview/Context section: 'request — deprecated (unmaintained since 2020), third-party HTTP client' and 'fs.writeFile (callba…"
+      },
+      "propose_fetch": {
+        "pass": true,
+        "reason": "The plan explicitly proposes using the native built-in fetch. In the Goal section: 'Replace with built-in fetch + fs/promises + async/await'. In Constraints: 'No new third-party dependencies — use bu…"
+      },
+      "propose_async_await": {
+        "pass": true,
+        "reason": "The plan explicitly states converting to async/await. The Goal states 'async/await' as a target. Variant A description states: 'callback → async function getData(url) возвращает Promise'. The code ex…"
+      },
+      "error_handling": {
+        "pass": true,
+        "reason": "The plan addresses error handling updates, though try/catch is not explicitly named. The Goal mentions 'modern error propagation'. The proposed code example shows the new error handling pattern: 'if …"
+      }
+    }
+  }
+}

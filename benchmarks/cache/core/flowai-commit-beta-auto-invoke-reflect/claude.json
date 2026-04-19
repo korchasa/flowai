@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "95a410fa57efd1d3d280edd1c6e6bf99451459b0a760e8f371c4f4f62e38fd37",
+  "scenarioId": "flowai-commit-beta-auto-invoke-reflect",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.708Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 127284.795292,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "file_committed": {
+        "pass": true,
+        "reason": "The git log clearly shows commit 182b698 titled 'fix(parse): throw on invalid input instead of silently returning NaN' includes 'utils.ts | 5 insertions(+)', and the final git status confirms 'nothin…"
+      },
+      "conventional_commits": {
+        "pass": true,
+        "reason": "The commit message 'fix(parse): throw on invalid input instead of silently returning NaN' perfectly follows the Conventional Commits spec: type='fix', scope='parse' in parentheses, colon separator, a…"
+      },
+      "reflect_auto_invoked": {
+        "pass": true,
+        "reason": "After committing, the agent detected complexity signals and invoked `## Tool: Skill` with `{\"skill\": \"flowai-skill-reflect\"}`. It then fully executed the reflect workflow: created a structured TodoWr…"
+      },
+      "reflect_not_asking_permission": {
+        "pass": true,
+        "reason": "The agent autonomously detected signals ('errors during testing, agent suggested wrong approach twice, user had to correct') and immediately announced 'запускаю /flowai-skill-reflect' (launching /flo…"
+      }
+    }
+  }
+}

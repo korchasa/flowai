@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "6d30bbe22414aca74b99ebb44a632467ee1a6ded9dfdc745bb283ddaa3b666de",
+  "scenarioId": "flowai-skill-investigate-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:53:58.142Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 77521.874458,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "hypotheses_proposed": {
+        "pass": true,
+        "reason": "The agent proposed exactly 4 hypotheses with initial probabilities in the 'Hypothesis Board (initial)': H1 (hardcoded +10 constant, 75%), H2 (operator precedence, 10%), H3 (off-by-one quantity+1, 10%…"
+      },
+      "autonomous_flow": {
+        "pass": true,
+        "reason": "The agent proceeded fully autonomously throughout the investigation. It self-assigned tasks via TodoWrite, read the source file, generated hypotheses, ran grep experiments to discriminate between H1 …"
+      },
+      "hypothesis_board": {
+        "pass": true,
+        "reason": "The agent displayed a named 'Hypothesis Board (initial)' with 4 hypotheses and probabilities, then updated it as 'Hypothesis Board (final)' after running experiments, reflecting updated confidence: H…"
+      },
+      "root_cause_identified": {
+        "pass": true,
+        "reason": "The agent correctly identified the root cause as the hardcoded `+ 10` term in `src/math.ts` line 2: `return price * quantity + 10;`. It explained why this causes the observed output (10×2+10=30 inste…"
+      },
+      "no_production_changes": {
+        "pass": true,
+        "reason": "The git diff shows no commits after 'init', and the final git status is 'nothing to commit, working tree clean'. The file src/math.ts still contains the original buggy line. The agent also explicitly…"
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "61684a1a4080790b3043076ea990df603dfc40c6cced200612896cd983d334ea",
+  "scenarioId": "flowai-commit-deps",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.710Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 45799.33316599997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "multiple_commits": {
+        "pass": true,
+        "reason": "The git log shows exactly 2 new commits created by the agent: 'build: bump version to 1.1.0' (f6b3009) and 'feat: update v constant to 2' (eecfc2f), both on top of the initial 'init' commit."
+      },
+      "build_commit": {
+        "pass": true,
+        "reason": "Commit f6b3009 has message 'build: bump version to 1.1.0' — type 'build' — and exclusively modifies deno.json (version change from 1.0.0 to 1.1.0), matching the requirement for a build/chore commit f…"
+      },
+      "feat_fix_commit": {
+        "pass": true,
+        "reason": "Commit eecfc2f has message 'feat: update v constant to 2' — type 'feat' — and exclusively modifies mod.ts (changing `export const v = 1` to `export const v = 2`), matching the requirement for a feat/…"
+      }
+    }
+  }
+}

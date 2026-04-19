@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "key": "a947c2de9bbf3e4c824d68484497ad60acf00fac610097093b397c6be25cb718",
+  "scenarioId": "flowai-skill-reflect-context",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:29:18.584Z",
+  "result": {
+    "success": true,
+    "score": 91.66666666666666,
+    "errorsCount": 0,
+    "warningsCount": 1,
+    "durationMs": 96335.185084,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_transcript": {
+        "pass": true,
+        "reason": "The agent explicitly used the Read tool on the transcript file at the path found via Glob. This is confirmed in the tool logs showing a Read call to the sandbox transcript.txt."
+      },
+      "identify_redundant_reads": {
+        "pass": true,
+        "reason": "Finding #1 explicitly identifies reading auth.service.ts (500 lines) and email.ts (300 lines) as unrelated to the billing bug, stating 'Neither auth nor email logic has any bearing on discount arithm…"
+      },
+      "identify_repeated_read": {
+        "pass": true,
+        "reason": "Finding #2 explicitly states: the agent read invoice.ts at step 4 (2000 lines), then again at step 23 with the comment 'Now let me read invoice.ts again to understand the bug.' The file had not chang…"
+      },
+      "identify_over_reading": {
+        "pass": true,
+        "reason": "Finding #3 explicitly identifies this: the task named the specific function calculateTotal but the agent read invoice.ts in full (2000 lines). The agent notes a targeted grep would retrieve the relev…"
+      },
+      "identify_missing_verification": {
+        "pass": true,
+        "reason": "Finding #4 explicitly covers this: after applying the one-line edit, the agent declared 'The fix is applied' without running any test command, even though invoice.test.ts was already read earlier in …"
+      },
+      "identify_missing_docs": {
+        "pass": false,
+        "reason": "The agent never mentions that project documentation (README, AGENTS.md) should have been read to understand discount domain semantics. Finding #4 notes the interpretation was 'assumed, not verified' …"
+      },
+      "actionable_table": {
+        "pass": true,
+        "reason": "The agent presents a 'Context Waste Audit' table with Action/Lines/Justified columns, plus four numbered corrective actions each with clear structured subsections. Both tabular and categorized list f…"
+      },
+      "narrative_what_happened": {
+        "pass": true,
+        "reason": "Each of the four findings includes an explicit 'What happened' subsection with full narrative. Finding #2 even quotes the agent's exact comment from the transcript ('Now let me read invoice.ts again …"
+      },
+      "narrative_impact": {
+        "pass": true,
+        "reason": "Each finding has measurable impact: Finding #1: ~1000-1200 tokens for zero benefit; Finding #2: ~2500 tokens / ~50% of a typical 4000-token working budget on a no-op; Finding #3: ~98% context cost re…"
+      },
+      "fix_has_where_and_draft": {
+        "pass": true,
+        "reason": "Each finding specifies an exact 'Where' (e.g., 'CLAUDE.md -> ## Diagnosing Failures section, after the existing rule list') and includes a 'Draft content' block with ready-to-paste rule text. All fou…"
+      },
+      "no_file_changes": {
+        "pass": true,
+        "reason": "Git status shows 'nothing to commit, working tree clean' and the git diff (init..HEAD) is empty. The agent performed analysis only using Read, TodoWrite, and Glob tools with no file modifications."
+      },
+      "specific_references": {
+        "pass": true,
+        "reason": "The agent cites specific files (CLAUDE.md, src/billing/invoice.ts, src/auth/auth.service.ts, src/notifications/email.ts, invoice.test.ts) with named sections (## Diagnosing Failures, ## TDD Flow, ## …"
+      }
+    }
+  }
+}

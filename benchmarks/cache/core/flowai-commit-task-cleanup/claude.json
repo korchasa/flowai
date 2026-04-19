@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "d4558dc548ddefa50af0ca54c0ae3dfbf1dbff8a937873e0e81f69e8536bca4e",
+  "scenarioId": "flowai-commit-task-cleanup",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.708Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 71403.88041700001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "code_committed": {
+        "pass": true,
+        "reason": "Commit fda49c40 ('feat: add /users endpoint with user list handler') includes api.ts with 6 insertions, confirmed in both the git log and the diff."
+      },
+      "task_file_deleted": {
+        "pass": true,
+        "reason": "Commit 146f2944 ('docs: remove completed task file 2026-03-28-add-users-api') removed documents/tasks/2026-03-28-add-users-api.md via `git rm`, with 29 deletions confirmed in the git log. The DOCUMEN…"
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output explicitly states 'On branch main / nothing to commit, working tree clean'."
+      }
+    }
+  }
+}

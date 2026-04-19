@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "2d08e763ff73320b9113fd1e9669f4ba8c4fbe1718301f19b151aa5e812d1b79",
+  "scenarioId": "flowai-skill-adapt-instructions-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:01:55.515Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 109154.62679200001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_installed_template": {
+        "pass": true,
+        "reason": "The agent explicitly used the Read tool on `.claude/assets/AGENTS.template.md` at the sandbox path — it did not invent the template from memory."
+      },
+      "read_project_artifact": {
+        "pass": true,
+        "reason": "The agent used the Read tool on `AGENTS.md` (the existing project file in the sandbox root) before computing any diff or proposing changes."
+      },
+      "computed_diff": {
+        "pass": true,
+        "reason": "The agent produced a detailed unified diff block (`-` / `+` lines) showing exactly what would be removed and added, covering every section. It also provided a categorized classification of hunks (new…"
+      },
+      "proposed_check_step": {
+        "pass": true,
+        "reason": "The diff explicitly adds step `4. **CHECK**: Run 'fmt', 'lint', and full test suite. Mandatory.` to the TDD Flow section, marked as `← NEW step`, which is the key missing framework section from the t…"
+      },
+      "preserved_project_sections": {
+        "pass": true,
+        "reason": "The proposal explicitly preserves all project-specific content: project name 'MyProject' (under Project Information), vision 'Build the best tool for widget assembly.', stack (TypeScript, Deno), Key …"
+      },
+      "asked_confirmation": {
+        "pass": true,
+        "reason": "At the end of both the intermediate analysis and the Final Result, the agent asks: 'Применить это слияние к AGENTS.md? (y / n / per-section)' — it explicitly requested confirmation before writing the…"
+      },
+      "no_template_duplication": {
+        "pass": true,
+        "reason": "The agent read the installed asset file and diff'd it against the existing AGENTS.md. It did not regenerate AGENTS.md wholesale from scratch — instead it proposed a targeted merge that incorporates o…"
+      },
+      "explained_changes": {
+        "pass": true,
+        "reason": "The agent provided a dedicated 'Почему каждое изменение рекомендуется' section explaining each change: Core Project Rules (new global agent behavior rules), Architecture (placeholder for future descr…"
+      }
+    }
+  }
+}

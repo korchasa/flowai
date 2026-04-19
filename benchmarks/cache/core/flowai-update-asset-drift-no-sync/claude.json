@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "ae8b4ce4d511aa1c0d901d466d3c578476425376035dda1379948c8a96a9cde6",
+  "scenarioId": "flowai-update-asset-drift-no-sync",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.340Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 283607.639291,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skipped_sync_correctly": {
+        "pass": true,
+        "reason": "The agent explicitly started with 'Начинаю с шага 6 — проверка и миграция артефактов ассетов' (Starting with step 6) and proceeded directly to listing directories and checking files without executing…"
+      },
+      "compared_templates_vs_artifacts": {
+        "pass": true,
+        "reason": "The agent explicitly read both `.claude/assets/AGENTS.template.md` and `./AGENTS.md` using the Read tool, then created a proposed merged file at `/tmp/proposed_agents.md` and ran `git diff --no-index…"
+      },
+      "found_missing_proactive_resolution": {
+        "pass": true,
+        "reason": "In the Final Result, the agent explicitly called out '+ добавить `Proactive Resolution` (новое в шаблоне)' under the ОБНОВИТЬ category for `## Planning Rules`. The current `AGENTS.md` (shown in git d…"
+      },
+      "proposed_adding_rule": {
+        "pass": true,
+        "reason": "The proposed merged file (`/tmp/proposed_agents.md`) includes the full 'Proactive Resolution' rule: '- **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, w…"
+      },
+      "did_not_stop_without_checking": {
+        "pass": true,
+        "reason": "The agent never paused or stopped upon the user's mention of 'NO ACTIONS REQUIRED'. It immediately proceeded to step 6, located the template, read both files, computed diffs, and produced a full merg…"
+      }
+    }
+  }
+}

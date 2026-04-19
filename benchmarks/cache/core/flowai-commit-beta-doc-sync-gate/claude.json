@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "26f07d71b469839a21a01450c0d57521553b4c9c559176e84f665cc57dff9dca",
+  "scenarioId": "flowai-commit-beta-doc-sync-gate",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.707Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 67043.497291,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "audit_report": {
+        "pass": true,
+        "reason": "The agent's final message states: 'Обновлены 4 файла: src/cli.ts, documents/requirements.md (FR-CLI-VERBOSE → FR-CLI-DEBUG), documents/design.md, README.md. Рабочее дерево чистое.' This constitutes a…"
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output shows 'On branch main / nothing to commit, working tree clean', confirming all changes were staged and committed."
+      },
+      "file_committed": {
+        "pass": true,
+        "reason": "The git log shows commit 8538c9d includes src/cli.ts among the 4 changed files. The diff confirms src/cli.ts was modified (--verbose → --debug, 6 lines changed)."
+      },
+      "readme_updated": {
+        "pass": true,
+        "reason": "The diff and final README.md content confirm all instances of '--verbose' were replaced with '--debug'. The usage example and description bullet both use '--debug' now. No '--verbose' remains."
+      },
+      "sds_updated": {
+        "pass": true,
+        "reason": "documents/design.md was updated in the same commit. All 5 occurrences of '--verbose' were replaced with '--debug', and the SRS reference 'FR-CLI-VERBOSE' was changed to 'FR-CLI-DEBUG'. The diff confi…"
+      },
+      "srs_updated": {
+        "pass": true,
+        "reason": "documents/requirements.md was updated: the section heading changed from 'FR-CLI-VERBOSE' to 'FR-CLI-DEBUG', and all three occurrences of '--verbose' in the Desc, Scenario, and Acceptance fields were …"
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "91309032b892f47649b35a1ad4ef8363230b43446428ab15ddad2ce7818eeb86",
+  "scenarioId": "flowai-skill-epic-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:52:13.131Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 6355.253292,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_epic_file": {
+        "pass": true,
+        "reason": "The git diff shows no new files were created (git diff init..HEAD is empty), and the final git status confirms 'nothing to commit, working tree clean'. No documents/tasks/epic-*.md file was created."
+      },
+      "no_phase_decomposition": {
+        "pass": true,
+        "reason": "The agent's output contains only a two-sentence definition. There is no phased decomposition, no Goal/Non-Goals/Architecture & Boundaries/Phase N sections, and no GODS-format task document was produc…"
+      },
+      "definitional_answer": {
+        "pass": true,
+        "reason": "The agent correctly answered with a concise agile definition: 'An epic is a large body of work that can be broken down into smaller user stories or tasks. It represents a high-level feature or goal t…"
+      }
+    }
+  }
+}

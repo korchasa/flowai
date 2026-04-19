@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "3064f6c7b0acc1bbd9064001f436fdb66ab09efcef3fb196dfe2bd05de54b4a8",
+  "scenarioId": "flowai-skill-maintenance-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:59:16.676Z",
+  "result": {
+    "success": true,
+    "score": 87.5,
+    "errorsCount": 0,
+    "warningsCount": 1,
+    "durationMs": 262704.15508399997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented findings numbered [1] through [17], explicitly grouped into 8 named categories (Structural Integrity, Code Hygiene & Dependencies, Complexity & Hotspots, Technical Debt, Consisten…"
+      },
+      "asks_how_to_proceed": {
+        "pass": true,
+        "reason": "After the summary, the agent explicitly offered: 'all' — go through each finding one by one; specific numbers (e.g., '1, 8, 9'); category name (e.g., 'Hygiene'); or 'done' — stop without fixes."
+      },
+      "todo_found": {
+        "pass": true,
+        "reason": "Finding [8] explicitly identifies 'src/main.ts:1': '// TODO: implement actual database connection' — getData() returns hardcoded [], DB never connected, rated as [critical]."
+      },
+      "god_object_found": {
+        "pass": true,
+        "reason": "Finding [7] explicitly identifies SystemManager in 'src/main.ts:7-13' as a God object candidate, noting it mixes 5 unrelated concerns (user processing, DB, email, logging, UI) and that 'the code comm…"
+      },
+      "unused_export_found": {
+        "pass": true,
+        "reason": "Finding [5] explicitly identifies 'src/main.ts:15': 'unusedExport = 42' as an exported constant never imported or used anywhere in the project, with a fix proposal to delete the line."
+      },
+      "interactive_resolution": {
+        "pass": true,
+        "reason": "After the user replied 'all', the agent entered a per-finding loop, presenting each finding individually with 'Apply fix / Skip / Edit fix?' options. The logs show this for findings [1] through [9], …"
+      },
+      "constructive_fixes": {
+        "pass": true,
+        "reason": "Every finding in the summary (all 17) includes an explicit '(Fix: ...)' clause — e.g., [1] '(Fix: Create documents/ with requirements.md and design.md stubs)', [5] '(Fix: Delete the unused export)', …"
+      },
+      "file_length_check": {
+        "pass": false,
+        "reason": "While the agent ran 'wc -l src/main.ts' (returning 15 lines), no finding or scan category explicitly addresses checking for files exceeding 500 lines or functions exceeding 50 lines. The Complexity &…"
+      }
+    }
+  }
+}

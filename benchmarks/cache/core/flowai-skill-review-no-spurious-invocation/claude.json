@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "05b8a9139ba9004f223defb1625c90fe6e87147ff4c63c8a10cfee4b9a71a3b5",
+  "scenarioId": "flowai-skill-review-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:34:31.372Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 8115.005582999991,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_review_workflow": {
+        "pass": true,
+        "reason": "The agent did not execute any review workflow. There is no verdict (Approve/Request Changes/Needs Discussion), no findings table with [critical]/[warning]/[nit] markers, and no review procedure was t…"
+      },
+      "no_git_diff": {
+        "pass": true,
+        "reason": "The agent did not run any git commands (git diff, git status, git diff --cached, or similar). The execution logs show only a direct text response with no tool invocations or shell commands."
+      },
+      "conceptual_answer": {
+        "pass": true,
+        "reason": "The agent answered the conceptual question directly and correctly, discussing TypeScript strict mode tradeoffs: listing specific compiler flags (strictNullChecks, noImplicitAny, strictFunctionTypes, …"
+      }
+    }
+  }
+}

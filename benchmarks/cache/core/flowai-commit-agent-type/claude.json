@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "fe00837eed8d60d9d048bdad3c902358e34f973b026788d4090be8ee27a40c03",
+  "scenarioId": "flowai-commit-agent-type",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 34069.258959,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "file_committed": {
+        "pass": true,
+        "reason": "The git log shows commit ba4cd31 includes '.claude/skills/my-skill/SKILL.md' with 8 insertions. The diff also confirms this file was added in the last commit."
+      },
+      "agent_type_used": {
+        "pass": true,
+        "reason": "The commit message is 'agent: add my-skill AI skill for testing', which uses the 'agent:' type prefix as required."
+      },
+      "conventional_commits": {
+        "pass": true,
+        "reason": "The commit message 'agent: add my-skill AI skill for testing' follows Conventional Commits format: type 'agent', no scope, and a descriptive subject line in imperative mood."
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status shows 'On branch main / nothing to commit, working tree clean', confirming a clean state after the commit."
+      }
+    }
+  }
+}

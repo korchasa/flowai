@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "5e103d8516c7ef5f75e0d9c71e8a48cbe21d6367f3578f9071e8fc1f720b6de3",
+  "scenarioId": "flowai-skill-review-parallel-delegation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:34:31.371Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 170661.79875000002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "diff_collected": {
+        "pass": true,
+        "reason": "The agent ran 'git diff --stat && echo \"---CACHED---\" && git diff --cached --stat && echo \"---STATUS---\" && git status --short' as one of its first actions, explicitly collecting git diff and status …"
+      },
+      "parallel_delegation": {
+        "pass": true,
+        "reason": "The agent explicitly launched two parallel Agent tool calls simultaneously: 'SA2: Hygiene grep scan on processor.ts' and 'SA1: Check manifests and run automated checks', both using the flowai-console…"
+      },
+      "automated_checks_in_report": {
+        "pass": true,
+        "reason": "The final report contains a dedicated '### Automated Checks' section with explicit pass/fail results: 'skipped deno task check — в sandbox нет deno.json' and 'pass hygiene scan — processor.ts чист', …"
+      },
+      "hygiene_in_report": {
+        "pass": true,
+        "reason": "The final report includes a hygiene finding in the Automated Checks section: 'pass hygiene scan — processor.ts чист: нет TODO/FIXME/console.log/секретов/localhost (SA2).' The hygiene scan explicitly …"
+      },
+      "review_executed": {
+        "pass": true,
+        "reason": "The agent performed both QA checks (found date type bypass bug at line 60, invalid date crash at line 130, missing tests) and Code Review checks (XML injection at line 162, CSV injection at line 154,…"
+      },
+      "verdict_present": {
+        "pass": true,
+        "reason": "The report opens with '## Review: Request Changes' — an unambiguous verdict requiring changes before merge. The summary also explicitly states 'Обязательно исправить перед мержем' (must fix before me…"
+      },
+      "no_commit": {
+        "pass": true,
+        "reason": "The git log shows no new commits made by the agent. The final git status shows 'nothing added to commit but untracked files present' — the agent only read files and produced a review report without w…"
+      }
+    }
+  }
+}

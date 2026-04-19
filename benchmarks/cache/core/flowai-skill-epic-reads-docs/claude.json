@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "245ed0e52f6d9d0cf9cfeecdc7ad679236a3dffe3f74f606f6d30b244f54045a",
+  "scenarioId": "flowai-skill-epic-reads-docs",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:52:13.131Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 233370.194208,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_srs": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: .../sandbox/documents/requirements.md) as shown in the agent logs."
+      },
+      "read_sds": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: .../sandbox/documents/design.md) as shown in the agent logs."
+      },
+      "epic_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/tasks/epic-auth.md' via the Write tool, confirmed in both agent logs and file diffs. The file contains a full epic with Goal, Overview, Non-Goals, Architecture & Boundari…"
+      }
+    }
+  }
+}

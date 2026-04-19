@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "key": "75f3ba13902aa90623a3b3ac104e67d9a7987094f09e5112ea79e9dc759b2e6d",
+  "scenarioId": "flowai-skill-investigate-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:24:16.667Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 17248.899125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_hypothesis_workflow": {
+        "pass": true,
+        "reason": "The agent did not execute any flowai-skill-investigate workflow. It only performed two simple actions: reading the README.md path and listing the sandbox directory. No hypothesis generation, experime…"
+      },
+      "no_root_cause_report": {
+        "pass": true,
+        "reason": "The agent produced no formal investigation report whatsoever — no hypotheses table, no root-cause analysis sections. The final output was a one-sentence conclusion that README.md was absent from the …"
+      }
+    }
+  }
+}

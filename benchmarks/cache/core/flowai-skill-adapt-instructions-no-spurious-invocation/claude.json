@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "20f5c707b10ed602bc28b6780f7c254f04e8b6ae7a2b1509383abc9ac8fbcdb4",
+  "scenarioId": "flowai-skill-adapt-instructions-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:01:55.515Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 14592.17775,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_template_diff": {
+        "pass": true,
+        "reason": "The agent only performed a Read on AGENTS.md and an Edit on AGENTS.md. There is no evidence in the logs of any read operation on `.claude/assets/AGENTS.template.md` or any other template file."
+      },
+      "no_merge_proposal": {
+        "pass": true,
+        "reason": "The agent made a direct targeted edit without producing any merge proposal, per-section classification, or confirmation prompt. The response was simply 'Добавил `- Docker` в раздел `Project tooling S…"
+      },
+      "direct_edit": {
+        "pass": true,
+        "reason": "The agent directly appended `- Docker` to the 'Project tooling Stack' section using the Edit tool. The final AGENTS.md confirms the line was added (TypeScript, Deno, Docker) while surrounding content…"
+      }
+    }
+  }
+}

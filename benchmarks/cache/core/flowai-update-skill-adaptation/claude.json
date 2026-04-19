@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "ccd0878411a1f2529987b2ecffa925b14cf4c3abba700802311db256552bd9da",
+  "scenarioId": "flowai-update-skill-adaptation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.340Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 96084.09512499999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detected_skill_change": {
+        "pass": true,
+        "reason": "The agent explicitly ran `git diff HEAD --name-only` and `git status --short`, then ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md`. It stated 'Синк обновил один скилл: flowai-commit' — …"
+      },
+      "read_previous_version": {
+        "pass": true,
+        "reason": "The agent ran `git show HEAD:.claude/skills/flowai-commit/SKILL.md` to read the previous project-adapted version from git HEAD, and also used `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md` …"
+      },
+      "preserved_python_commands": {
+        "pass": true,
+        "reason": "All three write attempts (cat heredoc, cat with dangerouslyDisableSandbox, and tee) include `poetry run pytest` and `ruff check .` for rules, and `poetry run pytest` + `ruff format .` in steps. The a…"
+      },
+      "incorporated_new_rule": {
+        "pass": true,
+        "reason": "All three write attempts include 'Rule 4: Add sign-off line to commit messages' and 'Step 4: Write commit message with sign-off'. The agent's final summary explicitly lists these as additions from up…"
+      },
+      "showed_diff_before_confirmation": {
+        "pass": true,
+        "reason": "After writing the adapted file, the agent ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md` and then presented a structured before/after summary listing exactly what was added from upstrea…"
+      },
+      "used_subagent": {
+        "pass": true,
+        "reason": "The agent invoked the `Agent` tool with `subagent_type: flowai-agent-adapter` and passed a detailed prompt requesting a 3-way merge of the skill. The subagent tool call is clearly visible in the logs…"
+      }
+    }
+  }
+}

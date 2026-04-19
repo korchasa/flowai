@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "3b8a1d451971a7dec61fb595ed6793e3b73e5b511389ff16c7b48aafddbe343c",
+  "scenarioId": "flowai-commit-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 56283.827457999985,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "file_committed": {
+        "pass": true,
+        "reason": "The git log shows the last commit 'feat(utils): add sum function' includes 'utils.ts | 1 +', confirming utils.ts was committed."
+      },
+      "commit_message_match": {
+        "pass": true,
+        "reason": "The commit message 'feat(utils): add sum function' clearly describes the addition of a sum function."
+      },
+      "conventional_commits": {
+        "pass": true,
+        "reason": "The commit message 'feat(utils): add sum function' follows the Conventional Commits format: type(scope): description, where type='feat', scope='utils', and description='add sum function'."
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output shows 'On branch main, nothing to commit, working tree clean'."
+      },
+      "git_pager_cat": {
+        "pass": true,
+        "reason": "All git commands in the agent logs used GIT_PAGER=cat prefix: 'GIT_PAGER=cat git status' (twice) and 'GIT_PAGER=cat git add utils.ts README.md && git commit ...'."
+      }
+    }
+  }
+}

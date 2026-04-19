@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "ece91bfb32615c0582e99fb3cf10fe222d29929708d8a30bd0f25b8b4b611a86",
+  "scenarioId": "flowai-skill-review-clean-approve",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:34:31.371Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 67974.694375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "diff_collected": {
+        "pass": true,
+        "reason": "The agent explicitly ran `git diff --stat && echo '---CACHED---' && git diff --cached --stat && echo '---STATUS---' && git status --short` as one of its first actions to collect diff and repository s…"
+      },
+      "review_executed": {
+        "pass": true,
+        "reason": "The agent's report contains both a 'QA Findings' section (mapping changes to requirements) and a 'Code Review Findings' section (checking for missing tests, Unicode safety, code quality). Both checks…"
+      },
+      "verdict_approve": {
+        "pass": true,
+        "reason": "The report clearly opens with '## Review: Approve' and the summary states 'Critical issues: 0'. The final message also confirms 'Функция `capitalize` одобрена — реализация корректна, код чистый.'"
+      },
+      "structured_report": {
+        "pass": true,
+        "reason": "The agent produced a structured report with distinct sections: 'QA Findings', 'Code Review Findings', 'Automated Checks', and 'Summary' (with counts for critical issues, warnings, and nits). This is …"
+      },
+      "no_commit": {
+        "pass": true,
+        "reason": "The git log shows only two pre-existing benchmark setup commits ('init' and 'Remove strings.ts from tracking'). The agent made no commits during its execution. The final git status confirms only untr…"
+      },
+      "severity_tags": {
+        "pass": true,
+        "reason": "All findings are tagged with severity levels: `[nit]` (for missing requirements doc mapping and Unicode safety concern) and `[warning]` (for missing test file). The `[skipped]` tag is also used for a…"
+      },
+      "verdict_first_line": {
+        "pass": true,
+        "reason": "The report begins with '## Review: Approve' as its very first line, placing the verdict prominently at the top before any findings or details."
+      }
+    }
+  }
+}

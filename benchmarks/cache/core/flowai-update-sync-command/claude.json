@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "7be1aa0f01d59ae3669f7762639ceaf16e4d84341781833d558a51e846f5c5e3",
+  "scenarioId": "flowai-update-sync-command",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.339Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 183952.51029099998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "used_sync_subcommand": {
+        "pass": true,
+        "reason": "The agent explicitly ran `flowai sync -y --skip-update-check 2>&1` — correctly using `sync` as a subcommand, not bare `flowai` or `flowai -y`. The SKILL.md instructions also include the reminder 'syn…"
+      },
+      "sync_succeeded": {
+        "pass": true,
+        "reason": "While the raw stdout of `flowai sync` isn't explicitly shown in the logs, the agent successfully parsed detailed sync output and reported concrete results: 'CONFIG MIGRATED: .flowai.yaml v1 → v1.1', …"
+      },
+      "detected_changes_or_no_changes": {
+        "pass": true,
+        "reason": "After sync, the agent actively checked for changes via multiple git commands: it ran `git show HEAD:<skill-path>/SKILL.md` for each of the 5 updated skills to compare HEAD versions vs new upstream ve…"
+      }
+    }
+  }
+}

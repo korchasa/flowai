@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "ff7b9fdbd1301a234d460f670eb6b415bb26b63db792a1191501c3ba5b5e1df7",
+  "scenarioId": "flowai-update-update-command",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.339Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 245319.86758299998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "used_update_subcommand": {
+        "pass": true,
+        "reason": "The agent explicitly ran `flowai update 2>&1` as shown in the Bash tool call with description 'Run flowai update to check for CLI updates'. This is the correct subcommand usage."
+      },
+      "not_used_version_flag": {
+        "pass": true,
+        "reason": "Reviewing all Bash commands in the logs, only `flowai update 2>&1` and `flowai sync -y --skip-update-check 2>&1` were used. The `flowai --version` flag was never invoked at any point during the execu…"
+      },
+      "proceeded_after_up_to_date": {
+        "pass": true,
+        "reason": "After `flowai update` returned that the CLI was already up to date (version 0.11.0), the agent marked the update step as completed and immediately proceeded to run `flowai sync -y --skip-update-check…"
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "fa3a7d5800e318093b0e87d228dc81e1e9793d2e6f67ef74d3de2f9e116f9da7",
+  "scenarioId": "flowai-update-template-vs-artifact",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.340Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 148638.928166,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detected_multiple_changes": {
+        "pass": true,
+        "reason": "The agent explicitly ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md .claude/skills/flowai-skill-reflect/SKILL.md .claude/skills/flowai-skill-review/SKILL.md .claude/assets/AGENTS.templat…"
+      },
+      "read_project_agents_md": {
+        "pass": true,
+        "reason": "The agent explicitly used the Read tool on both `/sandbox/.claude/assets/AGENTS.template.md` and `/sandbox/AGENTS.md` (the project artifact). The flowai-skill-adapt-instructions subskill read both fi…"
+      },
+      "found_missing_proactive_resolution": {
+        "pass": true,
+        "reason": "The agent explicitly identified: '2. Добавлено новое правило в `## Planning Rules`: `- **Proactive Resolution**: ...'` and in the classification table marked `## Planning Rules` as needing ACTION: 'д…"
+      },
+      "proposed_adding_rule": {
+        "pass": true,
+        "reason": "The agent explicitly proposed: 'Добавить правило **Proactive Resolution** в конец секции ## Planning Rules в AGENTS.md' and provided a concrete diff showing `+- **Proactive Resolution**: Before askin…"
+      },
+      "not_dismissed_as_formatting": {
+        "pass": true,
+        "reason": "While the agent did classify the skill SKILL.md changes as cosmetic (blank line removal), it did NOT stop there. It proceeded to compare the template against the project AGENTS.md artifact, correctly…"
+      }
+    }
+  }
+}

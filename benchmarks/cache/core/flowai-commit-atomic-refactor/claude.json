@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "1687370d4f313c3628afba8b0b7ef7a108baa07f74ef201cf447a825c0b3f87f",
+  "scenarioId": "flowai-commit-atomic-refactor",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.710Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 69832.41845900001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "multiple_commits": {
+        "pass": true,
+        "reason": "The git log shows exactly 2 new commits created after the init commit: ae2e110 ('refactor: rename sum to add in math.ts') and 32ac8b9 ('feat: add log utility function in utils.ts'), satisfying the re…"
+      },
+      "refactor_commit": {
+        "pass": true,
+        "reason": "Commit ae2e110 has the message 'refactor: rename sum to add in math.ts', which uses the conventional commit type 'refactor:' and contains only the math.ts change (1 file changed, 1 insertion, 1 delet…"
+      },
+      "feat_commit": {
+        "pass": true,
+        "reason": "Commit 32ac8b9 has the message 'feat: add log utility function in utils.ts', which uses the conventional commit type 'feat:' and contains only the utils.ts change (1 file changed, 1 insertion)."
+      }
+    }
+  }
+}

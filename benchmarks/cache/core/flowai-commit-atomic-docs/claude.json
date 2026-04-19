@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "cd2ec93f5dcd0029379546bcb3d9a7ed25701ad01460a93cd422cae76773b30e",
+  "scenarioId": "flowai-commit-atomic-docs",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.710Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 53527.895833999966,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "multiple_commits": {
+        "pass": true,
+        "reason": "The agent created 2 new commits after 'init': '355e21d docs: update README title' and 'fa7c9d6 refactor: update greeting string in main', satisfying the requirement of at least 2 commits."
+      },
+      "docs_commit": {
+        "pass": true,
+        "reason": "Commit '355e21d' has the message 'docs: update README title', which uses the conventional commit type 'docs'."
+      },
+      "feat_fix_commit": {
+        "pass": true,
+        "reason": "Commit 'fa7c9d6' has the message 'refactor: update greeting string in main', which uses the conventional commit type 'refactor' — one of the accepted types (feat/fix/refactor)."
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output explicitly states 'nothing to commit, working tree clean', confirming a fully clean working tree after both commits."
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "5a15ffedd05df8e6c582c95a325b6c7bf9d0f73e173218abe9b220c69338dbf5",
+  "scenarioId": "flowai-skill-plan-db",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.604Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 78964.563417,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "schema_update": {
+        "pass": true,
+        "reason": "The plan explicitly includes updating 'prisma/schema.prisma' in both variants. The task file's Definition of Done states: 'Prisma schema contains `enum Role { USER ADMIN }` and `User.role Role @defau…"
+      },
+      "migration_step": {
+        "pass": true,
+        "reason": "The plan explicitly includes a migration step in both variants. Variant A lists 'prisma migrate dev — сгенерировать и применить миграцию', Variant B also lists 'prisma migrate dev'. The task file Con…"
+      },
+      "service_update": {
+        "pass": true,
+        "reason": "Variant B explicitly includes updating 'src/user.service.ts': 'импорт Role из @prisma/client, добавить параметр role?: Role = Role.USER' with signature 'register(email, name, role?: Role)'. The DoD i…"
+      },
+      "default_value": {
+        "pass": true,
+        "reason": "The default value 'USER' is mentioned multiple times. The task file DoD states: 'User.role Role @default(USER)'. The Constraints section states: 'Enum values: USER, ADMIN. Default: USER.' Both varian…"
+      }
+    }
+  }
+}

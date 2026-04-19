@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "9cefbe6c3522fdfbba1924fb02a00f77f06eab8b76256b4443f68b5c5add859d",
+  "scenarioId": "flowai-update-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:19:21.339Z",
+  "result": {
+    "success": true,
+    "score": 87.5,
+    "errorsCount": 0,
+    "warningsCount": 1,
+    "durationMs": 43318.204791000004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detected_asset_change": {
+        "pass": true,
+        "reason": "The agent explicitly ran `git diff HEAD --name-only -- .claude/` and `git diff HEAD -- .claude/assets/AGENTS.template.md`, and correctly identified that only `.claude/assets/AGENTS.template.md` had c…"
+      },
+      "identified_agents_md": {
+        "pass": true,
+        "reason": "The agent explicitly identified AGENTS.md as the artifact to migrate from the template. The todo item reads 'Verify and migrate asset artifacts (AGENTS.template.md → AGENTS.md)', the agent ran `ls -l…"
+      },
+      "proposed_tdd_update": {
+        "pass": true,
+        "reason": "The agent explicitly proposed adding step 4: '4. **CHECK**: Run `fmt`, `lint`, and full test suite. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. …"
+      },
+      "showed_diff_or_change": {
+        "pass": true,
+        "reason": "The agent showed a clear before/after comparison: 'Текущий TDD FLOW в AGENTS.md' (steps 1-3 only) and 'Предлагаемое обновление' (steps 1-4 with the new CHECK step added). The diff from the template w…"
+      },
+      "preserved_project_content": {
+        "pass": true,
+        "reason": "The proposed change only adds step 4 (CHECK) to the TDD section and leaves all project-specific content intact. The shown 'Предлагаемое обновление' retains all existing steps (RED, GREEN, REFACTOR) a…"
+      },
+      "explained_why": {
+        "pass": true,
+        "reason": "The agent quoted the rationale directly from the template: 'You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.' This clearly ex…"
+      },
+      "per_file_confirmation": {
+        "pass": true,
+        "reason": "The agent ended its response with 'Применить это изменение в `AGENTS.md`?' (Apply this change to AGENTS.md?), explicitly asking for user confirmation before making any changes. The git status confirm…"
+      },
+      "atomic_commit": {
+        "pass": false,
+        "reason": "The agent never reached the commit step. The git log shows no new commits by the agent (only the 'Initial sync (baseline)' commit exists), and git status shows no staged changes. The agent stopped at…"
+      }
+    }
+  }
+}

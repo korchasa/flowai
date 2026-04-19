@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "0995b809c7301ac5c3951e90535aa714006534577e3cb1126e6391853ee911c9",
+  "scenarioId": "flowai-commit-dynamic-doc-list",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 113880.635875,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "custom_doc_discovered": {
+        "pass": true,
+        "reason": "The agent explicitly read AGENTS.md (via Read tool call), which contains the Documentation Hierarchy listing 'API Reference (documents/api-reference.md)'. The agent then proceeded to read documents/a…"
+      },
+      "custom_doc_updated": {
+        "pass": true,
+        "reason": "The git diff confirms documents/api-reference.md was updated: the placeholder 'No endpoints defined yet.' was replaced with a '## Users' section documenting both `getUsers() → User[]` and `getUserByI…"
+      },
+      "code_committed": {
+        "pass": true,
+        "reason": "The git log shows commit 9ad6377 includes 'api.ts | 7 +++++++' as one of the 5 changed files. The git diff also confirms api.ts was added with the getUsers and getUserById functions. Working tree is …"
+      }
+    }
+  }
+}

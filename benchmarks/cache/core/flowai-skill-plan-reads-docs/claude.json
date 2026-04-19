@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "c3ddba38ecb17e205f6bbd969341a2014c492f8d3e964bff237e733a8ff2916e",
+  "scenarioId": "flowai-skill-plan-reads-docs",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T17:43:35.604Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 209974.15725,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_srs": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: .../sandbox/documents/requirements.md) early in the session, before drafting the task file."
+      },
+      "read_sds": {
+        "pass": true,
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: .../sandbox/documents/design.md) in the same batch as the SRS read, confirming both documents were read before planning."
+      },
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/tasks/2026-04-19-add-api-caching-layer.md' via the Write tool and subsequently updated it with Solution and critique-triage content via Edit tools. The file is confirmed …"
+      }
+    }
+  }
+}

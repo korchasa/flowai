@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "9149ca45b287794bb0b5383f1366799b1c48cb9eb340c3921a9aead6c4af9ffc",
+  "scenarioId": "flowai-commit-atomic-hunk",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 79088.44970900004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "multiple_commits": {
+        "pass": true,
+        "reason": "The git log shows 2 new commits were created beyond the initial 'init' commit: 'refactor: rename old to newName' (8a15c47) and 'style: add comment to newName' (35a7d09)."
+      },
+      "style_commit": {
+        "pass": true,
+        "reason": "Commit 35a7d09a11bfb3f342b6c5d2b3ebbab66faff7e3 has the message 'style: add comment to newName', which uses the 'style' conventional commit type."
+      },
+      "refactor_commit": {
+        "pass": true,
+        "reason": "Commit 8a15c47142c7e3542ad4b15e26492e0de45434ad has the message 'refactor: rename old to newName', which uses the 'refactor' conventional commit type."
+      }
+    }
+  }
+}

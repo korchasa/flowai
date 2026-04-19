@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "7a81bfb6c2999efb6c2f552a6612f19b5d3f84b95abd8f8c3621e59b1913cd59",
+  "scenarioId": "flowai-skill-setup-agent-code-style-ts-strict-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:04:18.684Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 37961.354708,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "code_style_section_added": {
+        "pass": true,
+        "reason": "The AGENTS.md file clearly contains '## Code Style (TypeScript Strict Mode)' heading as confirmed by the generated AGENTS.md content shown in the evidence."
+      },
+      "injection_location_correct": {
+        "pass": true,
+        "reason": "In the final AGENTS.md, the order is: '## Project tooling Stack' → '## Code Style (TypeScript Strict Mode)' → '## Architecture'. The Edit tool targeted the '## Architecture' marker to inject the new …"
+      },
+      "strict_mode_rule": {
+        "pass": true,
+        "reason": "The injected content under '### TypeScript' explicitly states: \"Strict mode (`strict: true`)\" as the first bullet."
+      },
+      "avoid_any_rule": {
+        "pass": true,
+        "reason": "The injected content includes: \"Avoid `any`; use `unknown` for truly unknown types\" in the TypeScript subsection."
+      },
+      "testing_guidelines": {
+        "pass": true,
+        "reason": "The '### Testing' subsection includes all three required elements: \"Given-When-Then test names\", \"Target 60% coverage\", and \"Keep a test pyramid (~70% unit, ~25% integration, ≤5% e2e)\"."
+      },
+      "immutability_rule": {
+        "pass": true,
+        "reason": "The injected content explicitly states: \"Enforce immutability: use `readonly`, `Readonly<T>`, and `ReadonlyArray<T>`\" in the TypeScript subsection."
+      },
+      "no_duplicate_sections": {
+        "pass": true,
+        "reason": "The generated AGENTS.md content shows exactly one '## Code Style (TypeScript Strict Mode)' section. No duplicate Code Style headings are present in the file."
+      },
+      "existing_content_preserved": {
+        "pass": true,
+        "reason": "The '## Project tooling Stack' section retains its original content (Language: TypeScript, Runtime: Node.js, Strict mode enabled) and '## Architecture' section retains its content (`src/` — Applicati…"
+      }
+    }
+  }
+}

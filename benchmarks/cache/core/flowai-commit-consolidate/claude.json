@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "f22b230314bbbe6a8120f91d90dcccdbc56d0ada488ea4cfc3647de2e296ca18",
+  "scenarioId": "flowai-commit-consolidate",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 49162.05945899998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "single_commit": {
+        "pass": true,
+        "reason": "The git log shows exactly 1 new commit created by the agent: 'feat: add multiply function with tests and docs' (3533fa6). The 'init' commit (a14c1d6) was pre-existing. The agent explicitly decided to…"
+      },
+      "all_files_in_commit": {
+        "pass": true,
+        "reason": "The git log confirms the single commit contains all three files: README.md (+5 lines), math.test.ts (+6/-1 lines), and math.ts (+4 lines). The git diff also shows all three files changed from init to…"
+      },
+      "conventional_commits": {
+        "pass": true,
+        "reason": "The commit message 'feat: add multiply function with tests and docs' follows the Conventional Commits format with a valid type ('feat'), a colon separator, and a descriptive subject line."
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status explicitly shows 'On branch main / nothing to commit, working tree clean', confirming the repository is in a clean state after the commit."
+      },
+      "no_user_prompt_for_split": {
+        "pass": true,
+        "reason": "The agent autonomously decided to consolidate all changes into a single commit without asking the user. In the logs, it reasoned: 'Все изменения относятся к одной цели — добавление функции multiply. …"
+      }
+    }
+  }
+}
