@@ -9,11 +9,15 @@ Evidence-based agent evaluation infrastructure (run artifacts and config).
 - `config.json` — Multi-IDE benchmark configuration.
 - `benchmarks.lock` — Prevents concurrent benchmark runs.
 
-Scenario definitions live co-located with skills: `framework/skills/<skill>/benchmarks/<scenario>/mod.ts`.
+Scenario definitions live co-located with primitives:
+`framework/<pack>/skills/<skill>/benchmarks/<scenario>/mod.ts`,
+`framework/<pack>/commands/<command>/benchmarks/<scenario>/mod.ts`,
+`framework/<pack>/agents/<agent>/benchmarks/<scenario>/mod.ts`,
+`framework/<pack>/benchmarks/<scenario>/mod.ts` (pack-level).
 
 ## Key Decisions
 
-- Scenarios are discovered dynamically via `walk()` over `framework/skills/` in `scripts/task-bench.ts`.
+- Scenarios are discovered dynamically via `walk()` over `framework/<pack>/{skills,commands,agents,benchmarks}/` in `scripts/task-bench.ts`.
 - Evaluation uses LLM-Judge (`scripts/benchmarks/lib/judge.ts`) with semantic checklist items.
 - Each run is isolated in a temporary sandbox directory.
 - Multi-run support for statistical pass-rate analysis.

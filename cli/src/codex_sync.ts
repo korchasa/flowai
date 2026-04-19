@@ -28,6 +28,11 @@ import type { IDE, PlanAction, PlanItem } from "./types.ts";
 import { extractResourceActions } from "./resource_index.ts";
 import { processPlan, type SyncResult } from "./sync.ts";
 
+/**
+ * Syncs framework agents into Codex IDE: writes each as `.codex/prompts/<name>.md` and
+ * updates `.codex/config.toml` via `toml_merge`. `isFirstIde` controls whether the
+ * TOML manifest is reset (only the first IDE in a sync run owns it).
+ */
 export async function syncCodexAgents(
   cwd: string,
   ide: IDE,

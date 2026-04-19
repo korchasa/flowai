@@ -2,11 +2,14 @@ import { assertEquals, assertRejects } from "@std/assert";
 import { runCommandsInParallelBuffered } from "./utils.ts";
 
 Deno.test("runCommandsInParallelBuffered: all commands succeed", async () => {
+  let resolved = false;
   await runCommandsInParallelBuffered([
     { cmd: "deno", args: ["eval", "console.log('hello')"] },
     { cmd: "deno", args: ["eval", "console.log('world')"] },
-  ]);
-  // No error thrown = success
+  ]).then(() => {
+    resolved = true;
+  });
+  assertEquals(resolved, true);
 });
 
 Deno.test("runCommandsInParallelBuffered: one command fails — error lists failed", async () => {
@@ -35,5 +38,9 @@ Deno.test("runCommandsInParallelBuffered: multiple failures reported", async () 
 });
 
 Deno.test("runCommandsInParallelBuffered: empty commands list succeeds", async () => {
-  await runCommandsInParallelBuffered([]);
+  let resolved = false;
+  await runCommandsInParallelBuffered([]).then(() => {
+    resolved = true;
+  });
+  assertEquals(resolved, true);
 });

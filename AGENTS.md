@@ -28,7 +28,7 @@
 ## Project Vision
 ### Vision Statement
 
-A collection of AI skills and agents, designed to standardize work across various software development contexts and AI IDEs.
+Assisted Engineering framework: the developer stays architect/reviewer; the AI executes under supervision. Delivered as AI skills and agents standardizing work across software development contexts and AI IDEs.
 
 ### Target Audience
 

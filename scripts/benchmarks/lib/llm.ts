@@ -40,6 +40,10 @@ export function getIdeConfig(
   return ideSection;
 }
 
+/**
+ * Loads the benchmark configuration file (`benchmarks/config.json` by default).
+ * Throws with an actionable message when the file is missing or malformed.
+ */
 export async function loadConfig(
   path = "benchmarks/config.json",
 ): Promise<BenchmarkConfig> {

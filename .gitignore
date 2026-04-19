@@ -6,7 +6,9 @@ benchmarks/runs/
 benchmarks/benchmarks.lock
 # benchmarks/cache/ is intentionally tracked — committed per-scenario verdicts
 # short-circuit agent + judge calls when inputs haven't changed (FR-BENCH-CACHE).
-framework/skills/*/benchmarks/runs/
+framework/*/skills/*/benchmarks/runs/
+framework/*/commands/*/benchmarks/runs/
+framework/*/agents/*/benchmarks/runs/
 framework/**/flowai-skill-example/
 .env
 __pycache__/
