@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "9ffb097a685b59025f83df58cb002d7296b8485a2dff4038659d1cbff7a97778",
+  "scenarioId": "flowai-skill-ai-ide-runner-default-native-ide-for-model",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-20T18:42:03.361Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 14121.287749999989,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "used_claude_cli": {
+        "pass": true,
+        "reason": "The agent invoked `claude -p ...` as shown in the Bash tool call: `CLAUDECODE=\"\" claude -p \"What is one rule of thumb for writing maintainable TypeScript?\" --model sonnet 2>&1`"
+      },
+      "did_not_use_opencode": {
+        "pass": true,
+        "reason": "There is no mention of `opencode` anywhere in the agent logs. The agent exclusively used the `claude` CLI."
+      },
+      "did_not_use_cursor_or_codex": {
+        "pass": true,
+        "reason": "Neither `cursor-agent` nor `codex` were invoked at any point in the execution logs."
+      },
+      "sonnet_model_selected": {
+        "pass": true,
+        "reason": "The agent passed `--model sonnet` to the claude CLI, which resolved to `claude-sonnet-4-6` as reported in the final answer."
+      },
+      "claudecode_env_override": {
+        "pass": true,
+        "reason": "The command was prefixed with `CLAUDECODE=\"\"` to override the nested session detection: `CLAUDECODE=\"\" claude -p ...`"
+      },
+      "verbatim_relay": {
+        "pass": true,
+        "reason": "The agent quoted the CLI output verbatim: `prefer pure functions at the core.` — this matches the expected mock response content exactly."
+      },
+      "disclosed_ide_and_model": {
+        "pass": true,
+        "reason": "The final response explicitly states both: **IDE:** Claude Code and **Model:** `sonnet` (claude-sonnet-4-6)."
+      }
+    }
+  }
+}

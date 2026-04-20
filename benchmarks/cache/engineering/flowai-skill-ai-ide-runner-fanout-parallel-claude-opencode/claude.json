@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "556c0c41419e1e44cf9109e1c5f8f19bab4b8e31b7fe1beda8823e4fa686981e",
+  "scenarioId": "flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-20T18:39:58.333Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 58987.299417,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "both_binaries_invoked": {
+        "pass": true,
+        "reason": "The agent's Bash command invoked both `claude -p \"$P\" --model opus` and `opencode run \"$P\" -m anthropic/claude-opus-4-5`, confirming both binaries were called."
+      },
+      "parallel_execution": {
+        "pass": true,
+        "reason": "The agent launched both processes with shell backgrounding (`&`) and then called `wait $PID1 $PID2`, achieving true concurrent execution rather than sequential."
+      },
+      "claude_non_interactive": {
+        "pass": true,
+        "reason": "The `claude` invocation used `-p \"$P\"` (the print/non-interactive flag), satisfying the requirement."
+      },
+      "opencode_provider_model_format": {
+        "pass": true,
+        "reason": "OpenCode was invoked with `-m anthropic/claude-opus-4-5`, which follows the mandatory `provider/model` format. The model name triggered an 'unknown model' error in the sandbox (intercepted by mock ho…"
+      },
+      "claudecode_env_override": {
+        "pass": true,
+        "reason": "The Bash command explicitly prefixed the nested claude invocation with `CLAUDECODE=\"\"` (empty string), satisfying the env override requirement to prevent the 'already in a Claude session' refusal."
+      },
+      "side_by_side_comparison": {
+        "pass": true,
+        "reason": "The final answer presented both outputs in clearly labelled sections — 'Claude Code (`claude --model opus`)' and 'OpenCode (`opencode run -m anthropic/...`)' — with a comparison section, giving the u…"
+      },
+      "did_not_invent_models": {
+        "pass": true,
+        "reason": "The agent used `opus` (valid shorthand for Claude Code) and `anthropic/claude-opus-4-5` for OpenCode. While `claude-opus-4-5` is an atypical model slug, it follows real Claude naming conventions and …"
+      }
+    }
+  }
+}

@@ -761,6 +761,19 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - Mutant budget: ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. Report top-5 catching tests by severity × uniqueness.
 - **Acceptance verified by benchmarks:** `flowai-skill-jit-review-catch-regression`, `flowai-skill-jit-review-no-change-no-alarm`
 
+### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `flowai-skill-ai-ide-runner`
+
+- **Description:** Agent-invocable skill that spawns another AI IDE runtime (`claude`, `opencode`, `cursor-agent`, `codex`) from the current session in non-interactive mode, captures its stdout, and relays it back verbatim. Enables single-IDE "second opinion" runs, multi-IDE fan-out comparisons, and multi-model comparisons within one IDE.
+- **Scope:** Lives under `framework/engineering/skills/flowai-skill-ai-ide-runner/`. Model-invocable. Triggered by queries like "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better".
+- **Constraints:**
+  - MUST relay the child runtime's stdout byte-for-byte; MUST NOT synthesise a "better" answer from the outer model's weights. The skill is a courier, not a co-author.
+  - MUST default to the vendor's native IDE when the user names only a model: Anthropic/Claude → `claude`; OpenAI/GPT → `codex`; Cursor's own Composer → `cursor-agent`. Route to OpenCode only when the user says "in OpenCode", asks for OpenRouter billing, or requests cross-provider fan-out.
+  - MUST prefer native providers over routed variants in OpenCode (`anthropic/claude-sonnet-4.6` beats `openrouter/anthropic/claude-sonnet-4.6` unless the user explicitly asks for OpenRouter).
+  - If the native provider fails (auth / not configured / model ID mismatch), MUST report the failure and stop — MUST NOT silently retry with a routed variant.
+  - MUST apply the `CLAUDECODE=""` environment override when the caller is itself Claude Code and the child is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
+  - MUST NOT install or authenticate CLIs, persist transcripts, or judge output quality automatically.
+- **Acceptance verified by benchmarks:** `flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-skill-ai-ide-runner-opencode-provider-format`, `flowai-skill-ai-ide-runner-single-cursor-read-only`, `flowai-skill-ai-ide-runner-default-native-ide-for-model`
+
 ### FR-LOOP: Non-Interactive Runner — `flowai loop`
 
 - **Description:** Launch Claude Code non-interactively with a prompt. Base automation primitive. `flowai loop [OPTIONS] <prompt>`.

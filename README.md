@@ -153,6 +153,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `flowai-skill-draw-mermaid-diagrams` — Mermaid diagrams
 - `flowai-skill-fix-tests` — fix failing tests
 - `flowai-skill-jit-review` — JIT review: synthesize ephemeral tests that pass on parent and fail on diff
+- `flowai-skill-ai-ide-runner` — run prompts in Claude Code / OpenCode / Cursor / Codex CLIs; fan-out and compare
 - `flowai-skill-write-prd` — Product Requirements Documents
 - `flowai-skill-write-dep` — Development Enhancement Proposals
 - `flowai-skill-write-gods-tasks` — GODS-format tasks

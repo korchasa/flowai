@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "445a39722b2749e50a1e7166e2e5eee05a59d8bd78d247b70826b934be2cc8d1",
+  "scenarioId": "flowai-skill-ai-ide-runner-opencode-provider-format",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-20T18:40:41.603Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 18250.71887499999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_silent_routed_fallback": {
+        "pass": true,
+        "reason": "The agent's final invocation used `anthropic/claude-sonnet-4-5` — a native `anthropic/` provider. No `openrouter/...` or `opencode/...` routed variant was used at any point."
+      },
+      "attempted_anthropic_native": {
+        "pass": true,
+        "reason": "The agent first ran `opencode models anthropic` for discovery, then directly invoked `opencode run -m anthropic/claude-sonnet-4-5`, which is a genuine attempt at the native `anthropic/` provider befo…"
+      },
+      "provider_model_format_when_invoked": {
+        "pass": true,
+        "reason": "The invocation was `opencode run ... -m anthropic/claude-sonnet-4-5`, which conforms to the mandatory `<provider>/<model>` format."
+      },
+      "no_bare_model_id": {
+        "pass": true,
+        "reason": "The agent always used the fully-qualified `anthropic/claude-sonnet-4-5` form. No bare model name (e.g., `-m sonnet` or `-m claude-sonnet`) was ever passed."
+      },
+      "no_invented_id": {
+        "pass": true,
+        "reason": "The model ID `anthropic/claude-sonnet-4-5` corresponds to a real, published Claude Sonnet 4.5 model under the Anthropic provider. The agent attempted discovery first (`opencode models anthropic`) bef…"
+      },
+      "reported_outcome_to_user": {
+        "pass": true,
+        "reason": "The final response explicitly states the exact model ID passed: `anthropic/claude-sonnet-4-5`, and also delivers the answer returned by the mock tool (`For maintainable TypeScript, keep types at the …"
+      },
+      "used_run_subcommand_when_invoked": {
+        "pass": true,
+        "reason": "The agent used `opencode run` as the subcommand to execute the prompt. No alternative subcommands such as `exec`, `chat`, or bare `opencode` were used for prompt execution."
+      }
+    }
+  }
+}

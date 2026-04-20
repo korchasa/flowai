@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "a512ac21ebb01d09c32b9dc6ab3db4a23468760938cb7c3725b9aa76883ff6af",
+  "scenarioId": "flowai-skill-ai-ide-runner-single-cursor-read-only",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-20T18:41:29.898Z",
+  "result": {
+    "success": true,
+    "score": 87.5,
+    "errorsCount": 0,
+    "warningsCount": 1,
+    "durationMs": 17108.579792000004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "correct_binary": {
+        "pass": true,
+        "reason": "The agent ran `cursor-agent -p --trust --mode ask \"What does this repository do?\" 2>&1`, which correctly uses the `cursor-agent` binary."
+      },
+      "non_interactive_flag": {
+        "pass": true,
+        "reason": "The agent passed the `-p` flag in the command: `cursor-agent -p --trust --mode ask ...`."
+      },
+      "trust_flag": {
+        "pass": true,
+        "reason": "The agent passed `--trust` in the command: `cursor-agent -p --trust --mode ask ...`."
+      },
+      "read_only_mode": {
+        "pass": true,
+        "reason": "The agent passed `--mode ask`, which is a read-only mode that prevents edits, satisfying the 'no edits' constraint."
+      },
+      "verbatim_tool_output": {
+        "pass": true,
+        "reason": "The agent quoted the mock hook output verbatim: `CURSOR-MOCK: the repo is a Deno TypeScript project; see deno.json for tasks.` in a blockquote in both the intermediate and final responses."
+      },
+      "did_not_synthesise_answer": {
+        "pass": true,
+        "reason": "The agent did not write its own repository description. It returned the cursor-agent mock output verbatim and only added context explaining that the hook intercepted the call. The actual repo descrip…"
+      },
+      "disclosed_model": {
+        "pass": false,
+        "reason": "The agent did not disclose the actual model that ran. It speculated that 'in production, the default Cursor model (usually `auto` / `claude-3.7-sonnet`) would have been used', but this is not the act…"
+      },
+      "did_not_invent_binary": {
+        "pass": true,
+        "reason": "The agent used `cursor-agent`, which is the correct binary per the skill. It did not invent or use non-existent alternatives like `cursor -p`, `cursor run`, or `cursor_cli`."
+      }
+    }
+  }
+}

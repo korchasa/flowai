@@ -350,6 +350,24 @@ graph TD
 - **Fail-fast:** If AGENTS.md declares no `test`- or `check`-command, the skill aborts with an explicit error — no guessing (`npm test`, `pytest`, etc.).
 - **Behavioral requirements:** See benchmarks `flowai-skill-jit-review-catch-regression`, `flowai-skill-jit-review-no-change-no-alarm`.
 
+### 3.14 AI IDE Runner Skill — `flowai-skill-ai-ide-runner`
+
+- **Purpose:** Spawn another AI IDE CLI runtime (`claude`, `opencode`, `cursor-agent`, `codex`) in one-shot non-interactive mode, capture stdout, and relay it verbatim. Enables second-opinion lookups, per-IDE fan-out, and cross-model comparisons from within the current agent session. Implements FR-AI-IDE-RUNNER.
+- **Location:** `framework/engineering/skills/flowai-skill-ai-ide-runner/SKILL.md` with catalogue references under `references/models.md` and `references/runtimes.md`. Model-invocable.
+- **Dependencies:**
+  - Child CLIs on `PATH` (`claude`, `opencode`, `cursor-agent`, `codex`) — skill assumes they are installed and authenticated; missing binaries surface the runtime's own error verbatim.
+  - Shell for concurrent execution (`&` + `wait`) and stdout capture.
+- **Interface:** Triggered by queries matching the skill's description ("run in <ide>", "compare <ide> vs <ide>", "try on <model>"). Returns the child runtime's quoted output plus thin framing (IDE + resolved model labels, side-by-side layout for comparisons).
+- **Workflow:**
+  1. **Parse intent** — extract target IDEs, models, comparison axis; default unnamed-IDE runs to the vendor's native CLI (Anthropic→`claude`, OpenAI→`codex`).
+  2. **Pick model per IDE** — consult `references/models.md` catalogue; run discovery (`--list-models`, `models`) when the request names an unknown ID; do not invent IDs.
+  3. **Build & run** — construct each invocation per `references/runtimes.md` (binary, non-interactive flag, model flag, permission / sandbox mode); launch concurrently for comparisons; apply `CLAUDECODE=""` when calling `claude` from Claude Code.
+  4. **Present** — quote captured stdout byte-for-byte in labelled blocks; add only minimal framing (per-IDE headers, comparison paragraph). No translation, paraphrase, or grammar fixes.
+- **Output contract (verbatim relay):** The final message's quoted block MUST come from the child runtime's stdout/stderr (or, under sandbox hook blocks, the hook's `reason` payload returned as the Bash tool result). If the tool produced nothing or errored, the skill quotes the empty/error state — it does NOT synthesise a plausible answer from the outer model's weights.
+- **Provider routing (OpenCode):** Vendor labels map to native providers first (`anthropic/`, `openai/`); routed providers (`openrouter/`, `opencode/`) require explicit user opt-in. Native failure → report and stop; never silently reroute.
+- **Scope boundaries:** Skill does NOT install CLIs, persist session transcripts, or grade outputs. If the user wants a verdict, the skill runs an LLM-as-judge as an additional explicit invocation rather than embedding the opinion.
+- **Behavioral requirements:** See benchmarks `flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-skill-ai-ide-runner-opencode-provider-format`, `flowai-skill-ai-ide-runner-single-cursor-read-only`, `flowai-skill-ai-ide-runner-default-native-ide-for-model`.
+
 ## 4. Data and Storage
 
 - File-based storage only. No database. Entities: Skill (Name, Content, Path), Agent (Name, Prompt, Capabilities).
