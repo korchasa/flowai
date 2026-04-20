@@ -139,9 +139,11 @@ Deno.test("ClaudeAdapter - setupMocks creates settings.local.json hooks", async 
   assertEquals(existsSync(settingsPath), true);
 
   const settings = JSON.parse(await Deno.readTextFile(settingsPath));
-  assertEquals(Array.isArray(settings.hooks?.preToolUse), true);
-  assertEquals(settings.hooks.preToolUse.length, 1);
-  assertEquals(settings.hooks.preToolUse[0].matcher, "Bash(gh:*)");
+  assertEquals(Array.isArray(settings.hooks?.PreToolUse), true);
+  assertEquals(settings.hooks.PreToolUse.length, 1);
+  // Matcher is now the broad `Bash` — the hook script itself filters
+  // by tool name, so env-prefixed commands (e.g. `FOO=1 gh …`) match.
+  assertEquals(settings.hooks.PreToolUse[0].matcher, "Bash");
 
   // Verify hook script exists
   const hooksDir = join(sandboxPath, ".claude", "hooks");

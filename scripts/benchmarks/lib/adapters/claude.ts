@@ -143,25 +143,77 @@ export class ClaudeAdapter implements AgentAdapter {
       hooks: Array<{ type: string; command: string }>;
     }> = [];
 
+    // Each hook script is registered under a broad `Bash` matcher (no
+    // command prefix filter). The hook itself inspects
+    // `tool_input.command`, strips any leading env assignments and
+    // opening shell metacharacters (`(`, `&`, `|`, backticks, `$(`),
+    // and checks whether the first *bare* command word equals the
+    // mocked tool name. This is robust to:
+    //   - `claude -p "…"`                      (plain)
+    //   - `CLAUDECODE="" claude -p "…"`         (env assignment prefix)
+    //   - `( CLAUDECODE="" claude -p "…" ) &`   (subshell + background)
+    //   - `FOO=1 BAR=2 claude …`                (multiple env prefixes)
+    // Claude Code's built-in `Bash(<prefix>:*)` matcher does NOT do
+    // this stripping, which caused silent mock misses for the
+    // CLAUDECODE-override pattern that some skills mandate. Filtering
+    // inside the hook avoids depending on undocumented matcher
+    // semantics.
     for (const [tool, mockOutput] of Object.entries(mocks)) {
       const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
       const hookScript = `#!/bin/bash
-# Read stdin (JSON with tool details)
-read -r input
+# PreToolUse mock for \`${tool}\`.
+# Reads the hook JSON payload on stdin, extracts the Bash command, and
+# blocks it with a mock reason iff the first bare command word
+# (after stripping env assignments, subshell opens, and leading pipes)
+# is exactly \`${tool}\`. Otherwise exits 0 silently so the real
+# command proceeds.
+set -u
+input=$(cat)
 
-# Return mock response - deny execution and inject mock output
-cat <<'MOCK_EOF'
+# Extract tool_input.command. Fall back to empty string if jq absent
+# or field missing.
+if command -v jq >/dev/null 2>&1; then
+  cmd=$(printf '%s' "$input" | jq -r '.tool_input.command // empty' 2>/dev/null)
+else
+  cmd=$(printf '%s' "$input" | sed -n 's/.*"command":"\\([^"]*\\)".*/\\1/p')
+fi
+
+# Normalise: strip leading shell metachars that would hide the real
+# first token (subshell opens, pipes, logical ops, backticks, \$( ).
+# Loop because combinations stack (e.g. '( ( claude ...').
+while :; do
+  trimmed=$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]*(\\\$\\(|\\\`|\\(|\\{|&&|\\|\\|?|;|!)+//')
+  [ "$trimmed" = "$cmd" ] && break
+  cmd=$trimmed
+done
+
+# Strip leading VAR=val env assignments (one or more, whitespace-sep).
+while printf '%s' "$cmd" | grep -Eq '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*='; do
+  cmd=$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=("[^"]*"|'\\''[^'\\'']*'\\''|[^[:space:]]*)[[:space:]]*//')
+done
+
+# First bare word = everything up to the first whitespace.
+first_word=\${cmd%%[[:space:]]*}
+
+if [ "$first_word" = "${tool}" ]; then
+  cat <<'MOCK_EOF'
 {
   "decision": "block",
   "reason": ${JSON.stringify(mockOutput)}
 }
 MOCK_EOF
+fi
+
+# No match → exit 0 silently; Claude Code treats silent 0-exit
+# PreToolUse hooks as "no decision", and the command proceeds to the
+# next hook (or to actual execution if none matches).
+exit 0
 `;
       await Deno.writeTextFile(hookScriptPath, hookScript);
       await Deno.chmod(hookScriptPath, 0o755);
 
       preToolUse.push({
-        matcher: `Bash(${tool}:*)`,
+        matcher: `Bash`,
         hooks: [{
           type: "command",
           command: `.claude/hooks/mock-${tool}.sh`,
@@ -171,7 +223,7 @@ MOCK_EOF
 
     const settings = {
       hooks: {
-        preToolUse,
+        PreToolUse: preToolUse,
       },
     };
 
