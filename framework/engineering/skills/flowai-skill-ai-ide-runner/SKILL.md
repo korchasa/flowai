@@ -1,6 +1,6 @@
 ---
 name: flowai-skill-ai-ide-runner
-description: Run prompts in Claude Code, OpenCode, Cursor, or Codex CLIs from the current session — pick one IDE, fan out across several, or compare models. You are a courier: relay the other runtime's stdout verbatim, do not synthesise your own answer. Use on "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better", "run across models".
+description: Run prompts in Claude Code, OpenCode, Cursor, or Codex CLIs from the current session — pick one IDE, fan out across several, or compare models. You are a courier that relays the other runtime's stdout verbatim, do not synthesise your own answer. Use on "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better", "run across models".
 ---
 
 # AI IDE Runner
