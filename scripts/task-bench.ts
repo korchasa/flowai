@@ -399,6 +399,53 @@ async function main() {
     }
   }
 
+  // Per-scenario streaming cache write: track remaining runs and collected
+  // results so that the cache entry is written immediately after the LAST run
+  // of a scenario completes (instead of batched at the end). Same gating as
+  // the original batch logic: write only when all N runs passed.
+  const remainingRuns = new Map<string, number>();
+  const runResults = new Map<string, BenchmarkResult[]>();
+  for (const scenario of scenariosPendingExec) {
+    remainingRuns.set(scenario.id, runs);
+    runResults.set(scenario.id, []);
+  }
+
+  async function maybeWriteScenarioCache(scenario: BenchmarkScenario) {
+    if (!cacheWriteEnabled) return;
+    if (scenario.skip) return;
+    if (cachedScenarioIds.has(scenario.id)) return;
+    const scenarioResults = runResults.get(scenario.id) ?? [];
+    if (scenarioResults.length === 0) return;
+    if (scenarioResults.length !== runs) return;
+    if (!scenarioResults.every((r) => r.success)) return;
+    const key = scenarioCacheKeys.get(scenario.id);
+    if (!key) return;
+    const entry: CacheEntry = {
+      schema: CACHE_SCHEMA_VERSION,
+      key,
+      scenarioId: scenario.id,
+      ide: adapter.ide,
+      agentModel,
+      recordedAt: new Date().toISOString(),
+      result: trimResultForCache(scenarioResults[0]),
+    };
+    try {
+      await writeCache(scenario, adapter.ide, entry);
+      const cachePath = cacheFilePath(scenario, adapter.ide);
+      console.log(
+        `  ${ansi("\x1b[32m")}[CACHE WRITE]${
+          ansi("\x1b[0m")
+        } ${scenario.id} — ${relative(Deno.cwd(), cachePath)}`,
+      );
+    } catch (e) {
+      console.warn(
+        `  Warning: failed to write cache for ${scenario.id}: ${
+          e instanceof Error ? e.message : e
+        }`,
+      );
+    }
+  }
+
   /** Executes a single scenario run, prints checklist results, and accumulates costs. */
   async function executeTask(
     task: { scenario: BenchmarkScenario; runIndex: number },
@@ -419,6 +466,8 @@ async function main() {
       });
       results.push(result);
       totalCostAll += result.totalCost;
+
+      runResults.get(scenario.id)?.push(result);
 
       const statusLabel = result.success ? "PASSED" : "FAILED";
       console.log(
@@ -464,6 +513,12 @@ async function main() {
       }
     } catch (e) {
       console.error(`  Error running scenario ${scenario.id}:`, e);
+    } finally {
+      const remaining = (remainingRuns.get(scenario.id) ?? 0) - 1;
+      remainingRuns.set(scenario.id, remaining);
+      if (remaining === 0) {
+        await maybeWriteScenarioCache(scenario);
+      }
     }
   }
 
@@ -505,41 +560,8 @@ async function main() {
     }
   }
 
-  // Cache write: for each scenario that was just executed (cache-miss), if
-  // ALL of its N runs passed, write a fresh cache entry. Failed runs are not
-  // cached — that would freeze a broken scenario in the green column.
-  if (cacheWriteEnabled) {
-    for (const scenario of scenariosPendingExec) {
-      if (scenario.skip) continue;
-      if (cachedScenarioIds.has(scenario.id)) continue;
-      const scenarioResults = results.filter((r) =>
-        r.scenarioId === scenario.id
-      );
-      if (scenarioResults.length === 0) continue;
-      const allPassed = scenarioResults.every((r) => r.success);
-      if (!allPassed) continue;
-      const key = scenarioCacheKeys.get(scenario.id);
-      if (!key) continue;
-      const entry: CacheEntry = {
-        schema: CACHE_SCHEMA_VERSION,
-        key,
-        scenarioId: scenario.id,
-        ide: adapter.ide,
-        agentModel,
-        recordedAt: new Date().toISOString(),
-        result: trimResultForCache(scenarioResults[0]),
-      };
-      try {
-        await writeCache(scenario, adapter.ide, entry);
-      } catch (e) {
-        console.warn(
-          `  Warning: failed to write cache for ${scenario.id}: ${
-            e instanceof Error ? e.message : e
-          }`,
-        );
-      }
-    }
-  }
+  // Cache writes are streamed per-scenario inside executeTask's finally block
+  // (see maybeWriteScenarioCache above). No batched post-loop write.
 
   const failedResults = results.filter((r) =>
     r.errorsCount > 0 || r.warningsCount > 0
