@@ -82,6 +82,10 @@ Deno.test({
       setup: async (_sandbox) => {
         // No setup needed for simple keyword test
       },
+      sandboxState: {
+        commits: [],
+        expectedOutcome: "Agent responds with the keyword",
+      },
       userQuery: "Say the word 'BANANA' and nothing else.",
       agentsTemplateVars: { PROJECT_NAME: "IntegrationTest" },
       checklist: [
@@ -134,6 +138,10 @@ Deno.test({
           cwd: sandbox,
         });
         await gitInit.output();
+      },
+      sandboxState: {
+        commits: [],
+        expectedOutcome: "Agent asks a question and user emulator responds",
       },
       userQuery: "Ask me a question about my favorite color.",
       userPersona:
