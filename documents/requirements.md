@@ -828,6 +828,60 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Acceptance verified by tests:** `framework/memex/scripts/flowai-memex-audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/flowai-memex-status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
 - **Status:** [x]
 
+### FR-DOC-LINKS: Interconnectedness Principle for Documentation
+
+- **Description:** `framework/core/assets/AGENTS.template.md` declares an abstract rule that any linkable doc artifact (FR / SDS / ADR / NFR) carries a stable ID, source code references it via line-comment marker `// <NS>-<ID>` (or `# <NS>-<ID>`), doc-to-doc references use standard GFM markdown links with relative paths and heading anchors, and headings embed the ID so auto-generated GFM slugs survive heading rewrites.
+- **Scenario:** A new flowai project initialized via `flowai-init` receives the principle as part of its AGENTS.md; agents consuming that AGENTS.md know the namespace table, ID-comment convention, and GFM-link convention without consulting external sources.
+- **Out of scope:** Enforcement of the principle on existing docs (covered by FR-DOC-IDS for SDS migration, FR-DOC-LINT for periodic drift checks).
+- **Acceptance verified by tests:** `scripts/check-agents-template_test.ts` (5 tests covering principle section, namespace table, ID-comment convention, GFM-link convention, heading-includes-ID rule).
+- **Status:** [x]
+
+### FR-DOC-IDS: Stable IDs for SDS Components
+
+- **Description:** Every component in `documents/design.md` §3 carries a mnemonic ID `SDS-<MNEMONIC>` embedded in its heading (`### SDS-PACKS — Product Packs`). `Documentation Map` in root `CLAUDE.md` references components via GFM links to ID-anchors instead of `§3.X` numbers. `scripts/check-traceability.ts` is generalized to recognize any `<NS>-<ID>` shape in code comments while keeping FR-validation behavior intact.
+- **Scenario:** A code file uses `// SDS-PACKS` next to logic implementing the Pack subsystem; `git grep "// SDS-PACKS"` finds all such references; `Documentation Map` link `[Product Packs](documents/design.md#sds-packs--product-packs)` resolves to the SDS heading.
+- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (existing tests for FR remain green; new tests cover `<NS>-<ID>` recognition for SDS / ADR / NFR namespaces). `grep -c '^### SDS-' documents/design.md` ≥ component count in §3.
+- **Status:** [ ]
+
+### FR-DOC-ADR: Architecture Decision Record Skill — `flowai-skill-plan-adr`
+
+- **Description:** Agent-invocable skill that produces `documents/adr/<YYYY-MM-DD>-<slug>.md` capturing a non-trivial decision that needs to outlive the task file. Output format: frontmatter with `id: ADR-<NNNN>` (next free number from existing `documents/adr/`) and `status: proposed | accepted | rejected | superseded | deprecated`; sections Context / Alternatives (each with 1-line description + 2–4 Pros/Cons + a single-sentence rejection cause for non-chosen ones) / Decision / Consequences. After writing, the skill MUST update `documents/index.md` (FR-DOC-INDEX).
+- **Scope:** Lives under `framework/core/skills/flowai-skill-plan-adr/`. Model-invocable. Triggered by user queries like "зафиксируй это решение", "запиши ADR", "архивируй выбор X над Y".
+- **Constraints:**
+  - MUST scan `documents/adr/` for the highest existing `ADR-NNNN` and increment by 1.
+  - MUST require ≥1 alternative with rejection cause; refuses to write if the decision is single-option (suggest task file instead).
+  - MUST NOT modify SDS/SRS — those are owned by other workflows.
+- **Acceptance verified by benchmarks:** `flowai-skill-plan-adr-records-decision-with-alternatives`.
+- **Status:** [ ]
+
+### FR-DOC-INDEX: Agent-Maintained Documentation Index
+
+- **Description:** `flowai-skill-plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / ADR / NFR), sorted by ID within each group. Created on first write; never scaffolded by `flowai-init`.
+- **Scenario:** Agent plans a task that introduces FR-XYZ → adds FR-XYZ section to SRS → appends `- [FR-XYZ](requirements.md#fr-xyz-...) — <summary> — [ ]` under `## FR` in `documents/index.md`. Subsequent status flip to `[x]` updates the same row.
+- **Acceptance verified by benchmarks:** `flowai-skill-plan-updates-index-on-new-fr`.
+- **Status:** [ ]
+
+### FR-DOC-RESCUE: Reflect Rescues Durable Findings into SDS / ADR
+
+- **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass with two sub-detections on the current task file:
+  1. **Facts pass** — architectural facts phrased as statements ("we picked X over Y", "the contract is Z"); for each, propose target SDS component (existing or new); on accept, write to SDS and (if new component) add `SDS-<MNEMONIC>` heading + index row.
+  2. **Decisions pass** — passages with weighted alternatives (≥2 alternatives + explicit reasoning); for each, recommend invoking `flowai-skill-plan-adr` with a pre-filled draft. Reflect itself does NOT write the ADR — that is owned by `flowai-skill-plan-adr` (clean separation).
+- **Acceptance verified by benchmarks:** `flowai-skill-reflect-rescues-decision-as-adr`.
+- **Status:** [ ]
+
+### FR-DOC-LINT: Documentation Health Category in Maintenance
+
+- **Description:** `flowai-skill-maintenance` adds a "Documentation health" category to its 8-category audit. Checks (LLM-judgement, not deterministic — that is the value of using a skill):
+  - SRS↔SDS contradictions ("SRS says X is required, SDS says X is removed").
+  - `[x]` FRs whose `**Acceptance:**` reference no longer exists or no longer passes.
+  - Orphan FRs: `FR-<ID>` in SRS with `[x]` but no `// FR-<ID>` in any source file.
+  - SDS components without ID heading (after FR-DOC-IDS lands, this should be empty for projects that adopted the principle).
+  - Broken GFM cross-links (link target file or anchor missing).
+  - `documents/index.md` rows that disagree with the artifact (stale one-liner, wrong status, missing row).
+- **Scope:** Maintenance retains its existing interactive issue-by-issue UX; the new category integrates as one of the now-9 categories.
+- **Acceptance verified by benchmarks:** `flowai-skill-maintenance-detects-doc-health-issues`.
+- **Status:** [ ]
+
 ## 4. Non-functional requirements
 
 

@@ -50,6 +50,12 @@ Always confirm when asked to apply diffs.`;
       critical: true,
     },
     {
+      id: "interconnectedness_principle_present",
+      description:
+        "Does root AGENTS.md contain a '## Interconnectedness Principle' section that names FR/ADR/SDS/NFR namespaces, declares the `// <NS>-<ID>` code-comment convention, and shows GFM-link form for doc-to-doc references? (FR-DOC-LINKS)",
+      critical: true,
+    },
+    {
       id: "dev_commands_configured",
       description:
         "Were development commands configured with real scripts (not just stub echo commands)?",
