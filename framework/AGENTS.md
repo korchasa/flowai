@@ -22,6 +22,7 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 - `engineering` — Procedural engineering knowledge (deep-research, fix-tests, etc.).
 - `deno` — Deno-specific skills.
 - `typescript` — TypeScript-specific setup skills.
+- `memex` — Memex: long-term knowledge bank for AI agents (three skills: save, ask, audit).
 
 ## Key Decisions
 

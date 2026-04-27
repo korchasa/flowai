@@ -808,6 +808,26 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Stream-json output processing with ANSI formatting and agent nesting depth tracking.
   - [x] 28 unit tests for pure functions, formatter, processNDJSONStream.
 
+### FR-MEMEX: Memex Pack — `memex`
+
+- **Description:** Long-term knowledge bank for AI agents, packaged as a separate `memex` pack. Three agent-invocable skills operating on a memex directory (`raw/` + `pages/` + `AGENTS.md` schema + `log.md`):
+  1. `flowai-skill-memex-save <path|url|text>` — atomic save: store source in `raw/` → extract entities → create / update memex pages → backlink audit → update index → append log. Scaffolds the memex on first call if no `AGENTS.md + pages/` ancestor is found.
+  2. `flowai-skill-memex-ask <question>` — read index, open relevant pages, follow one wikilink hop, synthesise answer with `[[wikilink]]` citations, file the answer to `pages/answers/`, optionally promote to `pages/`. Honest about gaps; never falls back on training-data knowledge.
+  3. `flowai-skill-memex-audit [--fix]` — deterministic structural audit (dead links, orphans, missing concept-gap sections, index drift) plus LLM-judgement layer (contradictions, stale claims, gap-question suggestions). `--fix` applies trivial auto-fixes (stub pages, missing-section append, index drift). Never auto-deletes or auto-resolves contradictions.
+- **Pack provides:**
+  - `framework/memex/skills/flowai-skill-memex-{save,ask,audit}/SKILL.md` — three agent-invocable skills.
+  - `framework/memex/scripts/flowai-memex-audit.ts` — deterministic Deno audit script (Map-based link graph, frontmatter-aware checks, no external deps).
+  - `framework/memex/hooks/flowai-memex-status/{hook.yaml,run.ts}` — `SessionStart` hook that walks up from cwd for `AGENTS.md + pages/`, injects memex status (page count, source count, last log entry, last audit date, ≥5 uncompiled-source nudge) as `additionalContext`.
+  - `framework/memex/assets/memex-AGENTS.md` — schema asset dropped into the memex root on scaffold.
+- **Inherited primitives:**
+  - From Karpathy's `llmwiki` (Memex-style persistent wiki maintained by an LLM): three operations, `raw/` / `pages/` / schema layering, `index.md` (catalog) + `log.md` (chronological, grep-friendly `## [YYYY-MM-DD] op | title`), one-source-touches-many-pages atomicity.
+  - From ekadetov-llm-wiki: active memex detection (walk up from cwd), entity types (concept / person / source-summary), backlink audit via grep, deterministic audit script, contradiction callouts.
+  - From nvk-llm-wiki: nested `AGENTS.md` as portable schema (vs `CLAUDE.md`), frontmatter-as-data, optional dual-link `[[slug|Name]] ([Name](slug.md))` when the memex is an Obsidian vault, structural-guardian nudge on session start, honest-gaps rule, ask-answer promotion two-step (file then offer promote).
+- **Out of scope (intentionally minimal vs nvk):** multi-memex hub, research / thesis / librarian / projects commands, volatility / freshness scoring, qmd dependency.
+- **Acceptance verified by benchmarks:** `flowai-skill-memex-save-new`, `flowai-skill-memex-save-update`, `flowai-skill-memex-ask-citations`, `flowai-skill-memex-ask-honest-gap`, `flowai-skill-memex-audit-clean`, `flowai-skill-memex-audit-defects`.
+- **Acceptance verified by tests:** `framework/memex/scripts/flowai-memex-audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/flowai-memex-status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
+- **Status:** [x]
+
 ## 4. Non-functional requirements
 
 

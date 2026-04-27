@@ -1,0 +1,3 @@
+name: memex
+version: "0.1.0"
+description: Memex — long-term knowledge bank for AI agents. Skills that ingest sources, answer questions with citations, and audit the bank for orphans, dead links, and contradictions.

@@ -52,7 +52,7 @@
     scripts/<name>         # utility scripts (optional)
     assets/                # shared templates (optional, e.g. AGENTS.md templates)
   ```
-- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific).
+- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific), `memex` (long-term knowledge bank for AI agents, see §3.15).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs are the full installed names (e.g., `flowai-commit/`, `flowai-skill-write-dep/`). flowai copies them as-is — no name transformation at install time.
@@ -369,6 +369,30 @@ graph TD
 - **Provider routing (OpenCode):** Vendor labels map to native providers first (`anthropic/`, `openai/`); routed providers (`openrouter/`, `opencode/`) require explicit user opt-in. Native failure → report and stop; never silently reroute.
 - **Scope boundaries:** Skill does NOT install CLIs, persist session transcripts, or grade outputs. If the user wants a verdict, the skill runs an LLM-as-judge as an additional explicit invocation rather than embedding the opinion.
 - **Behavioral requirements:** See benchmarks `flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-skill-ai-ide-runner-opencode-provider-format`, `flowai-skill-ai-ide-runner-single-cursor-read-only`, `flowai-skill-ai-ide-runner-default-native-ide-for-model`.
+
+### 3.15 Memex Pack — FR-MEMEX (`framework/memex/`)
+
+- **Purpose:** Long-term knowledge bank for AI agents. The pack provides three agent-invocable skills plus a shared schema asset, a deterministic audit script, and a `SessionStart` hook. The memex itself lives wherever the user keeps it (typical: `<project>/` with `pages/` subdir, or a dedicated `~/memex/` root); this pack ships the operations, not the data.
+- **Inspiration:** Vannevar Bush's *Memex* (As We May Think, 1945) reframed for AI agents — a personal knowledge bank that an agent can read from, write into, and audit. Andrej Karpathy's `llmwiki` post (Memex-style persistent wiki maintained by an LLM) is the direct precursor. Two predecessor reference implementations were studied — `ekadetov/llm-wiki` (single-Obsidian-vault skill, ~600 lines) and `nvk/llm-wiki` (15-command multi-IDE plugin, ~4500 lines). This pack stays close to Karpathy's three-operation core while borrowing only the demonstrably useful primitives from each.
+- **Location:** `framework/memex/` containing:
+  - `pack.yaml` — manifest.
+  - `skills/flowai-skill-memex-{save,ask,audit}/SKILL.md` — three agent-invocable skills (`flowai-skill-*` prefix; descriptions are written for model auto-invocation).
+  - `scripts/flowai-memex-audit.ts` — standalone deterministic audit (uses `jsr:` imports, no import map). Reports `DEAD_LINK | ORPHAN | MISSING_SECTION | INDEX_MISSING | INDEX_DEAD` one-per-line.
+  - `scripts/flowai-memex-audit_test.ts` — 6 unit tests covering each issue kind plus clean-pass and missing-dir.
+  - `hooks/flowai-memex-status/{hook.yaml,run.ts,run_test.ts}` — `SessionStart` hook that walks up from `cwd` for `AGENTS.md + pages/`, prints `additionalContext` JSON with page / source counts, last-log entry, last-audit date, and a save-nudge once ≥5 raw sources lack any incoming wikilink.
+  - `assets/memex-AGENTS.md` — schema asset dropped into the memex root by the `save` skill on first call (defines directory layout, four entity templates with frontmatter, naming conventions, log format, cross-reference rules).
+- **Vocabulary:** Skills are named after their action — **save** (capture a source), **ask** (answer from the memex), **audit** (health check). The data model uses `pages/` for the cross-linked graph (with `pages/answers/` for filed `ask` outputs). The `[[wikilink]]` syntax inside pages is the industry-standard cross-link notation; do not confuse it with directory naming.
+- **Memex resolution protocol** (identical across all three skills):
+  1. `--memex <path>` flag → use that path.
+  2. Walk up from `cwd`. First ancestor with both `AGENTS.md` and a `pages/` subdirectory wins.
+  3. Fallback: cwd root. For `save`, scaffold if missing; for `ask` / `audit`, stop with a "no memex found" error.
+- **Skill (vs command) classification:** The three primitives are agent-invocable skills (`flowai-skill-*` prefix under `framework/memex/skills/`), not user-only commands. Agents auto-discover them by description match — fitting the "knowledge bank for AI agents" framing where the agent decides when to save, ask, or audit.
+- **Atomicity choice:** Unlike both reference implementations (which split source-save from page-creation across `ingest` + `compile`), this pack keeps Karpathy's atomic `save` — one skill stores to `raw/`, extracts entities, creates / updates pages, runs the backlink audit, updates `pages/index.md`, and appends `log.md`. Reduces ceremony at the cost of longer single invocations; aligns with "one source typically touches 5–15 pages."
+- **Schema-as-AGENTS.md:** Schema lives in the memex root as `AGENTS.md` (cross-IDE convention) rather than `CLAUDE.md` (Claude-specific). Both Claude Code and Codex auto-load it when working inside the memex dir.
+- **Optional dual-link:** When `.obsidian/` exists in the memex root, skills switch to `[[slug|Display]] ([Display](slug.md))` so both Obsidian's graph view and naive markdown link-followers can navigate. Otherwise plain `[[slug]]`.
+- **Honest gaps:** `ask` is forbidden from falling back on training-data knowledge. If the memex does not cover the question, the answer says so explicitly, suggests sources to save, and files a `status: gap` answer record. No silent `WebFetch` / `WebSearch` while answering.
+- **Scope boundaries (intentionally minimal vs nvk/llm-wiki):** No multi-memex hub, no `research` / `thesis` / `librarian` / `projects` / `output` / `assess` / `plan` skills, no volatility / freshness scoring, no `qmd` dependency, no derived-index protocol (the on-disk frontmatter is the only source of truth; index drift surfaces as an audit issue rather than auto-rebuilding silently).
+- **Behavioral requirements:** See benchmarks `flowai-skill-memex-save-new`, `flowai-skill-memex-save-update`, `flowai-skill-memex-ask-citations`, `flowai-skill-memex-ask-honest-gap`, `flowai-skill-memex-audit-clean`, `flowai-skill-memex-audit-defects`.
 
 ## 4. Data and Storage
 

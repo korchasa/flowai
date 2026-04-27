@@ -1,0 +1,4 @@
+event: SessionStart
+matcher: "startup|resume"
+description: "Detect when cwd is inside a memex (long-term knowledge bank for AI agents) and inject status (pages, sources, recent log) as additionalContext"
+timeout: 10
