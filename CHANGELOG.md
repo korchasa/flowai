@@ -2,6 +2,96 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.12.0](https://github.com/korchasa/flowai/compare/v0.11.0...v0.12.0) (2026-04-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** prefix-based orphan cleanup for framework sync
+* **framework:** the following slash commands are renamed and now auto-invocable
+by the model (users keep manual invocation via the new slash form):
+
+- flowai-reflect                       -> flowai-skill-reflect
+- flowai-reflect-by-history            -> flowai-skill-reflect-by-history
+- flowai-review                        -> flowai-skill-review
+- flowai-plan                          -> flowai-skill-plan
+- flowai-epic                          -> flowai-skill-epic
+- flowai-investigate                   -> flowai-skill-investigate
+- flowai-maintenance                   -> flowai-skill-maintenance
+- flowai-adapt-instructions            -> flowai-skill-adapt-instructions
+- flowai-setup-agent-code-style-ts-deno   -> flowai-skill-setup-agent-code-style-ts-deno
+- flowai-setup-agent-code-style-ts-strict -> flowai-skill-setup-agent-code-style-ts-strict
+
+High-risk commands stay as user-only under commands/:
+flowai-commit, flowai-commit-beta, flowai-review-and-commit,
+flowai-review-and-commit-beta, flowai-init, flowai-update, flowai-adapt.
+
+Each converted skill gets:
+- Frontmatter description rewritten in "Use when ..." form with explicit
+  Do-NOT gates to reduce spurious auto-invocation.
+- A new no-spurious-invocation benchmark (10 in total) that asserts the
+  model does NOT trigger the skill on adjacent out-of-scope requests.
+- Co-located benchmark ids/skills renamed with the flowai-skill- infix.
+
+Cross-refs updated:
+- Composite commands (commit, commit-beta, review-and-commit*, update)
+  now reference /flowai-skill-reflect, flowai-skill-review, etc.
+- SRS (documents/requirements.md), SDS (documents/design.md),
+  documents/benchmarking.md, README.md, CLAUDE.md/AGENTS.md, core pack.yaml,
+  CLI tests (cli_test.ts, source_test.ts, sync_test.ts),
+  scripts/check-naming-prefix_test.ts, scripts/check-pack-refs_test.ts,
+  scripts/check-skill-sync.ts.
+- cli/src/bundled.json regenerated via `deno task bundle`.
+
+Verification:
+- deno task check: 246 | 386 | 134 passed | 0 failed.
+- All 7 validators green (check-skills, check-agents, check-skill-sync,
+  check-pack-refs, check-naming-prefix, check-traceability,
+  check-srs-evidence).
+- Grep-guard: 0 stale path refs, 0 stale name-string refs outside
+  historical task files.
+
+NOTE: real benchmark runs (`deno task bench -f flowai-skill-*` and
+composite regression) were not executed in this commit — those are
+LLM-judged and costly; run them separately before publish.
+
+Implements: FR-PACKS.STRUCT, FR-PACKS.SKILL-INVARIANT, FR-HOWTO.
+
+Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **cli:** prefix-based orphan cleanup for framework sync ([036d9eb](https://github.com/korchasa/flowai/commit/036d9eb4ca1df515007c7f0adb8255de7121a0fa))
+* **coverage:** add prototype for per-FR coverage report and evidence scanning ([8f1a881](https://github.com/korchasa/flowai/commit/8f1a881ba0ab6cdc73ef859c173179cc56e060e1))
+* **framework:** convert 10 user-commands to agent-invocable skills ([7b23b04](https://github.com/korchasa/flowai/commit/7b23b0418c4021bf22be0a1e79d8a24bd66c1c7c))
+
+
+### Bug Fixes
+
+* **bench:** correct PreToolUse casing + env-aware matcher for claude adapter ([387620e](https://github.com/korchasa/flowai/commit/387620e2fff0244f2b4309317ba589226b835d94))
+* **bench:** drop secondary asserts in two no-spurious-invocation scenarios ([75d8f1c](https://github.com/korchasa/flowai/commit/75d8f1c17e487afa0a3aae9c4e0f4e22c7d9fd3c))
+* **bench:** harden claude-code mock hook + tolerant content assertions ([1fb3d51](https://github.com/korchasa/flowai/commit/1fb3d51e418ef36f9a035ddba6eb98405faf5dce))
+* **bench:** implement per-scenario streaming cache writes for benchmark results ([7da0d9a](https://github.com/korchasa/flowai/commit/7da0d9a07ea660a62498e709398230ddd7a7e1e8))
+* **reflect-by-history:** correct session paths + add path override ([074aa49](https://github.com/korchasa/flowai/commit/074aa498c32ed80eb78bc88a861646f0207352f9))
+
+
+### Tests
+
+* **cli:** assert skills/ install without disable-model-invocation ([93d22b3](https://github.com/korchasa/flowai/commit/93d22b365d589d1a512b547f53d25f452ac1d13b))
+
+
+### Chores
+
+* **bench:** cache 38 newly-passing scenarios across all packs ([9adb125](https://github.com/korchasa/flowai/commit/9adb125d0739c24dfb41c87580d638d1b6d06421))
+* **bench:** cache results from migration verification suite ([728fa29](https://github.com/korchasa/flowai/commit/728fa29c362ce17498d70aafca950adfc9ffabee))
+
+
+### Agent Changes
+
+* **engineering:** add flowai-skill-ai-ide-runner — run prompts across IDE CLIs ([afe6e00](https://github.com/korchasa/flowai/commit/afe6e00b13820fda03eed92c0b49431bb4a3cd1d))
+* **engineering:** add flowai-skill-jit-review — Catching JiTTests for diffs ([7e3d413](https://github.com/korchasa/flowai/commit/7e3d4137d3bd68b6f0862c5e69c12bd6bc1154e0))
+* **framework:** add FR acceptance gate across plan→review→commit cycle ([b2476ca](https://github.com/korchasa/flowai/commit/b2476caf919dfebacce55ae5f6d65ae0660ba15d))
+
 ## [0.11.0](https://github.com/korchasa/flowai/compare/v0.10.0...v0.11.0) (2026-04-19)
 
 
