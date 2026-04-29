@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "e96eaaa92424423ea93439d27bce1f9b7c56c2bd29e3cd50f78c5d6f416ffb11",
+  "key": "d100aa281465163aed4401eb4f17aa5db2e8d6eee45868ba58aa8ae55cfd0efe",
   "scenarioId": "flowai-init-greenfield",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.208Z",
+  "recordedAt": "2026-04-29T07:48:45.821Z",
   "result": {
     "success": true,
-    "score": 100,
+    "score": 71.42857142857143,
     "errorsCount": 0,
-    "warningsCount": 0,
-    "durationMs": 372827.6700419998,
+    "warningsCount": 2,
+    "durationMs": 216856.035458,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,27 +18,31 @@
     "checklistResults": {
       "interview_started": {
         "pass": true,
-        "reason": "The agent explicitly started a Greenfield interview, presenting 11 structured questions covering Project Name, Vision Statement, Target Audience, Problem Statement, Solution & Differentiators, Risks …"
+        "reason": "The agent explicitly identified the project as Greenfield and then presented a structured interview with 11 questions covering project name, vision, target audience, problem, solution, risks, tech st…"
       },
       "agents_md_created": {
         "pass": true,
-        "reason": "After the interview, the agent wrote a fully populated AGENTS.md (via Write tool) with all project-specific content filled in: MyProject name, vision, target audience, problem statement, tech stack (…"
+        "reason": "After the interview, the agent used Edit tool to update AGENTS.md with the user-provided details: project name 'MyProject', vision 'World domination', audience 'Everyone', problem 'Boredom', solution…"
       },
       "doc_rules_present": {
         "pass": true,
-        "reason": "The generated AGENTS.md content (visible in both the Write tool call and the file diff) contains a '## Documentation Rules' section with content covering SRS/SDS formats, traceability, status markers…"
+        "reason": "The AGENTS.md content in the file diffs clearly contains a '## Documentation Rules' section with subsections on SRS Format, SDS Format, Tasks, and Compressed Style Rules."
+      },
+      "interconnectedness_principle_present": {
+        "pass": true,
+        "reason": "The AGENTS.md content contains a '## Interconnectedness Principle' section that explicitly declares cross-references use standard GFM markdown links in the form '[descriptive text](relative/path.md#a…"
       },
       "dev_commands_configured": {
-        "pass": true,
-        "reason": "The agent created a real deno.json with four tasks (check, test, dev, prod) and a substantive scripts/check.ts that runs fmt + lint + type-check + tests in parallel using Deno.Command, buffers output…"
+        "pass": false,
+        "reason": "The user explicitly said 'No Deno tooling needed, no devcontainer.' The agent acknowledged this and skipped the development commands configuration step entirely, marking it 'completed' in the todo li…"
       },
       "no_hallucinations": {
         "pass": true,
-        "reason": "AGENTS.md documents exactly what the user specified: Deno (runtime + tooling), TypeScript, and Monolith architecture. No invented frameworks, libraries, or tools were added. The devcontainer configur…"
+        "reason": "The AGENTS.md Project tooling Stack lists only 'Deno' and 'TypeScript' (exactly what the user provided). The Architecture section says 'Monolith — single deployable unit' (exactly what the user said)…"
       },
       "temp_files_cleaned": {
-        "pass": true,
-        "reason": "No temporary files such as project_info.json or interview_data.json were created at any point during the session. The git status shows only legitimate untracked files (.devcontainer/, deno.json, deno…"
+        "pass": false,
+        "reason": "There is no explicit evidence in the agent logs or file diffs that temporary files such as project_info.json or interview_data.json were created and then cleaned up. The agent ran generate_agents.ts …"
       }
     }
   }

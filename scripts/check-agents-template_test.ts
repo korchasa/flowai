@@ -84,3 +84,27 @@ Deno.test("AGENTS.template.md — does NOT mandate `// <NS>-<ID>` code-comment m
     "Template still mandates `// <NS>-<ID>` code-comment marker as the canonical code-to-doc reference",
   );
 });
+
+Deno.test("AGENTS.template.md — declares forward-motion rule with named exception", async () => {
+  const content = await readTemplate();
+  // The rule MUST tell the agent that once a plan is authorized, it should
+  // execute through phases without re-confirming each one. AND it MUST
+  // name the exception class (genuinely irreversible side-effects).
+  // We anchor on the rule's trigger-word and require an exception-word
+  // within ±300 characters of it (same bullet / same paragraph).
+  const ruleAnchor =
+    /(authoriz(?:e|ed|ation)|forward motion|re-confirm|confirmation discipline|already authorized|do not re-ask|do not ask again)/i;
+  const match = content.match(ruleAnchor);
+  assert(
+    match !== null,
+    "Template missing forward-motion / no-re-confirmation rule",
+  );
+  const idx = match!.index!;
+  const window = content.slice(Math.max(0, idx - 300), idx + 300);
+  const exceptionPattern =
+    /(irreversible|force\s+push|prod\s+deploy|drop\s+(?:table|database)|external\s+message|external\s+side-effect|side[- ]effect)/i;
+  assert(
+    exceptionPattern.test(window),
+    "Template's forward-motion rule does not name the irreversible-action exception in the same vicinity",
+  );
+});

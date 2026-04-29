@@ -119,6 +119,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `agents-rules-functionality-preservation` — run tests before/after refactoring
   - [x] `agents-rules-evidence-claims` — read code before fixing, cite evidence
   - [x] `agents-rules-traceability-placement` — code evidence in code (`// FR-<ID>`), not in SRS; non-code evidence in SRS
+  - [x] `agents-rules-forward-motion` — once user authorizes a multi-step plan, agent executes without re-confirming each step
 - **Open (not yet implemented):**
   - [ ] `agents-rules-variant-analysis` — propose variants with pros/cons before coding
   - [ ] `agents-rules-proactive-resolution` — find answers in codebase, don't ask user
@@ -553,6 +554,15 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] `scripts/check-skills.ts` validates `framework/<pack>/{skills,commands}/**/SKILL.md` bodies against forbidden patterns: `gpt-5(?:\.\d+)?(?:-\w+)?`, `claude-opus-\d(?:-\d+)?`, `claude-sonnet-\d(?:-\d+)?`. Violations fail the check with criterion tag `FR-UNIVERSAL.IDE-NEUTRAL`.
   - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
   - [x] Benchmarks directory (`framework/*/benchmarks/`) and `.claude/skills/` dev resources are exempt (not distributed).
+
+#### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
+
+- **Desc:** Every framework skill that prompts the user with questions MUST use a unified format. Questions are presented as a numbered list (`1.`, `2.`, …); option choices inside a question are also numbered (`1.`, `2.`, …). For **multi-select** questions — where the user may pick several items from the list at once (multiple selection) — the option list MUST end with two extra service options on top of the actual choices: `all` (apply every listed option) and `agent's choice` (the agent picks for the user, announces the selection with a brief justification, and continues without waiting for confirmation). Single-choice questions do not get the service options. Scope is universal: every question-asking skill in the framework (e.g. `flowai-skill-conduct-qa-session`, `flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) is responsible for compliance.
+- **Acceptance:**
+  - [ ] `flowai-skill-conduct-qa-session/SKILL.md` documents the unified format (numbered questions, numbered options, multi-select service options `all` + `agent's choice` with announce-and-continue semantics) as canonical.
+  - [ ] Benchmark `flowai-skill-conduct-qa-session-multi-select-format` verifies, on a multi-select prompt: numbered options, presence of `all` and `agent's choice` service options, and that on `agent's choice` the agent emits a one-line justification and proceeds without awaiting confirmation.
+  - [ ] Question-asking skills (`flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) reference `FR-UNIVERSAL.QA-FORMAT` in their SKILL.md and emit the format in their existing benchmark traces (judged via checklist items added to each skill's basic scenario).
+- **Status:** [ ]
 
 **Script Requirements**
 

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "378dda72460394099fc60944b9be7a7df44f74987def0fc073adb6a5e0e1b39b",
+  "scenarioId": "agents-rules-forward-motion",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-29T08:03:19.462Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 20446.270500000002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "step1_created": {
+        "pass": true,
+        "reason": "The agent used the Write tool to create step1.txt with content 'done\\n'. The git status confirms step1.txt exists as an untracked file, and the generated files section shows its content is 'done'."
+      },
+      "step2_created": {
+        "pass": true,
+        "reason": "The agent used the Write tool to create step2.txt with content 'done\\n'. The git status confirms step2.txt exists as an untracked file, and the generated files section shows its content is 'done'."
+      },
+      "step3_created": {
+        "pass": true,
+        "reason": "The agent used the Write tool to create step3.txt with content 'done\\n'. The git status confirms step3.txt exists as an untracked file, and the generated files section shows its content is 'done'."
+      },
+      "no_midflow_confirmation": {
+        "pass": true,
+        "reason": "The agent logs show three consecutive Write tool calls (step1.txt, step2.txt, step3.txt) followed by a single final summary statement. No confirmation questions ('should I proceed?', 'shall I continu…"
+      },
+      "single_authorization_respected": {
+        "pass": true,
+        "reason": "The agent treated the user's initial message as full authorization for all three operations. It immediately executed all three file writes in sequence without pausing to seek additional authorization…"
+      }
+    }
+  }
+}
