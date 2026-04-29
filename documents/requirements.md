@@ -848,10 +848,10 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map
 
-- **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// implements [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` to GFM links to SDS sections (using natural-text slugs, no embedded IDs in headings).
-- **Scenario:** `git grep "// FR-"` returns zero hits in source files (excluding `documents/` itself and `*_test.ts` fixture inputs). `deno task check` validates that every GFM link in a code comment resolves to an existing heading. `Documentation Map` rows like `cli/src/sync.ts → [Distribution](documents/design.md#distribution)` resolve correctly.
-- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (rewritten for GFM-link validation: file resolution, anchor resolution, broken-link detection) + `scripts/check-fr-coverage_test.ts` (rewritten to count GFM links to FR headings instead of `// FR-<ID>` comments). `! git grep -l "^[[:space:]]*\(//\|#\)[[:space:]]\+FR-" -- ':!documents/' ':!*_test.ts'` returns nothing (zero legacy comments outside docs and test fixtures).
-- **Status:** [ ]
+- **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` (= root `AGENTS.md` symlink target) to GFM links into requirements.md / design.md / README.md.
+- **Scenario:** `git grep "// FR-"` returns zero hits in code outside `documents/` and benchmark scenarios. `scripts/check-traceability.ts` reports `All N comment doc-link(s) resolve. 0 legacy "// FR-<ID>" shortcuts.` for the current commit.
+- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (18 tests covering `computeAutoSlug`, `extractHeadingSlugs`, `extractCommentLinks`, `detectLegacyFrComments`, task-frontmatter parsing, and `validateTaskRefs`).
+- **Status:** [x]
 
 ### FR-DOC-ADR: Architecture Decision Record Skill — `flowai-skill-plan-adr`
 
