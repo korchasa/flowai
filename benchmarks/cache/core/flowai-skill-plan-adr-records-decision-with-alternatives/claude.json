@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "key": "7bb506ced4a5c4d77e862bb2f9b38510ad87eec3c041c94fb5444de8397421f0",
+  "scenarioId": "flowai-skill-plan-adr-records-decision-with-alternatives",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-29T22:42:09.345Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 94981.904125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "adr_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/adr/2026-04-30-use-sqlite-for-local-cache.md', which matches the required pattern 'documents/adr/<YYYY-MM-DD>-<slug>.md'."
+      },
+      "frontmatter_id_assigned": {
+        "pass": true,
+        "reason": "The ADR frontmatter contains 'id: ADR-0001', which matches the required 'id: ADR-NNNN' format with a 4-digit zero-padded number."
+      },
+      "frontmatter_status": {
+        "pass": true,
+        "reason": "The ADR frontmatter contains 'status: accepted', which is one of the allowed values (proposed | accepted | rejected | superseded | deprecated)."
+      },
+      "four_madr_sections_in_order": {
+        "pass": true,
+        "reason": "The ADR body contains exactly four top-level sections in the correct order: '## Context', '## Alternatives', '## Decision', '## Consequences'."
+      },
+      "chosen_alternative_marked": {
+        "pass": true,
+        "reason": "In the '## Alternatives' section, SQLite is explicitly marked with '**SQLite (CHOSEN)**', clearly identifying it as the selected option."
+      },
+      "rejection_cause_present": {
+        "pass": true,
+        "reason": "PostgreSQL (the non-chosen alternative) carries an explicit rejection rationale: '- Rejected because: running a dedicated server is unnecessary operational overhead for a single-process local cache.'"
+      },
+      "no_srs_modification": {
+        "pass": true,
+        "reason": "According to the git diff and generated files list, no 'documents/requirements.md' file was created or modified. Only the ADR file was written."
+      },
+      "no_sds_modification": {
+        "pass": true,
+        "reason": "According to the git diff and generated files list, no 'documents/design.md' file was created or modified. Only the ADR file was written."
+      },
+      "no_code_changes": {
+        "pass": true,
+        "reason": "The agent only created the ADR markdown file and used TodoWrite for task tracking. No source code files were modified, as confirmed by the git diff showing only the new 'documents/' directory as untr…"
+      }
+    }
+  }
+}
