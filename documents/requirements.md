@@ -862,7 +862,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - MUST require ≥1 alternative with rejection cause; refuses to write if the decision is single-option (suggest task file instead).
   - MUST NOT modify SDS/SRS — those are owned by other workflows.
 - **Acceptance verified by benchmarks:** `flowai-skill-plan-adr-records-decision-with-alternatives`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DOC-INDEX: Agent-Maintained Documentation Index
 
