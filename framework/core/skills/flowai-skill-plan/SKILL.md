@@ -21,7 +21,10 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 ## Rules & Constraints
 
 <rules>
-1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation. The ONLY file you may write is a single task file in `./documents/tasks/`. Name: `<YYYY-MM-DD>-<slug>.md` where slug is derived from the task (kebab-case, ≤40 chars). Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`, `2026-03-24-refactor-db-layer.md`. If the directory does not exist, CREATE it. If you catch yourself about to modify any file outside `documents/tasks/` — STOP immediately and return to planning.
+1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation, EXCEPT the two doc-system navigation artifacts listed below. If the task directory does not exist, CREATE it. If you catch yourself about to modify any file outside the allow-list — STOP immediately and return to planning.
+   - **Allow-list**:
+     - (a) A single task file in `./documents/tasks/<YYYY-MM-DD>-<slug>.md` where slug is derived from the task (kebab-case, ≤40 chars). Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`, `2026-03-24-refactor-db-layer.md`.
+     - (b) `./documents/index.md` — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 3. **Chat-First Reasoning**: Implementation variants MUST be presented in CHAT, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool. This is a mandatory rule!
@@ -63,6 +66,17 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - If any DoD item lacks the tuple, edit the task file to add it. Prefer reusing an existing FR (for bug fixes and small refactors) over coining a new one. Only introduce a new FR for user-visible or contract-level changes.
    - If new FRs appear in `implements:` that are absent from `documents/requirements.md`, the task MUST contain an explicit DoD entry "add FR-XXX section to SRS with `**Acceptance:**` field filled".
    - Do NOT create the test files themselves — that is the develop phase's RED step. This skill only FIXES the test location contract.
+5b. **Update Documentation Index (FR-DOC-INDEX)** — execute immediately, no permission needed. This is a write step, not a planning step.
+   - For every FR-ID in the task's `implements:` frontmatter, register a row in `./documents/index.md`.
+   - If `documents/index.md` does not exist, create it with a `## FR` heading (additional sections like `## SDS`, `## ADR`, `## NFR` may be added by other skills; do not pre-scaffold them here).
+   - Within `## FR`, ensure exactly one row per FR-ID. Row format:
+     `- [<FR-ID>](requirements.md#<anchor>) — <one-line summary> — <status>`
+     - `<anchor>` — GFM auto-slug of the SRS heading `### <FR-ID>: <title>` (lowercase, non-alphanumeric → `-`, collapse runs, strip leading/trailing `-`). If the SRS section does not yet exist, use the placeholder `<fr-id-lowercased>-tbd` (e.g. `fr-pause-tbd`); develop/commit will fix the anchor when the SRS section is added.
+     - `<one-line summary>` — pull from the SRS `**Description:**` first sentence if the section exists, otherwise reuse the task title (or a short paraphrase ≤80 chars).
+     - `<status>` — mirror the SRS `**Status:**` value if present, else `[ ]`.
+   - Sort rows alphabetically by FR-ID inside `## FR` before writing.
+   - Idempotent: if a row already exists for the FR-ID, only update its summary or status if the existing one is now stale; do NOT duplicate.
+   - This step is REQUIRED — it is part of execution, not the plan's Solution section. Skipping it leaves the index out of date and breaks the project's Interconnectedness Principle.
 6. **Critique** — execute immediately, no permission needed
    - Critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat as a numbered list.
 7. **Triage & Auto-Apply Refinements** — execute immediately, no permission needed
@@ -83,6 +97,7 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md.
 ## Verification
 
 <verification>
-- [ ] ONLY one file in `./documents/tasks/` modified.
+- [ ] Files modified are limited to `./documents/tasks/<date>-<slug>.md` and (when the task introduces or touches FRs) `./documents/index.md`. No other files touched.
+- [ ] For every FR-ID in `implements:`, `documents/index.md` contains a corresponding row under `## FR` with a GFM-link to `requirements.md#<anchor>`.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>

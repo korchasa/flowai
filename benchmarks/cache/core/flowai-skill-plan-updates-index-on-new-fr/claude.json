@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "key": "7fae6943f690af6268081860cfa1a05a851490e5bcf085b9dac8b11dafa552f0",
+  "scenarioId": "flowai-skill-plan-updates-index-on-new-fr",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-29T22:59:36.405Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 287237.580084,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/tasks/2026-04-30-add-flowai-pause-command.md' — confirmed in both the Write tool call in the logs and in the GENERATED FILES section of the diff."
+      },
+      "task_implements_fr_pause": {
+        "pass": true,
+        "reason": "The YAML frontmatter of the created task file explicitly contains:\n---\nimplements:\n  - FR-PAUSE\n---\nThis is confirmed in the file content shown in the diff."
+      },
+      "index_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/index.md' via a Write tool call. The file content is confirmed in the GENERATED FILES section of the diff."
+      },
+      "index_has_fr_section": {
+        "pass": true,
+        "reason": "The content of 'documents/index.md' begins with '## FR' as a top-level section heading, directly followed by the FR-PAUSE row."
+      },
+      "index_row_for_fr_pause": {
+        "pass": true,
+        "reason": "The FR section contains the row: '- [FR-PAUSE](requirements.md#fr-pause-tbd) — Halt agent execution for a specified duration via /flowai-pause command — [ ]'. It starts with '- ', contains the litera…"
+      },
+      "index_row_uses_gfm_link": {
+        "pass": true,
+        "reason": "The FR-PAUSE row uses a standard GFM link: '[FR-PAUSE](requirements.md#fr-pause-tbd)', which follows the form '[<text>](<path>#<anchor>)' and points into 'requirements.md' — consistent with the proje…"
+      },
+      "no_srs_modification": {
+        "pass": true,
+        "reason": "The agent never wrote to 'documents/requirements.md'. Only 'documents/tasks/2026-04-30-add-flowai-pause-command.md' and 'documents/index.md' appear in the GENERATED FILES section. The git status conf…"
+      },
+      "no_code_changes": {
+        "pass": true,
+        "reason": "No source code files were modified. The git status shows only 'documents/' as untracked. The git diff (init..HEAD) shows only the initial commit creating framework files, with no subsequent code chan…"
+      },
+      "no_switch_mode": {
+        "pass": true,
+        "reason": "The agent logs contain no mention of 'SwitchMode' anywhere in the execution trace."
+      }
+    }
+  }
+}
