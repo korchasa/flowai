@@ -52,7 +52,7 @@ Always confirm when asked to apply diffs.`;
     {
       id: "interconnectedness_principle_present",
       description:
-        "Does root AGENTS.md contain a '## Interconnectedness Principle' section that names FR/ADR/SDS/NFR namespaces, declares the `// <NS>-<ID>` code-comment convention, and shows GFM-link form for doc-to-doc references? (FR-DOC-LINKS)",
+        "Does root AGENTS.md contain a '## Interconnectedness Principle' section declaring that ALL cross-references — doc-to-doc AND code-to-doc — use standard GFM markdown links of the form `[text](path.md#anchor)`, and explicitly rejecting custom anchor / wikilink / ID-only / bare-ID-comment forms? (FR-DOC-LINKS)",
       critical: true,
     },
     {

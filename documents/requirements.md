@@ -830,17 +830,17 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-DOC-LINKS: Interconnectedness Principle for Documentation
 
-- **Description:** `framework/core/assets/AGENTS.template.md` declares an abstract rule that any linkable doc artifact (FR / SDS / ADR / NFR) carries a stable ID, source code references it via line-comment marker `// <NS>-<ID>` (or `# <NS>-<ID>`), doc-to-doc references use standard GFM markdown links with relative paths and heading anchors, and headings embed the ID so auto-generated GFM slugs survive heading rewrites.
-- **Scenario:** A new flowai project initialized via `flowai-init` receives the principle as part of its AGENTS.md; agents consuming that AGENTS.md know the namespace table, ID-comment convention, and GFM-link convention without consulting external sources.
-- **Out of scope:** Enforcement of the principle on existing docs (covered by FR-DOC-IDS for SDS migration, FR-DOC-LINT for periodic drift checks).
-- **Acceptance verified by tests:** `scripts/check-agents-template_test.ts` (5 tests covering principle section, namespace table, ID-comment convention, GFM-link convention, heading-includes-ID rule).
+- **Description:** `framework/core/assets/AGENTS.template.md` declares that ALL cross-references between project knowledge — doc-to-doc AND code-to-doc — use **standard GFM markdown links** of the form `[descriptive text](relative/path.md#auto-slug)`. Custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), wikilinks (`[[X]]`), ID-only shortcuts (`[FR-XXX]`), and bare ID-string code comments (`// FR-XXX`) are explicitly rejected. The legacy `// FR-<ID>` shortcut is recognized as deprecated for the migration window only.
+- **Scenario:** A new flowai project initialized via `flowai-init` receives the principle as part of its AGENTS.md. Agents consuming that AGENTS.md write all cross-references — in code comments, in SDS, in README, in ADR — as `[text](path.md#anchor)` GFM links without consulting external sources.
+- **Out of scope:** Migration of the existing 106 `// FR-XXX` comments in this project's source tree (covered by FR-DOC-IDS) and periodic drift checks (FR-DOC-LINT).
+- **Acceptance verified by tests:** `scripts/check-agents-template_test.ts` (6 tests: principle section present, GFM-link example present, rule applies to both docs and code, ID-only syntax explicitly rejected, namespace table absent, `// <NS>-<ID>` not mandated as canonical marker).
 - **Status:** [x]
 
-### FR-DOC-IDS: Stable IDs for SDS Components
+### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map
 
-- **Description:** Every component in `documents/design.md` §3 carries a mnemonic ID `SDS-<MNEMONIC>` embedded in its heading (`### SDS-PACKS — Product Packs`). `Documentation Map` in root `CLAUDE.md` references components via GFM links to ID-anchors instead of `§3.X` numbers. `scripts/check-traceability.ts` is generalized to recognize any `<NS>-<ID>` shape in code comments while keeping FR-validation behavior intact.
-- **Scenario:** A code file uses `// SDS-PACKS` next to logic implementing the Pack subsystem; `git grep "// SDS-PACKS"` finds all such references; `Documentation Map` link `[Product Packs](documents/design.md#sds-packs--product-packs)` resolves to the SDS heading.
-- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (existing tests for FR remain green; new tests cover `<NS>-<ID>` recognition for SDS / ADR / NFR namespaces). `grep -c '^### SDS-' documents/design.md` ≥ component count in §3.
+- **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// implements [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` to GFM links to SDS sections (using natural-text slugs, no embedded IDs in headings).
+- **Scenario:** `git grep "// FR-"` returns zero hits in source files (excluding `documents/` itself and `*_test.ts` fixture inputs). `deno task check` validates that every GFM link in a code comment resolves to an existing heading. `Documentation Map` rows like `cli/src/sync.ts → [Distribution](documents/design.md#distribution)` resolve correctly.
+- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (rewritten for GFM-link validation: file resolution, anchor resolution, broken-link detection) + `scripts/check-fr-coverage_test.ts` (rewritten to count GFM links to FR headings instead of `// FR-<ID>` comments). `! git grep -l "^[[:space:]]*\(//\|#\)[[:space:]]\+FR-" -- ':!documents/' ':!*_test.ts'` returns nothing (zero legacy comments outside docs and test fixtures).
 - **Status:** [ ]
 
 ### FR-DOC-ADR: Architecture Decision Record Skill — `flowai-skill-plan-adr`

@@ -42,22 +42,17 @@
 
 ## Interconnectedness Principle
 
-Any documentation artifact that another file might reference (a requirement, a design component, an architectural decision) MUST carry a stable identifier. Cross-references then survive renames, re-orderings, and re-numbering.
+Cross-references between any two pieces of project knowledge — doc-to-doc, **and code-to-doc** — use **standard GFM markdown links**. One mechanism, no special syntaxes, works in every tool that understands markdown (renderers, IDEs, link checkers, agents).
 
-- **Namespace table**:
-  - `FR-<MNEMONIC>` — Functional Requirement (in SRS).
-  - `NFR-<NUMBER>` — Non-Functional Requirement (in SRS).
-  - `SDS-<MNEMONIC>` — Design component (in SDS §3).
-  - `ADR-<NNNN>` — Architecture Decision Record (in `documents/adr/`).
-  - Mnemonic IDs read in code (e.g., `// SDS-PACKS`); numeric IDs scale for bulk-numbered artifacts.
+- **Canonical form** — `[descriptive text](relative/path.md#auto-slug)`, where `auto-slug` is the GFM-normalized form of the target heading. Example: `[подробности](documents/design.md#модель-rag)` referencing the heading `## Модель RAG`.
 
-- **Headings include the ID**: every artifact starts with a heading whose text contains the ID, e.g. `### SDS-PACKS — Product Packs`. The auto-generated GFM slug then carries the ID, so external links survive heading-text rewrites.
+- **Applies in code too** — when source code needs to reference documentation (an FR in SRS, a component in SDS, an ADR), the comment carries a GFM link, not a slug-style identifier. Example: `// implements [Command Execution](../documents/requirements.md#fr-cmd-exec-command-execution)`. The legacy `// FR-<ID>` shortcut is deprecated; new code uses GFM links.
 
-- **Code-to-doc links**: source code references doc artifacts via line-comment markers — `// <NS>-<ID>` (TS/JS/Go/Rust) or `# <NS>-<ID>` (YAML/shell/Python). Reverse lookup is `git grep "// <NS>-<ID>"`. The historical `// FR-<ID>` form is one instance of this rule.
+- **Rejected forms** — do NOT invent ID-only link syntax like `[FR-CMD-EXEC]`, `[[wikilink]]`, custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), or bare ID strings as cross-reference markers (`// FR-CMD-EXEC`). Standard markdown renderers cannot resolve any of these consistently.
 
-- **Doc-to-doc links**: cross-references between markdown documents use **standard GFM markdown links** with relative paths and heading anchors, e.g. `[подробности](design.md#sds-packs--product-packs)`. Do NOT invent ID-only link syntax like `[SDS-PACKS]` — agents and standard markdown renderers cannot resolve it.
+- **Heading IDs are conventions, not slugs** — section headings may carry mnemonic prefixes for readability (e.g., `### FR-CMD-EXEC: Command Execution`, `### ADR-0001: Use Deno`), but the link target is always the **GFM auto-slug** of the heading text, never a separate ID-derived identifier. If a heading is rewritten, links must be updated — this is the cost of standard tooling, not a bug.
 
-- **Drift discipline**: removing or renaming an artifact obliges updating every referencing place — checked semantically by `flowai-skill-maintenance` (Documentation health category) and mechanically by `scripts/check-traceability.ts` where the project ships such a script.
+- **Drift discipline** — removing or renaming a heading obliges updating every link to it. Checked mechanically by `scripts/check-traceability.ts` (link-resolution: file exists, anchor exists) where the project ships such a script, and semantically by `flowai-skill-maintenance` (Documentation health category).
 
 ## Documentation Map
 
@@ -81,7 +76,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Workflow for changes: new or updated requirement → update SRS → update SDS → implement. Skipping steps leads to docs-code drift.
 - Status markers: `[x]` = implemented, `[ ]` = pending.
 - **Traceability**: Every `[x]` criterion requires evidence. Placement depends on evidence type:
-  1. **Code-evidenced**: Source files contain `// <NS>-<ID>` (TS/JS/Go/Rust) or `# <NS>-<ID>` (YAML/shell/Python) comments near implementing logic. The historical `// FR-<ID>` form is one instance of this rule. No paths in SRS — the code comment IS the evidence.
+  1. **Code-evidenced**: Source files contain a GFM link (in a `//` or `#` comment) pointing to the relevant SRS/SDS heading near the implementing logic — e.g., `// implements [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`. The link IS the evidence; no paths are stored in SRS. The legacy `// FR-<ID>` shortcut is deprecated but still recognized during the migration period.
   2. **Non-code evidence** (benchmarks, URLs, config files without comment support, file/dir existence): Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a test path + test name, a benchmark scenario ID, or a verification command. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Exception: when automation cost exceeds defect cost (pure visual design, external vendor dependency), mark `**Acceptance: manual — <reviewer> — <checklist path>**`. Manual is the exception, not the default.
