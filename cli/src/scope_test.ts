@@ -29,7 +29,7 @@ Deno.test("resolveConfigPath - project mode returns cwd/.flowai.yaml", () => {
   );
 });
 
-// FR-DIST.CONFIG — global mode
+// [FR-DIST.CONFIG](../../documents/requirements.md#fr-dist.config-config-generation) — global mode
 Deno.test("resolveConfigPath global mode returns home/.flowai.yaml", () => {
   assertEquals(
     resolveConfigPath("global", "/project", "/home/user"),
@@ -71,7 +71,7 @@ Deno.test("resolveIdeBaseDir - project mode ignores purpose", () => {
 
 // --- resolveIdeBaseDir: global mode ---
 
-// FR-DIST.GLOBAL — IDE base dirs per IDE
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — IDE base dirs per IDE
 Deno.test("resolveIDEs global mode returns correct paths per IDE", () => {
   const home = "/home/user";
   assertEquals(

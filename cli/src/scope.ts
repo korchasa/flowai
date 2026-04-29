@@ -1,4 +1,4 @@
-// FR-DIST.GLOBAL — sync scope abstraction (project vs global mode).
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — sync scope abstraction (project vs global mode).
 // Threads through config loading, IDE path resolution, and hook writer so
 // every scope-dependent path lives in one place.
 import { type FsAdapter, join } from "./adapters/fs.ts";

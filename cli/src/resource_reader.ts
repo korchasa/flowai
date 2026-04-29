@@ -1,5 +1,5 @@
-// FR-DIST.SYNC — resource file readers
-// FR-PACKS.SCOPE — scope-aware primitive filter
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — resource file readers
+// [FR-PACKS.SCOPE](../../documents/requirements.md#fr-packs.scope-scope-frontmatter-field) — scope-aware primitive filter
 /** Read skill/command/agent/hook/script/asset files from framework source */
 import { extractPackAssetPaths, type FrameworkSource } from "./source.ts";
 import type { SyncScope } from "./scope.ts";
@@ -335,7 +335,7 @@ export async function readPackScriptFiles(
 
 /** Read asset files from pack structure framework/<pack>/assets/.
  * Currently only core pack has shared assets (AGENTS.md templates). */
-// FR-DIST.SYNC
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai)
 export async function readPackAssetFiles(
   allPaths: string[],
   source: FrameworkSource,

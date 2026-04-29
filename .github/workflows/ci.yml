@@ -1,4 +1,4 @@
-# FR-CICD, FR-CICD.PIN, FR-CICD.PRIV, FR-CICD.INTEGRITY, FR-CICD.JOBS
+# [FR-CICD](../../documents/requirements.md#fr-cicd-cicd-pipeline-security), FR-CICD.PIN, FR-CICD.PRIV, FR-CICD.INTEGRITY, FR-CICD.JOBS
 name: CI/CD
 
 on:

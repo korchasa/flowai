@@ -16,7 +16,7 @@ Deno.test("loadConfig - returns null when no .flowai.yaml", async () => {
   assertEquals(config, null);
 });
 
-// FR-DIST.CODEX-HOOKS — experimental.codexHooks parse/write
+// [FR-DIST.CODEX-HOOKS](../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — experimental.codexHooks parse/write
 Deno.test("parseConfigData - parses experimental.codexHooks: true", () => {
   const config = parseConfigData({
     version: "1.1",

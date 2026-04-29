@@ -574,7 +574,7 @@ Deno.test("sync - codex target: writes sidecar TOML + [agents.<name>] block", as
   const entry = agents["flowai-console-expert"] as Record<string, unknown>;
   assertEquals(entry.config_file, "./agents/flowai-console-expert.toml");
 
-  // FR-DIST.CLEAN-PREFIX — legacy manifest file must NOT be created by the
+  // [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — legacy manifest file must NOT be created by the
   // new prefix-based flow.
   assertEquals(
     await fs.exists("/project/.codex/flowai-agents.json"),
@@ -667,7 +667,7 @@ config_file = "./agents/my-custom.toml"
   assertEquals(parsed.model, "gpt-5.4", "other top-level keys preserved");
 });
 
-// FR-DIST.CODEX-HOOKS — Experimental gate
+// [FR-DIST.CODEX-HOOKS](../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — Experimental gate
 Deno.test("sync - codex target: skips hook install when experimental.codexHooks is absent", async () => {
   const fs = new InMemoryFsAdapter();
   fs.dirs.add("/project");

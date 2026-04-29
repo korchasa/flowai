@@ -1,10 +1,10 @@
-// FR-DIST.SYNC — sync orchestrator
-// FR-DIST.FILTER — selective sync via include/exclude
-// FR-DIST.GLOBAL — scope-aware path resolution, asset split, hook merge.
-// FR-PACKS — pack-based resource resolution
-// FR-PACKS.SCOPE — per-primitive scope filter (project-only / global-only).
-// FR-HOOK-RESOURCES.INSTALL — hook config generation
-// FR-SCRIPTS — script copy to IDE dirs
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — sync orchestrator
+// [FR-DIST.FILTER](../../documents/requirements.md#fr-dist.filter-selective-sync) — selective sync via include/exclude
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — scope-aware path resolution, asset split, hook merge.
+// [FR-PACKS](../../documents/requirements.md#fr-packs-pack-system-modular-resource-installation) — pack-based resource resolution
+// [FR-PACKS.SCOPE](../../documents/requirements.md#fr-packs.scope-scope-frontmatter-field) — per-primitive scope filter (project-only / global-only).
+// [FR-HOOK-RESOURCES.INSTALL](../../documents/requirements.md#fr-hook-resources.install-ide-specific-installation) — hook config generation
+// [FR-SCRIPTS](../../documents/requirements.md#fr-scripts-script-resources) — script copy to IDE dirs
 /** Sync orchestrator — resolves IDEs, reads bundled framework, computes plan, writes files */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { migrateV1ToV1_1, saveConfig } from "./config.ts";
@@ -270,7 +270,7 @@ export async function sync(
   const log = options.onProgress ?? console.log;
   const scope: SyncScope = options.scope ?? "project";
   const home = options.home ?? (scope === "global" ? resolveHomeDir() : "");
-  // FR-DIST.SYNC — dry-run wraps the adapter so no write site below needs
+  // [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — dry-run wraps the adapter so no write site below needs
   // to know about dry-run. Reads pass through.
   const fs: FsAdapter = options.dryRun ? wrapDryRun(realFs) : realFs;
   const result: SyncResult = {
@@ -320,7 +320,7 @@ export async function sync(
     const packDefs = usePacks
       ? await readPackDefinitions(allPaths, source)
       : [];
-    // FR-DIST.GLOBAL — scaffolds + artifact diffs are project-only concepts.
+    // [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — scaffolds + artifact diffs are project-only concepts.
     // Global mode installs primitives and template assets; scaffold/artifact
     // hints are suppressed because there is no <cwd> artifact to diff.
     const scaffoldsIndex = scope === "global"
@@ -355,7 +355,7 @@ export async function sync(
       scriptNames,
     } = resolvePackResources(allPaths, config);
 
-    // FR-PACKS.SCOPE — filter primitives whose `scope:` frontmatter
+    // [FR-PACKS.SCOPE](../../documents/requirements.md#fr-packs.scope-scope-frontmatter-field) — filter primitives whose `scope:` frontmatter
     // excludes the active sync scope. Only applies to pack-based layouts
     // (legacy flat layout had no scope concept).
     const skillNames = usePacks
@@ -420,7 +420,7 @@ export async function sync(
       log(`\nSyncing to ${ide.name}...`);
 
       const modelMap = mergeModelMap(ide.name, config);
-      // FR-DIST.GLOBAL — base dirs per IDE per scope. Codex global mode
+      // [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — base dirs per IDE per scope. Codex global mode
       // splits skills (~/.agents/skills/) from agents (~/.codex/).
       const ideSkillsBase = resolveIdeBaseDir(
         ide.name,
@@ -515,7 +515,7 @@ export async function sync(
         await processPlan(commandPlan, fs, options, result, log);
       }
 
-      // FR-DIST.CLEAN-PREFIX — unified prefix-based orphan cleanup for the
+      // [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — unified prefix-based orphan cleanup for the
       // shared .{ide}/skills/ dir. Single pass after BOTH skills and commands
       // have been written; keep-set = union of both. Catches renames
       // (flowai-plan → flowai-skill-plan) that the old name-list comparison
@@ -541,7 +541,7 @@ export async function sync(
       }
 
       // Agents (transform per IDE).
-      // FR-DIST.CODEX-AGENTS — Codex uses a TOML config + sidecar flow that
+      // [FR-DIST.CODEX-AGENTS](../../documents/requirements.md#fr-dist.codex-agents-openai-codex-subagent-sync) — Codex uses a TOML config + sidecar flow that
       // bypasses the standard markdown agent writer. All other IDEs go through
       // the per-file `{ide}/agents/<name>.md` path below.
       if (ide.name === "codex") {
@@ -594,7 +594,7 @@ export async function sync(
           await processPlan(agentPlan, fs, options, result, log);
         }
 
-        // FR-DIST.CLEAN-PREFIX — prefix-based orphan cleanup for agents.
+        // [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — prefix-based orphan cleanup for agents.
         const agentOrphansPlan = await computePrefixOrphansPlan(
           agentTargetDir,
           new Set(agentNames),
@@ -617,7 +617,7 @@ export async function sync(
       }
 
       // Hooks (copy files + generate IDE-specific config).
-      // FR-DIST.CODEX-HOOKS — Codex hook install is experimental and gated
+      // [FR-DIST.CODEX-HOOKS](../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — Codex hook install is experimental and gated
       // behind `experimental.codexHooks: true` in `.flowai.yaml`. When the
       // flag is absent or false, skip hook install for Codex with an info log.
       const skipCodexHooks = ide.name === "codex" &&
@@ -700,7 +700,7 @@ export async function sync(
       }
 
       // Core assets (copy to .{ide}/assets/)
-      // FR-DIST.SYNC — only core pack has shared assets (AGENTS.md templates)
+      // [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — only core pack has shared assets (AGENTS.md templates)
       if (usePacks) {
         const assetFiles = await readPackAssetFiles(
           allPaths,
@@ -779,7 +779,7 @@ export async function sync(
     }
   }
 
-  // FR-DIST.SYNC — post-process: mark ResourceActions whose writes failed so
+  // [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — post-process: mark ResourceActions whose writes failed so
   // the renderer can move them to the ERRORS block and shrink CREATED counts.
   // Commands install alongside skills (same `.{ide}/skills/` dir), so command
   // failures must also mark the corresponding skillActions entry.
@@ -834,7 +834,7 @@ export async function processPlan(
     result.totalConflicts += conflicts.length;
   }
 
-  // FR-DIST.SYNC — dry-run: skip writes entirely so totalWritten stays at 0
+  // [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — dry-run: skip writes entirely so totalWritten stays at 0
   // and the renderer's "complete" vs "FAILED" header reflects a non-write run
   // truthfully. Plan-derived ResourceActions are populated upstream.
   if (options.dryRun) return;

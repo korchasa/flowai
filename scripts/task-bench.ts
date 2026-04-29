@@ -333,7 +333,7 @@ async function main() {
 
   let totalCostAll = 0;
 
-  // FR-BENCH-CACHE
+  // [FR-BENCH-CACHE](../documents/requirements.md#fr-bench-cache-benchmark-result-cache)
   // --- Cache layer -----------------------------------------------------
   // Cache participation: bypassed when --no-cache is set, or when -n > 1
   // without --cache-with-runs (multi-run is a statistical probe by design).

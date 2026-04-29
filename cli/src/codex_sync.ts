@@ -1,6 +1,6 @@
-// FR-DIST.CODEX-AGENTS — Codex-specific agent sync
-// FR-DIST.CLEAN-PREFIX — prefix-based orphan cleanup (no manifest).
-// FR-DIST.GLOBAL — Codex agent sync resolves base dir via scope.
+// [FR-DIST.CODEX-AGENTS](../../documents/requirements.md#fr-dist.codex-agents-openai-codex-subagent-sync) — Codex-specific agent sync
+// [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — prefix-based orphan cleanup (no manifest).
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — Codex agent sync resolves base dir via scope.
 /**
  * Sync framework agents to Codex subagent format.
  *

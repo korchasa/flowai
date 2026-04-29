@@ -1,4 +1,4 @@
-// FR-MAINT — project maintenance via deno task check
+// [FR-MAINT](../documents/requirements.md#fr-maint-project-maintenance) — project maintenance via deno task check
 import { runCommands, runCommandsInParallelBuffered } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 

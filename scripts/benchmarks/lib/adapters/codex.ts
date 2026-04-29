@@ -1,4 +1,4 @@
-// FR-BENCH — OpenAI Codex benchmark adapter
+// [FR-BENCH](../../../../documents/requirements.md#fr-bench-benchmarking) — OpenAI Codex benchmark adapter
 /**
  * Adapter for the OpenAI Codex CLI (`codex` binary, tested against 0.118.0).
  *
@@ -178,7 +178,7 @@ export class CodexAdapter implements AgentAdapter {
     sandboxPath: string,
     mocks: Record<string, string>,
   ): Promise<void> {
-    // FR-DIST.CODEX-HOOKS — Codex supports hooks via `<repo>/.codex/hooks.json`
+    // [FR-DIST.CODEX-HOOKS](../../../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — Codex supports hooks via `<repo>/.codex/hooks.json`
     // behind the `codex_hooks` feature gate. Format mirrors Claude Code:
     // nested `{ hooks: { PreToolUse: [{ matcher, hooks: [{ type, command }] }] } }`.
     // Hooks are experimental ("under development") in codex-cli 0.118.0 — this

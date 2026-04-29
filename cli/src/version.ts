@@ -1,4 +1,4 @@
-// FR-DIST.UPDATE — self-update check against JSR
+// [FR-DIST.UPDATE](../../documents/requirements.md#fr-dist.update-pre-flight-update-notice) — self-update check against JSR
 import { greaterThan, parse } from "@std/semver";
 import { VERSION } from "./_version.ts";
 

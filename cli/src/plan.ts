@@ -1,4 +1,4 @@
-// FR-DIST.SYNC — idempotent plan computation
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — idempotent plan computation
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type {
   PlanAction,

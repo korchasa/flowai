@@ -1,5 +1,5 @@
-// FR-DIST.USER-SYNC — cross-IDE user resource propagation
-// FR-DIST.GLOBAL — scope-aware base dirs when scanning user dirs.
+// [FR-DIST.USER-SYNC](../../documents/requirements.md#fr-dist.user-sync-cross-ide-user-resource-sync) — cross-IDE user resource propagation
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — scope-aware base dirs when scanning user dirs.
 /** Cross-IDE user resource propagation — scans, compares, and syncs user skills/agents across IDEs */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { resolveIDEs } from "./ide.ts";

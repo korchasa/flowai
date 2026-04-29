@@ -1,4 +1,4 @@
-// FR-DIST.SYMLINKS — CLAUDE.md -> AGENTS.md symlinks
+// [FR-DIST.SYMLINKS](../../documents/requirements.md#fr-dist.symlinks-claude.md-symlinks) — CLAUDE.md -> AGENTS.md symlinks
 import { type FsAdapter, join } from "./adapters/fs.ts";
 
 /**

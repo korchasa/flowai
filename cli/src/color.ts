@@ -1,4 +1,4 @@
-// FR-DIST.SYNC — ANSI color helpers for renderSyncOutput
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — ANSI color helpers for renderSyncOutput
 /** Minimal ANSI color helpers. Respect NO_COLOR (https://no-color.org/) and
  * `Deno.stdout.isTerminal()` when auto-detecting; callers may also force on/off
  * via an explicit flag. */

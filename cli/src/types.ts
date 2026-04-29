@@ -1,6 +1,6 @@
-// FR-DIST.DETECT — IDE type definitions
-// FR-PACKS.CONFIG — FlowConfig with packs field
-// FR-HOOK-RESOURCES.FORMAT — HookDefinition type
+// [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — IDE type definitions
+// [FR-PACKS.CONFIG](../../documents/requirements.md#fr-packs.config-config-v1.1) — FlowConfig with packs field
+// [FR-HOOK-RESOURCES.FORMAT](../../documents/requirements.md#fr-hook-resources.format-hook-format) — HookDefinition type
 /** IDE definition */
 export interface IDE {
   name: string;
@@ -109,7 +109,7 @@ export const KNOWN_IDES: Record<string, IDE> = {
   cursor: { name: "cursor", configDir: ".cursor" },
   claude: { name: "claude", configDir: ".claude" },
   opencode: { name: "opencode", configDir: ".opencode" },
-  // FR-DIST.DETECT — OpenAI Codex CLI. Skills land in `.codex/skills/`, which
+  // [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — OpenAI Codex CLI. Skills land in `.codex/skills/`, which
   // Codex discovers natively (verified 2026-04-11 against codex-cli 0.118.0).
   codex: { name: "codex", configDir: ".codex" },
 };

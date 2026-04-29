@@ -1,6 +1,6 @@
-// FR-DIST.BUNDLE — BundledSource reads bundled.json
-// FR-HOOK-RESOURCES.SYNC-INFRA — hook/script name extraction
-// FR-SCRIPTS — script name extraction
+// [FR-DIST.BUNDLE](../../documents/requirements.md#fr-dist.bundle-bundled-source) — BundledSource reads bundled.json
+// [FR-HOOK-RESOURCES.SYNC-INFRA](../../documents/requirements.md#fr-hook-resources.sync-infra-hook-sync-infrastructure) — hook/script name extraction
+// [FR-SCRIPTS](../../documents/requirements.md#fr-scripts-script-resources) — script name extraction
 import { DEFAULT_GIT_URL } from "./types.ts";
 /** Framework source abstraction — provides file listing and content reading */
 export interface FrameworkSource {
@@ -350,7 +350,7 @@ export function extractPackScriptNames(
 
 /** Extract asset file paths within a specific pack.
  * Currently only core pack has shared assets (AGENTS.md templates). */
-// FR-DIST.SYNC
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai)
 export function extractPackAssetPaths(
   paths: string[],
   packName: string,

@@ -1,5 +1,5 @@
-// FR-DIST.CODEX-AGENTS — tests for mergeCodexConfig + buildCodexAgentSidecar
-// FR-DIST.CLEAN-PREFIX — ownership by `flowai-` key prefix (no manifest).
+// [FR-DIST.CODEX-AGENTS](../../documents/requirements.md#fr-dist.codex-agents-openai-codex-subagent-sync) — tests for mergeCodexConfig + buildCodexAgentSidecar
+// [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — ownership by `flowai-` key prefix (no manifest).
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import {
   buildCodexAgentSidecar,

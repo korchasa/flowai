@@ -1,7 +1,7 @@
-// FR-DIST.SYNC — CLI entry point for flowai sync
-// FR-DIST.GLOBAL — `--global` flag for user-level installs.
-// FR-DIST.UPDATE-CMD — self-update subcommand
-// FR-DIST.MIGRATE — migrate subcommand
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — CLI entry point for flowai sync
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — `--global` flag for user-level installs.
+// [FR-DIST.UPDATE-CMD](../../documents/requirements.md#fr-dist.update-cmd-self-update-subcommand) — self-update subcommand
+// [FR-DIST.MIGRATE](../../documents/requirements.md#fr-dist.migrate-one-way-ide-migration) — migrate subcommand
 import { Command } from "@cliffy/command";
 import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
@@ -581,7 +581,7 @@ export async function main(args: string[]): Promise<void> {
     // deno-lint-ignore no-explicit-any
     .action(async (options: any) => {
       const opts = extractSyncOptions(options as Record<string, unknown>);
-      // FR-DIST.GLOBAL — IDE-context guard fires only when the resolved scope
+      // [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — IDE-context guard fires only when the resolved scope
       // is project (auto-detected or forced via --local). Auto-resolution to
       // global is safe inside an IDE (writes land in user dirs, not cwd).
       if (isInsideIDE()) {

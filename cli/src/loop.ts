@@ -1,4 +1,4 @@
-// FR-LOOP — non-interactive Claude Code runner
+// [FR-LOOP](../../documents/requirements.md#fr-loop-non-interactive-runner-flowai-loop) — non-interactive Claude Code runner
 /**
  * flowai loop — non-interactive Claude Code runner.
  * Launches claude CLI with a prompt, processes stream-json output, handles exit codes and loop iteration.

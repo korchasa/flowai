@@ -1,4 +1,4 @@
-// FR-DIST.MIGRATE — Codex-specific agent migration
+// [FR-DIST.MIGRATE](../../documents/requirements.md#fr-dist.migrate-one-way-ide-migration) — Codex-specific agent migration
 /** Scan Codex agents from config.toml sidecars and migrate agents to Codex format */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";

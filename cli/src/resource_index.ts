@@ -1,4 +1,4 @@
-// FR-DIST.SYNC — resource indexing and filtering
+// [FR-DIST.SYNC](../../documents/requirements.md#fr-dist.sync-sync-command-flowai) — resource indexing and filtering
 /** Build pack indexes (scaffolds, assets), extract per-resource actions, filter by include/exclude */
 import type {
   PackDefinition,

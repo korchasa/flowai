@@ -1,4 +1,4 @@
-// FR-DIST.MIGRATE — one-way migration of all IDE primitives (skills, agents, commands)
+// [FR-DIST.MIGRATE](../../documents/requirements.md#fr-dist.migrate-one-way-ide-migration) — one-way migration of all IDE primitives (skills, agents, commands)
 /** One-way migration of all primitives from one IDE config dir to another */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { crossTransformAgent, DEFAULT_MODEL_MAPS } from "./transform.ts";
@@ -109,7 +109,7 @@ export async function scanAllResources(
   }
 
   // Agents.
-  // FR-DIST.MIGRATE — for Codex the on-disk agent format is
+  // [FR-DIST.MIGRATE](../../documents/requirements.md#fr-dist.migrate-one-way-ide-migration) — for Codex the on-disk agent format is
   // `<base>/config.toml` `[agents.<name>]` tables pointing at sidecar
   // `<base>/agents/<name>.toml` files (see FR-DIST.CODEX-AGENTS). Reconstruct
   // a synthetic universal markdown representation from each sidecar so the
@@ -294,7 +294,7 @@ export async function runMigrate(
     `  Found: ${skills.length} skills, ${agents.length} agents, ${commands.length} commands`,
   );
 
-  // FR-DIST.MIGRATE — when the target is Codex, agents take a separate
+  // [FR-DIST.MIGRATE](../../documents/requirements.md#fr-dist.migrate-one-way-ide-migration) — when the target is Codex, agents take a separate
   // TOML-sidecar path and must be excluded from the generic buildMigratePlan
   // (which writes markdown to `<ide>/agents/<name>.md`).
   const resourcesForPlan = toIde.name === "codex"

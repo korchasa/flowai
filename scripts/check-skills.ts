@@ -1,5 +1,5 @@
-// FR-PACKS.CMD-INVARIANT — commands/ SKILL.md MUST NOT declare `disable-model-invocation`
-// FR-PACKS.SKILL-INVARIANT — skills/ SKILL.md MUST NOT declare `disable-model-invocation`
+// [FR-PACKS.CMD-INVARIANT](../documents/requirements.md#fr-packs.cmd-invariant-command-source-must-not-carry-disable-model-invocation) — commands/ SKILL.md MUST NOT declare `disable-model-invocation`
+// [FR-PACKS.SKILL-INVARIANT](../documents/requirements.md#fr-packs.skill-invariant-skill-source-must-not-carry-disable-model-invocation) — skills/ SKILL.md MUST NOT declare `disable-model-invocation`
 /**
  * Validates all skill directories against FR-UNIVERSAL.AGENTSKILLS and FR-UNIVERSAL.XIDE-PATHS (agentskills.io compliance).
  *
@@ -300,7 +300,7 @@ export async function validateSkill(
     });
   }
 
-  // FR-UNIVERSAL.STRUCT: Structure
+  // [FR-UNIVERSAL.STRUCT](../documents/requirements.md#fr-universal.struct-directory-structure-agentskills.io): Structure
   errors.push(...validateStructure(dirName, entries));
 
   // Read SKILL.md
@@ -323,10 +323,10 @@ export async function validateSkill(
     return errors;
   }
 
-  // FR-UNIVERSAL.FRONTMATTER: Frontmatter (Zod schema)
+  // [FR-UNIVERSAL.FRONTMATTER](../documents/requirements.md#fr-universal.frontmatter-frontmatter-agentskills.io): Frontmatter (Zod schema)
   errors.push(...validateSkillFrontmatter(dirName, fm.data));
 
-  // FR-PACKS.{CMD,SKILL}-INVARIANT: commands/ vs skills/ directory invariants.
+  // [FR-PACKS](../documents/requirements.md#fr-packs-pack-system-modular-resource-installation).{CMD,SKILL}-INVARIANT: commands/ vs skills/ directory invariants.
   // Only applies to framework source tree; installed copies under .{ide}/skills/
   // legitimately carry `disable-model-invocation: true` on commands because
   // the writer injects it at sync time.
@@ -340,13 +340,13 @@ export async function validateSkill(
     );
   }
 
-  // FR-UNIVERSAL.DISCLOSURE: Progressive disclosure
+  // [FR-UNIVERSAL.DISCLOSURE](../documents/requirements.md#fr-universal.disclosure-progressive-disclosure-agentskills.io): Progressive disclosure
   errors.push(...validateProgressiveDisclosure(dirName, content, fm.data));
 
-  // FR-UNIVERSAL.XIDE-PATHS: Cross-IDE script path resolution
+  // [FR-UNIVERSAL.XIDE-PATHS](../documents/requirements.md#fr-universal.xide-paths-cross-ide-script-path-resolution): Cross-IDE script path resolution
   errors.push(...validatePathResolution(dirName, content));
 
-  // FR-UNIVERSAL.IDE-NEUTRAL: framework skills/commands/agents must not name
+  // [FR-UNIVERSAL.IDE-NEUTRAL](../documents/requirements.md#fr-universal.ide-neutral-framework-ide-neutrality): framework skills/commands/agents must not name
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
   // Model IDs belong in cli/src/transform.ts `DEFAULT_MODEL_MAPS`, not in
   // user-facing skill bodies.
@@ -354,7 +354,7 @@ export async function validateSkill(
     errors.push(...validateIdeNeutrality(dirName, content));
   }
 
-  // FR-UNIVERSAL.REFS: Reference depth
+  // [FR-UNIVERSAL.REFS](../documents/requirements.md#fr-universal.refs-file-references-agentskills.io): Reference depth
   errors.push(...await validateReferenceDepth(skillPath, dirName));
 
   return errors;

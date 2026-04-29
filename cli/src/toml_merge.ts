@@ -1,5 +1,5 @@
-// FR-DIST.CODEX-AGENTS — TOML merge utility for Codex config.toml
-// FR-DIST.CLEAN-PREFIX — ownership via `flowai-` key prefix (no manifest).
+// [FR-DIST.CODEX-AGENTS](../../documents/requirements.md#fr-dist.codex-agents-openai-codex-subagent-sync) — TOML merge utility for Codex config.toml
+// [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — ownership via `flowai-` key prefix (no manifest).
 /**
  * Merge flowai-managed `[agents.<name>]` tables into an existing Codex
  * `config.toml` without touching unrelated user sections.
@@ -175,7 +175,7 @@ export function mergeCodexConfig(
       ? { ...(agentsRaw as Record<string, Record<string, unknown>>) }
       : {};
 
-  // FR-DIST.CLEAN-PREFIX — strip stale flowai-* tables not in the current
+  // [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — strip stale flowai-* tables not in the current
   // change-set. Tables without the prefix are user-authored and preserved.
   const changeNames = new Set(changes.map((c) => c.name));
   for (const key of Object.keys(agents)) {

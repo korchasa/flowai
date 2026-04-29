@@ -38,8 +38,10 @@ const CACHE_ROOT = "benchmarks/cache";
 const FR_HEADING = /^###\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*):\s*(.*)$/;
 const BENCH_LINE = /Acceptance verified by benchmarks?:\*\*\s*(.*)$/i;
 const BENCH_ID = /`([a-z0-9][a-z0-9-]*)`/g;
+/** GFM-link in a code comment whose link-text is the FR-ID. Post-migration
+ *  (FR-DOC-IDS) all code-to-doc references use this form. */
 const CODE_REF =
-  /^[ \t]*(?:\/\/|#)\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*)/;
+  /^[ \t]*(?:\/\/|#)[^[\n]*\[(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*)\]\([^)]+\)/;
 
 /** Parses SRS into per-FR sections with declared benchmark IDs. */
 export function parseSrs(content: string): FrSection[] {

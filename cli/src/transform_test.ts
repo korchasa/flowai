@@ -151,7 +151,7 @@ Body.
   assertFrontmatterField(result, "model", "haiku");
 });
 
-// FR-DIST.MAPPING — Codex model tier resolution
+// [FR-DIST.MAPPING](../../documents/requirements.md#fr-dist.mapping-cross-ide-resource-mapping-universal-representation) — Codex model tier resolution
 Deno.test("transformAgent - model tier smart → gpt-5.3-codex for Codex", () => {
   const content = `---
 name: smart-agent

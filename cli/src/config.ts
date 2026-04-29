@@ -1,6 +1,6 @@
-// FR-DIST.CONFIG — .flowai.yaml loading/saving
-// FR-PACKS.CONFIG — v1.1 config with packs field
-// FR-DIST.GLOBAL — scope-aware config path (project vs home).
+// [FR-DIST.CONFIG](../../documents/requirements.md#fr-dist.config-config-generation) — .flowai.yaml loading/saving
+// [FR-PACKS.CONFIG](../../documents/requirements.md#fr-packs.config-config-v1.1) — v1.1 config with packs field
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — scope-aware config path (project vs home).
 import { parse, stringify } from "@std/yaml";
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import { resolveConfigPath, type SyncScope } from "./scope.ts";
@@ -158,7 +158,7 @@ export function parseConfigData(data: Record<string, unknown>): FlowConfig {
     }
   }
 
-  // FR-DIST.CODEX-HOOKS — experimental feature flags (opt-in, default false).
+  // [FR-DIST.CODEX-HOOKS](../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — experimental feature flags (opt-in, default false).
   let experimental: FlowConfig["experimental"];
   if (
     data.experimental && typeof data.experimental === "object" &&

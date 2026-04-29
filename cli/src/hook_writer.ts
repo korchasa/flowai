@@ -1,5 +1,5 @@
-// FR-HOOK-RESOURCES.INSTALL — IDE-specific hook config generation
-// FR-DIST.GLOBAL — hook config resolves base dir via scope.
+// [FR-HOOK-RESOURCES.INSTALL](../../documents/requirements.md#fr-hook-resources.install-ide-specific-installation) — IDE-specific hook config generation
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — hook config resolves base dir via scope.
 /** Write hook configuration files for each IDE (Claude, Cursor, OpenCode, Codex) */
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type { HookDefinition } from "./types.ts";
@@ -96,7 +96,7 @@ export async function writeHookConfig(
     const content = generateOpenCodePlugin(openCodeHooks);
     await fs.writeFile(pluginPath, content);
   } else if (ide.name === "codex") {
-    // FR-DIST.CODEX-HOOKS — Codex uses Claude-Code-compatible nested schema
+    // [FR-DIST.CODEX-HOOKS](../../documents/requirements.md#fr-dist.codex-hooks-openai-codex-hook-sync-experimental) — Codex uses Claude-Code-compatible nested schema
     // at <base>/hooks.json. Handled by syncCodexHooks elsewhere (call
     // site already gates on experimental.codexHooks).
     const hooksPath = join(base, "hooks.json");

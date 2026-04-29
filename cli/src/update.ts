@@ -1,5 +1,5 @@
-// FR-DIST.UPDATE — pre-flight notify-only check for `flowai` / `flowai sync`
-// FR-DIST.UPDATE-CMD — standalone `flowai update` subcommand with auto-install
+// [FR-DIST.UPDATE](../../documents/requirements.md#fr-dist.update-pre-flight-update-notice) — pre-flight notify-only check for `flowai` / `flowai sync`
+// [FR-DIST.UPDATE-CMD](../../documents/requirements.md#fr-dist.update-cmd-self-update-subcommand) — standalone `flowai update` subcommand with auto-install
 import {
   buildUpdateCommand,
   checkForUpdate,

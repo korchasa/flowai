@@ -1,4 +1,4 @@
-// FR-DIST.CLEAN-PREFIX — unit tests for prefix-based orphan scan
+// [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — unit tests for prefix-based orphan scan
 import { assertEquals } from "@std/assert";
 import { InMemoryFsAdapter } from "./adapters/fs.ts";
 import { computePrefixOrphansPlan } from "./sync.ts";

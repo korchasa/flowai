@@ -1,4 +1,4 @@
-// FR-DIST.MAPPING — agent frontmatter transformation per IDE
+// [FR-DIST.MAPPING](../../documents/requirements.md#fr-dist.mapping-cross-ide-resource-mapping-universal-representation) — agent frontmatter transformation per IDE
 /** Agent frontmatter transformation — extracts IDE-specific fields from universal format */
 import { parse, stringify } from "@std/yaml";
 
@@ -11,7 +11,7 @@ export const DEFAULT_MODEL_MAPS: Record<string, Record<string, string>> = {
   claude: { max: "opus", smart: "sonnet", fast: "haiku", cheap: "haiku" },
   cursor: { max: "slow", smart: "slow", fast: "fast", cheap: "fast" },
   opencode: {}, // user must configure in .flowai.yaml
-  // FR-DIST.MAPPING — Codex model map. Verified 2026-04-11 from
+  // [FR-DIST.MAPPING](../../documents/requirements.md#fr-dist.mapping-cross-ide-resource-mapping-universal-representation) — Codex model map. Verified 2026-04-11 from
   // ~/.codex/models_cache.json in codex-cli 0.118.0.
   codex: {
     max: "gpt-5.4",
@@ -66,7 +66,7 @@ const IDE_FIELDS: Record<string, Set<string>> = {
   ]),
   cursor: new Set(["name", "description", "readonly", "model"]),
   opencode: new Set(["description", "mode", "model", "color"]),
-  // FR-DIST.CODEX-AGENTS — Codex only consumes name/description/model from
+  // [FR-DIST.CODEX-AGENTS](../../documents/requirements.md#fr-dist.codex-agents-openai-codex-subagent-sync) — Codex only consumes name/description/model from
   // agent frontmatter during transform; the markdown body later becomes
   // `developer_instructions` in a TOML sidecar written by writer.ts.
   codex: new Set(["name", "description", "model"]),

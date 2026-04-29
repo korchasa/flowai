@@ -1,4 +1,4 @@
-// FR-BENCH-CACHE
+// [FR-BENCH-CACHE](../../../documents/requirements.md#fr-bench-cache-benchmark-result-cache)
 /**
  * Benchmark result cache — content-addressed, committed to the repo.
  *

@@ -1,5 +1,5 @@
-// FR-DIST.DETECT — IDE auto-detection by config dir presence
-// FR-DIST.GLOBAL — scope-aware IDE enumeration (global mode = all KNOWN_IDES).
+// [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — IDE auto-detection by config dir presence
+// [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — scope-aware IDE enumeration (global mode = all KNOWN_IDES).
 import { type FsAdapter, join } from "./adapters/fs.ts";
 import type { SyncScope } from "./scope.ts";
 import { type IDE, KNOWN_IDES } from "./types.ts";
@@ -24,7 +24,7 @@ export function isInsideIDE(
   env: { get(key: string): string | undefined } = Deno.env,
 ): boolean {
   if (IDE_ENV_VARS_BOOL.some((v) => env.get(v) === "1")) return true;
-  // FR-DIST.DETECT — Codex exports non-"1" values; any non-empty value counts.
+  // [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — Codex exports non-"1" values; any non-empty value counts.
   return IDE_ENV_VARS_PRESENCE.some((v) => {
     const value = env.get(v);
     return value !== undefined && value !== "";

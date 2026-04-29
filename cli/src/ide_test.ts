@@ -22,7 +22,7 @@ Deno.test("detectIDEs - detects multiple IDEs", async () => {
   assertEquals(names, ["claude", "cursor"]);
 });
 
-// FR-DIST.DETECT — Codex detection
+// [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — Codex detection
 Deno.test("detectIDEs - detects codex by .codex/ dir", async () => {
   const fs = new InMemoryFsAdapter();
   fs.dirs.add("/project/.codex");
@@ -94,7 +94,7 @@ Deno.test("isInsideIDE - returns true for OPENCODE=1", () => {
   assertEquals(isInsideIDE(fakeEnv({ OPENCODE: "1" })), true);
 });
 
-// FR-DIST.DETECT — Codex env-var detection
+// [FR-DIST.DETECT](../../documents/requirements.md#fr-dist.detect-ide-auto-detection) — Codex env-var detection
 Deno.test("isInsideIDE - returns true when CODEX_THREAD_ID is set", () => {
   assertEquals(
     isInsideIDE(fakeEnv({ CODEX_THREAD_ID: "019d7d56-af20-7e02" })),
