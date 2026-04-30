@@ -871,13 +871,11 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Acceptance verified by benchmarks:** `flowai-skill-plan-updates-index-on-new-fr`.
 - **Status:** [x]
 
-### FR-DOC-RESCUE: Reflect Rescues Durable Findings into SDS / ADR
+### FR-DOC-RESCUE: Reflect Surfaces Decisions for ADR Capture
 
-- **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass with two sub-detections on the current task file:
-  1. **Facts pass** — architectural facts phrased as statements ("we picked X over Y", "the contract is Z"); for each, propose target SDS component (existing or new); on accept, write to SDS and (if new component) add `SDS-<MNEMONIC>` heading + index row.
-  2. **Decisions pass** — passages with weighted alternatives (≥2 alternatives + explicit reasoning); for each, recommend invoking `flowai-skill-plan-adr` with a pre-filled draft. Reflect itself does NOT write the ADR — that is owned by `flowai-skill-plan-adr` (clean separation).
+- **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighted alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a clear chat message that names the decision title (a short phrase derived from the passage) and recommends invoking `flowai-skill-plan-adr` to record the rationale persistently. Reflect itself does NOT write to SDS, ADR, or any file — recording is owned by `flowai-skill-plan-adr` (clean separation, one mechanism). SDS-rescue for durable architectural facts (separate from decisions) is out of scope and may be added by a later FR.
 - **Acceptance verified by benchmarks:** `flowai-skill-reflect-rescues-decision-as-adr`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DOC-LINT: Documentation Health Category in Maintenance
 
