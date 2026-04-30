@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "e2b2458363c46e17045a34810d03e97da9b45e8e9f9daaed40ee744df2cce6d0",
+  "key": "5237e91044d311e85b9b39964e236bc5fbfe2cfafcc0b3a5e68c8e08ee5cc80d",
   "scenarioId": "flowai-skill-plan-variants-complex",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:43:35.606Z",
+  "recordedAt": "2026-04-30T20:09:29.698Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 111334.469125,
+    "durationMs": 123150.54529100005,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "task_file_created": {
         "pass": true,
-        "reason": "The agent created the file 'documents/tasks/2026-04-19-auth-system.md' using the Write tool, confirmed by both the tool call in logs and the file content shown in the DOCUMENTS/TASKS and GENERATED FI…"
+        "reason": "The agent created the file 'documents/tasks/2026-04-30-auth-system.md' using the Write tool, confirmed by both the agent logs (Tool: Write call) and the file diffs section showing the full content of…"
       },
       "multiple_variants": {
         "pass": true,
-        "reason": "The agent presented 3 distinct implementation variants in the chat: Variant 1 (Stateless JWT + Refresh Token Rotation with PostgreSQL only), Variant 2 (Server-Side Sessions with PostgreSQL + Redis), …"
+        "reason": "The agent presented three distinct implementation variants in the chat output: Variant A (Stateless JWT RS256 + Refresh Token Rotation), Variant B (Server-Side Sessions on Redis), and Variant C (OAut…"
       },
       "tradeoffs_discussed": {
         "pass": true,
-        "reason": "Each variant has explicit Pros, Cons, Risks, and Best For sections. Additionally, a Trade-off Summary table compares all three variants across 7 dimensions: instant revocation, infrastructure, DB hit…"
+        "reason": "Each variant includes explicit Pros, Cons, Risks, and Best For sections. Additionally, the agent provided a cross-variant comparison covering: performance at 10k RPS, SOC2/instant revocation capabili…"
       }
     }
   }

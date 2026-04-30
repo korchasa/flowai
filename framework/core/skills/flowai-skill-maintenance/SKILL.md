@@ -27,6 +27,7 @@ Categories checked:
 7.  **Doc Coverage**: Missing explanations in code.
 8.  **Instruction Coherence**: Contradictions and ambiguities across project instructions.
 9.  **Tooling Relevance**: Skills, agents, rules, and hooks that don't match the project.
+10. **Documentation Health**: Broken GFM cross-links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, `documents/index.md` drift.
 </context>
 
 ## Rules & Constraints
@@ -138,29 +139,49 @@ Collect all findings into an internal list. Each finding has: category, file/sym
      actually uses, and propose a fix (remove, replace with stack-appropriate
      alternative, or add justification).
 
+10. **Category 9: Documentation Health (FR-DOC-LINT)**
+   Audit the project's documentation system for broken or stale cross-references. This category is **DISTINCT** from Category 6 "Documentation Coverage" — coverage is about JSDoc / comments per code symbol; health is about cross-link integrity, FR-status freshness, and SRS↔SDS alignment.
+   In the Resolution Phase summary (step 10), findings from THIS category MUST appear under their OWN dedicated header. The header text MUST literally contain the English token `Documentation Health` (case-insensitive, may be followed by a translation in parentheses if the rest of the report is in another language — e.g. `Documentation Health (Здоровье документации)`). Do NOT translate the header outright; do NOT fold these findings into `Documentation Coverage`, `Consistency`, or any other existing category — the dedicated header is what makes the audit's doc-system focus visible to FR-DOC-LINT consumers.
+   - **Broken GFM cross-links**: scan project markdown (`documents/*.md`, `README.md`, `AGENTS.md`) and source-code comments for links of the form `[text](path.md#anchor)`. Flag any link where (a) the target file does not exist or (b) the anchor does not match a heading's GFM auto-slug in the target file.
+   - **Stale `[x]` FRs**: read `documents/requirements.md`. For each `### FR-<ID>` block whose `**Status:**` is `[x]`, verify the `**Acceptance:**` reference resolves — test path / benchmark id / command exists. Flag mismatches.
+   - **Orphan FRs**: for each `[x]` FR in SRS, search source code for any GFM-link reference of the form `[FR-<ID>](.../requirements.md#…)`. Flag FRs with zero references in code.
+   - **SRS ↔ SDS contradictions**: skim `documents/requirements.md` and `documents/design.md` for paired statements about the same component or behavior with mutually exclusive constraints (e.g., SRS says required, SDS says removed). Flag concrete pairs.
+   - **`documents/index.md` drift**: if `documents/index.md` exists, compare its FR rows against `documents/requirements.md` — flag rows whose status, summary, or anchor disagree with the SRS, and SRS FRs missing a row.
+   - **Verdict**: each finding must reference the exact file (and line if applicable) and propose a concrete fix.
+
 ### RESOLUTION PHASE
 
-10. **Present Summary**
+11. **Present Summary**
     - Output the full findings list, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings.
+    - **Category labels** — use these 9 categories. Even when the rest of the report is rendered in the user's language, the category label MUST be a clear DEDICATED tag for that category, not a translation that overlaps with another category's label. Acceptable: the English label verbatim, OR a translation that uniquely names the category. Forbidden: translating two distinct categories to the same word, OR omitting the new doc-system category entirely. If in doubt, fall back to the literal English label.
+      1. `Structural Integrity`
+      2. `Code Hygiene`
+      3. `Complexity & Hotspots`
+      4. `Technical Debt`
+      5. `Consistency (Docs vs Code)` — code/doc DRIFT (README claims X but code does Y).
+      6. `Documentation Coverage` — JSDoc/comments per code symbol.
+      7. `Instruction Coherence`
+      8. `Tooling Relevance`
+      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED whenever step 10 produced any finding. Distinct from #5 and #6: this group covers DOC-TO-DOC integrity (broken GFM cross-links, stale `[x]` FRs whose acceptance reference is missing, orphan FRs with no source-code link, SRS↔SDS contradictions, `documents/index.md` drift). NEVER fold these findings into `Consistency (Docs vs Code)` or `Documentation Coverage` — they are different concerns and FR-DOC-LINT consumers look specifically for the dedicated `Documentation Health` group.
     - Each issue line follows the shape: `- [N] <file/symbol>: <problem>. (Fix: <proposed fix>)`
     - Number every finding sequentially across all categories (e.g., [1], [2], ..., [N]).
     - At the end of the summary, show the total count per category and overall.
     - Example:
       ```
-      1. Structural Issues
+      Structural Integrity
       - [1] src/oldfile.ts: located in root, should be in src/utils/. (Fix: Move file)
 
-      2. Hygiene & Quality
+      Code Hygiene
       - [2] utils.ts: unused export `myFunc`. (Fix: Delete)
-      - [3] main.ts: 550 lines, exceeds 500-line limit. (Fix: Extract `processLogic` to a new file)
 
-      3. Technical Debt
-      - [4] api.ts: 5 TODOs clustered around error handling. (Fix: Create a tracked issue and resolve together)
+      Documentation Health
+      - [3] src/cache.ts:5: broken GFM link to #fr-missing-no-such-anchor. (Fix: remove or repoint to a real heading)
+      - [4] FR-AUTH: marked [x] in SRS but no source-code reference. (Fix: add a [FR-AUTH](requirements.md#fr-auth-…) reference in the implementing file, or revert status to [ ])
 
-      Total: 4 findings (Structural: 1, Hygiene: 2, Debt: 1)
+      Total: 4 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 2)
       ```
 
-11. **Ask User How to Proceed**
+12. **Ask User How to Proceed**
     - After the summary, ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT) which findings to resolve. Accept these reply modes:
       - **specific numbers** (e.g., `1, 3, 4`) — resolve only the selected findings
       - **category name** (e.g., `Hygiene`) — resolve all findings in that category
@@ -168,7 +189,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       - **`agent's choice`** — pick the most impactful subset yourself, emit a one-line justification, and proceed without re-asking
       - **`done`** — stop, no fixes needed
 
-12. **Interactive Resolution Loop**
+13. **Interactive Resolution Loop**
     - For each finding the user chose to resolve (in order):
       1. Show the finding details: file, problem, and proposed fix.
       2. Ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT):
@@ -192,6 +213,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 [ ] Checked for missing code documentation (File/Class/Method).
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
+[ ] Checked Documentation Health (broken GFM links, stale [x] FRs, orphan FRs, SRS↔SDS contradictions, documents/index.md drift) — findings grouped under the dedicated `Documentation Health` header in the summary.
 [ ] Presented numbered summary of all findings, grouped by category.
 [ ] Asked the user how to proceed with resolution.
 [ ] Resolved selected findings interactively (apply/skip/edit per finding).

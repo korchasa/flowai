@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "f2d540a1c166b5640ce2f505e25dfaf3d759e190f6597e719aed8b42e179e32f",
+  "key": "b8ec49c802bf4a5e9ae801751f313f1ab2f194eb97d21ef6144f6fbcf35402ae",
   "scenarioId": "flowai-skill-maintenance-instruction-coherence",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:59:16.676Z",
+  "recordedAt": "2026-04-30T20:30:26.616Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 280211.573917,
+    "durationMs": 261343.2377499994,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "numbered_summary": {
         "pass": true,
-        "reason": "The agent presented a 'Maintenance Audit — Findings Summary' with 14 numbered findings [1]–[14] grouped into 8 categories (Structural Integrity, Code Hygiene & Dependencies, Complexity & Hotspots, Te…"
+        "reason": "The agent presented findings numbered [1]–[13] grouped into 8 categories (Structural Issues, Code Hygiene, Complexity, Technical Debt, Consistency, Documentation Coverage, Instruction Coherence, Tool…"
       },
       "asks_how_to_proceed": {
         "pass": true,
-        "reason": "At the end of the summary, the agent explicitly asked 'How do you want to proceed?' and offered four options: '\"all\"' to walk through every finding, 'specific numbers' (e.g., '6 7 8'), 'category name…"
+        "reason": "After the summary, the agent explicitly offered four options: 'all' (all findings in order), '7' (coherence findings only), specific numbers (e.g. '7, 8, 9'), and 'done' (leave as is)."
       },
       "indentation_contradiction": {
         "pass": true,
-        "reason": "Finding [6] explicitly identifies the contradiction: 'CLAUDE.md §Code Style vs §Error Handling — indentation contradiction: §Code Style says \"Always use tabs for indentation\"; §Error Handling says \"U…"
+        "reason": "Finding [7] explicitly identified the contradiction: §Code Style 'Always use tabs for indentation' vs §Error Handling 'Use spaces for indentation (2 spaces per level)' in CLAUDE.md."
       },
       "naming_contradiction": {
         "pass": true,
-        "reason": "Finding [7] explicitly identifies the contradiction: 'CLAUDE.md §Code Style vs §Error Handling — naming convention contradiction: §Code Style says \"Use camelCase for all variable and function names\";…"
+        "reason": "Finding [8] explicitly identified the contradiction: §Code Style 'Use camelCase for all variable and function names' vs §Error Handling 'Use snake_case for utility functions' in CLAUDE.md."
       },
       "mock_contradiction": {
         "pass": true,
-        "reason": "Finding [8] explicitly identifies the contradiction: 'CLAUDE.md §Testing vs §Error Handling — mocking contradiction: §Testing says \"Never mock internal modules — use real implementations\"; §Error Han…"
+        "reason": "Finding [9] explicitly identified the contradiction: §Testing 'Never mock internal modules — use real implementations' vs §Error Handling 'Mock freely to isolate units during testing' in CLAUDE.md."
       },
       "coherence_section": {
         "pass": true,
-        "reason": "The report has a dedicated '7. Instruction Coherence' section containing 8 findings ([6]–[13]), covering indentation, naming, mocking, test optionality, JSDoc scope, section misplacement, an unfilled…"
+        "reason": "The report contains a dedicated '7. Instruction Coherence (ГЛАВНАЯ КАТЕГОРИЯ)' section with six findings ([7]–[12]) covering contradictions and ambiguities in CLAUDE.md."
       },
       "interactive_resolution": {
         "pass": true,
-        "reason": "When the user responded 'Instruction Coherence', the agent entered a sequential loop, presenting each finding ([6] through [13]) one at a time with the problem description and proposed fix, then aski…"
+        "reason": "After the user selected 'Instruction Coherence', the agent processed each finding individually, presenting the problem and proposed fix, then explicitly asking 'Применить / Пропустить / Изменить?' (A…"
       },
       "constructive_fixes": {
         "pass": true,
-        "reason": "Every coherence finding included a concrete proposed fix: [6] remove indentation rule from §Error Handling; [7] remove snake_case rule from §Error Handling; [8] remove 'Mock freely' from §Error Handl…"
+        "reason": "Every coherence finding included a concrete '(Fix: ...)' recommendation: [7] remove spaces rule from §Error Handling; [8] remove snake_case rule; [9] remove 'Mock freely'; [10] consolidate test-optio…"
       }
     }
   }

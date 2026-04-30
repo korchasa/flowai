@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "a97e580c857d88f30631e29266c1498db0f12db6afaf28026bea510c18b0a574",
+  "key": "bb76587f5e530d251883ddf9a85ede8534c44e4ac0b96494f33ff49bace012df",
   "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.207Z",
+  "recordedAt": "2026-04-30T19:02:12.971Z",
   "result": {
     "success": true,
-    "score": 90.9090909090909,
+    "score": 100,
     "errorsCount": 0,
-    "warningsCount": 1,
-    "durationMs": 62445.55325,
+    "warningsCount": 0,
+    "durationMs": 85776.045875,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,47 +18,47 @@
     "checklistResults": {
       "devcontainer_json_created": {
         "pass": true,
-        "reason": "The file `.devcontainer/devcontainer.json` is present in the generated files section and the agent validated it as valid JSON via `python3 -c \"import json; f=open(...)\"` in its verification step."
+        "reason": "The agent created `.devcontainer/devcontainer.json` and explicitly validated it with `python3 -m json.tool .devcontainer/devcontainer.json` which returned 'JSON valid'. The file content is fully show…"
       },
       "python_base_image": {
         "pass": true,
-        "reason": "devcontainer.json sets `\"image\": \"mcr.microsoft.com/devcontainers/python:3\"`, which clearly contains 'python' in the image name."
+        "reason": "The `image` field is set to `mcr.microsoft.com/devcontainers/python:3.11`, which clearly contains 'python' in the image name."
       },
       "claude_code_configured": {
         "pass": true,
-        "reason": "Claude Code is installed via `\"claude-cli\": \"curl -fsSL https://claude.ai/install.sh | bash\"` in `postCreateCommand`, which is a valid curl-based install method. Additionally, the VS Code extension `…"
+        "reason": "Claude Code is configured via a curl install in `postCreateCommand`: `\"claude-cli\": \"curl -fsSL https://claude.ai/install.sh | bash\"`. Additionally, the VS Code extension `anthropic.claude-code` is l…"
       },
       "opencode_configured": {
         "pass": true,
-        "reason": "OpenCode is configured via the devcontainer feature `\"ghcr.io/jsburckhardt/devcontainer-features/opencode:1\": {}` in the `features` block, a valid registry feature installation."
+        "reason": "OpenCode is configured via the devcontainer registry feature `\"ghcr.io/jsburckhardt/devcontainer-features/opencode:1\": {}` in the `features` block."
       },
       "claude_global_skills_mount": {
         "pass": true,
-        "reason": "The mounts array contains `\"source=${localEnv:HOME}/.claude,target=/home/vscode/.claude-host,type=bind,readonly\"`, which is a read-only bind mount of the host's ~/.claude/ to ~/.claude-host inside th…"
+        "reason": "There is a bind mount: `\"source=${localEnv:HOME}/.claude,target=/home/vscode/.claude-host,type=bind,readonly\"`, which mounts the host `~/.claude` directory as read-only to a separate path `~/.claude-…"
       },
       "opencode_global_skills_mount": {
         "pass": true,
-        "reason": "The mounts array contains `\"source=${localEnv:HOME}/.config/opencode,target=/home/vscode/.config/opencode-host,type=bind,readonly\"`, which is a read-only bind mount of the host's ~/.config/opencode/ …"
+        "reason": "There is a bind mount: `\"source=${localEnv:HOME}/.config/opencode,target=/home/vscode/.config/opencode-host,type=bind,readonly\"`, which mounts the host `~/.config/opencode` directory as read-only to …"
       },
       "post_start_skills_sync": {
-        "pass": false,
-        "reason": "Skills sync was generated and is correctly placed in `postStartCommand`. It correctly uses `cp -rL` for Claude Code (`~/.claude-host/skills` → `~/.claude/skills`). However, there is NO corresponding …"
+        "pass": true,
+        "reason": "The skills sync is placed in `postStartCommand` (not `postCreateCommand`). It uses `cp -rL` for both Claude Code (`cp -rL ~/.claude-host/skills ~/.claude/skills`) and OpenCode (`cp -rL ~/.config/open…"
       },
       "no_hardcoded_secrets": {
         "pass": true,
-        "reason": "Neither `devcontainer.json` nor `setup-container.sh` contain any hardcoded API keys, tokens, or credentials. All sensitive values rely on runtime auth (manual login flows)."
+        "reason": "No hardcoded API keys, tokens, or credentials are present in any generated file. The devcontainer.json, setup-container.sh, and all other files contain only structural configuration."
       },
       "python_deps_install": {
         "pass": true,
-        "reason": "`postCreateCommand` includes `\"deps\": \"pip install -e .\"`, which installs the Python project's dependencies from `pyproject.toml`."
+        "reason": "The `postCreateCommand` includes `\"deps\": \"pip install -e .\"`, which installs Python dependencies from the project's pyproject.toml."
       },
       "auth_policy_compliance": {
         "pass": true,
-        "reason": "All auth policy rules are satisfied: (a) no `remoteEnv` block with auth vars; (b) no `secrets` block; (c) no `initializeCommand` (verified explicitly in the agent's validation step); (d) no automatio…"
+        "reason": "All auth policy conditions are met: (a) no `remoteEnv` block with auth vars — no `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, or `CLAUDE_CONFIG_DIR` present; (b) no `secrets` block; (c) no `initializeCommand…"
       },
       "stable_volume_names": {
         "pass": true,
-        "reason": "Both named volumes use `${localWorkspaceFolderBasename}` as a prefix: `${localWorkspaceFolderBasename}-claude-config` and `${localWorkspaceFolderBasename}-opencode-config`. The ephemeral `${devcontai…"
+        "reason": "Named volumes use `${localWorkspaceFolderBasename}-claude-config` and `${localWorkspaceFolderBasename}-opencode-config` as their source names, which are derived from `${localWorkspaceFolderBasename}`…"
       }
     }
   }

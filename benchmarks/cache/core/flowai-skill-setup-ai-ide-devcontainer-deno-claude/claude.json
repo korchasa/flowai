@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "key": "0a8794482dd4b9d42f74740305d98235d08e854aa05d9dd7af3a5d535a112324",
+  "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-deno-claude",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-30T19:05:08.243Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 118624.75783300001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "devcontainer_json_created": {
+        "pass": true,
+        "reason": "The file `.devcontainer/devcontainer.json` was created and contains valid JSONC (JSON with comments). The structure is well-formed with proper keys for `name`, `build`, `features`, `customizations`, …"
+      },
+      "deno_support": {
+        "pass": true,
+        "reason": "The features section includes `\"ghcr.io/devcontainers-extra/features/deno:latest\": {}`, which explicitly provides Deno support via the devcontainers-extra feature registry."
+      },
+      "deno_extension": {
+        "pass": true,
+        "reason": "The `customizations.vscode.extensions` array includes `\"denoland.vscode-deno\"`."
+      },
+      "claude_code_setup": {
+        "pass": true,
+        "reason": "Claude Code CLI is installed via `\"claude-cli\": \"curl -fsSL https://claude.ai/install.sh | bash\"` in `postCreateCommand`. This uses the official install script, not a registry feature, matching SKILL…"
+      },
+      "host_claude_bind_mount_readonly_separate_path": {
+        "pass": true,
+        "reason": "The mounts section has two distinct entries: (1) a writable named volume targeting `/home/vscode/.claude` and (2) a read-only bind mount `source=${localEnv:HOME}/.claude,target=/home/vscode/.claude-h…"
+      },
+      "firewall_script": {
+        "pass": true,
+        "reason": "`init-firewall.sh` was created with `iptables -P INPUT DROP`, `iptables -P FORWARD DROP`, `iptables -P OUTPUT DROP` establishing a default-deny policy, and an `ALLOWED_DOMAINS` array allowlist coveri…"
+      },
+      "net_admin_cap": {
+        "pass": true,
+        "reason": "`runArgs` in devcontainer.json includes both `\"--cap-add=NET_ADMIN\"` and `\"--cap-add=NET_RAW\"`, which are required for iptables/ipset operations inside the container."
+      },
+      "dockerfile_created": {
+        "pass": true,
+        "reason": "`.devcontainer/Dockerfile` was created, based on `mcr.microsoft.com/devcontainers/base:ubuntu`, with iptables, ipset, and other utilities installed, plus the firewall script copied and granted passwo…"
+      },
+      "deno_settings": {
+        "pass": true,
+        "reason": "`customizations.vscode.settings` contains `\"deno.enable\": true` along with `\"deno.lint\": true` and formatter settings."
+      },
+      "stable_volume_names": {
+        "pass": true,
+        "reason": "Named volumes use `${localWorkspaceFolderBasename}-claude-config` and `${localWorkspaceFolderBasename}-bashhistory` — both derive from the workspace folder basename, which is stable across container …"
+      },
+      "volume_ownership_fix": {
+        "pass": true,
+        "reason": "The chown logic is inside `setup-container.sh` as a self-healing guard: `if [ -d \"$dir\" ] && [ ! -w \"$dir\" ]; then sudo chown -R ...`. This is not a raw `chown` entry directly in `postCreateCommand` …"
+      },
+      "auth_policy_compliance": {
+        "pass": true,
+        "reason": "All auth policy conditions are satisfied: (a) no `remoteEnv` section and no API key env vars present; (b) no `secrets` block; (c) no `initializeCommand`; (d) no automation of `claude login`, `gh auth…"
+      },
+      "no_hardcoded_secrets": {
+        "pass": true,
+        "reason": "No hardcoded API keys, tokens, or secrets appear in any of the four generated files (devcontainer.json, Dockerfile, init-firewall.sh, setup-container.sh)."
+      },
+      "global_skills_sync_placement": {
+        "pass": true,
+        "reason": "The skills sync command is in `postStartCommand` (not `postCreateCommand`): `\"skills-sync\": \"rm -rf ~/.claude/skills ~/.claude/commands && cp -rL ~/.claude-host/skills ~/.claude/skills 2>/dev/null ||…"
+      },
+      "feature_discovery_performed": {
+        "pass": true,
+        "reason": "The agent listed the references directory and read `devcontainer-template.md`, `firewall-template.md`, and `dockerfile-patterns.md` before generating output. It also read `deno.json` and `main.ts` to…"
+      }
+    }
+  }
+}

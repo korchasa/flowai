@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "624a6e0caaa17fdb2c9d9c7cf370880e445fced16b933c93c9c4d05451cfb79a",
+  "key": "2d614f19d653ce5215fce93df9fe3af481f28268bd2b550ad438dc3e2802fe09",
   "scenarioId": "flowai-skill-plan-context",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:43:35.599Z",
+  "recordedAt": "2026-04-30T19:36:20.736Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 66532.984375,
+    "durationMs": 104061.79512499971,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "context_read": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path visible in logs: '.../sandbox/documents/requirements.md') early in its execution."
+        "reason": "The agent explicitly called the Read tool on '/Users/korchasa/www/flowai/flowai/benchmarks/runs/2026-04-30T18-58-07/flowai-skill-plan-context/run-1/sandbox/documents/requirements.md' as shown in the …"
       },
       "context_read_sds": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path visible in logs: '.../sandbox/documents/design.md') as part of its exploration phase."
+        "reason": "The agent explicitly called the Read tool on '/Users/korchasa/www/flowai/flowai/benchmarks/runs/2026-04-30T18-58-07/flowai-skill-plan-context/run-1/sandbox/documents/design.md' as shown in the agent …"
       },
       "task_file_context": {
         "pass": true,
-        "reason": "The created file 'documents/tasks/2026-04-19-dark-mode-preference.md' is titled '# Dark Mode Preference Support' and mentions 'dark mode' multiple times throughout Goal, Overview, Definition of Done,…"
+        "reason": "The created task file 'documents/tasks/2026-04-30-dark-mode-preference.md' explicitly mentions dark mode throughout: the title is 'Dark Mode Preference Support', the Goal section references 'dark mod…"
       }
     }
   }

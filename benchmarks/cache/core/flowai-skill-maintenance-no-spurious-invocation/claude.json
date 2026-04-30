@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "dbb1614eb01027df2a1a204664f67b63043e2e6212bbbc722e454df0686b4a9b",
+  "key": "2d73925fec2db654c437b3ca6e696405184687ab9fc251d827a8c29e9fa4a10f",
   "scenarioId": "flowai-skill-maintenance-no-spurious-invocation",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:24:49.594Z",
+  "recordedAt": "2026-04-30T20:36:08.620Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 12174.286208,
+    "durationMs": 10787.237084000371,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "no_eight_category_scan": {
         "pass": true,
-        "reason": "The agent only ran `ls` on the sandbox directory, found no source files, and reported that nothing could be run. It did not perform any 8-category maintenance scan (documentation consistency, code qu…"
+        "reason": "The agent performed only a simple directory listing (ls) and reported that no source files, deno.json, or tests exist. It did not trigger any 8-category maintenance scan covering documentation consis…"
       },
       "no_interactive_resolution": {
         "pass": true,
-        "reason": "The agent did not enter any interactive issue-by-issue resolution phase. It made no findings to present, did not ask the user to approve or skip any fixes, and simply reported the sandbox directory h…"
+        "reason": "The agent did not enter any interactive issue-by-issue resolution phase. It listed the directory, found no actionable files, reported the result in a single final message, and stopped. There was no p…"
       }
     }
   }

@@ -895,14 +895,13 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-DOC-LINT: Documentation Health Category in Maintenance
 
-- **Description:** `flowai-skill-maintenance` adds a "Documentation health" category to its 8-category audit. Checks (LLM-judgement, not deterministic — that is the value of using a skill):
-  - SRS↔SDS contradictions ("SRS says X is required, SDS says X is removed").
-  - `[x]` FRs whose `**Acceptance:**` reference no longer exists or no longer passes.
-  - Orphan FRs: `FR-<ID>` in SRS with `[x]` but no `// FR-<ID>` in any source file.
-  - SDS components without ID heading (after FR-DOC-IDS lands, this should be empty for projects that adopted the principle).
-  - Broken GFM cross-links (link target file or anchor missing).
-  - `documents/index.md` rows that disagree with the artifact (stale one-liner, wrong status, missing row).
-- **Scope:** Maintenance retains its existing interactive issue-by-issue UX; the new category integrates as one of the now-9 categories.
+- **Description:** `flowai-skill-maintenance` adds a "Documentation Health" category to its existing 8-category audit. Checks (LLM-judgement, not deterministic — that is the value of using a skill):
+  - **Broken GFM cross-links** — any `[text](path.md#anchor)` reference where the target file or the anchor (GFM auto-slug) does not exist. Scope: project documentation files (`documents/*.md`, `README.md`, `AGENTS.md`) and code comments in source directories.
+  - **Stale `[x]` FRs** — FRs marked `[x]` whose `**Acceptance:**` reference no longer exists or, if it is a runnable command/test, no longer passes.
+  - **Orphan FRs** — FRs marked `[x]` in SRS that have no GFM-link reference (`[FR-<ID>](requirements.md#…)`) anywhere in source code.
+  - **SRS↔SDS contradictions** — pairs of statements where SRS and SDS describe the same component or behavior with mutually exclusive constraints.
+  - **`documents/index.md` drift** — index rows disagreeing with the artifact (status mismatch, stale summary, missing row for an FR that exists in SRS).
+- **Scope:** Maintenance keeps its existing interactive issue-by-issue UX; Documentation Health integrates as one of the now-9 categories. Findings appear under a clearly labeled "Documentation Health" group in the numbered summary.
 - **Acceptance verified by benchmarks:** `flowai-skill-maintenance-detects-doc-health-issues`.
 - **Status:** [ ]
 

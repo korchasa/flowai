@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "2d08e763ff73320b9113fd1e9669f4ba8c4fbe1718301f19b151aa5e812d1b79",
+  "key": "18a37937aad88e28c7b4db34d9bda6a50a6f883aef475afc7bc4c66fa72c8f04",
   "scenarioId": "flowai-skill-adapt-instructions-basic",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:01:55.515Z",
+  "recordedAt": "2026-04-30T20:48:39.686Z",
   "result": {
     "success": true,
-    "score": 100,
+    "score": 87.5,
     "errorsCount": 0,
-    "warningsCount": 0,
-    "durationMs": 109154.62679200001,
+    "warningsCount": 1,
+    "durationMs": 154522.98833299987,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "read_installed_template": {
         "pass": true,
-        "reason": "The agent explicitly used the Read tool on `.claude/assets/AGENTS.template.md` at the sandbox path — it did not invent the template from memory."
+        "reason": "The agent explicitly used the Read tool on `.claude/assets/AGENTS.template.md` (full sandbox path shown in logs). It also ran a Bash check to locate the template in `.claude/assets/` vs `.cursor/asse…"
       },
       "read_project_artifact": {
         "pass": true,
-        "reason": "The agent used the Read tool on `AGENTS.md` (the existing project file in the sandbox root) before computing any diff or proposing changes."
+        "reason": "The agent used the Read tool on the sandbox `AGENTS.md` file immediately after reading the template, as shown in the sequential Read tool calls in the logs."
       },
       "computed_diff": {
         "pass": true,
-        "reason": "The agent produced a detailed unified diff block (`-` / `+` lines) showing exactly what would be removed and added, covering every section. It also provided a categorized classification of hunks (new…"
+        "reason": "The agent produced a structured section-by-section classification showing НОВОЕ (new), СОХРАНЕНО (preserved), and ОБНОВЛЕНО (updated) for every section, along with a preview of the merged document st…"
       },
       "proposed_check_step": {
         "pass": true,
-        "reason": "The diff explicitly adds step `4. **CHECK**: Run 'fmt', 'lint', and full test suite. Mandatory.` to the TDD Flow section, marked as `← NEW step`, which is the key missing framework section from the t…"
+        "reason": "The agent explicitly states that `## TDD Flow` will be 'ОБНОВЛЕНО (4 шага вместо 3)' — replacing the 3-step (RED/GREEN/REFACTOR) flow from the current file with the 4-step version from the template, …"
       },
       "preserved_project_sections": {
         "pass": true,
-        "reason": "The proposal explicitly preserves all project-specific content: project name 'MyProject' (under Project Information), vision 'Build the best tool for widget assembly.', stack (TypeScript, Deno), Key …"
+        "reason": "The agent explicitly marks all requested user-owned sections as СОХРАНЕНО: `## Project Vision` (with its content 'Build the best tool for widget assembly.'), `## Project tooling Stack` (TypeScript, D…"
       },
       "asked_confirmation": {
         "pass": true,
-        "reason": "At the end of both the intermediate analysis and the Final Result, the agent asks: 'Применить это слияние к AGENTS.md? (y / n / per-section)' — it explicitly requested confirmation before writing the…"
+        "reason": "At the end of both the assistant message and the Final Result, the agent explicitly asks: 'Применить это слияние к `AGENTS.md`? (y/n/per-section)' — confirming it asked before writing the file. The f…"
       },
       "no_template_duplication": {
         "pass": true,
-        "reason": "The agent read the installed asset file and diff'd it against the existing AGENTS.md. It did not regenerate AGENTS.md wholesale from scratch — instead it proposed a targeted merge that incorporates o…"
+        "reason": "The agent read the template from the installed asset file using the Read tool and classified its sections against the existing AGENTS.md. There is no evidence of reinventing or regenerating the templ…"
       },
       "explained_changes": {
-        "pass": true,
-        "reason": "The agent provided a dedicated 'Почему каждое изменение рекомендуется' section explaining each change: Core Project Rules (new global agent behavior rules), Architecture (placeholder for future descr…"
+        "pass": false,
+        "reason": "The agent classified changes as 'framework-originated' or 'user-owned' but did not explain WHY each proposed change is recommended. For example, it did not explain that the CHECK step ensures the for…"
       }
     }
   }

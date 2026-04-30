@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "75f3ba13902aa90623a3b3ac104e67d9a7987094f09e5112ea79e9dc759b2e6d",
+  "key": "6772272c6eb2d0c992c6df785f4cfb44a7b1339a93f69d15e9aac3eb2f8b9eca",
   "scenarioId": "flowai-skill-investigate-no-spurious-invocation",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:24:16.667Z",
+  "recordedAt": "2026-04-30T21:04:56.191Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 17248.899125,
+    "durationMs": 13100.586667000316,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "no_hypothesis_workflow": {
         "pass": true,
-        "reason": "The agent did not execute any flowai-skill-investigate workflow. It only performed two simple actions: reading the README.md path and listing the sandbox directory. No hypothesis generation, experime…"
+        "reason": "The agent did not execute the flowai-skill-investigate workflow. It simply tried to read README.md, listed the sandbox directory, found the file absent, and reported back. No hypothesis generation, e…"
       },
       "no_root_cause_report": {
         "pass": true,
-        "reason": "The agent produced no formal investigation report whatsoever — no hypotheses table, no root-cause analysis sections. The final output was a one-sentence conclusion that README.md was absent from the …"
+        "reason": "The agent produced no formal investigation report, no hypotheses table, and no root-cause analysis sections. Its only output was a brief statement that README.md was not found in the sandbox director…"
       }
     }
   }

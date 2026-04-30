@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "7221b975e95be1929fcbf4cec26747a99a31e550ccc49cf9d5065698396d3ef0",
+  "key": "bfe58f03bdc23be438dcd74653e10b354eacf50632bacec537d83015fe7852a4",
   "scenarioId": "flowai-skill-deno-cli-test-permissions",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.206Z",
+  "recordedAt": "2026-04-30T18:59:15.439Z",
   "result": {
     "success": true,
-    "score": 100,
+    "score": 80,
     "errorsCount": 0,
-    "warningsCount": 0,
-    "durationMs": 22955.6675,
+    "warningsCount": 1,
+    "durationMs": 34318.33775,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "reads_deno_json": {
         "pass": true,
-        "reason": "The agent explicitly used the Read tool to open the sandbox's deno.json file, confirming it examined the project configuration and existing tasks before answering."
+        "reason": "The agent explicitly ran a bash command to read deno.json and quoted its content in the response: 'Текущая задача `test` в `deno.json` задана как: `deno test --allow-read --allow-env`', confirming it…"
       },
       "suggests_task_test": {
         "pass": true,
-        "reason": "The agent suggested 'deno task test' as an option: 'Либо через task (после исправления deno.json): deno task test'. It acknowledged the existing task while noting it needed flags added."
+        "reason": "The agent explicitly suggests 'deno task test' as the preferred command: 'В проекте уже есть задача `test` в `deno.json`, поэтому используй: `deno task test`'."
       },
       "mentions_unstable_kv": {
         "pass": true,
-        "reason": "The agent explicitly listed '--unstable-kv' as a required flag and explained that 'Deno.openKv() является нестабильным API' (is an unstable API). It also recommended adding it to the test task in den…"
+        "reason": "The agent clearly states '--unstable-kv — обязателен, так как Deno.openKv() относится к нестабильному API' and also provides the alternative deno.json config 'unstable: [\"kv\"]'."
       },
       "explains_permissions": {
-        "pass": true,
-        "reason": "The agent explained --allow-read (file reading), --allow-env (environment variables), and --allow-write (KV disk storage) with their purposes. However, --allow-net (listed in the checklist) was not m…"
+        "pass": false,
+        "reason": "The agent explained --allow-read, --allow-write, and --allow-env with their purposes, but never mentioned --allow-net, which is listed as a required permission in the checklist. The server.ts uses De…"
       },
       "deno_add_jsr": {
         "pass": true,
-        "reason": "The agent clearly demonstrated the 'deno add jsr:@scope/package' pattern with a concrete example: 'deno add jsr:@std/uuid', and explained it would update deno.json imports and deno.lock automatically."
+        "reason": "The agent clearly explains 'deno add jsr:@std/testing' as the command to add a JSR dependency, and describes how Deno automatically adds the entry to the 'imports' section of deno.json."
       }
     }
   }

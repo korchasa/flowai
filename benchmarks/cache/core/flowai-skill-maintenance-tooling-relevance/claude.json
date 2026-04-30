@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "77c56a418d3ba219cc2f57d391947e39e4f0b2530c1566ba806feea800f1ac97",
+  "key": "1ed9d335f5c7481f5543ec75210f1cf8e20ddfbe7fa8a43aaca3071d824fb3aa",
   "scenarioId": "flowai-skill-maintenance-tooling-relevance",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:59:16.675Z",
+  "recordedAt": "2026-04-30T20:25:34.253Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 163170.917667,
+    "durationMs": 243306.5597090004,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "numbered_summary": {
         "pass": true,
-        "reason": "The agent presented a clearly numbered summary ([1]–[6]) grouped by category: Structural Integrity (2 findings), Code Hygiene/Complexity/Debt/Consistency (0 findings), Documentation Coverage (1 findi…"
+        "reason": "The agent presented a numbered list of 7 findings ([1]–[7]) grouped into 5 named categories (Structural Integrity, Code Hygiene, Documentation Coverage, Instruction Coherence, Tooling Relevance) befo…"
       },
       "asks_how_to_proceed": {
         "pass": true,
-        "reason": "After the summary, the agent explicitly offered four options: \"all\" (iterate all findings), specific numbers (e.g. \"4, 5, 6\"), category name (e.g. \"Tooling Relevance\"), or \"done\" (stop without fixes)…"
+        "reason": "After the summary, the agent explicitly offered four options: 'all' (go through all findings in order), specific numbers (e.g., '5, 6, 7'), a category name (e.g., 'Tooling'), or 'done' (stop without …"
       },
       "irrelevant_skill_detected": {
         "pass": true,
-        "reason": "Finding [5] explicitly flags `.claude/skills/django-migrations/SKILL.md` as irrelevant: 'Django/Python skill installed — calls python manage.py, references models.py. Project stack is TypeScript/Deno…"
+        "reason": "Finding [7] explicitly flags '.claude/skills/django-migrations/SKILL.md' as irrelevant, noting it describes Django-specific commands (python manage.py makemigrations/migrate) while the project uses T…"
       },
       "irrelevant_agent_detected": {
         "pass": true,
-        "reason": "Finding [4] explicitly flags `.claude/agents/kubernetes-deployer.md` as irrelevant: 'K8s agent installed — expects kubectl, Helm, cluster access. Project has zero K8s manifests, Dockerfiles, or infra…"
+        "reason": "Finding [5] explicitly flags '.claude/agents/kubernetes-deployer.md' as irrelevant, noting it specializes in Kubernetes deployment (kubectl, Helm, service meshes) while the project is TypeScript/Deno…"
       },
       "irrelevant_hook_detected": {
         "pass": true,
-        "reason": "Finding [6] explicitly flags `.claude/hooks/pre-commit-python-lint.sh` as irrelevant: 'hook runs flake8 and black (Python linters). No Python files in project, both tools will fail on every commit. (…"
+        "reason": "Finding [6] explicitly flags '.claude/hooks/pre-commit-python-lint.sh' as irrelevant, noting it runs 'flake8' and 'black' (Python linters) while the project contains only TypeScript files with no Pyt…"
       },
       "relevance_section": {
         "pass": true,
-        "reason": "The report contains a dedicated '4. Tooling Relevance' section listing findings [4], [5], [6], covering agents, skills, and hooks misalignment with the TypeScript/Deno project stack. The final summar…"
+        "reason": "The report has a dedicated section '5. Релевантность инструментов' (Tooling Relevance) containing all three irrelevant tooling findings ([5], [6], [7]), clearly separated from other categories."
       },
       "interactive_resolution": {
         "pass": true,
-        "reason": "After the user selected 'Tooling Relevance', the agent iterated over each finding ([4], [5], [6]) individually, presenting the problem and proposed fix for each, then asking 'Apply fix / Skip / Edit …"
+        "reason": "After the user selected 'Tooling Relevance', the agent entered an interactive loop: it presented each finding individually ([5], [6], [7]) with a description and proposed fix, then asked 'Apply fix /…"
       },
       "constructive_fixes": {
         "pass": true,
-        "reason": "Every tooling relevance finding includes a concrete proposed fix: [4] 'remove — no domain match', [5] 'remove — wrong stack', [6] 'remove — stale, wrong stack'. During the resolution loop the agent a…"
+        "reason": "Each relevance issue has a concrete proposed fix: [5] delete '.claude/agents/kubernetes-deployer.md', [6] delete '.claude/hooks/pre-commit-python-lint.sh', [7] delete directory '.claude/skills/django…"
       }
     }
   }

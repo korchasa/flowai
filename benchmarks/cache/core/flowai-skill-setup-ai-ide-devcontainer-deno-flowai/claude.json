@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "1b06942ec06d3329c313afa36ae6f2f783463b7de23c0ddd3a4d232714ae2193",
+  "key": "24343f23d4beba1e8c946e3c8ba70d1f1341f4b6b31bc22f0c0e255c3bed4645",
   "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-deno-flowai",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.207Z",
+  "recordedAt": "2026-04-30T19:14:29.176Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 82138.42883300001,
+    "durationMs": 120248.07604100008,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,43 +18,43 @@
     "checklistResults": {
       "devcontainer_json_created": {
         "pass": true,
-        "reason": "The agent created `.devcontainer/devcontainer.json` and the file content shown in the diff is well-formed JSON (no syntax errors, all braces/brackets matched properly)."
+        "reason": "The agent created `.devcontainer/devcontainer.json` and validated it as valid JSON using Node.js JSON.parse(), confirming it is syntactically correct."
       },
       "deno_support": {
         "pass": true,
-        "reason": "The config uses `mcr.microsoft.com/devcontainers/base:ubuntu` as the base image and includes `ghcr.io/devcontainers-extra/features/deno:latest` in the features block, satisfying the Deno runtime requ…"
+        "reason": "The config uses `mcr.microsoft.com/devcontainers/base:ubuntu` as the base image combined with the `ghcr.io/devcontainers-extra/features/deno:latest` feature, which exactly matches one of the two acce…"
       },
       "deno_extension": {
         "pass": true,
-        "reason": "The extensions list in `customizations.vscode.extensions` explicitly includes `\"denoland.vscode-deno\"`."
+        "reason": "The extensions list in `customizations.vscode.extensions` explicitly includes `denoland.vscode-deno`."
       },
       "flowai_install_in_post_create": {
         "pass": true,
-        "reason": "The `postCreateCommand` contains `\"flowai-cli\": \"deno install -g -A -f jsr:@korchasa/flowai\"`, which matches the required install command exactly."
+        "reason": "The `postCreateCommand` object contains `\"flowai\": \"deno install -g -A -f jsr:@korchasa/flowai\"`, which is the exact required command to install flowai from JSR."
       },
       "no_flowai_config_volume": {
         "pass": true,
-        "reason": "The three mounts in the config are: a named volume for `.claude`, a read-only bind of the host `.claude`, and a named volume for bash history (`/commandhistory`). None target flowai config paths (`~/…"
+        "reason": "Neither of the two mounts targets `~/.config/flowai` or `~/.flowai`. The mounts are for `~/.claude` (named volume) and `~/.claude-host` (read-only bind), which are Claude-specific, not flowai config.…"
       },
       "auth_policy_compliance": {
         "pass": true,
-        "reason": "All auth policy conditions are met: (a) no `remoteEnv` block with auth vars; (b) no `secrets` block; (c) no `initializeCommand`; (d) no `gh auth login` or `claude login` automation in postCreateComma…"
+        "reason": "All auth policy requirements are met: (a) no `remoteEnv` block with auth vars; (b) no `secrets` block; (c) no `initializeCommand`; (d) no automation of `gh auth login` or `claude login` — the agent e…"
       },
       "stable_volume_names_if_any": {
         "pass": true,
-        "reason": "Both named volumes use `${localWorkspaceFolderBasename}` as the prefix: `${localWorkspaceFolderBasename}-claude-config` and `${localWorkspaceFolderBasename}-bashhistory`. The unstable `${devcontainer…"
+        "reason": "The named volume is defined as `source=${localWorkspaceFolderBasename}-claude-config`, which uses the stable `${localWorkspaceFolderBasename}` variable rather than the rehashing `${devcontainerId}`. …"
       },
       "no_hardcoded_secrets": {
         "pass": true,
-        "reason": "Neither `devcontainer.json` nor `setup-container.sh` contain any hardcoded API keys, tokens, or credentials. All references to external services are via installation commands, not embedded secrets."
+        "reason": "No hardcoded API keys, tokens, or credentials appear in either `devcontainer.json` or `setup-container.sh`. The verification grep in the agent logs confirmed no `api_key`, `apikey`, or token patterns…"
       },
       "remote_user_set": {
         "pass": true,
-        "reason": "`\"remoteUser\": \"vscode\"` is explicitly set. This is the correct non-root user for the `mcr.microsoft.com/devcontainers/base:ubuntu` base image."
+        "reason": "`\"remoteUser\": \"vscode\"` is explicitly set at the top level of `devcontainer.json`, which is the correct non-root user for the `mcr.microsoft.com/devcontainers/base:ubuntu` base image."
       },
       "no_dockerfile": {
         "pass": true,
-        "reason": "The agent only created `.devcontainer/devcontainer.json` and `.devcontainer/setup-container.sh`. No Dockerfile was generated anywhere in the workspace."
+        "reason": "No Dockerfile was generated. The agent used the `image` field pointing to a prebuilt Microsoft devcontainer base image with features, and no custom Dockerfile appears in the file diffs or generated f…"
       }
     }
   }

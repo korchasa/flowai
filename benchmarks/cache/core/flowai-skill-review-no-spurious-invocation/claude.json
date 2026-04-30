@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "05b8a9139ba9004f223defb1625c90fe6e87147ff4c63c8a10cfee4b9a71a3b5",
+  "key": "42188e65846cabd397602ac0b5503d0b05e4e1c4202e9e6e152ab5c6fe34905e",
   "scenarioId": "flowai-skill-review-no-spurious-invocation",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:34:31.372Z",
+  "recordedAt": "2026-04-30T20:21:03.053Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 8115.005582999991,
+    "durationMs": 10798.155124999583,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "no_review_workflow": {
         "pass": true,
-        "reason": "The agent did not execute any review workflow. There is no verdict (Approve/Request Changes/Needs Discussion), no findings table with [critical]/[warning]/[nit] markers, and no review procedure was t…"
+        "reason": "The agent did not execute the flowai-skill-review workflow. There is no verdict (Approve/Request Changes/Needs Discussion), no findings table with [critical]/[warning]/[nit] markers, and no review pr…"
       },
       "no_git_diff": {
         "pass": true,
-        "reason": "The agent did not run any git commands (git diff, git status, git diff --cached, or similar). The execution logs show only a direct text response with no tool invocations or shell commands."
+        "reason": "The agent logs show no invocation of `git diff`, `git status`, or `git diff --cached`. The agent responded purely with conceptual knowledge about TypeScript strict mode without attempting to gather a…"
       },
       "conceptual_answer": {
         "pass": true,
-        "reason": "The agent answered the conceptual question directly and correctly, discussing TypeScript strict mode tradeoffs: listing specific compiler flags (strictNullChecks, noImplicitAny, strictFunctionTypes, …"
+        "reason": "The agent answered the conceptual question directly and substantively: it confirmed strict mode is good practice, enumerated key flags it enables (strictNullChecks, noImplicitAny, strictFunctionTypes…"
       }
     }
   }
