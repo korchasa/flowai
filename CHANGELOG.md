@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.1](https://github.com/korchasa/flowai/compare/v0.12.0...v0.12.1) (2026-04-30)
+
+
+### Features
+
+* **core:** add flowai-skill-plan-adr — record ADRs in documents/adr/ (FR-DOC-ADR) ([233daf8](https://github.com/korchasa/flowai/commit/233daf8e7856a61e268020b834e8683cac3120ff))
+* **core:** add Interconnectedness Principle to docs system (FR-DOC-LINKS [x] + 5 pending) ([8e9d746](https://github.com/korchasa/flowai/commit/8e9d74653032b6746c06a579c471d88579d69f3e))
+* **core:** flowai-skill-plan maintains documents/index.md (FR-DOC-INDEX) ([b45a068](https://github.com/korchasa/flowai/commit/b45a068917f989d3ddc2b341be5a139f040f2126))
+* **core:** flowai-skill-reflect surfaces decisions for ADR capture (FR-DOC-RESCUE) ([7659f69](https://github.com/korchasa/flowai/commit/7659f69f6fb202d2410358995d938ccd7b6540f0))
+* **core:** maintenance Documentation Health category benchmark + FR-DOC-LINT [x] ([8b827ce](https://github.com/korchasa/flowai/commit/8b827ce0fd3bd703acd8caf6a27a94f716f6e5c2))
+* **core:** migrate code-to-doc references to GFM links (FR-DOC-IDS [x]) ([2572e15](https://github.com/korchasa/flowai/commit/2572e15cf8df38d43eb95780ac0295206bf05f9e))
+* **core:** rewrite Interconnectedness Principle to GFM-everywhere (revises 8e9d746) ([9a83ffc](https://github.com/korchasa/flowai/commit/9a83ffccb20221099e94917db4ee45c972d96838))
+* **core:** unified Q&A format scoped to numbered question + agent's-choice semantics (FR-UNIVERSAL.QA-FORMAT) ([86fc00a](https://github.com/korchasa/flowai/commit/86fc00a77c9dc78326611f20f38a547517e0a277))
+* **engineering:** add flowai-skill-diagnose-benchmark-failure (FR-DIAGNOSE-BENCH) ([ea092bd](https://github.com/korchasa/flowai/commit/ea092bdddc9ce9b4c8a079e4878e4709834bbc64))
+* **memex:** scaffold memex structure and implement save functionality ([a1a2b68](https://github.com/korchasa/flowai/commit/a1a2b684648bf9a665ad554fbcfdc8642c9cb8fe))
+
+
+### Bug Fixes
+
+* **benchmarks:** restore baseline by adding required sandboxState to integration tests ([18b3185](https://github.com/korchasa/flowai/commit/18b318566692471bb8bed4c60ee0c6ef8ea91fd9))
+* **qa-format:** scope FR-UNIVERSAL.QA-FORMAT to short-option Q&A; exempt rich-content alternatives ([2f2b93a](https://github.com/korchasa/flowai/commit/2f2b93a0c0426ab7193697a091d5df7b14bf4df4))
+
+
+### Agent Changes
+
+* apply reflect-suggested improvements ([39dbb90](https://github.com/korchasa/flowai/commit/39dbb90851d4ad1af9690f1c744b1c6a9074c38a))
+* codify forward-motion rule (FR-BENCH.RULES) — agents proceed without re-confirmation after authorization ([2fefdb1](https://github.com/korchasa/flowai/commit/2fefdb1eeed5fff906b39d6c67e016014c4b0882))
+* **commit:** solve reflect double-commit + harden composite reflect step ([385750d](https://github.com/korchasa/flowai/commit/385750d8f42dc5381ff39e41a052a0ba6f5bb1b0))
+
+
+### Chores
+
+* **benchmarks:** refresh cache after full sweep on feat/core-doc-llmwiki ([cde676b](https://github.com/korchasa/flowai/commit/cde676b814ac1c67993078f0784f14c4a44c6e71))
+
+
+### Documentation
+
+* **sds:** add §3.16 Documentation System summarizing FR-DOC-* (1/6) ([7c068d1](https://github.com/korchasa/flowai/commit/7c068d172819384959324305806a9d232e7e1ea6))
+* **srs:** mark FR-DOC-ADR [x] after Phase 2 ADR skill ([dd5f51a](https://github.com/korchasa/flowai/commit/dd5f51a84e264821fd9d4dc78f8887f73217e16d))
+* **srs:** mark FR-DOC-IDS [x] after Phase 1 GFM migration ([d1ed682](https://github.com/korchasa/flowai/commit/d1ed6822ea26a62865385a5927b2038eb12bb217))
+
 ## [0.12.0](https://github.com/korchasa/flowai/compare/v0.11.0...v0.12.0) (2026-04-21)
 
 
