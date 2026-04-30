@@ -901,7 +901,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - **`documents/index.md` drift** — index rows disagreeing with the artifact (status mismatch, stale summary, missing row for an FR that exists in SRS).
 - **Scope:** Maintenance keeps its existing interactive issue-by-issue UX; Documentation Health integrates as one of the now-9 categories. Findings appear under a clearly labeled "Documentation Health" group in the numbered summary.
 - **Acceptance verified by benchmarks:** `flowai-skill-maintenance-detects-doc-health-issues`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ## 4. Non-functional requirements
 

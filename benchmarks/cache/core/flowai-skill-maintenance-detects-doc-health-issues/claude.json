@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "bc225b199d689c94a17a885510de48421e11bf2010cd1259a5492b307c2fad69",
+  "scenarioId": "flowai-skill-maintenance-detects-doc-health-issues",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-30T22:15:02.875Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 193292.47662499998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "documentation_health_category_present": {
+        "pass": true,
+        "reason": "The agent's findings summary includes a dedicated '2. Documentation Health' section with findings [5] and [6]. This is a separate, clearly labeled category distinct from the existing 8 categories, sp…"
+      },
+      "broken_link_detected": {
+        "pass": true,
+        "reason": "Finding [5] under 'Documentation Health' explicitly states: '`src/cache.ts:5`: broken GFM anchor — comment links to `#fr-missing-no-such-anchor` which does not exist in `documents/requirements.md`.' …"
+      },
+      "second_doc_issue_detected": {
+        "pass": true,
+        "reason": "Finding [6] under Documentation Health flags a second doc issue: broken GFM slug using '#3.1-fr-cache-local-cache-for-repeated-lookups' (contains '.') which GFM strips, making the real slug '#31-fr-c…"
+      },
+      "constructive_fix_for_doc_issue": {
+        "pass": true,
+        "reason": "Both Documentation Health findings carry explicit fix proposals: [5] includes '(Fix: remove the comment or correct the anchor to a real heading slug)' and [6] includes '(Fix: change link to `#31-fr-c…"
+      },
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented all 14 findings with sequential numbers [1] through [14], grouped under category headers (Structural Integrity, Documentation Health, Consistency (Docs vs Code), Documentation Cov…"
+      },
+      "asks_how_to_proceed": {
+        "pass": true,
+        "reason": "After presenting the numbered summary, the agent explicitly asked 'How do you want to proceed?' with four clearly labeled options: 'all' (walk through every finding), specific numbers (e.g., '1, 5, 1…"
+      },
+      "no_premature_fixes": {
+        "pass": true,
+        "reason": "After the user responded 'done', the agent confirmed '14 findings identified, 0 applied, 0 skipped, 0 edited.' The git diff shows no changes beyond the initial 'init' commit — the fixture files (src/…"
+      }
+    }
+  }
+}
