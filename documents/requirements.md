@@ -797,6 +797,18 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - Mutant budget: ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. Report top-5 catching tests by severity × uniqueness.
 - **Acceptance verified by benchmarks:** `flowai-skill-jit-review-catch-regression`, `flowai-skill-jit-review-no-change-no-alarm`
 
+### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `flowai-skill-diagnose-benchmark-failure`
+
+- **Description:** Agent-invocable skill that, given a failed benchmark scenario ID, reads the run artifacts (`benchmarks/runs/latest/<scenario-id>/run-1/judge-evidence.md`, the sandbox copy of the failing primitive's `SKILL.md`, and the scenario `mod.ts`), pattern-matches the symptoms against a documented failure-mode taxonomy (MD-PRIOR-BULLETS, HEADING-INSTEAD-OF-ITEM, STALE-SKILL-IN-SANDBOX, SKILL-NOT-MOUNTED, COMPOSITE-DELEGATION-BYPASS, PERSONA-MISMATCH, TEST-FITTING-PERSONA, CROSS-PACK-REFERENCE-MISSING), and produces an evidence-grounded diagnostic report.
+- **Scope:** Lives under `framework/engineering/skills/flowai-skill-diagnose-benchmark-failure/`. Model-invocable. Triggered by user prompts about diagnosing/investigating a specific failed benchmark run, or by an agent's own follow-up after observing a benchmark failure during Benchmark TDD.
+- **Constraints:**
+  - Read-only: MUST NOT edit any source file (no `SKILL.md`, `mod.ts`, SRS/SDS, etc.). Output is a report; downstream agents apply fixes.
+  - Evidence-grounded: every claim in the report must cite a quoted line from `judge-evidence.md`, the sandbox `SKILL.md`, or the scenario `mod.ts`. Hypotheses without artifact citations are invalid.
+  - Fail-closed: if any of the three required artifacts is missing, the skill stops and reports the gap rather than proceeding with partial data.
+  - Taxonomy-grounded: classifications use the documented codes; novel modes only when the documented set is empirically ruled out.
+- **Acceptance verified by benchmarks:** `flowai-skill-diagnose-benchmark-failure-md-prior-bullets`
+- **Status:** [x]
+
 ### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `flowai-skill-ai-ide-runner`
 
 - **Description:** Agent-invocable skill that spawns another AI IDE runtime (`claude`, `opencode`, `cursor-agent`, `codex`) from the current session in non-interactive mode, captures its stdout, and relays it back verbatim. Enables single-IDE "second opinion" runs, multi-IDE fan-out comparisons, and multi-model comparisons within one IDE.
