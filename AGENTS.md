@@ -13,6 +13,7 @@
 - Use standard tools (jq, yq, jc) to process and manage structured output — they are portable and well-understood.
 - Do not add fallbacks, default behaviors, or error recovery silently — if the user didn't ask for it, it's an assumption. If you believe a fallback is genuinely needed, ask the user first.
 - Do not use tables in chat output — use two-level lists instead. Tables render poorly in terminal and are harder to scan.
+- **Push is pre-authorized**: this is a solo-maintained project — `git push` (non-force) to any branch including `main` is pre-authorized and does NOT require per-action confirmation. Treat it as a local, reversible action. Force push, branch deletion on remote, and PR merge still require explicit confirmation.
 
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
