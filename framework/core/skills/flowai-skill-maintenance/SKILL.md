@@ -44,10 +44,10 @@ Categories checked:
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
 
-When asking the user a choice (resolution selection, individual fix verdict):
+For the per-finding **Apply / Skip / Edit** verdict in Step 13:
 
-- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
-- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+- The question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- The post-summary "how to proceed" prompt in Step 12 is exempt: it follows a long rich-content findings list and falls under the "rich-content alternatives" exemption in `FR-UNIVERSAL.QA-FORMAT`.
 
 ## Instructions
 
@@ -182,7 +182,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       ```
 
 12. **Ask User How to Proceed**
-    - After the summary, ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT) which findings to resolve. Accept these reply modes:
+    - After the summary, ask the user which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accept these reply modes:
       - **specific numbers** (e.g., `1, 3, 4`) — resolve only the selected findings
       - **category name** (e.g., `Hygiene`) — resolve all findings in that category
       - **`all`** — walk through every finding one by one

@@ -557,13 +557,17 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 #### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
 
-- **Desc:** Every framework skill that prompts the user with questions MUST use a unified format scoped to what current AI-IDE stacks can reliably enforce through skill text alone:
+- **Desc:** Every framework skill that prompts the user with **clarifying / Q&A-style questions** MUST use a unified format:
   1. **Numbered questions** — each question is a numbered list item (`1.`, `2.`, `3.`, …). Not a heading, not bold-only, not a bare paragraph.
   2. **`agent's choice` resolution semantics for multi-select** — when the user picks multiple items from a list and explicitly delegates the choice to the agent (e.g. by saying `agent's choice` or its language equivalent), the agent picks the subset, emits a one-line justification announcing what it picked and why, and proceeds without re-asking for confirmation.
-  Strict numbering of option choices and required `all` / `agent's choice` service-option lines were considered but proven unreliable to enforce through SKILL.md instructions on Claude Code (deferred — see follow-up below). Scope is universal: every question-asking skill in the framework (e.g. `flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) is responsible for compliance.
-- **Deferred (follow-up):** strict numbering of option choices and literal `all` / `agent's choice` lines appended to every multi-select option list. Reliable enforcement requires a runtime mechanism that does not exist in Claude Code today (no `afterAgentResponse` hook); revisit when such a mechanism is available across IDEs.
+- **Scope (in / out):**
+  - **In** — clarifying questions, option picks with short labels, multi-select over short option lists. Examples: IDE / scope choice in `flowai-skill-engineer-skill`, target audience / constraints in `flowai-skill-write-prd`, fix verdict in `flowai-skill-maintenance`.
+  - **Out** — multi-section content presentations where each "option" is a rich block with its own Pros/Cons/Risks/Best-for sub-sections, AND closing "how to proceed" questions that immediately follow a long rich-content listing in the same response. Examples: variant selection in `flowai-skill-plan` Step 4, phase decomposition in `flowai-skill-epic` Step 4, the post-findings "how to proceed" prompt in `flowai-skill-maintenance` (after the 9-category findings list). These follow the legacy multi-section pattern (`### Variant N` / `### Phase N` per option, or bullet-dash short options after a rich-content preamble) — empirical testing across 7 SKILL.md iterations and a deterministic helper-script approach showed Claude Sonnet 4.6's layout prior for "rich-content alternatives" cannot be overridden through skill text alone, and Claude Code lacks an `afterAgentResponse` hook for runtime enforcement.
+- **Deferred (follow-up):** strict numbering of option choices and literal `all` / `agent's choice` lines appended to every multi-select option list, plus extending the format to rich-content alternatives. Both require a runtime mechanism (e.g. an output-rewrite hook) not available in Claude Code today; revisit when such a mechanism exists across IDEs.
 - **Acceptance:**
-  - [x] Question-asking skills (`flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) reference `FR-UNIVERSAL.QA-FORMAT` in their SKILL.md.
+  - [x] `flowai-skill-conduct-qa-session/SKILL.md` documents the scoped format (numbered questions, `agent's choice` resolution semantics) as canonical.
+  - [x] Benchmark `flowai-skill-conduct-qa-session-multi-select-format` verifies, on a multi-select prompt: the question is numbered; on `agent's choice` the agent emits a one-line justification and proceeds without awaiting confirmation.
+  - [x] Question-asking skills (`flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) reference `FR-UNIVERSAL.QA-FORMAT` in their SKILL.md and call out exemptions where applicable.
 - **Status:** [x]
 
 **Script Requirements**

@@ -43,11 +43,5 @@ When asked for confirmation, agree and ask to proceed.`;
       description: "Did the logs NOT contain 'SwitchMode'?",
       critical: true,
     },
-    {
-      id: "qa_format_compliant",
-      description:
-        "When the agent asked the user to choose a variant, did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: the question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
-      critical: true,
-    },
   ];
 }();

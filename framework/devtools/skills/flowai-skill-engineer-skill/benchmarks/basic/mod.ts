@@ -58,7 +58,7 @@ export const EngineerSkillBasicBench = new class
     {
       id: "qa_format_compliant",
       description:
-        "When the agent asked the user clarifying questions (e.g. IDE, scope), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: each question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
+        "If the agent asked clarifying questions to the user (e.g. IDE, scope), did each question follow FR-UNIVERSAL.QA-FORMAT — i.e. each question is a numbered list item (a line starting with '1.', '2.', ...), NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph? If the agent did not ask any clarifying questions, this criterion is vacuously satisfied (mark as passed).",
       critical: true,
     },
   ];

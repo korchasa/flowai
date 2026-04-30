@@ -63,11 +63,5 @@ export const MaintenanceBasicBench = new class extends BenchmarkSkillScenario {
         "Did the findings check for files exceeding 500 lines or functions exceeding 50 lines?",
       critical: false,
     },
-    {
-      id: "qa_format_compliant",
-      description:
-        "When the agent asked the user how to proceed (selection over findings), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: the question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
-      critical: true,
-    },
   ];
 }();

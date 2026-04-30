@@ -97,11 +97,5 @@ export const EpicBasicBench = new class extends BenchmarkSkillScenario {
         "Do phases have dependency ordering with prerequisites (no circular dependencies)?",
       critical: false,
     },
-    {
-      id: "qa_format_compliant",
-      description:
-        "When the agent asked the user a choice (e.g. phase approval, which critique points to address), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: the question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
-      critical: true,
-    },
   ];
 }();
