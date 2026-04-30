@@ -1,0 +1,8 @@
+Result: FAILED (Errors: 5, Warnings: 0)
+Checklist:
+  [x] questions_numbered: The agent presented the question block prefixed with '1.' — a numbered list marker.
+  [ ] options_numbered (ERROR): All five options (Metrics, Logs, Traces, Profiles, Real-User-Monitoring) are presented with dash bullet markers ('- **Metrics**', '- **Logs**', etc.), not as a numbered list (1., 2., 3., ...).
+  [ ] service_option_all (ERROR): The agent mentions 'или все' ('or all') in closing prose, but this is not a proper service option literally named 'all' appended as a numbered item after the real choices.
+  [ ] service_option_agent_choice (ERROR): There is no service option named "agent's choice" anywhere in the agent's response.
+  [ ] agent_choice_announces (ERROR): The 'agent's choice' service option was never presented.
+  [ ] agent_choice_proceeds (ERROR): Since 'agent's choice' was not offered, this behavior was never triggered.
