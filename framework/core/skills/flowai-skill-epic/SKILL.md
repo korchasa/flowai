@@ -44,10 +44,12 @@ documentation, web) to understand the problem before asking the user.
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
 
-When asking the user a choice (phase approval, critique points to address):
+For **clarifying / uncertainty-resolution questions** asked during research (Step 2):
 
 - Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
 - For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
+**Phase approval (Step 4) and critique-points selection (Step 7) are exempt** — phase decomposition is a multi-section content presentation (the same prior that drives variant analysis), and critique triage is auto-classified by the agent without asking the user.
 
 ## Instructions
 
