@@ -37,7 +37,7 @@ When asked to write a PRD:
    business goal.
 2. **Ask Clarifying Questions**: If key context is missing (e.g., "Who is this
    for?", "What are the constraints?"), ask the user before generating the full
-   doc. Follow `flowai-skill-conduct-qa-session` and the **Question Format** section below (FR-UNIVERSAL.QA-FORMAT).
+   doc. Follow the **Question Format** section above (FR-UNIVERSAL.QA-FORMAT).
 3. **Drafting**: Use the template below.
 4. **Review**: Check against the "Bad vs Good" examples in Section 4.
 5. **Persist**: MUST write the final PRD to a file (e.g., `documents/prd-<slug>.md`

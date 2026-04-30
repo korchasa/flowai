@@ -160,7 +160,6 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `flowai-skill-write-in-informational-style` — informational writing style
 - `flowai-skill-manage-github-tickets` — GitHub issue management
 - `flowai-skill-browser-automation` — browser automation
-- `flowai-skill-conduct-qa-session` — Q&A sessions
 - `flowai-skill-analyze-context` — token usage analysis
 - `flowai-skill-engineer-prompts-for-instant` — prompts for fast models
 - `flowai-skill-engineer-prompts-for-reasoning` — prompts for reasoning models
