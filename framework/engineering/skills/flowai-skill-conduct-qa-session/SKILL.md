@@ -1,47 +1,59 @@
 ---
 name: flowai-skill-conduct-qa-session
-description: How to conduct a Q&A session with the user
+description: How to conduct a Q&A session with the user. Canonical reference for FR-UNIVERSAL.QA-FORMAT.
 ---
 
 # How to Conduct a Q&A Session
 
 When you need to clarify requirements, gather missing information, or discuss
-design choices with the user, follow these strict guidelines.
+design choices with the user, follow these guidelines. This skill is the
+**canonical reference** for `FR-UNIVERSAL.QA-FORMAT`.
 
 ## 1. Language
 
-- **Match the User's Language**: Ask questions in the same language as the user's last query, unless explicitly instructed otherwise.
+Match the user's language. Reply in the same language as the last user turn
+unless explicitly told otherwise.
 
-## 2. Formatting & Structure
+## 2. Numbered questions (mandatory)
 
-- **Number Your Questions**: Always use a numbered list for questions (1., 2.,
-  3., ...).
-- **Batch Size**: Ask **1 to 5 questions** per response. Do not overwhelm the
-  user with too many questions at once.
-- **Prioritize**: Start with the most critical or blocking questions first.
+Every question MUST be a numbered list item — a line starting with `1.`,
+`2.`, `3.`, …, followed by a space. Not a heading (`# …`, `## …`), not a
+bold-only line (`**Title**`), not a bare paragraph.
 
-## 3. Content & Guidance
+Example (single question, single-select):
 
-- **Provide Context**: Never ask a "naked" question. Add background information
-  or context to help the user understand _why_ you are asking.
-- **Facilitate Decision Making**: Provide data or hints that make it easier for
-  the user to answer.
+1. **Storage backend** — sessions are short-lived (≤ 30 min); persistence not
+   required.
+   - Redis — fastest, ephemeral with TTL.
+   - PostgreSQL — already in stack, simpler deploy.
+   - In-memory — zero deps, loses state on restart.
 
-## 4. Option Comparison
+The user replies with a label or a number; you proceed.
 
-- **Compare Variants**: If asking the user to choose between options (A vs. B),
-  explicitly compare them in the question description.
-  - Highlight Pros/Cons/Risks per option + Trade-offs across options.
-  - Explain the impact of each choice.
+## 3. Multi-select with `agent's choice`
 
-## Example
+When the user picks any subset from a list (multi-select) and delegates the
+choice to you — by saying `agent's choice`, `на твой выбор`, `выбери сам`,
+or an equivalent — apply this resolution:
 
-**Bad:** "Which database?"
+1. Pick the subset yourself.
+2. Emit **one short line** naming what you picked and why (e.g.
+   *"Picking metrics + logs — sufficient for baseline SLOs without trace
+   storage cost."*).
+3. Proceed with the rest of the task. Do NOT prompt the user for yes/no
+   confirmation on your auto-selection.
 
-**Good:** "1. **Database Selection**: For the session storage, we have two main
-options. Which do you prefer? - **Redis**: Extremely fast, ideal for ephemeral
-data with TTL, but adds a new infrastructure dependency. - **PostgreSQL**: We
-already use it, simplifies the stack, but slightly slower for high-frequency
-reads/writes.
+Examples of the user delegating: `agent's choice`, `pick the best`,
+`на твой выбор`, `тебе виднее`. Treat any clear delegation phrase the same
+way.
 
-    *Recommendation: Start with Postgres for simplicity, migrate to Redis if load increases.*"
+When the user picks the options themselves (e.g. `metrics, logs`,
+`1, 3`, `all`), use exactly those — no auto-pick.
+
+## 4. Content & guidance
+
+- **Provide context** with each question — never naked.
+- **Compare variants** when trade-offs matter: list short Pros/Cons or impact
+  per option.
+- **Recommend** when one option is clearly better for the stated context.
+- **Batch size**: 1–5 questions per response. Most blocking question first.

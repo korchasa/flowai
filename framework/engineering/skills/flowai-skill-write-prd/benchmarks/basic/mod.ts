@@ -71,5 +71,11 @@ export const WritePrdBasicBench = new class extends BenchmarkSkillScenario {
         "Are requirements specific and measurable rather than vague (e.g., 'latency < 200ms' instead of 'should be fast')?",
       critical: true,
     },
+    {
+      id: "qa_format_compliant",
+      description:
+        "When the agent asked the user clarifying questions (target audience, constraints, timeline), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: each question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
+      critical: true,
+    },
   ];
 }();

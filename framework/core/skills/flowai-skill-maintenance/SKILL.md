@@ -41,6 +41,13 @@ Categories checked:
 7.  **User decides**: Every fix requires explicit user approval. Never apply fixes silently.
 </rules>
 
+## Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (resolution selection, individual fix verdict):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## Instructions
 
 <step_by_step>
@@ -154,19 +161,20 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       ```
 
 11. **Ask User How to Proceed**
-    - After the summary, ask the user how they want to proceed. Offer these options:
-      - **"all"** — walk through every finding one by one
-      - **specific numbers** (e.g., "1, 3, 4") — resolve only selected findings
-      - **category name** (e.g., "Hygiene") — resolve all findings in that category
-      - **"done"** — stop, no fixes needed
+    - After the summary, ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT) which findings to resolve. Accept these reply modes:
+      - **specific numbers** (e.g., `1, 3, 4`) — resolve only the selected findings
+      - **category name** (e.g., `Hygiene`) — resolve all findings in that category
+      - **`all`** — walk through every finding one by one
+      - **`agent's choice`** — pick the most impactful subset yourself, emit a one-line justification, and proceed without re-asking
+      - **`done`** — stop, no fixes needed
 
 12. **Interactive Resolution Loop**
     - For each finding the user chose to resolve (in order):
       1. Show the finding details: file, problem, and proposed fix.
-      2. Ask the user: **"Apply fix / Skip / Edit fix?"**
-         - **Apply**: Execute the proposed fix (edit file, move file, delete code, etc.).
-         - **Skip**: Move to the next finding.
-         - **Edit**: User provides an alternative fix — apply that instead.
+      2. Ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT):
+         - **Apply** — execute the proposed fix (edit file, move file, delete code, etc.).
+         - **Skip** — move to the next finding.
+         - **Edit** — user provides an alternative fix; apply that instead.
       3. After applying a fix, briefly confirm what was done.
       4. Move to the next finding.
     - After all selected findings are processed, show a brief summary of actions taken (N applied, M skipped, K edited).

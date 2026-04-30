@@ -557,12 +557,16 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 #### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
 
-- **Desc:** Every framework skill that prompts the user with questions MUST use a unified format. Questions are presented as a numbered list (`1.`, `2.`, …); option choices inside a question are also numbered (`1.`, `2.`, …). For **multi-select** questions — where the user may pick several items from the list at once (multiple selection) — the option list MUST end with two extra service options on top of the actual choices: `all` (apply every listed option) and `agent's choice` (the agent picks for the user, announces the selection with a brief justification, and continues without waiting for confirmation). Single-choice questions do not get the service options. Scope is universal: every question-asking skill in the framework (e.g. `flowai-skill-conduct-qa-session`, `flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) is responsible for compliance.
+- **Desc:** Every framework skill that prompts the user with questions MUST use a unified format scoped to what current AI-IDE stacks can reliably enforce through skill text alone:
+  1. **Numbered questions** — each question is a numbered list item (`1.`, `2.`, `3.`, …). Not a heading, not bold-only, not a bare paragraph.
+  2. **`agent's choice` resolution semantics for multi-select** — when the user picks multiple items from a list and explicitly delegates the choice to the agent (e.g. by saying `agent's choice` or its language equivalent), the agent picks the subset, emits a one-line justification announcing what it picked and why, and proceeds without re-asking for confirmation.
+  Strict numbering of option choices and required `all` / `agent's choice` service-option lines were considered but proven unreliable to enforce through SKILL.md instructions on Claude Code (deferred — see follow-up below). Scope is universal: every question-asking skill in the framework (e.g. `flowai-skill-conduct-qa-session`, `flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) is responsible for compliance.
+- **Deferred (follow-up):** strict numbering of option choices and literal `all` / `agent's choice` lines appended to every multi-select option list. Reliable enforcement requires a runtime mechanism that does not exist in Claude Code today (no `afterAgentResponse` hook); revisit when such a mechanism is available across IDEs.
 - **Acceptance:**
-  - [ ] `flowai-skill-conduct-qa-session/SKILL.md` documents the unified format (numbered questions, numbered options, multi-select service options `all` + `agent's choice` with announce-and-continue semantics) as canonical.
-  - [ ] Benchmark `flowai-skill-conduct-qa-session-multi-select-format` verifies, on a multi-select prompt: numbered options, presence of `all` and `agent's choice` service options, and that on `agent's choice` the agent emits a one-line justification and proceeds without awaiting confirmation.
-  - [ ] Question-asking skills (`flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) reference `FR-UNIVERSAL.QA-FORMAT` in their SKILL.md and emit the format in their existing benchmark traces (judged via checklist items added to each skill's basic scenario).
-- **Status:** [ ]
+  - [x] `flowai-skill-conduct-qa-session/SKILL.md` documents the scoped format (numbered questions, `agent's choice` resolution semantics) as canonical.
+  - [x] Benchmark `flowai-skill-conduct-qa-session-multi-select-format` verifies, on a multi-select prompt: the question is numbered; on `agent's choice` the agent emits a one-line justification and proceeds without awaiting confirmation.
+  - [x] Question-asking skills (`flowai-skill-plan`, `flowai-skill-epic`, `flowai-skill-write-prd`, `flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`) reference `FR-UNIVERSAL.QA-FORMAT` in their SKILL.md.
+- **Status:** [x]
 
 **Script Requirements**
 

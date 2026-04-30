@@ -8,6 +8,13 @@ license: Based on https://github.com/anthropics/skills
 
 This skill guides through creating effective Agent Skills — markdown-based packages that teach AI agents specialized workflows, domain knowledge, and procedural capabilities.
 
+## Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (IDE, scope, behavior decisions):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## About Skills
 
 Skills are self-contained packages (directory with `SKILL.md`) that extend agent capabilities with:
