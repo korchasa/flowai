@@ -12,6 +12,13 @@ guidelines to ensure clarity, completeness, and alignment. This rule is designed
 to apply "Prompt Engineering" principles—clarity, constraints, and structure—to
 documentation.
 
+## 0. Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (audience, constraints, timeline):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## 1. Core Principles
 
 - **Outcome-Oriented**: Focus on the _value_ delivered to the user, not just the
@@ -30,7 +37,7 @@ When asked to write a PRD:
    business goal.
 2. **Ask Clarifying Questions**: If key context is missing (e.g., "Who is this
    for?", "What are the constraints?"), ask the user before generating the full
-   doc (see `flowai-skill-conduct-qa-session`).
+   doc. Follow `flowai-skill-conduct-qa-session` and the **Question Format** section below (FR-UNIVERSAL.QA-FORMAT).
 3. **Drafting**: Use the template below.
 4. **Review**: Check against the "Bad vs Good" examples in Section 4.
 5. **Persist**: MUST write the final PRD to a file (e.g., `documents/prd-<slug>.md`

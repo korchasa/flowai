@@ -8,6 +8,13 @@ license: Based on https://github.com/anthropics/skills
 
 This skill provides guidance for creating effective flowai commands.
 
+## Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (IDE, scope, examples to cover):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## About flowai Commands
 
 Commands are modular, self-contained packages that extend flowai's capabilities by providing specialized knowledge, workflows, and tools. Think of them as "onboarding guides" for specific domains or tasks—they transform flowai from a general-purpose agent into a specialized agent equipped with procedural knowledge that no model can fully possess.

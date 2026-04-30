@@ -55,5 +55,11 @@ export const EngineerCommandCreateBench = new class
         "Did the agent detect or ask about the IDE environment and place the command in the correct path?",
       critical: false,
     },
+    {
+      id: "qa_format_compliant",
+      description:
+        "When the agent asked the user clarifying questions (usage examples, IDE, scope), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: each question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
+      critical: true,
+    },
   ];
 }();

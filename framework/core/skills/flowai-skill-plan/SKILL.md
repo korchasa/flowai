@@ -34,6 +34,13 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 8. **Traceability & Acceptance Tuple**: If the task creates, modifies, or implements FR-* requirements, the `implements:` YAML frontmatter is REQUIRED with every affected FR-* code. Every item in `## Definition of Done` MUST pair with an FR-ID and a runnable acceptance reference — `Test: <path>::<name>` (or `Benchmark: <scenario-id>`) + `Evidence: <command>`. Exception — `manual — <reviewer>` — only when automation cost exceeds defect cost. DoD items without this tuple are not accepted and must be rewritten before the plan is finalized. The test does not need to exist yet — the develop phase creates it as RED — but the plan MUST fix WHERE it will live. If an FR is new (not yet in `documents/requirements.md`), the plan MUST also list "add FR-XXX section to SRS with `**Acceptance:**` field" as a DoD item, paired with the same tuple.
 </rules>
 
+## Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (variant selection, option pick):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## Instructions
 
 <step_by_step>
@@ -51,11 +58,29 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 4. **Strategic Analysis & Variant Selection**
    - Generate variants in chat following `Variant Analysis` from AGENTS.md.
    - MUST propose **2+ distinct** implementation approaches for non-trivial tasks.
-   - For EACH variant, present: **Pros**, **Cons**, **Risks**, and **Best For** (use cases/constraints it handles).
-   - Across all variants, analyze **Trade-offs**: security vs complexity, performance vs maintainability, cost vs features.
-   - **Exception — single variant**: Only offer 1 variant when the task has an obvious path (e.g., "create a text file", "add a config line") with no meaningful trade-offs. Briefly explain why alternatives don't apply.
-   - Ask user which variant they prefer. Wait for response.
-   - When user selects a variant, immediately proceed to fill the Solution section (Step 5). Do NOT stop after receiving the selection.
+   - **Exception — single variant**: only offer 1 variant when the task has an obvious path (e.g., "create a text file", "add a config line") with no meaningful trade-offs. Briefly explain why alternatives don't apply (no selection question needed; skip to Step 5).
+   - For 2+ variants, present the selection as a single numbered question per FR-UNIVERSAL.QA-FORMAT. The question line itself is `1. **<topic>** — <one-sentence trade-off across variants>`. Each variant is a numbered sub-option (`1.`, `2.`, …) carrying a short label only. Full **Pros**, **Cons**, **Risks**, **Best for** details for each variant go in a separate section BELOW the question — NOT inside the numbered list. Example shape (mimic this exact structure):
+
+     ```
+     1. **Implementation variant** — pick one. Trade-off: simplicity vs distribution portability.
+        1. `deno run` + task alias
+        2. `deno compile` → portable binary
+
+     #### Variant 1 — `deno run` + task alias
+     - Pros: minimum complexity, no build step.
+     - Cons: requires Deno on the target machine.
+     - Risks: none significant.
+     - Best for: educational projects, internal tools.
+
+     #### Variant 2 — `deno compile` → portable binary
+     - Pros: self-contained binary; no runtime dependency.
+     - Cons: ~70 MB output; build step adds friction.
+     - Risks: overkill for trivial CLI.
+     - Best for: distributable CLIs without runtime dependency on Deno.
+     ```
+
+     Do NOT use `### Вариант A` / `### Variant A` headings as the *primary* presentation — they are detail sections under the numbered question, not replacements for it.
+   - When user selects a variant by number or name, immediately proceed to fill the Solution section (Step 5). Do NOT stop after receiving the selection.
 5. **Detail Solution (S)** — execute immediately after user selects a variant
    - Re-read the task file you created in Step 3.
    - Overwrite the `Solution` section placeholder with concrete implementation steps for the selected variant (follow `### GODS Format` from AGENTS.md).

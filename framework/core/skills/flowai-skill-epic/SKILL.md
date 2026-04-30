@@ -42,6 +42,13 @@ documentation, web) to understand the problem before asking the user.
 11. **Traceability**: If task implements known FR-* requirements, add `implements:` YAML frontmatter with FR-* codes from SRS. Optional — omit if FR-* not yet defined.
 </rules>
 
+## Question Format (FR-UNIVERSAL.QA-FORMAT)
+
+When asking the user a choice (phase approval, critique points to address):
+
+- Each question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
+- For multi-select questions, when the user delegates with `agent's choice` (or equivalent), pick the subset yourself, emit a one-line justification of the pick, and proceed without re-asking for confirmation.
+
 ## Instructions
 
 <step_by_step>

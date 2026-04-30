@@ -55,6 +55,12 @@ export const EngineerSkillBasicBench = new class
         "Did the agent avoid creating unnecessary auxiliary files (README.md, CHANGELOG.md)?",
       critical: false,
     },
+    {
+      id: "qa_format_compliant",
+      description:
+        "When the agent asked the user clarifying questions (e.g. IDE, scope), did it follow FR-UNIVERSAL.QA-FORMAT? Concretely: each question is a numbered list item (a line starting with '1.', '2.', ...) — NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph.",
+      critical: true,
+    },
   ];
 
   override setup(sandboxDir: string): Promise<void> {
