@@ -181,31 +181,90 @@ function renderDashboardRows(groups: ScenarioGroupStats[]): string {
   }).join("");
 }
 
-/** Renders a single scenario detail view (header, summary, events timeline). */
-function renderScenarioDetail(
-  meta: ScenarioMetadata,
+const EVENT_ICONS: Record<string, string> = {
+  message: "\u{1F4AC}",
+  interaction: "\u{1F916}",
+  command: "\u{1F41A}",
+  evidence: "\u{1F4C2}",
+  evaluation: "⚖️",
+  summary: "\u{1F4CA}",
+  tools_definition: "\u{1F6E0}️",
+  context: "\u{1F4DD}",
+};
+
+/** Renders a single trace event as HTML. */
+function renderEvent(event: TraceEvent, eventId: string): string {
+  const title = event.metadata.description || event.type;
+
+  let content = event.content;
+  if (content.includes("%")) {
+    try {
+      content = decodeURIComponent(content);
+    } catch {
+      // If decoding fails, keep original content
+    }
+  }
+
+  const roleAttr = event.metadata.role_attr
+    ? `data-role="${event.metadata.role_attr}"`
+    : "";
+  const sourceAttr = event.metadata.source
+    ? `data-source="${event.metadata.source}"`
+    : "";
+  const stepAttr = event.metadata.step !== undefined
+    ? `data-step="${event.metadata.step}"`
+    : "";
+  const dataAttrs =
+    `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
+
+  const icon = EVENT_ICONS[event.type] || "\u{1F539}";
+
+  const headerContent = `
+              <span class="timestamp">${
+    new Date(event.timestamp).toLocaleTimeString()
+  }</span>
+              <span class="type-icon">${icon}</span>
+              <span class="type">${event.type}</span>
+              <span class="title">${escape(String(title))}</span>
+              ${
+    event.metadata.step !== undefined
+      ? `<span class="step-badge">Step ${event.metadata.step}</span>`
+      : ""
+  }
+            `;
+
+  return `
+              <div class="event event-${event.type}" ${dataAttrs}>
+                <div class="event-header">${headerContent}</div>
+                <div class="content">${content}</div>
+              </div>
+            `;
+}
+
+/**
+ * Renders the per-scenario events timeline. Groups consecutive events that
+ * share an `interactionId` into a single `event-group` block, and emits a
+ * step separator whenever `metadata.step` advances.
+ */
+function renderEventTimeline(
+  scenarioId: string,
   events: TraceEvent[],
 ): string {
+  const scenarioEvents = events.filter((e) => e.scenarioId === scenarioId);
+  const out: string[] = [];
   let currentStep = -1;
-  const scenarioEvents = events.filter((e) => e.scenarioId === meta.id);
-
-  const eventsHtml: string[] = [];
   let currentInteractionId: string | null = null;
   let interactionGroup: string[] = [];
 
   const flushInteraction = () => {
     if (interactionGroup.length > 0) {
-      eventsHtml.push(
-        `<div class="event-group">${interactionGroup.join("")}</div>`,
-      );
+      out.push(`<div class="event-group">${interactionGroup.join("")}</div>`);
       interactionGroup = [];
     }
   };
 
   scenarioEvents.forEach((event, index) => {
-    const title = event.metadata.description || event.type;
-    const eventId = `event-${meta.id}-${index}`;
-    let stepHeader = "";
+    const eventId = `event-${scenarioId}-${index}`;
 
     if (
       event.metadata.step !== undefined &&
@@ -213,13 +272,12 @@ function renderScenarioDetail(
     ) {
       flushInteraction();
       currentStep = event.metadata.step as number;
-      stepHeader = `
+      out.push(`
                 <div class="step-separator">
                   <h2>Step ${currentStep}</h2>
                   <div class="line"></div>
                 </div>
-              `;
-      eventsHtml.push(stepHeader);
+              `);
     }
 
     const interactionId = event.metadata.interactionId as string | null;
@@ -228,110 +286,61 @@ function renderScenarioDetail(
       currentInteractionId = interactionId;
     }
 
-    let content = event.content;
-    if (content.includes("%")) {
-      try {
-        content = decodeURIComponent(content);
-      } catch {
-        // If decoding fails, keep original content
-      }
-    }
-
-    const eventClass = `event event-${event.type}`;
-    const roleAttr = event.metadata.role_attr
-      ? `data-role="${event.metadata.role_attr}"`
-      : "";
-    const sourceAttr = event.metadata.source
-      ? `data-source="${event.metadata.source}"`
-      : "";
-    const stepAttr = event.metadata.step !== undefined
-      ? `data-step="${event.metadata.step}"`
-      : "";
-    const dataAttrs =
-      `id="${eventId}" data-type="${event.type}" ${roleAttr} ${sourceAttr} ${stepAttr}`;
-
-    const iconMap: Record<string, string> = {
-      message: "\u{1F4AC}",
-      interaction: "\u{1F916}",
-      command: "\u{1F41A}",
-      evidence: "\u{1F4C2}",
-      evaluation: "\u2696\uFE0F",
-      summary: "\u{1F4CA}",
-      tools_definition: "\u{1F6E0}\uFE0F",
-      context: "\u{1F4DD}",
-    };
-    const icon = iconMap[event.type] || "\u{1F539}";
-
-    const headerContent = `
-              <span class="timestamp">${
-      new Date(event.timestamp).toLocaleTimeString()
-    }</span>
-              <span class="type-icon">${icon}</span>
-              <span class="type">${event.type}</span>
-              <span class="title">${escape(String(title))}</span>
-              ${
-      event.metadata.step !== undefined
-        ? `<span class="step-badge">Step ${event.metadata.step}</span>`
-        : ""
-    }
-            `;
-
-    const eventHtml = `
-              <div class="${eventClass}" ${dataAttrs}>
-                <div class="event-header">${headerContent}</div>
-                <div class="content">${content}</div>
-              </div>
-            `;
-
+    const eventHtml = renderEvent(event, eventId);
     if (interactionId) {
       interactionGroup.push(eventHtml);
     } else {
-      eventsHtml.push(eventHtml);
+      out.push(eventHtml);
     }
   });
 
   flushInteraction();
+  return out.join("\n");
+}
 
-  const finalEventsHtml = eventsHtml.join("\n");
-
-  const summaryHtml = meta.summary
-    ? `
+/** Renders the summary metrics card for a scenario, or empty string when summary is missing. */
+function renderScenarioSummaryCard(
+  summary: ScenarioMetadata["summary"],
+): string {
+  if (!summary) return "";
+  return `
         <div class="summary-card">
           <div class="metric">
             <span class="metric-value" style="color: ${
-      meta.summary.success ? "var(--success-color)" : "var(--error-color)"
-    }">${meta.summary.success ? "PASSED" : "FAILED"}</span>
+    summary.success ? "var(--success-color)" : "var(--error-color)"
+  }">${summary.success ? "PASSED" : "FAILED"}</span>
             <span class="metric-label">Result</span>
           </div>
           <div class="metric">
-            <span class="metric-value">${meta.summary.errors}</span>
+            <span class="metric-value">${summary.errors}</span>
             <span class="metric-label">Errors</span>
           </div>
           <div class="metric">
-            <span class="metric-value">${meta.summary.warnings}</span>
+            <span class="metric-value">${summary.warnings}</span>
             <span class="metric-label">Warnings</span>
           </div>
           <div class="metric">
             <span class="metric-value">${
-      (meta.summary.durationMs / 1000).toFixed(1)
-    }s</span>
+    (summary.durationMs / 1000).toFixed(1)
+  }s</span>
             <span class="metric-label">Duration</span>
           </div>
           <div class="metric">
-            <span class="metric-value">${meta.summary.tokensUsed}</span>
+            <span class="metric-value">${summary.tokensUsed}</span>
             <span class="metric-label">Tokens</span>
           </div>
           <div class="metric">
             <span class="metric-value">$${
-      meta.summary.totalCost.toFixed(6)
-    }</span>
+    summary.totalCost.toFixed(6)
+  }</span>
             <span class="metric-label">Cost</span>
           </div>
-        </div>`
-    : "";
+        </div>`;
+}
 
+/** Renders the scenario header (title, meta-grid, initial query). */
+function renderScenarioHeader(meta: ScenarioMetadata): string {
   return `
-        <article id="scenario-${meta.id}" class="scenario-section">
           <header class="scenario-header">
             <div class="scenario-title-row">
               <h1>Trace: ${escape(formatScenarioName(meta.id, meta.name))}</h1>
@@ -360,8 +369,6 @@ function renderScenarioDetail(
             </div>
           </header>
 
-          ${summaryHtml}
-
           <div class="event event-context">
             <div class="event-header"><span class="title">INITIAL QUERY</span></div>
             <div class="content">
@@ -369,10 +376,22 @@ function renderScenarioDetail(
     escape(meta.userQuery).replace(/\n/g, "<br>")
   }</blockquote>
             </div>
-          </div>
+          </div>`;
+}
+
+/** Renders a single scenario detail view (header, summary, events timeline). */
+function renderScenarioDetail(
+  meta: ScenarioMetadata,
+  events: TraceEvent[],
+): string {
+  return `
+        <article id="scenario-${meta.id}" class="scenario-section">
+          ${renderScenarioHeader(meta)}
+
+          ${renderScenarioSummaryCard(meta.summary)}
 
           <div class="events-container">
-            ${finalEventsHtml}
+            ${renderEventTimeline(meta.id, events)}
           </div>
         </article>
       `;
@@ -406,8 +425,8 @@ function renderToC(groups: ScenarioGroupStats[]): string {
               ? (s.summary.success ? "status-pass" : "status-fail")
               : "status-pending";
             const statusIcon = s.summary
-              ? (s.summary.success ? "\u2713" : "\u2717")
-              : "\u25CB";
+              ? (s.summary.success ? "✓" : "✗")
+              : "○";
             return `<li data-id="${s.id}" onclick="showScenario('${s.id}')">
                 <span class="toc-status ${statusClass}">${statusIcon}</span>
                 <span class="toc-scenario">${escape(s.name)}</span>
@@ -416,14 +435,14 @@ function renderToC(groups: ScenarioGroupStats[]): string {
 
           // Multi-run group
           const groupStatusClass = g.allPassed ? "status-pass" : "status-fail";
-          const groupStatusIcon = g.allPassed ? "\u2713" : "\u2717";
+          const groupStatusIcon = g.allPassed ? "✓" : "✗";
           const subItems = g.runs.map((s) => {
             const sc = s.summary
               ? (s.summary.success ? "status-pass" : "status-fail")
               : "status-pending";
             const si = s.summary
-              ? (s.summary.success ? "\u2713" : "\u2717")
-              : "\u25CB";
+              ? (s.summary.success ? "✓" : "✗")
+              : "○";
             return `<li data-id="${s.id}" onclick="showScenario('${s.id}')" style="padding-left: 24px; font-size: 0.8em;">
                 <span class="toc-status ${sc}">${si}</span>
                 <span class="toc-scenario">run-${s.runIndex || "?"}</span>
