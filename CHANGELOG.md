@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.3](https://github.com/korchasa/flowai/compare/v0.12.2...v0.12.3) (2026-05-02)
+
+
+### Features
+
+* **bench:** isolate sandbox $HOME from user-level skills (FR-BENCH-ISOLATION) ([d1665bb](https://github.com/korchasa/flowai/commit/d1665bbca803c8425ed47918c983db43815fa079))
+
 ### [0.12.2](https://github.com/korchasa/flowai/compare/v0.12.1...v0.12.2) (2026-05-02)
 
 
