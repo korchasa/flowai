@@ -133,7 +133,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-skill-reflect` — self-analysis of the current session
 - `flowai-skill-reflect-by-history` — cross-session analysis of past IDE transcripts
 - `flowai-skill-investigate` — deep bug investigation via hypothesis-driven experiments
-- `flowai-skill-maintenance` — project health audit (8-category scan + interactive resolution)
+- `flowai-skill-maintenance` — project health audit (16-category scan + interactive resolution)
 - `flowai-skill-adapt-instructions` — re-adapt root AGENTS.md after upstream template change
 - `flowai-skill-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
 - `flowai-skill-configure-deno-commands` — configure Deno tasks

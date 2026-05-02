@@ -1,13 +1,13 @@
 ---
 name: flowai-skill-maintenance
-description: Use when the user asks for a project health audit, maintenance sweep, or 8-category lead-engineer scan followed by interactive issue-by-issue resolution with user approval. Do NOT trigger on routine lint/test runs, single-file cleanups, or standard "check project" requests.
+description: Use when the user asks for a project health audit, maintenance sweep, or multi-category lead-engineer scan followed by interactive issue-by-issue resolution with user approval. Do NOT trigger on routine lint/test runs, single-file cleanups, or standard "check project" requests.
 ---
 
 # Task: Project Maintenance & Health Audit
 
 ## Overview
 
-Execute a rigorous 8-category maintenance sweep, then walk the user through each finding interactively. The process has two distinct phases:
+Execute a rigorous multi-category maintenance sweep, then walk the user through each finding interactively. The process has two distinct phases:
 
 - **Scan Phase**: Run all checks silently, collecting findings into an internal list. No fixes during this phase.
 - **Resolution Phase**: Present the summary, then iterate through each finding — show details, propose a fix, ask the user for a decision, apply if approved.
@@ -28,6 +28,13 @@ Categories checked:
 8.  **Instruction Coherence**: Contradictions and ambiguities across project instructions.
 9.  **Tooling Relevance**: Skills, agents, rules, and hooks that don't match the project.
 10. **Documentation Health**: Broken GFM cross-links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, `documents/index.md` drift.
+11. **Architectural Integrity**: Dependency direction, import cycles, layer leakage, reverse dependencies.
+12. **Conceptual Duplication**: Parallel implementations of one decision; untyped path beside a typed sibling; diverging schema clones.
+13. **API Contract Review**: Capability-vs-implementation mismatch; sentinel-vs-missing conflation; defaults-toward-bug; dead enum values; type-level vs runtime invariant divergence.
+14. **Cross-Implementation Symmetry**: Capability / error-class / reserved-set / warning-latch parity across N implementations of one interface.
+15. **Defensive-Programming Smell**: Silent swallows of consumer-callback errors; wholesale failure swallowing; fallback-on-zero; error-as-decision coupling.
+16. **Invariant ↔ Test Pairing**: Documented architectural invariants without matching tests; stub-only contract tests where the real-binary path is gated/absent.
+17. **Public-Surface Quality**: Synonym duplication; free-function-and-method duplicates; barrel re-exports of internal-only symbols; reserved lists mixing positionals and flags.
 </context>
 
 ## Rules & Constraints
@@ -77,12 +84,14 @@ Collect all findings into an internal list. Each finding has: category, file/sym
      - Have no assertions.
      - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
      - Are commented out.
+   - **Invariant ↔ test pairing (lightweight)**: Extract SHOULD/MUST clauses from `AGENTS.md`, `CLAUDE.md`, `documents/design.md`. Grep test descriptors (`it`, `Deno.test`, `def test_`, `func Test`) for matching coverage; flag invariants with zero matching test names. (Deeper analysis — stub-only tests, hand-curated lists without cross-reference tests — lives in Category 15.)
 
 4. **Category 3: Complexity & Hotspots**
-   - **Files**: Flag any source file exceeding **500 lines**.
+   - **Project-context normalization**: Read project vision in `AGENTS.md` / `CLAUDE.md` and pick the LOC bucket BEFORE flagging files. Buckets: **thin wrapper / facade** (declared "wrapper", "adapter", "bindings", "SDK") → 300 lines; **service / framework / tool** (default) → 500 lines; **monolithic app / migration target** → 800 lines. State the bucket and quote the source phrase in the finding.
+   - **Files**: Flag any source file exceeding the bucket's threshold.
    - **Functions**: Scan for functions/methods exceeding **50 lines**.
-   - **God Objects**: Identify classes/modules with mixed concerns (e.g.,
-     logic + UI + database in one file).
+   - **God Objects**: Classes/modules with mixed concerns (logic + UI + DB in one file).
+   - **Mixed-concerns detection (beyond LOC)**: Flag a single file holding 2+ unrelated top-level concerns (e.g., parsing + lifecycle + formatting + protocol detection). Signals: cross-domain export verbs, heterogeneous imports, section comments naming distinct phases. Trips even when file is under the LOC threshold.
 
 5. **Category 4: Technical Debt Aggregation**
    - **Scan**: Search for `TODO`, `FIXME`, `HACK`, `XXX` tags in the codebase.
@@ -149,11 +158,21 @@ Collect all findings into an internal list. Each finding has: category, file/sym
    - **`documents/index.md` drift**: if `documents/index.md` exists, compare its FR rows against `documents/requirements.md` — flag rows whose status, summary, or anchor disagree with the SRS, and SRS FRs missing a row.
    - **Verdict**: each finding must reference the exact file (and line if applicable) and propose a concrete fix.
 
+**Categories 10–16 (architectural review)** — full sub-check details, patterns, thresholds, and verdict shape live in [references/architectural-categories.md](references/architectural-categories.md). READ THAT FILE BEFORE running these checks. Each finding follows the same `- [N] <site>: <problem>. (Fix: <fix>)` shape as Cats 1–9.
+
+11. **Category 10: Architectural Integrity** — cyclic imports through barrels (TDZ trap); layer leakage; reverse dependencies. Read declared layering in `AGENTS.md` / `CLAUDE.md` / SDS first.
+12. **Category 11: Conceptual Duplication** — parallel implementations of one decision; untyped path beside typed sibling; diverging schema clones.
+13. **Category 12: API Contract Review** — capability-vs-impl mismatch; sentinel-vs-missing conflation; default-toward-bug; dead enum values; type-vs-runtime invariant divergence.
+14. **Category 13: Cross-Implementation Symmetry** — capability / error-class / reserved-set / warning-latch parity across N implementations of one interface.
+15. **Category 14: Defensive-Programming Smell** — silent consumer-callback swallows; wholesale failure swallowing; fallback-on-zero (`||` vs `??`); error-as-decision coupling.
+16. **Category 15: Invariant ↔ Test Pairing** — deeper than Cat 2's spot-check. Architectural invariants without tests; stub-only contract tests; hand-curated lists without cross-reference tests.
+17. **Category 16: Public-Surface Quality** — synonym duplication; free-fn-and-method duplicates; barrel re-exports of internal-only symbols; reserved-flag lists mixing positionals and flags; overlapping public/private boundary.
+
 ### RESOLUTION PHASE
 
-11. **Present Summary**
+18. **Present Summary**
     - Output the full findings list, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings.
-    - **Category labels** — use these 9 categories. Even when the rest of the report is rendered in the user's language, the category label MUST be a clear DEDICATED tag for that category, not a translation that overlaps with another category's label. Acceptable: the English label verbatim, OR a translation that uniquely names the category. Forbidden: translating two distinct categories to the same word, OR omitting the new doc-system category entirely. If in doubt, fall back to the literal English label.
+    - **Category labels** — use the 16 categories below. Even when the rest of the report is rendered in the user's language, the category label MUST be a clear DEDICATED tag for that category, not a translation that overlaps with another category's label. Acceptable: the English label verbatim, OR a translation that uniquely names the category. Forbidden: translating two distinct categories to the same word, OR omitting the new doc-system category entirely. If in doubt, fall back to the literal English label.
       1. `Structural Integrity`
       2. `Code Hygiene`
       3. `Complexity & Hotspots`
@@ -163,25 +182,32 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       7. `Instruction Coherence`
       8. `Tooling Relevance`
       9. `Documentation Health` (FR-DOC-LINT) — REQUIRED whenever step 10 produced any finding. Distinct from #5 and #6: this group covers DOC-TO-DOC integrity (broken GFM cross-links, stale `[x]` FRs whose acceptance reference is missing, orphan FRs with no source-code link, SRS↔SDS contradictions, `documents/index.md` drift). NEVER fold these findings into `Consistency (Docs vs Code)` or `Documentation Coverage` — they are different concerns and FR-DOC-LINT consumers look specifically for the dedicated `Documentation Health` group.
+      10. `Architectural Integrity`
+      11. `Conceptual Duplication`
+      12. `API Contract Review`
+      13. `Cross-Implementation Symmetry`
+      14. `Defensive-Programming Smell`
+      15. `Invariant ↔ Test Pairing`
+      16. `Public-Surface Quality`
     - Each issue line follows the shape: `- [N] <file/symbol>: <problem>. (Fix: <proposed fix>)`
     - Number every finding sequentially across all categories (e.g., [1], [2], ..., [N]).
     - At the end of the summary, show the total count per category and overall.
-    - Example:
+    - Brief example (covers Categories 1, 2, 9):
       ```
       Structural Integrity
-      - [1] src/oldfile.ts: located in root, should be in src/utils/. (Fix: Move file)
+      - [1] src/oldfile.ts: in root, should be in src/utils/. (Fix: move)
 
       Code Hygiene
-      - [2] utils.ts: unused export `myFunc`. (Fix: Delete)
+      - [2] utils.ts: unused export `myFunc`. (Fix: delete)
 
       Documentation Health
-      - [3] src/cache.ts:5: broken GFM link to #fr-missing-no-such-anchor. (Fix: remove or repoint to a real heading)
-      - [4] FR-AUTH: marked [x] in SRS but no source-code reference. (Fix: add a [FR-AUTH](requirements.md#fr-auth-…) reference in the implementing file, or revert status to [ ])
+      - [3] FR-AUTH marked [x] in SRS, no source-code reference. (Fix: add `[FR-AUTH](...)` link or revert to [ ])
 
-      Total: 4 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 2)
+      Total: 3 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 1).
       ```
+    - One representative finding per category (including Cats 10–16: architectural integrity, conceptual duplication, API contract review, cross-implementation symmetry, defensive-programming smell, invariant↔test pairing, public-surface quality) lives in [references/example-findings.md](references/example-findings.md). Mirror that shape for new categories.
 
-12. **Ask User How to Proceed**
+19. **Ask User How to Proceed**
     - After the summary, ask the user which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accept these reply modes:
       - **specific numbers** (e.g., `1, 3, 4`) — resolve only the selected findings
       - **category name** (e.g., `Hygiene`) — resolve all findings in that category
@@ -189,7 +215,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       - **`agent's choice`** — pick the most impactful subset yourself, emit a one-line justification, and proceed without re-asking
       - **`done`** — stop, no fixes needed
 
-13. **Interactive Resolution Loop**
+20. **Interactive Resolution Loop**
     - For each finding the user chose to resolve (in order):
       1. Show the finding details: file, problem, and proposed fix.
       2. Ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT):
@@ -214,6 +240,13 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
 [ ] Checked Documentation Health (broken GFM links, stale [x] FRs, orphan FRs, SRS↔SDS contradictions, documents/index.md drift) — findings grouped under the dedicated `Documentation Health` header in the summary.
+[ ] Checked Architectural Integrity (cycles, layer leakage, reverse deps) against declared layering.
+[ ] Checked Conceptual Duplication (parallel decision tables, untyped/typed asymmetry, schema clones).
+[ ] Checked API Contract Review (capability-vs-impl, sentinel-vs-missing, default-toward-bug, dead enums, type-vs-runtime divergence).
+[ ] Checked Cross-Implementation Symmetry (capability / error-class / reserved-set / warning-latch parity).
+[ ] Checked Defensive-Programming Smell (callback swallows, wholesale swallows, fallback-on-zero, error-as-decision).
+[ ] Checked Invariant ↔ Test Pairing (SHOULD/MUST clauses → test descriptors; stub-only contract tests).
+[ ] Checked Public-Surface Quality (synonyms, free-fn-and-method dup, barrel re-exports of internals, reserved lists mixing positionals).
 [ ] Presented numbered summary of all findings, grouped by category.
 [ ] Asked the user how to proceed with resolution.
 [ ] Resolved selected findings interactively (apply/skip/edit per finding).
