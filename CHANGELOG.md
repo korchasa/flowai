@@ -2,6 +2,52 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.2](https://github.com/korchasa/flowai/compare/v0.12.1...v0.12.2) (2026-05-02)
+
+
+### Features
+
+* **bench:** add skill trigger benchmarks (FR-BENCH.TRIGGER) ([21511b8](https://github.com/korchasa/flowai/commit/21511b8d225e25cdca1d25422fe626c5eb99dca0))
+* **scripts:** add sync-global task to install framework to user-level IDE dirs ([6596564](https://github.com/korchasa/flowai/commit/65965649c489a0264289daec883140805e4ac236))
+* **skill-maintenance:** add 7 architectural review categories ([77887f0](https://github.com/korchasa/flowai/commit/77887f0b3987d48d1d65703ec354c3451a41933a))
+
+
+### Tests
+
+* **cli:** isolate bare-IDE test in tmp cwd with .flowai.yaml ([a910e54](https://github.com/korchasa/flowai/commit/a910e5420a7384c389d86e728939b8bf56cbbfa2))
+
+
+### Code Refactoring
+
+* **cli:** decompose runSync, renderSyncOutput, and main() ([5b81837](https://github.com/korchasa/flowai/commit/5b81837d797bf828fa48014afb3746c315e9a5e4))
+* **runner:** decompose runScenario orchestrator into phases ([01b3dba](https://github.com/korchasa/flowai/commit/01b3dba12fd32e80be829237837666658488bb7c))
+* **sync:** decompose sync() orchestrator into per-phase helpers ([2c43569](https://github.com/korchasa/flowai/commit/2c43569087f1ea0de8f324cdaf8fa87449087e5b))
+* **task-bench:** decompose main() into discovery/run/report phases ([0ea2bd3](https://github.com/korchasa/flowai/commit/0ea2bd338738f1f7cc75bfc085f2c32ae4bf2324))
+* **trace-renderer:** split renderScenarioDetail into helpers ([fe23bff](https://github.com/korchasa/flowai/commit/fe23bff2eaedea99bb284a33af7e7a9b3155ef10))
+
+
+### Documentation
+
+* **agents:** pre-authorize git push for solo project ([c866999](https://github.com/korchasa/flowai/commit/c866999cc5c292c2354b1524ff806d20f813003b))
+* **bench:** drop meta-questions from false-use trigger patterns ([e7ae296](https://github.com/korchasa/flowai/commit/e7ae2967611d50a64497ef890abb29e3758de13a))
+* **rules:** apply reflection findings from skill-maintenance task ([775813b](https://github.com/korchasa/flowai/commit/775813b75d87524407e5ddd2a181b71ef8a07792))
+
+
+### Chores
+
+* **bench:** cache 21 passing trigger sample-run results (3 skills) ([209adfa](https://github.com/korchasa/flowai/commit/209adfabe780c79e315c9ae876165eb57cae231b))
+* **config:** remove obsolete .flowai.yaml configuration file ([ead5850](https://github.com/korchasa/flowai/commit/ead585062fce55d8db98d2362ae1496a60017f07))
+
+
+### Agent Changes
+
+* apply reflect-suggested improvements ([2dd7445](https://github.com/korchasa/flowai/commit/2dd7445b87e024848cbaefc6355413580fe9508b))
+
+
+### Styles
+
+* **trace-renderer:** apply deno fmt after refactor ([888cc7d](https://github.com/korchasa/flowai/commit/888cc7d3ad86d60274544c5005a7c30338f29c4d))
+
 ### [0.12.1](https://github.com/korchasa/flowai/compare/v0.12.0...v0.12.1) (2026-04-30)
 
 
