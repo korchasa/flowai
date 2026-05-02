@@ -160,6 +160,7 @@ Description is critical for skill discovery. The agent uses it to decide when to
 | `name` | Max 64 chars, `[a-z0-9-]` only, no leading/trailing/consecutive hyphens |
 | `description` | Max 1024 chars, no angle brackets `<>` |
 | `name + description` combined | **<100 tokens** (~400 chars; chars/4 approx) — the flowai validator `check-skills.ts` rejects over-budget catalog metadata. Agents load this tuple at session start for skill discovery; over-budget means the skill won't be visible. Aim for ~75 tokens to leave headroom. |
+| `SKILL.md` body | **<5000 tokens** (~20000 chars; chars/4 approx) — also enforced by `check-skills.ts`. **Plan the budget BEFORE editing**: run `wc -c <SKILL.md>`; if `(current + planned-additions) / 4 > 4000` tokens, put the bulk in `references/<topic>.md` from the start instead of inlining. The cap rejects late, so retry-and-compress cycles waste tool calls. Multiple skills in this repo (`flowai-skill-maintenance`, `flowai-skill-engineer-skill`, `flowai-skill-engineer-command`, `flowai-skill-write-agent-benchmarks`, etc.) already follow this pattern — check their `references/` for prior art. |
 
 ## Common Patterns
 
