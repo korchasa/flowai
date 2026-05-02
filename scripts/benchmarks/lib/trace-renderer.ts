@@ -330,9 +330,7 @@ function renderScenarioSummaryCard(
             <span class="metric-label">Tokens</span>
           </div>
           <div class="metric">
-            <span class="metric-value">$${
-    summary.totalCost.toFixed(6)
-  }</span>
+            <span class="metric-value">$${summary.totalCost.toFixed(6)}</span>
             <span class="metric-label">Cost</span>
           </div>
         </div>`;
@@ -440,9 +438,7 @@ function renderToC(groups: ScenarioGroupStats[]): string {
             const sc = s.summary
               ? (s.summary.success ? "status-pass" : "status-fail")
               : "status-pending";
-            const si = s.summary
-              ? (s.summary.success ? "✓" : "✗")
-              : "○";
+            const si = s.summary ? (s.summary.success ? "✓" : "✗") : "○";
             return `<li data-id="${s.id}" onclick="showScenario('${s.id}')" style="padding-left: 24px; font-size: 0.8em;">
                 <span class="toc-status ${sc}">${si}</span>
                 <span class="toc-scenario">run-${s.runIndex || "?"}</span>
