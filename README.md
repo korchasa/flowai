@@ -127,7 +127,8 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-adapt` — adapt installed skills/agents/hooks/assets to project specifics (standalone)
 
 **Skills:**
-- `flowai-skill-plan` — task planning (GODS format)
+- `flowai-skill-plan` — task planning (GODS format, gitignored task file)
+- `flowai-skill-plan-adr` — planning skill for tasks with an architectural decision; writes a persistent MADR file under `documents/adr/` (rationale + DoD + Solution); status auto-flips to `implemented` by commit skills
 - `flowai-skill-epic` — structured feature specification for multi-session features
 - `flowai-skill-review` — QA + code review of current changes
 - `flowai-skill-reflect` — self-analysis of the current session

@@ -14,15 +14,7 @@ get committed.
 ## Context
 
 <context>
-The user has completed a coding task and wants a single command to review and
-commit. This command inlines both workflows:
-1. **Phase 1 — Review** (from `flowai-skill-review`): QA + code review, produces verdict
-2. **Phase 2 — Commit** (from `flowai-commit`): documentation audit, verification,
-   atomic grouping, commit
-
-The gate logic prevents committing code that has critical issues.
-
-Maintainer note (NOT for runtime): step_by_step blocks are kept verbatim in sync with `flowai-skill-review/SKILL.md` and `flowai-commit/SKILL.md` via `scripts/check-skill-sync.ts`. This is for source-of-truth bookkeeping only.
+Single command to review and commit. Inlines two phases: Phase 1 (review) — QA + code review, produces verdict; Phase 2 (commit) — documentation audit, atomic grouping, commit. Gate logic prevents committing code with critical issues.
 </context>
 
 ## Rules & Constraints
@@ -39,15 +31,7 @@ Maintainer note (NOT for runtime): step_by_step blocks are kept verbatim in sync
 5. **Transparency**: Output both review findings and commit results to the user.
 6. **Planning**: Use a task management tool (e.g., `todo_write`, `todowrite`)
    to track steps.
-7. **Session Scope**: Compare current `git status` with the git status snapshot
-   from session start (available in system context). By default, files already
-   modified/untracked at session start are outside the review and commit scope —
-   note them but do not review or commit. **Exception**: if the user's request
-   explicitly refers to a specific file, function, or feature (e.g. "review and
-   commit the sum function", "commit the new main.py utility"), include it in
-   both phases even if it predates the session. Focus on session changes plus
-   any explicitly requested files. If unsure which changes are yours, ask the
-   user before staging.
+7. **Session Scope**: By default exclude files already modified/untracked at session start (compare to git-status snapshot from system context); note them but do not review or commit. Exception: include pre-existing files when the user's request names them explicitly ("review and commit the sum function"). Ask before staging if unsure.
 </rules>
 
 ## Instructions
@@ -271,7 +255,8 @@ After completing the review report above:
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
-     3. Commit with a Conventional Commits message.
+     3. **ADR Status Lifecycle** (FR-DOC-ADR-LIFECYCLE) — for each `ADR-NNNN` referenced by staged files (`implements:` frontmatter) or commit-plan/user-message text: read `documents/adr/<file>.md`; if all `## Definition of Done` top-level checkboxes are `[x]` AND frontmatter `status:` is `accepted`, edit it to `status: implemented` and `git add` the ADR file (included in this commit). Idempotent on `implemented`. Never downgrade. Warn-only on parse errors — never block the commit.
+     4. Commit with a Conventional Commits message (now including the optional ADR frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
    - If the user referenced a task file and it contains a `## Definition of Done` (or similar checklist):
      a. Compare each DoD item against the committed changes.
@@ -309,6 +294,7 @@ Output a combined summary:
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
 [ ] Task file cleanup: completed task files deleted, partial task files confirmed with user.
+[ ] ADR lifecycle: referenced ADRs with all DoD `[x]` had `status: accepted → implemented` flipped and staged. Warn-only on errors.
 [ ] Session complexity check performed; `/flowai-skill-reflect` suggested if signals detected.
 [ ] Both review and commit results reported to user.
 </verification>

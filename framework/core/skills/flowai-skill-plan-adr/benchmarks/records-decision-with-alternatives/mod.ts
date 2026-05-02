@@ -36,13 +36,13 @@ When the agent shows you a draft ADR, briefly approve it ("looks good, write it"
     {
       id: "frontmatter_status",
       description:
-        "Read the created ADR file. Does its frontmatter contain 'status:' with one of: proposed | accepted | rejected | superseded | deprecated?",
+        "Read the created ADR file. Does its frontmatter contain 'status:' with one of: proposed | accepted | implemented | rejected | superseded | deprecated?",
       critical: true,
     },
     {
-      id: "four_madr_sections_in_order",
+      id: "six_madr_sections_in_order",
       description:
-        "Read the created ADR file. Does the body contain exactly four top-level (## ) sections in this order: '## Context', '## Alternatives', '## Decision', '## Consequences'? Order matters.",
+        "Read the created ADR file. Does the body contain six top-level (## ) sections in this order: '## Context', '## Alternatives', '## Decision', '## Consequences', '## Definition of Done', '## Solution'? Order matters. Optional trailing '## Follow-ups' is acceptable.",
       critical: true,
     },
     {

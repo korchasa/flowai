@@ -37,7 +37,7 @@
 2. **SRS** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements.
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
 4. **Tasks** (`documents/tasks/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes per task. Gitignored — task files do not survive past the task lifecycle.
-5. **ADR** (`documents/adr/<YYYY-MM-DD>-<slug>.md`): Architecture Decision Records (MADR-style). Persistent (NOT gitignored). Created by `flowai-skill-plan-adr` when a non-trivial decision needs to outlive the task.
+5. **ADR** (`documents/adr/<YYYY-MM-DD>-<slug>.md`): Architecture Decision Records (MADR-style). Persistent (NOT gitignored). Created by `flowai-skill-plan-adr` — a planning-class skill that writes both the rationale (Context / Alternatives / Decision / Consequences) and the implementation contract (Definition of Done with FR-Test-Evidence tuples + Solution) in one file. Lifecycle: `proposed | accepted | implemented | rejected | superseded | deprecated`. Status flips `accepted → implemented` on the commit that closes all DoD items.
 6. **Index** (`documents/index.md`): Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / ADR / NFR). Created on first write, never scaffolded.
 7. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
 
@@ -149,6 +149,16 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Use GODS format (see below) for issues and plans.
 - Directory is gitignored. Files accumulate — this is expected.
 
+### ADR (`documents/adr/`)
+
+- One file per non-trivial architectural decision: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
+- Examples: `2026-03-24-pick-rag-over-finetune.md`, `2026-03-24-drop-postgres-for-sqlite.md`.
+- Do not reuse another decision's ADR file — create a new file. Old ADRs are persistent rationale, not scratchpads.
+- Use MADR format (see below) — both the rationale (Context / Alternatives / Decision / Consequences) and the implementation contract (Definition of Done + Solution) live in the same file.
+- ID assignment: frontmatter `id: ADR-NNNN` is one greater than the highest existing `ADR-NNNN` under `documents/adr/`. Start at `ADR-0001`.
+- Directory is **NOT gitignored** — ADRs are persistent records. Files accumulate by design — this is the point.
+- Status lifecycle: `proposed | accepted | implemented | rejected | superseded | deprecated`. Default for new ADRs is `accepted`. Commit workflows flip `accepted → implemented` on the commit that closes all DoD items.
+
 ### GODS Format
 
 ```markdown
@@ -190,6 +200,55 @@ Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance referen
 ## Solution
 
 [Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
+```
+
+### MADR Format
+
+```markdown
+---
+id: ADR-NNNN
+status: accepted
+date: YYYY-MM-DD
+implements:
+  - FR-XXX
+tags:
+  - <optional>
+---
+
+# [Decision Title — short, imperative]
+
+## Context
+
+[2–4 sentences on the situation and constraints that forced this decision.]
+
+## Alternatives
+
+[Brief — 3–5 lines per entry, one Pros / Cons each. Mark the chosen one with `(CHOSEN)`. At least one rejected alternative with a single-sentence "Rejected because" line.]
+
+- **<short name>** — 1-line description.
+  - Pros: <bullet list>
+  - Cons: <bullet list>
+  - Rejected because: <one sentence> (omit for the chosen alternative; mark it `(CHOSEN)`)
+
+## Decision
+
+[1–2 sentences stating exactly what was decided. Cross-link affected components via GFM `[text](path.md#anchor)`.]
+
+## Consequences
+
+[Bullet list of follow-on effects, both positive and negative. Mention any SDS/SRS updates implied.]
+
+## Definition of Done
+
+Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance reference. Items without this tuple are wishes, not contracts.
+
+- [ ] FR-XXX: <observable behavior>
+  - Test: `<path/to/test>::<test_name>` (or `Benchmark: <scenario-id>`)
+  - Evidence: `<command that passes iff the item is done>`
+
+## Solution
+
+[Detailed step-by-step for the CHOSEN alternative. Files to create/modify, implementation approach, dependencies, verification commands.]
 ```
 
 ### Compressed Style Rules (All Docs)

@@ -98,7 +98,8 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
-     3. Commit with a Conventional Commits message.
+     3. **ADR Status Lifecycle** (FR-DOC-ADR-LIFECYCLE) — for each `ADR-NNNN` referenced by staged files (`implements:` frontmatter) or commit-plan/user-message text: read `documents/adr/<file>.md`; if all `## Definition of Done` top-level checkboxes are `[x]` AND frontmatter `status:` is `accepted`, edit it to `status: implemented` and `git add` the ADR file (included in this commit). Idempotent on `implemented`. Never downgrade. Warn-only on parse errors — never block the commit.
+     4. Commit with a Conventional Commits message (now including the optional ADR frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
    - If the user referenced a task file and it contains a `## Definition of Done` (or similar checklist):
      a. Compare each DoD item against the committed changes.
@@ -128,5 +129,6 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.
 - [ ] Task file cleanup: completed task files deleted, partial task files confirmed with user.
+- [ ] ADR lifecycle: any referenced ADR with all DoD `[x]` had `status: accepted → implemented` flipped and staged in the same commit. Warn-only on parse errors.
 - [ ] Session complexity check performed; `/flowai-skill-reflect` suggested if signals detected.
 </verification>

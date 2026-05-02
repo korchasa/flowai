@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "f3abe538b89f2a6f754da35edfd2ab87c9fde5625d7080b58009a547aed6cacc",
+  "scenarioId": "flowai-skill-plan-adr-auto-writes-without-roundtrip",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T23:04:06.244Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 205432.48500000002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "adr_file_created": {
+        "pass": true,
+        "reason": "The agent created a file at 'documents/adr/2026-05-03-postgres-listen-notify-job-queue.md', which matches the required pattern 'documents/adr/<YYYY-MM-DD>-<slug>.md'. The file is confirmed in both th…"
+      },
+      "no_draft_approval_prompt": {
+        "pass": true,
+        "reason": "The agent never showed the full ADR body in chat and asked for approval. It scanned for existing docs, assigned the ID, then immediately wrote the file using the Write tool. No 'approve before write'…"
+      },
+      "summary_only_after_write": {
+        "pass": true,
+        "reason": "After writing the ADR file, the agent's post-write message was a concise 5-line summary listing the ADR ID, file path, index changes, DoD count, and critique stats. The full ADR body was NOT re-paste…"
+      },
+      "frontmatter_id_assigned": {
+        "pass": true,
+        "reason": "The YAML frontmatter of the created ADR file contains 'id: ADR-0001', which matches the required format 'id: ADR-NNNN' with 4-digit zero-padding."
+      },
+      "decision_section_matches_user_intent": {
+        "pass": true,
+        "reason": "The '## Decision' section states: 'Use Postgres LISTEN/NOTIFY as the job queue pub/sub transport, replacing any Redis Streams usage in the job queue module.' This correctly reflects the user's stated…"
+      },
+      "no_user_anger_response": {
+        "pass": true,
+        "reason": "There is no instance in the conversation log of the user responding with the anger phrase 'I asked you to record the decision — write the file now and stop asking' or any similar statement. The agent…"
+      }
+    }
+  }
+}

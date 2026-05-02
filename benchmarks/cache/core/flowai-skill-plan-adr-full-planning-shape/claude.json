@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "key": "865b83b07e786064265bac078bd0fa2536cdfcff8a9806f62e0096ee5506394c",
+  "scenarioId": "flowai-skill-plan-adr-full-planning-shape",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T23:00:12.954Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 420069.4855,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "adr_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/adr/2026-05-03-pick-docs-site-rendering-strategy.md', which exactly matches the required pattern 'documents/adr/<YYYY-MM-DD>-<slug>.md'."
+      },
+      "frontmatter_complete": {
+        "pass": true,
+        "reason": "The YAML frontmatter contains all three required fields: 'id: ADR-0001' (4-digit zero-padded), 'status: accepted', and 'date: 2026-05-03'. Optional fields 'implements:' and 'tags:' are also present."
+      },
+      "six_sections_in_order": {
+        "pass": true,
+        "reason": "The ADR body contains all six required top-level sections in the exact required order: '## Context', '## Alternatives', '## Decision', '## Consequences', '## Definition of Done', '## Solution'. Addit…"
+      },
+      "alternatives_brief": {
+        "pass": true,
+        "reason": "Each alternative is concise and well under 8 lines. SSG with Astro: 3 lines (description + Pros + Cons). SSR with Deno Fresh: 4 lines (description + Pros + Cons + Rejected because). Hybrid SSG+Island…"
+      },
+      "chosen_alternative_marked": {
+        "pass": true,
+        "reason": "The SSG with Astro alternative is explicitly marked with the '(CHOSEN)' marker: '**SSG with Astro** — pre-build all pages at CI time, deploy static files to CDN. `(CHOSEN)`'."
+      },
+      "rejection_cause_present": {
+        "pass": true,
+        "reason": "Both non-chosen alternatives carry explicit rejection rationales. SSR with Deno Fresh: 'Rejected because: docs content changes infrequently — per-request rendering overhead is unjustified for static …"
+      },
+      "dod_has_tuple_structure": {
+        "pass": true,
+        "reason": "DoD items are checkboxes ('- [ ]') and contain the full tuple structure. For example, FR-DOCS-RENDER has: (a) FR-ID reference in the item line ('FR-DOCS-RENDER'), (b) 'Test: manual — dev-lead' sub-bu…"
+      },
+      "solution_has_concrete_steps": {
+        "pass": true,
+        "reason": "The '## Solution' section contains 10 concrete numbered steps including: shell commands to initialize Astro, configuration file content for astro.config.mjs, optional Starlight integration commands, …"
+      },
+      "no_srs_modification": {
+        "pass": true,
+        "reason": "The file diffs and git status show no creation or modification of 'documents/requirements.md'. Only 'documents/adr/2026-05-03-pick-docs-site-rendering-strategy.md' and 'documents/index.md' were creat…"
+      },
+      "no_sds_modification": {
+        "pass": true,
+        "reason": "The file diffs and git status show no creation or modification of 'documents/design.md'. The agent explicitly noted these files need to be updated in the future (as DoD steps 9 and 10 in the Solution…"
+      }
+    }
+  }
+}

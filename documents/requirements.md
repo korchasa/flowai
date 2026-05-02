@@ -916,14 +916,26 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 ### FR-DOC-ADR: Architecture Decision Record Skill — `flowai-skill-plan-adr`
 
-- **Description:** Agent-invocable skill that produces `documents/adr/<YYYY-MM-DD>-<slug>.md` capturing a non-trivial decision that needs to outlive the task file. Output format: frontmatter with `id: ADR-<NNNN>` (next free number from existing `documents/adr/`) and `status: proposed | accepted | rejected | superseded | deprecated`; sections Context / Alternatives (each with 1-line description + 2–4 Pros/Cons + a single-sentence rejection cause for non-chosen ones) / Decision / Consequences. After writing, the skill MUST update `documents/index.md` (FR-DOC-INDEX).
-- **Scope:** Lives under `framework/core/skills/flowai-skill-plan-adr/`. Model-invocable. Triggered by user queries like "зафиксируй это решение", "запиши ADR", "архивируй выбор X над Y".
+- **Description:** Agent-invocable **planning-class** skill that produces `documents/adr/<YYYY-MM-DD>-<slug>.md` capturing both the rationale of a non-trivial decision and the implementation contract. Parallel to `flowai-skill-plan` — the differentiator is artifact format and lifetime (persistent MADR vs gitignored GODS task). Output format: frontmatter with `id: ADR-<NNNN>` (next free number from existing `documents/adr/`), `status: proposed | accepted | implemented | rejected | superseded | deprecated`, `date`, optional `implements: [FR-...]` and `tags`; body sections in order — `## Context`, `## Alternatives` (brief — 3–5 lines per entry, 1-line description + Pros/Cons + single-sentence rejection cause for non-chosen, marker `(CHOSEN)` on the chosen one), `## Decision`, `## Consequences`, `## Definition of Done` (every item paired with an FR-ID + Test/Benchmark + Evidence command), `## Solution` (step-by-step for the chosen alternative). After writing, the skill MUST update `documents/index.md` `## ADR` section (FR-DOC-INDEX).
+- **Scope:** Lives under `framework/core/skills/flowai-skill-plan-adr/`. Model-invocable. Triggered by user queries like "зафиксируй это решение", "запиши ADR", "архивируй выбор X над Y", or planning queries with explicit architectural component ("plan the migration from X to Y", "design the new caching layer"). MUST NOT poach trivial bug-fix or refactor queries — those route to `flowai-skill-plan`.
 - **Constraints:**
   - MUST scan `documents/adr/` for the highest existing `ADR-NNNN` and increment by 1.
   - MUST require ≥1 alternative with rejection cause; refuses to write if the decision is single-option (suggest task file instead).
+  - MUST auto-write the file after the Solution step. NO chat draft preview, NO "approve before write" prompt — user edits the file post-write.
   - MUST NOT modify SDS/SRS — those are owned by other workflows.
-- **Acceptance verified by benchmarks:** `flowai-skill-plan-adr-records-decision-with-alternatives`.
-- **Status:** [x]
+- **Acceptance verified by benchmarks:** `flowai-skill-plan-adr-records-decision-with-alternatives`, `flowai-skill-plan-adr-full-planning-shape`, `flowai-skill-plan-adr-auto-writes-without-roundtrip`.
+- **Status:** [ ]
+
+### FR-DOC-ADR-LIFECYCLE: ADR Status Lifecycle — Auto-Flip on Implementation
+
+- **Description:** ADR `status` extends the legacy MADR set with `implemented` to mark decisions whose Definition of Done has been satisfied by a landed commit. `flowai-commit` and `flowai-review-and-commit` scan their commit's diff for files referencing `ADR-NNNN` (via `implements:` frontmatter or commit-message body), parse the referenced ADR file under `documents/adr/`, and if every `## Definition of Done` item is `[x]` after the commit, flip `status: accepted` → `status: implemented` in the ADR's frontmatter and stage the change as part of the same commit. Failure modes (parse error, missing ADR, mixed-state DoD) are warn-only — never block the commit.
+- **Scenario:** Developer commits the diff that closes ADR-0042. The commit references ADR-0042 in `implements:` of the changed task or directly in the commit message. `flowai-commit` parses `documents/adr/<file>.md`, checks all DoD items are `[x]`, edits frontmatter to `status: implemented`, stages the file, and writes the commit including the frontmatter edit.
+- **Constraints:**
+  - MUST run only on commits — no out-of-band flips.
+  - MUST be idempotent: a second commit referencing the same ADR (already `implemented`) is a no-op.
+  - MUST NOT downgrade status (`implemented → accepted` is forbidden). Reverts of an `implemented` ADR are out of scope.
+- **Acceptance verified by benchmarks:** `flowai-commit-flips-adr-status`, `flowai-review-and-commit-flips-adr-status`.
+- **Status:** [ ]
 
 ### FR-DOC-INDEX: Agent-Maintained Documentation Index
 
