@@ -396,6 +396,7 @@ The runner also pre-checks that `scenario.skill` is mounted in the sandbox befor
 
 - The bench `-f` flag accepts ONE substring (last-wins on multiple). To run several scenarios: use a broader substring covering all of them, OR run sequential single-`-f` invocations. Multiple `-f` flags silently keep only the last value.
 - A bench run reporting "0 errors, 0 scenarios run" with exit 0 is a SETUP FAILURE, not success. Check stderr for "Error running scenario" lines. Common cause: missing `fixture/` directory referenced by the scenario's setup hook.
+- **user-level skill collision (FR-BENCH-ISOLATION)**: Claude Code's Skill tool resolves `~/.claude/skills/<name>/SKILL.md` (user-level) over `<sandbox>/.claude/skills/<name>/SKILL.md` (project-level) on name collision. Without mitigation, every framework-source `SKILL.md` edit silently routes the model to the developer's installed snapshot, and the Benchmark TDD RED→GREEN cycle produces no observable change. Mitigation lives in `ClaudeAdapter.prepareWorkspace` (`scripts/benchmarks/lib/adapters/claude.ts`): builds `<workDir>/bench-home/` (sibling of the sandbox; placed outside the sandbox cwd so `git status` does not flag it as untracked) with an empty `.claude/skills/` and symlinks back to `~/Library/Keychains` and `~/.local/share/claude` for OAuth/Keychain auth, then exports `HOME=<workDir>/bench-home`. `~/.claude/skills/` is never read or written by the bench. Cursor/Codex have no analogous bug and pass through unchanged.
 
 ### Lint Exclude / Test Ignore Drift
 

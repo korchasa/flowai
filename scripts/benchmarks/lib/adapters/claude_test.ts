@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assert, assertEquals } from "@std/assert";
 import { ClaudeAdapter } from "./claude.ts";
 import { join } from "@std/path";
 import { existsSync } from "@std/fs";
@@ -228,6 +228,166 @@ Deno.test(
     }
 
     await Deno.remove(tmpDir, { recursive: true });
+  },
+);
+
+/**
+ * FR-BENCH-ISOLATION — `prepareWorkspace` must build an isolated `$HOME`
+ * with an EMPTY `.claude/skills/` directory so that user-level skill
+ * installations at `~/.claude/skills/` cannot shadow sandbox-level skills
+ * via Claude Code's Skill tool resolution path. The bench-home is a
+ * sandbox subdirectory; the real `$HOME` is read for symlink targets but
+ * `~/.claude/skills/` is deliberately NOT mirrored.
+ */
+Deno.test(
+  "ClaudeAdapter - prepareWorkspace isolation: empty user-level skills dir",
+  async () => {
+    const tmpDir = await Deno.makeTempDir({ prefix: "iso-test-" });
+    try {
+      const sandboxPath = join(tmpDir, "sandbox");
+      await Deno.mkdir(sandboxPath, { recursive: true });
+      const env = await adapter.prepareWorkspace(sandboxPath);
+      const benchHome = join(tmpDir, "bench-home");
+      assertEquals(env.HOME, benchHome);
+
+      // bench-home/.claude/skills must exist and be empty — this is the
+      // "user-level skills" view that claude consults via $HOME, and the
+      // emptiness is what kills the precedence-bug.
+      const skillsDir = join(benchHome, ".claude", "skills");
+      assert(existsSync(skillsDir), "bench-home skills dir must exist");
+      const entries: string[] = [];
+      for await (const entry of Deno.readDir(skillsDir)) {
+        entries.push(entry.name);
+      }
+      assertEquals(
+        entries,
+        [],
+        "bench-home `.claude/skills/` MUST be empty; non-empty means user-level skills will leak into the sandbox",
+      );
+    } finally {
+      await Deno.remove(tmpDir, { recursive: true });
+    }
+  },
+);
+
+/**
+ * FR-BENCH-ISOLATION — auth must keep working under the isolated `$HOME`.
+ * On macOS, OAuth/Keychain reads need `~/Library/Keychains` and
+ * `~/.local/share/claude` reachable from `$HOME`. The adapter symlinks
+ * those paths into the bench-home if (and only if) they exist on the host.
+ * On Linux/CI those paths may not exist, in which case the symlink is
+ * skipped — the test asserts presence-iff-source-exists rather than
+ * unconditional presence so it is portable.
+ */
+Deno.test(
+  "ClaudeAdapter - prepareWorkspace isolation: auth-related symlinks track host",
+  async () => {
+    const tmpDir = await Deno.makeTempDir({ prefix: "iso-test-" });
+    try {
+      const sandboxPath = join(tmpDir, "sandbox");
+      await Deno.mkdir(sandboxPath, { recursive: true });
+      await adapter.prepareWorkspace(sandboxPath);
+      const benchHome = join(tmpDir, "bench-home");
+      const realHome = Deno.env.get("HOME");
+      if (!realHome) return; // No HOME in env — adapter writes only the empty skills dir.
+
+      for (const rel of ["Library/Keychains", ".local/share/claude"]) {
+        const src = join(realHome, rel);
+        const dst = join(benchHome, rel);
+        let srcExists = false;
+        try {
+          await Deno.lstat(src);
+          srcExists = true;
+        } catch { /* not present on host */ }
+
+        if (srcExists) {
+          const lst = await Deno.lstat(dst);
+          assert(
+            lst.isSymlink,
+            `${rel} must be a symlink in bench-home when source exists on host`,
+          );
+        } else {
+          assertEquals(
+            existsSync(dst),
+            false,
+            `${rel} must NOT be created in bench-home when source is absent on host`,
+          );
+        }
+      }
+    } finally {
+      await Deno.remove(tmpDir, { recursive: true });
+    }
+  },
+);
+
+/**
+ * FR-BENCH-ISOLATION — `~/.credentials.json` must NOT be mirrored even
+ * if present on the host. Mirroring it would force claude onto the
+ * plaintext-credentials backend (stale `refreshToken` → HTTP 400 from
+ * the OAuth token endpoint); leaving it absent lets Keychain win.
+ */
+Deno.test(
+  "ClaudeAdapter - prepareWorkspace isolation: never mirrors .credentials.json",
+  async () => {
+    const tmpDir = await Deno.makeTempDir({ prefix: "iso-test-" });
+    try {
+      const sandboxPath = join(tmpDir, "sandbox");
+      await Deno.mkdir(sandboxPath, { recursive: true });
+      await adapter.prepareWorkspace(sandboxPath);
+      const benchHome = join(tmpDir, "bench-home");
+      assertEquals(
+        existsSync(join(benchHome, ".claude", ".credentials.json")),
+        false,
+      );
+    } finally {
+      await Deno.remove(tmpDir, { recursive: true });
+    }
+  },
+);
+
+/**
+ * FR-BENCH-ISOLATION — the real `~/.claude/skills/` MUST remain untouched
+ * by `prepareWorkspace`. The developer's interactive installation lives
+ * there; the bench cannot move/delete/symlink it as a side effect.
+ */
+Deno.test(
+  "ClaudeAdapter - prepareWorkspace isolation: does not touch ~/.claude/skills/",
+  async () => {
+    const realHome = Deno.env.get("HOME");
+    if (!realHome) return;
+    const userSkillsPath = join(realHome, ".claude", "skills");
+
+    // Snapshot before — list of names + mtimes — and assert it is unchanged
+    // afterwards. If the user has no `~/.claude/skills/` (CI), this is a
+    // no-op assertion (snapshot stays []).
+    const snapshot: Array<[string, number]> = [];
+    try {
+      for await (const e of Deno.readDir(userSkillsPath)) {
+        const stat = await Deno.lstat(join(userSkillsPath, e.name));
+        snapshot.push([e.name, stat.mtime?.getTime() ?? 0]);
+      }
+    } catch { /* dir absent → snapshot stays empty */ }
+    snapshot.sort();
+
+    const tmpDir = await Deno.makeTempDir({ prefix: "iso-test-" });
+    try {
+      const sandboxPath = join(tmpDir, "sandbox");
+      await Deno.mkdir(sandboxPath, { recursive: true });
+      await adapter.prepareWorkspace(sandboxPath);
+
+      const after: Array<[string, number]> = [];
+      try {
+        for await (const e of Deno.readDir(userSkillsPath)) {
+          const stat = await Deno.lstat(join(userSkillsPath, e.name));
+          after.push([e.name, stat.mtime?.getTime() ?? 0]);
+        }
+      } catch { /* still absent → fine */ }
+      after.sort();
+
+      assertEquals(after, snapshot);
+    } finally {
+      await Deno.remove(tmpDir, { recursive: true });
+    }
   },
 );
 

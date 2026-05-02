@@ -28,6 +28,17 @@ export interface AgentAdapter {
   /** Extra environment variables needed for this IDE's CLI */
   getEnv(): Record<string, string>;
 
+  /**
+   * Optional sandbox preparation step run after fixture/framework copy and
+   * before agent spawn. Adapters may set up auxiliary directories (e.g. an
+   * isolated $HOME) and return env vars to merge into the spawned process.
+   * Default implementation returns {} and writes nothing.
+   *
+   * Used by `ClaudeAdapter` to isolate from `~/.claude/skills/` — see
+   * FR-BENCH-ISOLATION.
+   */
+  prepareWorkspace?(sandboxPath: string): Promise<Record<string, string>>;
+
   /** Setup tool mocks in the sandbox (hooks mechanism is IDE-specific) */
   setupMocks(sandboxPath: string, mocks: Record<string, string>): Promise<void>;
 

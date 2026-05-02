@@ -483,6 +483,77 @@ Deno.test("trimResultForCache: drops fat fields (logs, evidence)", () => {
 });
 
 /**
+ * FR-BENCH-ISOLATION — the cache key MUST include the adapter source so
+ * that adding/changing the `prepareWorkspace` HOME-isolation behaviour
+ * invalidates stale cached verdicts. Otherwise the first post-merge bench
+ * run would re-use cached results computed with the old (broken) Skill
+ * resolution.
+ *
+ * Verifies inclusion by injecting a temp marker file under
+ * `scripts/benchmarks/lib/adapters/` (the adapter directory walked by the
+ * `runner:` prefix) and asserting the key changes.
+ */
+Deno.test("isolation-key-change: cache key tracks adapter directory contents", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  const adaptersDir = join(
+    REPO_ROOT,
+    "scripts",
+    "benchmarks",
+    "lib",
+    "adapters",
+  );
+  // Use a non-.ts extension so the imports drift-guard parser does not
+  // consume it concurrently. The walker in cache.ts is content-typeless.
+  const markerPath = join(
+    adaptersDir,
+    `_isolation_key_marker_${crypto.randomUUID()}.bin`,
+  );
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const baseline = await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    });
+
+    await Deno.writeTextFile(markerPath, "isolation-key-marker\n");
+    const withMarker = await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assertNotEquals(
+      baseline,
+      withMarker,
+      "Adding a file under adapters/ MUST change the cache key — adapter source is part of the runner: prefix walk.",
+    );
+
+    await Deno.remove(markerPath);
+    const restored = await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assertEquals(
+      baseline,
+      restored,
+      "Removing the marker MUST restore the original cache key (proves no other state changed).",
+    );
+  } finally {
+    try {
+      await Deno.remove(markerPath);
+    } catch (_) { /* already removed in happy path */ }
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+/**
  * Drift guard: if any file under scripts/benchmarks/lib/ gains a new
  * relative import that escapes `scripts/benchmarks/`, it MUST be added to
  * the whitelist in cache.ts. Otherwise cache keys silently miss the change.

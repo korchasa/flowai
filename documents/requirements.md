@@ -86,6 +86,30 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/` and `framework/<pack>/commands/<command>/benchmarks/`), pack-level scenarios (`framework/<pack>/benchmarks/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
 - **Implementation:** `scripts/benchmarks/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
 
+### FR-BENCH-ISOLATION: Sandbox Isolation From User-Level Skills
+
+- **Desc:** `deno task bench` MUST judge the sandbox `SKILL.md` (the one written into `<sandbox>/.claude/skills/<name>/`), not the developer's user-level installation at `~/.claude/skills/<name>/`. Without this, framework-source `SKILL.md` edits never reach the model: Claude Code's Skill tool resolves user-level over project-level on collision, so any DIFF skill silently delivers stale text and the Benchmark TDD RED→GREEN cycle produces no observable change.
+- **Scenario:** A contributor edits `framework/<pack>/skills/<name>/SKILL.md` and runs `deno task bench -f <name>`. The model must load the edited body, not whatever the user happened to install via `flowai sync` weeks ago. Constraint: the bench MUST NOT modify, move, symlink, or delete `~/.claude/skills/`.
+- **Mechanism (Claude adapter only):** `ClaudeAdapter.prepareWorkspace(<sandbox>)` builds an isolated `$HOME = <workDir>/bench-home/` (sibling of the sandbox; deliberately outside the sandbox cwd so `git status` does not see it as untracked) containing an empty `.claude/skills/` (so user-level resolution finds nothing) plus targeted symlinks back to the real `$HOME` for OAuth/Keychain auth (`Library/Keychains`) and the versioned launcher binary (`.local/share/claude`). `.credentials.json` is intentionally NOT mirrored — letting Keychain win avoids stale-refresh-token 400s. Cursor and Codex adapters do not implement `prepareWorkspace` (no analogous Skill tool resolution path exists).
+- **Acceptance:**
+  - [x] Programmatic isolation test: `<workDir>/bench-home/.claude/skills/` is created empty by `prepareWorkspace`.
+    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "prepareWorkspace isolation: empty user-level skills dir"`.
+  - [x] Auth-related symlinks track host: present iff source path exists on host (`Library/Keychains`, `.local/share/claude`).
+    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "auth-related symlinks track host"`.
+  - [x] `.credentials.json` is never mirrored into `<workDir>/bench-home/.claude/`.
+    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "never mirrors .credentials.json"`.
+  - [x] `~/.claude/skills/` snapshot (entry names + mtimes) is byte-identical before and after `prepareWorkspace`.
+    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "does not touch ~/.claude/skills/"`.
+  - [x] Cache key invalidates on any change inside `scripts/benchmarks/lib/adapters/` (so old cached verdicts cannot mask the fix on first post-merge run).
+    Evidence: `deno test -A scripts/benchmarks/lib/cache_test.ts --filter "isolation-key-change"`.
+  - [x] `AgentAdapter.prepareWorkspace` is optional in the contract; runner only invokes it when adapter implements it (Cursor/Codex pass through unchanged).
+    Evidence: `scripts/benchmarks/lib/runner.ts` (`adapter.prepareWorkspace ? ... : {}`); `scripts/benchmarks/lib/adapters/types.ts` (declared optional).
+- **Non-acceptance (explicit trade-offs):**
+  - macOS-first: the symlink set targets macOS auth (Keychain). On Linux/CI without `~/Library/Keychains`, those symlinks are skipped — auth then relies on whatever Linux mechanism the developer has set up. CI workflows that already export `ANTHROPIC_API_KEY` are unaffected.
+  - First post-merge run pays ~120 fresh executions: the cache key changes (adapter source touched), invalidating the prior `[CACHED]` verdicts.
+- **Open (follow-up):**
+  - [ ] `~/.local/share/claude/versions/<v>/` PID-lock contention under parallel scenarios is a pre-existing concern — not introduced by isolation, but worth a separate fix.
+
 ### FR-BENCH-CACHE: Benchmark Result Cache
 
 - **Desc:** Commit per-scenario benchmark verdicts to the repo; re-run only when a cache-key input changes. Makes `deno task bench` an incremental operation.

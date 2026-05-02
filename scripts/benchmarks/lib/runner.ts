@@ -266,6 +266,13 @@ async function runAgentWithTimeout(
     })
     : null;
 
+  // Adapter-specific sandbox preparation (e.g. isolated $HOME for Claude
+  // to avoid `~/.claude/skills/` shadowing sandbox skills via the Skill
+  // tool resolution path — FR-BENCH-ISOLATION).
+  const adapterEnv = options.adapter.prepareWorkspace
+    ? await options.adapter.prepareWorkspace(sandboxPath)
+    : {};
+
   const agent = new SpawnedAgent({
     workspace: sandboxPath,
     model: options.agentModel,
@@ -273,6 +280,7 @@ async function runAgentWithTimeout(
     maxSteps: scenario.maxSteps || 10,
     stepTimeout: scenario.stepTimeoutMs || 300000,
     adapter: options.adapter,
+    env: adapterEnv,
     name: scenario.skill ? `${scenario.skill}/${scenario.id}` : scenario.id,
   });
 
@@ -558,7 +566,6 @@ export async function runScenario(
     );
 
     const { tokensUsed, tokensDetails } = await collectUsage(agent, adapter);
-
     await tracer.logExecutionSection();
     await tracer.logLLMInteraction(
       traceId,

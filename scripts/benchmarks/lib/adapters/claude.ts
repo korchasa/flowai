@@ -1,7 +1,20 @@
-import { join } from "@std/path";
+import { dirname, join } from "@std/path";
 import type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 import type { SessionUsage } from "../usage.ts";
 import { probeCliVersion } from "./version.ts";
+
+/**
+ * Files/dirs under the real `$HOME` that must remain reachable from the
+ * isolated bench-home so OAuth/Keychain auth keeps working on macOS:
+ *   - `Library/Keychains/`     — default keychain search-path resolution.
+ *   - `.local/share/claude/`   — versioned launcher binary + PID lock dir.
+ * Symlinked into the bench-home; missing entries are skipped silently
+ * (e.g. Linux has no `Library/Keychains`).
+ */
+const ISOLATED_HOME_LINKS = [
+  "Library/Keychains",
+  ".local/share/claude",
+] as const;
 
 interface ClaudeEvent {
   type?: string;
@@ -31,6 +44,58 @@ export class ClaudeAdapter implements AgentAdapter {
   getEnv(): Record<string, string> {
     // Unset CLAUDECODE to allow spawning claude inside a claude session
     return { CLAUDECODE: "" };
+  }
+
+  /**
+   * Builds an isolated `$HOME` directory adjacent to the sandbox (NOT inside
+   * it — placing the bench-home in the sandbox makes it appear as `untracked`
+   * in `git status` and trips scenarios that assert a clean working tree).
+   * Returns `{ HOME: <bench-home> }` for the spawned `claude` process.
+   *
+   * The bench-home contains an empty `.claude/skills/` (so user-level skill
+   * installations at `~/.claude/skills/` cannot shadow the sandbox-level
+   * project skills via the Skill tool resolution path) plus targeted
+   * symlinks back to the real `$HOME` for OAuth/Keychain auth and the
+   * versioned launcher binary.
+   *
+   * The real `~/.claude/skills/` is never read or written by this adapter —
+   * the symlinks deliberately exclude it. See FR-BENCH-ISOLATION (SRS) and
+   * SDS §3.4 for the precedence-bug history.
+   *
+   * `.credentials.json` is intentionally NOT mirrored: when present, Claude
+   * reads the plaintext backend instead of Keychain, and the file's
+   * refreshToken is typically stale (HTTP 400 from the OAuth token endpoint).
+   * Letting Keychain win avoids that footgun.
+   */
+  // implements [FR-BENCH-ISOLATION](../../../../documents/requirements.md#fr-bench-isolation-sandbox-isolation-from-user-level-skills)
+  async prepareWorkspace(
+    sandboxPath: string,
+  ): Promise<Record<string, string>> {
+    // Sibling of sandbox: <workDir>/bench-home alongside <workDir>/sandbox.
+    // Cleaned up automatically when the runner wipes <workDir> on next run.
+    const benchHome = join(dirname(sandboxPath), "bench-home");
+    await Deno.mkdir(join(benchHome, ".claude", "skills"), { recursive: true });
+
+    const realHome = Deno.env.get("HOME");
+    if (realHome) {
+      for (const rel of ISOLATED_HOME_LINKS) {
+        const src = join(realHome, rel);
+        const dst = join(benchHome, rel);
+        try {
+          await Deno.lstat(src);
+        } catch {
+          continue; // Source missing (e.g. Linux without Keychains) → skip.
+        }
+        await Deno.mkdir(dirname(dst), { recursive: true });
+        try {
+          await Deno.symlink(src, dst);
+        } catch (e) {
+          if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+        }
+      }
+    }
+
+    return { HOME: benchHome };
   }
 
   buildArgs(opts: {
