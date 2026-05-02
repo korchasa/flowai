@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "94c59b3f7ccafbf138b16989d55b8e6a6ef9e4be889cd7fb30e37b1240054888",
+  "scenarioId": "flowai-skill-draw-mermaid-diagrams-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:11:15.200Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 55609.276667,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly called the `Skill` tool with `\"skill\": \"flowai-skill-draw-mermaid-diagrams\"` in the execution trace, directly in response to the user's request to update the flowchart in documen…"
+      }
+    }
+  }
+}

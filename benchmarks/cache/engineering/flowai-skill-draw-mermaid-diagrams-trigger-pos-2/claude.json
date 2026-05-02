@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "2c59d569a2edd9f37e2c10df47adcc69c4ef5a99ab0a4743a3e49a42ebd9e680",
+  "scenarioId": "flowai-skill-draw-mermaid-diagrams-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:10:38.715Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 19916.074291,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's first action was a `Skill` tool call with `\"skill\": \"flowai-skill-draw-mermaid-diagrams\"`, directly invoking this skill in response to the user's query about adding a diagram to the READM…"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "7e3095b56b3e30c4b56fcc9fa476521ce36b704b6b91eb1e109cc0bfca6176b0",
+  "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:06:51.532Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 37634.013083,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "В логах агента явно присутствует вызов инструмента `Skill` с параметром `\"skill\": \"flowai-skill-setup-ai-ide-devcontainer\"`. После этого агент действовал в соответствии со скиллом: просканировал дире…"
+      }
+    }
+  }
+}

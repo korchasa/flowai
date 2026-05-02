@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "8fe26edc440fa070f901211311591d4401a09fd97873d6638c218f296121b7e8",
+  "scenarioId": "flowai-skill-draw-mermaid-diagrams-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:10:46.638Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 23358.794875,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly with a conceptual comparison without invoking any tools or skills. There is no evidence in the execution logs of the agent loading `flowai-skill-draw-mermaid-diagrams/SKI…"
+      }
+    }
+  }
+}

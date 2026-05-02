@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "76905e4daf57df93785c438a2e8bf5f3269e820c83aef5548c87e6bcc6302267",
+  "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-adj-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:07:52.205Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 101400.370084,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent invoked the `Skill` tool with `\"skill\": \"update-config\"`, not `flowai-skill-setup-ai-ide-devcontainer`. There is no evidence in the logs of the agent reading `flowai-skill-setup-ai-ide-devc…"
+      }
+    }
+  }
+}

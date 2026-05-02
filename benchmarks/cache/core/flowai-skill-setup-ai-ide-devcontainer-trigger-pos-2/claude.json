@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "748021ec6b8c6b1352332c61c6bdb24d9e4f91e6d2aa476b8878f95d0e11b9d6",
+  "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:07:28.737Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 80473.913458,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The very first action in the agent logs is a `Skill` tool call with `\"skill\": \"flowai-skill-setup-ai-ide-devcontainer\"`, confirming the skill was explicitly loaded and invoked before any other work w…"
+      }
+    }
+  }
+}

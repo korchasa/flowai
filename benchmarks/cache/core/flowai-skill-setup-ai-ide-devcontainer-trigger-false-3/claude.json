@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6dd03391f36b664fbaeb436b505b77d0f15f217f039924896fda0b8c69c73546",
+  "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:06:49.574Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 27697.701624999998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never loaded `flowai-skill-setup-ai-ide-devcontainer/SKILL.md` nor called the Skill tool with that skill name. It responded directly to the troubleshooting query by running bash commands to…"
+      }
+    }
+  }
+}

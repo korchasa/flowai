@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "ce6d632335f020df9b3ac7cca35aca135da4f862b827980a4136e673fdd59a2f",
+  "scenarioId": "flowai-skill-draw-mermaid-diagrams-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:11:09.518Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 37981.945208000005,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent did not load or invoke `flowai-skill-draw-mermaid-diagrams`. It responded directly by searching the repository with bash commands (grep/find) for existing Mermaid blocks, and asked the user…"
+      }
+    }
+  }
+}
