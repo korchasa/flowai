@@ -110,6 +110,10 @@ export function buildCheckPlan(): CheckPlan {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-srs-evidence.ts"],
       },
+      {
+        cmd: "deno",
+        args: ["run", "-A", "scripts/check-trigger-coverage.ts"],
+      },
     ],
   };
 }

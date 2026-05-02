@@ -126,6 +126,25 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [ ] `agents-rules-no-silent-fallbacks` — don't add defaults/fallbacks without asking
   - [ ] `agents-rules-run-all-tests` — run full test suite, not just changed files
 
+### FR-BENCH.TRIGGER: Skill Description-Matching Verification
+
+- **Desc:** Every skill in `framework/<pack>/skills/` MUST have 9 trigger scenarios verifying description-matching correctness: 3 positive (skill should activate), 3 adjacent-negative (a different skill is the right match), 3 false-use-negative (query is in the skill's domain but the wrong intent for it). Catches regressions where a description rewrite makes the skill invisible to the model (false negative) or over-triggered (false positive).
+- **Scope:** Only `framework/<pack>/skills/`. Commands (`framework/<pack>/commands/`) carry `disable-model-invocation: true` (injected at sync) and are triggered by explicit `/name` — out of scope.
+- **Shape:** Regular `BenchmarkSkillScenario` with one `userQuery` and one critical checklist item evaluated by the LLM judge against the trace. No new infra.
+- **Layout:** Sibling folders inside the skill's existing `benchmarks/`:
+  - `trigger-pos-{1,2,3}/mod.ts` — query the skill SHOULD activate on
+  - `trigger-adj-{1,2,3}/mod.ts` — query an ADJACENT skill is correct for; this skill should stand down
+  - `trigger-false-{1,2,3}/mod.ts` — query in this skill's domain but wrong intent (e.g., asking *about* the skill, not asking *to do* the skill's job)
+- **Naming:** Scenario `id` follows `<skill-id>-trigger-<pos|adj|false>-<n>`; directory name matches the scenario id's tail (`trigger-<type>-<n>`).
+- **Checklist contract:**
+  - Positives: id `skill_invoked`, critical: true — judge confirms the trace contains a `Skill` tool call or `SKILL.md` read for the target skill, AND the agent acted on it.
+  - Negatives (adjacent + false): id `skill_not_invoked`, critical: true — judge confirms the trace does NOT contain a `Skill` tool call or `SKILL.md` read for the target skill (the agent invoked a different skill or responded directly).
+- **Enforcement:** `scripts/check-trigger-coverage.ts` fails `deno task check` on missing/misnamed scenarios.
+- **Cost note:** Full sweep adds N×9 scenarios to `deno task bench`. The result cache (FR-BENCH-CACHE) absorbs unchanged scenarios; refreshes are scoped to skill-description edits.
+- **Acceptance verified by benchmarks:** every `framework/*/skills/flowai-skill-*/benchmarks/trigger-{pos,adj,false}-{1,2,3}/mod.ts` (verified by `scripts/check-trigger-coverage.ts`).
+- **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/benchmarks/trigger-*' | wc -l` equals (skill count) × 9.
+- **Status:** [x]
+
 ### FR-EXP: Experiments Subsystem (RELOCATED)
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). Requirement retained here as a stub so historical traceability links keep resolving.

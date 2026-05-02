@@ -177,6 +177,39 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Drift guard:** `cache_test.ts` parses every `*.ts` under `scripts/benchmarks/lib/` for imports, resolves relative paths, and asserts any import that escapes `scripts/benchmarks/` appears in `whitelistedCrossPackageFiles`. Catches silent staleness introduced by new cross-package dependencies.
 - **Storage footprint:** One JSON file per (scenario, ide). Typical size ~1–3 KB. `logs` and `evidence` are dropped; full traces remain in the gitignored `benchmarks/runs/` directory.
 
+### 3.4.2 Skill Trigger Benchmarks — FR-BENCH.TRIGGER
+
+- **Purpose:** Verify the LLM picks the correct skill (or none) for a given user query, independent of whether the skill *executes* correctly when chosen. Detects description-matching regressions: a description rewrite that makes the skill invisible (false negative) or over-broad (false positive). Pairs with execution scenarios, which assume the skill is already loaded.
+- **Layout:** Co-located with each skill, parallel to existing execution scenarios:
+  ```
+  framework/<pack>/skills/<skill-id>/benchmarks/
+    trigger-pos-1/mod.ts    trigger-adj-1/mod.ts    trigger-false-1/mod.ts
+    trigger-pos-2/mod.ts    trigger-adj-2/mod.ts    trigger-false-2/mod.ts
+    trigger-pos-3/mod.ts    trigger-adj-3/mod.ts    trigger-false-3/mod.ts
+    <execution-scenario>/mod.ts ...
+  ```
+- **Naming convention:** Scenario `id` is `<skill-id>-trigger-<type>-<n>` where `<type>` is `pos`, `adj`, or `false` and `<n>` ∈ `{1,2,3}`. Directory name matches the trailing `trigger-<type>-<n>`.
+- **Type semantics:**
+  - `trigger-pos-*` (positive): user query that naturally matches the skill's description. Skill MUST activate.
+  - `trigger-adj-*` (adjacent-negative): user query for which a *different, neighboring* skill is the right match (e.g., for `flowai-skill-fix-tests` an adjacent query targets `flowai-skill-jit-review`). The skill under test MUST stand down.
+  - `trigger-false-*` (false-use-negative): user query inside the skill's general domain but with the wrong intent — typically asking *about* the skill, asking how it works, requesting documentation on its idiom, or asking for something semantically close but explicitly excluded by the description. The skill under test MUST stand down.
+- **Scenario shape:** Plain `BenchmarkSkillScenario` instance with `id`, `name`, `skill`, `agentsTemplateVars`, `userQuery`, and `checklist` (1 critical item). No `setup`, no `fixturePath` (default empty sandbox is sufficient — trigger decisions happen before any project state matters).
+- **Checklist phrasing (stable, judge-friendly):**
+  - Positive (`expectTriggered: true`):
+    - `id`: `skill_invoked`
+    - `description`: "Did the agent load and act on `<skill-id>` in response to this query? Look in the trace for a `Skill` tool call or a read of the skill's `SKILL.md` for `<skill-id>`."
+    - `critical`: true
+  - Negative (`expectTriggered: false`):
+    - `id`: `skill_not_invoked`
+    - `description`: "Did the agent AVOID loading `<skill-id>`? For this query the skill is not appropriate; the agent should either invoke a different skill or respond directly without reading `<skill-id>/SKILL.md` or calling the `Skill` tool with `<skill-id>`."
+    - `critical`: true
+- **Coverage enforcement:** `scripts/check-trigger-coverage.ts` walks `framework/*/skills/flowai-skill-*` and asserts each contains exactly the 9 expected `benchmarks/trigger-{pos,adj,false}-{1,2,3}/mod.ts` files. Wired into `scripts/task-check.ts`. Failure messages list the missing/misnamed paths.
+- **Selection guidance for authors** (also in the authoring skill):
+  - `pos` queries should sound like a real user — short, natural, no `/skill-name` invocation, no over-specified jargon. Prefer 3 distinct phrasings (different verbs, different framing) so the test stresses description-matching, not exact wording.
+  - `adj` queries pick the *most likely confusion* skill — usually a sibling in the same pack, or a skill with overlapping vocabulary. Examples: `flowai-skill-fix-tests` ↔ `flowai-skill-jit-review`; `flowai-skill-plan` ↔ `flowai-skill-epic`.
+  - `false` queries probe the skill's hardest no-go cases. Common patterns: "explain how X works" vs. "do X"; meta queries about the skill's own internals; a request whose surface vocabulary matches but whose actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense).
+- **Cost / cache:** Each scenario runs the agent once and the judge once. Trigger benchmarks compose with `FR-BENCH-CACHE` (no special handling). Skill-description edits invalidate exactly the affected skill's 9 scenarios.
+
 ### 3.4a Experiments Subsystem (RELOCATED) — FR-EXP
 
 Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). That repo owns: the experiment runner/judge/noise/report/tokens libs, the `claude-md-length` variants and committed results, the `deno task experiment` CLI, and the `writeMemoryFile`/`getCleanroomEnv` adapter extensions that were experiment-only. The `AgentAdapter` contract in `flow` returns to regression-benchmark responsibilities (no memory-file injection, no cleanroom env plumbing). `task-bench.ts` discovery was always scoped to `framework/<pack>/.../benchmarks/`, so no isolation logic changed.

@@ -202,6 +202,75 @@ skill text wastes bench cycles and frequently introduces regressions
 (e.g. "mandatory capture-to-file" rules that don't help because hooks
 block before the shell redirect executes).
 
+## 6.1 Trigger Scenarios for Skills (FR-BENCH.TRIGGER)
+
+Execution scenarios prove "when skill X runs, it works." They do NOT prove that the model picks skill X for a relevant query, or that it stands down for an unrelated one. **Trigger scenarios** close that gap: they verify description-matching correctness.
+
+### Scope and shape
+
+- **Applies to:** every skill under `framework/<pack>/skills/flowai-skill-*/`. Commands (`commands/`) carry `disable-model-invocation: true` and are out of scope.
+- **Per skill:** exactly 9 scenarios — 3 positive, 3 adjacent-negative, 3 false-use-negative.
+- **Layout:** sibling folders to existing scenarios:
+  ```
+  framework/<pack>/skills/<skill-id>/benchmarks/
+    trigger-pos-{1,2,3}/mod.ts
+    trigger-adj-{1,2,3}/mod.ts
+    trigger-false-{1,2,3}/mod.ts
+  ```
+- **Scenario id:** `<skill-id>-trigger-<pos|adj|false>-<n>`.
+- **Coverage check:** `scripts/check-trigger-coverage.ts` (wired into `deno task check`) fails if any of the 9 are missing or misnamed.
+
+### Picking queries
+
+- **Positive (`trigger-pos-*`):** a natural, short user query that matches the skill's description. **No `/skill-name` prefix** (that bypasses description-matching), no over-specified jargon, no hints at internal mechanics. Use 3 different phrasings (different verbs / framings) so the test stresses description match, not exact wording.
+- **Adjacent-negative (`trigger-adj-*`):** a query for which a *different, neighboring* skill is the correct match. Pick the most-likely confusion candidates from the same pack or with overlapping vocabulary. Typical confusion patterns: a "fix this test" skill vs. a "review my diff" skill (overlap on "I broke something"); a single-task planner vs. a multi-phase epic planner (overlap on "plan"); a current-session reflection vs. a historical-sessions reflection (overlap on "reflect").
+- **False-use-negative (`trigger-false-*`):** a query inside the skill's general domain but with the wrong intent. Common patterns: "explain how X works" vs "do X"; meta queries about the skill's own internals; surface vocabulary that matches but the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense).
+
+### Checklist contract
+
+Every trigger scenario carries exactly **one critical** checklist item.
+
+- Positive (`trigger-pos-*`):
+  ```ts
+  checklist = [{
+    id: "skill_invoked",
+    description: "Did the agent load and act on `<skill-id>` in response to this query? Look in the trace for a `Skill` tool call or a read of the skill's `SKILL.md` for `<skill-id>`.",
+    critical: true,
+  }];
+  ```
+- Negative (`trigger-adj-*` and `trigger-false-*`):
+  ```ts
+  checklist = [{
+    id: "skill_not_invoked",
+    description: "Did the agent AVOID loading `<skill-id>`? For this query the skill is not appropriate; the agent should either invoke a different skill or respond directly without reading `<skill-id>/SKILL.md` or calling the `Skill` tool with `<skill-id>`.",
+    critical: true,
+  }];
+  ```
+
+### Template (`mod.ts`)
+
+```ts
+import { BenchmarkSkillScenario } from "@bench/types.ts";
+
+export const TriggerPos1 = new class extends BenchmarkSkillScenario {
+  id = "<skill-id>-trigger-pos-1";
+  name = "<short label, e.g. 'natural fix-tests query'>";
+  skill = "<skill-id>";
+  agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
+  userQuery = "<natural user query>";
+  checklist = [{
+    id: "skill_invoked",
+    description:
+      "Did the agent load and act on `<skill-id>` in response to this query? Look in the trace for a `Skill` tool call or a read of the skill's `SKILL.md` for `<skill-id>`.",
+    critical: true,
+  }];
+}();
+```
+
+### RED-phase verification
+
+Before scaling, write one positive scenario and run it; confirm the judge correctly fails the run when the skill's `description` is mangled to be unrelated. Then revert the description. This validates the pattern end-to-end. See SRS `FR-BENCH.TRIGGER`, SDS §3.4.2.
+
 ## 7. Universal Result Schema
 
 To ensure cross-platform compatibility, benchmark results must follow a standard JSON schema.

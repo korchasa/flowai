@@ -6,7 +6,9 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 
 - `<pack>/pack.yaml` — Pack manifest (name, version, description, scaffolds).
 - `<pack>/commands/` — **User-only** workflows (`SKILL.md` directories). Names: `flowai-*`, `flowai-setup-*`. Source files MUST NOT declare `disable-model-invocation`; the CLI writer injects it at sync time based on directory placement. Benchmark scenarios co-located in `<pack>/commands/<command>/benchmarks/`.
-- `<pack>/skills/` — **Agent-invocable** capabilities (`SKILL.md` directories). Names: `flowai-skill-*`. Source files MUST NOT declare `disable-model-invocation`. Benchmark scenarios co-located in `<pack>/skills/<skill>/benchmarks/`.
+- `<pack>/skills/` — **Agent-invocable** capabilities (`SKILL.md` directories). Names: `flowai-skill-*`. Source files MUST NOT declare `disable-model-invocation`. Benchmark scenarios co-located in `<pack>/skills/<skill>/benchmarks/`. Each skill carries TWO categories of scenarios:
+  - **Execution scenarios** (1+ per skill): verify the skill produces correct results when triggered.
+  - **Trigger scenarios** (FR-BENCH.TRIGGER, exactly 9 per skill): verify description-matching correctness. Three positives (`trigger-pos-{1,2,3}/mod.ts`) the skill should activate on; three adjacent-negatives (`trigger-adj-{1,2,3}/mod.ts`) where a different skill is the right match; three false-use-negatives (`trigger-false-{1,2,3}/mod.ts`) inside the skill's domain but with the wrong intent. Coverage gated by `scripts/check-trigger-coverage.ts`. Authoring guidance in `flowai-skill-write-agent-benchmarks` §6.1.
 - `<pack>/agents/` — Canonical agent definitions (`<agent-name>.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by flowai at install time. Benchmark scenarios co-located in `<pack>/agents/<agent-name>/benchmarks/`.
 - `<pack>/assets/` — Shared templates (AGENTS.md templates) used by multiple skills and the benchmark runner.
 - `<pack>/benchmarks/` — Pack-level benchmark scenarios (e.g., AGENTS.md rules verification) with shared fixtures.
