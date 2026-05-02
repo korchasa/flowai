@@ -5,7 +5,7 @@
 import { Command } from "@cliffy/command";
 import { Confirm } from "@cliffy/prompt";
 import { wait } from "@denosaurs/wait";
-import { DenoFsAdapter } from "./adapters/fs.ts";
+import { DenoFsAdapter, type FsAdapter } from "./adapters/fs.ts";
 import { detectColor, red } from "./color.ts";
 import { loadConfig } from "./config.ts";
 import {
@@ -63,16 +63,16 @@ function withSyncOptions<T extends Command<any>>(cmd: T): T {
     ) as T;
 }
 
-/** Extract sync options from parsed cliffy options */
-function extractSyncOptions(
-  options: Record<string, unknown>,
-): {
+interface SyncCliOptions {
   yes: boolean;
   skipUpdateCheck: boolean;
   global: boolean;
   local: boolean;
   dryRun: boolean;
-} {
+}
+
+/** Extract sync options from parsed cliffy options */
+function extractSyncOptions(options: Record<string, unknown>): SyncCliOptions {
   return {
     yes: options.yes as boolean,
     skipUpdateCheck: options.skipUpdateCheck as boolean,
@@ -161,7 +161,7 @@ export async function resolveEffectiveScope(
   mode: ScopeMode,
   cwd: string,
   home: string,
-  fs: DenoFsAdapter | import("./adapters/fs.ts").FsAdapter,
+  fs: DenoFsAdapter | FsAdapter,
 ): Promise<
   { scope: SyncScope; needsPrompt: boolean; autoUsedGlobal: boolean }
 > {
@@ -184,47 +184,36 @@ export async function resolveEffectiveScope(
   return { scope: "global", needsPrompt: true, autoUsedGlobal: false };
 }
 
-/** Shared sync action used by both bare command (outside IDE) and `sync` subcommand.
- *
- * Returns exit code (0 = success, 1 = errors). Caller invokes `Deno.exit`. */
-async function runSync(options: {
-  yes: boolean;
-  skipUpdateCheck: boolean;
-  global: boolean;
-  local: boolean;
-  dryRun: boolean;
-}): Promise<number> {
-  const cwd = Deno.cwd();
-  const fs = new DenoFsAdapter();
-  const {
-    yes,
-    skipUpdateCheck,
-    global: isGlobal,
-    local: isLocal,
-    dryRun,
-  } = options;
+interface PreparedScope {
+  scope: SyncScope;
+  effectiveHome: string;
+  home: string;
+}
 
-  // Validate mutually exclusive scope flags before any work.
+/** Validate scope flags and resolve to an effective scope + home pair.
+ * Logs and returns null on flag conflict; otherwise returns the prepared scope
+ * (post auto-resolve and optional interactive prompt). */
+async function prepareScope(
+  opts: SyncCliOptions,
+  fs: FsAdapter,
+  cwd: string,
+): Promise<PreparedScope | null> {
   let mode: ScopeMode;
   try {
-    mode = resolveScopeMode({ global: isGlobal, local: isLocal });
+    mode = resolveScopeMode({ global: opts.global, local: opts.local });
   } catch (err) {
     console.error(red((err as Error).message, detectColor()));
-    return 1;
+    return null;
   }
 
-  // Home is required for auto-probe and global targets; in forced project
-  // scope we still resolve it (cheap) so downstream global-bootstrap paths
-  // work consistently.
   const home = resolveHomeDir();
-
   const resolution = await resolveEffectiveScope(mode, cwd, home, fs);
   let scope: SyncScope = resolution.scope;
 
   if (resolution.autoUsedGlobal) {
     console.log(`Using global config at ${home}/.flowai.yaml (--auto).`);
   }
-  if (resolution.needsPrompt && !yes && !dryRun) {
+  if (resolution.needsPrompt && !opts.yes && !opts.dryRun) {
     const pickLocal = await Confirm.prompt({
       message:
         "No flowai config found. Create a project-local config (.flowai.yaml in this dir)? Answer 'no' to set up a global config instead.",
@@ -236,37 +225,44 @@ async function runSync(options: {
   }
   // Downstream functions expect `home` empty for project scope.
   const effectiveHome = scope === "global" ? home : "";
+  return { scope, effectiveHome, home };
+}
 
-  // 0. Notify about a newer version (fail-open). Never installs — users run
-  //    `flowai update` to apply. Skipped under dry-run and `--skip-update-check`.
-  if (!dryRun) {
-    await notifyUpdateAvailable({ skip: skipUpdateCheck });
-  }
-
-  // 1. Load or generate config (scope-aware path). Dry-run must never write a
-  //    config either — if missing, print a hint and exit 0.
+/** Load existing flowai config or generate a new one (interactive vs `-y`).
+ * Returns null when dry-run is set and no config exists (caller should exit 0
+ * without writing a config). The `isNewConfig` flag distinguishes generated
+ * configs from existing ones — used downstream to gate the post-plan
+ * confirmation prompt. */
+async function loadOrGenerateConfig(
+  cwd: string,
+  fs: FsAdapter,
+  scope: SyncScope,
+  effectiveHome: string,
+  home: string,
+  opts: SyncCliOptions,
+): Promise<{ config: FlowConfig; isNewConfig: boolean } | null> {
   let config = await loadConfig(cwd, fs, scope, effectiveHome);
   const isNewConfig = !config;
 
   if (!config) {
-    if (dryRun) {
+    if (opts.dryRun) {
       console.log(
         "[DRY RUN] No .flowai.yaml found. Run without --dry-run to generate one interactively, or with -y for defaults.",
       );
-      return 0;
+      return null;
     }
     // Global-mode first-run notice: primitives go into IDE USER dirs for
     // every known IDE by default, which surprises users who typed --global
     // by mistake. Surface the blast radius before the non-interactive
     // config writer proceeds.
-    if (scope === "global" && yes) {
+    if (scope === "global" && opts.yes) {
       console.log(
         `Global mode: creating ${home}/.flowai.yaml and installing to IDE user dirs (all ${
           Object.keys(KNOWN_IDES).length
         } known IDEs). Edit the config \`ides:\` field to narrow.`,
       );
     }
-    config = yes
+    config = opts.yes
       ? await generateConfigNonInteractive(
         cwd,
         fs,
@@ -276,28 +272,21 @@ async function runSync(options: {
       )
       : await generateConfig(cwd, fs, undefined, scope, effectiveHome);
   }
+  return { config, isNewConfig };
+}
 
-  // 2. Show sync plan (includes Target dirs in global mode)
-  if (dryRun) {
-    console.log("[DRY RUN] Previewing sync — no files will be written.");
-  }
-  console.log(formatSyncPlan(config, { scope, home: effectiveHome }));
-
-  // Confirm only for newly generated configs (skipped under dry-run since
-  // dry-run has no side effects to confirm).
-  if (isNewConfig && !yes && !dryRun) {
-    const proceed = await Confirm.prompt({
-      message: "Proceed with sync?",
-      default: true,
-    });
-    if (!proceed) {
-      console.log("Aborted.");
-      return 0;
-    }
-  }
-
-  // 3. Execute sync. Dry-run skips the spinner (animation is pointless when
-  //    no writes happen and the run completes instantly).
+/** Execute sync (with spinner, conflict prompt, and output rendering).
+ * Returns the exit code: 0 on success, 1 on any write error in a real run.
+ * Dry-run can never fail. */
+async function executeSync(
+  cwd: string,
+  fs: FsAdapter,
+  config: FlowConfig,
+  scope: SyncScope,
+  effectiveHome: string,
+  opts: SyncCliOptions,
+): Promise<number> {
+  const { yes, dryRun } = opts;
   const spinner = dryRun ? null : wait({ text: "Syncing...", color: "cyan" });
   spinner?.start();
 
@@ -329,16 +318,65 @@ async function runSync(options: {
   try {
     const result = await sync(cwd, config, fs, syncOptions);
     spinner?.stop();
-
-    // 4. Render instruction-oriented output
     renderSyncOutput(result);
-
-    // 5. Exit code: 1 if any writes failed (real run only; dry-run can't fail).
     return (!dryRun && result.errors.length > 0) ? 1 : 0;
   } catch (e) {
     spinner?.stop();
     throw e;
   }
+}
+
+/** Shared sync action used by both bare command (outside IDE) and `sync` subcommand.
+ *
+ * Returns exit code (0 = success, 1 = errors). Caller invokes `Deno.exit`. */
+async function runSync(opts: SyncCliOptions): Promise<number> {
+  const cwd = Deno.cwd();
+  const fs = new DenoFsAdapter();
+
+  const prepared = await prepareScope(opts, fs, cwd);
+  if (!prepared) return 1;
+  const { scope, effectiveHome, home } = prepared;
+
+  // 0. Notify about a newer version (fail-open). Never installs — users run
+  //    `flowai update` to apply. Skipped under dry-run and `--skip-update-check`.
+  if (!opts.dryRun) {
+    await notifyUpdateAvailable({ skip: opts.skipUpdateCheck });
+  }
+
+  // 1. Load or generate config (scope-aware path). Dry-run must never write a
+  //    config either — if missing, print a hint and exit 0.
+  const loaded = await loadOrGenerateConfig(
+    cwd,
+    fs,
+    scope,
+    effectiveHome,
+    home,
+    opts,
+  );
+  if (!loaded) return 0;
+  const { config, isNewConfig } = loaded;
+
+  // 2. Show sync plan (includes Target dirs in global mode)
+  if (opts.dryRun) {
+    console.log("[DRY RUN] Previewing sync — no files will be written.");
+  }
+  console.log(formatSyncPlan(config, { scope, home: effectiveHome }));
+
+  // Confirm only for newly generated configs (skipped under dry-run since
+  // dry-run has no side effects to confirm).
+  if (isNewConfig && !opts.yes && !opts.dryRun) {
+    const proceed = await Confirm.prompt({
+      message: "Proceed with sync?",
+      default: true,
+    });
+    if (!proceed) {
+      console.log("Aborted.");
+      return 0;
+    }
+  }
+
+  // 3. Execute sync.
+  return executeSync(cwd, fs, config, scope, effectiveHome, opts);
 }
 
 /** Options for renderSyncOutput. `color` overrides auto-detection (NO_COLOR
@@ -347,61 +385,16 @@ export interface RenderOptions {
   color?: boolean;
 }
 
-/** Render instruction-oriented sync output.
- *
- * Layout:
- *   1. Truthful header — "flowai sync complete." (success) or
- *      "flowai sync FAILED: N error(s)." (red).
- *   2. ACTIONS REQUIRED — numbered list of resource changes. Failed items
- *      are excluded here and counters show `written/planned` when they differ.
- *   3. NO ACTIONS REQUIRED summary (unchanged resource counts).
- *   4. ERRORS block (red) — failed writes, at the very end so they're the
- *      last thing the user sees. */
-export function renderSyncOutput(
-  result: SyncResult,
-  options: RenderOptions = {},
-): void {
-  const color = options.color ?? detectColor();
-  const hasErrors = result.errors.length > 0;
-  const dryPrefix = result.dryRun ? "[DRY RUN] " : "";
+interface ResourceSection {
+  label: string;
+  items: ResourceAction[];
+  artifactLabel: string;
+  hints: { update: string; create: string; delete: string };
+}
 
-  if (hasErrors) {
-    console.log(
-      "\n" +
-        red(
-          `${dryPrefix}flowai sync FAILED: ${result.errors.length} error(s).`,
-          color,
-        ),
-    );
-  } else {
-    console.log(`\n${dryPrefix}flowai sync complete.`);
-  }
-
-  const actions: string[] = [];
-  let actionNum = 0;
-
-  const push = (text: string) => {
-    actionNum++;
-    actions.push(`${actionNum}. ${text}`);
-  };
-
-  // Config migration
-  if (result.configMigrated) {
-    const m = result.configMigrated;
-    push(
-      `CONFIG MIGRATED (v${m.from} -> v${m.to}):\n` +
-        `   .flowai.yaml updated with packs: ${m.packs.join(", ")}.\n` +
-        `   Commit this file.`,
-    );
-  }
-
-  // Resource sections: skills, agents, hooks, assets
-  const sections: Array<{
-    label: string;
-    items: ResourceAction[];
-    artifactLabel: string;
-    hints: { update: string; create: string; delete: string };
-  }> = [
+/** Build the static description of resource sections from a sync result. */
+function buildResourceSections(result: SyncResult): ResourceSection[] {
+  return [
     {
       label: "SKILLS",
       items: result.skillActions,
@@ -445,12 +438,34 @@ export function renderSyncOutput(
       },
     },
   ];
+}
+
+/** Build the numbered ACTIONS REQUIRED list (config migration + per-section
+ * create/update/delete entries). Failed items are excluded so counters report
+ * what was actually written. Returned strings are pre-numbered. */
+function buildActionEntries(
+  result: SyncResult,
+  sections: ResourceSection[],
+): string[] {
+  const actions: string[] = [];
+  let actionNum = 0;
+  const push = (text: string) => {
+    actionNum++;
+    actions.push(`${actionNum}. ${text}`);
+  };
+
+  if (result.configMigrated) {
+    const m = result.configMigrated;
+    push(
+      `CONFIG MIGRATED (v${m.from} -> v${m.to}):\n` +
+        `   .flowai.yaml updated with packs: ${m.packs.join(", ")}.\n` +
+        `   Commit this file.`,
+    );
+  }
 
   for (const { label, items, artifactLabel, hints } of sections) {
     const grouped = groupByAction(items);
-    for (
-      const action of ["update", "create", "delete"] as const
-    ) {
+    for (const action of ["update", "create", "delete"] as const) {
       const list = grouped[action];
       if (list.length === 0) continue;
       // Failed items are excluded from the visible list and subtracted from
@@ -478,13 +493,36 @@ export function renderSyncOutput(
     }
   }
 
-  // Render ACTIONS REQUIRED block (without errors — they get their own)
+  return actions;
+}
+
+/** Print the truthful header line: success or red FAILED summary. */
+function printSyncHeader(result: SyncResult, color: boolean): void {
+  const dryPrefix = result.dryRun ? "[DRY RUN] " : "";
+  if (result.errors.length > 0) {
+    console.log(
+      "\n" +
+        red(
+          `${dryPrefix}flowai sync FAILED: ${result.errors.length} error(s).`,
+          color,
+        ),
+    );
+  } else {
+    console.log(`\n${dryPrefix}flowai sync complete.`);
+  }
+}
+
+/** Print the ACTIONS REQUIRED block followed by the NO ACTIONS summary. */
+function printActionsAndSummary(
+  actions: string[],
+  sections: ResourceSection[],
+  hasErrors: boolean,
+): void {
   if (actions.length > 0) {
     console.log("\n>>> ACTIONS REQUIRED:\n");
     console.log(actions.join("\n\n"));
   }
 
-  // No-action summary
   const noActionParts: string[] = [];
   for (const { label, items } of sections) {
     const okCount = items.filter((a) => a.action === "ok").length;
@@ -501,17 +539,17 @@ export function renderSyncOutput(
   } else if (noActionParts.length > 0) {
     console.log(`\n>>> NO ACTIONS REQUIRED:\n${noActionParts.join(", ")}.`);
   }
+}
 
-  // ERRORS block — final section, after ACTIONS and NO ACTIONS, so it's the
-  // last thing the user sees in the scrollback. Red when colored.
-  if (hasErrors) {
+/** Print the trailing ERRORS block + symlink informational summary. */
+function printTrailers(result: SyncResult, color: boolean): void {
+  if (result.errors.length > 0) {
     console.log("\n" + red(`>>> ERRORS (${result.errors.length}):`, color));
     for (const e of result.errors) {
       console.log(red(`   - ${e.path}: ${e.error}`, color));
     }
   }
 
-  // Symlinks (informational)
   if (result.symlinkResult) {
     const sl = result.symlinkResult;
     if (sl.created.length > 0 || sl.updated.length > 0) {
@@ -520,6 +558,28 @@ export function renderSyncOutput(
       );
     }
   }
+}
+
+/** Render instruction-oriented sync output.
+ *
+ * Layout:
+ *   1. Truthful header — "flowai sync complete." (success) or
+ *      "flowai sync FAILED: N error(s)." (red).
+ *   2. ACTIONS REQUIRED — numbered list of resource changes. Failed items
+ *      are excluded here and counters show `written/planned` when they differ.
+ *   3. NO ACTIONS REQUIRED summary (unchanged resource counts).
+ *   4. ERRORS block (red) — failed writes, at the very end so they're the
+ *      last thing the user sees. */
+export function renderSyncOutput(
+  result: SyncResult,
+  options: RenderOptions = {},
+): void {
+  const color = options.color ?? detectColor();
+  printSyncHeader(result, color);
+  const sections = buildResourceSections(result);
+  const actions = buildActionEntries(result, sections);
+  printActionsAndSummary(actions, sections, result.errors.length > 0);
+  printTrailers(result, color);
 }
 
 function groupByAction(
@@ -540,9 +600,9 @@ function groupByAction(
   >;
 }
 
-/** CLI entry point */
-export async function main(args: string[]): Promise<void> {
-  const syncSubcommand = withSyncOptions(
+/** Build the `sync` subcommand: explicit sync action with shared options. */
+function buildSyncSubcommand() {
+  return withSyncOptions(
     new Command()
       .description(
         "Explicitly sync framework skills/agents into IDE config dirs.",
@@ -554,7 +614,171 @@ export async function main(args: string[]): Promise<void> {
     );
     if (code !== 0) Deno.exit(code);
   });
+}
 
+/** Build the `loop` subcommand: non-interactive Claude Code runner. */
+function buildLoopSubcommand() {
+  return new Command()
+    .description("Run Claude Code non-interactively with a prompt.")
+    .arguments("<prompt:string>")
+    .option("--agent <name:string>", "Agent name (passed as --agent)")
+    .option("--model <model:string>", "Model override")
+    .option(
+      "--cwd <path:string>",
+      "Working directory for claude",
+      { default: "." },
+    )
+    .option(
+      "--yolo",
+      "Pass --dangerously-skip-permissions to claude",
+      { default: false },
+    )
+    .option(
+      "--timeout <seconds:number>",
+      "Timeout per iteration in seconds (default: no limit)",
+    )
+    .option(
+      "--interval <duration:string>",
+      "Pause between iterations, e.g. 30s, 5m, 1h (default: 0)",
+    )
+    .option(
+      "--max-iterations <n:number>",
+      "Max number of iterations (default: infinite)",
+    )
+    // deno-lint-ignore no-explicit-any
+    .action(async (options: any, prompt: string) => {
+      const cwd = options.cwd === "." ? undefined : options.cwd;
+      const loopOpts: LoopOptions = {
+        agent: options.agent,
+        prompt,
+        model: options.model,
+        cwd,
+        yolo: options.yolo,
+        timeout: options.timeout,
+        interval: options.interval,
+        maxIterations: options.maxIterations,
+      };
+      const exitCode = await runLoop(loopOpts);
+      if (exitCode !== 0) Deno.exit(exitCode);
+    });
+}
+
+/** Build the `migrate` subcommand: one-way primitive migration between IDEs. */
+function buildMigrateSubcommand() {
+  return new Command()
+    .description(
+      "One-way migration of all primitives (skills, agents, commands) from one IDE to another. Requires an explicit scope flag.",
+    )
+    .arguments("<from:string> <to:string>")
+    .option("-y, --yes", "Overwrite without prompt", { default: false })
+    .option(
+      "-g, --global",
+      "Migrate between IDE user-level dirs (e.g. ~/.claude/ → ~/.cursor/). Mutually exclusive with --local.",
+      { default: false },
+    )
+    .option(
+      "-l, --local",
+      "Migrate between project-local IDE dirs (<cwd>/.{ide}/). Mutually exclusive with --global.",
+      { default: false },
+    )
+    .option(
+      "--dry-run",
+      "Print what would be migrated without writing files",
+      { default: false },
+    )
+    // deno-lint-ignore no-explicit-any
+    .action(async (options: any, from: string, to: string) => {
+      const g = options.global === true;
+      const l = options.local === true;
+      if (g && l) {
+        console.error(
+          red(
+            "--global and --local are mutually exclusive; pass only one.",
+            detectColor(),
+          ),
+        );
+        Deno.exit(1);
+      }
+      if (!g && !l) {
+        console.error(
+          red(
+            "flowai migrate requires an explicit scope: pass --global or --local.",
+            detectColor(),
+          ),
+        );
+        Deno.exit(1);
+      }
+      const scope: SyncScope = g ? "global" : "project";
+      const home = g ? resolveHomeDir() : "";
+      const migrateOpts: MigrateOptions = {
+        yes: options.yes as boolean,
+        dryRun: options.dryRun as boolean,
+        scope,
+        home,
+        promptConflicts: options.yes
+          ? undefined
+          : async (conflicts: PlanItem[]) => {
+            console.log("\nConflicts detected:");
+            for (const c of conflicts) {
+              console.log(`  - ${c.targetPath}`);
+            }
+            const overwrite = await Confirm.prompt({
+              message: "Overwrite all?",
+              default: true,
+            });
+            return overwrite ? conflicts.map((_, i) => i) : [];
+          },
+      };
+      await runMigrate(
+        Deno.cwd(),
+        from,
+        to,
+        new DenoFsAdapter(),
+        migrateOpts,
+        console.log,
+      );
+    });
+}
+
+/** Build the `update` subcommand: self-update from JSR. */
+function buildUpdateSubcommand() {
+  return new Command()
+    .description("Check for a newer flowai version and self-update.")
+    // deno-lint-ignore no-explicit-any
+    .action(async (_options: any) => {
+      await runSelfUpdate();
+    });
+}
+
+/** Build the bare-command action handler. Inside IDEs that resolve to project
+ * scope, prints a hint and exits without running sync — prevents accidental
+ * project-config writes from background slash-command invocations. */
+function buildRootAction(): (options: unknown) => Promise<void> {
+  return async (options: unknown) => {
+    const opts = extractSyncOptions(options as Record<string, unknown>);
+    // [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — IDE-context guard fires only when the resolved scope
+    // is project (auto-detected or forced via --local). Auto-resolution to
+    // global is safe inside an IDE (writes land in user dirs, not cwd).
+    if (isInsideIDE()) {
+      const willBeProject = opts.local ||
+        (!opts.global && await new DenoFsAdapter().exists(
+          `${Deno.cwd()}/.flowai.yaml`,
+        ));
+      if (willBeProject) {
+        console.log(
+          "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
+        );
+        return;
+      }
+    }
+
+    const code = await runSync(opts);
+    if (code !== 0) Deno.exit(code);
+  };
+}
+
+/** CLI entry point */
+export async function main(args: string[]): Promise<void> {
   const command = withSyncOptions(
     new Command()
       .name("flowai")
@@ -579,161 +803,11 @@ export async function main(args: string[]): Promise<void> {
       ),
   )
     // deno-lint-ignore no-explicit-any
-    .action(async (options: any) => {
-      const opts = extractSyncOptions(options as Record<string, unknown>);
-      // [FR-DIST.GLOBAL](../../documents/requirements.md#fr-dist.global-scope-selection-global-local-auto) — IDE-context guard fires only when the resolved scope
-      // is project (auto-detected or forced via --local). Auto-resolution to
-      // global is safe inside an IDE (writes land in user dirs, not cwd).
-      if (isInsideIDE()) {
-        const willBeProject = opts.local ||
-          (!opts.global && await new DenoFsAdapter().exists(
-            `${Deno.cwd()}/.flowai.yaml`,
-          ));
-        if (willBeProject) {
-          console.log(
-            "IDE context detected. Run `flowai sync -y --skip-update-check` or use `/flowai-update` skill.",
-          );
-          return;
-        }
-      }
-
-      const code = await runSync(opts);
-      if (code !== 0) Deno.exit(code);
-    })
-    .command("sync", syncSubcommand)
-    .command(
-      "loop",
-      new Command()
-        .description(
-          "Run Claude Code non-interactively with a prompt.",
-        )
-        .arguments("<prompt:string>")
-        .option("--agent <name:string>", "Agent name (passed as --agent)")
-        .option("--model <model:string>", "Model override")
-        .option(
-          "--cwd <path:string>",
-          "Working directory for claude",
-          { default: "." },
-        )
-        .option(
-          "--yolo",
-          "Pass --dangerously-skip-permissions to claude",
-          { default: false },
-        )
-        .option(
-          "--timeout <seconds:number>",
-          "Timeout per iteration in seconds (default: no limit)",
-        )
-        .option(
-          "--interval <duration:string>",
-          "Pause between iterations, e.g. 30s, 5m, 1h (default: 0)",
-        )
-        .option(
-          "--max-iterations <n:number>",
-          "Max number of iterations (default: infinite)",
-        )
-        // deno-lint-ignore no-explicit-any
-        .action(async (options: any, prompt: string) => {
-          const cwd = options.cwd === "." ? undefined : options.cwd;
-          const loopOpts: LoopOptions = {
-            agent: options.agent,
-            prompt,
-            model: options.model,
-            cwd,
-            yolo: options.yolo,
-            timeout: options.timeout,
-            interval: options.interval,
-            maxIterations: options.maxIterations,
-          };
-          const exitCode = await runLoop(loopOpts);
-          if (exitCode !== 0) Deno.exit(exitCode);
-        }),
-    )
-    .command(
-      "migrate",
-      new Command()
-        .description(
-          "One-way migration of all primitives (skills, agents, commands) from one IDE to another. Requires an explicit scope flag.",
-        )
-        .arguments("<from:string> <to:string>")
-        .option("-y, --yes", "Overwrite without prompt", { default: false })
-        .option(
-          "-g, --global",
-          "Migrate between IDE user-level dirs (e.g. ~/.claude/ → ~/.cursor/). Mutually exclusive with --local.",
-          { default: false },
-        )
-        .option(
-          "-l, --local",
-          "Migrate between project-local IDE dirs (<cwd>/.{ide}/). Mutually exclusive with --global.",
-          { default: false },
-        )
-        .option(
-          "--dry-run",
-          "Print what would be migrated without writing files",
-          { default: false },
-        )
-        // deno-lint-ignore no-explicit-any
-        .action(async (options: any, from: string, to: string) => {
-          const g = options.global === true;
-          const l = options.local === true;
-          if (g && l) {
-            console.error(
-              red(
-                "--global and --local are mutually exclusive; pass only one.",
-                detectColor(),
-              ),
-            );
-            Deno.exit(1);
-          }
-          if (!g && !l) {
-            console.error(
-              red(
-                "flowai migrate requires an explicit scope: pass --global or --local.",
-                detectColor(),
-              ),
-            );
-            Deno.exit(1);
-          }
-          const scope: SyncScope = g ? "global" : "project";
-          const home = g ? resolveHomeDir() : "";
-          const migrateOpts: MigrateOptions = {
-            yes: options.yes as boolean,
-            dryRun: options.dryRun as boolean,
-            scope,
-            home,
-            promptConflicts: options.yes
-              ? undefined
-              : async (conflicts: PlanItem[]) => {
-                console.log("\nConflicts detected:");
-                for (const c of conflicts) {
-                  console.log(`  - ${c.targetPath}`);
-                }
-                const overwrite = await Confirm.prompt({
-                  message: "Overwrite all?",
-                  default: true,
-                });
-                return overwrite ? conflicts.map((_, i) => i) : [];
-              },
-          };
-          await runMigrate(
-            Deno.cwd(),
-            from,
-            to,
-            new DenoFsAdapter(),
-            migrateOpts,
-            console.log,
-          );
-        }),
-    )
-    .command(
-      "update",
-      new Command()
-        .description("Check for a newer flowai version and self-update.")
-        // deno-lint-ignore no-explicit-any
-        .action(async (_options: any) => {
-          await runSelfUpdate();
-        }),
-    );
+    .action(buildRootAction() as any)
+    .command("sync", buildSyncSubcommand())
+    .command("loop", buildLoopSubcommand())
+    .command("migrate", buildMigrateSubcommand())
+    .command("update", buildUpdateSubcommand());
 
   await command.parse(args);
 }
