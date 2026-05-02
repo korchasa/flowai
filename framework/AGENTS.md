@@ -33,6 +33,10 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 - Agent format is canonical (IDE-agnostic); flowai adds IDE-specific frontmatter during distribution.
 - Scaffolded artifact mapping declared in `pack.yaml` `scaffolds:` field (primitive-name → artifact paths; resolves the same whether the primitive lives under `commands/` or `skills/`).
 
+## IDE Behavior Notes
+
+- **Claude Code skill routing has two surfaces**: the model's preloaded skill catalog (frontmatter `description`) AND a runtime directory listing of `.claude/skills/` that the agent can read mid-conversation. The latter lets the agent invoke a `Skill` tool call by directory name even when the description does not match the query. Implications: (1) skill descriptions cannot fully suppress activation; the directory name is also a routing key. (2) Trigger benchmarks (FR-BENCH.TRIGGER) must treat "agent reads `SKILL.md` to answer a meta-question about the skill" as a positive, not a false-use trap. (3) Description quality controls *preference* among installed skills, not absolute *availability*.
+
 ## Composite Skill Authoring
 
 A composite skill inlines step_by_step blocks from 2+ standalone skills (kept in sync by `scripts/check-skill-sync.ts`). Without the rules below, the agent invokes the source skills via the Skill tool and silently bypasses the composite's gate logic — fixed once in this project (commit history: no-delegation rule + verdict gate hardening).
