@@ -34,6 +34,7 @@
     "dev": "deno run -A scripts/task-dev.ts",
     "bench": "deno run -A scripts/task-bench.ts",
     "sync-local": "deno run -A scripts/task-sync-local.ts",
+    "sync-global": "deno run -A scripts/task-sync-global.ts",
     "bundle": "deno run -A cli/scripts/bundle-framework.ts",
     "release": "deno run -A npm:standard-version --skip.tag"
   },
