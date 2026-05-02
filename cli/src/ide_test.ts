@@ -146,34 +146,50 @@ Deno.test("CLI - --version prints version string", async () => {
 // --- CLI integration: bare command inside IDE prints message and does NOT sync ---
 
 Deno.test("CLI - bare command inside IDE prints message instead of syncing", async () => {
-  // Strip all IDE env vars, then set CLAUDECODE=1
-  const env: Record<string, string> = {};
-  for (const [k, v] of Object.entries(Deno.env.toObject())) {
-    if (!["CLAUDECODE", "CURSOR_AGENT", "OPENCODE"].includes(k)) {
-      env[k] = v;
+  // The IDE-context guard fires only when scope resolves to project — i.e.
+  // `--local` or `./.flowai.yaml` exists in cwd. Stage a project config in
+  // tmpDir + isolate HOME so the bare command picks the project scope and
+  // hits the guard before runSync.
+  const tmpDir = await Deno.makeTempDir();
+  const tmpHome = await Deno.makeTempDir();
+  try {
+    await Deno.writeTextFile(`${tmpDir}/.flowai.yaml`, "version: 1\n");
+
+    const env: Record<string, string> = {};
+    for (const [k, v] of Object.entries(Deno.env.toObject())) {
+      if (!["CLAUDECODE", "CURSOR_AGENT", "OPENCODE"].includes(k)) {
+        env[k] = v;
+      }
     }
+    env["CLAUDECODE"] = "1";
+    env["HOME"] = tmpHome;
+    env["USERPROFILE"] = tmpHome;
+
+    const mainPath = new URL("./main.ts", import.meta.url).pathname;
+    const cmd = new Deno.Command("deno", {
+      args: ["run", "-A", mainPath],
+      cwd: tmpDir,
+      env,
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const output = await cmd.output();
+    const stdout = new TextDecoder().decode(output.stdout);
+
+    assertEquals(output.code, 0);
+    assert(
+      stdout.includes("IDE context detected") &&
+        stdout.includes("flowai sync -y --skip-update-check"),
+      `Expected IDE message with sync subcommand hint, got: ${stdout}`,
+    );
+    assert(
+      !stdout.includes("Sync plan"),
+      "Should NOT start sync inside IDE context",
+    );
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
+    await Deno.remove(tmpHome, { recursive: true });
   }
-  env["CLAUDECODE"] = "1";
-
-  const cmd = new Deno.Command("deno", {
-    args: ["run", "-A", "cli/src/main.ts"],
-    env,
-    stdout: "piped",
-    stderr: "piped",
-  });
-  const output = await cmd.output();
-  const stdout = new TextDecoder().decode(output.stdout);
-
-  assertEquals(output.code, 0);
-  assert(
-    stdout.includes("IDE context detected") &&
-      stdout.includes("flowai sync -y --skip-update-check"),
-    `Expected IDE message with sync subcommand hint, got: ${stdout}`,
-  );
-  assert(
-    !stdout.includes("Sync plan"),
-    "Should NOT start sync inside IDE context",
-  );
 });
 
 Deno.test("CLI - sync subcommand works even inside IDE", async () => {
