@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.4](https://github.com/korchasa/flowai/compare/v0.12.3...v0.12.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* **bench:** self-heal stale benchmarks.lock from crashed prior runs ([27dba8a](https://github.com/korchasa/flowai/commit/27dba8ab597fb68f6f15e5bb36e6f7f6e813f885))
+
+
+### Agent Changes
+
+* implement ADR-0001 — flowai-skill-plan-adr as parallel planning skill ([39975a7](https://github.com/korchasa/flowai/commit/39975a7a85673cdca1c2954131cfda5c63e2e9d1))
+
 ### [0.12.3](https://github.com/korchasa/flowai/compare/v0.12.2...v0.12.3) (2026-05-02)
 
 
