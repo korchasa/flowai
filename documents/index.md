@@ -11,3 +11,5 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 ## FR
 
 - [FR-BENCH.TRIGGER](requirements.md#fr-benchtrigger-skill-description-matching-verification) — Skill description-matching verified by 9 trigger scenarios per skill — accepted
+- [FR-DOC-INDEX](requirements.md#fr-doc-index-agent-maintained-documentation-index) — Agent-maintained documentation index — [x]
+- [FR-DOC-RESCUE](requirements.md#fr-doc-rescue-reflect-surfaces-decisions-for-adr-capture) — Reflect surfaces decision passages for ADR capture — [x]

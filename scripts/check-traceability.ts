@@ -291,18 +291,21 @@ async function scanCodeFiles(
 
 async function scanTaskRefs(tasksDir: string): Promise<TaskRef[]> {
   const refs: TaskRef[] = [];
-  try {
-    for await (const entry of Deno.readDir(tasksDir)) {
+  async function walk(dir: string): Promise<void> {
+    for await (const entry of Deno.readDir(dir)) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory) {
+        await walk(fullPath);
+        continue;
+      }
       if (!entry.isFile || !entry.name.endsWith(".md")) continue;
-      const fullPath = join(tasksDir, entry.name);
       const content = await Deno.readTextFile(fullPath);
-      refs.push(
-        ...extractImplementsFromTask(
-          `documents/tasks/${entry.name}`,
-          content,
-        ),
-      );
+      const relPath = relative(Deno.cwd(), fullPath);
+      refs.push(...extractImplementsFromTask(relPath, content));
     }
+  }
+  try {
+    await walk(tasksDir);
   } catch {
     /* tasks dir may not exist */
   }

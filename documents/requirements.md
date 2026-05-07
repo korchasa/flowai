@@ -944,6 +944,30 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Acceptance verified by benchmarks:** `flowai-skill-plan-updates-index-on-new-fr`.
 - **Status:** [x]
 
+### FR-DOC-TASKS: First-Class Committed Tasks
+
+- **Description:** TBD (skeleton — filled in Phase 8 of `replace-adr-with-tasks` task). Tasks live at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`; frontmatter carries `date`, `status` ∈ `to do | in progress | done`, `implements`, optional `tags` and `related_tasks`; validated by `scripts/check-task-format.ts`.
+- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter`.
+- **Status:** [ ]
+
+### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills
+
+- **Description:** TBD (skeleton — filled in Phase 8). `flowai-commit` and `flowai-review-and-commit` derive `status` from `## Definition of Done` checkbox state (`0/N → to do`, `1..N-1 → in progress`, `N/N → done`) on every commit touching `documents/tasks/**/*.md` with new-shape frontmatter (presence of `date:`).
+- **Acceptance verified by benchmarks:** `flowai-commit-flips-task-status`, `flowai-commit-derives-in-progress-status`.
+- **Status:** [ ]
+
+### FR-DOC-TASK-CONTEXT: Plan Skill Loads Related Tasks into Step 2
+
+- **Description:** TBD (skeleton — filled in Phase 8). `flowai-plan-exp-permanent-tasks` Step 2 globs `documents/tasks/**/*.md`, parses frontmatter `implements:`, and reads tasks whose set intersects the planned task's `implements:` (cap 10).
+- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-loads-related-tasks`.
+- **Status:** [ ]
+
+### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer
+
+- **Description:** TBD (skeleton — filled in Phase 8). `flowai-plan-exp-permanent-tasks` (and `flowai-skill-epic`) inserts/extends `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly after `**Description:**` in each FR section listed in the new task's `implements:`. Surgical: only this line is touched. Idempotent.
+- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer`, `flowai-plan-exp-permanent-tasks-srs-task-edit-scope-limited`, `flowai-plan-exp-permanent-tasks-srs-task-back-pointer-idempotent`.
+- **Status:** [ ]
+
 ### FR-DOC-RESCUE: Reflect Surfaces Decisions for ADR Capture
 
 - **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighted alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a clear chat message that names the decision title (a short phrase derived from the passage) and recommends invoking `flowai-skill-plan-adr` to record the rationale persistently. Reflect itself does NOT write to SDS, ADR, or any file — recording is owned by `flowai-skill-plan-adr` (clean separation, one mechanism). SDS-rescue for durable architectural facts (separate from decisions) is out of scope and may be added by a later FR.
