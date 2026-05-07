@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "5f09da8a871f3416640a7347e474506043991a0a44e59395509e2a073b8e2cb8",
+  "scenarioId": "flowai-commit-derives-in-progress-status",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T10:47:41.635Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 108335.718584,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "code_committed": {
+        "pass": true,
+        "reason": "Коммит d30c4f1 содержит файл src/components/SearchPage.ts — это подтверждается как git log ('+3 lines in src/components/SearchPage.ts'), так и финальным содержимым файла в разделе GENERATED FILES."
+      },
+      "task_status_in_progress": {
+        "pass": true,
+        "reason": "В финальном содержимом файла documents/tasks/2026/04/20/add-search-page.md присутствует строка 'status: in progress'. Агент изменил фронтматер с 'status: to do' на 'status: in progress', что соответс…"
+      },
+      "task_change_in_commit": {
+        "pass": true,
+        "reason": "В git diff коммита d30c4f1 явно видно изменение файла documents/tasks/2026/04/20/add-search-page.md: строка '-status: to do' заменена на '+status: in progress'. Изменение зафиксировано в коммите, а н…"
+      },
+      "task_file_not_deleted": {
+        "pass": true,
+        "reason": "Файл documents/tasks/2026/04/20/add-search-page.md присутствует в разделе GENERATED FILES с полным содержимым. Git status показывает 'nothing to commit, working tree clean', файл не удалён."
+      },
+      "dod_items_unchanged": {
+        "pass": true,
+        "reason": "В финальном содержимом файла раздел Definition of Done содержит ровно 3 пункта: '[x] FR-SEARCH-PAGE: page renders results from /api/search', '[ ] FR-SEARCH-PAGE: pagination via query string', '[ ] FR…"
+      }
+    }
+  }
+}

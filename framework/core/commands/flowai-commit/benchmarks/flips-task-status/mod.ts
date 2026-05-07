@@ -1,11 +1,18 @@
 import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const CommitFlipsAdrStatusBench = new class
+// Verifies FR-DOC-TASK-LIFECYCLE: flowai-commit derives task `status` from
+// DoD checkbox count and rewrites the frontmatter when it differs.
+//
+// Fixture: documents/tasks/2026/04/15/add-rate-limiter.md with frontmatter
+// `status: in progress` AND all 3 DoD items already `[x]`.
+// Expected after commit: frontmatter rewritten to `status: done`, change is
+// IN A COMMIT (not just on disk), and the DoD items remain unchanged. The
+// task file MUST NOT be deleted (new-shape tasks are persistent records).
+export const CommitFlipsTaskStatusBench = new class
   extends BenchmarkSkillScenario {
-  id = "flowai-commit-flips-adr-status";
-  name =
-    "ADR status flips accepted → implemented when commit closes all DoD items";
+  id = "flowai-commit-flips-task-status";
+  name = "Task status flips in progress → done when DoD becomes fully checked";
   skill = "flowai-commit";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -22,7 +29,7 @@ export const CommitFlipsAdrStatusBench = new class
       "src/api/server_test.ts",
     ],
     expectedOutcome:
-      "Agent commits the new source files implementing ADR-0042, AND in the same commit flips the ADR's frontmatter status from 'accepted' to 'implemented' (because all DoD items in documents/adr/2026-04-15-add-rate-limiter.md are [x]).",
+      "Agent commits the four new source files, AND in the same commit (or a sibling commit in the same session) flips the task's frontmatter `status` from `in progress` to `done` because all DoD checkboxes in `documents/tasks/2026/04/15/add-rate-limiter.md` are now `[x]`.",
   };
 
   override async setup(sandboxPath: string) {
@@ -121,7 +128,7 @@ Deno.test("registers_rate_limit", () => {
   }
 
   userQuery =
-    "/flowai-commit Implemented the rate limiter described in documents/adr/2026-04-15-add-rate-limiter.md (ADR-0042). All DoD items are now satisfied. Commit the changes.";
+    "/flowai-commit Implemented the rate limiter described in the task at documents/tasks/2026/04/15/add-rate-limiter.md. All DoD items are now satisfied. Commit the changes.";
 
   checklist = [
     {
@@ -131,27 +138,27 @@ Deno.test("registers_rate_limit", () => {
       critical: true,
     },
     {
-      id: "adr_status_flipped",
+      id: "task_status_flipped",
       description:
-        "Read `documents/adr/2026-04-15-add-rate-limiter.md` after the commit. Does its frontmatter contain `status: implemented` (NOT `status: accepted`)?",
+        "Read `documents/tasks/2026/04/15/add-rate-limiter.md` after the commit. Does its frontmatter contain `status: done` (NOT `status: in progress`)?",
       critical: true,
     },
     {
-      id: "adr_change_in_commit",
+      id: "task_change_in_commit",
       description:
-        "Run `git log -p -- documents/adr/2026-04-15-add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the ADR's `status` from `accepted` to `implemented`? The change must be IN A COMMIT, not just on disk.",
+        "Run `git log -p -- documents/tasks/2026/04/15/add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the task's `status` from `in progress` to `done`? The change must be IN A COMMIT, not just on disk.",
       critical: true,
     },
     {
-      id: "adr_id_unchanged",
+      id: "task_file_not_deleted",
       description:
-        "Read the ADR file. Does its frontmatter still contain `id: ADR-0042`? The agent must NOT have changed the ID.",
+        "The new-shape task file at `documents/tasks/2026/04/15/add-rate-limiter.md` must NOT have been deleted by the cleanup step. It is a persistent canonical record per the new contract — only legacy flat-path tasks are eligible for deletion. Verify file still exists in the working tree and was not removed in any commit (`git log --diff-filter=D -- documents/tasks/2026/04/15/add-rate-limiter.md` should be empty).",
       critical: true,
     },
     {
       id: "dod_items_unchanged",
       description:
-        "Read the ADR file. Is the `## Definition of Done` section unchanged from the original (3 items, all `[x]`)? The agent must NOT have edited the DoD list itself — only the frontmatter `status:` line.",
+        "Read the task file. Is the `## Definition of Done` section unchanged from the fixture (3 items, all `[x]`)? The agent must NOT have edited the DoD list itself — only the frontmatter `status:` line.",
       critical: false,
     },
     {

@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "140d5700e1c88ff3543ef2906660eb61c260b698dfc3095ee6a8b931b92ee6fd",
+  "scenarioId": "flowai-review-and-commit-flips-task-status",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T10:45:23.905Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 293986.043084,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "review_phase_executed": {
+        "pass": true,
+        "reason": "The agent executed a full Phase 1 review before committing. The logs show structured review steps (QA, FR Coverage Audit, code hygiene, design/architecture review, readability review) and emitted a c…"
+      },
+      "code_committed": {
+        "pass": true,
+        "reason": "The git diff and git log both confirm all four source files are present in commit d05eb04: src/api/middleware/rate_limit.ts, src/api/middleware/rate_limit_test.ts, src/api/server.ts, and src/api/serv…"
+      },
+      "task_status_flipped": {
+        "pass": true,
+        "reason": "The generated file content shows `status: done` in the frontmatter, and the diff clearly shows the change from `status: in progress` to `status: done` in documents/tasks/2026/04/15/add-rate-limiter.m…"
+      },
+      "task_change_in_commit": {
+        "pass": true,
+        "reason": "The git log for commit d05eb04 includes documents/tasks/2026/04/15/add-rate-limiter.md with a diff line showing `-status: in progress` replaced by `+status: done`. The change is recorded in a commit,…"
+      },
+      "no_skill_tool_delegation": {
+        "pass": true,
+        "reason": "Inspection of all tool calls in the agent logs shows no invocation of the `Skill` tool to delegate to `flowai-skill-review`, `flowai-commit`, or `flowai-commit-beta`. The agent performed both Phase 1…"
+      },
+      "task_file_not_deleted": {
+        "pass": true,
+        "reason": "The task file documents/tasks/2026/04/15/add-rate-limiter.md is present and has content in the generated files section. The git diff shows it was modified (not deleted), and the final git status is c…"
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output shown in the evidence reads 'On branch main / nothing to commit, working tree clean', confirming a clean working tree after the commit."
+      }
+    }
+  }
+}

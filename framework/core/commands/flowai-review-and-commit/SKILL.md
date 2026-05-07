@@ -255,14 +255,11 @@ After completing the review report above:
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
-     3. **ADR Status Lifecycle** (FR-DOC-ADR-LIFECYCLE) — for each `ADR-NNNN` referenced by staged files (`implements:` frontmatter) or commit-plan/user-message text: read `documents/adr/<file>.md`; if all `## Definition of Done` top-level checkboxes are `[x]` AND frontmatter `status:` is `accepted`, edit it to `status: implemented` and `git add` the ADR file (included in this commit). Idempotent on `implemented`. Never downgrade. Warn-only on parse errors — never block the commit.
-     4. Commit with a Conventional Commits message (now including the optional ADR frontmatter edit).
+     3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter `status` and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
+     4. Commit with a Conventional Commits message (now including the optional task-status frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
-   - If the user referenced a task file and it contains a `## Definition of Done` (or similar checklist):
-     a. Compare each DoD item against the committed changes.
-     b. If **all** DoD items are satisfied by the committed code and documentation → delete the task file (`git rm`) and include the deletion in the commit (amend the last commit or create a separate `docs: remove completed task file` commit).
-     c. If **any** DoD item is NOT satisfied → ask the user: "The task file has incomplete items: [list]. Delete it anyway or keep for next session?" Act on the user's answer.
-   - If the task file has no DoD section → ask the user whether the planned work is complete and whether to delete the task file.
+   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
+   - **Legacy tasks** (flat path, no `date:` frontmatter): if all DoD items satisfied → `git rm` and commit; if any unsatisfied → ask user "Delete or keep?"; if no DoD → ask user.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
    - If uncommitted changes remain, investigate and report to the user.
@@ -293,8 +290,8 @@ Output a combined summary:
 [ ] Documentation audit performed and files updated.
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
-[ ] Task file cleanup: completed task files deleted, partial task files confirmed with user.
-[ ] ADR lifecycle: referenced ADRs with all DoD `[x]` had `status: accepted → implemented` flipped and staged. Warn-only on errors.
+[ ] Task lifecycle: every staged new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. Never downgrades `done`. Warn-only on parse errors.
+[ ] Task file cleanup: legacy flat-path tasks — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted.
 [ ] Session complexity check performed; `/flowai-skill-reflect` suggested if signals detected.
 [ ] Both review and commit results reported to user.
 </verification>
