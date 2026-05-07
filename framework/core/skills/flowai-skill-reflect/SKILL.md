@@ -70,7 +70,7 @@ When proposing a fix, classify *where* it belongs:
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
 5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 6. **Pattern Validation**: Before proposing a fix for an issue found in the current session, check session history to determine whether it is a **recurring pattern** or an **isolated incident**. Prioritize systemic fixes for recurring patterns over one-off corrections.
-7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for ADR capture (step 2b), reflect MUST recommend `/flowai-skill-plan-adr` and MUST NOT write under `documents/adr/`, MUST NOT draft or offer to write the ADR file itself. Clean separation: detection lives here, recording lives in `flowai-skill-plan-adr`.
+7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/flowai-plan-exp-permanent-tasks` and MUST NOT write under `documents/tasks/`, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `flowai-plan-exp-permanent-tasks`.
 </rules>
 
 ## Instructions
@@ -83,15 +83,15 @@ When proposing a fix, classify *where* it belongs:
    - If the user points to a transcript file, read it using available file reading tools.
    - Otherwise, review the current conversation history.
 
-2b. **Surface Decisions for ADR Capture (FR-DOC-RESCUE)** — execute IMMEDIATELY after step 2, BEFORE the main reflection analysis. This is a STANDALONE output, separated from the rest of the report.
+2b. **Surface Decisions for Task Capture (FR-DOC-RESCUE)** — execute IMMEDIATELY after step 2, BEFORE the main reflection analysis. This is a STANDALONE output, separated from the rest of the report.
    - Scan the source for **decision passages**: ≥2 weighed alternatives + explicit reasoning ("picked X over Y because …", "rejected Z due to …"). Headings like `## Decision` / `## Solution` with bulleted alternatives are strong signals.
-   - If any decisions are found, emit ONE chat block immediately (not buffered into the final report), titled `### Decisions for ADR Capture`. For each decision use this template (literal text + substituted fields):
+   - If any decisions are found, emit ONE chat block immediately (not buffered into the final report), titled `### Decisions for Task Capture`. For each decision use this template (literal text + substituted fields):
      - `**Decision detected:** <≤8-word title>`
-     - `**Recommended action:** invoke \`/flowai-skill-plan-adr <title>\` — that skill writes the ADR.`
+     - `**Recommended action:** invoke \`/flowai-plan-exp-permanent-tasks <title>\` — that skill writes the task file as a persistent canonical record of the decision.`
      - `**Alternatives weighed:** <bullet list, 1 line each>`
      - `**Chosen:** <chosen alternative + 1-sentence rationale>`
-   - The literal token `/flowai-skill-plan-adr` MUST appear on the Recommended action line — that is the user's invocation signal. After emitting, this finding is DONE; do not revisit it later in steps 12 or 14.
-   - FORBIDDEN at any point in this run, no matter how the report is later phrased: writing under `documents/adr/`; drafting the full ADR body in chat as if preparing to save it; asking "shall I create the ADR?" / "Хотите, чтобы я создал…?" / "Создать сейчас?" / any equivalent offer to perform the write yourself; listing "create ADR file" or "save ADR" under step 12's Corrective Actions. Reflect detects + recommends; `/flowai-skill-plan-adr` writes — clean separation.
+   - The literal token `/flowai-plan-exp-permanent-tasks` MUST appear on the Recommended action line — that is the user's invocation signal. After emitting, this finding is DONE; do not revisit it later in steps 12 or 14.
+   - FORBIDDEN: writing under `documents/tasks/`; drafting the full task body in chat as if preparing to save it; offering "shall I create the task?" / "Хотите, чтобы я создал…?" / equivalent; listing "create task file" under step 12's Corrective Actions. Reflect detects + recommends; `/flowai-plan-exp-permanent-tasks` writes — clean separation.
    - If no decision passages exist in the source, skip silently — do NOT fabricate one. Continue to step 3.
 
 3. **Load Session History**
@@ -219,5 +219,5 @@ When proposing a fix, classify *where* it belongs:
    - Present the revised report from steps 12–13.
    - Clearly mark which findings were adjusted during self-criticism and why.
    - List the proposed actionable items.
-   - Ask the user if they want to apply these changes immediately. **Exception**: ADR rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/flowai-skill-plan-adr` separately. Do not re-list them here; do not offer to write the ADR yourself.
+   - Ask the user if they want to apply these changes immediately. **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/flowai-plan-exp-permanent-tasks` separately. Do not re-list them here; do not offer to write the task file yourself.
 </step_by_step>
