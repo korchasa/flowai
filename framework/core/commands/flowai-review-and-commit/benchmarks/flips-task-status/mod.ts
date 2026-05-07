@@ -1,11 +1,20 @@
 import { join } from "@std/path";
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-export const ReviewAndCommitFlipsAdrStatusBench = new class
+// Verifies FR-DOC-TASK-LIFECYCLE for the composite review-and-commit skill:
+// Phase 2 (commit) derives task `status` from DoD checkbox count and rewrites
+// the frontmatter — same logic as flowai-commit, but exercised through the
+// inlined two-phase contract.
+//
+// Fixture: documents/tasks/2026/04/15/add-rate-limiter.md with frontmatter
+// `status: in progress` AND all 3 DoD items already `[x]`. Composite agent
+// must inline Phase 1 (Review) and Phase 2 (Commit) without delegating via
+// the Skill tool, and the commit phase flips `status` to `done`.
+export const ReviewAndCommitFlipsTaskStatusBench = new class
   extends BenchmarkSkillScenario {
-  id = "flowai-review-and-commit-flips-adr-status";
+  id = "flowai-review-and-commit-flips-task-status";
   name =
-    "Composite review-and-commit flips ADR status accepted → implemented when commit closes all DoD items (inline, no Skill-tool delegation)";
+    "Composite review-and-commit flips task status in progress → done when commit closes all DoD items (inline, no Skill-tool delegation)";
   skill = "flowai-review-and-commit";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -22,7 +31,7 @@ export const ReviewAndCommitFlipsAdrStatusBench = new class
       "src/api/server_test.ts",
     ],
     expectedOutcome:
-      "Agent reviews the changes (Phase 1 — Approve verdict expected for clean implementation), then in Phase 2 commits the source files AND in the same commit flips the ADR's frontmatter status from 'accepted' to 'implemented' (because all DoD items in documents/adr/2026-04-15-add-rate-limiter.md are [x]).",
+      "Agent reviews the changes (Phase 1 — Approve verdict expected for clean implementation), then in Phase 2 commits the source files AND in the same commit flips the task's frontmatter status from 'in progress' to 'done' (because all DoD items in documents/tasks/2026/04/15/add-rate-limiter.md are [x]).",
   };
 
   override async setup(sandboxPath: string) {
@@ -121,7 +130,7 @@ Deno.test("registers_rate_limit", () => {
   }
 
   userQuery =
-    "/flowai-review-and-commit Implemented the rate limiter described in documents/adr/2026-04-15-add-rate-limiter.md (ADR-0042). All DoD items are now satisfied. Review and commit.";
+    "/flowai-review-and-commit Implemented the rate limiter described in the task at documents/tasks/2026/04/15/add-rate-limiter.md. All DoD items are now satisfied. Review and commit.";
 
   checklist = [
     {
@@ -137,21 +146,27 @@ Deno.test("registers_rate_limit", () => {
       critical: true,
     },
     {
-      id: "adr_status_flipped",
+      id: "task_status_flipped",
       description:
-        "Read `documents/adr/2026-04-15-add-rate-limiter.md` after the commit. Does its frontmatter contain `status: implemented` (NOT `status: accepted`)?",
+        "Read `documents/tasks/2026/04/15/add-rate-limiter.md` after the commit. Does its frontmatter contain `status: done` (NOT `status: in progress`)?",
       critical: true,
     },
     {
-      id: "adr_change_in_commit",
+      id: "task_change_in_commit",
       description:
-        "Run `git log -p -- documents/adr/2026-04-15-add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the ADR's `status` from `accepted` to `implemented`? The change must be IN A COMMIT, not just on disk.",
+        "Run `git log -p -- documents/tasks/2026/04/15/add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the task's `status` from `in progress` to `done`? The change must be IN A COMMIT, not just on disk.",
       critical: true,
     },
     {
       id: "no_skill_tool_delegation",
       description:
         "Inspect the agent's tool calls. Did the agent invoke the `Skill` tool to call `flowai-skill-review`, `flowai-commit`, or `flowai-commit-beta`? If yes, this is a composite-skill violation — Phase 1 and Phase 2 must be inlined. The check passes ONLY if NO such Skill-tool calls occurred.",
+      critical: true,
+    },
+    {
+      id: "task_file_not_deleted",
+      description:
+        "The new-shape task file at `documents/tasks/2026/04/15/add-rate-limiter.md` must NOT have been deleted (`git log --diff-filter=D -- documents/tasks/2026/04/15/add-rate-limiter.md` should be empty). New-shape tasks are persistent canonical records — only legacy flat-path tasks may be deleted on completion.",
       critical: true,
     },
     {
