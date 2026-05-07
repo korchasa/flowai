@@ -1,6 +1,6 @@
 ---
 name: flowai-skill-epic
-description: Use when the user asks to plan a LARGE feature that spans multiple sessions or phases — produces documents/tasks/epic-{name}.md with dependency-ordered phases, atomic tasks, and per-phase status tracking. Use flowai-skill-plan for single-session tasks. Do NOT trigger on generic planning, roadmap, or brainstorming requests.
+description: Use when the user asks to plan a LARGE feature that spans multiple sessions or phases — produces documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md with dependency-ordered phases, atomic tasks, and per-phase status tracking. Use flowai-skill-plan for single-session tasks. Do NOT trigger on generic planning, roadmap, or brainstorming requests.
 argument-hint: feature name or description
 effort: high
 ---
@@ -9,8 +9,7 @@ effort: high
 
 ## Overview
 
-Create a structured, decomposed epic in `./documents/tasks/epic-{name}.md` for
-features too large for a single agent session.
+Create a structured, decomposed epic in `./documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` for features too large for a single agent session. The path uses today's date as a directory hierarchy; the file slug begins with `epic-` (no date prefix in the slug).
 
 ## When to Use
 
@@ -29,17 +28,18 @@ documentation, web) to understand the problem before asking the user.
 ## Rules & Constraints
 
 <rules>
-1. **Pure Specification**: MUST NOT write code. Only `./documents/tasks/epic-{name}.md`. If the file does not exist, CREATE it.
+1. **Pure Specification**: MUST NOT write code. Only `./documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md`. If the parent directories do not exist, CREATE them (use `mkdir -p` or your environment's equivalent).
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track execution steps.
 3. **Chat-First Reasoning**: Phase decomposition MUST be presented in CHAT first, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool.
 5. **Proactive Resolution**: Follow `Proactive Resolution` rule from `## Planning Rules` in AGENTS.md.
 6. **Stop-Analysis Protocol**: Follow Stop-Analysis rules from `# YOU MUST` in AGENTS.md.
 7. **AGENTS.md Planning Rules**: Follow all rules from `## Planning Rules` section in AGENTS.md.
-8. **Living Document**: Epic status fields are updated during implementation. Implementer MUST update Phase Status (`not-started` → `in-progress` → `done`) when starting/completing a phase.
+8. **Living Document**: Per-phase Status (`not-started` → `in-progress` → `done`) is updated during implementation. Top-level frontmatter `status` is auto-derived from epic-wide `## Definition of Done` checkboxes by `flowai-commit` / `flowai-review-and-commit`; do NOT update it manually.
 9. **Phase Size Guard**: Each phase SHOULD contain ≤50 requirements and target ≤5 files per task. If exceeded → split.
 10. **Implementation Hints Only in Notes**: Epic describes WHAT and WHY. HOW — only in Notes section as implementation hints (patterns, gotchas, references), not as code.
 11. **Traceability**: If task implements known FR-* requirements, add `implements:` YAML frontmatter with FR-* codes from SRS. Optional — omit if FR-* not yet defined.
+12. **Frontmatter Shape**: Required keys — `date: <YYYY-MM-DD>` (today's date as quoted ISO string), `status: to do` (initial value; auto-derived later), `tags: [...]` (may be empty `[]`), `related_tasks: [...]` (relative paths to other tasks under `documents/tasks/`, may be empty). Optional: `implements: [FR-...]`.
 </rules>
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
@@ -57,6 +57,7 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
 
 1. **Initialize**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan based on these steps.
+   - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d`). Hold it as `<DATE>`. Derive `<YYYY>`, `<MM>`, `<DD>` (zero-padded). The eventual file path is `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md`.
 
 2. **Deep Context & Research**
    - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
@@ -65,7 +66,9 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 
 3. **Draft Spec Header**
-   - Write to `documents/tasks/epic-{name}.md` the following sections:
+   - Create the parent directories `documents/tasks/<YYYY>/<MM>/<DD>/` (use `mkdir -p`).
+   - Write to `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` the following sections:
+     - YAML frontmatter with all required keys (rule 12): `date`, `status: to do`, `tags`, `related_tasks`, optional `implements`.
      - Title and metadata table (Status: Draft, Created/Updated dates)
      - Goal (business/user value — why are we building this?)
      - Overview (current state, why now, relevant context)
@@ -82,7 +85,7 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
    - Present to user. STOP and wait for approval/adjustments.
 
 5. **Detail Phases**
-   - Write approved phases into epic file. Each phase contains:
+   - Write approved phases into the epic file at `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md`. Each phase contains:
      - Status (not-started / in-progress / done)
      - Prerequisites (which phases must be done first)
      - Goal (what this phase achieves)
@@ -103,8 +106,8 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
 
 7. **Refine & Finalize**
    - Ask the user which critique points to address.
-   - Update `documents/tasks/epic-{name}.md` with accepted improvements.
-   - Update Status from "Draft" to "Ready".
+   - Update `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` with accepted improvements.
+   - Update the metadata table Status from "Draft" to "Ready". (Frontmatter `status:` is auto-derived from DoD; do not change it manually.)
 
 8. **TOTAL STOP**
 
@@ -114,8 +117,12 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
 
 ```markdown
 ---
+date: YYYY-MM-DD
+status: to do
 implements:
   - FR-XXX
+tags: []
+related_tasks: []
 ---
 # Epic: {Feature Name}
 
@@ -196,7 +203,8 @@ implements:
 ## Verification
 
 <verification>
-- [ ] ONLY `documents/tasks/epic-{name}.md` modified
+- [ ] ONLY `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` modified (and optionally `documents/index.md`)
+- [ ] Frontmatter contains `date`, `status: to do`, `tags`, `related_tasks` keys
 - [ ] Each phase has: Goal, Prerequisites, Scope, Tasks, Verification
 - [ ] Non-Goals section is non-empty
 - [ ] Boundaries (Always/Ask First/Never) are specified
