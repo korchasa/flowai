@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "c5c7be0bd21b93f6bf780c04f00a08aa88d9d20eab3c0908e4b86d71ab0e7c78",
+  "scenarioId": "flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T09:59:58.103Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 193378.721583,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_at_new_path": {
+        "pass": true,
+        "reason": "The agent created the file at `documents/tasks/2026/05/07/add-healthz-endpoint.md`, which matches the required pattern `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with date hierarchy directories and…"
+      },
+      "frontmatter_has_date": {
+        "pass": true,
+        "reason": "The frontmatter contains `date: \"2026-05-07\"`, which matches the YYYY-MM-DD format."
+      },
+      "frontmatter_has_status_to_do": {
+        "pass": true,
+        "reason": "The frontmatter contains `status: to do`, which is the correct initial value for a freshly-created task."
+      },
+      "frontmatter_has_implements": {
+        "pass": true,
+        "reason": "The frontmatter contains a non-empty `implements:` list with one FR-ID: `- FR-HEALTHZ`."
+      },
+      "frontmatter_has_tags_and_related_tasks": {
+        "pass": true,
+        "reason": "The frontmatter contains both `tags:` (with values: express, healthcheck, api) and `related_tasks: []` (empty array, but key is present)."
+      },
+      "gods_structure": {
+        "pass": true,
+        "reason": "The file body follows GODS structure: `## Goal` (liveness probe endpoint purpose), `## Overview` with subsections `### Context`, `### Current State`, `### Constraints`, `## Definition of Done` with F…"
+      },
+      "no_code_changes": {
+        "pass": true,
+        "reason": "The git diff shows no changes committed beyond the initial commit. The git status shows only untracked files under `documents/` (task file and index.md). No source code files (index.js or others) wer…"
+      }
+    }
+  }
+}
