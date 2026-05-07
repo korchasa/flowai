@@ -1,15 +1,13 @@
 # Documentation Index
 
-Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / ADR / NFR). Sections appear on first write; never pre-scaffolded.
-
-## ADR
-
-- [ADR-0001](adr/2026-05-02-plan-adr-as-parallel-planner.md) — `flowai-skill-plan-adr` becomes parallel planning skill writing MADR-format artifact — implemented
-- [ADR-0002](adr/2026-05-03-skill-trigger-benchmarks.md) — Skill description-matching verified by 3+3+3 trigger scenarios per skill — accepted
-- [ADR-0003](adr/2026-05-03-decompose-complexity-hotspots.md) — Decompose five complexity hotspots into ≤100-line single-responsibility helpers — accepted
+Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / NFR). Sections appear on first write; never pre-scaffolded. Task ↔ FR navigation lives inline in SRS as `**Tasks:**` back-pointers (FR-DOC-TASK-LINK), not here.
 
 ## FR
 
-- [FR-BENCH.TRIGGER](requirements.md#fr-benchtrigger-skill-description-matching-verification) — Skill description-matching verified by 9 trigger scenarios per skill — accepted
+- [FR-BENCH.TRIGGER](requirements.md#fr-benchtrigger-skill-description-matching-verification) — Skill description-matching verified by 9 trigger scenarios per skill — [x]
 - [FR-DOC-INDEX](requirements.md#fr-doc-index-agent-maintained-documentation-index) — Agent-maintained documentation index — [x]
-- [FR-DOC-RESCUE](requirements.md#fr-doc-rescue-reflect-surfaces-decisions-for-adr-capture) — Reflect surfaces decision passages for ADR capture — [x]
+- [FR-DOC-TASKS](requirements.md#fr-doc-tasks-first-class-committed-tasks) — First-class committed tasks at documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md — [x]
+- [FR-DOC-TASK-LIFECYCLE](requirements.md#fr-doc-task-lifecycle-task-status-derived-from-dod-by-commit-skills) — Task status derived from DoD by commit skills — [x]
+- [FR-DOC-TASK-CONTEXT](requirements.md#fr-doc-task-context-plan-skill-loads-related-tasks-into-step-2) — Plan skill loads related tasks into Step 2 — [x]
+- [FR-DOC-TASK-LINK](requirements.md#fr-doc-task-link-srs-inline-tasks-back-pointer) — SRS-inline **Tasks:** back-pointer — [x]
+- [FR-DOC-RESCUE](requirements.md#fr-doc-rescue-reflect-surfaces-decisions-for-task-capture) — Reflect surfaces decision passages for task capture — [x]

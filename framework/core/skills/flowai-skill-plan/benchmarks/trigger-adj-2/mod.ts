@@ -1,14 +1,15 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// Adjacent skill: flowai-skill-plan-adr (record an architectural decision in
-// MADR style, not a regular implementation plan).
+// Adjacent skill: flowai-skill-epic (multi-session feature spec — the user
+// describes a long-horizon feature with multiple phases, not a single
+// task plan).
 export const PlanTriggerAdj2 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-plan-trigger-adj-2";
-  name = "record an ADR (adjacent)";
+  name = "spec a multi-session feature (adjacent)";
   skill = "flowai-skill-plan";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Capture our rationale for picking SQLite over PostgreSQL for the local cache as an architectural decision record.";
+    "We're rolling out a full multi-tenant authentication and authorization system across the API, web, and mobile clients over the next quarter — write the epic specification with phases, milestones, and per-area deliverables.";
   checklist = [{
     id: "skill_not_invoked",
     description:

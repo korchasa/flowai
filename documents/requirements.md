@@ -914,64 +914,53 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (18 tests covering `computeAutoSlug`, `extractHeadingSlugs`, `extractCommentLinks`, `detectLegacyFrComments`, task-frontmatter parsing, and `validateTaskRefs`).
 - **Status:** [x]
 
-### FR-DOC-ADR: Architecture Decision Record Skill — `flowai-skill-plan-adr`
-
-- **Description:** Agent-invocable **planning-class** skill that produces `documents/adr/<YYYY-MM-DD>-<slug>.md` capturing both the rationale of a non-trivial decision and the implementation contract. Parallel to `flowai-skill-plan` — the differentiator is artifact format and lifetime (persistent MADR vs gitignored GODS task). Output format: frontmatter with `id: ADR-<NNNN>` (next free number from existing `documents/adr/`), `status: proposed | accepted | implemented | rejected | superseded | deprecated`, `date`, optional `implements: [FR-...]` and `tags`; body sections in order — `## Context`, `## Alternatives` (brief — 3–5 lines per entry, 1-line description + Pros/Cons + single-sentence rejection cause for non-chosen, marker `(CHOSEN)` on the chosen one), `## Decision`, `## Consequences`, `## Definition of Done` (every item paired with an FR-ID + Test/Benchmark + Evidence command), `## Solution` (step-by-step for the chosen alternative). After writing, the skill MUST update `documents/index.md` `## ADR` section (FR-DOC-INDEX).
-- **Scope:** Lives under `framework/core/skills/flowai-skill-plan-adr/`. Model-invocable. Triggered by user queries like "зафиксируй это решение", "запиши ADR", "архивируй выбор X над Y", or planning queries with explicit architectural component ("plan the migration from X to Y", "design the new caching layer"). MUST NOT poach trivial bug-fix or refactor queries — those route to `flowai-skill-plan`.
-- **Constraints:**
-  - MUST scan `documents/adr/` for the highest existing `ADR-NNNN` and increment by 1.
-  - MUST require ≥1 alternative with rejection cause; refuses to write if the decision is single-option (suggest task file instead).
-  - MUST auto-write the file after the Solution step. NO chat draft preview, NO "approve before write" prompt — user edits the file post-write.
-  - MUST NOT modify SDS/SRS — those are owned by other workflows.
-- **Acceptance verified by benchmarks:** `flowai-skill-plan-adr-records-decision-with-alternatives`, `flowai-skill-plan-adr-full-planning-shape`, `flowai-skill-plan-adr-auto-writes-without-roundtrip`.
-- **Status:** [ ]
-
-### FR-DOC-ADR-LIFECYCLE: ADR Status Lifecycle — Auto-Flip on Implementation
-
-- **Description:** ADR `status` extends the legacy MADR set with `implemented` to mark decisions whose Definition of Done has been satisfied by a landed commit. `flowai-commit` and `flowai-review-and-commit` scan their commit's diff for files referencing `ADR-NNNN` (via `implements:` frontmatter or commit-message body), parse the referenced ADR file under `documents/adr/`, and if every `## Definition of Done` item is `[x]` after the commit, flip `status: accepted` → `status: implemented` in the ADR's frontmatter and stage the change as part of the same commit. Failure modes (parse error, missing ADR, mixed-state DoD) are warn-only — never block the commit.
-- **Scenario:** Developer commits the diff that closes ADR-0042. The commit references ADR-0042 in `implements:` of the changed task or directly in the commit message. `flowai-commit` parses `documents/adr/<file>.md`, checks all DoD items are `[x]`, edits frontmatter to `status: implemented`, stages the file, and writes the commit including the frontmatter edit.
-- **Constraints:**
-  - MUST run only on commits — no out-of-band flips.
-  - MUST be idempotent: a second commit referencing the same ADR (already `implemented`) is a no-op.
-  - MUST NOT downgrade status (`implemented → accepted` is forbidden). Reverts of an `implemented` ADR are out of scope.
-- **Acceptance verified by benchmarks:** `flowai-commit-flips-adr-status`, `flowai-review-and-commit-flips-adr-status`.
-- **Status:** [ ]
-
 ### FR-DOC-INDEX: Agent-Maintained Documentation Index
 
-- **Description:** `flowai-skill-plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / ADR / NFR), sorted by ID within each group. Created on first write; never scaffolded by `flowai-init`.
+- **Description:** `flowai-skill-plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write; never scaffolded by `flowai-init`.
 - **Scenario:** Agent plans a task that introduces FR-XYZ → adds FR-XYZ section to SRS → appends `- [FR-XYZ](requirements.md#fr-xyz-...) — <summary> — [ ]` under `## FR` in `documents/index.md`. Subsequent status flip to `[x]` updates the same row.
 - **Acceptance verified by benchmarks:** `flowai-skill-plan-updates-index-on-new-fr`.
 - **Status:** [x]
 
 ### FR-DOC-TASKS: First-Class Committed Tasks
 
-- **Description:** TBD (skeleton — filled in Phase 8 of `replace-adr-with-tasks` task). Tasks live at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`; frontmatter carries `date`, `status` ∈ `to do | in progress | done`, `implements`, optional `tags` and `related_tasks`; validated by `scripts/check-task-format.ts`.
+- **Description:** Tasks are persistent canonical records — committed (NOT gitignored), one file per task at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`. Frontmatter carries: `date` (YYYY-MM-DD; required), `status` ∈ `to do | in progress | done` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags: [...]`, optional `related_tasks: [...]` (markdown links to other task files), optional `migrated_from: "<old-id> (status: <old>)"` for provenance. Body uses GODS shape (Goal / Overview / Definition of Done / Solution). Architectural decisions are recorded as regular tasks with weighed alternatives surfaced inline (no separate ADR primitive). Validated by `scripts/check-task-format.ts` — wired into `deno task check`. The variant of `flowai-skill-plan` that writes this layout is `/flowai-plan-exp-permanent-tasks` (user-invoked).
+- **Scenario:** User invokes `/flowai-plan-exp-permanent-tasks add cache layer to CLI` → skill writes `documents/tasks/2026/05/07/add-cache-layer.md` with new-shape frontmatter (`date: 2026-05-07`, `status: to do`, `implements: [FR-CACHE]`).
+- **Constraints:**
+  - Path MUST match `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (kebab-case slug).
+  - `status` value MUST come from the 3-state set; legacy ADR statuses (`accepted` / `implemented` / `proposed`) are rejected by the validator.
+  - Tasks NEVER deleted by commit-cleanup (persistent canonical records).
 - **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills
 
-- **Description:** TBD (skeleton — filled in Phase 8). `flowai-commit` and `flowai-review-and-commit` derive `status` from `## Definition of Done` checkbox state (`0/N → to do`, `1..N-1 → in progress`, `N/N → done`) on every commit touching `documents/tasks/**/*.md` with new-shape frontmatter (presence of `date:`).
-- **Acceptance verified by benchmarks:** `flowai-commit-flips-task-status`, `flowai-commit-derives-in-progress-status`.
-- **Status:** [ ]
+- **Description:** `flowai-commit` and `flowai-review-and-commit` derive `status` from `## Definition of Done` checkbox state on every commit that stages a `documents/tasks/**/*.md` file with new-shape frontmatter (presence of `date:`). Algorithm: count top-level `- [ ]`/`- [x]` items K of N under `## Definition of Done`; map `K=0 → "to do"`, `0<K<N → "in progress"`, `K=N → "done"`. If the derived value differs from the current frontmatter `status`, rewrite the frontmatter line and `git add` the file as part of the same commit. Idempotent. Never downgrades `done` (manual re-open required). Warn-only on parse errors / missing DoD section. Legacy flat-path tasks (no `date:`) are skipped — preserves coexistence with unmodified `flowai-skill-plan`.
+- **Scenario:** Developer commits a fix that ticks the last DoD box of `documents/tasks/2026/05/07/add-cache-layer.md`. `flowai-commit` re-counts the DoD items (N/N), sees `status: in progress`, rewrites frontmatter to `status: done`, and stages the file alongside the developer's diff.
+- **Constraints:**
+  - MUST run only on commits — no out-of-band flips.
+  - MUST be idempotent: re-committing an already-derived task is a no-op.
+  - MUST NOT downgrade `done`. Other transitions are bidirectional.
+- **Acceptance verified by benchmarks:** `flowai-commit-flips-task-status`, `flowai-commit-derives-in-progress-status`, `flowai-review-and-commit-flips-task-status`.
+- **Status:** [x]
 
 ### FR-DOC-TASK-CONTEXT: Plan Skill Loads Related Tasks into Step 2
 
-- **Description:** TBD (skeleton — filled in Phase 8). `flowai-plan-exp-permanent-tasks` Step 2 globs `documents/tasks/**/*.md`, parses frontmatter `implements:`, and reads tasks whose set intersects the planned task's `implements:` (cap 10).
+- **Description:** `flowai-plan-exp-permanent-tasks` Step 2 ("Deep Context & Uncertainty") globs `documents/tasks/**/*.md`, parses each task's frontmatter `implements:` array, and reads (Read tool) tasks whose `implements:` set intersects the new task's `implements:` set. Cap: 10 most recent (by `date:`) related tasks. Loaded content informs the variant analysis and DoD synthesis so prior decisions are not contradicted. Empty `implements:` → no related-task lookup.
+- **Scenario:** User runs `/flowai-plan-exp-permanent-tasks` for a task that `implements: [FR-CACHE]`. Step 2 finds two prior tasks under `documents/tasks/` whose frontmatter also lists `FR-CACHE`, reads both, and references them in the variant analysis.
 - **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-loads-related-tasks`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer
 
-- **Description:** TBD (skeleton — filled in Phase 8). `flowai-plan-exp-permanent-tasks` (and `flowai-skill-epic`) inserts/extends `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly after `**Description:**` in each FR section listed in the new task's `implements:`. Surgical: only this line is touched. Idempotent.
-- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer`, `flowai-plan-exp-permanent-tasks-srs-task-edit-scope-limited`, `flowai-plan-exp-permanent-tasks-srs-task-back-pointer-idempotent`.
-- **Status:** [ ]
+- **Description:** `flowai-plan-exp-permanent-tasks` (and `flowai-skill-epic`) inserts/extends a `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)[, ...]` line directly after the `**Description:**` line in each SRS FR section listed in the new task's `implements:`. Surgical edit: only this single line is touched in the SRS — no other SRS content modified. Idempotent: re-running on the same task does not duplicate the link. Replaces the now-removed `## ADR` section in `documents/index.md` as the navigation surface from FR → its driving tasks.
+- **Scenario:** New task `documents/tasks/2026/05/07/add-cache.md` declares `implements: [FR-CACHE]`. Skill opens `documents/requirements.md`, finds `### FR-CACHE`, and inserts `- **Tasks:** [add-cache](tasks/2026/05/07/add-cache.md)` after the existing `**Description:**` line. Subsequent task `clear-cache.md` for the same FR appends `, [clear-cache](tasks/2026/05/07/clear-cache.md)` to the existing line.
+- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer`.
+- **Status:** [x]
 
-### FR-DOC-RESCUE: Reflect Surfaces Decisions for ADR Capture
+### FR-DOC-RESCUE: Reflect Surfaces Decisions for Task Capture
 
-- **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighted alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a clear chat message that names the decision title (a short phrase derived from the passage) and recommends invoking `flowai-skill-plan-adr` to record the rationale persistently. Reflect itself does NOT write to SDS, ADR, or any file — recording is owned by `flowai-skill-plan-adr` (clean separation, one mechanism). SDS-rescue for durable architectural facts (separate from decisions) is out of scope and may be added by a later FR.
-- **Acceptance verified by benchmarks:** `flowai-skill-reflect-rescues-decision-as-adr`.
+- **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighed alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a chat message naming the decision and recommends `/flowai-plan-exp-permanent-tasks` (the canonical-record writer) on its `**Recommended action:**` line. Reflect itself remains read-only — it never writes a task file, never edits SRS/SDS, never creates an ADR (the `documents/adr/` directory has been phased out). Recording is owned exclusively by `/flowai-plan-exp-permanent-tasks`.
+- **Acceptance verified by benchmarks:** `flowai-skill-reflect-rescues-decision-as-task`.
 - **Status:** [x]
 
 ### FR-DOC-LINT: Documentation Health Category in Maintenance

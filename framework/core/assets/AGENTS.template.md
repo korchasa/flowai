@@ -37,8 +37,7 @@
 2. **SRS** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements.
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
 4. **Tasks** (`documents/tasks/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes per task. Gitignored — task files do not survive past the task lifecycle.
-5. **ADR** (`documents/adr/<YYYY-MM-DD>-<slug>.md`): Architecture Decision Records (MADR-style). Persistent (NOT gitignored). Created by `flowai-skill-plan-adr` — a planning-class skill that writes both the rationale (Context / Alternatives / Decision / Consequences) and the implementation contract (Definition of Done with FR-Test-Evidence tuples + Solution) in one file. Lifecycle: `proposed | accepted | implemented | rejected | superseded | deprecated`. Status flips `accepted → implemented` on the commit that closes all DoD items.
-6. **Index** (`documents/index.md`): Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / ADR / NFR). Created on first write, never scaffolded.
+5. **Index** (`documents/index.md`): Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / NFR). Created on first write, never scaffolded. Task ↔ FR navigation lives inline in SRS as `**Tasks:**` back-pointers, not here.
 7. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
 
 ## Interconnectedness Principle
@@ -47,11 +46,11 @@ Cross-references between any two pieces of project knowledge — doc-to-doc, **a
 
 - **Canonical form** — `[descriptive text](relative/path.md#auto-slug)`, where `auto-slug` is the GFM-normalized form of the target heading. Example: `[подробности](documents/design.md#модель-rag)` referencing the heading `## Модель RAG`.
 
-- **Applies in code too** — when source code needs to reference documentation (an FR in SRS, a component in SDS, an ADR), the comment carries a GFM link, not a slug-style identifier. Example: `// implements [Command Execution](../documents/requirements.md#fr-cmd-exec-command-execution)`. The legacy `// FR-<ID>` shortcut is deprecated; new code uses GFM links.
+- **Applies in code too** — when source code needs to reference documentation (an FR in SRS, a component in SDS, a task), the comment carries a GFM link, not a slug-style identifier. Example: `// implements [Command Execution](../documents/requirements.md#fr-cmd-exec-command-execution)`. The legacy `// FR-<ID>` shortcut is deprecated; new code uses GFM links.
 
 - **Rejected forms** — do NOT invent ID-only link syntax like `[FR-CMD-EXEC]`, `[[wikilink]]`, custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), or bare ID strings as cross-reference markers (`// FR-CMD-EXEC`). Standard markdown renderers cannot resolve any of these consistently.
 
-- **Heading IDs are conventions, not slugs** — section headings may carry mnemonic prefixes for readability (e.g., `### FR-CMD-EXEC: Command Execution`, `### ADR-0001: Use Deno`), but the link target is always the **GFM auto-slug** of the heading text, never a separate ID-derived identifier. If a heading is rewritten, links must be updated — this is the cost of standard tooling, not a bug.
+- **Heading IDs are conventions, not slugs** — section headings may carry mnemonic prefixes for readability (e.g., `### FR-CMD-EXEC: Command Execution`, `### FR-DOC-TASKS: First-Class Tasks`), but the link target is always the **GFM auto-slug** of the heading text, never a separate ID-derived identifier. If a heading is rewritten, links must be updated — this is the cost of standard tooling, not a bug.
 
 - **Drift discipline** — removing or renaming a heading obliges updating every link to it. Checked mechanically by `scripts/check-traceability.ts` (link-resolution: file exists, anchor exists) where the project ships such a script, and semantically by `flowai-skill-maintenance` (Documentation health category).
 
@@ -143,21 +142,13 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 ### Tasks (`documents/tasks/`)
 
-- One file per task or session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
-- Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`.
-- Do not reuse another session's task file — create a new file. Old tasks provide context but may contain outdated decisions.
-- Use GODS format (see below) for issues and plans.
-- Directory is gitignored. Files accumulate — this is expected.
-
-### ADR (`documents/adr/`)
-
-- One file per non-trivial architectural decision: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
-- Examples: `2026-03-24-pick-rag-over-finetune.md`, `2026-03-24-drop-postgres-for-sqlite.md`.
-- Do not reuse another decision's ADR file — create a new file. Old ADRs are persistent rationale, not scratchpads.
-- Use MADR format (see below) — both the rationale (Context / Alternatives / Decision / Consequences) and the implementation contract (Definition of Done + Solution) live in the same file.
-- ID assignment: frontmatter `id: ADR-NNNN` is one greater than the highest existing `ADR-NNNN` under `documents/adr/`. Start at `ADR-0001`.
-- Directory is **NOT gitignored** — ADRs are persistent records. Files accumulate by design — this is the point.
-- Status lifecycle: `proposed | accepted | implemented | rejected | superseded | deprecated`. Default for new ADRs is `accepted`. Commit workflows flip `accepted → implemented` on the commit that closes all DoD items.
+- One file per task or session at a date-hierarchy path: `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (kebab-case slug, max 40 chars).
+- Examples: `documents/tasks/2026/03/24/add-dark-mode.md`, `documents/tasks/2026/03/24/fix-auth-bug.md`.
+- Do not reuse another session's task file — create a new file. Old tasks are persistent canonical records.
+- Use GODS format (see below). Architectural decisions are recorded as regular tasks with weighed alternatives in the body — there is no separate ADR primitive.
+- Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags`, optional `related_tasks` (markdown links to other task files), optional `migrated_from` for provenance.
+- Status auto-derives from `## Definition of Done` checkbox count on every commit (commit workflows handle this — never edit `status` manually mid-flight).
+- Directory is **NOT gitignored** — tasks are persistent records. Validated by `scripts/check-task-format.ts` (path regex, status enum, status↔DoD consistency).
 
 ### GODS Format
 
@@ -200,55 +191,6 @@ Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance referen
 ## Solution
 
 [Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
-```
-
-### MADR Format
-
-```markdown
----
-id: ADR-NNNN
-status: accepted
-date: YYYY-MM-DD
-implements:
-  - FR-XXX
-tags:
-  - <optional>
----
-
-# [Decision Title — short, imperative]
-
-## Context
-
-[2–4 sentences on the situation and constraints that forced this decision.]
-
-## Alternatives
-
-[Brief — 3–5 lines per entry, one Pros / Cons each. Mark the chosen one with `(CHOSEN)`. At least one rejected alternative with a single-sentence "Rejected because" line.]
-
-- **<short name>** — 1-line description.
-  - Pros: <bullet list>
-  - Cons: <bullet list>
-  - Rejected because: <one sentence> (omit for the chosen alternative; mark it `(CHOSEN)`)
-
-## Decision
-
-[1–2 sentences stating exactly what was decided. Cross-link affected components via GFM `[text](path.md#anchor)`.]
-
-## Consequences
-
-[Bullet list of follow-on effects, both positive and negative. Mention any SDS/SRS updates implied.]
-
-## Definition of Done
-
-Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance reference. Items without this tuple are wishes, not contracts.
-
-- [ ] FR-XXX: <observable behavior>
-  - Test: `<path/to/test>::<test_name>` (or `Benchmark: <scenario-id>`)
-  - Evidence: `<command that passes iff the item is done>`
-
-## Solution
-
-[Detailed step-by-step for the CHOSEN alternative. Files to create/modify, implementation approach, dependencies, verification commands.]
 ```
 
 ### Compressed Style Rules (All Docs)

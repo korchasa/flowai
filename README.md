@@ -128,7 +128,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 
 **Skills:**
 - `flowai-skill-plan` — task planning (GODS format, gitignored task file)
-- `flowai-skill-plan-adr` — planning skill for tasks with an architectural decision; writes a persistent MADR file under `documents/adr/` (rationale + DoD + Solution); status auto-flips to `implemented` by commit skills
+- `/flowai-plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done`, `implements`, `tags`, `related_tasks`); status auto-derives from DoD by commit skills
 - `flowai-skill-epic` — structured feature specification for multi-session features
 - `flowai-skill-review` — QA + code review of current changes
 - `flowai-skill-reflect` — self-analysis of the current session

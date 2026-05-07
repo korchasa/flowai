@@ -1,7 +1,8 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// Adjacent skill: flowai-skill-plan-adr (record an architectural decision — the
-// user has already decided and wants persistence, not new research synthesis).
+// Adjacent skill: /flowai-plan-exp-permanent-tasks (record an architectural
+// decision as a committed task — the user has already decided and wants
+// persistence, not new research synthesis).
 export const DeepResearchTriggerAdj3 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-deep-research-trigger-adj-3";
@@ -9,7 +10,7 @@ export const DeepResearchTriggerAdj3 = new class
   skill = "flowai-skill-deep-research";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "We just decided to switch from Postgres to SQLite for the embedded test harness — capture that decision as an ADR with the rejected alternatives.";
+    "We just decided to switch from Postgres to SQLite for the embedded test harness — capture that decision as a committed task with the rejected alternatives.";
   checklist = [{
     id: "skill_not_invoked",
     description:
