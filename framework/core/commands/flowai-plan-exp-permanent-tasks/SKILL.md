@@ -58,6 +58,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d` or your environment's date primitive). Hold it as `<DATE>`. Derive `<YYYY>`, `<MM>`, `<DD>` (zero-padded) and the eventual file path `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`.
 2. **Deep Context & Uncertainty Resolution**
    - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
+   - **Load related committed tasks**: glob `documents/tasks/**/*.md` (the path is recursive — task files live under date-hierarchy subdirs `<YYYY>/<MM>/<DD>/<slug>.md`). For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
    - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
    - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
