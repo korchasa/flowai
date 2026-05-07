@@ -34,13 +34,13 @@ export const PlanExpUpdatesSrsBackPointerBench = new class
     {
       id: "inserts_tasks_bullet_for_fr_cart_add",
       description:
-        "After Step 5c, does `documents/requirements.md`'s `### FR-CART-ADD` section contain a NEW bullet `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)` placed directly after the existing `- **Description:**` bullet? The slug must match the just-created task file. Before the run, FR-CART-ADD had no `**Tasks:**` line.",
+        "After Step 5c, does `documents/requirements.md`'s `### FR-CART-ADD` section contain a NEW bullet `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` placed directly after the existing `- **Description:**` bullet? The slug must match the just-created task file. Before the run, FR-CART-ADD had no `**Tasks:**` line.",
       critical: true,
     },
     {
       id: "extends_tasks_bullet_for_fr_cart_remove",
       description:
-        "After Step 5c, does `### FR-CART-REMOVE` section's existing `- **Tasks:** [old-cart-remove-rework](tasks/2026/03/01/old-cart-remove-rework.md)` bullet now have `, [<new-slug>](tasks/<YYYY>/<MM>/<DD>/<new-slug>.md)` appended to the same line (i.e. the existing link is preserved, not replaced; new link added as a comma-separated continuation, NOT as a duplicate `- **Tasks:**` bullet)?",
+        "After Step 5c, does `### FR-CART-REMOVE` section's existing `- **Tasks:** [old-cart-remove-rework](tasks/2026/03/old-cart-remove-rework.md)` bullet now have `, [<new-slug>](tasks/<YYYY>/<MM>/<new-slug>.md)` appended to the same line (i.e. the existing link is preserved, not replaced; new link added as a comma-separated continuation, NOT as a duplicate `- **Tasks:**` bullet)?",
       critical: true,
     },
     {
@@ -52,7 +52,7 @@ export const PlanExpUpdatesSrsBackPointerBench = new class
     {
       id: "task_file_at_new_path",
       description:
-        "Did the agent create the new task file at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (date hierarchy directories, slug without date prefix)?",
+        "Did the agent create the new task file at `documents/tasks/<YYYY>/<MM>/<slug>.md` (date hierarchy directories, slug without date prefix)?",
       critical: true,
     },
   ];

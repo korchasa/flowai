@@ -23,7 +23,7 @@ export const PlanExpWritesTaskBench = new class extends BenchmarkSkillScenario {
     {
       id: "task_file_at_new_path",
       description:
-        "Did the agent create the task file at a path matching `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (date hierarchy directories, slug without date prefix)? Inspect the agent logs and the GENERATED FILES list.",
+        "Did the agent create the task file at a path matching `documents/tasks/<YYYY>/<MM>/<slug>.md` (date hierarchy directories, slug without date prefix)? Inspect the agent logs and the GENERATED FILES list.",
       critical: true,
     },
     {

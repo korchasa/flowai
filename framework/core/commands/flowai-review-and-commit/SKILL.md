@@ -258,7 +258,7 @@ After completing the review report above:
      3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter `status` and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
      4. Commit with a Conventional Commits message (now including the optional task-status frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
-   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
+   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
    - **Legacy tasks** (flat path, no `date:` frontmatter): if all DoD items satisfied → `git rm` and commit; if any unsatisfied → ask user "Delete or keep?"; if no DoD → ask user.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.

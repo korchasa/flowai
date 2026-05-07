@@ -142,8 +142,8 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 ### Tasks (`documents/tasks/`)
 
-- One file per task or session at a date-hierarchy path: `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (kebab-case slug, max 40 chars).
-- Examples: `documents/tasks/2026/03/24/add-dark-mode.md`, `documents/tasks/2026/03/24/fix-auth-bug.md`.
+- One file per task or session at a date-hierarchy path: `documents/tasks/<YYYY>/<MM>/<slug>.md` (kebab-case slug, max 40 chars).
+- Examples: `documents/tasks/2026/03/add-dark-mode.md`, `documents/tasks/2026/03/fix-auth-bug.md`.
 - Do not reuse another session's task file — create a new file. Old tasks are persistent canonical records.
 - Use GODS format (see below). Architectural decisions are recorded as regular tasks with weighed alternatives in the body — there is no separate ADR primitive.
 - Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags`, optional `related_tasks` (markdown links to other task files), optional `migrated_from` for provenance.

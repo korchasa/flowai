@@ -29,7 +29,7 @@ The new task-writing logic ships as a parallel **commands** primitive `flowai-pl
 2. Tasks need stable identity, status lifecycle, scaling layout (date hierarchy), and metadata (tags, related_tasks).
 3. `flowai-skill-plan` (and `flowai-skill-epic`) must adopt the new layout/frontmatter and load related tasks as planning context.
 
-After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`, the `## ADR` section in `documents/index.md` disappears with no replacement (SRS-inline `**Tasks:**` carries the navigation load).
+After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `documents/tasks/<YYYY>/<MM>/<slug>.md`, the `## ADR` section in `documents/index.md` disappears with no replacement (SRS-inline `**Tasks:**` carries the navigation load).
 
 ### Current State
 
@@ -48,11 +48,11 @@ After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `docume
 ### Constraints
 
 - Placement of new primitive: `framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md`. Source `SKILL.md` MUST NOT declare `disable-model-invocation` — CLI writer injects it. Bench dir: `framework/core/commands/flowai-plan-exp-permanent-tasks/benchmarks/`.
-- Coexistence with `flowai-skill-plan`: legacy flat-path tasks (`documents/tasks/<YYYY-MM-DD>-<slug>.md`) remain valid until promotion. `check-task-format.ts` enforces strict shape ONLY on tasks under `documents/tasks/<YYYY>/<MM>/<DD>/` path; legacy flat paths get a deprecation warning. `flowai-commit` / `flowai-review-and-commit` status-derivation acts only on tasks with new-shape frontmatter (presence of `date:` field) — legacy tasks are skipped.
+- Coexistence with `flowai-skill-plan`: legacy flat-path tasks (`documents/tasks/<YYYY-MM-DD>-<slug>.md`) remain valid until promotion. `check-task-format.ts` enforces strict shape ONLY on tasks under `documents/tasks/<YYYY>/<MM>/` path; legacy flat paths get a deprecation warning. `flowai-commit` / `flowai-review-and-commit` status-derivation acts only on tasks with new-shape frontmatter (presence of `date:` field) — legacy tasks are skipped.
 - Benchmark TDD: every skill change paired with a failing-then-passing benchmark scenario (RED → GREEN). Renames must preserve trigger coverage (3 pos / 3 adj-neg / 3 false-use).
 - Status field is **derived**, not authored: `flowai-commit` / `flowai-review-and-commit` rewrite `status:` on every commit that touches `documents/tasks/**/*.md`, computed purely from `## Definition of Done` checkbox state (`0 of N → to do`, `1..N-1 of N → in progress`, `N of N → done`). Tasks without a DoD section: warn-only, status untouched. Skill-on-creation writes `status: to do` to match empty DoD.
-- Filenames lose the date prefix; date moves into frontmatter. New layout: `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`. Slugs remain kebab-case, ≤40 chars.
-- Identity = relative markdown link. SRS/index reference tasks as `[slug](tasks/2026/05/07/replace-adr-with-tasks.md)` — no separate ID counter.
+- Filenames lose the date prefix; date moves into frontmatter. New layout: `documents/tasks/<YYYY>/<MM>/<slug>.md`. Slugs remain kebab-case, ≤40 chars.
+- Identity = relative markdown link. SRS/index reference tasks as `[slug](tasks/2026/05/replace-adr-with-tasks.md)` — no separate ID counter.
 - `**Tasks:**` SRS back-pointer accumulates ALL tasks linked to an FR regardless of status (in-flight + completed). Comma-separated; one bullet per FR section, placed immediately after `**Description:**`. Idempotent.
 - Existing ADR bodies are kept as-is during migration (decision-shaped content). Only frontmatter is rewritten. A `## Definition of Done` section is synthesized per file (one bullet matching the prior status: implemented → `[x]`, accepted → `[ ]`) so the auto-derive rule has something to compute on.
 - `flowai-skill-plan-adr` is deleted in full (SKILL.md, 12 benches, all 73 references). No grandfather period.
@@ -60,13 +60,13 @@ After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `docume
 
 ## Definition of Done
 
-- [x] FR-DOC-TASKS: tasks live at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`; frontmatter carries `date`, `status`, `implements`, `tags`, `related_tasks`; `documents/.gitignore` no longer ignores `tasks/`.
+- [x] FR-DOC-TASKS: tasks live at `documents/tasks/<YYYY>/<MM>/<slug>.md`; frontmatter carries `date`, `status`, `implements`, `tags`, `related_tasks`; `documents/.gitignore` no longer ignores `tasks/`.
   - Test: `scripts/check-task-format_test.ts` (new) — validates layout, frontmatter shape, status enum.
   - Evidence: `git ls-files documents/tasks/ | wc -l` returns ≥4 (3 migrated ADRs + this plan); `grep -c '^tasks/$' documents/.gitignore` returns 0.
 - [x] FR-DOC-TASKS: `flowai-plan-exp-permanent-tasks` writes the new layout with the new frontmatter shape.
   - Benchmark: `flowai-plan-exp-permanent-tasks/benchmarks/writes-task-new-frontmatter`
   - Evidence: `deno task bench -f flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter` passes.
-- [x] FR-DOC-TASKS: `flowai-skill-epic` writes `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` with new frontmatter.
+- [x] FR-DOC-TASKS: `flowai-skill-epic` writes `documents/tasks/<YYYY>/<MM>/epic-<name>.md` with new frontmatter.
   - Benchmark: `flowai-skill-epic/benchmarks/writes-epic-new-path`
   - Evidence: `deno task bench -f flowai-skill-epic-writes-epic-new-path` passes.
 - [x] FR-DOC-TASK-LIFECYCLE: `flowai-commit` and `flowai-review-and-commit` derive `status` from DoD checkbox count on every commit touching `documents/tasks/**/*.md`. States: `to do | in progress | done`. Idempotent. Warn-only on tasks without DoD.
@@ -82,13 +82,13 @@ After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `docume
   - Benchmark: `flowai-plan-exp-permanent-tasks/benchmarks/srs-task-edit-scope-limited`
   - Benchmark: `flowai-plan-exp-permanent-tasks/benchmarks/srs-task-back-pointer-idempotent`
   - Evidence: `deno task bench -f srs-task-back-pointer 2>&1 | tail -10` shows 3 passes.
-- [x] FR-DOC-RESCUE: `flowai-skill-reflect` Step 2b recommends `/flowai-plan-exp-permanent-tasks` (not `/flowai-skill-plan-adr`) on detected decision passages; references `documents/tasks/<YYYY>/<MM>/<DD>/`.
+- [x] FR-DOC-RESCUE: `flowai-skill-reflect` Step 2b recommends `/flowai-plan-exp-permanent-tasks` (not `/flowai-skill-plan-adr`) on detected decision passages; references `documents/tasks/<YYYY>/<MM>/`.
   - Benchmark: `flowai-skill-reflect/benchmarks/rescues-decision-as-task` (rename of `rescues-decision-as-adr`)
   - Evidence: `deno task bench -f rescues-decision-as-task` passes.
 - [x] FR-DOC-INDEX: `documents/index.md` `## ADR` section removed; no replacement section added.
   - Evidence: `git grep -E '^## ADR' documents/index.md` returns empty; `git grep -E '^## (PDR|Tasks)' documents/index.md` returns empty.
-- [x] Migration: 3 ADRs moved to `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` via `git mv` with frontmatter rewrite and synthesized DoD.
-  - Evidence: `git ls-files documents/tasks/2026/05/02/ documents/tasks/2026/05/03/ | wc -l` returns 3; `git log --follow documents/tasks/2026/05/02/plan-adr-as-parallel-planner.md | head -3` shows pre-migration commits; `git ls-files documents/adr/` returns empty.
+- [x] Migration: 3 ADRs moved to `documents/tasks/<YYYY>/<MM>/<slug>.md` via `git mv` with frontmatter rewrite and synthesized DoD.
+  - Evidence: `git ls-files documents/tasks/2026/05/ documents/tasks/2026/05/ | wc -l` returns 3; `git log --follow documents/tasks/2026/05/plan-adr-as-parallel-planner.md | head -3` shows pre-migration commits; `git ls-files documents/adr/` returns empty.
 - [x] `flowai-skill-plan-adr` deleted in full.
   - Evidence: `ls framework/core/skills/flowai-skill-plan-adr/ 2>&1` reports "No such file"; `git grep flowai-skill-plan-adr` returns empty.
 - [x] SRS rewrites: drop `FR-DOC-ADR`, `FR-DOC-ADR-LIFECYCLE`; add `FR-DOC-TASKS`, `FR-DOC-TASK-LIFECYCLE`, `FR-DOC-TASK-CONTEXT`, `FR-DOC-TASK-LINK`; update `FR-DOC-RESCUE`, `FR-DOC-INDEX`.
@@ -104,7 +104,7 @@ After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `docume
 - [x] CLI bundle regenerated; no leftover `flowai-skill-plan-adr` paths.
   - Evidence: `git grep flowai-skill-plan-adr cli/src/bundled.json` returns empty.
 - [x] Zero residual ADR references in product code.
-  - Evidence: `git grep -E '\bADR-[0-9]+\b|flowai-skill-plan-adr|documents/adr/|FR-DOC-ADR' framework/ documents/requirements.md documents/design.md documents/index.md README.md cli/src/ scripts/ | grep -v 'documents/tasks/2026/05/07/replace-adr-with-tasks.md'` returns empty.
+  - Evidence: `git grep -E '\bADR-[0-9]+\b|flowai-skill-plan-adr|documents/adr/|FR-DOC-ADR' framework/ documents/requirements.md documents/design.md documents/index.md README.md cli/src/ scripts/ | grep -v 'documents/tasks/2026/05/replace-adr-with-tasks.md'` returns empty.
 - [x] All baseline checks pass.
   - Evidence: `deno task check 2>&1 | tail -5` summary shows "0 failed".
 
@@ -118,16 +118,16 @@ Single feature branch, grouped commits by area. Each commit ends `deno task chec
 
 ### Phase 1 — Foundation: gitignore + format validator
 
-- Edit `documents/.gitignore`: remove the `tasks/` line. Verify `git status` now sees `documents/tasks/2026/05/07/replace-adr-with-tasks.md` (this plan).
+- Edit `documents/.gitignore`: remove the `tasks/` line. Verify `git status` now sees `documents/tasks/2026/05/replace-adr-with-tasks.md` (this plan).
 - Add `scripts/check-task-format.ts` + `_test.ts`. Validates every committed file under `documents/tasks/`:
-  - **Coexistence rule**: tasks with new-shape path `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` get full validation (frontmatter shape + status derivation). Legacy flat-path tasks `documents/tasks/<slug>.md` (including dated `<YYYY-MM-DD>-<slug>.md` form) emit a deprecation warning but pass (so existing `flowai-skill-plan` outputs keep working until promotion). Exception: `documents/tasks/README.md` if present is ignored.
+  - **Coexistence rule**: tasks with new-shape path `documents/tasks/<YYYY>/<MM>/<slug>.md` get full validation (frontmatter shape + status derivation). Legacy flat-path tasks `documents/tasks/<slug>.md` (including dated `<YYYY-MM-DD>-<slug>.md` form) emit a deprecation warning but pass (so existing `flowai-skill-plan` outputs keep working until promotion). Exception: `documents/tasks/README.md` if present is ignored.
   - Frontmatter shape (new-path tasks): required `date`, `status` ∈ `to do | in progress | done`, `implements: [...]`. Optional: `tags`, `related_tasks`.
   - Status consistency: declared `status` must match derivation from `## Definition of Done` checkbox count (`0/N → to do`, `1..N-1 → in progress`, `N/N → done`). Warn-only on absent DoD.
 - Wire `scripts/check-task-format.ts` into `scripts/task-check.ts` so `deno task check` runs it.
 
 ### Phase 2 — Migrate 3 ADRs
 
-For each ADR: `git mv documents/adr/<file>.md documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (slug = filename without date prefix), then rewrite frontmatter:
+For each ADR: `git mv documents/adr/<file>.md documents/tasks/<YYYY>/<MM>/<slug>.md` (slug = filename without date prefix), then rewrite frontmatter:
 
 ```yaml
 ---
@@ -152,7 +152,7 @@ Create `framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md` from s
 
 - Frontmatter: `name: flowai-plan-exp-permanent-tasks`, `description:` covering planning queries (matches the established `flowai-skill-plan` description verbatim plus a leading "(experimental committed-tasks variant)" note), `argument-hint: task title or feature description`. Do NOT declare `disable-model-invocation` — CLI writer injects it.
 - Body: lift the GODS planning workflow from `flowai-skill-plan/SKILL.md` (variant analysis, DoD-with-evidence, auto-write). Edit deltas vs source:
-  - Task path template: `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`. Date computed at write time.
+  - Task path template: `documents/tasks/<YYYY>/<MM>/<slug>.md`. Date computed at write time.
   - Frontmatter template: `date`, `status: to do`, `implements`, `tags`, `related_tasks`.
   - **New Step 2 sub-bullet** (Deep Context): glob `documents/tasks/**/*.md`, parse each frontmatter, keep tasks whose `implements:` ∩ planned `implements:` is non-empty. Cap 10 by recency (newest first by `date`); if more match, list IDs without bodies and ask user which to expand. Read full bodies of kept tasks before drafting GODS. List loaded tasks in chat.
   - **New final step** (after auto-write): for each FR-ID in `implements:`, locate `### FR-XXX:` heading in `documents/requirements.md`. If section exists:
@@ -166,7 +166,7 @@ Create `framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md` from s
 
 Edit `framework/core/skills/flowai-skill-epic/SKILL.md`:
 
-- Path: `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` (epic-prefix on slug).
+- Path: `documents/tasks/<YYYY>/<MM>/epic-<name>.md` (epic-prefix on slug).
 - Same frontmatter shape as plan tasks.
 - Same SRS back-pointer step.
 
@@ -218,7 +218,7 @@ Edit `framework/core/skills/flowai-skill-reflect/SKILL.md`:
 
 Edit `framework/core/assets/AGENTS.template.md`:
 
-- Documentation Hierarchy item 4: rewrite to describe new layout (`<YYYY>/<MM>/<DD>/<slug>.md`), committed (no longer "gitignored"), full frontmatter shape, status enum, lifecycle.
+- Documentation Hierarchy item 4: rewrite to describe new layout (`<YYYY>/<MM>/<slug>.md`), committed (no longer "gitignored"), full frontmatter shape, status enum, lifecycle.
 - Remove `### ADR (documents/adr/)` block in full.
 - Remove `### MADR Format` block in full.
 - Add `### Tasks (documents/tasks/)` block:
@@ -247,12 +247,12 @@ Edit `framework/core/assets/AGENTS.template.md`:
 
 Write/update before the corresponding phase lands; verify RED on parent commit, GREEN on phase commit.
 
-- `flowai-plan-exp-permanent-tasks/benchmarks/writes-task-new-frontmatter` — fixture seeds `documents/requirements.md` with FR-X; query plans a small task; checklist: file at `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`; frontmatter has `date`, `status: to do`, `implements`, `tags`, `related_tasks`.
+- `flowai-plan-exp-permanent-tasks/benchmarks/writes-task-new-frontmatter` — fixture seeds `documents/requirements.md` with FR-X; query plans a small task; checklist: file at `documents/tasks/<YYYY>/<MM>/<slug>.md`; frontmatter has `date`, `status: to do`, `implements`, `tags`, `related_tasks`.
 - `flowai-plan-exp-permanent-tasks/benchmarks/loads-related-tasks` — fixture seeds two pre-existing tasks (FR-X + FR-Y `implements:`); query plans new task with `implements: [FR-X]`; checklist: chat names FR-X task as loaded, does NOT name FR-Y task.
 - `flowai-plan-exp-permanent-tasks/benchmarks/updates-srs-task-back-pointer` — fixture has FR-X section with only `**Description:**` bullet; checklist: post-skill SRS contains `**Tasks:**` bullet right after `**Description:**` linking the new task.
 - `flowai-plan-exp-permanent-tasks/benchmarks/srs-task-edit-scope-limited` — fixture has multi-line FR-X section; checklist: ONLY the `**Tasks:**` line was added; all other lines byte-identical.
 - `flowai-plan-exp-permanent-tasks/benchmarks/srs-task-back-pointer-idempotent` — fixture has existing `**Tasks:** [slug-a](...)` line; checklist: skill appends `, [slug-b](...)` (no duplicate bullet); second invocation with same task is no-op.
-- `flowai-skill-epic/benchmarks/writes-epic-new-path` — fixture; checklist: epic at `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` with new frontmatter.
+- `flowai-skill-epic/benchmarks/writes-epic-new-path` — fixture; checklist: epic at `documents/tasks/<YYYY>/<MM>/epic-<name>.md` with new frontmatter.
 - `flowai-commit/benchmarks/flips-task-status` (rename `flips-adr-status`) — fixture: task with `status: in progress`, all DoD `[x]`; checklist: post-commit `status: done`.
 - `flowai-commit/benchmarks/derives-in-progress-status` — fixture: task with `status: to do`, 1 of 3 DoD `[x]`; checklist: post-commit `status: in progress`.
 - `flowai-commit/benchmarks/skips-legacy-task` — fixture: task at legacy flat path with no `date:` frontmatter; checklist: commit succeeds, file content unchanged (verifies coexistence rule).
@@ -272,7 +272,7 @@ Write/update before the corresponding phase lands; verify RED on parent commit, 
   ```sh
   git grep -E '\bADR-[0-9]+\b|flowai-skill-plan-adr|documents/adr/|FR-DOC-ADR' \
     framework/ documents/ README.md cli/src/ scripts/ \
-    | grep -v 'documents/tasks/2026/05/07/replace-adr-with-tasks.md'
+    | grep -v 'documents/tasks/2026/05/replace-adr-with-tasks.md'
   ```
   Expected: empty.
 

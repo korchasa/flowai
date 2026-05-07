@@ -1,6 +1,6 @@
 ---
 name: flowai-plan-exp-permanent-tasks
-description: Experimental committed-tasks variant of flowai-skill-plan. User-invoked. Writes tasks at documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md with extended frontmatter (date, status, implements, tags, related_tasks).
+description: Experimental committed-tasks variant of flowai-skill-plan. User-invoked. Writes tasks at documents/tasks/<YYYY>/<MM>/<slug>.md with extended frontmatter (date, status, implements, tags, related_tasks).
 argument-hint: task description or issue URL
 effort: high
 ---
@@ -9,7 +9,7 @@ effort: high
 
 ## Overview
 
-Create a clear, critiqued plan in `./documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` using the GODS framework. **This skill writes a different path layout than the legacy AGENTS.md "Documentation Hierarchy" item 4 mentions** — the path here is `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` (date in directory hierarchy, slug WITHOUT a date prefix), not `documents/tasks/<YYYY-MM-DD>-<slug>.md`. Tasks are committed (no longer gitignored) and carry extended frontmatter so they serve as the canonical record of *what was decided, planned, and shipped*.
+Create a clear, critiqued plan in `./documents/tasks/<YYYY>/<MM>/<slug>.md` using the GODS framework. **This skill writes a different path layout than the legacy AGENTS.md "Documentation Hierarchy" item 4 mentions** — the path here is `documents/tasks/<YYYY>/<MM>/<slug>.md` (date in directory hierarchy, slug WITHOUT a date prefix), not `documents/tasks/<YYYY-MM-DD>-<slug>.md`. Tasks are committed (no longer gitignored) and carry extended frontmatter so they serve as the canonical record of *what was decided, planned, and shipped*.
 
 ## Context
 
@@ -21,9 +21,9 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 ## Rules & Constraints
 
 <rules>
-1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation, EXCEPT the two doc-system navigation artifacts listed below. If the task directory does not exist (`./documents/tasks/<YYYY>/<MM>/<DD>/`), CREATE it (with intermediate year/month/day directories). If you catch yourself about to modify any file outside the allow-list — STOP immediately and return to planning.
+1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation, EXCEPT the two doc-system navigation artifacts listed below. If the task directory does not exist (`./documents/tasks/<YYYY>/<MM>/`), CREATE it (with intermediate year/month/day directories). If you catch yourself about to modify any file outside the allow-list — STOP immediately and return to planning.
    - **Allow-list**:
-     - (a) A single task file at `./documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` where `<YYYY>`, `<MM>`, `<DD>` are today's date components (zero-padded month/day) and `<slug>` is derived from the task (kebab-case, ≤40 chars, NO date prefix). Examples: `documents/tasks/2026/03/24/add-dark-mode.md`, `documents/tasks/2026/03/24/fix-auth-bug.md`, `documents/tasks/2026/03/24/refactor-db-layer.md`.
+     - (a) A single task file at `./documents/tasks/<YYYY>/<MM>/<slug>.md` where `<YYYY>`, `<MM>`, `<DD>` are today's date components (zero-padded month/day) and `<slug>` is derived from the task (kebab-case, ≤40 chars, NO date prefix). Examples: `documents/tasks/2026/03/add-dark-mode.md`, `documents/tasks/2026/03/fix-auth-bug.md`, `documents/tasks/2026/03/refactor-db-layer.md`.
      - (b) `./documents/index.md` — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
      - (c) `./documents/requirements.md` — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
@@ -56,16 +56,16 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
 
 1. **Initialize**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan based on these steps.
-   - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d` or your environment's date primitive). Hold it as `<DATE>`. Derive `<YYYY>`, `<MM>`, `<DD>` (zero-padded) and the eventual file path `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md`.
+   - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d` or your environment's date primitive). Hold it as `<DATE>`. Derive `<YYYY>`, `<MM>`, `<DD>` (zero-padded) and the eventual file path `documents/tasks/<YYYY>/<MM>/<slug>.md`.
 2. **Deep Context & Uncertainty Resolution**
    - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
-   - **Load related committed tasks**: glob `documents/tasks/**/*.md` (the path is recursive — task files live under date-hierarchy subdirs `<YYYY>/<MM>/<DD>/<slug>.md`). For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
+   - **Load related committed tasks**: glob `documents/tasks/**/*.md` (the path is recursive — task files live under date-hierarchy subdirs `<YYYY>/<MM>/<slug>.md`). For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
    - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
    - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 3. **Draft Framework (G-O-D)**
-   - Create the parent directories `documents/tasks/<YYYY>/<MM>/<DD>/` (use `mkdir -p` or your environment's equivalent).
-   - Write `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with:
+   - Create the parent directories `documents/tasks/<YYYY>/<MM>/` (use `mkdir -p` or your environment's equivalent).
+   - Write `documents/tasks/<YYYY>/<MM>/<slug>.md` with:
      - Frontmatter containing ALL required keys per Rule 9. Set `status: to do` initially.
      - Body sections per `### GODS Format` from AGENTS.md: `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` (placeholder bullets — fill in step 5a).
    - **CRITICAL**: Do NOT fill `## Solution` section yet.
@@ -93,8 +93,8 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - For each FR-ID in the task's `implements:` frontmatter, locate the heading `### <FR-ID>:` in `documents/requirements.md`.
    - If the heading does not exist (new FR introduced by the same task), SKIP this FR for now and emit a chat note: "FR-XXX SRS section pending — task back-pointer deferred." The develop/commit phase will add the section AND the back-pointer atomically.
    - If the heading exists, find the section's existing `**Description:**` bullet (`- **Description:** ...`). Look at the line(s) immediately following it within the same section.
-     - If a `- **Tasks:** [...]` bullet already exists: append `, [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)` to the comma-separated list. **Idempotency**: if the exact link `[<slug>](tasks/...)` is already in the list, do nothing for that FR.
-     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)` immediately AFTER the `**Description:**` bullet (before any other bullets in the section).
+     - If a `- **Tasks:** [...]` bullet already exists: append `, [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` to the comma-separated list. **Idempotency**: if the exact link `[<slug>](tasks/...)` is already in the list, do nothing for that FR.
+     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` immediately AFTER the `**Description:**` bullet (before any other bullets in the section).
    - **Surgical edit only**: the rest of the SRS file MUST remain byte-identical. Do not re-format, do not touch other sections, do not adjust whitespace anywhere except the inserted/extended line.
 
 5b. **Update Documentation Index (FR-DOC-INDEX)** — execute immediately, no permission needed. This is a write step, not a planning step.
@@ -128,7 +128,7 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 ## Verification
 
 <verification>
-- [ ] The task file path matches `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` exactly — date hierarchy directories present, slug without date prefix.
+- [ ] The task file path matches `documents/tasks/<YYYY>/<MM>/<slug>.md` exactly — date hierarchy directories present, slug without date prefix.
 - [ ] Frontmatter contains `date`, `status: to do`, `implements`, `tags`, `related_tasks` keys (in any order).
 - [ ] Files modified are limited to the task file, `./documents/index.md` (when the task introduces or touches FRs), and surgical `**Tasks:**` line inserts/extends in `./documents/requirements.md`. No other files touched.
 - [ ] For every FR-ID in `implements:`, `documents/index.md` contains a corresponding row under `## FR` with a GFM-link to `requirements.md#<anchor>`.
