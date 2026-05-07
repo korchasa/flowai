@@ -2,7 +2,7 @@
  * Validates task files under documents/tasks/ for the new committed-tasks layout.
  *
  * New-shape rule (full validation):
- *   - Path: documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md
+ *   - Path: documents/tasks/<YYYY>/<MM>/<slug>.md
  *   - Frontmatter required keys: date (YYYY-MM-DD), status (to do | in progress | done).
  *   - Optional: implements (array of FR-IDs — present for FR-driven tasks; omitted
  *     for internal/maintenance tasks), tags (array), related_tasks (array).
@@ -35,7 +35,7 @@ const STATUS_VALUES = new Set(["to do", "in progress", "done"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FR_ID_RE = /^FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*$/;
 const NEW_PATH_RE =
-  /^documents\/tasks\/(\d{4})\/(\d{2})\/(\d{2})\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.md$/;
+  /^documents\/tasks\/(\d{4})\/(\d{2})\/[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.md$/;
 
 /** Classify a task file by its repo-relative path (forward slashes). */
 export function classifyTaskPath(filePath: string): TaskClassification {
@@ -204,7 +204,7 @@ export function validateLegacyTask(filePath: string): TaskValidationError[] {
   return [{
     file: filePath,
     message:
-      "Legacy flat-path task — migrate to documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md and add new-shape frontmatter",
+      "Legacy flat-path task — migrate to documents/tasks/<YYYY>/<MM>/<slug>.md and add new-shape frontmatter",
     level: "warning",
   }];
 }

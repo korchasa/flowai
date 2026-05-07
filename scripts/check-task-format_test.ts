@@ -10,7 +10,7 @@ import {
 
 Deno.test("classifyTaskPath: new-shape canonical path", () => {
   assertEquals(
-    classifyTaskPath("documents/tasks/2026/05/07/some-slug.md"),
+    classifyTaskPath("documents/tasks/2026/05/some-slug.md"),
     "new-shape",
   );
 });
@@ -45,10 +45,15 @@ Deno.test("classifyTaskPath: unrelated path", () => {
 
 Deno.test("classifyTaskPath: partial date hierarchy is treated as legacy (warn-only)", () => {
   // Anything under documents/tasks/ that doesn't match the canonical
-  // <YYYY>/<MM>/<DD>/<slug>.md falls back to "legacy" so the author gets
+  // <YYYY>/<MM>/<slug>.md falls back to "legacy" so the author gets
   // a deprecation warning rather than silent acceptance.
   assertEquals(
     classifyTaskPath("documents/tasks/2026/slug.md"),
+    "legacy",
+  );
+  // Day-level subfolder (former layout) → no longer matches; legacy now.
+  assertEquals(
+    classifyTaskPath("documents/tasks/2026/05/07/slug.md"),
     "legacy",
   );
 });
@@ -157,7 +162,7 @@ const validBody = [
 
 Deno.test("validateNewShapeTask: minimal valid task → no errors", () => {
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     validFrontmatter + "\n" + validBody,
   );
   assertEquals(errs, []);
@@ -165,7 +170,7 @@ Deno.test("validateNewShapeTask: minimal valid task → no errors", () => {
 
 Deno.test("validateNewShapeTask: missing frontmatter → error", () => {
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     "# No frontmatter\n",
   );
   assertEquals(errs.length, 1);
@@ -175,7 +180,7 @@ Deno.test("validateNewShapeTask: missing frontmatter → error", () => {
 Deno.test("validateNewShapeTask: invalid status → error", () => {
   const fm = validFrontmatter.replace("status: to do", "status: pending");
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     fm + "\n" + validBody,
   );
   const statusErr = errs.find((e) => e.message.includes("'status'"));
@@ -185,7 +190,7 @@ Deno.test("validateNewShapeTask: invalid status → error", () => {
 Deno.test("validateNewShapeTask: bad date format → error", () => {
   const fm = validFrontmatter.replace("date: 2026-05-07", 'date: "may 7th"');
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     fm + "\n" + validBody,
   );
   const dateErr = errs.find((e) => e.message.includes("'date'"));
@@ -200,7 +205,7 @@ Deno.test("validateNewShapeTask: implements omitted → no error (internal task)
     "---",
   ].join("\n");
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     fm + "\n" + validBody,
   );
   const implErr = errs.find((e) =>
@@ -219,7 +224,7 @@ Deno.test("validateNewShapeTask: invalid FR-ID → error", () => {
     "---",
   ].join("\n");
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     fm + "\n" + validBody,
   );
   const idErr = errs.find((e) => e.message.includes("invalid FR-ID"));
@@ -236,7 +241,7 @@ Deno.test("validateNewShapeTask: status mismatch with DoD → error", () => {
   ].join("\n");
   // frontmatter says "to do" but DoD is fully checked → derive "done"
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     validFrontmatter + "\n" + body,
   );
   const mismatchErr = errs.find((e) => e.message.includes("Status mismatch"));
@@ -246,7 +251,7 @@ Deno.test("validateNewShapeTask: status mismatch with DoD → error", () => {
 Deno.test("validateNewShapeTask: no DoD → warning, not error", () => {
   const body = "# Title\n\nNo DoD here.\n";
   const errs = validateNewShapeTask(
-    "documents/tasks/2026/05/07/x.md",
+    "documents/tasks/2026/05/x.md",
     validFrontmatter + "\n" + body,
   );
   const dodWarn = errs.find((e) => e.message.includes("Definition of Done"));

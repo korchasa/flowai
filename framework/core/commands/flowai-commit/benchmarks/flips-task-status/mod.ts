@@ -4,7 +4,7 @@ import { BenchmarkSkillScenario } from "@bench/types.ts";
 // Verifies FR-DOC-TASK-LIFECYCLE: flowai-commit derives task `status` from
 // DoD checkbox count and rewrites the frontmatter when it differs.
 //
-// Fixture: documents/tasks/2026/04/15/add-rate-limiter.md with frontmatter
+// Fixture: documents/tasks/2026/04/add-rate-limiter.md with frontmatter
 // `status: in progress` AND all 3 DoD items already `[x]`.
 // Expected after commit: frontmatter rewritten to `status: done`, change is
 // IN A COMMIT (not just on disk), and the DoD items remain unchanged. The
@@ -29,7 +29,7 @@ export const CommitFlipsTaskStatusBench = new class
       "src/api/server_test.ts",
     ],
     expectedOutcome:
-      "Agent commits the four new source files, AND in the same commit (or a sibling commit in the same session) flips the task's frontmatter `status` from `in progress` to `done` because all DoD checkboxes in `documents/tasks/2026/04/15/add-rate-limiter.md` are now `[x]`.",
+      "Agent commits the four new source files, AND in the same commit (or a sibling commit in the same session) flips the task's frontmatter `status` from `in progress` to `done` because all DoD checkboxes in `documents/tasks/2026/04/add-rate-limiter.md` are now `[x]`.",
   };
 
   override async setup(sandboxPath: string) {
@@ -128,7 +128,7 @@ Deno.test("registers_rate_limit", () => {
   }
 
   userQuery =
-    "/flowai-commit Implemented the rate limiter described in the task at documents/tasks/2026/04/15/add-rate-limiter.md. All DoD items are now satisfied. Commit the changes.";
+    "/flowai-commit Implemented the rate limiter described in the task at documents/tasks/2026/04/add-rate-limiter.md. All DoD items are now satisfied. Commit the changes.";
 
   checklist = [
     {
@@ -140,19 +140,19 @@ Deno.test("registers_rate_limit", () => {
     {
       id: "task_status_flipped",
       description:
-        "Read `documents/tasks/2026/04/15/add-rate-limiter.md` after the commit. Does its frontmatter contain `status: done` (NOT `status: in progress`)?",
+        "Read `documents/tasks/2026/04/add-rate-limiter.md` after the commit. Does its frontmatter contain `status: done` (NOT `status: in progress`)?",
       critical: true,
     },
     {
       id: "task_change_in_commit",
       description:
-        "Run `git log -p -- documents/tasks/2026/04/15/add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the task's `status` from `in progress` to `done`? The change must be IN A COMMIT, not just on disk.",
+        "Run `git log -p -- documents/tasks/2026/04/add-rate-limiter.md`. Is there a commit in the agent's session that includes a diff line changing the task's `status` from `in progress` to `done`? The change must be IN A COMMIT, not just on disk.",
       critical: true,
     },
     {
       id: "task_file_not_deleted",
       description:
-        "The new-shape task file at `documents/tasks/2026/04/15/add-rate-limiter.md` must NOT have been deleted by the cleanup step. It is a persistent canonical record per the new contract — only legacy flat-path tasks are eligible for deletion. Verify file still exists in the working tree and was not removed in any commit (`git log --diff-filter=D -- documents/tasks/2026/04/15/add-rate-limiter.md` should be empty).",
+        "The new-shape task file at `documents/tasks/2026/04/add-rate-limiter.md` must NOT have been deleted by the cleanup step. It is a persistent canonical record per the new contract — only legacy flat-path tasks are eligible for deletion. Verify file still exists in the working tree and was not removed in any commit (`git log --diff-filter=D -- documents/tasks/2026/04/add-rate-limiter.md` should be empty).",
       critical: true,
     },
     {

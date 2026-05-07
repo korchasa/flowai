@@ -16,13 +16,13 @@ export const ReflectRescuesDecisionAsTaskBench = new class
   };
 
   userQuery =
-    "/flowai-skill-reflect Analyze the task file 'documents/tasks/2026/04/30/cache-strategy.md' for durable findings — in particular, any architectural decision with weighed alternatives that should be captured persistently as its own task record.";
+    "/flowai-skill-reflect Analyze the task file 'documents/tasks/2026/04/cache-strategy.md' for durable findings — in particular, any architectural decision with weighed alternatives that should be captured persistently as its own task record.";
 
   checklist = [
     {
       id: "task_file_read",
       description:
-        "Did the agent read 'documents/tasks/2026/04/30/cache-strategy.md'?",
+        "Did the agent read 'documents/tasks/2026/04/cache-strategy.md'?",
       critical: true,
     },
     {

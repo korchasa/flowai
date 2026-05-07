@@ -101,7 +101,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter `status` and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
      4. Commit with a Conventional Commits message (now including the optional task-status frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
-   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
+   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
    - **Legacy tasks** (flat path, no `date:` frontmatter): if all DoD items satisfied → `git rm` and commit; if any unsatisfied → ask user "Delete or keep?"; if no DoD → ask user.
 6. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
@@ -125,7 +125,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 - [ ] Changes grouped by logical purpose (no mixed independent concerns).
 - [ ] Commits executed automatically without user prompt.
 - [ ] Conventional Commits format used.
-- [ ] Task lifecycle: every staged new-shape task (`documents/tasks/<YYYY>/<MM>/<DD>/*.md` with `date:` frontmatter) had its `status:` auto-derived from `## Definition of Done` checkbox count and rewritten if it differed (`to do | in progress | done`). Never downgrades `done`. Warn-only on parse errors.
+- [ ] Task lifecycle: every staged new-shape task (`documents/tasks/<YYYY>/<MM>/*.md` with `date:` frontmatter) had its `status:` auto-derived from `## Definition of Done` checkbox count and rewritten if it differed (`to do | in progress | done`). Never downgrades `done`. Warn-only on parse errors.
 - [ ] Task file cleanup: legacy flat-path task files (no `date:` frontmatter) — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted (persistent canonical records).
 - [ ] Session complexity check performed; `/flowai-skill-reflect` suggested if signals detected.
 </verification>

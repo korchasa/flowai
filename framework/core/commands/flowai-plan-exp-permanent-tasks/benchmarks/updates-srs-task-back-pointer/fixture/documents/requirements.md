@@ -15,6 +15,6 @@
 ### FR-CART-REMOVE: Remove from Cart
 
 - **Description:** Users remove a product line from the cart.
-- **Tasks:** [old-cart-remove-rework](tasks/2026/03/01/old-cart-remove-rework.md)
+- **Tasks:** [old-cart-remove-rework](tasks/2026/03/old-cart-remove-rework.md)
 - **Acceptance:** manual — bench fixture
 - **Status:** [ ]

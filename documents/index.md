@@ -6,7 +6,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 
 - [FR-BENCH.TRIGGER](requirements.md#fr-benchtrigger-skill-description-matching-verification) — Skill description-matching verified by 9 trigger scenarios per skill — [x]
 - [FR-DOC-INDEX](requirements.md#fr-doc-index-agent-maintained-documentation-index) — Agent-maintained documentation index — [x]
-- [FR-DOC-TASKS](requirements.md#fr-doc-tasks-first-class-committed-tasks) — First-class committed tasks at documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md — [x]
+- [FR-DOC-TASKS](requirements.md#fr-doc-tasks-first-class-committed-tasks) — First-class committed tasks at documents/tasks/<YYYY>/<MM>/<slug>.md — [x]
 - [FR-DOC-TASK-LIFECYCLE](requirements.md#fr-doc-task-lifecycle-task-status-derived-from-dod-by-commit-skills) — Task status derived from DoD by commit skills — [x]
 - [FR-DOC-TASK-CONTEXT](requirements.md#fr-doc-task-context-plan-skill-loads-related-tasks-into-step-2) — Plan skill loads related tasks into Step 2 — [x]
 - [FR-DOC-TASK-LINK](requirements.md#fr-doc-task-link-srs-inline-tasks-back-pointer) — SRS-inline **Tasks:** back-pointer — [x]

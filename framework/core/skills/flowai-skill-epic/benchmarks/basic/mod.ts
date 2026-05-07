@@ -24,7 +24,7 @@ export const EpicBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "epic_file_at_new_path",
       description:
-        "Did the agent create an epic file at a path matching `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` (date-hierarchy directories, slug starts with `epic-`, no date prefix in slug)?",
+        "Did the agent create an epic file at a path matching `documents/tasks/<YYYY>/<MM>/epic-<name>.md` (date-hierarchy directories, slug starts with `epic-`, no date prefix in slug)?",
       critical: true,
     },
     {
@@ -78,7 +78,7 @@ export const EpicBasicBench = new class extends BenchmarkSkillScenario {
     {
       id: "only_epic_file_modified",
       description:
-        "Did the agent ONLY create/modify the epic file under `documents/tasks/<YYYY>/<MM>/<DD>/epic-*.md` (and optionally `documents/index.md`) and NOT touch any source code files?",
+        "Did the agent ONLY create/modify the epic file under `documents/tasks/<YYYY>/<MM>/epic-*.md` (and optionally `documents/index.md`) and NOT touch any source code files?",
       critical: true,
     },
     {
