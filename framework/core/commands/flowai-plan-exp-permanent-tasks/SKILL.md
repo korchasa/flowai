@@ -25,6 +25,7 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - **Allow-list**:
      - (a) A single task file at `./documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` where `<YYYY>`, `<MM>`, `<DD>` are today's date components (zero-padded month/day) and `<slug>` is derived from the task (kebab-case, ≤40 chars, NO date prefix). Examples: `documents/tasks/2026/03/24/add-dark-mode.md`, `documents/tasks/2026/03/24/fix-auth-bug.md`, `documents/tasks/2026/03/24/refactor-db-layer.md`.
      - (b) `./documents/index.md` — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
+     - (c) `./documents/requirements.md` — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 3. **Chat-First Reasoning**: Implementation variants MUST be presented in CHAT, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool. This is a mandatory rule!
@@ -88,6 +89,14 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - If any DoD item lacks the tuple, edit the task file to add it. Prefer reusing an existing FR (for bug fixes and small refactors) over coining a new one. Only introduce a new FR for user-visible or contract-level changes.
    - If new FRs appear in `implements:` that are absent from `documents/requirements.md`, the task MUST contain an explicit DoD entry "add FR-XXX section to SRS with `**Acceptance:**` field filled".
    - Do NOT create the test files themselves — that is the develop phase's RED step. This skill only FIXES the test location contract.
+5c. **Write SRS-inline `**Tasks:**` Back-Pointer (FR-DOC-TASK-LINK)** — execute immediately, no permission needed. This is a write step.
+   - For each FR-ID in the task's `implements:` frontmatter, locate the heading `### <FR-ID>:` in `documents/requirements.md`.
+   - If the heading does not exist (new FR introduced by the same task), SKIP this FR for now and emit a chat note: "FR-XXX SRS section pending — task back-pointer deferred." The develop/commit phase will add the section AND the back-pointer atomically.
+   - If the heading exists, find the section's existing `**Description:**` bullet (`- **Description:** ...`). Look at the line(s) immediately following it within the same section.
+     - If a `- **Tasks:** [...]` bullet already exists: append `, [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)` to the comma-separated list. **Idempotency**: if the exact link `[<slug>](tasks/...)` is already in the list, do nothing for that FR.
+     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<DD>/<slug>.md)` immediately AFTER the `**Description:**` bullet (before any other bullets in the section).
+   - **Surgical edit only**: the rest of the SRS file MUST remain byte-identical. Do not re-format, do not touch other sections, do not adjust whitespace anywhere except the inserted/extended line.
+
 5b. **Update Documentation Index (FR-DOC-INDEX)** — execute immediately, no permission needed. This is a write step, not a planning step.
    - For every FR-ID in the task's `implements:` frontmatter, register a row in `./documents/index.md`.
    - If `documents/index.md` does not exist, create it with a `## FR` heading (additional sections like `## SDS`, `## NFR` may be added by other skills; do not pre-scaffold them here).
@@ -121,7 +130,8 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 <verification>
 - [ ] The task file path matches `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` exactly — date hierarchy directories present, slug without date prefix.
 - [ ] Frontmatter contains `date`, `status: to do`, `implements`, `tags`, `related_tasks` keys (in any order).
-- [ ] Files modified are limited to the task file and (when the task introduces or touches FRs) `./documents/index.md`. No other files touched.
+- [ ] Files modified are limited to the task file, `./documents/index.md` (when the task introduces or touches FRs), and surgical `**Tasks:**` line inserts/extends in `./documents/requirements.md`. No other files touched.
 - [ ] For every FR-ID in `implements:`, `documents/index.md` contains a corresponding row under `## FR` with a GFM-link to `requirements.md#<anchor>`.
+- [ ] For every FR-ID in `implements:` whose SRS section already exists, `documents/requirements.md` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>

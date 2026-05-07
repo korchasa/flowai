@@ -28,7 +28,9 @@ documentation, web) to understand the problem before asking the user.
 ## Rules & Constraints
 
 <rules>
-1. **Pure Specification**: MUST NOT write code. Only `./documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md`. If the parent directories do not exist, CREATE them (use `mkdir -p` or your environment's equivalent).
+1. **Pure Specification**: MUST NOT write code. Allowed-to-write artifacts:
+   - (a) `./documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` — the epic file. If the parent directories do not exist, CREATE them (use `mkdir -p`).
+   - (b) `./documents/requirements.md` — **surgical-edit only**. May insert/extend a single line `- **Tasks:** [epic-<name>](tasks/<YYYY>/<MM>/<DD>/epic-<name>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 7a.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track execution steps.
 3. **Chat-First Reasoning**: Phase decomposition MUST be presented in CHAT first, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool.
@@ -108,6 +110,14 @@ For **clarifying / uncertainty-resolution questions** asked during research (Ste
    - Ask the user which critique points to address.
    - Update `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` with accepted improvements.
    - Update the metadata table Status from "Draft" to "Ready". (Frontmatter `status:` is auto-derived from DoD; do not change it manually.)
+
+7a. **Write SRS-inline `**Tasks:**` Back-Pointer (FR-DOC-TASK-LINK)** — execute immediately, no permission needed. This is a write step.
+   - For each FR-ID in the epic's `implements:` frontmatter, locate the heading `### <FR-ID>:` in `documents/requirements.md`.
+   - If the heading does not exist (new FR introduced by the epic), SKIP this FR and emit a chat note: "FR-XXX SRS section pending — task back-pointer deferred."
+   - If the heading exists, find the section's `**Description:**` bullet. Look at the line(s) immediately following it.
+     - If a `- **Tasks:** [...]` bullet already exists: append `, [epic-<name>](tasks/<YYYY>/<MM>/<DD>/epic-<name>.md)` to the comma-separated list. Idempotent: skip if the exact link is already present.
+     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [epic-<name>](tasks/<YYYY>/<MM>/<DD>/epic-<name>.md)` immediately AFTER the `**Description:**` bullet.
+   - **Surgical edit only**: rest of the SRS file MUST remain byte-identical.
 
 8. **TOTAL STOP**
 
@@ -203,8 +213,9 @@ related_tasks: []
 ## Verification
 
 <verification>
-- [ ] ONLY `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` modified (and optionally `documents/index.md`)
+- [ ] ONLY `documents/tasks/<YYYY>/<MM>/<DD>/epic-<name>.md` modified, plus optional surgical `**Tasks:**` line edits in `documents/requirements.md` (FR-DOC-TASK-LINK), plus optional `documents/index.md` row updates.
 - [ ] Frontmatter contains `date`, `status: to do`, `tags`, `related_tasks` keys
+- [ ] For every FR-ID in `implements:` whose SRS section already exists, the corresponding `### FR-XXX:` section now carries a `- **Tasks:**` bullet linking to the epic file. Other SRS lines unchanged.
 - [ ] Each phase has: Goal, Prerequisites, Scope, Tasks, Verification
 - [ ] Non-Goals section is non-empty
 - [ ] Boundaries (Always/Ask First/Never) are specified

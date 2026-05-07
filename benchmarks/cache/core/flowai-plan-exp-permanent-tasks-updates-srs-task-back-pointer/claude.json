@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "23392ee00a002ee79e9a8bdc1a6a882be0a278f11c26e23d15ce153b398ef471",
+  "scenarioId": "flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T10:27:17.136Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 407381.184541,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "inserts_tasks_bullet_for_fr_cart_add": {
+        "pass": true,
+        "reason": "The generated requirements.md shows FR-CART-ADD section now contains '- **Tasks:** [refactor-cart-ui](tasks/2026/05/07/refactor-cart-ui.md)' placed directly after the '- **Description:**' bullet. Bef…"
+      },
+      "extends_tasks_bullet_for_fr_cart_remove": {
+        "pass": true,
+        "reason": "The generated requirements.md shows FR-CART-REMOVE's Tasks bullet reads '- **Tasks:** [old-cart-remove-rework](tasks/2026/03/01/old-cart-remove-rework.md), [refactor-cart-ui](tasks/2026/05/07/refacto…"
+      },
+      "srs_edit_scope_limited": {
+        "pass": true,
+        "reason": "Comparing the original fixture (from the init commit diff) with the post-run requirements.md, only two changes occurred: (1) a new '- **Tasks:**' line was inserted in FR-CART-ADD after the Descriptio…"
+      },
+      "task_file_at_new_path": {
+        "pass": true,
+        "reason": "The agent created the task file at 'documents/tasks/2026/05/07/refactor-cart-ui.md' — using the date-hierarchy directory structure (YYYY/MM/DD) and a slug without a date prefix ('refactor-cart-ui'). …"
+      }
+    }
+  }
+}
