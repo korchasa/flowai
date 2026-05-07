@@ -114,6 +114,10 @@ export function buildCheckPlan(): CheckPlan {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-trigger-coverage.ts"],
       },
+      {
+        cmd: "deno",
+        args: ["run", "-A", "scripts/check-task-format.ts"],
+      },
     ],
   };
 }
