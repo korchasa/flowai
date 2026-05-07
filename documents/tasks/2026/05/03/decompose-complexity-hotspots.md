@@ -1,12 +1,13 @@
 ---
-id: ADR-0003
-status: accepted
 date: 2026-05-03
+status: done
 tags:
   - refactor
   - maintainability
   - cli
   - benchmarks
+related_tasks: []
+migrated_from: "ADR-0003 (status: accepted)"
 ---
 
 # Decompose five complexity hotspots into ≤100-line single-responsibility helpers

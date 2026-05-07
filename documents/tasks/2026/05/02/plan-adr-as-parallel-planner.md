@@ -1,14 +1,13 @@
 ---
-id: ADR-0001
-status: implemented
 date: 2026-05-02
+status: done
 implements:
-  - FR-DOC-ADR
-  - FR-DOC-ADR-LIFECYCLE
   - FR-INIT
 tags:
   - skill-design
   - documentation
+related_tasks: []
+migrated_from: "ADR-0001 (status: implemented)"
 ---
 
 # `flowai-skill-plan-adr` as parallel planning skill

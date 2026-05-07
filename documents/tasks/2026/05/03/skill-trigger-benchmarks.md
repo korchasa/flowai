@@ -1,13 +1,14 @@
 ---
-id: ADR-0002
-status: accepted
 date: 2026-05-03
+status: done
 implements:
   - FR-BENCH.TRIGGER
 tags:
   - benchmarks
   - skills
   - quality-gate
+related_tasks: []
+migrated_from: "ADR-0002 (status: accepted)"
 ---
 
 # Skill description-matching verified by 3+3+3 trigger scenarios per skill

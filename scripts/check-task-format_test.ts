@@ -192,20 +192,21 @@ Deno.test("validateNewShapeTask: bad date format → error", () => {
   assertEquals(dateErr?.level, "error");
 });
 
-Deno.test("validateNewShapeTask: empty implements → error", () => {
+Deno.test("validateNewShapeTask: implements omitted → no error (internal task)", () => {
   const fm = [
     "---",
     "date: 2026-05-07",
     "status: to do",
-    "implements: []",
     "---",
   ].join("\n");
   const errs = validateNewShapeTask(
     "documents/tasks/2026/05/07/x.md",
     fm + "\n" + validBody,
   );
-  const implErr = errs.find((e) => e.message.includes("'implements'"));
-  assertEquals(implErr?.level, "error");
+  const implErr = errs.find((e) =>
+    e.level === "error" && e.message.includes("'implements'")
+  );
+  assertEquals(implErr, undefined);
 });
 
 Deno.test("validateNewShapeTask: invalid FR-ID → error", () => {

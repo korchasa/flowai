@@ -3,9 +3,9 @@
  *
  * New-shape rule (full validation):
  *   - Path: documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md
- *   - Frontmatter required keys: date (YYYY-MM-DD), status (to do | in progress | done),
- *     implements (non-empty array of FR-IDs).
- *   - Optional: tags (array), related_tasks (array).
+ *   - Frontmatter required keys: date (YYYY-MM-DD), status (to do | in progress | done).
+ *   - Optional: implements (array of FR-IDs — present for FR-driven tasks; omitted
+ *     for internal/maintenance tasks), tags (array), related_tasks (array).
  *   - Status must match derivation from `## Definition of Done` checkbox count:
  *       0 of N → "to do"; 1..N-1 of N → "in progress"; N of N → "done".
  *     No DoD section → warning, status untouched.
@@ -137,22 +137,25 @@ export function validateNewShapeTask(
     });
   }
 
-  if (!Array.isArray(fm.implements) || fm.implements.length === 0) {
-    errs.push({
-      file: filePath,
-      message: "Frontmatter 'implements' must be a non-empty array of FR-IDs",
-      level: "error",
-    });
-  } else {
-    for (const id of fm.implements) {
-      if (typeof id !== "string" || !FR_ID_RE.test(id)) {
-        errs.push({
-          file: filePath,
-          message: `Frontmatter 'implements' contains invalid FR-ID: ${
-            JSON.stringify(id)
-          }`,
-          level: "error",
-        });
+  if (fm.implements !== undefined) {
+    if (!Array.isArray(fm.implements)) {
+      errs.push({
+        file: filePath,
+        message:
+          "Frontmatter 'implements' must be an array of FR-IDs (or omitted for internal tasks)",
+        level: "error",
+      });
+    } else {
+      for (const id of fm.implements) {
+        if (typeof id !== "string" || !FR_ID_RE.test(id)) {
+          errs.push({
+            file: filePath,
+            message: `Frontmatter 'implements' contains invalid FR-ID: ${
+              JSON.stringify(id)
+            }`,
+            level: "error",
+          });
+        }
       }
     }
   }
