@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "2ccf284ca5c501e498bcd4eadb907ef03e84ca6cabaa73d0c01a8ac7b2f58c86",
+  "scenarioId": "flowai-plan-exp-permanent-tasks-loads-related-tasks",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T10:16:52.771Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 238595.415125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "loads_related_login_task": {
+        "pass": true,
+        "reason": "The agent explicitly identifies and names `documents/tasks/2026/04/01/add-login-form.md` in chat as a related task, explaining it implements FR-AUTH-LOGIN (same FR as the planned task) with status `d…"
+      },
+      "skips_unrelated_profile_task": {
+        "pass": true,
+        "reason": "The agent reads `add-profile-edit.md` to check for FR overlap, then explicitly excludes it from loaded context, stating: 'documents/tasks/2026/04/02/add-profile-edit.md — FR-PROFILE-EDIT — не пересек…"
+      },
+      "task_file_at_new_path": {
+        "pass": true,
+        "reason": "The agent creates the task file at `documents/tasks/2026/05/07/add-password-reset.md`, which follows the `<YYYY>/<MM>/<DD>/<slug>.md` hierarchy (date-based directory nesting) with a slug (`add-passwo…"
+      }
+    }
+  }
+}
