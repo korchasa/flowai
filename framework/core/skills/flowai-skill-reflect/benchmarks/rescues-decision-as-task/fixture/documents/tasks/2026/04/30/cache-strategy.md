@@ -1,6 +1,12 @@
 ---
+date: 2026-04-30
+status: in progress
 implements:
   - FR-CACHE
+tags:
+  - cache
+  - performance
+related_tasks: []
 ---
 # Add Local Cache for CLI Tool
 
