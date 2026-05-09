@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "ed8feab429796d9d2f708db009e7a8a10dcac32520f0ac1ad5d429d38a60f0c5",
+  "scenarioId": "flowai-skill-deno-cli-trigger-adj-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:15:45.744Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 61975.424625,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent invoked 'flowai-skill-configure-deno-commands' (not 'flowai-skill-deno-cli'). There is no evidence in the logs of reading flowai-skill-deno-cli/SKILL.md or calling the Skill tool with 'flow…"
+      }
+    }
+  }
+}

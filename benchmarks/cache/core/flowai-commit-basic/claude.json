@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "3b8a1d451971a7dec61fb595ed6793e3b73e5b511389ff16c7b48aafddbe343c",
+  "key": "58453f4db06f62a84454fca7d62d082864a7b0cb755f2e0786b30c99e2d691e8",
   "scenarioId": "flowai-commit-basic",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "recordedAt": "2026-05-08T01:10:18.877Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 56283.827457999985,
+    "durationMs": 120517.3795,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "file_committed": {
         "pass": true,
-        "reason": "The git log shows the last commit 'feat(utils): add sum function' includes 'utils.ts | 1 +', confirming utils.ts was committed."
+        "reason": "The git log for the last commit (9ca34d9) explicitly shows `utils.ts | 1 +` in the changed files, confirming utils.ts was included in that commit."
       },
       "commit_message_match": {
         "pass": true,
-        "reason": "The commit message 'feat(utils): add sum function' clearly describes the addition of a sum function."
+        "reason": "The commit message is 'feat(utils): add sum function' with body 'Exports `add(a, b)` for numeric summation. Documents API in README.' — this clearly and directly describes the sum function that was a…"
       },
       "conventional_commits": {
         "pass": true,
-        "reason": "The commit message 'feat(utils): add sum function' follows the Conventional Commits format: type(scope): description, where type='feat', scope='utils', and description='add sum function'."
+        "reason": "The commit message 'feat(utils): add sum function' follows the Conventional Commits format exactly: type 'feat', scope '(utils)', and a short description — all compliant with the spec."
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final git status output shows 'On branch main, nothing to commit, working tree clean'."
+        "reason": "The final git status output reads 'On branch main / nothing to commit, working tree clean', confirming a fully clean state after the commit."
       },
       "git_pager_cat": {
         "pass": true,
-        "reason": "All git commands in the agent logs used GIT_PAGER=cat prefix: 'GIT_PAGER=cat git status' (twice) and 'GIT_PAGER=cat git add utils.ts README.md && git commit ...'."
+        "reason": "The agent consistently prefixed all git commands with GIT_PAGER=cat: 'GIT_PAGER=cat git status', 'GIT_PAGER=cat git diff', 'GIT_PAGER=cat git diff --cached', 'GIT_PAGER=cat git add ... && GIT_PAGER=c…"
       }
     }
   }

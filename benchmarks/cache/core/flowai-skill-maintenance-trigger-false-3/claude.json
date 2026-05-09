@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "cd0ae40975b43e1ad82a901e1cfe1eb16b34cb440035aaac9c6a58b1e57e566a",
+  "scenarioId": "flowai-skill-maintenance-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:21:30.821Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 10747.717791998759,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent only executed two bash commands (`cat deno.json...` and `ls -la`) to inspect the project structure, then responded directly. There is no evidence in the logs of the agent reading `flowai-sk…"
+      }
+    }
+  }
+}

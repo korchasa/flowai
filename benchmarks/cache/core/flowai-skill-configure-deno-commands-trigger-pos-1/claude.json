@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6b4826ab515c4a914502641dbaa8f3a9985c48eec7e3f1598864642ef3951814",
+  "scenarioId": "flowai-skill-configure-deno-commands-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T02:01:07.152Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 92832.50512500001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's first action was a `Skill` tool call with `\"skill\": \"flowai-skill-configure-deno-commands\"`, explicitly loading and acting on the required skill before proceeding with any file reads or w…"
+      }
+    }
+  }
+}

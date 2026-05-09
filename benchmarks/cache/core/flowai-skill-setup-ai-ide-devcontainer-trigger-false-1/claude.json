@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "c47a13f288784beb5146ff10c9af922780ca3fe24c81d5768831b10372b8353e",
+  "key": "ffa4bbce0f10881324f6437882b8d4c01b2ac27eae8f1f8d66aaa80cbaab0fd9",
   "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-false-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-02T16:06:43.077Z",
+  "recordedAt": "2026-05-09T01:05:33.082Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 30708.252167000002,
+    "durationMs": 26604.127291999757,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent never loaded or referenced `flowai-skill-setup-ai-ide-devcontainer`. It handled the Dockerfile creation task directly by listing the sandbox directory and writing a Dockerfile, with no invo…"
+        "reason": "The agent logs show the agent listed the sandbox directory and then directly wrote a Dockerfile without invoking the Skill tool or reading `flowai-skill-setup-ai-ide-devcontainer/SKILL.md`. The agent…"
       }
     }
   }

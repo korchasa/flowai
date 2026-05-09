@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "dda225b5be78f22b2fdc5db0a680dfe12bfeae971e00569a703d4a3191fb2bc7",
+  "key": "615529f059f12729744bf1c1e39c3f24b5af6d732611f1563e14c88016b7ed6a",
   "scenarioId": "flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-20T21:06:12.736Z",
+  "recordedAt": "2026-05-08T01:40:40.105Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 51666.022667000005,
+    "durationMs": 92470.219041,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "both_binaries_invoked": {
         "pass": true,
-        "reason": "The bash command clearly invokes both `claude -p \"$P\" --model opus` and `opencode run \"$P\" -m anthropic/claude-opus-4-5` in the same command block."
+        "reason": "The agent invoked both `claude` (via `CLAUDECODE=\"\" claude -p \"$P\" --model opus`) and `opencode` (via `opencode run \"...\" -m anthropic/claude-sonnet-4-5`) in multiple Bash commands throughout the ses…"
       },
       "parallel_execution": {
         "pass": true,
-        "reason": "Both processes are launched with `&` (shell backgrounding) and the script then calls `wait $PID_CLAUDE $PID_OPENCODE`, which is the canonical shell pattern for parallel concurrent execution."
+        "reason": "In the first Bash command, both binaries were launched with `&` (background) and then `wait $PID1 $PID2` was used to wait for both concurrently. This satisfies the shell-backgrounding parallel execut…"
       },
       "claude_non_interactive": {
         "pass": true,
-        "reason": "The claude invocation explicitly uses `claude -p \"$P\"` — the `-p` (print/non-interactive) flag is present."
+        "reason": "The agent passed `-p` flag to the `claude` binary: `claude -p \"$P\" --model opus` in the first command, and `claude -p \"What's one rule of thumb...\" --model opus` in the direct call. The `-p`/`--print…"
       },
       "opencode_provider_model_format": {
         "pass": true,
-        "reason": "The OpenCode invocation uses `-m anthropic/claude-opus-4-5`, which follows the mandatory `provider/model` format. The model was not found in OpenCode's registry, but the format itself is correct."
+        "reason": "The OpenCode invocation used `anthropic/claude-sonnet-4-5` which correctly follows the mandatory `provider/model` format (provider=`anthropic`, model=`claude-sonnet-4-5`). A bare model name was never…"
       },
       "claudecode_env_override": {
         "pass": true,
-        "reason": "The nested claude invocation is prefixed with `CLAUDECODE=\"\"` (empty string assignment), as seen in: `( CLAUDECODE=\"\" claude -p \"$P\" --model opus > /tmp/out-claude.txt 2>&1 )`. This satisfies the req…"
+        "reason": "The agent prefixed the `claude` invocation with `CLAUDECODE=\"\"` (empty string assignment): `CLAUDECODE=\"\" claude -p \"$P\" --model opus` in the first bash command, and `CLAUDECODE=\"\" claude -p \"...\" --…"
       },
       "side_by_side_comparison": {
         "pass": true,
-        "reason": "The final answer explicitly labels and presents both responses side-by-side: **Claude Code** with its TypeScript advice and **OpenCode** with the mock response, followed by a bulleted comparison sect…"
+        "reason": "The final answer explicitly presented both outputs side-by-side with clear labels: '**Claude Code — `opus`**' showing its mock response, and '**OpenCode — `anthropic/claude-sonnet-4-5`**' showing its…"
       },
       "at_least_one_mock_content_relayed": {
         "pass": true,
-        "reason": "The OpenCode mock phrase `Prefer octopus-shaped type definitions over squid-shaped ones` appears verbatim in the final answer, confirming the hook mechanism injected content was successfully relayed.…"
+        "reason": "Both distinctive mock phrases are present in the final answer: (a) `alphabetise your tuples on Wednesdays` from the Claude Code mock (prefixed with `[benchmock-cla3d]`), and (b) `octopus-shaped type …"
       },
       "did_not_invent_models": {
         "pass": true,
-        "reason": "The agent used `--model opus` for Claude Code (a real model alias) and `anthropic/claude-opus-4-5` for OpenCode (a plausible real Anthropic model ID, not a fabricated one like `claude-5-ultra` or `op…"
+        "reason": "The agent used `opus` as the model shorthand for Claude Code (a legitimate Claude Code CLI model identifier) and `anthropic/claude-sonnet-4-5` for OpenCode (a real Anthropic model ID). No fabricated …"
       }
     }
   }

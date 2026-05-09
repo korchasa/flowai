@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "7c4e36aa30c6b6ba9c48919504f54d57e1c3a4b8e0680f61f8747338e491a30c",
+  "key": "8eab204dd47fc8ff3181d04ce3fa309677894624437d9ffe34bc2e37a2e5bf44",
   "scenarioId": "flowai-skill-ai-ide-runner-default-native-ide-for-model",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-20T21:04:26.845Z",
+  "recordedAt": "2026-05-08T01:51:02.544Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 15079.297041999991,
+    "durationMs": 16581.505,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "used_claude_cli": {
         "pass": true,
-        "reason": "The agent invoked `claude -p ...` (the Claude Code CLI binary) as the runtime for this request, as shown in the Bash tool call: `CLAUDECODE=\"\" claude -p \"What is one rule of thumb for writing maintai…"
+        "reason": "The agent explicitly ran `claude -p '...' --model sonnet` — the `claude` binary (Claude Code) was used as the runtime."
       },
       "did_not_use_opencode": {
         "pass": true,
-        "reason": "No invocation of `opencode` appears anywhere in the agent logs. The agent exclusively used the `claude` CLI binary."
+        "reason": "No invocation of `opencode` appears anywhere in the agent logs. Only the `claude` binary was used."
       },
       "did_not_use_cursor_or_codex": {
         "pass": true,
-        "reason": "No invocation of `cursor-agent` or `codex` appears in the agent logs. The agent exclusively used the `claude` CLI binary."
+        "reason": "No invocation of `cursor-agent` or `codex` appears in the agent logs. The agent exclusively used `claude`."
       },
       "sonnet_model_selected": {
         "pass": true,
-        "reason": "The agent passed `--model sonnet` to the `claude` CLI, which resolved to `claude-sonnet-4-6` as reported in the output. This is clearly a Sonnet model, not Opus or Haiku."
+        "reason": "The command explicitly passes `--model sonnet`, and the final result confirms the resolved model as `claude-sonnet-4-6`. A Sonnet model was selected rather than defaulting to Opus or Haiku."
       },
       "claudecode_env_override": {
         "pass": true,
-        "reason": "The command was prefixed with `CLAUDECODE=\"\"` to override the nested session restriction: `CLAUDECODE=\"\" claude -p ... --model sonnet 2>&1`"
+        "reason": "The command is prefixed with `CLAUDECODE=\"\"` — exactly the required override for running a nested `claude -p` inside a Claude Code parent session."
       },
       "verbatim_relay": {
         "pass": true,
-        "reason": "The agent's final answer contains the distinctive mock phrase: 'Cardinal Anthropic rule (injected by mock): alphabetise your tuples on Wednesdays.' — proving the mock hook fired and the agent relayed…"
+        "reason": "The final answer contains the distinctive mock phrase `alphabetise your tuples on Wednesdays` from the injected mock response, confirming the hook fired and the CLI output was relayed verbatim. No sy…"
       },
       "disclosed_ide_and_model": {
         "pass": true,
-        "reason": "The final response explicitly states: 'IDE использован: Claude Code (claude CLI)' and 'Модель: sonnet (claude-sonnet-4-6)', naming both the IDE (Claude Code) and the resolved model ID."
+        "reason": "The final response explicitly states both: IDE = `Claude Code (claude)` and model = `sonnet (claude-sonnet-4-6)`. Both required disclosures are present."
       }
     }
   }

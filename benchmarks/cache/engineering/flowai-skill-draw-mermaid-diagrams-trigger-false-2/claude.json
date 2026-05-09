@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "8fe26edc440fa070f901211311591d4401a09fd97873d6638c218f296121b7e8",
+  "key": "b49a1a7495bc6ac70aeeb00c37c3aed0e8d7a54db24efe9194e30be3160ee417",
   "scenarioId": "flowai-skill-draw-mermaid-diagrams-trigger-false-2",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-02T16:10:46.638Z",
+  "recordedAt": "2026-05-08T02:07:52.726Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 23358.794875,
+    "durationMs": 20052.283541999997,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent responded directly with a conceptual comparison without invoking any tools or skills. There is no evidence in the execution logs of the agent loading `flowai-skill-draw-mermaid-diagrams/SKI…"
+        "reason": "The agent logs show no invocation of the `flowai-skill-draw-mermaid-diagrams` skill and no reading of its SKILL.md. The agent responded directly with a conceptual text comparison of Mermaid vs PlantU…"
       }
     }
   }

@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "ee007aa8c0742d8891371788b98a125a2330f25d26f68f66c0d9fe729b4d7a0f",
+  "key": "a39718143d621579ea9062e1c2b4d41dc8cd8366e01a31c1b54534ddf3a8879b",
   "scenarioId": "flowai-skill-deno-deploy-troubleshoot",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-30T19:00:13.576Z",
+  "recordedAt": "2026-05-09T00:26:16.136Z",
   "result": {
     "success": true,
-    "score": 100,
+    "score": 80,
     "errorsCount": 0,
-    "warningsCount": 0,
-    "durationMs": 32656.194292,
+    "warningsCount": 1,
+    "durationMs": 9675.056250000023,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "unstable_deno_json": {
         "pass": true,
-        "reason": "Агент явно рекомендовал добавить \"unstable\": [\"kv\"] в deno.json и фактически выполнил это изменение. В итоговом deno.json видно поле \"unstable\": [\"kv\"]. Агент также пояснил: \"Это единственный способ …"
+        "reason": "The agent explicitly recommended adding `\"unstable\": [\"kv\"]` to deno.json as the fix: 'Нужно объявить нестабильное API в `deno.json`: { \"unstable\": [\"kv\"] }'."
       },
       "no_cli_unstable_flag": {
         "pass": true,
-        "reason": "Агент прямо указал: «Флаг --unstable-kv работает при локальном запуске, но Deno Deploy его не принимает.» Это чёткое объяснение того, что CLI-флаг --unstable-kv не поддерживается Deno Deploy."
+        "reason": "The agent explicitly stated: 'Deno Deploy не принимает флаги `--unstable-*` при деплое', clearly explaining that CLI unstable flags don't work on Deno Deploy."
       },
       "gitignore_solution": {
         "pass": true,
-        "reason": "Агент рекомендовал добавить .playwright-browsers/ в .gitignore и фактически выполнил это изменение через инструмент Edit. Изменение подтверждено в git status как modified: .gitignore."
+        "reason": "The agent explicitly recommended: 'Единственный способ исключить файлы — через `.gitignore`. Добавьте в `.gitignore`: .playwright-browsers/'."
       },
       "no_exclude_flag": {
         "pass": true,
-        "reason": "Агент явно указал: «deno deploy не поддерживает флаг --exclude, поэтому загружает всё, что не исключено через .gitignore.» Это корректное объяснение ограничения и причины использования .gitignore как…"
+        "reason": "The agent explicitly stated: 'Команда `deno deploy` **не поддерживает** флаг `--exclude`', correctly informing the user that the --exclude flag is not supported."
       },
       "reads_project_files": {
-        "pass": true,
-        "reason": "Агент выполнил Bash-команды для проверки и чтения deno.json и .gitignore, а также использовал инструмент Read для чтения deno.json и .gitignore перед внесением изменений. Содержимое src/main.ts также…"
+        "pass": false,
+        "reason": "The agent logs show no tool calls to read deno.json or src/main.ts. The git diff shows no file changes, and the agent response contains no references to actual project file contents. The agent answer…"
       }
     }
   }

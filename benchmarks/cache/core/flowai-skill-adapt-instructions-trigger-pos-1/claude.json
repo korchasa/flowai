@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "2639fb7959993d17da89233fc69f39f61d78c1bf45a4ebf140003cbd3fb1f73a",
+  "scenarioId": "flowai-skill-adapt-instructions-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:51:56.932Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 86775.547959,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first action is an explicit `Skill` tool call with `\"skill\": \"flowai-skill-adapt-instructions\"`. All subsequent steps (locating the template, reading both files, computing the diff, …"
+      }
+    }
+  }
+}

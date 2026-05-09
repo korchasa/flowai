@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "957c5b5fb65d7c48a0e7fef6030739d46f3d30c8c8ce9e1c01d7c79b12012496",
+  "scenarioId": "flowai-skill-reflect-by-history-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T19:04:33.688Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 67677.16479100008,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first action in the trace is a `Skill` tool call with `{\"skill\": \"flowai-skill-reflect-by-history\"}`, confirming the skill was explicitly loaded and acted upon in response to the que…"
+      }
+    }
+  }
+}
