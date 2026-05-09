@@ -1,5 +1,24 @@
+import { fromFileUrl } from "@std/path";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { ansi } from "../../utils.ts";
+import { startWatchdog, type WatchdogHandle } from "./process_watchdog.ts";
+import {
+  assertHealthy,
+  describeHealth,
+  SystemUnhealthyError,
+} from "./system_health.ts";
+
+/**
+ * Python wrapper that calls `setsid()` then `execvp(target, args)`. Spawning
+ * the agent through it places `claude` (or any other CLI) in its own process
+ * group so the watchdog can SIGKILL the entire group — including orphans
+ * that have re-parented to PID 1. Path is resolved at module load time via
+ * `import.meta.url` so it survives different cwd layouts (bench root, test
+ * worktree, etc.).
+ */
+const SETPGRP_WRAPPER = fromFileUrl(
+  new URL("./setpgrp_exec.py", import.meta.url),
+);
 
 export interface AgentOptions {
   workspace: string;
@@ -30,6 +49,7 @@ export interface AgentResult {
  */
 export class SpawnedAgent {
   private process: Deno.ChildProcess | null = null;
+  private watchdog: WatchdogHandle | null = null;
   private fullLog: string[] = [];
   private outputBuffer: string = "";
   private isFinished: boolean = false;
@@ -153,12 +173,35 @@ export class SpawnedAgent {
    * Starts the agent process for a single step.
    * @private
    */
-  start(prompt: string): void {
+  async start(prompt: string): Promise<void> {
     this.isFinished = false;
     this.outputBuffer = "";
     this.exitPromise = new Promise((resolve) => {
       this.resolveExit = resolve;
     });
+
+    // implements [FR-BENCH-GUARDS](../../../documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents)
+    // Bail out before spawning when host is already under memory/CPU pressure
+    // that risks an OOM hang of the kind seen on 2026-05-09 07:50
+    // (vm-compressor-space-shortage). Skipped on non-darwin and when
+    // BENCH_HEALTH_DISABLE=1.
+    try {
+      const h = await assertHealthy(
+        undefined,
+        `agent ${this.options.name ?? ""}`.trim(),
+      );
+      if (h.platform === "darwin") {
+        this.fullLog.push(`[health] ${describeHealth(h)}\n`);
+      }
+    } catch (e) {
+      if (e instanceof SystemUnhealthyError) {
+        this.fullLog.push(`\n[health] aborting spawn: ${e.message}\n`);
+        console.error(`[health] ${e.message}`);
+        this.cleanup(/* exit code */ 75); // 75 = EX_TEMPFAIL
+        return;
+      }
+      throw e;
+    }
 
     if (prompt) {
       // Avoid duplicating the prompt if we are resuming with the same prompt
@@ -179,8 +222,16 @@ export class SpawnedAgent {
       name: this.options.name,
     });
 
-    const cmd = new Deno.Command(command, {
-      args,
+    // Wrap the agent in setpgrp_exec.py so it becomes the leader of its own
+    // process group. Required for the watchdog's group-kill path — see
+    // process_watchdog.ts header. Disabled with BENCH_WATCHDOG_DISABLE=1
+    // (same flag that disables the watchdog itself).
+    const wrapInGroup = Deno.env.get("BENCH_WATCHDOG_DISABLE") !== "1";
+    const spawnCommand = wrapInGroup ? "python3" : command;
+    const spawnArgs = wrapInGroup ? [SETPGRP_WRAPPER, command, ...args] : args;
+
+    const cmd = new Deno.Command(spawnCommand, {
+      args: spawnArgs,
       cwd: this.options.workspace,
       env: { ...this.adapter.getEnv(), ...this.options.env },
       stdin: "piped",
@@ -195,6 +246,17 @@ export class SpawnedAgent {
       try {
         this.process.stdin.close();
       } catch (_) { /* ignore */ }
+      this.watchdog = startWatchdog(this.process.pid, {
+        onTrip: (trip) => {
+          const tag = trip.cause === "fork-loop"
+            ? "[fork-loop guard]"
+            : "[rss-bloat guard]";
+          const msg = `\n${tag} killed agent tree: ${trip.reason}\n` +
+            `${tag} killed pids: ${trip.killedPids.join(", ")}\n`;
+          this.fullLog.push(msg);
+          console.error(msg.trimEnd());
+        },
+      });
       this.monitorProcess();
     } catch (e) {
       this.fullLog.push(`Error starting process: ${e}\n`);
@@ -345,15 +407,27 @@ export class SpawnedAgent {
   }
 
   /**
-   * Forcefully terminates the agent process.
+   * Forcefully terminates the agent process AND its entire process group
+   * (set up by setpgrp_exec.py via os.setsid()). Killing only the leader
+   * leaves orphaned grandchildren / background sleeps alive — observed as
+   * Deno test resource leaks during mock-agent runs.
    */
   kill() {
     if (this.isFinished) return;
 
     if (this.process) {
+      const pid = this.process.pid;
+      try {
+        // Negative pid = signal the entire process group. Works whether or
+        // not the wrapper layer is active: when disabled the agent shares
+        // the runner's group, in which case `Deno.kill(-pid, ...)` is a
+        // no-op (no group with that pgid). To stay safe we also signal the
+        // leader directly.
+        Deno.kill(-pid, "SIGINT");
+      } catch (_) { /* group already gone */ }
       try {
         this.process.kill("SIGINT");
-      } catch (_) { /* ignore */ }
+      } catch (_) { /* leader already gone */ }
     }
     this.cleanup(130);
   }
@@ -361,9 +435,15 @@ export class SpawnedAgent {
   private cleanup(code: number) {
     if (this.isFinished) return;
     this.isFinished = true;
+    try {
+      this.watchdog?.stop();
+    } catch { /* ignore */ }
+
+    const trip = this.watchdog?.trip();
+    const finalCode = trip ? 137 : code;
 
     const result = {
-      code,
+      code: finalCode,
       logs: this.fullLog.join(""),
     };
 

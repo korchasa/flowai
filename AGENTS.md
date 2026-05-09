@@ -110,6 +110,7 @@ the mapped section contradicts new code → update the section.
 - `cli/src/adapt.ts` → [FR-ADAPT-INSTRUCTIONS](documents/requirements.md#fr-adapt-instructions-standalone-agents.md-re-adaptation-flowai-skill-adapt-instructions), [SDS §3.5.1](documents/design.md#3.5.1-agents.md-re-adaptation-skill-flowai-skill-adapt-instructions) + [§3.12](documents/design.md#3.12-standalone-primitive-adaptation-flowai-adapt)
 - `scripts/benchmarks/` → SRS `FR-BENCH*` clauses, [SDS §3.4 Benchmark System](documents/design.md#3.4-benchmark-system-benchmarks-scriptsbenchmarks)
 - `scripts/benchmarks/lib/cache.ts` / `benchmarks/cache/` → [FR-BENCH-CACHE](documents/requirements.md#fr-bench-cache-benchmark-result-cache), [SDS §3.4.1 Benchmark Result Cache](documents/design.md#3.4.1-benchmark-result-cache-fr-bench-cache-scriptsbenchmarkslibcache.ts)
+- `scripts/benchmarks/lib/process_watchdog.ts` / `scripts/benchmarks/lib/system_health.ts` → [FR-BENCH-GUARDS](documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents), [SDS §3.4.2 Resource Guards](documents/design.md#3.4.2-resource-guards-for-spawned-agents-fr-bench-guards-scriptsbenchmarkslibprocess_watchdog.ts-system_health.ts)
 - `scripts/check-*.ts` → SDS §5 Logic / validation rules; SRS where the rule is first defined
 - `scripts/task-*.ts` → [README §CLI Commands](README.md#cli-commands)
 - `documents/ides-difference.md` is READ-ONLY reference for `FR-HOOK-DOCS`..`FR-IDE-SCOPE` clauses — update only when IDE capabilities change.

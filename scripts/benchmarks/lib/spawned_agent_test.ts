@@ -1,5 +1,18 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
+
+// SpawnedAgent normally wraps every spawn in `python3 setpgrp_exec.py …` so
+// the resource watchdog can group-kill the agent's tree. That extra process
+// hop occasionally races Deno's per-test resource leak detector when mock
+// scripts complete in a few hundred ms (orphan stdout pipes between exec
+// and reaper). Watchdog/group-isolation behaviour has its own dedicated
+// suite (`process_watchdog_test.ts`); here we just want to test
+// SpawnedAgent's lifecycle. Disable both the watchdog and the wrapper for
+// this file. MUST be set before importing spawned_agent.ts so the env read
+// inside its module body sees it (currently env is read at start() time,
+// but pinning here keeps the contract robust to future refactors).
+Deno.env.set("BENCH_WATCHDOG_DISABLE", "1");
+
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { createTempDir } from "./utils.ts";
 import { CursorAdapter } from "./adapters/cursor.ts";
