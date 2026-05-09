@@ -36,6 +36,8 @@ The project must support these commands in `deno.json`:
 10. **Real-Time Progress**: Print a status line when each command starts and when it finishes (pass/fail).
 11. **Output Ordering**: After all checks complete, print buffered output of passed checks first, then ALL failed checks at the end — for easy debugging.
 12. **No Output Loss**: ALL stdout and stderr from every check MUST be printed regardless of success/failure.
+13. **Subprocess Spawn Safety (fork-loop prevention)**: Any `.ts` file under `scripts/` that calls `Deno.Command`, `Deno.run`, or otherwise spawns a subprocess at module top level MUST wrap the spawn in `if (import.meta.main) { … }`. Reason: `deno test -A scripts/` walks the directory and **imports every file** to discover `Deno.test(…)` calls. Importing a file with an unguarded top-level `Deno.Command("deno", ["test", "-A", …])` immediately spawns another `deno test`, which imports the same file again — recursive fork-bomb that exhausts the host within seconds. This pattern crashed the dev host on 2026-05-09 (multiple WindowServer kernel panics).
+14. **Prefer inline `deno.json` tasks over wrapper scripts**: If a task is a single command (`deno test -A`, `deno run --watch -A src/main.ts`), declare it directly in `deno.json` `"tasks"`. Generate a `scripts/<name>.ts` file ONLY for orchestration that needs Deno-script logic (e.g. parallel runs, conditional sequencing, output buffering). `scripts/check.ts` qualifies; `scripts/test.ts` and `scripts/dev.ts` do not — they should be inline tasks. When the user explicitly asks for a `scripts/test.ts` wrapper, apply rule 13 AND require an explicit path argument (do NOT call `deno test -A` without a path from inside `scripts/` — that triggers the recursion above).
 
 ## Workflow
 
@@ -46,7 +48,7 @@ The project must support these commands in `deno.json`:
 
 ## Examples
 
-### deno.json tasks
+### deno.json tasks (preferred — inline tasks for single-command operations)
 ```json
 {
   "tasks": {
@@ -55,6 +57,25 @@ The project must support these commands in `deno.json`:
     "dev": "deno run --watch -A src/main.ts",
     "prod": "deno run -A src/main.ts"
   }
+}
+```
+
+### scripts/test.ts (only when user explicitly asks for a wrapper)
+```ts
+#!/usr/bin/env -S deno run -A
+// Guard against re-entry: `deno test -A scripts/` would otherwise import
+// this file, execute the spawn at top level, and cause a recursive
+// fork-bomb (rule 13 in SKILL.md).
+if (import.meta.main) {
+  const path = Deno.args[0];
+  if (!path) {
+    console.error("usage: scripts/test.ts <path>  (passing no path triggers recursion)");
+    Deno.exit(2);
+  }
+  const { code } = await new Deno.Command("deno", {
+    args: ["test", "-A", path],
+  }).spawn().status;
+  Deno.exit(code);
 }
 ```
 
