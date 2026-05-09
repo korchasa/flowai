@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "17552075cc9f0a8763d71e9ca087e7723f2969b9b5b44ce21a27197a239cb161",
+  "key": "583474d35fefc8093618644e8d490109c701bf31ac72e02ffee45e6046cb4e1b",
   "scenarioId": "flowai-init-node-project-commands",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.207Z",
+  "recordedAt": "2026-05-08T01:41:26.750Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 157271.06520800013,
+    "durationMs": 185928.47270900002,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "agents_md_created": {
         "pass": true,
-        "reason": "AGENTS.md existed as a template from the initial commit, and the agent properly populated it with project-specific content: Vision, Architecture, Key Decisions, Documentation Map, and Detected Comman…"
+        "reason": "AGENTS.md existed as a template from the initial commit (with placeholders and empty sections). The agent filled in all empty sections: Project Vision, Architecture, Key Decisions, Documentation Map,…"
       },
       "commands_use_package_json": {
         "pass": true,
-        "reason": "The agent added 'check' (npm run lint && npm test) and 'dev' (node --watch src/index.js) scripts to package.json. The final package.json clearly shows all commands configured as npm scripts: check, t…"
+        "reason": "The agent added development commands exclusively via package.json scripts. The final package.json shows: 'check': 'npm run lint && npm test', 'dev': 'node --watch src/index.js', 'prod': 'node src/ind…"
       },
       "no_deno_json_created": {
         "pass": true,
-        "reason": "The git status shows only 'deno.lock' as an untracked file (a side effect of running the existing .claude/skills analysis script with deno), but no 'deno.json' was created. The modified/untracked fil…"
+        "reason": "The git status shows only 'modified: AGENTS.md', 'modified: package.json', and untracked 'deno.lock' and 'documents/'. No deno.json was created. The deno.lock appeared as a side effect of the agent r…"
       },
       "no_forced_scripts_dir": {
         "pass": true,
-        "reason": "The agent did not create any scripts/ directory or .ts check scripts. The only files created/modified were AGENTS.md, package.json, documents/requirements.md, and documents/design.md. The deno.lock s…"
+        "reason": "No scripts/ directory was created in the project. The git status and generated files listing shows only AGENTS.md, package.json, documents/requirements.md, and documents/design.md as changed/new file…"
       },
       "detected_node_stack": {
         "pass": true,
-        "reason": "The agent explicitly identified this as a Node.js/Express project from package.json. In the logs: 'Stack: Node.js/Express (JavaScript)' and noted a mismatch with the template's TypeScript claim. The …"
+        "reason": "The agent correctly identified the project as Node.js/Express. It updated AGENTS.md stack section to 'Node.js (runtime), Express.js (HTTP framework), Jest (test runner), ESLint (linter)' and describe…"
       }
     }
   }

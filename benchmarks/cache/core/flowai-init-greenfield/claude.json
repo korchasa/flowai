@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "d100aa281465163aed4401eb4f17aa5db2e8d6eee45868ba58aa8ae55cfd0efe",
+  "key": "8c0161d91f1979427e976f0f314f299cd1b194d8677dcc8b6bac237b784a12b2",
   "scenarioId": "flowai-init-greenfield",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-29T07:48:45.821Z",
+  "recordedAt": "2026-05-08T01:27:47.848Z",
   "result": {
     "success": true,
-    "score": 71.42857142857143,
+    "score": 100,
     "errorsCount": 0,
-    "warningsCount": 2,
-    "durationMs": 216856.035458,
+    "warningsCount": 0,
+    "durationMs": 445784.756958,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "interview_started": {
         "pass": true,
-        "reason": "The agent explicitly identified the project as Greenfield and then presented a structured interview with 11 questions covering project name, vision, target audience, problem, solution, risks, tech st…"
+        "reason": "The agent explicitly initiated an interview using AskUserQuestion tool with structured questions about project name/vision, target audience/problem, tech stack, and infrastructure. Additionally, it w…"
       },
       "agents_md_created": {
         "pass": true,
-        "reason": "After the interview, the agent used Edit tool to update AGENTS.md with the user-provided details: project name 'MyProject', vision 'World domination', audience 'Everyone', problem 'Boredom', solution…"
+        "reason": "After receiving the user's interview response (MyProject, world domination vision, Deno+TypeScript, Monolith), the agent wrote a complete AGENTS.md via the Write tool. The git status confirms AGENTS.…"
       },
       "doc_rules_present": {
         "pass": true,
-        "reason": "The AGENTS.md content in the file diffs clearly contains a '## Documentation Rules' section with subsections on SRS Format, SDS Format, Tasks, and Compressed Style Rules."
+        "reason": "The AGENTS.md content in the evidence clearly contains a '## Documentation Rules' section with detailed rules about traceability, acceptance-as-gate, SRS/SDS/Tasks formats, and compressed style rules."
       },
       "interconnectedness_principle_present": {
         "pass": true,
-        "reason": "The AGENTS.md content contains a '## Interconnectedness Principle' section that explicitly declares cross-references use standard GFM markdown links in the form '[descriptive text](relative/path.md#a…"
+        "reason": "AGENTS.md contains a '## Interconnectedness Principle' section that explicitly states doc-to-doc AND code-to-doc cross-references use standard GFM markdown links of the form `[descriptive text](relat…"
       },
       "dev_commands_configured": {
-        "pass": false,
-        "reason": "The user explicitly said 'No Deno tooling needed, no devcontainer.' The agent acknowledged this and skipped the development commands configuration step entirely, marking it 'completed' in the todo li…"
+        "pass": true,
+        "reason": "deno.json was created with real, executable Deno commands: `check` runs `deno fmt --check && deno lint && deno test --allow-all`; `test` runs `deno test --allow-all`; `dev` runs `deno run --allow-net…"
       },
       "no_hallucinations": {
         "pass": true,
-        "reason": "The AGENTS.md Project tooling Stack lists only 'Deno' and 'TypeScript' (exactly what the user provided). The Architecture section says 'Monolith — single deployable unit' (exactly what the user said)…"
+        "reason": "AGENTS.md 'Project tooling Stack' lists only TypeScript and Deno (explicitly provided by user). Architecture is listed as Monolith (explicitly provided by user). Vision, audience, problem, and soluti…"
       },
       "temp_files_cleaned": {
-        "pass": false,
-        "reason": "There is no explicit evidence in the agent logs or file diffs that temporary files such as project_info.json or interview_data.json were created and then cleaned up. The agent ran generate_agents.ts …"
+        "pass": true,
+        "reason": "The git status shows only `deno.json`, `deno.lock`, and `documents/` as untracked files. No temporary files such as project_info.json or interview_data.json appear in the final state — they were eith…"
       }
     }
   }

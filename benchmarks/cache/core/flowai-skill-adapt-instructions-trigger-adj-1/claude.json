@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "5e266cdfb6980c24ce2d02f6759025916287c449bcf81092ff1658ccc7a70f35",
+  "scenarioId": "flowai-skill-adapt-instructions-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:37:43.867Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 21325.468291,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never loaded or referenced `flowai-skill-adapt-instructions/SKILL.md` and never called the Skill tool with `flowai-skill-adapt-instructions`. It handled the task directly by finding AGENTS.…"
+      }
+    }
+  }
+}

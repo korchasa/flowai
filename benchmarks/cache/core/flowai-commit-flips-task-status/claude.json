@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "23d8393de47f66507cd69069f02e387a418f1b7604864d38ebe7275ef3c19e9d",
+  "key": "1394ad9abe7eb68d82cf3b69d7fd7c1c466691ff11c45da2788e0510d8063d80",
   "scenarioId": "flowai-commit-flips-task-status",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-07T10:40:02.819Z",
+  "recordedAt": "2026-05-08T01:21:47.857Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 130132.191292,
+    "durationMs": 213794.664208,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,27 +18,27 @@
     "checklistResults": {
       "code_committed": {
         "pass": true,
-        "reason": "All four source files are present in commit 3f9cf78: `src/api/middleware/rate_limit.ts`, `src/api/middleware/rate_limit_test.ts`, `src/api/server.ts`, and `src/api/server_test.ts` — confirmed by the …"
+        "reason": "Все четыре файла присутствуют в коммите edc97642: src/api/middleware/rate_limit.ts, src/api/middleware/rate_limit_test.ts, src/api/server.ts, src/api/server_test.ts — все видны в git diff (init..HEAD…"
       },
       "task_status_flipped": {
         "pass": true,
-        "reason": "The task file `documents/tasks/2026/04/15/add-rate-limiter.md` shows `status: done` in its frontmatter in the generated files section, changed from the original `status: in progress`."
+        "reason": "В финальном состоянии файла documents/tasks/2026/04/add-rate-limiter.md фронтматтер содержит `status: done` — это подтверждается и содержимым generated-файла, и git diff."
       },
       "task_change_in_commit": {
         "pass": true,
-        "reason": "The git diff for commit 3f9cf78 shows a diff line `-status: in progress` / `+status: done` in `documents/tasks/2026/04/15/add-rate-limiter.md`, confirming the change is committed, not merely on disk."
+        "reason": "В git diff коммита edc97642 явно видна строка `-status: in progress` / `+status: done` в файле documents/tasks/2026/04/add-rate-limiter.md — изменение зафиксировано в коммите, а не только на диске."
       },
       "task_file_not_deleted": {
         "pass": true,
-        "reason": "The task file `documents/tasks/2026/04/15/add-rate-limiter.md` is present in the working tree (shown in generated files section) and was modified (not deleted) in the commit. The diff shows a modific…"
+        "reason": "Файл documents/tasks/2026/04/add-rate-limiter.md существует в рабочем дереве (присутствует в разделе generated files). В git log нет коммита с удалением этого файла — в коммите edc97642 он только изм…"
       },
       "dod_items_unchanged": {
         "pass": true,
-        "reason": "The `## Definition of Done` section in the final task file contains exactly 3 items, all marked `[x]`, matching the fixture. The agent only changed the frontmatter `status:` line via an Edit tool cal…"
+        "reason": "Git diff для файла задачи показывает ровно одну изменённую строку (`status: in progress` → `status: done`). Секция ## Definition of Done не тронута: все три пункта с [x] и их содержимое идентичны исх…"
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final `git status` output shows 'nothing to commit, working tree clean', confirmed by both the git status log and the agent's verification step."
+        "reason": "Финальный git status: 'On branch main / nothing to commit, working tree clean' — рабочее дерево полностью чистое."
       }
     }
   }

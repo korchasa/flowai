@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "c5c7be0bd21b93f6bf780c04f00a08aa88d9d20eab3c0908e4b86d71ab0e7c78",
+  "key": "24d50ea818b4752c0f3b31f44b718e664625a3387ead0e37b07d200e0354b310",
   "scenarioId": "flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-07T09:59:58.103Z",
+  "recordedAt": "2026-05-08T01:35:07.954Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 193378.721583,
+    "durationMs": 413078.390417,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "task_file_at_new_path": {
         "pass": true,
-        "reason": "The agent created the file at `documents/tasks/2026/05/07/add-healthz-endpoint.md`, which matches the required pattern `documents/tasks/<YYYY>/<MM>/<DD>/<slug>.md` with date hierarchy directories and…"
+        "reason": "The agent created the task file at `documents/tasks/2026/05/add-healthz-endpoint.md`, which matches the required pattern `documents/tasks/<YYYY>/<MM>/<slug>.md` with year=2026, month=05, and slug `ad…"
       },
       "frontmatter_has_date": {
         "pass": true,
-        "reason": "The frontmatter contains `date: \"2026-05-07\"`, which matches the YYYY-MM-DD format."
+        "reason": "The YAML frontmatter contains `date: \"2026-05-08\"`, which is a valid YYYY-MM-DD format value."
       },
       "frontmatter_has_status_to_do": {
         "pass": true,
-        "reason": "The frontmatter contains `status: to do`, which is the correct initial value for a freshly-created task."
+        "reason": "The frontmatter contains `status: to do`, which is the correct initial value for a freshly-created task with all DoD items unchecked."
       },
       "frontmatter_has_implements": {
         "pass": true,
-        "reason": "The frontmatter contains a non-empty `implements:` list with one FR-ID: `- FR-HEALTHZ`."
+        "reason": "The frontmatter contains a non-empty `implements:` list with the entry `- FR-HEALTH-CHECK`, satisfying the requirement of at least one FR-ID."
       },
       "frontmatter_has_tags_and_related_tasks": {
         "pass": true,
-        "reason": "The frontmatter contains both `tags:` (with values: express, healthcheck, api) and `related_tasks: []` (empty array, but key is present)."
+        "reason": "The frontmatter contains both `tags: [express, healthcheck, api]` (non-empty) and `related_tasks: []` (empty array). Both keys are present as required."
       },
       "gods_structure": {
         "pass": true,
-        "reason": "The file body follows GODS structure: `## Goal` (liveness probe endpoint purpose), `## Overview` with subsections `### Context`, `### Current State`, `### Constraints`, `## Definition of Done` with F…"
+        "reason": "The task file body fully follows GODS structure: `## Goal` is present; `## Overview` is present with all three required sub-sections (`### Context`, `### Current State`, `### Constraints`); `## Defin…"
       },
       "no_code_changes": {
         "pass": true,
-        "reason": "The git diff shows no changes committed beyond the initial commit. The git status shows only untracked files under `documents/` (task file and index.md). No source code files (index.js or others) wer…"
+        "reason": "The agent only created files under `documents/` (`documents/tasks/2026/05/add-healthz-endpoint.md` and `documents/index.md`). The git log shows no new commits after the initial `init`, and git status…"
       }
     }
   }

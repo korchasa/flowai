@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "faa9a89a18a9d55b3622c6d5272b68c7eb9bff2b1590d4591122496986cadd49",
+  "scenarioId": "flowai-skill-plan-trigger-adj-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:20:48.832Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 110710.30033299979,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent invoked `flowai-skill-epic` (not `flowai-skill-plan`) as its first Skill tool call. There is no evidence in the logs of `flowai-skill-plan` being loaded or the Skill tool being called with …"
+      }
+    }
+  }
+}

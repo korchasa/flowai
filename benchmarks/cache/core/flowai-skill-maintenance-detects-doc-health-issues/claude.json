@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "bc225b199d689c94a17a885510de48421e11bf2010cd1259a5492b307c2fad69",
+  "key": "6e37870643f4f054823a9651401f73a061876dd51f945bb09a5cad593c80b7d8",
   "scenarioId": "flowai-skill-maintenance-detects-doc-health-issues",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-30T22:15:02.875Z",
+  "recordedAt": "2026-05-09T03:35:15.095Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 193292.47662499998,
+    "durationMs": 183644.65420800075,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "documentation_health_category_present": {
         "pass": true,
-        "reason": "The agent's findings summary includes a dedicated '2. Documentation Health' section with findings [5] and [6]. This is a separate, clearly labeled category distinct from the existing 8 categories, sp…"
+        "reason": "The agent's findings summary includes a dedicated 'Documentation Health' section (findings [12]-[17]), which is explicitly distinct from the existing 8 categories. This header appears as its own grou…"
       },
       "broken_link_detected": {
         "pass": true,
-        "reason": "Finding [5] under 'Documentation Health' explicitly states: '`src/cache.ts:5`: broken GFM anchor — comment links to `#fr-missing-no-such-anchor` which does not exist in `documents/requirements.md`.' …"
+        "reason": "Finding [12] explicitly flags the broken GFM link in 'src/cache.ts:5': '[FR-MISSING](../documents/requirements.md#fr-missing-no-such-anchor)' — the agent correctly notes that the anchor '#fr-missing-…"
       },
       "second_doc_issue_detected": {
         "pass": true,
-        "reason": "Finding [6] under Documentation Health flags a second doc issue: broken GFM slug using '#3.1-fr-cache-local-cache-for-repeated-lookups' (contains '.') which GFM strips, making the real slug '#31-fr-c…"
+        "reason": "The agent reported multiple additional Documentation Health issues beyond the broken link: Finding [14] flags FR-CACHE as having a stale [x] status because 'tests/cache_test.ts' does not exist; Findi…"
       },
       "constructive_fix_for_doc_issue": {
         "pass": true,
-        "reason": "Both Documentation Health findings carry explicit fix proposals: [5] includes '(Fix: remove the comment or correct the anchor to a real heading slug)' and [6] includes '(Fix: change link to `#31-fr-c…"
+        "reason": "Every Documentation Health finding includes a '(Fix: …)' proposal. For example: [12] 'Fix: remove this comment line'; [13] 'Fix: change link to #31-fr-cache-local-cache-for-repeated-lookups'; [14] 'F…"
       },
       "numbered_summary": {
         "pass": true,
-        "reason": "The agent presented all 14 findings with sequential numbers [1] through [14], grouped under category headers (Structural Integrity, Documentation Health, Consistency (Docs vs Code), Documentation Cov…"
+        "reason": "The agent presented all 17 findings with sequential numbering [1] through [17], grouped under category headers (Structural Integrity, Code Hygiene, Consistency (Docs vs Code), Documentation Coverage,…"
       },
       "asks_how_to_proceed": {
         "pass": true,
-        "reason": "After presenting the numbered summary, the agent explicitly asked 'How do you want to proceed?' with four clearly labeled options: 'all' (walk through every finding), specific numbers (e.g., '1, 5, 1…"
+        "reason": "After the numbered summary, the agent explicitly asked 'Как продолжить?' and offered multiple options: specific finding numbers, category name, 'all', 'agent's choice', or 'done'. This satisfies the …"
       },
       "no_premature_fixes": {
         "pass": true,
-        "reason": "After the user responded 'done', the agent confirmed '14 findings identified, 0 applied, 0 skipped, 0 edited.' The git diff shows no changes beyond the initial 'init' commit — the fixture files (src/…"
+        "reason": "The git diff shows the working tree is clean with no changes after the initial 'init' commit. The agent's own summary states '0 применено, 0 пропущено' (0 applied, 0 skipped). The fixture files (SRS,…"
       }
     }
   }

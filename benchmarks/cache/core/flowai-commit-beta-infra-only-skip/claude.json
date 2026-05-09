@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "d87ba3de841a8cc2dd2eea390f6feb89708dce3ca52b9e5887ff99ce81459f71",
+  "key": "ae0a54fa1d0431df09c2a7ab3786e9efa5fc01f3eecbcf44c67b89feee85b8a7",
   "scenarioId": "flowai-commit-beta-infra-only-skip",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:12:50.708Z",
+  "recordedAt": "2026-05-08T01:17:46.377Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 19074.638166999997,
+    "durationMs": 29066.825167,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "file_committed": {
         "pass": true,
-        "reason": "The git log confirms commit c243a406 'test: add subtract test' includes math_test.ts with 4 insertions (1 file changed, 4 insertions(+))."
+        "reason": "The git log shows commit 7fd4359363d1430482912d225a5f7093ffce814d with message 'test: add subtract test' explicitly lists 'math_test.ts | 4 ++++' — the file is present in the last commit."
       },
       "doc_sync_skipped": {
         "pass": true,
-        "reason": "The agent explicitly output 'Изменение только в тестовом файле — doc sync пропускается.' and '**Documentation sync: skipped — infra-only changes (tests/CI/benchmarks)**', clearly skipping doc sync wi…"
+        "reason": "The agent explicitly output 'Documentation sync: skipped — infra-only changes (tests/CI/benchmarks)' and confirmed in the final result 'Синхронизация документации пропущена (infra-only изменение)'. N…"
       },
       "no_doc_reads": {
         "pass": true,
-        "reason": "The agent only executed three Bash tool calls: one to gather git state, one to stage and commit, and one to verify status. No Read tool calls were made to any files in the documents/ directory."
+        "reason": "The agent only executed three bash commands: (1) git status/diff/log, (2) git add + commit, (3) git status. There are no Read tool calls or any access to files in the documents/ directory in the enti…"
       },
       "conventional_commits": {
         "pass": true,
-        "reason": "The commit message 'test: add subtract test' follows the Conventional Commits format with type 'test' followed by a colon, space, and description."
+        "reason": "The commit message is 'test: add subtract test', which correctly follows Conventional Commits format with type 'test' followed by a colon, space, and a short imperative description."
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final git status output shows 'On branch main / nothing to commit, working tree clean', confirming a clean working tree."
+        "reason": "The final git status section shows 'On branch main / nothing to commit, working tree clean', confirming a clean working tree after the commit."
       }
     }
   }

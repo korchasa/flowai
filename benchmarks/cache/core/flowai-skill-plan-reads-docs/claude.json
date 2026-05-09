@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "2891d7e83c8ecb07f6b75b5628443809428dc1b43afeda2ee4526a4b41129ac3",
+  "key": "5a7a482389cf3f156b0702edc2a489eff5914979e588f4f0e1fa238c7520720b",
   "scenarioId": "flowai-skill-plan-reads-docs",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-30T19:47:59.197Z",
+  "recordedAt": "2026-05-09T02:10:34.997Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 190489.89504199987,
+    "durationMs": 310282.51425,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "read_srs": {
         "pass": true,
-        "reason": "In the agent logs, there is a clear Read tool call for the file path ending in 'sandbox/documents/requirements.md', confirming the agent read the SRS document."
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' multiple times (directly and via 'git show 1223044:documents/requirements.md'). The file content is confirmed in the generated…"
       },
       "read_sds": {
         "pass": true,
-        "reason": "In the agent logs, there is a clear Read tool call for the file path ending in 'sandbox/documents/design.md', confirming the agent read the SDS document."
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' multiple times (directly and via 'git show 1223044:documents/design.md'). The file content is shown in the generated files section, …"
       },
       "task_file_created": {
         "pass": true,
-        "reason": "The agent used the Write tool to create 'documents/tasks/2026-04-30-add-cache-layer.md', and the file content is confirmed in the file diffs section showing the complete task file with GODS format in…"
+        "reason": "The agent created 'documents/tasks/2026/05/add-caching-layer.md' using the Write tool. The git status confirms 'documents/tasks/' is listed as an untracked directory, and the full content of the task…"
       }
     }
   }

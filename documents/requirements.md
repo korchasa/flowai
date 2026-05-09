@@ -136,9 +136,9 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - Per-agent guards do not cap the AGGREGATE across N parallel agents. If `task-bench.ts` ever spawns concurrent scenarios, each agent's 6 GiB cap multiplies → an N-agent run can consume `N × 6` GiB before any individual trip. Not addressed in this FR; if/when concurrency lands, add an aggregate accumulator in the runner orchestrator.
   - `assertHealthy` is macOS-only (Linux returns neutral). Linux/CI runs rely on the kernel's own OOM-killer.
   - Setting `BENCH_MAX_RSS_GB` too low (< ~1.5 GiB for `claude`) will trip during normal long-context turns. Default 6 GiB is calibrated against observed peaks; lower with care.
-- **Open (follow-up):**
-  - [ ] Aggregate RSS accumulator across all live `SpawnedAgent` instances when concurrent bench execution is added.
-  - [ ] End-to-end re-validation against the original fork-loop scenario (`flowai-skill-configure-deno-commands-trigger-pos-3`) on a host with low memory pressure — current unit-tests cover the kill primitive, but the real-world reaction-window math (intervalMs × confirmSamples = 1 s) needs a live measurement of how many descendants the watchdog catches at.
+- **Deferred (not blocking — root cause fixed in `flowai-skill-configure-deno-commands` SKILL.md rules 13–14, which prevents the agent from generating the fork-bomb pattern at source; userspace guards remain as defense-in-depth):**
+  - Aggregate RSS accumulator across all live `SpawnedAgent` instances. Activate only when `task-bench.ts` adds concurrent scenario execution; current runner is sequential.
+  - End-to-end re-validation on a low-memory host with the original fork-loop scenario re-introduced. Verified indirectly on 2026-05-09: re-ran `flowai-skill-configure-deno-commands-trigger-pos-{1,2,3}`, `-basic`, `flowai-skill-setup-ai-ide-devcontainer-{deno-claude,feature-discovery}` after the SKILL.md fix — six previously-dangerous scenarios passed without tripping the watchdog and without measurable swap pressure.
 
 ### FR-BENCH-CACHE: Benchmark Result Cache
 

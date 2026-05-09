@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "bc05c9594cb415da6f866321c55101eed81489db540127bfcfadb370ca0faccf",
+  "scenarioId": "flowai-skill-reflect-by-history-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T01:19:19.749Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 28788.274958000053,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent used Bash and Glob tools to directly search for session JSONL files in ~/.claude/projects/. At no point did the agent invoke the `flowai-skill-reflect-by-history` skill or read its SKILL.md…"
+      }
+    }
+  }
+}

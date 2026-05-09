@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "db793be4e0eaaddd840c0a8bbd63ea32e5593e8a643693c6de1e2d4a806037cb",
+  "scenarioId": "flowai-skill-deno-cli-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:14:34.644Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 20678.050625000003,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `flowai-skill-deno-cli` skill via a `Skill` tool call with args `add @std/assert`, as clearly shown in the execution logs: `## Tool: Skill { \"skill\": \"flowai-skill-de…"
+      }
+    }
+  }
+}

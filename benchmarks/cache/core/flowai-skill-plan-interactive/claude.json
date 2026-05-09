@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "d72cf5fc3ac857ac2600a2909f7819e3c6a6b064a5804aa8f23d69faa0cc9cc3",
+  "key": "eb4f1cc088f2d7ac7abdfcce386bfd08a7d541f72edb4655a442569c270fe07b",
   "scenarioId": "flowai-skill-plan-interactive",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:43:35.605Z",
+  "recordedAt": "2026-05-09T02:18:48.189Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 155691.344875,
+    "durationMs": 177047.58016700018,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "variants_presented": {
         "pass": true,
-        "reason": "The agent clearly presented two implementation variants in the chat: Variant A (Minimal single file) and Variant B (Module + entry point), each with Pros, Cons, Risks, and Best For sections, plus a T…"
+        "reason": "The agent explicitly presented two implementation variants in the chat: Variant 1 (Single-file script with console.log directly in main.ts) and Variant 2 (Entrypoint + separate logic module with gree…"
       },
       "question_asked": {
         "pass": true,
-        "reason": "At the end of the variants presentation, the agent explicitly asked: 'Какой вариант предпочитаете — A или B?' — directly prompting the user to select a variant."
+        "reason": "After presenting the variants, the agent explicitly asked 'Какой вариант выбираете?' (Which variant do you choose?), prompting the user to select."
       },
       "solution_filled": {
         "pass": true,
-        "reason": "The Solution section in documents/tasks/2026-04-19-hello-world-cli.md contains concrete technical details: selected variant (A), full file contents for deno.json (with imports map and tasks), src/mai…"
+        "reason": "The Solution section in documents/tasks/2026/05/hello-world-cli.md contains concrete technical details: selected variant declaration, 7 numbered implementation steps (bootstrap deno.json, add SRS, RE…"
       },
       "no_switch_mode": {
         "pass": true,
-        "reason": "The agent logs contain no mention of 'SwitchMode' anywhere in the execution trace."
+        "reason": "No 'SwitchMode' appears anywhere in the agent logs or file diffs."
       }
     }
   }

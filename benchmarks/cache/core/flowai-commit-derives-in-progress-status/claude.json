@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "5f09da8a871f3416640a7347e474506043991a0a44e59395509e2a073b8e2cb8",
+  "key": "42c0ab90cbe08061a0bc017dab7fd21af6e6077d5c1c1eff3ecb07d02ad91e53",
   "scenarioId": "flowai-commit-derives-in-progress-status",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-07T10:47:41.635Z",
+  "recordedAt": "2026-05-08T01:16:07.285Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 108335.718584,
+    "durationMs": 116638.88575,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "code_committed": {
         "pass": true,
-        "reason": "Коммит d30c4f1 содержит файл src/components/SearchPage.ts — это подтверждается как git log ('+3 lines in src/components/SearchPage.ts'), так и финальным содержимым файла в разделе GENERATED FILES."
+        "reason": "The git diff and commit log clearly show `src/components/SearchPage.ts` was added (3 lines) in commit `4f07c1d2160f16c5425ec3dcac6f0d20e2853212` titled 'feat(search): add SearchPage component, render…"
       },
       "task_status_in_progress": {
         "pass": true,
-        "reason": "В финальном содержимом файла documents/tasks/2026/04/20/add-search-page.md присутствует строка 'status: in progress'. Агент изменил фронтматер с 'status: to do' на 'status: in progress', что соответс…"
+        "reason": "The generated file content for `documents/tasks/2026/04/add-search-page.md` shows `status: in progress` in the frontmatter after the commit, correctly derived from 1 of 3 DoD checkboxes being checked."
       },
       "task_change_in_commit": {
         "pass": true,
-        "reason": "В git diff коммита d30c4f1 явно видно изменение файла documents/tasks/2026/04/20/add-search-page.md: строка '-status: to do' заменена на '+status: in progress'. Изменение зафиксировано в коммите, а н…"
+        "reason": "The git diff shows the task file was modified in commit `4f07c1d2160f16c5425ec3dcac6f0d20e2853212`, with the line `-status: to do` replaced by `+status: in progress`. The change is part of a committe…"
       },
       "task_file_not_deleted": {
         "pass": true,
-        "reason": "Файл documents/tasks/2026/04/20/add-search-page.md присутствует в разделе GENERATED FILES с полным содержимым. Git status показывает 'nothing to commit, working tree clean', файл не удалён."
+        "reason": "The task file `documents/tasks/2026/04/add-search-page.md` is present in the final state (shown in generated files section) and only modified (not deleted) in the commit. The git diff shows modificat…"
       },
       "dod_items_unchanged": {
         "pass": true,
-        "reason": "В финальном содержимом файла раздел Definition of Done содержит ровно 3 пункта: '[x] FR-SEARCH-PAGE: page renders results from /api/search', '[ ] FR-SEARCH-PAGE: pagination via query string', '[ ] FR…"
+        "reason": "The task file's DoD section in the generated files shows exactly 3 items: 1 `[x]` (renders results) and 2 `[ ]` (pagination, empty-state). The git diff only touches the `status` frontmatter line — no…"
       }
     }
   }

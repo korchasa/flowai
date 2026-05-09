@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "fe00837eed8d60d9d048bdad3c902358e34f973b026788d4090be8ee27a40c03",
+  "key": "59b2300efd01b16fea6ac1e2ef6e39e31a49a7680054663282123b92972a08ec",
   "scenarioId": "flowai-commit-agent-type",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:12:50.709Z",
+  "recordedAt": "2026-05-08T01:07:50.807Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 34069.258959,
+    "durationMs": 40727.363417,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "file_committed": {
         "pass": true,
-        "reason": "The git log shows commit ba4cd31 includes '.claude/skills/my-skill/SKILL.md' with 8 insertions. The diff also confirms this file was added in the last commit."
+        "reason": "The git log for the last commit (d68afc8) explicitly shows '.claude/skills/my-skill/SKILL.md | 8 ++++++++' with '1 file changed, 8 insertions(+)', and the diff confirms the file was added with 8 line…"
       },
       "agent_type_used": {
         "pass": true,
-        "reason": "The commit message is 'agent: add my-skill AI skill for testing', which uses the 'agent:' type prefix as required."
+        "reason": "The commit message is 'agent: add my-skill AI skill for testing', which uses the 'agent:' type prefix as required for AI agent/skill config files."
       },
       "conventional_commits": {
         "pass": true,
-        "reason": "The commit message 'agent: add my-skill AI skill for testing' follows Conventional Commits format: type 'agent', no scope, and a descriptive subject line in imperative mood."
+        "reason": "The commit message 'agent: add my-skill AI skill for testing' follows the Conventional Commits format: <type>: <description>, where 'agent' is the type and 'add my-skill AI skill for testing' is the …"
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final git status shows 'On branch main / nothing to commit, working tree clean', confirming a clean state after the commit."
+        "reason": "The final git status output shows 'On branch main / nothing to commit, working tree clean', confirming the working tree is fully clean after the commit."
       }
     }
   }

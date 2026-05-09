@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6e529ae5e5f17fbef720c0d5c5ce9baf74503d657b8cd546559f48c8b9e6e2b1",
+  "scenarioId": "flowai-skill-review-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:44:10.200Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 31361.819582998753,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's first action in the trace is a `Skill` tool call with `{\"skill\": \"flowai-skill-review\"}`, confirming that the `flowai-skill-review` skill was explicitly loaded and invoked in direct respo…"
+      }
+    }
+  }
+}

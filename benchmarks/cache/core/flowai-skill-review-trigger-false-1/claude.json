@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "5978889d1550de8d1c5a2832486922c4c1f205d4701bef6c1d703166018a5748",
+  "scenarioId": "flowai-skill-review-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:00:28.446Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 5572.6502499990165,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly to the Go code question without invoking any skills or tools. The logs show only a direct text response with no mention of reading flowai-skill-review/SKILL.md or calling…"
+      }
+    }
+  }
+}

@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "bad26a15bc2f3918fc0ef3eeedc4da7e1fa9446c5f712d4ec975f50f9628fc07",
+  "key": "bd01ad3c70ef597ffc8c738fd8d9c282ddb0553c1dc2dc2447f4250afd4edb17",
   "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-adj-3",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-02T16:08:30.376Z",
+  "recordedAt": "2026-05-09T00:59:28.412Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 129786.31991600001,
+    "durationMs": 85992.63554099994,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent never loaded or referenced `flowai-skill-setup-ai-ide-devcontainer/SKILL.md` and never called the `Skill` tool with that skill name. It handled the task directly by reading `AGENTS.md`, cre…"
+        "reason": "The agent never invoked or read `flowai-skill-setup-ai-ide-devcontainer`. Instead, it used `flowai-skill-configure-deno-commands`, which is the appropriate skill for setting up deno tasks."
       }
     }
   }

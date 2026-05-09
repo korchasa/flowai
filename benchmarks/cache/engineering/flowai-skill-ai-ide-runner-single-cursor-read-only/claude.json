@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "7fc28a22f2c72c444c3eddda67ff217ee2d5b312def0da45297ae1961e302a35",
+  "key": "35a9d0691315eef0a212e4030ffd61ec494b5b2d3373a8e7e4e21023f0c0368a",
   "scenarioId": "flowai-skill-ai-ide-runner-single-cursor-read-only",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-20T21:03:54.693Z",
+  "recordedAt": "2026-05-08T01:48:10.960Z",
   "result": {
     "success": true,
     "score": 87.5,
     "errorsCount": 0,
     "warningsCount": 1,
-    "durationMs": 16623.930667000008,
+    "durationMs": 21264.782042,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "correct_binary": {
         "pass": true,
-        "reason": "The agent's Bash command clearly invokes `cursor-agent` (not `cursor` or `cursor_cli`): `cursor-agent -p --trust --mode ask \"What does this repository do?\" 2>&1`."
+        "reason": "The agent's Bash command was `cursor-agent -p --trust --mode ask \"What does this repository do?\" 2>&1`, which correctly uses the `cursor-agent` binary, not `cursor` or any other variant."
       },
       "non_interactive_flag": {
         "pass": true,
-        "reason": "The `-p` flag is present in the command: `cursor-agent -p --trust --mode ask ...`, satisfying the non-interactive/scriptable requirement."
+        "reason": "The command `cursor-agent -p --trust --mode ask ...` includes the `-p` flag, making the run non-interactive/scriptable."
       },
       "trust_flag": {
         "pass": true,
-        "reason": "The `--trust` flag is explicitly included in the command: `cursor-agent -p --trust --mode ask ...`."
+        "reason": "The command includes `--trust`, which is required for non-interactive `-p` mode. Confirmed in the command string: `cursor-agent -p --trust --mode ask ...`."
       },
       "read_only_mode": {
         "pass": true,
-        "reason": "The agent used `--mode ask` which is a read-only mode (no edits), correctly honouring the 'no edits' constraint from the user query."
+        "reason": "The agent passed `--mode ask`, which is one of the explicitly accepted read-only modes per the checklist, honoring the 'no edits' constraint."
       },
       "verbatim_tool_output": {
         "pass": true,
-        "reason": "The final answer contains the distinctive mock phrases `lavender-coloured bicycles` and `deno task unicorn` — phrases absent from any plausible model-weight completion of a repository description. Th…"
+        "reason": "The final answer quotes the mock output verbatim: `[benchmock-cur19] Mock Cursor briefing: this repo ships lavender-coloured bicycles and exposes a \\`deno task unicorn\\` endpoint.` Both distinctive m…"
       },
       "did_not_synthesise_answer": {
         "pass": true,
-        "reason": "The agent did not write its own repository description. It relayed the mock hook output (`this repo ships lavender-coloured bicycles and exposes a 'deno task unicorn' endpoint`) as the answer, which …"
+        "reason": "The agent did not write its own description of the repository. It relayed the hook's output verbatim and explicitly explained it was from the sandbox mock hook (`benchmock-cur19`). No self-authored r…"
       },
       "disclosed_model": {
         "pass": false,
-        "reason": "The agent only stated 'Cursor default (флаг --model не передавался; mock-идентификатор сессии: benchmock-cur19)'. This does not name a specific actual model (e.g. `auto`, `composer-2-fast`, or any re…"
+        "reason": "The agent stated 'модель не разрешилась — вызов cursor-agent был заблокирован sandbox-хуком' (the model didn't resolve — the call was blocked by the sandbox hook) but never named a specific model (e.…"
       },
       "did_not_invent_binary": {
         "pass": true,
-        "reason": "The agent used the correct `cursor-agent` binary and did not attempt to use non-existent alternatives like `cursor -p`, `cursor run`, or `cursor_cli`."
+        "reason": "The agent used the correct `cursor-agent` binary. It did not run `cursor -p`, `cursor run`, `cursor_cli`, or any other non-existent variant."
       }
     }
   }

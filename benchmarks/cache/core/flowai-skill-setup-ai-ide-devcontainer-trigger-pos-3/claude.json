@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "7e3095b56b3e30c4b56fcc9fa476521ce36b704b6b91eb1e109cc0bfca6176b0",
+  "key": "15fff00194fa01e635cf692be0d7313cf8f81d8ba9125a022b1518ac5895148e",
   "scenarioId": "flowai-skill-setup-ai-ide-devcontainer-trigger-pos-3",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-02T16:06:51.532Z",
+  "recordedAt": "2026-05-09T00:39:09.768Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 37634.013083,
+    "durationMs": 158043.2394999999,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "В логах агента явно присутствует вызов инструмента `Skill` с параметром `\"skill\": \"flowai-skill-setup-ai-ide-devcontainer\"`. После этого агент действовал в соответствии со скиллом: просканировал дире…"
+        "reason": "The agent's first action in the logs is a `Skill` tool call with `\"skill\": \"flowai-skill-setup-ai-ide-devcontainer\"`, directly invoking the required skill. The agent then also read reference files fr…"
       }
     }
   }

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "4d8e5a57ccbfa2a63f12246d20f94fa1a71c1c39b078430716535a82e7e286e5",
+  "scenarioId": "flowai-init-brownfield-idempotent",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:25:48.715Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 421540.716791,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "agents_md_preserved": {
+        "pass": true,
+        "reason": "The merged AGENTS.md clearly contains 'CUSTOM CONTENT MARKER' in the output. The Write tool call for AGENTS.md shows the content with '---\nCUSTOM CONTENT MARKER\n## Project Information\n- Project Name:…"
+      },
+      "missing_components_created": {
+        "pass": true,
+        "reason": "The agent created documents/requirements.md as evidenced by the Write tool call and the generated files section showing the full SRS content. The file follows the proper SRS format with sections for …"
+      },
+      "user_asked_about_overwrite": {
+        "pass": true,
+        "reason": "The agent used AskUserQuestion tool with the question 'Применить следующие изменения к ./AGENTS.md (merge legacy layout → single file)?' and offered options 'Применить' (Apply) and 'Отменить' (Cancel…"
+      },
+      "dev_commands_created": {
+        "pass": true,
+        "reason": "The agent created scripts/check.ts as evidenced by the Write tool call and the generated files section. The script runs fmt, lint, and test checks in parallel using Deno.Command, with proper buffered…"
+      }
+    }
+  }
+}

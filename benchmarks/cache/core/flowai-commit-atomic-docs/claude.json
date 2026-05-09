@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "cd2ec93f5dcd0029379546bcb3d9a7ed25701ad01460a93cd422cae76773b30e",
+  "key": "e1d1f340e2e06387cc80e9c38d482be3becb52d903638596ed2842714740a7d1",
   "scenarioId": "flowai-commit-atomic-docs",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T18:12:50.710Z",
+  "recordedAt": "2026-05-08T01:08:48.288Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 53527.895833999966,
+    "durationMs": 73470.85987500001,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "multiple_commits": {
         "pass": true,
-        "reason": "The agent created 2 new commits after 'init': '355e21d docs: update README title' and 'fa7c9d6 refactor: update greeting string in main', satisfying the requirement of at least 2 commits."
+        "reason": "The git log shows 2 new commits beyond the initial 'init' commit: '938307a docs: update project title' and 'c5fec89 fix: update greeting message and normalize quote style'."
       },
       "docs_commit": {
         "pass": true,
-        "reason": "Commit '355e21d' has the message 'docs: update README title', which uses the conventional commit type 'docs'."
+        "reason": "Commit '938307a' has the conventional commit type 'docs' in its message: 'docs: update project title', covering the README.md change."
       },
       "feat_fix_commit": {
         "pass": true,
-        "reason": "Commit 'fa7c9d6' has the message 'refactor: update greeting string in main', which uses the conventional commit type 'refactor' — one of the accepted types (feat/fix/refactor)."
+        "reason": "Commit 'c5fec89' has the conventional commit type 'fix' in its message: 'fix: update greeting message and normalize quote style', covering the main.ts change."
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final git status output explicitly states 'nothing to commit, working tree clean', confirming a fully clean working tree after both commits."
+        "reason": "The final git status explicitly shows 'On branch main, nothing to commit, working tree clean', confirming all changes were committed."
       }
     }
   }

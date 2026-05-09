@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "b76e18f0ad4e1bd0fb7830310f485d984f8cb4e21314629640d3f30a426ca8b3",
+  "scenarioId": "flowai-skill-configure-deno-commands-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:45:14.053Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 17035.99583400041,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show no invocation of `flowai-skill-configure-deno-commands` or any `Skill` tool call. The agent handled the task directly by reading `.zshrc` and using the `Edit` tool to add the alia…"
+      }
+    }
+  }
+}

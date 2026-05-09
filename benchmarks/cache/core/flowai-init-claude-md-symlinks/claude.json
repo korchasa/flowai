@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "9efcde3d19ace4ffe5fe6375fcb9a223f41a5d45fa7f053587286060740be243",
+  "key": "d89eb6809a4ccf4fc7761c1f96922804fab0ac9f94f4458279042f9ad6d7d134",
   "scenarioId": "flowai-init-claude-md-symlinks",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.207Z",
+  "recordedAt": "2026-05-08T01:30:31.500Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 306512.50633400003,
+    "durationMs": 286008.855375,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "agents_md_created": {
         "pass": true,
-        "reason": "AGENTS.md exists in the root directory. It was initially created in the setup commit and the agent populated it with architecture, key decisions, documentation map, and detected commands sections dur…"
+        "reason": "AGENTS.md exists in the root directory. It was part of the initial fixture (created in the 'init' commit) as a template, and the agent successfully updated it by filling in the {{DOCUMENTATION_MAP}} …"
       },
       "claude_md_root_symlink": {
         "pass": true,
-        "reason": "CLAUDE.md exists in the root directory as a symlink pointing to AGENTS.md. This was established in the initial setup commit (git log shows 'CLAUDE.md | 1 +' with a symlink). The agent detected it was…"
+        "reason": "CLAUDE.md exists in the root directory as a symlink to AGENTS.md. The initial 'init' commit created CLAUDE.md (shown with 1 insertion in the git log — consistent with a symlink file). The agent expli…"
       },
       "no_hallucinations": {
         "pass": true,
-        "reason": "AGENTS.md accurately reflects only what exists in the project: Deno runtime (confirmed by deno.json), TypeScript (src/main.ts), single CLI script entry at src/main.ts (confirmed by file read showing …"
+        "reason": "AGENTS.md documents only tooling and architecture that genuinely exists in the project. The stack (TypeScript, Deno) is real. The Documentation Map references actual files: src/*.ts (src/main.ts exis…"
       }
     }
   }

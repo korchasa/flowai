@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "c6fe3520d5f0e5a84197899f9a550d3d458554d106ce85f558c4703a7b12b177",
+  "scenarioId": "flowai-skill-review-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:39:49.253Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 19253.26774999872,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "В логах агента явно виден вызов инструмента `Skill` с параметром `{\"skill\": \"flowai-skill-review\"}` в самом начале выполнения задачи — агент корректно загрузил и активировал скилл `flowai-skill-revie…"
+      }
+    }
+  }
+}

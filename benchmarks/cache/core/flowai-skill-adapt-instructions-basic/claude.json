@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "18a37937aad88e28c7b4db34d9bda6a50a6f883aef475afc7bc4c66fa72c8f04",
+  "key": "4509e7f473c0c80b74783910b3eeecc8df98b7c2794e1de0262db394b40811fe",
   "scenarioId": "flowai-skill-adapt-instructions-basic",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-30T20:48:39.686Z",
+  "recordedAt": "2026-05-08T01:42:04.055Z",
   "result": {
     "success": true,
-    "score": 87.5,
+    "score": 100,
     "errorsCount": 0,
-    "warningsCount": 1,
-    "durationMs": 154522.98833299987,
+    "warningsCount": 0,
+    "durationMs": 123101.1065,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,35 +18,35 @@
     "checklistResults": {
       "read_installed_template": {
         "pass": true,
-        "reason": "The agent explicitly used the Read tool on `.claude/assets/AGENTS.template.md` (full sandbox path shown in logs). It also ran a Bash check to locate the template in `.claude/assets/` vs `.cursor/asse…"
+        "reason": "The agent explicitly called the Read tool on `/Users/korchasa/.../sandbox/.claude/assets/AGENTS.template.md` — the installed asset path — rather than reconstructing the template from memory."
       },
       "read_project_artifact": {
         "pass": true,
-        "reason": "The agent used the Read tool on the sandbox `AGENTS.md` file immediately after reading the template, as shown in the sequential Read tool calls in the logs."
+        "reason": "The agent called the Read tool on `/Users/korchasa/.../sandbox/AGENTS.md` before proposing any changes, as shown in the tool call sequence in the logs."
       },
       "computed_diff": {
         "pass": true,
-        "reason": "The agent produced a structured section-by-section classification showing НОВОЕ (new), СОХРАНЕНО (preserved), and ОБНОВЛЕНО (updated) for every section, along with a preview of the merged document st…"
+        "reason": "The agent produced a structured diff with '+/-' notation for each section (header, TDD Flow, Planning Rules) and a table listing new sections absent from the project AGENTS.md, constituting a clear b…"
       },
       "proposed_check_step": {
         "pass": true,
-        "reason": "The agent explicitly states that `## TDD Flow` will be 'ОБНОВЛЕНО (4 шага вместо 3)' — replacing the 3-step (RED/GREEN/REFACTOR) flow from the current file with the 4-step version from the template, …"
+        "reason": "The agent explicitly proposed adding step 4 CHECK ('Run `fmt`, `lint`, and full test suite. You are NOT done after GREEN…') plus the `### Test Rules` subsection, noting that the current AGENTS.md has…"
       },
       "preserved_project_sections": {
         "pass": true,
-        "reason": "The agent explicitly marks all requested user-owned sections as СОХРАНЕНО: `## Project Vision` (with its content 'Build the best tool for widget assembly.'), `## Project tooling Stack` (TypeScript, D…"
+        "reason": "The proposal classified 'Project Vision', 'Project tooling Stack', and 'Key Decisions' as СОХРАНЕНЫ (preserved verbatim). The project-specific planning rule 'One plan per task.' was kept as an additi…"
       },
       "asked_confirmation": {
         "pass": true,
-        "reason": "At the end of both the assistant message and the Final Result, the agent explicitly asks: 'Применить это слияние к `AGENTS.md`? (y/n/per-section)' — confirming it asked before writing the file. The f…"
+        "reason": "The agent invoked `AskUserQuestion` with the question 'Применить предложенный мёрж к AGENTS.md?' and options 'Да, применить всё' / 'Нет, отменить' before writing anything. The session ended at this c…"
       },
       "no_template_duplication": {
         "pass": true,
-        "reason": "The agent read the template from the installed asset file using the Read tool and classified its sections against the existing AGENTS.md. There is no evidence of reinventing or regenerating the templ…"
+        "reason": "The agent read the installed asset and produced a targeted merge/diff rather than regenerating AGENTS.md wholesale from scratch. The proposed output merges project-specific content with template upda…"
       },
       "explained_changes": {
-        "pass": false,
-        "reason": "The agent classified changes as 'framework-originated' or 'user-owned' but did not explain WHY each proposed change is recommended. For example, it did not explain that the CHECK step ensures the for…"
+        "pass": true,
+        "reason": "Each proposed change included a reason: header change explained by 'структура шаблона требует # Core Project Rules'; CHECK step explained as needed to catch formatting errors and regressions; Plannin…"
       }
     }
   }

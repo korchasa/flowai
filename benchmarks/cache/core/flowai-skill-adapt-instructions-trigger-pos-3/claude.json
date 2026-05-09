@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "628cf5ac540e9cfcfdd21c2eba7a0244cc46af118678c0ef303b59a321902089",
+  "scenarioId": "flowai-skill-adapt-instructions-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:44:44.209Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 100234.939625,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first tool call is `Skill` with `{\"skill\": \"flowai-skill-adapt-instructions\"}`, clearly loading and acting on the skill in direct response to the user's query."
+      }
+    }
+  }
+}

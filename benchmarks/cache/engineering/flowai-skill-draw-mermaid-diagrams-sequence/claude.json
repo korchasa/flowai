@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "dbf5aed7f187f9c78eccfbd22ad62149da8203d661266e1bd6eb4dc0082cc40e",
+  "key": "6091014c5961bd14e67974a760ebad0e04395605b3369b3d9b8f0249f68b35db",
   "scenarioId": "flowai-skill-draw-mermaid-diagrams-sequence",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T23:34:43.212Z",
+  "recordedAt": "2026-05-08T02:07:03.432Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 17135.65170800034,
+    "durationMs": 25751.093957999998,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,27 +18,27 @@
     "checklistResults": {
       "correct_diagram_type": {
         "pass": true,
-        "reason": "The generated file docs/auth-flow.md uses 'sequenceDiagram' as the diagram type in the mermaid block, confirmed in the GENERATED FILES section of the evidence."
+        "reason": "The diagram explicitly uses 'sequenceDiagram' as its type declaration in the Mermaid code block, confirming it is a sequence diagram and not a flowchart or other type."
       },
       "four_participants": {
         "pass": true,
-        "reason": "The diagram explicitly declares all four required participants: 'participant User', 'participant Browser', 'participant AuthServer as Auth Server', and 'participant ResourceServer as Resource Server'."
+        "reason": "All four required participants are declared: 'participant User', 'participant Browser', 'participant AuthServer as Auth Server', and 'participant ResourceServer as Resource Server'."
       },
       "auth_code_flow": {
         "pass": true,
-        "reason": "All key OAuth2 steps are present: (1) authorization request via 'GET /authorize?response_type=code&client_id=...', (2) redirect with code via 'Redirect to redirect_uri?code=AUTH_CODE&state=...', (3) …"
+        "reason": "All key OAuth2 steps are present: (1) authorization request via 'Browser->>AuthServer: GET /authorize?response_type=code...', (2) redirect with code via 'AuthServer-->>Browser: 302 Redirect to redire…"
       },
       "mermaid_code_block": {
         "pass": true,
-        "reason": "The diagram is correctly wrapped in a ```mermaid code block inside the markdown file docs/auth-flow.md, as shown in the GENERATED FILES section."
+        "reason": "The diagram is enclosed in a ```mermaid code block inside the markdown file docs/auth-flow.md, as clearly shown in the generated file content."
       },
       "file_saved": {
         "pass": true,
-        "reason": "The file was written to the sandbox path ending in 'docs/auth-flow.md' via the Write tool. The git status confirms 'docs/' exists as an untracked directory, and the GENERATED FILES section shows the …"
+        "reason": "The file was saved to 'docs/auth-flow.md' as evidenced by the Write tool call saving to that path, confirmed by the 'GENERATED FILES' section which shows '--- docs/auth-flow.md ---' with full content…"
       },
       "valid_syntax": {
         "pass": true,
-        "reason": "The Mermaid syntax is correct: participant declarations use proper format, solid arrows use '->>' and dashed return arrows use '-->>'. No activate/deactivate blocks are used but they are not mandator…"
+        "reason": "The diagram uses correct Mermaid arrow notation: solid arrows '->>' for requests and dashed arrows '-->>' for responses. Participant declarations are properly formatted with aliases ('AuthServer as A…"
       }
     }
   }

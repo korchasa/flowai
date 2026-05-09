@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "2d73925fec2db654c437b3ca6e696405184687ab9fc251d827a8c29e9fa4a10f",
+  "key": "7beefec8f31fe6daad069d3d717b9b40e3554fc4faadd05d303d168b0f8975bf",
   "scenarioId": "flowai-skill-maintenance-no-spurious-invocation",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-30T20:36:08.620Z",
+  "recordedAt": "2026-05-09T03:30:41.969Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 10787.237084000371,
+    "durationMs": 14967.991458000615,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "no_eight_category_scan": {
         "pass": true,
-        "reason": "The agent performed only a simple directory listing (ls) and reported that no source files, deno.json, or tests exist. It did not trigger any 8-category maintenance scan covering documentation consis…"
+        "reason": "The agent did not perform any 8-category maintenance scan. It simply attempted to locate linter/test commands (listed files, read AGENTS.md), determined there was no source code or configuration to r…"
       },
       "no_interactive_resolution": {
         "pass": true,
-        "reason": "The agent did not enter any interactive issue-by-issue resolution phase. It listed the directory, found no actionable files, reported the result in a single final message, and stopped. There was no p…"
+        "reason": "The agent did not enter any interactive issue-by-issue resolution phase. It made two tool calls (ls and Read AGENTS.md), then reported its findings in a single final message without presenting findin…"
       }
     }
   }

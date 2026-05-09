@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "48ef8dd24933aa6e89f49f5408a6e45dbeea33098f7770decc912f1a2e4908d5",
+  "scenarioId": "flowai-skill-review-trigger-adj-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:59:35.706Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 46731.92245800048,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "В логах агента нет ни одного вызова инструмента Skill с параметром flowai-skill-review, а также нет чтения файла flowai-skill-review/SKILL.md. Агент использовал только инструменты Glob и Bash для пои…"
+      }
+    }
+  }
+}
