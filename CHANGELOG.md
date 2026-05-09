@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.5](https://github.com/korchasa/flowai/compare/v0.12.4...v0.12.5) (2026-05-09)
+
+
+### Features
+
+* **bench:** resource guards for spawned agents (FR-BENCH-GUARDS) ([74ce277](https://github.com/korchasa/flowai/commit/74ce277a0358475b26a8450c19c83184ff58b800))
+* **commit,review-and-commit:** derive task status from DoD checkboxes ([6196880](https://github.com/korchasa/flowai/commit/61968803f1e168a22c73b2d03e7a522654fb53ca))
+* **epic:** align flowai-skill-epic with new task layout ([aa4f39a](https://github.com/korchasa/flowai/commit/aa4f39a4e92ce08523e71af66f0fcb6dccca1b5b))
+* **plan-exp,epic:** SRS-inline **Tasks:** back-pointer (FR-DOC-TASK-LINK) ([ec472c6](https://github.com/korchasa/flowai/commit/ec472c62da67058fde14b380315e4a080ccbd393))
+* **plan-exp:** new flowai-plan-exp-permanent-tasks command ([138ceaa](https://github.com/korchasa/flowai/commit/138ceaa0c43b97d7f65210c09f2b1be897b58598))
+* **plan-exp:** step 2 loads related committed tasks into context ([72e374f](https://github.com/korchasa/flowai/commit/72e374f611aa077d8cd25839e1b8e475e38a0f26))
+* **reflect:** rescue points to /flowai-plan-exp-permanent-tasks (FR-DOC-RESCUE) ([34acc53](https://github.com/korchasa/flowai/commit/34acc5346d7a1a59c34c4e46df7abd108321096c))
+
+
+### Bug Fixes
+
+* **skill/configure-deno-commands:** prevent fork-loop in scripts/test.ts ([418d892](https://github.com/korchasa/flowai/commit/418d89254a9063a16e23123c618541304f16c650))
+
+
+### Documentation
+
+* **adr:** record ADR-0002 (trigger benchmarks) and ADR-0003 (hotspot refactor) ([b0b9dbf](https://github.com/korchasa/flowai/commit/b0b9dbf3ca069050599efa1263377628062ae194))
+
+
+### Agent Changes
+
+* drop day folder from task path layout ([0e44541](https://github.com/korchasa/flowai/commit/0e445415d936824fc51934712c9a0564842b645c))
+* remove ADR primitive in favor of first-class committed tasks ([f25e7dd](https://github.com/korchasa/flowai/commit/f25e7ddf85c044fd61889601b09f96239f221ea9))
+
+
+### Chores
+
+* **bench:** refresh cache after FR-BENCH-GUARDS lib additions ([c6f1910](https://github.com/korchasa/flowai/commit/c6f19100d876a11c8423270a2b2383a1ca80d5ca))
+* **tasks:** ungitignore + add task-format validator (coexistence-aware) ([56486b5](https://github.com/korchasa/flowai/commit/56486b5696e2fa317a4ce99bc5e7e71a3fcf8ffc))
+
 ### [0.12.4](https://github.com/korchasa/flowai/compare/v0.12.3...v0.12.4) (2026-05-03)
 
 
