@@ -102,5 +102,11 @@ export const ConfigureDenoCommandsBasicBench = new class
         "Does check.ts print ALL stdout and stderr from every check regardless of success/failure — no output is lost?",
       critical: true,
     },
+    {
+      id: "scripts_no_unguarded_top_level_spawn",
+      description:
+        'For every `.ts` file the agent created under `scripts/`, verify that top-level `Deno.Command` / `Deno.run` calls (if any) are wrapped in `if (import.meta.main)`. This prevents `deno test -A scripts/` from recursively spawning new `deno test` processes when it imports the file — a real incident on 2026-05-09 produced ~720 deno descendants in 90 s and forced multiple host reboots. Pass if either: (a) no `scripts/*.ts` performs a top-level subprocess spawn at all, OR (b) every such spawn is inside an `if (import.meta.main)` block. Fail if any `scripts/*.ts` file calls `Deno.Command("deno", ["test", …])` (or similar) at module top level without the guard.',
+      critical: true,
+    },
   ];
 }();
