@@ -1,14 +1,15 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about what the skill covers, not a request to apply it.
+// False-use: Deno/TS surface match, but the request is a code refactor, not
+// adding style rules to AGENTS.md.
 export const TsDenoStyleTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-setup-agent-code-style-ts-deno-trigger-false-1";
-  name = "meta question about deno style guidelines";
+  name = "Deno code refactor";
   skill = "flowai-skill-setup-agent-code-style-ts-deno";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What kinds of Deno-flavored TypeScript conventions usually live in an AGENTS.md file? Just trying to understand the shape of it.";
+    "Refactor this Deno function to use async/await instead of `.then()` chains, and add proper type annotations.";
   checklist = [{
     id: "skill_not_invoked",
     description:

@@ -1,14 +1,13 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about how the memex-ask workflow works, not an actual
-// query to be answered from the memex.
+// False-use: question is a web/Stack Overflow lookup, not a memex query.
 export const MemexAskTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-memex-ask-trigger-false-1";
-  name = "meta question about the skill";
+  name = "external web lookup";
   skill = "flowai-skill-memex-ask";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "How does the memex-ask flow decide which pages to open and how many wikilink hops it follows?";
+    "Search Stack Overflow and tell me the canonical way to debounce input in React with TypeScript.";
   checklist = [{
     id: "skill_not_invoked",
     description:

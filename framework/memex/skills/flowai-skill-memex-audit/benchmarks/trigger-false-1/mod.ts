@@ -1,15 +1,15 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about how the memex-audit workflow operates,
-// not a request to actually run the audit.
+// False-use: audit-style request, but target is repo Markdown, not the
+// memex knowledge bank.
 export const MemexAuditTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-memex-audit-trigger-false-1";
-  name = "meta question about the skill";
+  name = "markdown lint of repo README";
   skill = "flowai-skill-memex-audit";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What checks does the memex audit perform, and which of them are deterministic versus LLM-judged?";
+    "Run a markdown lint on README.md and fix the heading-level mistakes you find.";
   checklist = [{
     id: "skill_not_invoked",
     description:

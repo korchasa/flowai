@@ -1,15 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about why GODS exists, not a request to write a
-// task in GODS format.
+// False-use: task vocabulary, but the target format is a Jira ticket, not GODS.
 export const WriteGodsTasksTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-write-gods-tasks-trigger-false-1";
-  name = "meta question about GODS";
+  name = "Jira ticket draft";
   skill = "flowai-skill-write-gods-tasks";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Why does our team prefer GODS over plain user-story format? Just curious about the reasoning — no need to draft anything.";
+    "Convert this user story into a Jira ticket with acceptance criteria for our PM to review.";
   checklist = [{
     id: "skill_not_invoked",
     description:

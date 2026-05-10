@@ -1,14 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about subagent semantics, not a request to author one.
+// False-use: invoke an existing subagent, not author a new one.
 export const EngineerSubagentTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-engineer-subagent-trigger-false-1";
-  name = "meta question about subagents";
+  name = "invoke an existing subagent";
   skill = "flowai-skill-engineer-subagent";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What's the difference between a subagent and just spawning another conversation, and how does context propagate between them?";
+    "Spawn a code-reviewer subagent right now to look at my last commit and report any issues it finds.";
   checklist = [{
     id: "skill_not_invoked",
     description:

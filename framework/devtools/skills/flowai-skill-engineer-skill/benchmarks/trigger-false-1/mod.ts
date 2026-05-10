@@ -1,15 +1,15 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about how skills are organized, not a request to
-// author one.
+// False-use: the word "skills" is used in the human-learning sense, not
+// flowai SKILL.md authoring.
 export const EngineerSkillTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-engineer-skill-trigger-false-1";
-  name = "meta question about skills";
+  name = "human skill development advice";
   skill = "flowai-skill-engineer-skill";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "How does the agent decide between two competing skills when both descriptions sort of match the user's request?";
+    "I want to level up at TypeScript fast — what skills should I focus on first, and in what order?";
   checklist = [{
     id: "skill_not_invoked",
     description:

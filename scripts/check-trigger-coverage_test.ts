@@ -6,17 +6,11 @@ import {
   validateSkillTriggerCoverage,
 } from "./check-trigger-coverage.ts";
 
-Deno.test("expectedTriggerDirs returns the 9 canonical names in order", () => {
+Deno.test("expectedTriggerDirs returns the 3 canonical names in order", () => {
   assertEquals(expectedTriggerDirs(), [
     "trigger-pos-1",
-    "trigger-pos-2",
-    "trigger-pos-3",
     "trigger-adj-1",
-    "trigger-adj-2",
-    "trigger-adj-3",
     "trigger-false-1",
-    "trigger-false-2",
-    "trigger-false-3",
   ]);
 });
 
@@ -76,7 +70,7 @@ Deno.test("validateSkillTriggerCoverage: dir without mod.ts counts as missing", 
       "flowai-skill-foo",
       tmp,
     );
-    assertEquals(errors.length, 9);
+    assertEquals(errors.length, 3);
   } finally {
     await Deno.remove(tmp, { recursive: true });
   }
@@ -108,7 +102,7 @@ Deno.test("validateSkillTriggerCoverage: misnamed trigger-* dir is reported", as
   }
 });
 
-Deno.test("validateAllTriggerCoverage: real framework dir has zero errors when all 360 scenarios present", async () => {
+Deno.test("validateAllTriggerCoverage: real framework dir has zero errors when all 117 scenarios present", async () => {
   const errors = await validateAllTriggerCoverage("framework");
   // This test passes once the bulk authoring step lands. Until then the message
   // surface is informative; flip the assertion when scenarios are written.
@@ -150,8 +144,8 @@ Deno.test("validateAllTriggerCoverage: tmp framework with one complete + one inc
     await Deno.mkdir(incompleteSkill, { recursive: true });
 
     const errors = await validateAllTriggerCoverage(fw);
-    // 9 missing for the incomplete skill, 0 for the complete one
-    assertEquals(errors.length, 9);
+    // 3 missing for the incomplete skill, 0 for the complete one
+    assertEquals(errors.length, 3);
     for (const e of errors) {
       assertEquals(e.skill, "flowai-skill-incomplete");
     }

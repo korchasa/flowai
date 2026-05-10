@@ -1,14 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta documentation question about the skill, not an actual run request.
+// False-use: tweaking the IDE itself, not running a prompt across IDE CLIs.
 export const AiIdeRunnerTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-ai-ide-runner-trigger-false-1";
-  name = "meta question about the runner";
+  name = "edit IDE settings";
   skill = "flowai-skill-ai-ide-runner";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Explain conceptually how cross-IDE prompt execution works in flowai — I am writing a blog post, not running anything.";
+    "Update my Cursor settings.json to use a darker theme and a smaller editor font.";
   checklist = [{
     id: "skill_not_invoked",
     description:

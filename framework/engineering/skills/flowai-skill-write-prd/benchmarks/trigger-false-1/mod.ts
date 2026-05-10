@@ -1,13 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about PRD format, not a request to write one.
+// False-use: technical-writing surface match, but the artifact is marketing,
+// not a PRD.
 export const WritePrdTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-prd-trigger-false-1";
-  name = "meta question about PRDs";
+  name = "marketing one-pager";
   skill = "flowai-skill-write-prd";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What sections does a strong product requirements document usually have? Just curious — I'm not writing one yet.";
+    "Write a marketing one-pager for our new mobile app focused on benefits for end users — keep it punchy.";
   checklist = [{
     id: "skill_not_invoked",
     description:

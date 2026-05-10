@@ -1,13 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about the skill's mechanics, not a request to fix a test.
+// False-use: tests pass — request is a perf optimization of the runner,
+// not a failure fix.
 export const FixTestsTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-fix-tests-trigger-false-1";
-  name = "meta question about the skill";
+  name = "test runner perf request";
   skill = "flowai-skill-fix-tests";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What does the fix-tests workflow generally cover, and when would I avoid using it?";
+    "My test suite takes 12 minutes and they're all green — make it run in under 3. Profile and optimize the slow ones.";
   checklist = [{
     id: "skill_not_invoked",
     description:

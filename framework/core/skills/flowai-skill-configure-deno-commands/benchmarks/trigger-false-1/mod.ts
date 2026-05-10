@@ -1,15 +1,15 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about how the standard deno commands work, not a
-// request to configure them in this project.
+// False-use: ad-hoc Deno command invocation, not configuring the standard
+// deno.json/scripts interface.
 export const ConfigureDenoCommandsTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-configure-deno-commands-trigger-false-1";
-  name = "meta question about the convention";
+  name = "ad-hoc deno command run";
   skill = "flowai-skill-configure-deno-commands";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What does the flowai standard deno command interface look like in general? I'm just researching conventions.";
+    "Run `deno fmt` on the repo and tell me which files got reformatted — just a one-off cleanup before I commit.";
   checklist = [{
     id: "skill_not_invoked",
     description:

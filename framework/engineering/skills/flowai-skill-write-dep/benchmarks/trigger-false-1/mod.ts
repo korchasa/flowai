@@ -1,14 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about the proposal format, not a request to draft
-// one.
+// False-use: technical-writing surface match, but request is release notes,
+// not a DEP.
 export const WriteDepTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-write-dep-trigger-false-1";
-  name = "meta question about DEP format";
+  name = "release notes request";
   skill = "flowai-skill-write-dep";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What sections does a Development Enhancement Proposal usually have, and how is it different from an RFC in your view?";
+    "Write a one-pager release note for v2.3 that highlights the auth changes for our users.";
   checklist = [{
     id: "skill_not_invoked",
     description:

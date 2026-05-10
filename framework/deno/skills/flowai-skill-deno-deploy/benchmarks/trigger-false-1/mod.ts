@@ -1,15 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about the deploy workflow — informational, not a
-// concrete deploy action.
+// False-use: deploy target is Vercel, not Deno Deploy.
 export const DenoDeployTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-deno-deploy-trigger-false-1";
-  name = "meta question about deploy workflow";
+  name = "deploy to a different platform";
   skill = "flowai-skill-deno-deploy";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What's the difference between the Build, Dev, and Prod contexts on Deno's hosting platform, conceptually? Just curious.";
+    "Deploy this app to Vercel — set up the project with the right framework preset and environment variables.";
   checklist = [{
     id: "skill_not_invoked",
     description:

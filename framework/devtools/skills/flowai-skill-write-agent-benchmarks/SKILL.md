@@ -209,22 +209,24 @@ Execution scenarios prove "when skill X runs, it works." They do NOT prove that 
 ### Scope and shape
 
 - **Applies to:** every skill under `framework/<pack>/skills/flowai-skill-*/`. Commands (`commands/`) carry `disable-model-invocation: true` and are out of scope.
-- **Per skill:** exactly 9 scenarios — 3 positive, 3 adjacent-negative, 3 false-use-negative.
+- **Per skill:** exactly 3 scenarios — 1 positive, 1 adjacent-negative, 1 false-use-negative.
 - **Layout:** sibling folders to existing scenarios:
   ```
   framework/<pack>/skills/<skill-id>/benchmarks/
-    trigger-pos-{1,2,3}/mod.ts
-    trigger-adj-{1,2,3}/mod.ts
-    trigger-false-{1,2,3}/mod.ts
+    trigger-pos-1/mod.ts
+    trigger-adj-1/mod.ts
+    trigger-false-1/mod.ts
   ```
-- **Scenario id:** `<skill-id>-trigger-<pos|adj|false>-<n>`.
-- **Coverage check:** `scripts/check-trigger-coverage.ts` (wired into `deno task check`) fails if any of the 9 are missing or misnamed.
+- **Scenario id:** `<skill-id>-trigger-<pos|adj|false>-1` (the trailing `-1` is preserved for backward compatibility with trace tooling; only `n=1` is permitted).
+- **Coverage check:** `scripts/check-trigger-coverage.ts` (wired into `deno task check`) fails if any of the 3 are missing, or if stray `trigger-{type}-{2,3,...}` directories exist.
 
 ### Picking queries
 
-- **Positive (`trigger-pos-*`):** a natural, short user query that matches the skill's description. **No `/skill-name` prefix** (that bypasses description-matching), no over-specified jargon, no hints at internal mechanics. Use 3 different phrasings (different verbs / framings) so the test stresses description match, not exact wording.
-- **Adjacent-negative (`trigger-adj-*`):** a query for which a *different, neighboring* skill is the correct match. Pick the most-likely confusion candidates from the same pack or with overlapping vocabulary. Typical confusion patterns: a "fix this test" skill vs. a "review my diff" skill (overlap on "I broke something"); a single-task planner vs. a multi-phase epic planner (overlap on "plan"); a current-session reflection vs. a historical-sessions reflection (overlap on "reflect").
-- **False-use-negative (`trigger-false-*`):** a query inside the skill's general domain but with the wrong intent. Recommended patterns: surface vocabulary that matches but the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense; a fix-tests skill receiving a "speed up the test runner" perf request); reverse-intent traps (e.g., write *new* tests vs fix *failing* ones). **Do NOT use meta-questions about the skill itself** ("what does X cover?", "how does X work?", "when should I use X?") as false-use — under Claude Code these are legitimately answered by *reading* the skill's `SKILL.md`, so the agent will rightly load it and the judge will record activation. Treat meta-questions as positives or omit them.
+With N=1, each query carries the full description-match weight for its class — pick the phrasing most likely to expose a description regression.
+
+- **Positive (`trigger-pos-1`):** a natural, short user query that matches the skill's description. **No `/skill-name` prefix** (that bypasses description-matching), no over-specified jargon, no hints at internal mechanics. Pick the phrasing a typical user would write — the least-jargonized form — so the test stresses description match, not exact wording.
+- **Adjacent-negative (`trigger-adj-1`):** a query for which a *different, neighboring* skill is the correct match. Pick the most-likely confusion candidate from the same pack or with overlapping vocabulary. Typical confusion patterns: a "fix this test" skill vs. a "review my diff" skill (overlap on "I broke something"); a single-task planner vs. a multi-phase epic planner (overlap on "plan"); a current-session reflection vs. a historical-sessions reflection (overlap on "reflect").
+- **False-use-negative (`trigger-false-1`):** a query inside the skill's general domain but with the wrong intent. Recommended patterns: surface vocabulary that matches but the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense; a fix-tests skill receiving a "speed up the test runner" perf request); reverse-intent traps (e.g., write *new* tests vs fix *failing* ones). **Do NOT use meta-questions about the skill itself** ("what does X cover?", "how does X work?", "when should I use X?") as false-use — under Claude Code these are legitimately answered by *reading* the skill's `SKILL.md`, so the agent will rightly load it and the judge will record activation. Treat meta-questions as positives or omit them.
 
 ### Checklist contract
 

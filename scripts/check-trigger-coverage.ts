@@ -1,27 +1,29 @@
-// [FR-BENCH.TRIGGER](../documents/requirements.md#fr-bench.trigger-skill-description-matching-verification) — every skill MUST have 9 trigger scenarios (3 pos + 3 adj + 3 false).
+// [FR-BENCH.TRIGGER](../documents/requirements.md#fr-bench.trigger-skill-description-matching-verification) — every skill MUST have 3 trigger scenarios (1 pos + 1 adj + 1 false).
 /**
  * Validates that every skill in `framework/<pack>/skills/flowai-skill-*` has
- * the full set of 9 trigger benchmark scenarios required by FR-BENCH.TRIGGER.
+ * the full set of 3 trigger benchmark scenarios required by FR-BENCH.TRIGGER.
  *
- * For each skill the following 9 directories must exist with a `mod.ts`:
- *   benchmarks/trigger-pos-{1,2,3}/mod.ts
- *   benchmarks/trigger-adj-{1,2,3}/mod.ts
- *   benchmarks/trigger-false-{1,2,3}/mod.ts
+ * For each skill the following 3 directories must exist with a `mod.ts`:
+ *   benchmarks/trigger-pos-1/mod.ts
+ *   benchmarks/trigger-adj-1/mod.ts
+ *   benchmarks/trigger-false-1/mod.ts
  *
  * Commands (`framework/<pack>/commands/`) are exempt — they are user-only
  * primitives invoked via `/name` and do not participate in description-matching
  * routing decisions.
  *
- * Exits with code 1 if any skill is missing any of the 9 scenarios.
+ * Exits with code 1 if any skill is missing any of the 3 scenarios. Stray
+ * `trigger-{type}-{2,3,...}` directories are reported as misnamed (the
+ * previous 3+3+3 layout was reduced to 1+1+1 on 2026-05-10).
  */
 import { join } from "@std/path";
 
 export const TRIGGER_TYPES = ["pos", "adj", "false"] as const;
-export const TRIGGER_INDEXES = [1, 2, 3] as const;
+export const TRIGGER_INDEXES = [1] as const;
 
 export type TriggerType = typeof TRIGGER_TYPES[number];
 
-/** Returns the 9 expected trigger directory names per skill. */
+/** Returns the 3 expected trigger directory names per skill. */
 export function expectedTriggerDirs(): string[] {
   const out: string[] = [];
   for (const type of TRIGGER_TYPES) {
@@ -59,7 +61,7 @@ async function listDirs(path: string): Promise<string[]> {
 }
 
 /**
- * Checks one skill directory for the 9 expected trigger scenario folders.
+ * Checks one skill directory for the 3 expected trigger scenario folders.
  * Each folder must contain a `mod.ts` file.
  */
 export async function validateSkillTriggerCoverage(
@@ -149,7 +151,7 @@ export async function validateAllTriggerCoverage(
 
 if (import.meta.main) {
   console.log(
-    "Checking trigger benchmark coverage (FR-BENCH.TRIGGER: 9 scenarios per skill)...",
+    "Checking trigger benchmark coverage (FR-BENCH.TRIGGER: 3 scenarios per skill)...",
   );
   const errors = await validateAllTriggerCoverage("framework");
 
@@ -163,7 +165,7 @@ if (import.meta.main) {
     Deno.exit(1);
   } else {
     console.log(
-      "✅ All skills have 9 trigger scenarios (3 pos + 3 adj + 3 false).",
+      "✅ All skills have 3 trigger scenarios (1 pos + 1 adj + 1 false).",
     );
   }
 }

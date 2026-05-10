@@ -1,15 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about how the command-authoring workflow works,
-// not a request to author one.
+// False-use: shell command vocabulary, not a flowai command-authoring task.
 export const EngineerCommandTriggerFalse1 = new class
   extends BenchmarkSkillScenario {
   id = "flowai-skill-engineer-command-trigger-false-1";
-  name = "meta question about commands";
+  name = "shell one-liner request";
   skill = "flowai-skill-engineer-command";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What's the difference between a command and a skill in flowai's setup, and when does each get auto-invoked?";
+    "Write me a one-liner shell command that finds the 10 largest files under ./src and prints them sorted by size.";
   checklist = [{
     id: "skill_not_invoked",
     description:

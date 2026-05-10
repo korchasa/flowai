@@ -1,14 +1,13 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about the CLI workflow itself — not an actual
-// request to run any Deno command.
+// False-use: setting up a Node.js script — different runtime, not Deno.
 export const DenoCliTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-deno-cli-trigger-false-1";
-  name = "meta question about deno workflow";
+  name = "Node.js script setup (wrong runtime)";
   skill = "flowai-skill-deno-cli";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "How does the typical local development workflow look for a Deno project, and which commands do people lean on?";
+    "Add an `npm run lint` script to package.json that runs ESLint on src/ before each commit.";
   checklist = [{
     id: "skill_not_invoked",
     description:

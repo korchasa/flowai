@@ -1,13 +1,14 @@
 import { BenchmarkSkillScenario } from "@bench/types.ts";
 
-// False-use: meta question about what JIT review is, not a request to run one.
+// False-use: request is a normal historical code review of merged commits,
+// not a JIT scan of staged/unstaged diff.
 export const JitReviewTriggerFalse1 = new class extends BenchmarkSkillScenario {
   id = "flowai-skill-jit-review-trigger-false-1";
-  name = "meta question about JIT review";
+  name = "regular code review request";
   skill = "flowai-skill-jit-review";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "What's the difference between a JIT review and a regular code review? When would I prefer one over the other?";
+    "Walk through the last 5 commits on this branch and tell me which ones look risky in a normal code review.";
   checklist = [{
     id: "skill_not_invoked",
     description:
