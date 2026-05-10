@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.6](https://github.com/korchasa/flowai/compare/v0.12.5...v0.12.6) (2026-05-10)
+
+
+### Features
+
+* **bench/skill:** -beta lifecycle policy + close beta coverage gap ([b9c4125](https://github.com/korchasa/flowai/commit/b9c412598e7362ed1b7dba959e59b5023770a5af))
+* **commands:** add flowai-do-with-plan composite (FR-DO-WITH-PLAN) ([25b14db](https://github.com/korchasa/flowai/commit/25b14dbfe7caefd630ea24bbc3434ee3d519f9e1))
+
+
+### Agent Changes
+
+* apply reflect-suggested improvements ([fe113d7](https://github.com/korchasa/flowai/commit/fe113d7d5c58e08ce0755ab17cdedbbba7426a43))
+
+
+### Code Refactoring
+
+* **bench:** reduce trigger benchmarks from 9 to 3 per skill ([e62058c](https://github.com/korchasa/flowai/commit/e62058c5d5abb3bc7d6b684b73895ba0f2244b63))
+
 ### [0.12.5](https://github.com/korchasa/flowai/compare/v0.12.4...v0.12.5) (2026-05-09)
 
 
