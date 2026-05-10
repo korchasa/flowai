@@ -113,3 +113,9 @@ Current contract (FR-BENCH.TRIGGER, 2026-05-03): every skill has 9 trigger scena
 - Empirical flake-rate measurement on the new N=1 cohort over ~3 sweeps. If sustained noise > 5% per scenario, add `BenchmarkSkillScenario.retryOnFail?: number` (default 0) and update FR-BENCH.TRIGGER to set it on trigger scenarios.
 - Revisit asymmetric weighting (e.g., 2 pos + 1 adj + 1 false) once N=1 baseline has empirical support — positive failures (false-negative routing) are user-visible, asymmetry may be defensible.
 - Cache invalidation tightening (per FR-BENCH-CACHE follow-up): trigger sweep should re-run on description edits only, not on description-adjacent edits.
+
+## Adjacent work landed alongside (2026-05-10)
+
+- SDS §3.1.1: added `-beta` lifecycle policy (60-day promote-or-retire deadline; coverage parity rule: each beta delta MUST have ≥1 dedicated scenario).
+- `flowai-review-and-commit-beta`: closed coverage gap (was 1/3 deltas, now 3/3). Added scenarios `phase-2-diff-eliminated` (Phase 2 must reuse Phase 1 diff, no `git diff` re-read) and `post-reflect-cleanup-commit` (reflect-driven edits commit as separate `agent: ...` commit, never amend).
+- `flowai-commit-beta`: kept (3/3 deltas covered, last functional commit 2026-04-27 → 13d idle, well under 60d threshold).
