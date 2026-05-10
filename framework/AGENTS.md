@@ -47,3 +47,15 @@ A composite skill inlines step_by_step blocks from 2+ standalone skills (kept in
 4. **Verdict Gate explicitness**: If the composite has a phase gate, the gate text MUST tell the agent what to do on EACH verdict, including the success case (e.g., "Approve → DO NOT commit yet. Phase 2 below is MANDATORY"). Implicit success paths get skipped under cognitive load.
 5. **Source skills must contain exactly ONE `<step_by_step>` block.** `scripts/check-skill-sync.ts` `extractStepByStep` returns the FIRST `<step_by_step>` match only — it is not a global regex, by design, for simplicity. A multi-block source (notably another composite like `flowai-review-and-commit-beta`, which has two `<step_by_step>` blocks for Phase 1 and Phase 2) would silently lose sync coverage of everything after the first block. To inline behaviour from an existing composite, point `SYNC_CHECKS` at the original primitive sources of that composite (e.g. `flowai-skill-review` + `flowai-commit-beta`), NOT at the composite itself.
 6. **Token budget**: SKILL.md MUST stay under 500 lines. The 5000-token cap from `FR-UNIVERSAL.DISCLOSURE` is relaxed for composites (see `scripts/composite-skills.ts` `COMPOSITE_SKILLS`), since their byte count is dictated mechanically by the inlined sources. Add a new composite name to `COMPOSITE_SKILLS` AND to `SYNC_CHECKS` together — `scripts/composite-skills_test.ts` enforces the agreement.
+
+## Benchmark Fixture deno.json Contract
+
+When a benchmark scenario invokes `deno task check` (or any project-check command) inside the sandbox, the fixture's `deno.json` MUST exclude the copied framework + bench artefacts from fmt/lint/test:
+
+```json
+"fmt":  { "exclude": [".claude/", "documents/", "benchmarks/"] },
+"lint": { "exclude": [".claude/", "documents/", "benchmarks/"] },
+"test": { "exclude": [".claude/", "benchmarks/"] }
+```
+
+Without these, the sandbox's `deno fmt --check` and `deno lint` apply to the copied `framework/`-as-`.claude/` tree, which has formatting/lint drift relative to the sandbox project. Symptoms: a happy-path checklist item like `check_gate_enforced` fails with the agent surfacing an fmt diff against files it never touched. Fix-it-once template lives in `framework/core/commands/flowai-do-with-plan/benchmarks/full-cycle/fixture/deno.json`.

@@ -326,6 +326,7 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 - Write benchmark BEFORE changing the primitive (RED phase). If the benchmark already passes before the change, the scenario is not testing the right thing — revise it.
 - Benchmark scenarios test OBSERVABLE BEHAVIOR (checklist items), not internal wording.
 - One scenario per distinct capability or edge case. Do not overload a single scenario.
+- **Grep before writing a near-duplicate scenario.** Before authoring a new scenario aimed at a specific keyword / branch label / verdict value, grep the target SKILL.md (or agent.md) for that label. If multiple labels share an identical execution path (e.g., `Request Changes` and `Needs Discussion` both route to `output report + STOP`), ONE scenario covers all of them — encode label tolerance in the checklist text rather than spawning a near-duplicate. A new file is justified only when the code path differs. Skipping this check has cost ~1h of LLM time per redundant scenario.
 - Run ALL benchmarks for the affected primitive before finishing, not just the new one.
 - Commands and skills both use `BenchmarkSkillScenario` (field: `skill`) — the installed IDE representation is a `SKILL.md`, regardless of the source `commands/` vs `skills/` directory. Agents use `BenchmarkAgentScenario` (field: `agent`).
 - **No test-fitting.** If a benchmark fails, first determine whether the problem is in the skill/agent or in the benchmark. Signs of test-fitting: userQuery hints at the correct approach, simulatedUser/persona scripts the exact answer, mocks leak internal logic, setup pre-creates artifacts the skill should produce. Fix the skill/agent first; adjust the benchmark only if the scenario itself is wrong.
@@ -408,9 +409,10 @@ The runner also pre-checks that `scenario.skill` is mounted in the sandbox befor
 
 ### Lint Exclude / Test Ignore Drift
 
-- `deno.json` `lint.exclude` and `scripts/task-check.ts` `--ignore` flag must list the SAME paths (`framework/*/skills/*/benchmarks/`, `framework/*/commands/*/benchmarks/`, `framework/*/agents/*/benchmarks/`, `framework/*/benchmarks/*/fixture/`).
-- These two locations drift in practice. When adding a new ignore pattern, update BOTH.
-- Drift symptom: `deno task check` lint passes but `deno task check` test phase imports test fixtures as production code (`no-explicit-any` errors in `*/fixture/*.ts`).
+- `deno.json` `lint.exclude`, `deno.json` `fmt.exclude`, and `scripts/task-check.ts` `--ignore` flag must list the SAME paths (`framework/*/skills/*/benchmarks/`, `framework/*/commands/*/benchmarks/`, `framework/*/agents/*/benchmarks/`, `framework/*/benchmarks/*/fixture/`).
+- These THREE locations drift in practice. When adding a new ignore pattern, update ALL THREE.
+- Drift symptom A (lint vs test): `deno task check` lint passes but test phase imports fixtures as production code (`no-explicit-any` errors in `*/fixture/*.ts`).
+- Drift symptom B (lint vs fmt): pre-flight `deno fmt --check` fails on intentionally malformed fixture files (e.g. a fixture seeded with deliberate formatting drift to exercise a scope-violation gate).
 
 ## Code Documentation
 
