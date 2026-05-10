@@ -123,6 +123,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-commit-beta` — streamlined commit (targeted doc sync, inline grouping)
 - `flowai-review-and-commit` — review quality, then commit if approved
 - `flowai-review-and-commit-beta` — streamlined review + commit (reuses diff across phases)
+- `flowai-do-with-plan` — full plan → implement → review-and-commit cycle (user-only composite)
 - `flowai-update` — update flowai framework (sync skills/agents, migrate artifacts)
 - `flowai-adapt` — adapt installed skills/agents/hooks/assets to project specifics (standalone)
 

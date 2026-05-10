@@ -16,6 +16,7 @@
  * Exits with code 1 if any violation is found.
  */
 import { join } from "@std/path";
+import { isComposite } from "./composite-skills.ts";
 import {
   parseFrontmatter,
   type ResourceError,
@@ -162,6 +163,15 @@ export function validateSkillFrontmatter(
  * FR-UNIVERSAL.DISCLOSURE: Validates progressive disclosure limits.
  * - SKILL.md: <500 lines, <5000 tokens (chars/4 approximation)
  * - Catalog metadata (name+description): <100 tokens per agentskills.io spec
+ *
+ * Composite-skill exemption: skills listed in `composite-skills.ts`
+ * `COMPOSITE_SKILLS` are exempt from the 5000-token cap. Their byte count is
+ * mechanically dictated by the inlined sources (sync-enforced by
+ * `check-skill-sync.ts`), and the no-delegation canon
+ * (`framework/CLAUDE.md` § Composite Skill Authoring) forbids reducing the
+ * volume by re-introducing Skill-tool delegation. The line cap (500) and the
+ * frontmatter catalog cap (100 tokens) still apply — they cap authoring
+ * cruft rather than mechanically-required content.
  */
 export function validateProgressiveDisclosure(
   dirName: string,
@@ -186,7 +196,7 @@ export function validateProgressiveDisclosure(
       message: `SKILL.md has ${lines} lines (limit: ${SKILL_MAX_LINES})`,
     });
   }
-  if (tokens >= SKILL_MAX_TOKENS) {
+  if (tokens >= SKILL_MAX_TOKENS && !isComposite(dirName)) {
     errors.push({
       skill: dirName,
       criterion: "FR-UNIVERSAL.DISCLOSURE",

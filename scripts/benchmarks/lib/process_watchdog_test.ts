@@ -173,3 +173,31 @@ Deno.test({
     }
   },
 });
+
+// Regression: BENCH_WATCHDOG_DISABLE was intentionally removed so the agent
+// cannot bypass the watchdog through environment. The watchdog is now
+// disable-able only via the programmatic `WatchdogOptions.disabled` flag.
+Deno.test("BENCH_WATCHDOG_DISABLE has NO effect — env-var bypass was removed", () => {
+  Deno.env.set("BENCH_WATCHDOG_DISABLE", "1");
+  try {
+    const handle = startWatchdog(Deno.pid, { intervalMs: 100_000 });
+    // If env var still bypassed the gate, isStopped() would return true
+    // immediately (the no-op handle returns isStopped: true).
+    assertEquals(
+      handle.isStopped(),
+      false,
+      "watchdog must remain active despite BENCH_WATCHDOG_DISABLE — env bypass was removed",
+    );
+    handle.stop();
+  } finally {
+    Deno.env.delete("BENCH_WATCHDOG_DISABLE");
+  }
+});
+
+Deno.test("WatchdogOptions.disabled returns a no-op handle (programmatic, test-only)", () => {
+  const handle = startWatchdog(Deno.pid, { disabled: true });
+  assertEquals(handle.isStopped(), true);
+  assertEquals(handle.trip(), null);
+  // stop() must be safe to call on the no-op handle.
+  handle.stop();
+});

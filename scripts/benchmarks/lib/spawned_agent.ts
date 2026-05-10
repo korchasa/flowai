@@ -35,6 +35,12 @@ export interface AgentOptions {
   stepTimeout?: number;
   /** Session name for IDE identification (e.g. "skill/scenario"). */
   name?: string;
+  /** Programmatic-only no-op. Disables the watchdog AND skips the
+   *  setpgrp_exec.py wrapper (so the agent runs unwrapped during tests).
+   *  Production callers MUST NOT set this — there is no env-var path to
+   *  bypass the watchdog. Tests for SpawnedAgent's lifecycle set this
+   *  explicitly to avoid races with mock subprocesses. */
+  disableWatchdog?: boolean;
 }
 
 export interface AgentResult {
@@ -183,8 +189,8 @@ export class SpawnedAgent {
     // implements [FR-BENCH-GUARDS](../../../documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents)
     // Bail out before spawning when host is already under memory/CPU pressure
     // that risks an OOM hang of the kind seen on 2026-05-09 07:50
-    // (vm-compressor-space-shortage). Skipped on non-darwin and when
-    // BENCH_HEALTH_DISABLE=1.
+    // (vm-compressor-space-shortage). Skipped on non-darwin only — there is
+    // no env-var bypass.
     try {
       const h = await assertHealthy(
         undefined,
@@ -224,9 +230,9 @@ export class SpawnedAgent {
 
     // Wrap the agent in setpgrp_exec.py so it becomes the leader of its own
     // process group. Required for the watchdog's group-kill path — see
-    // process_watchdog.ts header. Disabled with BENCH_WATCHDOG_DISABLE=1
-    // (same flag that disables the watchdog itself).
-    const wrapInGroup = Deno.env.get("BENCH_WATCHDOG_DISABLE") !== "1";
+    // process_watchdog.ts header. Skipped only when the caller passes
+    // `disableWatchdog: true` (programmatic, test-only).
+    const wrapInGroup = !this.options.disableWatchdog;
     const spawnCommand = wrapInGroup ? "python3" : command;
     const spawnArgs = wrapInGroup ? [SETPGRP_WRAPPER, command, ...args] : args;
 
@@ -247,6 +253,7 @@ export class SpawnedAgent {
         this.process.stdin.close();
       } catch (_) { /* ignore */ }
       this.watchdog = startWatchdog(this.process.pid, {
+        disabled: this.options.disableWatchdog,
         onTrip: (trip) => {
           const tag = trip.cause === "fork-loop"
             ? "[fork-loop guard]"

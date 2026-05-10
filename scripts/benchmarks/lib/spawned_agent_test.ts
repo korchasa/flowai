@@ -7,11 +7,8 @@ import { join } from "@std/path";
 // scripts complete in a few hundred ms (orphan stdout pipes between exec
 // and reaper). Watchdog/group-isolation behaviour has its own dedicated
 // suite (`process_watchdog_test.ts`); here we just want to test
-// SpawnedAgent's lifecycle. Disable both the watchdog and the wrapper for
-// this file. MUST be set before importing spawned_agent.ts so the env read
-// inside its module body sees it (currently env is read at start() time,
-// but pinning here keeps the contract robust to future refactors).
-Deno.env.set("BENCH_WATCHDOG_DISABLE", "1");
+// SpawnedAgent's lifecycle. Each test passes `disableWatchdog: true` to
+// SpawnedAgent (programmatic option; there is no env-var bypass).
 
 import { SpawnedAgent } from "./spawned_agent.ts";
 import { createTempDir } from "./utils.ts";
@@ -44,6 +41,7 @@ exit 0
     workspace: tempDir,
     model: "test-model",
     adapter,
+    disableWatchdog: true,
   });
 
   try {
@@ -98,6 +96,7 @@ fi
     workspace: tempDir,
     model: "test-model",
     adapter,
+    disableWatchdog: true,
   });
 
   try {
@@ -146,6 +145,7 @@ exit 0
     workspace: tempDir,
     model: "test-model",
     adapter,
+    disableWatchdog: true,
   });
 
   try {
@@ -184,6 +184,7 @@ exit 0
     model: "test-model",
     maxSteps: 3,
     adapter,
+    disableWatchdog: true,
   });
 
   try {
@@ -234,6 +235,7 @@ exit 0
     model: "test-model",
     env: { "MY_CUSTOM_VAR": "hello-world" },
     adapter,
+    disableWatchdog: true,
   });
 
   try {
@@ -252,6 +254,7 @@ Deno.test("SpawnedAgent - Error Handling (Invalid Command)", async () => {
     workspace: tempDir,
     model: "test-model",
     adapter,
+    disableWatchdog: true,
   });
 
   // In the current implementation, monitorPty simply logs the error to the console and performs cleanup(0)
@@ -306,6 +309,7 @@ exit 0
     model: "test-model",
     prompt: "initial prompt",
     adapter,
+    disableWatchdog: true,
   });
 
   try {

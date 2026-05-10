@@ -1,0 +1,15 @@
+{
+  "tasks": {
+    "test": "deno test -A",
+    "check": "deno fmt --check && deno lint && deno test -A"
+  },
+  "fmt": {
+    "exclude": [".claude/", "documents/", "benchmarks/"]
+  },
+  "lint": {
+    "exclude": [".claude/", "documents/", "benchmarks/"]
+  },
+  "test": {
+    "exclude": [".claude/", "benchmarks/"]
+  }
+}

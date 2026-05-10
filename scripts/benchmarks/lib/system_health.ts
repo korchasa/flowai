@@ -12,8 +12,19 @@
 //   - `sysctl hw.ncpu`     → CPU count for normalising load
 //
 // Defaults are tuned to abort BEFORE the host becomes unresponsive, not
-// after. Override via env: BENCH_MIN_FREE_PCT, BENCH_MAX_SWAP_PCT,
-// BENCH_MAX_LOAD_PER_CPU, BENCH_HEALTH_DISABLE=1.
+// after. The memory gate uses a single combined "effective headroom"
+// metric — availableRAM + freeSwap × swapDiscount — instead of two
+// independent thresholds (free-RAM-percent and swap-percent). Independent
+// thresholds gave false aborts when one side was tight but the other had
+// plenty of capacity to absorb a single agent (~500 MB–1 GB peak). The
+// combined metric models the actual question: "is there enough room for
+// the next spawn without forcing the VM compressor into the OOM path?"
+//
+// Thresholds can be tuned (NOT disabled) via env:
+// BENCH_MIN_HEADROOM_MB, BENCH_SWAP_DISCOUNT, BENCH_MAX_LOAD_PER_CPU.
+// There is intentionally NO escape hatch to skip the gate entirely — when
+// the host is unhealthy, the only correct response is to free resources
+// or hand off to a healthier machine.
 //
 // Linux fallback: vm_stat / sysctl absent → returns a neutral snapshot and
 // never trips. The CI sandboxes that run the framework on Linux do not need
@@ -34,14 +45,23 @@ export interface SystemHealth {
 }
 
 export interface HealthThresholds {
-  minAvailablePct: number;
-  maxSwapPct: number;
+  /** Minimum effective memory headroom (bytes) before a spawn is allowed.
+   *  Headroom = availableRAM + freeSwap × swapDiscountFactor. */
+  minHeadroomBytes: number;
+  /** Discount applied to free swap when computing headroom. Swap is
+   *  several times slower than RAM, so 1 GB of free swap is worth less
+   *  than 1 GB of free RAM. Default 0.3 (NVMe swap ~3× slower for
+   *  sequential, much worse for random access). */
+  swapDiscountFactor: number;
+  /** Trip when 1-min load average per CPU exceeds this. Independent of
+   *  the memory gate — different failure mode. */
   maxLoadPerCpu: number;
 }
 
 export const DEFAULT_THRESHOLDS: HealthThresholds = {
-  minAvailablePct: Number(Deno.env.get("BENCH_MIN_FREE_PCT") ?? "10"),
-  maxSwapPct: Number(Deno.env.get("BENCH_MAX_SWAP_PCT") ?? "60"),
+  minHeadroomBytes: Number(Deno.env.get("BENCH_MIN_HEADROOM_MB") ?? "2048") *
+    1024 * 1024,
+  swapDiscountFactor: Number(Deno.env.get("BENCH_SWAP_DISCOUNT") ?? "0.3"),
   maxLoadPerCpu: Number(Deno.env.get("BENCH_MAX_LOAD_PER_CPU") ?? "4"),
 };
 
@@ -163,8 +183,23 @@ export function describeHealth(h: SystemHealth): string {
 }
 
 /**
+ * Effective memory headroom in bytes. Combines available RAM with discounted
+ * free swap — the discount reflects swap being significantly slower than
+ * RAM. Used as the single memory-pressure axis for the gate.
+ */
+export function effectiveHeadroomBytes(
+  h: SystemHealth,
+  swapDiscountFactor: number,
+): number {
+  const swapFree = Math.max(0, h.swapTotalBytes - h.swapUsedBytes);
+  return h.availableBytes + swapFree * swapDiscountFactor;
+}
+
+/**
  * Throws `SystemUnhealthyError` if any threshold is breached. Returns the
- * health snapshot otherwise. Set `BENCH_HEALTH_DISABLE=1` to skip.
+ * health snapshot otherwise. There is no escape hatch — to relax the gate,
+ * tune the thresholds via env (`BENCH_MIN_HEADROOM_MB`, `BENCH_SWAP_DISCOUNT`,
+ * `BENCH_MAX_LOAD_PER_CPU`), don't disable the check.
  */
 export async function assertHealthy(
   thresholds: HealthThresholds = DEFAULT_THRESHOLDS,
@@ -172,19 +207,19 @@ export async function assertHealthy(
 ): Promise<SystemHealth> {
   const h = await readHealth();
   if (h.platform !== "darwin") return h;
-  if (Deno.env.get("BENCH_HEALTH_DISABLE") === "1") return h;
 
   const reasons: string[] = [];
-  if (h.availablePct < thresholds.minAvailablePct) {
+  const headroom = effectiveHeadroomBytes(h, thresholds.swapDiscountFactor);
+  if (headroom < thresholds.minHeadroomBytes) {
+    const mb = (b: number) => (b / 1024 / 1024).toFixed(0);
+    const swapFree = Math.max(0, h.swapTotalBytes - h.swapUsedBytes);
     reasons.push(
-      `available memory ${
-        h.availablePct.toFixed(1)
-      }% < ${thresholds.minAvailablePct}%`,
-    );
-  }
-  if (h.swapPct > thresholds.maxSwapPct) {
-    reasons.push(
-      `swap usage ${h.swapPct.toFixed(0)}% > ${thresholds.maxSwapPct}%`,
+      `effective headroom ${mb(headroom)} MB < ${
+        mb(thresholds.minHeadroomBytes)
+      } MB ` +
+        `(availableRAM ${mb(h.availableBytes)} MB + swapFree ${
+          mb(swapFree)
+        } MB × ${thresholds.swapDiscountFactor})`,
     );
   }
   const loadPerCpu = h.load1 / Math.max(1, h.cpuCount);
@@ -200,7 +235,7 @@ export async function assertHealthy(
         reasons.join("; ")
       }`,
       `snapshot: ${describeHealth(h)}`,
-      `override: BENCH_HEALTH_DISABLE=1; tune via BENCH_MIN_FREE_PCT, BENCH_MAX_SWAP_PCT, BENCH_MAX_LOAD_PER_CPU`,
+      `tune thresholds: BENCH_MIN_HEADROOM_MB, BENCH_SWAP_DISCOUNT, BENCH_MAX_LOAD_PER_CPU (cannot be disabled)`,
     ].join("\n  ");
     throw new SystemUnhealthyError(msg, h);
   }

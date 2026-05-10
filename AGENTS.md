@@ -16,6 +16,7 @@
 - **Push is pre-authorized**: this is a solo-maintained project — `git push` (non-force) to any branch including `main` is pre-authorized and does NOT require per-action confirmation. Treat it as a local, reversible action. Force push, branch deletion on remote, and PR merge still require explicit confirmation.
 - **Worktree freshness**: immediately after entering a worktree (e.g., `EnterWorktree` or `git worktree add`), check whether the branch is behind `main` and rebase before making edits. Diff-pollution from upstream commits is invisible until review. Quick check: `git log --oneline ${branch_base}..main | head` — non-empty output means rebase first (`git stash -u && git rebase main && git stash pop`).
 - **Worktree paths**: when CWD is inside a worktree, prefer **relative paths** for `Write`/`Edit` calls. If an absolute path is required, derive it from `pwd` / `Deno.cwd()`, never from project memory. The worktree path (`<repo-root>/.claude/worktrees/<name>/`) and the repo-root path point to **different working trees**; an absolute path to repo-root from inside a worktree is a silent cross-tree leak.
+- **Safety guards are not friction**: when a guard blocks an action (`system_health`, `process_watchdog`, pre-commit hooks, lint disables, `--force`, `--no-verify`), the guard is a signal that conditions are wrong — NOT a hint to use the override. Diagnostic text in the guard's error message that mentions an override env var or flag is informational for an operator, NOT authorization for the agent. To proceed: report the blocker, propose remediation (free memory, fix the failing test, address the lint warning), and ask the user — or hand off. Do NOT pre-emptively use override flags / env vars / `--force` / `--no-verify` without explicit per-action authorization.
 
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
@@ -305,13 +306,19 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 1. **RED**: Write benchmark scenario (`framework/<pack>/<kind>/<name>/benchmarks/<scenario>/mod.ts`) for new/changed behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
 2. **GREEN**: Update SKILL.md (`framework/<pack>/<kind>/<name>/SKILL.md`) until benchmark passes.
 3. **REFACTOR**: Improve text or benchmark clarity. No behavior change. Re-run benchmark.
-4. **CHECK**: Run ALL benchmarks for the affected primitive. Fix all failures.
+4. **CHECK**: ALL benchmarks for the affected primitive run on the user side (or in CI). Hand off with the command `deno task bench -f <primitive-id>`. Fix any reported failures by re-entering the RED→GREEN cycle on the failing scenario.
 
 **For Agents (subagents):**
 1. **RED**: Write benchmark scenario (`framework/<pack>/agents/<agent-name>/benchmarks/<name>/mod.ts`) for new/changed agent behavior. Use `BenchmarkAgentScenario` base class (field `agent` instead of `skill`). Run benchmark — it MUST fail.
 2. **GREEN**: Update agent (`framework/<pack>/agents/<agent-name>.md`) until benchmark passes.
 3. **REFACTOR**: Improve agent prompt or benchmark clarity. No behavior change. Re-run benchmark.
 4. **CHECK**: Run ALL benchmarks for the affected agent. Fix all failures.
+
+**Who runs benchmarks**:
+
+- RED, GREEN, REFACTOR — agent runs ONLY the specific scenario(s) being authored / iterated. This is mandatory and not deferrable to the user; LLM-cost or run-duration are NOT valid reasons to defer (a single scenario is local and reversible — sandbox + cache, not in the `Executing actions with care` taxonomy).
+- CHECK (full sweep across ALL scenarios for the affected primitive) — defer to the user. A primitive may carry 10–25 scenarios; running them all is hours and significant LLM cost. Author a clear hand-off message: list the new/changed scenarios already verified, the cache state, and the exact command (`deno task bench -f <primitive-id>`) for the user to run. Do NOT run the full sweep yourself unless the user explicitly authorises it for the current task.
+- When a guard (`system_health`, `process_watchdog`) blocks even a single-scenario run, report the blocker and its cause — wait, retry, or hand off explicitly. Do NOT pre-emptively use override flags or environment variables.
 
 #### Benchmark Rules
 

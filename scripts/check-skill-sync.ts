@@ -56,6 +56,25 @@ const SYNC_CHECKS: Array<{
       },
     ],
   },
+  {
+    composite: "flowai-do-with-plan",
+    sources: [
+      {
+        skill: "flowai-plan-exp-permanent-tasks",
+        phase: "Plan Phase",
+        allowedDivergentSteps: [8],
+      },
+      {
+        skill: "flowai-skill-review",
+        phase: "Review-and-Commit Phase (review)",
+      },
+      {
+        skill: "flowai-commit-beta",
+        phase: "Review-and-Commit Phase (commit)",
+        allowedDivergentSteps: [1],
+      },
+    ],
+  },
 ];
 
 function extractStepByStep(content: string): string | null {

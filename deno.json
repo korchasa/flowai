@@ -53,6 +53,9 @@
       ".cursor/",
       ".claude/",
       ".flowai.yaml",
+      "framework/*/skills/*/benchmarks/*/fixture/",
+      "framework/*/commands/*/benchmarks/*/fixture/",
+      "framework/*/agents/*/benchmarks/*/fixture/",
       "framework/*/benchmarks/*/fixture/"
     ]
   }

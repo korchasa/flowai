@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "f7e2b764d1a1a38728374f1f7cb14031291d09d16879da93c52310861738128f",
+  "scenarioId": "flowai-do-with-plan-pauses-for-variant-selection",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-10T18:32:36.526Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 574573.243125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "variant_analysis_emitted": {
+        "pass": true,
+        "reason": "The agent emitted a clearly structured variant analysis with two named variants (A and B). Each variant included Плюсы (Pros), Минусы (Cons), Риски (Risks), and Лучше всего (Best For) sections, fully…"
+      },
+      "explicit_variant_question": {
+        "pass": true,
+        "reason": "At the end of the variant analysis block, the agent explicitly asked: '**Какой вариант предпочитаете — A или B?**' — a direct question that pauses the workflow and requires user input before proceedi…"
+      },
+      "no_solution_before_selection": {
+        "pass": true,
+        "reason": "The initial Write of the task file used '## Solution\n\n<!-- FILLED AFTER VARIANT SELECTION -->' as a placeholder. The Solution section was only populated via an Edit call AFTER the user replied 'Varia…"
+      },
+      "task_file_skeleton_written": {
+        "pass": true,
+        "reason": "The agent wrote the full task file skeleton (frontmatter with date/status/implements/tags, Goal, Overview with Context/Current State/Constraints, and Definition of Done sections) via the Write tool a…"
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "tasks": {
+    "test": "deno test -A",
+    "check": "deno fmt --check && deno lint && deno test -A"
+  }
+}

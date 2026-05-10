@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "963f8dc823f84484bd5d580dd7a2df49aa42076b65cc3628efe94ad719bfc3f2",
+  "scenarioId": "flowai-do-with-plan-check-fails-stops",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-10T18:08:03.472Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 136219.451917,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "check_was_executed": {
+        "pass": true,
+        "reason": "The agent explicitly ran `deno task check` via bash command `NO_COLOR=1 deno task check 2>&1` after implementing math.ts and math_test.ts, as shown in the tool-call trace under 'CHECK — запускаю `den…"
+      },
+      "check_failed": {
+        "pass": true,
+        "reason": "The agent explicitly states '`deno task check` завершился с кодом 1' (exited with code 1). The failure was caused by pre-existing issues: `broken_test.ts` (intentionally failing test) and `CLAUDE.md`…"
+      },
+      "no_review_phase_executed": {
+        "pass": true,
+        "reason": "The agent stopped at the gate and never entered the Review-and-Commit Phase. The TodoWrite shows 'Review-and-Commit Phase' remained with status 'pending'. No structured review report with '## Review:…"
+      },
+      "no_commit_landed": {
+        "pass": true,
+        "reason": "The git log shows only the single initial 'init' commit (9a7573b5a4edd1748705fde53545eed1f7ec985e). The git status shows math.ts, math_test.ts, documents/index.md, etc. as untracked/unstaged — never …"
+      },
+      "explicit_gate_stop_message": {
+        "pass": true,
+        "reason": "The agent explicitly surfaced a gate-stop message: 'STOP — Implement → Review-and-Commit Gate сработал' and 'Согласно правилу: \"Project check did NOT exit 0 → STOP. Do not enter Review-and-Commit Pha…"
+      }
+    }
+  }
+}

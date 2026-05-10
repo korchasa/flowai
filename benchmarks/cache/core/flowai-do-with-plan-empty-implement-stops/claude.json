@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "ab163691ca871a64f3291f02284b2f06db407391cf932248c87177d9f3415c3c",
+  "scenarioId": "flowai-do-with-plan-empty-implement-stops",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-10T18:22:41.406Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 193358.06924999994,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_implementation_diff": {
+        "pass": true,
+        "reason": "The git diff (init..HEAD) shows zero changes to source files. math.ts and math_test.ts are unchanged from the init commit. The agent explicitly confirmed 'nessun commit eseguito' and that the feature…"
+      },
+      "no_review_phase_executed": {
+        "pass": true,
+        "reason": "The agent never entered the Review-and-Commit Phase. There is no '## Review: [Approve|Request Changes|Needs Discussion]' structured review report anywhere in the transcript. The agent explicitly stat…"
+      },
+      "no_commit_landed": {
+        "pass": true,
+        "reason": "The git log shows only the single initial 'init' commit (88f3aed9bbb56cc014106871fd011566d5683414). The git status confirms 'no changes added to commit'. No new commits were created by the agent duri…"
+      },
+      "explicit_gate_stop_message": {
+        "pass": true,
+        "reason": "The agent surfaced an explicit gate-stop message: 'Gate: Implement → Review-and-Commit — STOP' with the explanation that the feature was already present (no-op) and no implementation diff was produce…"
+      }
+    }
+  }
+}

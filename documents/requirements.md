@@ -119,7 +119,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - **Process-group isolation**: every spawn is wrapped in `python3 setpgrp_exec.py <agent> <args>`. The wrapper calls `os.setsid()` then `os.execvp()`, making the agent the leader of a new process group whose PGID equals the agent's PID. All descendants inherit the PGID — even after re-parenting to PID 1 when an intermediate parent dies. Required because the prior PPID-walk approach killed only direct descendants; orphaned grandchildren kept forking and ultimately required a host reboot on 2026-05-09 12:12.
   - **Fork-loop guard**: poll `pgrep -g <pgid>` for group members (orphans included). When `members.length - 1 > BENCH_MAX_DESCENDANTS` (default 5) for `BENCH_WATCHDOG_CONFIRM` (default 2) consecutive samples → `/bin/kill -TERM -- -<pgid>`, wait `graceMs` (default 1500, cancellable via AbortController), `/bin/kill -KILL -- -<pgid>`. Trip cause = `"fork-loop"`.
   - **RSS-bloat guard**: same poll loop, additionally read `ps -o pid=,rss=` for the group, sum bytes. When sum > `BENCH_MAX_RSS_GB` × 1 GiB (default 6 GiB) for `BENCH_WATCHDOG_CONFIRM` consecutive samples → same group-kill sequence. Trip cause = `"rss-bloat"`. Required because `setrlimit RLIMIT_AS / RLIMIT_DATA` is useless against V8-based agents on macOS — V8 over-reserves virtual address space (~485 GiB VSZ at 95 MiB RSS observed for `claude`), so any `-v` cap small enough to constrain RSS will also clip the V8 reservation and crash the binary at startup; `RLIMIT_RSS` exists in shell but the kernel does not enforce it on macOS or Linux.
-  - **Pre-flight system-health gate**: before each `cmd.spawn()` the agent calls `assertHealthy()`. Reads `vm_stat` + `sysctl vm.swapusage` + `sysctl vm.loadavg` + `sysctl hw.ncpu`. Throws `SystemUnhealthyError` if any of: available memory < `BENCH_MIN_FREE_PCT` (default 10) %, swap occupancy > `BENCH_MAX_SWAP_PCT` (default 60) %, 1-min load avg per CPU > `BENCH_MAX_LOAD_PER_CPU` (default 4). Caught in `start()`, surfaced as exit code 75 (`EX_TEMPFAIL`). Linux returns a neutral snapshot and never trips. `BENCH_HEALTH_DISABLE=1` skips the gate.
+  - **Pre-flight system-health gate**: before each `cmd.spawn()` the agent calls `assertHealthy()`. Reads `vm_stat` + `sysctl vm.swapusage` + `sysctl vm.loadavg` + `sysctl hw.ncpu`. Throws `SystemUnhealthyError` when either: (a) **effective memory headroom** = `availableRAM + freeSwap × BENCH_SWAP_DISCOUNT` (default 0.3) falls below `BENCH_MIN_HEADROOM_MB` (default 2048) MB; or (b) 1-min load avg per CPU > `BENCH_MAX_LOAD_PER_CPU` (default 4). The combined-headroom metric replaces the earlier independent-threshold scheme (`BENCH_MIN_FREE_PCT` + `BENCH_MAX_SWAP_PCT`) which over-aborted when one axis was tight but the other had ample slack. Caught in `start()`, surfaced as exit code 75 (`EX_TEMPFAIL`). Linux returns a neutral snapshot and never trips. **No env-var escape hatch**: thresholds may be tuned, but the gate cannot be disabled — to bypass, free resources or hand off to a healthier host.
 - **Acceptance:**
   - [x] Fork-loop trip kills entire process group, INCLUDING orphans that re-parented to PID 1 after their immediate parent died.
     Evidence: `deno test -A scripts/benchmarks/lib/process_watchdog_test.ts --filter "trips on fork-loop"`.
@@ -127,8 +127,8 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
     Evidence: `deno test -A scripts/benchmarks/lib/process_watchdog_test.ts --filter "rss-bloat"`.
   - [ ] Pre-flight health snapshot is logged in every run's `judge-evidence.md` (`[health] available … MB (…%), compressor … MB, swap …/… MB (…%), load1 … on … CPU (…/CPU)`).
     Evidence: `grep -h '\[health\]' benchmarks/runs/latest/*/run-*/judge-evidence.md`.
-  - [ ] When swap > `BENCH_MAX_SWAP_PCT` is set artificially low (`BENCH_MAX_SWAP_PCT=0`), `assertHealthy` throws and `SpawnedAgent` reports exit code 75 without spawning.
-    Evidence: `BENCH_MAX_SWAP_PCT=0 deno task bench -f <any-scenario>` → `[health] aborting spawn: ...`.
+  - [x] When `assertHealthy` throws, `SpawnedAgent.start` catches `SystemUnhealthyError`, logs `[health] aborting spawn: ...`, and surfaces exit code 75 without spawning.
+    Evidence: `deno test -A scripts/benchmarks/lib/system_health_test.ts` (covers threshold-trip path).
   - [ ] Watchdog publishes the `trip` object BEFORE killing (so consumers reading `watchdog.trip()` after `child.status` resolves on SIGTERM see the verdict, not `null`).
     Evidence: `process_watchdog.ts:tripNow` sets `trip` before awaiting `killTree`.
 - **Non-acceptance (explicit trade-offs):**
@@ -582,6 +582,13 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
 - **Acceptance verified by benchmarks:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
 
+### FR-DO-WITH-PLAN: Full-Cycle Workflow — `flowai-do-with-plan`
+
+- **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (per `flowai-review-and-commit-beta` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). All phases inlined verbatim from source skills; sync enforced by [scripts/check-skill-sync.ts](../scripts/check-skill-sync.ts).
+- **Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md)
+- **Acceptance verified by benchmarks:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
+- **Status:** [ ]
+
 ### FR-DEVCONTAINER: AI Devcontainer Setup — flowai-skill-setup-ai-ide-devcontainer
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.
@@ -607,6 +614,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 - **Acceptance:**
   - [x] Metadata (~100 tokens) loaded at startup; full SKILL.md (<5000 tokens, <500 lines) on activation; scripts/references/assets loaded only when required. Enforced by `scripts/check-skills.ts`.
+  - [x] **Composite-skill exemption:** skills listed in [scripts/composite-skills.ts](../scripts/composite-skills.ts) `COMPOSITE_SKILLS` are exempt from the 5000-token cap. Their byte count is mechanically dictated by inlined sources (sync-enforced by `check-skill-sync.ts`); the no-delegation canon (`framework/CLAUDE.md` § Composite Skill Authoring) forbids reducing volume by re-introducing Skill-tool delegation. Line cap (500) and frontmatter catalog cap (100 tokens) still apply. The `COMPOSITE_SKILLS` list MUST agree with `SYNC_CHECKS` in `check-skill-sync.ts` (verified by `scripts/composite-skills_test.ts::COMPOSITE_SKILLS list matches SYNC_CHECKS in check-skill-sync.ts`).
 
 #### FR-UNIVERSAL.REFS File References (agentskills.io)
 

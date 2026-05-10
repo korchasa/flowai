@@ -195,6 +195,69 @@ Deno.test("FR-UNIVERSAL.DISCLOSURE: file exceeding 5000 tokens is error", () => 
   assertEquals(errors.some((e) => e.message.includes("tokens")), true);
 });
 
+Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills are exempt from 5000-token cap", () => {
+  const content = "x".repeat(40000); // 10000 tokens — would fail for non-composite
+  const fm = { name: "flowai-do-with-plan", description: "y" };
+  const errors = validateProgressiveDisclosure(
+    "flowai-do-with-plan",
+    content,
+    fm,
+  );
+  assertEquals(
+    errors.some((e) => e.message.includes("tokens")),
+    false,
+    "composite must not raise the token error",
+  );
+});
+
+Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills still hit the 500-line cap", () => {
+  const content = "x\n".repeat(500); // 500 lines exactly
+  const fm = { name: "flowai-do-with-plan", description: "y" };
+  const errors = validateProgressiveDisclosure(
+    "flowai-do-with-plan",
+    content,
+    fm,
+  );
+  assertEquals(
+    errors.some((e) => e.message.includes("lines")),
+    true,
+    "composite must still hit the line cap",
+  );
+});
+
+Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills still hit the catalog (frontmatter) cap", () => {
+  const content = "short";
+  const fm = {
+    name: "flowai-do-with-plan",
+    description: "x".repeat(500), // > 100 tokens
+  };
+  const errors = validateProgressiveDisclosure(
+    "flowai-do-with-plan",
+    content,
+    fm,
+  );
+  assertEquals(
+    errors.some((e) => e.message.includes("Catalog metadata")),
+    true,
+    "composite must still hit the catalog cap",
+  );
+});
+
+Deno.test("FR-UNIVERSAL.DISCLOSURE: regular skill (not in COMPOSITE_SKILLS) still hits the token cap", () => {
+  const content = "x".repeat(20001);
+  const fm = { name: "regular-skill", description: "y" };
+  const errors = validateProgressiveDisclosure(
+    "regular-skill",
+    content,
+    fm,
+  );
+  assertEquals(
+    errors.some((e) => e.message.includes("tokens")),
+    true,
+    "non-composite must continue to hit the token cap",
+  );
+});
+
 Deno.test("FR-UNIVERSAL.DISCLOSURE: catalog metadata exceeding 100 tokens is error", () => {
   const content = "short";
   // name(5) + description(396) = 401 chars / 4 = ~101 tokens

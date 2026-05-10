@@ -32,11 +32,12 @@
 // window was chosen after a 2026-05-09 12:12 test where intervalMs=2000
 // caught a fork-loop at 35 descendants — late enough that swap had
 // already grown from 2 GiB to 6 GiB. At 500 ms, the same scenario would
-// trip near 10 descendants, before measurable swap pressure. Configurable
-// via env:
-//   BENCH_MAX_DESCENDANTS, BENCH_MAX_RSS_GB,
-//   BENCH_WATCHDOG_INTERVAL_MS, BENCH_WATCHDOG_CONFIRM,
-//   BENCH_WATCHDOG_DISABLE.
+// trip near 10 descendants, before measurable swap pressure. Thresholds are
+// tunable (NOT disable-able) via env: BENCH_MAX_DESCENDANTS, BENCH_MAX_RSS_GB,
+// BENCH_WATCHDOG_INTERVAL_MS, BENCH_WATCHDOG_CONFIRM. There is no env-var
+// escape hatch to skip the watchdog. Tests that exercise SpawnedAgent's
+// lifecycle pass `disabled: true` programmatically via WatchdogOptions —
+// production callers cannot bypass via environment.
 
 export interface WatchdogOptions {
   maxDescendants?: number; // default 5
@@ -45,6 +46,10 @@ export interface WatchdogOptions {
   confirmSamples?: number; // default 2 (consecutive overshoots before killing)
   graceMs?: number; // default 1500 (between SIGTERM and SIGKILL)
   onTrip?: (reason: WatchdogTrip) => void;
+  /** Programmatic-only no-op. Tests use this to exercise SpawnedAgent
+   *  lifecycle without wrapping the spawn in setpgrp_exec.py. Production
+   *  callers MUST NOT set this — see header comment. */
+  disabled?: boolean;
 }
 
 export type WatchdogTripCause = "fork-loop" | "rss-bloat";
@@ -187,7 +192,7 @@ export function startWatchdog(
   opts: WatchdogOptions = {},
 ): WatchdogHandle {
   const cfg = { ...DEFAULTS, ...opts };
-  if (Deno.env.get("BENCH_WATCHDOG_DISABLE") === "1") {
+  if (opts.disabled) {
     return {
       stop: () => {},
       trip: () => null,
