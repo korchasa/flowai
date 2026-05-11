@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.7](https://github.com/korchasa/flowai/compare/v0.12.6...v0.12.7) (2026-05-11)
+
+
+### Documentation
+
+* **srs:** mark FR-DO-WITH-PLAN done, backfill index.md, retarget evidence ([9d9aa73](https://github.com/korchasa/flowai/commit/9d9aa739756154c4b45cd6717b75b661ee49e8dc))
+
+
+### Code Refactoring
+
+* split oversized modules into focused sub-modules ([ed8a55d](https://github.com/korchasa/flowai/commit/ed8a55d54e04cf2fc898ed49a843650a461b0c7d))
+
 ### [0.12.6](https://github.com/korchasa/flowai/compare/v0.12.5...v0.12.6) (2026-05-10)
 
 
