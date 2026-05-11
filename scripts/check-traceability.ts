@@ -247,13 +247,13 @@ const NAME_SKIP = new Set([
   ".git",
 ]);
 /** Path-context skips: skip when the absolute path matches any pattern.
- *  Differentiates framework benchmark-scenario folders (fixture data, not
- *  source) from the benchmark runtime library at `scripts/benchmarks/`. */
+ *  Differentiates framework acceptance-test-scenario folders (fixture data, not
+ *  source) from the acceptance test runtime library at `scripts/acceptance-tests/`. */
 const PATH_SKIP = [
-  /\/framework\/[^/]+\/(?:skills|commands|agents)\/[^/]+\/benchmarks(?:\/|$)/,
-  /\/framework\/[^/]+\/benchmarks(?:\/|$)/,
-  /\/benchmarks\/cache(?:\/|$)/,
-  /\/benchmarks\/runs(?:\/|$)/,
+  /\/framework\/[^/]+\/(?:skills|commands|agents)\/[^/]+\/acceptance-tests(?:\/|$)/,
+  /\/framework\/[^/]+\/acceptance-tests(?:\/|$)/,
+  /\/acceptance-tests\/cache(?:\/|$)/,
+  /\/acceptance-tests\/runs(?:\/|$)/,
 ];
 
 function shouldSkipDir(fullPath: string, name: string): boolean {

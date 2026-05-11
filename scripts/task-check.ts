@@ -57,7 +57,7 @@ export function buildCheckPlan(): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=scripts/benchmarks/lib/integration_test.ts",
+          "--ignore=scripts/acceptance-tests/lib/integration_test.ts",
           "scripts",
         ],
       },
@@ -72,7 +72,7 @@ export function buildCheckPlan(): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=framework/*/skills/*/benchmarks,framework/*/commands/*/benchmarks,framework/*/agents/*/benchmarks,framework/*/benchmarks/*/fixture",
+          "--ignore=framework/*/skills/*/acceptance-tests,framework/*/commands/*/acceptance-tests,framework/*/agents/*/acceptance-tests,framework/*/acceptance-tests/*/fixture",
           "framework",
         ],
       },

@@ -14,7 +14,7 @@ migrated_from: "ADR-0003 (status: accepted)"
 
 ## Context
 
-A `/flowai-skill-maintenance` scan on 2026-04-19 surfaced five files where a single function spanned 150–540 lines and owned multiple concerns: [cli/src/sync.ts](../../cli/src/sync.ts) `sync()` (541 lines), [scripts/task-bench.ts](../../scripts/task-bench.ts) `main()` (540 lines), [scripts/benchmarks/lib/runner.ts](../../scripts/benchmarks/lib/runner.ts) `runScenario()` (488 lines), [cli/src/cli.ts](../../cli/src/cli.ts) (three hotspots — `runSync` 152, render 160, `main` 195), [scripts/benchmarks/lib/trace-renderer.ts](../../scripts/benchmarks/lib/trace-renderer.ts) renderer (191 lines). The concrete cost: a cache-key change in `runner.ts` required re-reading ~500 lines to confirm nothing else broke. Existing test suites cover all five files — they bound the refactor.
+A `/flowai-skill-maintenance` scan on 2026-04-19 surfaced five files where a single function spanned 150–540 lines and owned multiple concerns: [cli/src/sync.ts](../../cli/src/sync.ts) `sync()` (541 lines), [scripts/task-bench.ts](../../scripts/task-bench.ts) `main()` (540 lines), [scripts/acceptance-tests/lib/runner.ts](../../scripts/acceptance-tests/lib/runner.ts) `runScenario()` (488 lines), [cli/src/cli.ts](../../cli/src/cli.ts) (three hotspots — `runSync` 152, render 160, `main` 195), [scripts/acceptance-tests/lib/trace-renderer.ts](../../scripts/acceptance-tests/lib/trace-renderer.ts) renderer (191 lines). The concrete cost: a cache-key change in `runner.ts` required re-reading ~500 lines to confirm nothing else broke. Existing test suites cover all five files — they bound the refactor.
 
 ## Alternatives
 
@@ -34,7 +34,7 @@ A `/flowai-skill-maintenance` scan on 2026-04-19 surfaced five files where a sin
 
 ## Decision
 
-Decompose the five hotspot files into named helper functions, each ≤100 lines and single-responsibility. Preserve every public signature; preserve the order of side-effects observable from existing tests. No new dependencies, no new tests for existing behavior, no test modification. Refactor order from lowest to highest blast-radius: [trace-renderer.ts](../../scripts/benchmarks/lib/trace-renderer.ts) → [cli.ts](../../cli/src/cli.ts) → [task-bench.ts](../../scripts/task-bench.ts) → [runner.ts](../../scripts/benchmarks/lib/runner.ts) → [sync.ts](../../cli/src/sync.ts). One file per commit. `deno task check` green after each commit, not only at the end.
+Decompose the five hotspot files into named helper functions, each ≤100 lines and single-responsibility. Preserve every public signature; preserve the order of side-effects observable from existing tests. No new dependencies, no new tests for existing behavior, no test modification. Refactor order from lowest to highest blast-radius: [trace-renderer.ts](../../scripts/acceptance-tests/lib/trace-renderer.ts) → [cli.ts](../../cli/src/cli.ts) → [task-bench.ts](../../scripts/task-bench.ts) → [runner.ts](../../scripts/acceptance-tests/lib/runner.ts) → [sync.ts](../../cli/src/sync.ts). One file per commit. `deno task check` green after each commit, not only at the end.
 
 ## Consequences
 
@@ -73,13 +73,13 @@ For each file, in order — `trace-renderer.ts` → `cli.ts` → `task-bench.ts`
 
 Concrete decomposition (as implemented):
 
-- **[trace-renderer.ts](../../scripts/benchmarks/lib/trace-renderer.ts)** → `renderDashboard`, `renderDashboardRows`, `renderEvent`, `renderEventTimeline`, `renderScenarioSummaryCard`, `renderScenarioHeader`, `renderScenarioDetail`, `renderToC`, `renderTraceReport` (top-level).
+- **[trace-renderer.ts](../../scripts/acceptance-tests/lib/trace-renderer.ts)** → `renderDashboard`, `renderDashboardRows`, `renderEvent`, `renderEventTimeline`, `renderScenarioSummaryCard`, `renderScenarioHeader`, `renderScenarioDetail`, `renderToC`, `renderTraceReport` (top-level).
 - **[cli.ts](../../cli/src/cli.ts)** → `prepareScope`, `loadOrGenerateConfig`, `executeSync`, `buildResourceSections`, `buildActionEntries`, `printSyncHeader`, `printActionsAndSummary`, `printTrailers`, `groupByAction`, plus per-subcommand builders `buildSyncSubcommand` / `buildLoopSubcommand` / `buildMigrateSubcommand` / `buildUpdateSubcommand` / `buildRootAction`.
 - **[task-bench.ts](../../scripts/task-bench.ts)** → `parseAndValidateArgs`, `selectScenarios`, `precheckCache`, `runTasks`, `executeTask`, `printSummaryTable`, `buildExecutionContext`, `finalizeRun`, `printPassRates`, `printDetailedErrors`, `buildRuntimeSetup`, `printRunHeader`, `createRunDir`, `updateLatestSymlink`. Top-level `main()` becomes a short orchestrator.
-- **[runner.ts](../../scripts/benchmarks/lib/runner.ts)** → `setupSandbox`, `initTracer`, `prepareSandboxFiles`, `initSandboxGit`, `runAgentWithTimeout`, `gatherJudgeEvidence`, `judgeAndScore`, `collectGeneratedFiles`, `scoreChecklist`. Top-level `runScenario()` orchestrates.
+- **[runner.ts](../../scripts/acceptance-tests/lib/runner.ts)** → `setupSandbox`, `initTracer`, `prepareSandboxFiles`, `initSandboxGit`, `runAgentWithTimeout`, `gatherJudgeEvidence`, `judgeAndScore`, `collectGeneratedFiles`, `scoreChecklist`. Top-level `runScenario()` orchestrates.
 - **[sync.ts](../../cli/src/sync.ts)** → `loadFrameworkAndIndexes`, `resolveResourcesForSync`, `readPrimitiveFiles`, `syncSkillsAndCommandsForIde`, `syncAgentsForIde`, `syncHooksForIde`, `syncScriptsForIde`, `syncCoreAssetsForIde`, `syncSingleIde`, `runUserSyncStep`, `runSymlinksStep`, `resolveTargetIdes`, `markAllFailedActions`. Top-level `sync()` orchestrates phases in fixed order.
 
 ## Follow-ups
 
-- Add a lightweight check (script or lint plugin) that flags any function > 100 lines in `cli/src/`, `scripts/benchmarks/lib/`, `scripts/task-*.ts`. Without it, drift back into god-functions is invisible until the next maintenance scan.
+- Add a lightweight check (script or lint plugin) that flags any function > 100 lines in `cli/src/`, `scripts/acceptance-tests/lib/`, `scripts/task-*.ts`. Without it, drift back into god-functions is invisible until the next maintenance scan.
 - Consider extracting subcommand handlers from `cli/src/cli.ts` into `cli/src/commands/<name>.ts` if `cli.ts` grows further — currently in-file helpers are sufficient.

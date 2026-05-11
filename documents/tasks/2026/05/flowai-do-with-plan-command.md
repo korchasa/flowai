@@ -49,7 +49,7 @@ The project already has a precedent for composite commands: `flowai-review-and-c
 - **Variant gate inside Phase 1** is honoured: the composite stops Phase 1 at "ask user which variant" and only proceeds to Phase 2 after the user selects (this is the existing behaviour of the source skill — preserved by inlining).
 - **Verdict gate inside Phase 3** is honoured: Request Changes / Needs Discussion stops the composite without committing.
 - **No new agent-invocable surface** — `disable-model-invocation: true` is auto-injected; agent cannot self-trigger this command.
-- **Bench TDD applies** (per AGENTS.md "Benchmark TDD"): RED scenario(s) must fail before SKILL.md is written, GREEN once SKILL.md is final, ALL benchmarks for the command run on CHECK.
+- **Bench TDD applies** (per AGENTS.md "Acceptance Test TDD"): RED scenario(s) must fail before SKILL.md is written, GREEN once SKILL.md is final, ALL benchmarks for the command run on CHECK.
 - **Composite-skill description rules**: the description string MUST NOT contain `flowai-plan-exp-permanent-tasks` or `flowai-review-and-commit-beta` literally; MUST contain the "Self-contained" phrase.
 
 ## Definition of Done
@@ -128,12 +128,12 @@ The project already has a precedent for composite commands: `flowai-review-and-c
 5. `documents/index.md` — register `## FR` row for `FR-DO-WITH-PLAN` (executed by this skill at step 5b; no manual edit needed).
 6. `CLAUDE.md` (root) — extend `## Documentation Map` if needed: not required, since the existing `framework/<pack>/commands/<name>/SKILL.md` row covers it.
 
-### Implementation approach (Benchmark TDD)
+### Implementation approach (Acceptance Test TDD)
 
 Order is mandatory — each step is a checkpoint.
 
-1. **RED — happy-path bench first.** Author `benchmarks/full-cycle/mod.ts` skeleton (use `BenchmarkSkillScenario`, `skill = "flowai-do-with-plan"`, `interactive = true`, `maxSteps = 60`, `stepTimeoutMs = 600_000`). Set checklist items per DoD. Run `deno task bench -f flowai-do-with-plan-full-cycle`. Expect failure (`Unknown skill` — SKILL.md does not exist yet). This proves the bench infra sees the new id.
-2. **Smoke-check infra.** Run `deno task bench -f flowai-review-and-commit-beta-auto-invoke-reflect` to confirm the runner is healthy in this session before writing the new SKILL.md. (See AGENTS.md "Benchmark Infrastructure Smoke Test".)
+1. **RED — happy-path bench first.** Author `benchmarks/full-cycle/mod.ts` skeleton (use `AcceptanceTestScenario`, `skill = "flowai-do-with-plan"`, `interactive = true`, `maxSteps = 60`, `stepTimeoutMs = 600_000`). Set checklist items per DoD. Run `deno task bench -f flowai-do-with-plan-full-cycle`. Expect failure (`Unknown skill` — SKILL.md does not exist yet). This proves the bench infra sees the new id.
+2. **Smoke-check infra.** Run `deno task bench -f flowai-review-and-commit-beta-auto-invoke-reflect` to confirm the runner is healthy in this session before writing the new SKILL.md. (See AGENTS.md "Acceptance Test Infrastructure Smoke Test".)
 3. **GREEN — author SKILL.md.** Frontmatter:
    ```yaml
    ---

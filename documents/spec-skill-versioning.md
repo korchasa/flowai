@@ -215,7 +215,7 @@ skills.
 - `@std/semver` is part of Deno standard library. Add via `deno add jsr:@std/semver`
   if not already in `deno.json`. Check existing imports first.
 - Only `SKILL.md` files carry version metadata. Other skill files (scripts,
-  benchmarks) are compared by content as before.
+  acceptance tests) are compared by content as before.
 - `computePlan` receives upstream files as `UpstreamFile[]` — the `SKILL.md` file
   path is identifiable by `path.endsWith("SKILL.md")`.
 - The constraint is keyed by skill directory name (e.g., `flowai-commit`), which is
@@ -283,7 +283,7 @@ constraint.
 
 - `cli/src/frontmatter_test.ts` (finalize, may already exist from Phase 2)
 - `cli/src/plan_test.ts` (finalize, may already exist from Phase 3)
-- `framework/devtools/skills/flowai-skill-engineer-subagent/benchmarks/skill-versioning/mod.ts` (new benchmark)
+- `framework/devtools/skills/flowai-skill-engineer-subagent/acceptance-tests/skill-versioning/mod.ts` (new benchmark)
 
 ### Tasks
 
@@ -292,7 +292,7 @@ constraint.
    - Frontmatter with no `version` field → `parseFrontmatter` returns `"0.0.0"`.
    - Constraint that is an invalid semver range → parse-time error.
    - Skills with no constraint: content-diff logic unchanged end-to-end.
-3. Create benchmark scenario `framework/devtools/skills/flowai-skill-engineer-skill/benchmarks/skill-versioning/mod.ts`
+3. Create acceptance test scenario `framework/devtools/skills/flowai-skill-engineer-skill/acceptance-tests/skill-versioning/mod.ts`
    (host: `flowai-skill-engineer-skill` — closest skill for SKILL.md authoring tasks):
    - Scenario: user asks to add `version: "1.0.0"` to a SKILL.md that lacks it.
    - Checklist items:
@@ -301,7 +301,7 @@ constraint.
      - Version value matches semver pattern `^\d+\.\d+\.\d+$`.
 4. Verify benchmark host path: `ls framework/devtools/skills/flowai-skill-engineer-skill/`
    must exist; adjust path if structure differs.
-5. Run benchmark: `deno task bench skill-versioning` — must pass.
+5. Run acceptance test: `deno task acceptance-tests skill-versioning` — must pass.
 6. Run `deno task check` — must exit 0 with no errors or warnings.
 
 ### Verification
@@ -313,6 +313,6 @@ constraint.
 ### Notes
 
 - Benchmark scenarios live co-located with skills, discovered via `walk()` in
-  `scripts/task-bench.ts`. Check `benchmarks/CLAUDE.md` for scenario file format.
+  `scripts/task-acceptance-tests.ts`. Check `acceptance-tests/CLAUDE.md` for scenario file format.
 - Benchmark host `flowai-skill-engineer-skill` is for SKILL.md authoring — it is the
   closest match. If absent, fall back to `flowai-skill-engineer-subagent`.

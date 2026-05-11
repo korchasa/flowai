@@ -202,7 +202,7 @@ skill text wastes bench cycles and frequently introduces regressions
 (e.g. "mandatory capture-to-file" rules that don't help because hooks
 block before the shell redirect executes).
 
-## 6.1 Trigger Scenarios for Skills (FR-BENCH.TRIGGER)
+## 6.1 Trigger Scenarios for Skills (FR-ACCEPT.TRIGGER)
 
 Execution scenarios prove "when skill X runs, it works." They do NOT prove that the model picks skill X for a relevant query, or that it stands down for an unrelated one. **Trigger scenarios** close that gap: they verify description-matching correctness.
 
@@ -252,9 +252,9 @@ Every trigger scenario carries exactly **one critical** checklist item.
 ### Template (`mod.ts`)
 
 ```ts
-import { BenchmarkSkillScenario } from "@bench/types.ts";
+import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-export const TriggerPos1 = new class extends BenchmarkSkillScenario {
+export const TriggerPos1 = new class extends AcceptanceTestScenario {
   id = "<skill-id>-trigger-pos-1";
   name = "<short label, e.g. 'natural fix-tests query'>";
   skill = "<skill-id>";
@@ -271,7 +271,7 @@ export const TriggerPos1 = new class extends BenchmarkSkillScenario {
 
 ### RED-phase verification
 
-Before scaling, write one positive scenario and run it; confirm the judge correctly fails the run when the skill's `description` is mangled to be unrelated. Then revert the description. This validates the pattern end-to-end. See SRS `FR-BENCH.TRIGGER`, SDS §3.4.2.
+Before scaling, write one positive scenario and run it; confirm the judge correctly fails the run when the skill's `description` is mangled to be unrelated. Then revert the description. This validates the pattern end-to-end. See SRS `FR-ACCEPT.TRIGGER`, SDS §3.4.2.
 
 ## 7. Universal Result Schema
 
@@ -307,4 +307,4 @@ To ensure cross-platform compatibility, benchmark results must follow a standard
 ## 9. Assets & References
 
 - **[examples/scenario-example.md](assets/scenario-example.md)**: Template for defining scenarios.
-- **[benchmarks/config.json](benchmarks/config.json)**: Main configuration file for models and presets.
+- **[acceptance-tests/config.json](acceptance-tests/config.json)**: Main configuration file for models and presets.

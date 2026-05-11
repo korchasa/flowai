@@ -26,13 +26,13 @@
     "@std/toml": "jsr:@std/toml@^1.0.2",
     "@std/yaml": "jsr:@std/yaml@^1.0.12",
     "zod": "npm:zod@^3.25.76",
-    "@bench/": "./scripts/benchmarks/lib/"
+    "@acceptance-tests/": "./scripts/acceptance-tests/lib/"
   },
   "tasks": {
     "check": "deno run -A scripts/task-check.ts",
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
-    "bench": "deno run -A scripts/task-bench.ts",
+    "acceptance-tests": "deno run -A scripts/task-acceptance-tests.ts",
     "sync-local": "deno run -A scripts/task-sync-local.ts",
     "sync-global": "deno run -A scripts/task-sync-global.ts",
     "bundle": "deno run -A cli/scripts/bundle-framework.ts",
@@ -40,10 +40,10 @@
   },
   "lint": {
     "exclude": [
-      "framework/*/skills/*/benchmarks/",
-      "framework/*/commands/*/benchmarks/",
-      "framework/*/agents/*/benchmarks/",
-      "framework/*/benchmarks/*/fixture/"
+      "framework/*/skills/*/acceptance-tests/",
+      "framework/*/commands/*/acceptance-tests/",
+      "framework/*/agents/*/acceptance-tests/",
+      "framework/*/acceptance-tests/*/fixture/"
     ]
   },
   "fmt": {
@@ -53,10 +53,10 @@
       ".cursor/",
       ".claude/",
       ".flowai.yaml",
-      "framework/*/skills/*/benchmarks/*/fixture/",
-      "framework/*/commands/*/benchmarks/*/fixture/",
-      "framework/*/agents/*/benchmarks/*/fixture/",
-      "framework/*/benchmarks/*/fixture/"
+      "framework/*/skills/*/acceptance-tests/*/fixture/",
+      "framework/*/commands/*/acceptance-tests/*/fixture/",
+      "framework/*/agents/*/acceptance-tests/*/fixture/",
+      "framework/*/acceptance-tests/*/fixture/"
     ]
   }
 }

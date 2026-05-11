@@ -137,9 +137,9 @@ Deno.test("resolvePackResources - packs: [core] only includes core scripts", () 
   assertEquals(result.scriptNames, ["check.ts"]);
 });
 
-// --- Dev-only file exclusion tests (benchmarks + tests) ---
+// --- Dev-only file exclusion tests (acceptance-tests + tests) ---
 
-Deno.test("readPackSkillFiles - excludes benchmarks and test files", async () => {
+Deno.test("readPackSkillFiles - excludes acceptance-tests and test files", async () => {
   const source = new InMemoryFrameworkSource(
     new Map([
       ["framework/core/skills/flowai-skill-demo/SKILL.md", "# Demo"],
@@ -150,11 +150,11 @@ Deno.test("readPackSkillFiles - excludes benchmarks and test files", async () =>
         "test code",
       ],
       [
-        "framework/core/skills/flowai-skill-demo/benchmarks/basic/mod.ts",
+        "framework/core/skills/flowai-skill-demo/acceptance-tests/basic/mod.ts",
         "bench code",
       ],
       [
-        "framework/core/skills/flowai-skill-demo/benchmarks/basic/fixture/file.md",
+        "framework/core/skills/flowai-skill-demo/acceptance-tests/basic/fixture/file.md",
         "fixture",
       ],
     ]),
@@ -164,8 +164,8 @@ Deno.test("readPackSkillFiles - excludes benchmarks and test files", async () =>
     "framework/core/skills/flowai-skill-demo/prompt.md",
     "framework/core/skills/flowai-skill-demo/scripts/helper.ts",
     "framework/core/skills/flowai-skill-demo/scripts/helper_test.ts",
-    "framework/core/skills/flowai-skill-demo/benchmarks/basic/mod.ts",
-    "framework/core/skills/flowai-skill-demo/benchmarks/basic/fixture/file.md",
+    "framework/core/skills/flowai-skill-demo/acceptance-tests/basic/mod.ts",
+    "framework/core/skills/flowai-skill-demo/acceptance-tests/basic/fixture/file.md",
   ];
 
   const files = await readPackSkillFiles(
@@ -182,14 +182,14 @@ Deno.test("readPackSkillFiles - excludes benchmarks and test files", async () =>
   ]);
 });
 
-Deno.test("readSkillFiles - excludes benchmarks and test files", async () => {
+Deno.test("readSkillFiles - excludes acceptance-tests and test files", async () => {
   const source = new InMemoryFrameworkSource(
     new Map([
       ["framework/skills/flowai-skill-demo/SKILL.md", "# Demo"],
       ["framework/skills/flowai-skill-demo/scripts/run.ts", "code"],
       ["framework/skills/flowai-skill-demo/scripts/run_test.ts", "test"],
       [
-        "framework/skills/flowai-skill-demo/benchmarks/basic/mod.ts",
+        "framework/skills/flowai-skill-demo/acceptance-tests/basic/mod.ts",
         "bench code",
       ],
     ]),
@@ -198,7 +198,7 @@ Deno.test("readSkillFiles - excludes benchmarks and test files", async () => {
     "framework/skills/flowai-skill-demo/SKILL.md",
     "framework/skills/flowai-skill-demo/scripts/run.ts",
     "framework/skills/flowai-skill-demo/scripts/run_test.ts",
-    "framework/skills/flowai-skill-demo/benchmarks/basic/mod.ts",
+    "framework/skills/flowai-skill-demo/acceptance-tests/basic/mod.ts",
   ];
 
   const files = await readSkillFiles(["flowai-skill-demo"], allPaths, source);
@@ -228,7 +228,7 @@ Deno.test("readPackCommandFiles - reads commands from framework/<pack>/commands/
         "test",
       ],
       [
-        "framework/core/commands/flowai-commit/benchmarks/basic/mod.ts",
+        "framework/core/commands/flowai-commit/acceptance-tests/basic/mod.ts",
         "bench",
       ],
     ]),
@@ -237,7 +237,7 @@ Deno.test("readPackCommandFiles - reads commands from framework/<pack>/commands/
     "framework/core/commands/flowai-commit/SKILL.md",
     "framework/core/commands/flowai-commit/scripts/helper.ts",
     "framework/core/commands/flowai-commit/scripts/helper_test.ts",
-    "framework/core/commands/flowai-commit/benchmarks/basic/mod.ts",
+    "framework/core/commands/flowai-commit/acceptance-tests/basic/mod.ts",
   ];
 
   const files = await readPackCommandFiles(
@@ -337,14 +337,14 @@ Deno.test("readCommandFiles - legacy flat framework/commands/", async () => {
         "---\nname: flowai-commit\ndescription: x\n---\n",
       ],
       [
-        "framework/commands/flowai-commit/benchmarks/basic/mod.ts",
+        "framework/commands/flowai-commit/acceptance-tests/basic/mod.ts",
         "bench",
       ],
     ]),
   );
   const allPaths = [
     "framework/commands/flowai-commit/SKILL.md",
-    "framework/commands/flowai-commit/benchmarks/basic/mod.ts",
+    "framework/commands/flowai-commit/acceptance-tests/basic/mod.ts",
   ];
   const files = await readCommandFiles(["flowai-commit"], allPaths, source);
   assertEquals(files.length, 1);

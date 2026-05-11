@@ -21,7 +21,7 @@
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
 - Everything in `framework/` is the framework — the product of this project. Users install it via flowai into their IDE's config dir (`.claude/`). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
-- Any changes to skills or agents must follow Benchmark TDD flow (see "Benchmark TDD" section below) — untested skill changes lead to regressions that are hard to detect without benchmarks.
+- Any changes to skills or agents must follow Acceptance Test TDD flow (see "Acceptance Test TDD" section below) — untested skill changes lead to regressions that are hard to detect without acceptance tests.
 - This is a universal framework for multiple IDEs (Cursor, Claude Code, OpenCode). Do not use tool names specific to a single IDE — write generically and provide examples for various IDEs. For example, instead of `use todo_write`, use `add to todo list (by todo_write, todowrite, etc.)`.
 - Use relative paths in commands when possible — absolute paths only when required by the tool or context.
 - Be precise in wording. Use a scientific approach — accompany highly specialized terms and abbreviations with short hints in parentheses.
@@ -57,7 +57,7 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 - Python (benchmark fixtures only; no production scripts)
 
 ## Architecture
-- `framework/<pack>/`: Source of truth for product packs. Each pack has `pack.yaml` + two primitive dirs: `commands/` (user-only workflows) and `skills/` (agent-invocable capabilities). `agents/`, `hooks/`, `scripts/`, `assets/`, `benchmarks/` are optional.
+- `framework/<pack>/`: Source of truth for product packs. Each pack has `pack.yaml` + two primitive dirs: `commands/` (user-only workflows) and `skills/` (agent-invocable capabilities). `agents/`, `hooks/`, `scripts/`, `assets/`, `acceptance-tests/` are optional.
 - `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework commands + skills install into `.claude/skills/` (commands get `disable-model-invocation: true` injected by the CLI writer).
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
@@ -109,13 +109,13 @@ the mapped section contradicts new code → update the section.
 - `cli/src/update.ts` → [FR-DIST.UPDATE](documents/requirements.md#fr-dist.update-pre-flight-update-notice) / [FR-DIST.UPDATE-CMD](documents/requirements.md#fr-dist.update-cmd-self-update-subcommand), [SDS §3.10 Framework Update](documents/design.md#3.10-framework-update-skill-flowai-update)
 - `cli/src/loop.ts` → [FR-LOOP](documents/requirements.md#fr-loop-non-interactive-runner-flowai-loop), [SDS §3.11 Loop Command](documents/design.md#3.11-loop-command-non-interactive-runner-fr-loop-clisrcloop.ts)
 - `cli/src/adapt.ts` → [FR-ADAPT-INSTRUCTIONS](documents/requirements.md#fr-adapt-instructions-standalone-agents.md-re-adaptation-flowai-skill-adapt-instructions), [SDS §3.5.1](documents/design.md#3.5.1-agents.md-re-adaptation-skill-flowai-skill-adapt-instructions) + [§3.12](documents/design.md#3.12-standalone-primitive-adaptation-flowai-adapt)
-- `scripts/benchmarks/` → SRS `FR-BENCH*` clauses, [SDS §3.4 Benchmark System](documents/design.md#3.4-benchmark-system-benchmarks-scriptsbenchmarks)
-- `scripts/benchmarks/lib/cache.ts` / `benchmarks/cache/` → [FR-BENCH-CACHE](documents/requirements.md#fr-bench-cache-benchmark-result-cache), [SDS §3.4.1 Benchmark Result Cache](documents/design.md#3.4.1-benchmark-result-cache-fr-bench-cache-scriptsbenchmarkslibcache.ts)
-- `scripts/benchmarks/lib/process_watchdog.ts` / `scripts/benchmarks/lib/system_health.ts` → [FR-BENCH-GUARDS](documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents), [SDS §3.4.2 Resource Guards](documents/design.md#3.4.2-resource-guards-for-spawned-agents-fr-bench-guards-scriptsbenchmarkslibprocess_watchdog.ts-system_health.ts)
+- `scripts/acceptance-tests/` → SRS `FR-ACCEPT*` clauses, [SDS §3.4 Acceptance Test System](documents/design.md#3.4-benchmark-system-benchmarks-scriptsbenchmarks)
+- `scripts/acceptance-tests/lib/cache.ts` / `acceptance-tests/cache/` → [FR-ACCEPT-CACHE](documents/requirements.md#fr-bench-cache-benchmark-result-cache), [SDS §3.4.1 Acceptance Test Result Cache](documents/design.md#3.4.1-benchmark-result-cache-fr-bench-cache-scriptsbenchmarkslibcache.ts)
+- `scripts/acceptance-tests/lib/process_watchdog.ts` / `scripts/acceptance-tests/lib/system_health.ts` → [FR-ACCEPT-GUARDS](documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents), [SDS §3.4.2 Resource Guards](documents/design.md#3.4.2-resource-guards-for-spawned-agents-fr-bench-guards-scriptsbenchmarkslibprocess_watchdog.ts-system_health.ts)
 - `scripts/check-*.ts` → SDS §5 Logic / validation rules; SRS where the rule is first defined
 - `scripts/task-*.ts` → [README §CLI Commands](README.md#cli-commands)
 - `documents/ides-difference.md` is READ-ONLY reference for `FR-HOOK-DOCS`..`FR-IDE-SCOPE` clauses — update only when IDE capabilities change.
-- Files whose changes NEVER require doc sync: `*_test.ts`, `**/benchmarks/*/mod.ts`, `**/benchmarks/*/fixture/**`, `.github/`, `.devcontainer/`, formatting-only edits, `deno.lock`.
+- Files whose changes NEVER require doc sync: `*_test.ts`, `**/acceptance-tests/*/mod.ts`, `**/acceptance-tests/*/fixture/**`, `.github/`, `.devcontainer/`, formatting-only edits, `deno.lock`.
 
 ## Documentation Rules
 
@@ -128,7 +128,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
   1. **Code-evidenced**: Source files contain `// FR-<ID>` (TS/JS) or `# FR-<ID>` (YAML/shell)
      comments near implementing logic. Validated by `deno task check` (`check-traceability.ts`).
      No paths in SRS — the code comment IS the evidence.
-  2. **Non-code evidence** (benchmarks, URLs, config files without comment support, file/dir existence):
+  2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence):
      Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a benchmark scenario ID (flowai's own idiom, matched by `check-fr-coverage.ts`), a test `path::name`, a verification command, or `manual — <reviewer>`. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Enforced by `flowai-skill-plan` (DoD tuple), `flowai-skill-review` / `flowai-review-and-commit` (FR Coverage Audit — blocking), and `flowai-commit` / `flowai-review-and-commit` (FR Acceptance Gate on SRS edits).
@@ -150,7 +150,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 ### 3.1 FR-CMD-EXEC
 - **Desc:**
 - **Scenario:**
-- **Acceptance verified by benchmarks:** `scenario-id-1`, `scenario-id-2`
+- **Acceptance verified by acceptance tests:** `scenario-id-1`, `scenario-id-2`
   <!-- or: **Acceptance:** tests/foo_test.ts::test_bar | `deno task check-x` | manual — <reviewer> -->
 - **Status:** [ ] / [x]
 ---
@@ -300,35 +300,35 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 - When a test fails, fix the source code — not the test. Do not modify a failing test to make it pass, do not add error swallowing or skip logic.
 - Do not create source files with guessed or fabricated data to satisfy imports — if the data source is missing, that is a blocker (see Diagnosing Failures).
 
-### Benchmark TDD (Commands/Skills/Agents)
+### Acceptance Test TDD (Commands/Skills/Agents)
 
 **For Skills and Commands** (same flow — `<kind>` = `skills` or `commands`):
-1. **RED**: Write benchmark scenario (`framework/<pack>/<kind>/<name>/benchmarks/<scenario>/mod.ts`) for new/changed behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
+1. **RED**: Write benchmark scenario (`framework/<pack>/<kind>/<name>/acceptance-tests/<scenario>/mod.ts`) for new/changed behavior. Run benchmark — it MUST fail (proves the scenario tests something real).
 2. **GREEN**: Update SKILL.md (`framework/<pack>/<kind>/<name>/SKILL.md`) until benchmark passes.
 3. **REFACTOR**: Improve text or benchmark clarity. No behavior change. Re-run benchmark.
-4. **CHECK**: ALL benchmarks for the affected primitive run on the user side (or in CI). Hand off with the command `deno task bench -f <primitive-id>`. Fix any reported failures by re-entering the RED→GREEN cycle on the failing scenario.
+4. **CHECK**: ALL acceptance tests for the affected primitive run on the user side (or in CI). Hand off with the command `deno task acceptance-tests -f <primitive-id>`. Fix any reported failures by re-entering the RED→GREEN cycle on the failing scenario.
 
 **For Agents (subagents):**
-1. **RED**: Write benchmark scenario (`framework/<pack>/agents/<agent-name>/benchmarks/<name>/mod.ts`) for new/changed agent behavior. Use `BenchmarkAgentScenario` base class (field `agent` instead of `skill`). Run benchmark — it MUST fail.
+1. **RED**: Write benchmark scenario (`framework/<pack>/agents/<agent-name>/acceptance-tests/<name>/mod.ts`) for new/changed agent behavior. Use `AcceptanceTestAgentScenario` base class (field `agent` instead of `skill`). Run benchmark — it MUST fail.
 2. **GREEN**: Update agent (`framework/<pack>/agents/<agent-name>.md`) until benchmark passes.
 3. **REFACTOR**: Improve agent prompt or benchmark clarity. No behavior change. Re-run benchmark.
-4. **CHECK**: Run ALL benchmarks for the affected agent. Fix all failures.
+4. **CHECK**: Run ALL acceptance tests for the affected agent. Fix all failures.
 
-**Who runs benchmarks**:
+**Who runs acceptance tests**:
 
 - RED, GREEN, REFACTOR — agent runs ONLY the specific scenario(s) being authored / iterated. This is mandatory and not deferrable to the user; LLM-cost or run-duration are NOT valid reasons to defer (a single scenario is local and reversible — sandbox + cache, not in the `Executing actions with care` taxonomy).
-- CHECK (full sweep across ALL scenarios for the affected primitive) — defer to the user. A primitive may carry 10–25 scenarios; running them all is hours and significant LLM cost. Author a clear hand-off message: list the new/changed scenarios already verified, the cache state, and the exact command (`deno task bench -f <primitive-id>`) for the user to run. Do NOT run the full sweep yourself unless the user explicitly authorises it for the current task.
+- CHECK (full sweep across ALL scenarios for the affected primitive) — defer to the user. A primitive may carry 10–25 scenarios; running them all is hours and significant LLM cost. Author a clear hand-off message: list the new/changed scenarios already verified, the cache state, and the exact command (`deno task acceptance-tests -f <primitive-id>`) for the user to run. Do NOT run the full sweep yourself unless the user explicitly authorises it for the current task.
 - When a guard (`system_health`, `process_watchdog`) blocks even a single-scenario run, report the blocker and its cause — wait, retry, or hand off explicitly. Do NOT pre-emptively use override flags or environment variables.
 
-#### Benchmark Rules
+#### Acceptance Test Rules
 
 - EVERY command/skill/agent change MUST have a corresponding benchmark scenario (new or existing) that covers the changed behavior.
 - Write benchmark BEFORE changing the primitive (RED phase). If the benchmark already passes before the change, the scenario is not testing the right thing — revise it.
 - Benchmark scenarios test OBSERVABLE BEHAVIOR (checklist items), not internal wording.
 - One scenario per distinct capability or edge case. Do not overload a single scenario.
 - **Grep before writing a near-duplicate scenario.** Before authoring a new scenario aimed at a specific keyword / branch label / verdict value, grep the target SKILL.md (or agent.md) for that label. If multiple labels share an identical execution path (e.g., `Request Changes` and `Needs Discussion` both route to `output report + STOP`), ONE scenario covers all of them — encode label tolerance in the checklist text rather than spawning a near-duplicate. A new file is justified only when the code path differs. Skipping this check has cost ~1h of LLM time per redundant scenario.
-- Run ALL benchmarks for the affected primitive before finishing, not just the new one.
-- Commands and skills both use `BenchmarkSkillScenario` (field: `skill`) — the installed IDE representation is a `SKILL.md`, regardless of the source `commands/` vs `skills/` directory. Agents use `BenchmarkAgentScenario` (field: `agent`).
+- Run ALL acceptance tests for the affected primitive before finishing, not just the new one.
+- Commands and skills both use `AcceptanceTestScenario` (field: `skill`) — the installed IDE representation is a `SKILL.md`, regardless of the source `commands/` vs `skills/` directory. Agents use `AcceptanceTestAgentScenario` (field: `agent`).
 - **No test-fitting.** If a benchmark fails, first determine whether the problem is in the skill/agent or in the benchmark. Signs of test-fitting: userQuery hints at the correct approach, simulatedUser/persona scripts the exact answer, mocks leak internal logic, setup pre-creates artifacts the skill should produce. Fix the skill/agent first; adjust the benchmark only if the scenario itself is wrong.
 - **Mocks are static.** The hooks-based mock mechanism returns the same `reason` string for ALL invocations of the mocked tool. Do NOT use conditional logic (`if`/`case`/`$`) in mock values — it will be shown as raw text, not executed. One mock = one response.
 
@@ -337,7 +337,7 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 The goal is to identify the root cause, not to suppress the symptom. A quick workaround that hides the root cause is worse than an unresolved issue with a correct diagnosis.
 
 1. Read the relevant code and error output before making any changes.
-2. For benchmark behavioral failures (skill/command/agent scenario where exit code is fine but checklist score is low): READ `benchmarks/runs/latest/<scenario-id>/run-1/judge-evidence.md` BEFORE editing the SKILL.md. The trace shows the actual tool calls — text edits cannot fix execution paths the agent never takes (e.g., a composite skill delegating to a standalone skill via the Skill tool).
+2. For benchmark behavioral failures (skill/command/agent scenario where exit code is fine but checklist score is low): READ `acceptance-tests/runs/latest/<scenario-id>/run-1/judge-evidence.md` BEFORE editing the SKILL.md. The trace shows the actual tool calls — text edits cannot fix execution paths the agent never takes (e.g., a composite skill delegating to a standalone skill via the Skill tool).
 3. Apply "5 WHY" analysis to find the root cause.
 4. Root cause is fixable — apply the fix, retry.
 5. Second fix attempt failed — STOP. Output "STOP-ANALYSIS REPORT" (state, expected, 5-why chain, root cause, hypotheses). Wait for user help.
@@ -355,10 +355,10 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
 
 ### Responsibility
 
-Build tooling, verification, and benchmark infrastructure for flowai.
+Build tooling, verification, and acceptance test infrastructure for flowai.
 
-- `scripts/*.ts` — Deno task entry points (check, test, dev, bench)
-- `scripts/benchmarks/lib/` — Benchmark framework: adapter layer for IDE CLIs, scenario runner, LLM judge, trace visualization, token usage estimation
+- `scripts/*.ts` — Deno task entry points (check, test, dev, acceptance-tests)
+- `scripts/acceptance-tests/lib/` — Acceptance test framework: adapter layer for IDE CLIs, scenario runner, LLM judge, trace visualization, token usage estimation
 - `scripts/check-*.ts` — Validation scripts for skills and sync integrity
 
 ### Standard Interface
@@ -374,7 +374,7 @@ Build tooling, verification, and benchmark infrastructure for flowai.
 - `deno task check` (check deno.json)
 - `deno task test` (check deno.json)
 - `deno task dev` (check deno.json)
-- `deno task bench` (check deno.json)
+- `deno task acceptance-tests` (check deno.json)
 
 ### CLI Test Caveat
 - CLI tests (`cli/src/`) require `-A` flag and MUST be run from **repo root**, not from `cli/` subdir. See `cli/CLAUDE.md` for details.
@@ -391,25 +391,25 @@ Build tooling, verification, and benchmark infrastructure for flowai.
 - **Real verdict** comes from the final `N passed | M failed` summary lines, NOT from the presence of `=== FAIL` strings. Always grep for `failed` count, not for `FAIL`.
 - If the agent stops on `=== FAIL deno eval Deno.exit(...)` without checking the summary line, it is a false alarm.
 
-### Benchmark Infrastructure Smoke Test
+### Acceptance Test Infrastructure Smoke Test
 
 Before writing or modifying a benchmark scenario for a command or skill, run one **existing** scenario for the same primitive to verify infrastructure works:
 
 ```sh
-deno task bench -f <existing-scenario-id>
+deno task acceptance-tests -f <existing-scenario-id>
 ```
 
-If it finishes with 0 agent steps or "Unknown skill" — the benchmark runner has an infrastructure bug (e.g., `copyFrameworkToIdeDir` not copying the primitive). Fix the runner first; do not write new scenarios on broken infrastructure.
+If it finishes with 0 agent steps or "Unknown skill" — the acceptance test runner has an infrastructure bug (e.g., `copyFrameworkToIdeDir` not copying the primitive). Fix the runner first; do not write new scenarios on broken infrastructure.
 
 The runner also pre-checks that `scenario.skill` is mounted in the sandbox before spawning the agent and warns on suspiciously short agent output (< 200 chars with exit 0).
 
-- The bench `-f` flag accepts ONE substring (last-wins on multiple). To run several scenarios: use a broader substring covering all of them, OR run sequential single-`-f` invocations. Multiple `-f` flags silently keep only the last value.
-- A bench run reporting "0 errors, 0 scenarios run" with exit 0 is a SETUP FAILURE, not success. Check stderr for "Error running scenario" lines. Common cause: missing `fixture/` directory referenced by the scenario's setup hook.
-- **user-level skill collision (FR-BENCH-ISOLATION)**: Claude Code's Skill tool resolves `~/.claude/skills/<name>/SKILL.md` (user-level) over `<sandbox>/.claude/skills/<name>/SKILL.md` (project-level) on name collision. Without mitigation, every framework-source `SKILL.md` edit silently routes the model to the developer's installed snapshot, and the Benchmark TDD RED→GREEN cycle produces no observable change. Mitigation lives in `ClaudeAdapter.prepareWorkspace` (`scripts/benchmarks/lib/adapters/claude.ts`): builds `<workDir>/bench-home/` (sibling of the sandbox; placed outside the sandbox cwd so `git status` does not flag it as untracked) with an empty `.claude/skills/` and symlinks back to `~/Library/Keychains` and `~/.local/share/claude` for OAuth/Keychain auth, then exports `HOME=<workDir>/bench-home`. `~/.claude/skills/` is never read or written by the bench. Cursor/Codex have no analogous bug and pass through unchanged.
+- The `acceptance-tests -f` flag accepts ONE substring (last-wins on multiple). To run several scenarios: use a broader substring covering all of them, OR run sequential single-`-f` invocations. Multiple `-f` flags silently keep only the last value.
+- An `acceptance-tests` run reporting "0 errors, 0 scenarios run" with exit 0 is a SETUP FAILURE, not success. Check stderr for "Error running scenario" lines. Common cause: missing `fixture/` directory referenced by the scenario's setup hook.
+- **user-level skill collision (FR-ACCEPT-ISOLATION)**: Claude Code's Skill tool resolves `~/.claude/skills/<name>/SKILL.md` (user-level) over `<sandbox>/.claude/skills/<name>/SKILL.md` (project-level) on name collision. Without mitigation, every framework-source `SKILL.md` edit silently routes the model to the developer's installed snapshot, and the Acceptance Test TDD RED→GREEN cycle produces no observable change. Mitigation lives in `ClaudeAdapter.prepareWorkspace` (`scripts/acceptance-tests/lib/adapters/claude.ts`): builds `<workDir>/bench-home/` (sibling of the sandbox; placed outside the sandbox cwd so `git status` does not flag it as untracked) with an empty `.claude/skills/` and symlinks back to `~/Library/Keychains` and `~/.local/share/claude` for OAuth/Keychain auth, then exports `HOME=<workDir>/bench-home`. `~/.claude/skills/` is never read or written by the bench. Cursor/Codex have no analogous bug and pass through unchanged.
 
 ### Lint Exclude / Test Ignore Drift
 
-- `deno.json` `lint.exclude`, `deno.json` `fmt.exclude`, and `scripts/task-check.ts` `--ignore` flag must list the SAME paths (`framework/*/skills/*/benchmarks/`, `framework/*/commands/*/benchmarks/`, `framework/*/agents/*/benchmarks/`, `framework/*/benchmarks/*/fixture/`).
+- `deno.json` `lint.exclude`, `deno.json` `fmt.exclude`, and `scripts/task-check.ts` `--ignore` flag must list the SAME paths (`framework/*/skills/*/acceptance-tests/`, `framework/*/commands/*/acceptance-tests/`, `framework/*/agents/*/acceptance-tests/`, `framework/*/acceptance-tests/*/fixture/`).
 - These THREE locations drift in practice. When adding a new ignore pattern, update ALL THREE.
 - Drift symptom A (lint vs test): `deno task check` lint passes but test phase imports fixtures as production code (`no-explicit-any` errors in `*/fixture/*.ts`).
 - Drift symptom B (lint vs fmt): pre-flight `deno fmt --check` fails on intentionally malformed fixture files (e.g. a fixture seeded with deliberate formatting drift to exercise a scope-violation gate).

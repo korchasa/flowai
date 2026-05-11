@@ -172,7 +172,9 @@ export class LocalSource implements FrameworkSource {
             fullPath.substring(this.frameworkDir.length + 1)
           }`;
           // Skip dev-only files (same as bundle-framework.ts)
-          if (/\/benchmarks\//.test(rel) || /_test\.\w+$/.test(rel)) continue;
+          if (/\/acceptance-tests\//.test(rel) || /_test\.\w+$/.test(rel)) {
+            continue;
+          }
           if (rel.startsWith(prefix)) {
             result.push(rel);
           }

@@ -7,9 +7,9 @@ import { transformAgent, transformSkillModel } from "./transform.ts";
 import type { HookDefinition, PackDefinition, UpstreamFile } from "./types.ts";
 import { parse as parseYaml } from "@std/yaml";
 
-/** Check if a path is dev-only (benchmarks or test files) and should not be distributed */
+/** Check if a path is dev-only (acceptance-tests or test files) and should not be distributed */
 export function isDevOnlyPath(path: string): boolean {
-  if (/\/benchmarks\//.test(path)) return true;
+  if (/\/acceptance-tests\//.test(path)) return true;
   if (/_test\.\w+$/.test(path)) return true;
   return false;
 }

@@ -107,7 +107,7 @@ AI models lose context between sessions. flowai compensates by storing all decis
 This repository contains two distinct layers. Do not confuse them:
 
 - **`framework/`** — **the product itself**. Skills and agents organized into packs that users install into their projects via `flowai`. This is what flowai distributes.
-- **`.claude/skills/`, `.claude/agents/`** — **internal development tooling**. Skills and agents used to develop flowai itself (benchmark runner, cursor-agent integration, code generation helpers). These are NOT distributed to users. Tracked in git directly.
+- **`.claude/skills/`, `.claude/agents/`** — **internal development tooling**. Skills and agents used to develop flowai itself (acceptance test runner, cursor-agent integration, code generation helpers). These are NOT distributed to users. Tracked in git directly.
 
 ## Packs
 
@@ -180,7 +180,7 @@ Skill and agent authoring tools.
 - `flowai-skill-engineer-rule` — create/modify a rule
 - `flowai-skill-engineer-hook` — create/modify a hook
 - `flowai-skill-engineer-subagent` — create/modify a subagent
-- `flowai-skill-write-agent-benchmarks` — agent benchmarks
+- `flowai-skill-write-agent-benchmarks` — agent acceptance tests
 
 ### deno
 
@@ -303,8 +303,8 @@ cli/                    # Distribution tool — published to JSR as @korchasa/fl
   src/                  #   CLI source (BundledSource, sync, transform, plan)
   scripts/              #   Bundle script (generates bundled.json + _version.ts)
 documents/              # Project documentation (SRS, SDS, tasks)
-scripts/                # Deno task scripts + benchmark infrastructure
-benchmarks/             # Benchmark runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/benchmarks/)
+scripts/                # Deno task scripts + acceptance test infrastructure
+acceptance-tests/             # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
 deno.json               # Single config: JSR metadata, imports, tasks
 AGENTS.md               # Project vision, rules, agent instructions
 

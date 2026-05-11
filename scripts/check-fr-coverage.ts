@@ -3,10 +3,10 @@
  *
  * For a given FR-ID (or all FRs), prints all evidence the spec claims:
  *   - SRS heading location
- *   - Benchmark scenarios declared via "Acceptance verified by benchmarks: ..."
+ *   - Acceptance test scenarios declared via "Acceptance verified by acceptance tests: ..."
  *   - Code comments referencing the FR-ID
  *   - Task files implementing the FR-ID
- *   - Latest benchmark verdict per IDE (from benchmarks/cache/)
+ *   - Latest benchmark verdict per IDE (from acceptance-tests/cache/)
  *
  * Usage:
  *   deno run -A scripts/check-fr-coverage.ts                  # all FRs
@@ -34,9 +34,9 @@ type CacheVerdict = {
 };
 
 const SRS_PATH = "documents/requirements.md";
-const CACHE_ROOT = "benchmarks/cache";
+const CACHE_ROOT = "acceptance-tests/cache";
 const FR_HEADING = /^###\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*):\s*(.*)$/;
-const BENCH_LINE = /Acceptance verified by benchmarks?:\*\*\s*(.*)$/i;
+const BENCH_LINE = /Acceptance verified by acceptance tests?:\*\*\s*(.*)$/i;
 const BENCH_ID = /`([a-z0-9][a-z0-9-]*)`/g;
 /** GFM-link in a code comment whose link-text is the FR-ID. Post-migration
  *  (FR-DOC-IDS) all code-to-doc references use this form. */
@@ -83,7 +83,7 @@ async function scanCodeRefs(root: string): Promise<Map<string, string[]>> {
     ".cursor",
     ".opencode",
     "documents",
-    "benchmarks",
+    "acceptance-tests",
   ]);
   const exts = new Set([".ts", ".js", ".yml", ".yaml", ".sh"]);
 
@@ -228,7 +228,7 @@ function deriveVerdict(
   const declared = fr.benchmarkIds.length;
   const withCache = new Set(allVerdicts.map((v) => v.scenarioId)).size;
   if (withCache < declared) {
-    return `PARTIAL (${withCache}/${declared} benchmarks have cached verdicts)`;
+    return `PARTIAL (${withCache}/${declared} acceptance tests have cached verdicts)`;
   }
   const anyFail = allVerdicts.some((v) => !v.pass);
   return anyFail ? "FAILING" : "COVERED";

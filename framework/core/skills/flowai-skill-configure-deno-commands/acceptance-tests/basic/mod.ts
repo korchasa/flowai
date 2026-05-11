@@ -1,0 +1,112 @@
+import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+
+export const ConfigureDenoCommandsBasicBench = new class
+  extends AcceptanceTestScenario {
+  id = "flowai-skill-configure-deno-commands-basic";
+  name = "Configure standard Deno development commands";
+  skill = "flowai-skill-configure-deno-commands";
+  stepTimeoutMs = 300_000;
+  agentsTemplateVars = {
+    PROJECT_NAME: "DenoCommandsProject",
+    TOOLING_STACK: "- TypeScript\n- Deno",
+  };
+
+  userQuery =
+    "/flowai-skill-configure-deno-commands Set up the standard Deno development commands (check, test, dev, prod) for this project.";
+
+  checklist = [
+    {
+      id: "deno_json_has_check_task",
+      description:
+        'Does deno.json contain a "check" task that runs comprehensive verification (fmt, lint, tests)?',
+      critical: true,
+    },
+    {
+      id: "deno_json_has_test_task",
+      description: 'Does deno.json contain a "test" task that runs tests?',
+      critical: true,
+    },
+    {
+      id: "deno_json_has_dev_task",
+      description: 'Does deno.json contain a "dev" task with watch mode?',
+      critical: true,
+    },
+    {
+      id: "deno_json_has_prod_task",
+      description: 'Does deno.json contain a "prod" task for production mode?',
+      critical: false,
+    },
+    {
+      id: "check_script_created",
+      description:
+        "Was a scripts/check.ts file created with the verification logic (fmt --check, lint, test)?",
+      critical: true,
+    },
+    {
+      id: "check_script_exits_on_failure",
+      description:
+        "Does the check script use non-zero exit codes on failure (Deno.exit(1) or equivalent)?",
+      critical: true,
+    },
+    {
+      id: "existing_config_preserved",
+      description:
+        "Were existing deno.json settings (compilerOptions, imports) preserved when adding tasks?",
+      critical: true,
+    },
+    {
+      id: "tasks_reference_scripts",
+      description:
+        "Do the deno.json tasks point to script files in scripts/ directory (not inline complex commands)?",
+      critical: false,
+    },
+    {
+      id: "check_runs_parallel",
+      description:
+        "Does check.ts run independent checks (fmt, lint, test) in parallel (e.g., Promise.all/Promise.allSettled), not sequentially one after another?",
+      critical: true,
+    },
+    {
+      id: "check_buffers_output",
+      description:
+        "Does check.ts buffer stdout/stderr per-command (piped, not inherit) to prevent interleaving of parallel command output?",
+      critical: true,
+    },
+    {
+      id: "check_failed_last",
+      description:
+        "Does check.ts print output of passed checks first, then ALL failed checks at the end?",
+      critical: true,
+    },
+    {
+      id: "check_no_external_deps",
+      description:
+        "Does check.ts avoid external dependencies (no cliffy, no npm packages) — only Deno stdlib or built-in APIs?",
+      critical: true,
+    },
+    {
+      id: "check_sequential_prerequisites",
+      description:
+        "If the project has build/codegen steps, does check.ts ensure they complete before parallel checks start (sequential prerequisites)?",
+      critical: false,
+    },
+    {
+      id: "check_realtime_progress",
+      description:
+        "Does check.ts print a status line when each command starts and when it finishes (pass/fail) for real-time progress?",
+      critical: true,
+    },
+    {
+      id: "check_no_output_loss",
+      description:
+        "Does check.ts print ALL stdout and stderr from every check regardless of success/failure — no output is lost?",
+      critical: true,
+    },
+    {
+      id: "scripts_no_unguarded_top_level_spawn",
+      description:
+        'For every `.ts` file the agent created under `scripts/`, verify that top-level `Deno.Command` / `Deno.run` calls (if any) are wrapped in `if (import.meta.main)`. This prevents `deno test -A scripts/` from recursively spawning new `deno test` processes when it imports the file — a real incident on 2026-05-09 produced ~720 deno descendants in 90 s and forced multiple host reboots. Pass if either: (a) no `scripts/*.ts` performs a top-level subprocess spawn at all, OR (b) every such spawn is inside an `if (import.meta.main)` block. Fail if any `scripts/*.ts` file calls `Deno.Command("deno", ["test", …])` (or similar) at module top level without the guard.',
+      critical: true,
+    },
+  ];
+}();

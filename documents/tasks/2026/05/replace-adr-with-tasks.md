@@ -49,7 +49,7 @@ After landing, `flowai-skill-plan-adr` is deleted, all 3 ADRs migrate to `docume
 
 - Placement of new primitive: `framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md`. Source `SKILL.md` MUST NOT declare `disable-model-invocation` — CLI writer injects it. Bench dir: `framework/core/commands/flowai-plan-exp-permanent-tasks/benchmarks/`.
 - Coexistence with `flowai-skill-plan`: legacy flat-path tasks (`documents/tasks/<YYYY-MM-DD>-<slug>.md`) remain valid until promotion. `check-task-format.ts` enforces strict shape ONLY on tasks under `documents/tasks/<YYYY>/<MM>/` path; legacy flat paths get a deprecation warning. `flowai-commit` / `flowai-review-and-commit` status-derivation acts only on tasks with new-shape frontmatter (presence of `date:` field) — legacy tasks are skipped.
-- Benchmark TDD: every skill change paired with a failing-then-passing benchmark scenario (RED → GREEN). Renames must preserve trigger coverage (3 pos / 3 adj-neg / 3 false-use).
+- Acceptance Test TDD: every skill change paired with a failing-then-passing benchmark scenario (RED → GREEN). Renames must preserve trigger coverage (3 pos / 3 adj-neg / 3 false-use).
 - Status field is **derived**, not authored: `flowai-commit` / `flowai-review-and-commit` rewrite `status:` on every commit that touches `documents/tasks/**/*.md`, computed purely from `## Definition of Done` checkbox state (`0 of N → to do`, `1..N-1 of N → in progress`, `N of N → done`). Tasks without a DoD section: warn-only, status untouched. Skill-on-creation writes `status: to do` to match empty DoD.
 - Filenames lose the date prefix; date moves into frontmatter. New layout: `documents/tasks/<YYYY>/<MM>/<slug>.md`. Slugs remain kebab-case, ≤40 chars.
 - Identity = relative markdown link. SRS/index reference tasks as `[slug](tasks/2026/05/replace-adr-with-tasks.md)` — no separate ID counter.
@@ -114,7 +114,7 @@ Single feature branch, grouped commits by area. Each commit ends `deno task chec
 
 ### Phase 0 — Bench infrastructure smoke test
 
-- Run `deno task bench -f flowai-skill-plan-basic` (existing scenario). Confirms infra: scenarios actually execute, agent does ≥1 step, no "Unknown skill" errors. If it fails on infrastructure (not on the scenario verdict), fix `scripts/benchmarks/lib/` first; do not write new scenarios on broken infra.
+- Run `deno task bench -f flowai-skill-plan-basic` (existing scenario). Confirms infra: scenarios actually execute, agent does ≥1 step, no "Unknown skill" errors. If it fails on infrastructure (not on the scenario verdict), fix `scripts/acceptance-tests/lib/` first; do not write new scenarios on broken infra.
 
 ### Phase 1 — Foundation: gitignore + format validator
 
@@ -160,7 +160,7 @@ Create `framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md` from s
     - Else: insert `- **Tasks:** [<slug>](tasks/<path>.md)` bullet immediately after `**Description:**` bullet of that section.
     - Edit ONLY this line; never touch other SRS lines.
   - If FR section does not exist (new FR introduced by the same task), skip SRS edit; mention in chat: "FR-XXX SRS section pending — task back-pointer deferred."
-- Trigger benchmarks: write 3 pos / 3 adj-neg / 3 false-use under `framework/core/commands/flowai-plan-exp-permanent-tasks/benchmarks/trigger-{pos,adj,false}-{1,2,3}/`. Since `disable-model-invocation: true` is injected, "trigger" tests verify the agent reaches the skill ONLY via explicit `/flowai-plan-exp-permanent-tasks` invocation; auto-trigger queries must NOT route here. Adapt FR-BENCH.TRIGGER contract accordingly (or use the lighter `expected: never` variant for adj-neg/false-use).
+- Trigger benchmarks: write 3 pos / 3 adj-neg / 3 false-use under `framework/core/commands/flowai-plan-exp-permanent-tasks/benchmarks/trigger-{pos,adj,false}-{1,2,3}/`. Since `disable-model-invocation: true` is injected, "trigger" tests verify the agent reaches the skill ONLY via explicit `/flowai-plan-exp-permanent-tasks` invocation; auto-trigger queries must NOT route here. Adapt FR-ACCEPT.TRIGGER contract accordingly (or use the lighter `expected: never` variant for adj-neg/false-use).
 
 ### Phase 4 — `flowai-skill-epic` alignment
 

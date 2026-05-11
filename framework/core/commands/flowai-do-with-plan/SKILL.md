@@ -137,7 +137,7 @@ The user wants the full task lifecycle in a single invocation. The composite inl
      - **RED**: write a failing test for the new/changed behavior. Run the project test command — it MUST fail.
      - **GREEN**: write the minimal code to make the test pass.
      - **REFACTOR**: improve code and tests without changing behavior. Re-run tests.
-   - For benchmark-driven changes (skill/command/agent), follow "Benchmark TDD":
+   - For benchmark-driven changes (skill/command/agent), follow "Acceptance Test TDD":
      - **RED**: write or update the benchmark scenario before changing the SKILL.md/agent.md. Run it — it MUST fail.
      - **GREEN**: edit the SKILL.md/agent.md until the benchmark passes.
      - **REFACTOR**: tighten wording without behavior change.
@@ -342,7 +342,7 @@ After completing the review report above:
    - If new changes appeared (unexpected), report and STOP.
 2. **Documentation Sync** _(mandatory — do NOT skip)_
    - **Determine scope**: look at the file paths from step 1. Classify the change:
-     - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), benchmarks (`benchmarks/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/benchmarks)`.
+     - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), acceptance tests (`acceptance-tests/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/acceptance-tests)`.
      - **Product changes**: anything else → proceed with doc sync below.
    - **Find the mapping**: check if `./AGENTS.md` has a `## Documentation Map` section. If yes → use the path→document mapping from there. If no → use the default mapping:
      - New/changed exported functions, classes, types → SDS (component section)

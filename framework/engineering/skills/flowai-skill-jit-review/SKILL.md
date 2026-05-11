@@ -40,7 +40,7 @@ you caught a real regression. Tests are discarded by default.
     `<range-start>^`).
 - Reconstruct parent sources in a scratch worktree whose name includes a
   session / sandbox identifier (to avoid collisions when the skill runs in
-  parallel benchmarks or multiple shells):
+  parallel acceptance tests or multiple shells):
   ```
   git worktree add <SCRATCH>/jit-parent-<session-id> <parent-sha>
   ```

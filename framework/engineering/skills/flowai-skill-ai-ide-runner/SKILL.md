@@ -163,7 +163,7 @@ response in the same turn you invoked the child runtime**. Two cases:
 - **Unblocked run**: the child ran for real. The Bash tool's response
   contains whatever the child printed on stdout/stderr (plus your
   redirects if you used any). Quote from there.
-- **Hook-blocked run** (common in sandboxes, benchmarks, policy
+- **Hook-blocked run** (common in sandboxes, acceptance tests, policy
   gates): the child never executed. The harness intercepted the call
   and returned a payload like
   *"Tool call blocked. Reason: `CLAUDE-MOCK: prefer pure functions at

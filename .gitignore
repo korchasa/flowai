@@ -2,13 +2,13 @@
 .vscode
 skeleton.md
 tmp/
-benchmarks/runs/
-benchmarks/benchmarks.lock
-# benchmarks/cache/ is intentionally tracked — committed per-scenario verdicts
-# short-circuit agent + judge calls when inputs haven't changed (FR-BENCH-CACHE).
-framework/*/skills/*/benchmarks/runs/
-framework/*/commands/*/benchmarks/runs/
-framework/*/agents/*/benchmarks/runs/
+acceptance-tests/runs/
+acceptance-tests/acceptance-tests.lock
+# acceptance-tests/cache/ is intentionally tracked — committed per-scenario verdicts
+# short-circuit agent + judge calls when inputs haven't changed (FR-ACCEPT-CACHE).
+framework/*/skills/*/acceptance-tests/runs/
+framework/*/commands/*/acceptance-tests/runs/
+framework/*/agents/*/acceptance-tests/runs/
 framework/**/flowai-skill-example/
 .env
 __pycache__/

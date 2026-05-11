@@ -58,7 +58,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
 2. **Documentation Sync** _(mandatory — do NOT skip)_
    - **Determine scope**: look at the file paths from step 1. Classify the change:
-     - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), benchmarks (`benchmarks/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/benchmarks)`.
+     - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), acceptance tests (`acceptance-tests/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/acceptance-tests)`.
      - **Product changes**: anything else → proceed with doc sync below.
    - **Find the mapping**: check if `./AGENTS.md` has a `## Documentation Map` section. If yes → use the path→document mapping from there. If no → use the default mapping:
      - New/changed exported functions, classes, types → SDS (component section)

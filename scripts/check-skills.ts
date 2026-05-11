@@ -44,7 +44,7 @@ export const ALLOWED_SUBDIRS = new Set([
   "references",
   "assets",
   "evals",
-  "benchmarks",
+  "acceptance-tests",
 ]);
 
 /** Source directory kind, inferred from the parent directory name.
@@ -264,9 +264,9 @@ export async function validateReferenceDepth(
 ): Promise<SkillError[]> {
   const errors: SkillError[] = [];
 
-  // benchmarks/ is excluded: scenarios naturally have nested dirs (fixture/, etc.)
+  // acceptance-tests/ is excluded: scenarios naturally have nested dirs (fixture/, etc.)
   const depthCheckedDirs = [...ALLOWED_SUBDIRS].filter((d) =>
-    d !== "benchmarks"
+    d !== "acceptance-tests"
   );
   for (const subdir of depthCheckedDirs) {
     const subdirPath = join(skillPath, subdir);

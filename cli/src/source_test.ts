@@ -332,8 +332,8 @@ Deno.test("LocalSource - listFiles returns framework/ files", async () => {
   const hasPackYaml = files.some((f) => f === "framework/core/pack.yaml");
   assertEquals(hasPackYaml, true);
 
-  // Should exclude benchmarks
-  const hasBenchmark = files.some((f) => /\/benchmarks\//.test(f));
+  // Should exclude acceptance-tests
+  const hasBenchmark = files.some((f) => /\/acceptance-tests\//.test(f));
   assertEquals(hasBenchmark, false);
 
   // Should exclude test files

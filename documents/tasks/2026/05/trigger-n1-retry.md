@@ -2,7 +2,7 @@
 date: 2026-05-10
 status: done
 implements:
-  - FR-BENCH.TRIGGER
+  - FR-ACCEPT.TRIGGER
 tags:
   - benchmarks
   - skills
@@ -15,22 +15,22 @@ related_tasks:
 
 ## Goal
 
-Cut FR-BENCH.TRIGGER cohort from 351 to 117 scenarios by replacing 3+3+3 with 1+1+1. Removes structural redundancy that the 2026-05-03 task admitted was a convention without empirical basis (no power analysis; symmetric N=3 chosen for aesthetics). Saves ~3× wall-clock and LLM cost on full sweep, ~3× drift maintenance on description rewrites.
+Cut FR-ACCEPT.TRIGGER cohort from 351 to 117 scenarios by replacing 3+3+3 with 1+1+1. Removes structural redundancy that the 2026-05-03 task admitted was a convention without empirical basis (no power analysis; symmetric N=3 chosen for aesthetics). Saves ~3× wall-clock and LLM cost on full sweep, ~3× drift maintenance on description rewrites.
 
 ## Overview
 
 ### Context
 
-Current contract (FR-BENCH.TRIGGER, 2026-05-03): every skill has 9 trigger scenarios (3 pos / 3 adj / 3 false). Empirical findings (this task's prior analysis):
+Current contract (FR-ACCEPT.TRIGGER, 2026-05-03): every skill has 9 trigger scenarios (3 pos / 3 adj / 3 false). Empirical findings (this task's prior analysis):
 
 - **351 scenarios on disk** (39 skills × 9). 70% of all framework benchmarks.
 - **108/351 cached**; 243 never run. **24/39 skills** have zero cached trigger verdicts. The triple-redundancy is theoretical — in practice cohort runs sparsely.
-- 11/242 cached scenarios scored <100; the rest 100. N=3 does not produce statistically meaningful regression signal at this scale; judge variance, where present, is already absorbed by judge-level retry (`scripts/benchmarks/lib/judge.ts:103`).
-- The originating task (`documents/tasks/2026/05/skill-trigger-benchmarks.md`) does not justify N=3 vs N=1 or N=5 — only justifies the *shape* (regular `BenchmarkSkillScenario` vs custom runner). Symmetric 3+3+3 is convention.
+- 11/242 cached scenarios scored <100; the rest 100. N=3 does not produce statistically meaningful regression signal at this scale; judge variance, where present, is already absorbed by judge-level retry (`scripts/acceptance-tests/lib/judge.ts:103`).
+- The originating task (`documents/tasks/2026/05/skill-trigger-benchmarks.md`) does not justify N=3 vs N=1 or N=5 — only justifies the *shape* (regular `AcceptanceTestScenario` vs custom runner). Symmetric 3+3+3 is convention.
 
 ### Current State
 
-- `documents/requirements.md:183` — FR-BENCH.TRIGGER mandates 9 scenarios, 3 per class.
+- `documents/requirements.md:183` — FR-ACCEPT.TRIGGER mandates 9 scenarios, 3 per class.
 - `documents/design.md:205` — SDS §3.4.3 documents 3+3+3 layout.
 - `scripts/check-trigger-coverage.ts:20` — `TRIGGER_INDEXES = [1, 2, 3]`.
 - `scripts/check-trigger-coverage_test.ts` — assertions hardcode 9.
@@ -42,37 +42,37 @@ Current contract (FR-BENCH.TRIGGER, 2026-05-03): every skill has 9 trigger scena
 
 - Must not break `deno task check`. Coverage script + test must pass on new contract.
 - Must not break `deno task bench` for retained scenarios. Trigger-1 directories already exist; deletion scope is `-2` and `-3` only.
-- Cache (`benchmarks/cache/<pack>/<scenario-id>/claude.json`) for deleted scenarios becomes orphaned — cleanup is mechanical and reversible (cache regenerates on demand).
+- Cache (`acceptance-tests/cache/<pack>/<scenario-id>/claude.json`) for deleted scenarios becomes orphaned — cleanup is mechanical and reversible (cache regenerates on demand).
 - No new retry infrastructure in this task. Existing judge-level retry (judge.ts:103) covers transient infra failures. Agent-level variance, if it surfaces empirically, is a follow-up: scenario-level `retryOnFail` field with re-run-on-fail semantics. Adding it now risks hiding real regressions under retry-masking and adds a new failure mode (retry-runner divergence from single-run) without measured need.
 
 ## Definition of Done
 
-- [x] FR-BENCH.TRIGGER: SRS section declares 3 scenarios per skill (1 pos + 1 adj + 1 false), retry note explicit.
+- [x] FR-ACCEPT.TRIGGER: SRS section declares 3 scenarios per skill (1 pos + 1 adj + 1 false), retry note explicit.
   - Test: `grep -c "1 positive (skill should activate), 1 adjacent-negative" documents/requirements.md` ≥ 1
   - Evidence: SRS edit landed.
-- [x] FR-BENCH.TRIGGER: SDS §3.4.3 reflects new layout, no references to `-2`/`-3` outside historical notes.
+- [x] FR-ACCEPT.TRIGGER: SDS §3.4.3 reflects new layout, no references to `-2`/`-3` outside historical notes.
   - Test: SDS layout block shows only `-1` directories; historical incident note (line 195/201) annotated with consolidation date.
   - Evidence: SDS edit landed.
-- [x] FR-BENCH.TRIGGER: `scripts/check-trigger-coverage.ts` enforces 3 dirs per skill.
+- [x] FR-ACCEPT.TRIGGER: `scripts/check-trigger-coverage.ts` enforces 3 dirs per skill.
   - Test: `deno test scripts/check-trigger-coverage_test.ts` passes (9 tests pass)
   - Evidence: `TRIGGER_INDEXES = [1]` in source.
-- [x] FR-BENCH.TRIGGER: 39 skills carry exactly 3 trigger dirs each.
+- [x] FR-ACCEPT.TRIGGER: 39 skills carry exactly 3 trigger dirs each.
   - Test: `find framework -type d -path '*/skills/*/benchmarks/trigger-*' | wc -l` = 117
   - Evidence: 234 directories deleted; coverage script reports clean.
-- [x] FR-BENCH.TRIGGER: authoring guide (SKILL.md) updated.
+- [x] FR-ACCEPT.TRIGGER: authoring guide (SKILL.md) updated.
   - Test: `grep -c "exactly 3 scenarios" framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md` ≥ 1
   - Evidence: edit landed.
-- [x] FR-BENCH.TRIGGER: framework/CLAUDE.md (and AGENTS.md target) updated.
+- [x] FR-ACCEPT.TRIGGER: framework/CLAUDE.md (and AGENTS.md target) updated.
   - Test: `grep -c "exactly 9 per skill" framework/CLAUDE.md framework/AGENTS.md` = 0
   - Evidence: edit landed in framework/AGENTS.md (CLAUDE.md is a symlink → AGENTS.md).
-- [x] FR-BENCH.TRIGGER trigger-related gates green.
+- [x] FR-ACCEPT.TRIGGER trigger-related gates green.
   - Test: `deno run -A scripts/check-trigger-coverage.ts` exits 0; `deno test scripts/check-trigger-coverage_test.ts` passes; `deno fmt --check`, `deno lint` clean for changed files.
-  - Note: pre-existing `SpawnedAgent` test failures in `scripts/benchmarks/lib/spawned_agent_test.ts` are unrelated to this task (verified on clean main: `git stash && deno test -A scripts/benchmarks/lib/spawned_agent_test.ts` reproduces the 6 failures). Out of scope.
+  - Note: pre-existing `SpawnedAgent` test failures in `scripts/acceptance-tests/lib/spawned_agent_test.ts` are unrelated to this task (verified on clean main: `git stash && deno test -A scripts/acceptance-tests/lib/spawned_agent_test.ts` reproduces the 6 failures). Out of scope.
   - Evidence: gate commands exit 0 in this worktree.
 
 ## Solution
 
-1. **Write SRS** — replace FR-BENCH.TRIGGER body (`documents/requirements.md:183-200`):
+1. **Write SRS** — replace FR-ACCEPT.TRIGGER body (`documents/requirements.md:183-200`):
    - "9 trigger scenarios (3 positive + 3 adjacent-negative + 3 false-use-negative)" → "3 trigger scenarios (1 positive + 1 adjacent-negative + 1 false-use-negative)"
    - Layout subsection: drop `{1,2,3}`, write singular `trigger-{pos,adj,false}-1/mod.ts`
    - Naming: `<skill-id>-trigger-<pos|adj|false>-1`
@@ -93,7 +93,7 @@ Current contract (FR-BENCH.TRIGGER, 2026-05-03): every skill has 9 trigger scena
    - Counts in error-count assertions: 3, not 9.
 5. **Delete redundant directories** — for each of the 39 skills:
    ```
-   rm -rf framework/<pack>/skills/<skill>/benchmarks/trigger-{pos,adj,false}-{2,3}
+   rm -rf framework/<pack>/skills/<skill>/acceptance-tests/trigger-{pos,adj,false}-{2,3}
    ```
    Mechanical. 234 directories total.
 6. **Update authoring SKILL.md** (`framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md:212-272`):
@@ -105,14 +105,14 @@ Current contract (FR-BENCH.TRIGGER, 2026-05-03): every skill has 9 trigger scena
    - `deno test scripts/check-trigger-coverage_test.ts` (pass)
    - `deno task check` (full gate)
    - `find framework -type d -path '*/skills/*/benchmarks/trigger-*' | wc -l` = 117
-9. **Cache cleanup** — orphaned cache entries for `-2`/`-3` scenarios remain in `benchmarks/cache/` until next run prunes them. Optional: `find benchmarks/cache -path '*-trigger-*-2/*' -o -path '*-trigger-*-3/*' -delete` to reclaim disk; not required for correctness.
+9. **Cache cleanup** — orphaned cache entries for `-2`/`-3` scenarios remain in `acceptance-tests/cache/` until next run prunes them. Optional: `find benchmarks/cache -path '*-trigger-*-2/*' -o -path '*-trigger-*-3/*' -delete` to reclaim disk; not required for correctness.
 10. **Commit** — single commit per project rules: SRS+SDS+code+docs+deletions atomic.
 
 ## Follow-ups
 
-- Empirical flake-rate measurement on the new N=1 cohort over ~3 sweeps. If sustained noise > 5% per scenario, add `BenchmarkSkillScenario.retryOnFail?: number` (default 0) and update FR-BENCH.TRIGGER to set it on trigger scenarios.
+- Empirical flake-rate measurement on the new N=1 cohort over ~3 sweeps. If sustained noise > 5% per scenario, add `AcceptanceTestScenario.retryOnFail?: number` (default 0) and update FR-ACCEPT.TRIGGER to set it on trigger scenarios.
 - Revisit asymmetric weighting (e.g., 2 pos + 1 adj + 1 false) once N=1 baseline has empirical support — positive failures (false-negative routing) are user-visible, asymmetry may be defensible.
-- Cache invalidation tightening (per FR-BENCH-CACHE follow-up): trigger sweep should re-run on description edits only, not on description-adjacent edits.
+- Cache invalidation tightening (per FR-ACCEPT-CACHE follow-up): trigger sweep should re-run on description edits only, not on description-adjacent edits.
 
 ## Adjacent work landed alongside (2026-05-10)
 

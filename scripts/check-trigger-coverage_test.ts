@@ -17,7 +17,7 @@ Deno.test("expectedTriggerDirs returns the 3 canonical names in order", () => {
 Deno.test("validateSkillTriggerCoverage: complete skill returns no errors", async () => {
   const tmp = await Deno.makeTempDir();
   try {
-    const benchDir = join(tmp, "benchmarks");
+    const benchDir = join(tmp, "acceptance-tests");
     for (const dir of expectedTriggerDirs()) {
       await Deno.mkdir(join(benchDir, dir), { recursive: true });
       await Deno.writeTextFile(join(benchDir, dir, "mod.ts"), "// stub\n");
@@ -36,7 +36,7 @@ Deno.test("validateSkillTriggerCoverage: complete skill returns no errors", asyn
 Deno.test("validateSkillTriggerCoverage: missing one scenario reports one error", async () => {
   const tmp = await Deno.makeTempDir();
   try {
-    const benchDir = join(tmp, "benchmarks");
+    const benchDir = join(tmp, "acceptance-tests");
     const required = expectedTriggerDirs();
     // Create all but one
     for (const dir of required.slice(0, -1)) {
@@ -60,7 +60,7 @@ Deno.test("validateSkillTriggerCoverage: missing one scenario reports one error"
 Deno.test("validateSkillTriggerCoverage: dir without mod.ts counts as missing", async () => {
   const tmp = await Deno.makeTempDir();
   try {
-    const benchDir = join(tmp, "benchmarks");
+    const benchDir = join(tmp, "acceptance-tests");
     for (const dir of expectedTriggerDirs()) {
       await Deno.mkdir(join(benchDir, dir), { recursive: true });
     }
@@ -79,7 +79,7 @@ Deno.test("validateSkillTriggerCoverage: dir without mod.ts counts as missing", 
 Deno.test("validateSkillTriggerCoverage: misnamed trigger-* dir is reported", async () => {
   const tmp = await Deno.makeTempDir();
   try {
-    const benchDir = join(tmp, "benchmarks");
+    const benchDir = join(tmp, "acceptance-tests");
     for (const dir of expectedTriggerDirs()) {
       await Deno.mkdir(join(benchDir, dir), { recursive: true });
       await Deno.writeTextFile(join(benchDir, dir, "mod.ts"), "// stub\n");
@@ -133,11 +133,11 @@ Deno.test("validateAllTriggerCoverage: tmp framework with one complete + one inc
       "flowai-skill-incomplete",
     );
     for (const dir of expectedTriggerDirs()) {
-      await Deno.mkdir(join(completeSkill, "benchmarks", dir), {
+      await Deno.mkdir(join(completeSkill, "acceptance-tests", dir), {
         recursive: true,
       });
       await Deno.writeTextFile(
-        join(completeSkill, "benchmarks", dir, "mod.ts"),
+        join(completeSkill, "acceptance-tests", dir, "mod.ts"),
         "// stub\n",
       );
     }

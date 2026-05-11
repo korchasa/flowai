@@ -1,12 +1,12 @@
-// [FR-BENCH.TRIGGER](../documents/requirements.md#fr-bench.trigger-skill-description-matching-verification) — every skill MUST have 3 trigger scenarios (1 pos + 1 adj + 1 false).
+// [FR-ACCEPT.TRIGGER](../documents/requirements.md#fr-accept.trigger-skill-description-matching-verification) — every skill MUST have 3 trigger scenarios (1 pos + 1 adj + 1 false).
 /**
  * Validates that every skill in `framework/<pack>/skills/flowai-skill-*` has
- * the full set of 3 trigger benchmark scenarios required by FR-BENCH.TRIGGER.
+ * the full set of 3 trigger benchmark scenarios required by FR-ACCEPT.TRIGGER.
  *
  * For each skill the following 3 directories must exist with a `mod.ts`:
- *   benchmarks/trigger-pos-1/mod.ts
- *   benchmarks/trigger-adj-1/mod.ts
- *   benchmarks/trigger-false-1/mod.ts
+ *   acceptance-tests/trigger-pos-1/mod.ts
+ *   acceptance-tests/trigger-adj-1/mod.ts
+ *   acceptance-tests/trigger-false-1/mod.ts
  *
  * Commands (`framework/<pack>/commands/`) are exempt — they are user-only
  * primitives invoked via `/name` and do not participate in description-matching
@@ -70,7 +70,7 @@ export async function validateSkillTriggerCoverage(
   skillDir: string,
 ): Promise<CoverageError[]> {
   const errors: CoverageError[] = [];
-  const benchDir = join(skillDir, "benchmarks");
+  const benchDir = join(skillDir, "acceptance-tests");
   for (const name of expectedTriggerDirs()) {
     const dir = join(benchDir, name);
     const mod = join(dir, "mod.ts");
@@ -80,7 +80,7 @@ export async function validateSkillTriggerCoverage(
         skill,
         missing: name,
         message:
-          `Missing trigger scenario: ${dir}/mod.ts (required by FR-BENCH.TRIGGER)`,
+          `Missing trigger scenario: ${dir}/mod.ts (required by FR-ACCEPT.TRIGGER)`,
       });
     }
   }
@@ -151,14 +151,14 @@ export async function validateAllTriggerCoverage(
 
 if (import.meta.main) {
   console.log(
-    "Checking trigger benchmark coverage (FR-BENCH.TRIGGER: 3 scenarios per skill)...",
+    "Checking trigger benchmark coverage (FR-ACCEPT.TRIGGER: 3 scenarios per skill)...",
   );
   const errors = await validateAllTriggerCoverage("framework");
 
   if (errors.length > 0) {
     for (const e of errors) {
       console.error(
-        `❌ [FR-BENCH.TRIGGER] ${e.pack}/${e.skill}: ${e.message}`,
+        `❌ [FR-ACCEPT.TRIGGER] ${e.pack}/${e.skill}: ${e.message}`,
       );
     }
     console.error(`\n${errors.length} violation(s) found.`);

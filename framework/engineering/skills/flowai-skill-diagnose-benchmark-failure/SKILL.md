@@ -43,8 +43,8 @@ evidence-first diagnosis so each iteration moves on facts, not hopes.
 <step_by_step>
 
 1. **Locate the run dir**
-   - Default path: `benchmarks/runs/latest/<scenario-id>/run-1/`.
-   - If `latest` is missing, list `benchmarks/runs/` and pick the most
+   - Default path: `acceptance-tests/runs/latest/<scenario-id>/run-1/`.
+   - If `latest` is missing, list `acceptance-tests/runs/` and pick the most
      recently modified directory containing `<scenario-id>`.
    - Required files inside: `judge-evidence.md`, `sandbox/`. If either is
      missing → fail closed (rule 4).
@@ -144,7 +144,7 @@ listed.
   - Cause: bench cache hit on a scenario whose primitive was edited after
     the cached run. Or `--no-cache` was forgotten on a quick re-run.
   - Fix-direction: re-run with `--no-cache`. If the issue persists, check
-    `scripts/benchmarks/lib/cache.ts` cache-key inputs vs. what changed.
+    `scripts/acceptance-tests/lib/cache.ts` cache-key inputs vs. what changed.
 
 - **SKILL-NOT-MOUNTED**
   - Symptom: `Agent finished with exit code 0` but `0 agent steps`, or judge

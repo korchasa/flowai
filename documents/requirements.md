@@ -30,13 +30,13 @@ Dependencies between unclosed requirements define execution order:
 3. **FR-SCRIPTS** Script Resources — depends on FR-PACKS (pack structure)
 4. **FR-UNIVERSAL** Universal Skill & Script Requirements — standardize before distribution
 5. **FR-INIT.RERUN** flowai-init idempotent re-run — independent, can run in parallel with 4
-6. **FR-BENCH.COLOC** Co-locate benchmarks with skills — can run in parallel with 4–5
+6. **FR-ACCEPT.COLOC** Co-locate benchmarks with skills — can run in parallel with 4–5
 
 ```
 FR-PACKS (pack system) → FR-HOOK-RESOURCES (hooks), FR-SCRIPTS (scripts) — parallel after FR-PACKS
 FR-UNIVERSAL (parallel with above)
 FR-INIT.RERUN (parallel)
-FR-BENCH.COLOC (parallel)
+FR-ACCEPT.COLOC (parallel)
 FR-DIST.MAPPING open questions (parallel)
 ```
 
@@ -45,12 +45,12 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 ### FR-CMD-EXEC: Command Execution
 
 - **Description:** The system must provide executable workflows for common development tasks, accessible via chat commands (`/<command>`).
-- **Acceptance verified by benchmarks:** See Component Coverage Matrix (section 3.8) — all commands benchmarked.
+- **Acceptance verified by acceptance tests:** See Component Coverage Matrix (section 3.8) — all commands benchmarked.
 
 ### FR-RULES: Rule Enforcement
 
 - **Description:** The system must automatically apply development rules and coding standards (code style, TDD, documentation).
-- **Acceptance verified by benchmarks:** `flowai-skill-setup-agent-code-style-ts-deno-basic`, `flowai-skill-setup-agent-code-style-ts-strict-basic`
+- **Acceptance verified by acceptance tests:** `flowai-skill-setup-agent-code-style-ts-deno-basic`, `flowai-skill-setup-agent-code-style-ts-strict-basic`
 
 ### FR-DOCS: Documentation Management
 
@@ -60,7 +60,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 ### FR-HOWTO: Automation & How-To
 
 - **Description:** The system must provide guides (`flowai-skill-*`) for complex or situational tasks (QA, testing, diagrams, prompts, research, etc.).
-- **Acceptance verified by benchmarks:** See Component Coverage Matrix (section 3.8) — all skills benchmarked.
+- **Acceptance verified by acceptance tests:** See Component Coverage Matrix (section 3.8) — all skills benchmarked.
 
 ### FR-MAINT: Project Maintenance
 
@@ -79,56 +79,56 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] Schedule for periodic maintenance (Health Check, Docs Audit, Agent Updates).
   - [x] Guidance for specific cases (Investigate, Answer, Engineer).
 
-### FR-BENCH: Benchmarking
+### FR-ACCEPT: Benchmarking
 
-- **Description:** Evidence-based benchmarking system to evaluate agent skill execution quality. `deno task bench`.
+- **Description:** Evidence-based acceptance testing system to evaluate agent skill execution quality. `deno task acceptance-tests`.
 - **Key capabilities:** Isolated sandbox execution (`SpawnedAgent`), LLM-based Judge, evidence collection, interactive flows (`UserEmulator`), cost/token tracking, HTML tracing, parallel execution protection.
-- **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/benchmarks/` and `framework/<pack>/commands/<command>/benchmarks/`), pack-level scenarios (`framework/<pack>/benchmarks/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
-- **Implementation:** `scripts/benchmarks/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
+- **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/acceptance-tests/` and `framework/<pack>/commands/<command>/acceptance-tests/`), pack-level scenarios (`framework/<pack>/acceptance-tests/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
+- **Implementation:** `scripts/acceptance-tests/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
 
-### FR-BENCH-ISOLATION: Sandbox Isolation From User-Level Skills
+### FR-ACCEPT-ISOLATION: Sandbox Isolation From User-Level Skills
 
-- **Desc:** `deno task bench` MUST judge the sandbox `SKILL.md` (the one written into `<sandbox>/.claude/skills/<name>/`), not the developer's user-level installation at `~/.claude/skills/<name>/`. Without this, framework-source `SKILL.md` edits never reach the model: Claude Code's Skill tool resolves user-level over project-level on collision, so any DIFF skill silently delivers stale text and the Benchmark TDD RED→GREEN cycle produces no observable change.
-- **Scenario:** A contributor edits `framework/<pack>/skills/<name>/SKILL.md` and runs `deno task bench -f <name>`. The model must load the edited body, not whatever the user happened to install via `flowai sync` weeks ago. Constraint: the bench MUST NOT modify, move, symlink, or delete `~/.claude/skills/`.
+- **Desc:** `deno task acceptance-tests` MUST judge the sandbox `SKILL.md` (the one written into `<sandbox>/.claude/skills/<name>/`), not the developer's user-level installation at `~/.claude/skills/<name>/`. Without this, framework-source `SKILL.md` edits never reach the model: Claude Code's Skill tool resolves user-level over project-level on collision, so any DIFF skill silently delivers stale text and the Acceptance Test TDD RED→GREEN cycle produces no observable change.
+- **Scenario:** A contributor edits `framework/<pack>/skills/<name>/SKILL.md` and runs `deno task acceptance-tests -f <name>`. The model must load the edited body, not whatever the user happened to install via `flowai sync` weeks ago. Constraint: the acceptance-tests runner MUST NOT modify, move, symlink, or delete `~/.claude/skills/`.
 - **Mechanism (Claude adapter only):** `ClaudeAdapter.prepareWorkspace(<sandbox>)` builds an isolated `$HOME = <workDir>/bench-home/` (sibling of the sandbox; deliberately outside the sandbox cwd so `git status` does not see it as untracked) containing an empty `.claude/skills/` (so user-level resolution finds nothing) plus targeted symlinks back to the real `$HOME` for OAuth/Keychain auth (`Library/Keychains`) and the versioned launcher binary (`.local/share/claude`). `.credentials.json` is intentionally NOT mirrored — letting Keychain win avoids stale-refresh-token 400s. Cursor and Codex adapters do not implement `prepareWorkspace` (no analogous Skill tool resolution path exists).
 - **Acceptance:**
   - [x] Programmatic isolation test: `<workDir>/bench-home/.claude/skills/` is created empty by `prepareWorkspace`.
-    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "prepareWorkspace isolation: empty user-level skills dir"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "prepareWorkspace isolation: empty user-level skills dir"`.
   - [x] Auth-related symlinks track host: present iff source path exists on host (`Library/Keychains`, `.local/share/claude`).
-    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "auth-related symlinks track host"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "auth-related symlinks track host"`.
   - [x] `.credentials.json` is never mirrored into `<workDir>/bench-home/.claude/`.
-    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "never mirrors .credentials.json"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "never mirrors .credentials.json"`.
   - [x] `~/.claude/skills/` snapshot (entry names + mtimes) is byte-identical before and after `prepareWorkspace`.
-    Evidence: `deno test -A scripts/benchmarks/lib/adapters/claude_test.ts --filter "does not touch ~/.claude/skills/"`.
-  - [x] Cache key invalidates on any change inside `scripts/benchmarks/lib/adapters/` (so old cached verdicts cannot mask the fix on first post-merge run).
-    Evidence: `deno test -A scripts/benchmarks/lib/cache_test.ts --filter "isolation-key-change"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "does not touch ~/.claude/skills/"`.
+  - [x] Cache key invalidates on any change inside `scripts/acceptance-tests/lib/adapters/` (so old cached verdicts cannot mask the fix on first post-merge run).
+    Evidence: `deno test -A scripts/acceptance-tests/lib/cache_test.ts --filter "isolation-key-change"`.
   - [x] `AgentAdapter.prepareWorkspace` is optional in the contract; runner only invokes it when adapter implements it (Cursor/Codex pass through unchanged).
-    Evidence: `scripts/benchmarks/lib/runner.ts` (`adapter.prepareWorkspace ? ... : {}`); `scripts/benchmarks/lib/adapters/types.ts` (declared optional).
+    Evidence: `scripts/acceptance-tests/lib/runner.ts` (`adapter.prepareWorkspace ? ... : {}`); `scripts/acceptance-tests/lib/adapters/types.ts` (declared optional).
 - **Non-acceptance (explicit trade-offs):**
   - macOS-first: the symlink set targets macOS auth (Keychain). On Linux/CI without `~/Library/Keychains`, those symlinks are skipped — auth then relies on whatever Linux mechanism the developer has set up. CI workflows that already export `ANTHROPIC_API_KEY` are unaffected.
   - First post-merge run pays ~120 fresh executions: the cache key changes (adapter source touched), invalidating the prior `[CACHED]` verdicts.
-  - **Container-based isolation is incompatible with subscription auth.** The reason this scheme works silently is a chain that exists ONLY on the macOS host: (1) the Claude Pro/Max OAuth token lives in macOS Keychain, not on disk; (2) the keychain item carries an ACL granting "Always Allow" to the `claude` binary by code-signing identity; (3) the bench reuses the SAME signed binary with `HOME=<bench-home>` whose `Library/Keychains` symlinks back to the host DB → kernel matches code signature → token released without prompts. None of these hold inside a Linux container: no Keychain Services API, the Linux `claude` binary expects `~/.claude/.credentials.json` (file not present on macOS hosts), and extracting the token to a file requires a one-time interactive Keychain approval of the `security` CLI. A previous Docker isolation attempt (commit `ce1d4c1`, removed in `9e30ab7`) was abandoned for this reason — there is no path to subscription-auth inside a container without a manual approval step. Resource isolation is therefore handled in userspace on the host instead — see FR-BENCH-GUARDS.
+  - **Container-based isolation is incompatible with subscription auth.** The reason this scheme works silently is a chain that exists ONLY on the macOS host: (1) the Claude Pro/Max OAuth token lives in macOS Keychain, not on disk; (2) the keychain item carries an ACL granting "Always Allow" to the `claude` binary by code-signing identity; (3) the bench reuses the SAME signed binary with `HOME=<bench-home>` whose `Library/Keychains` symlinks back to the host DB → kernel matches code signature → token released without prompts. None of these hold inside a Linux container: no Keychain Services API, the Linux `claude` binary expects `~/.claude/.credentials.json` (file not present on macOS hosts), and extracting the token to a file requires a one-time interactive Keychain approval of the `security` CLI. A previous Docker isolation attempt (commit `ce1d4c1`, removed in `9e30ab7`) was abandoned for this reason — there is no path to subscription-auth inside a container without a manual approval step. Resource isolation is therefore handled in userspace on the host instead — see FR-ACCEPT-GUARDS.
 - **Open (follow-up):**
   - [ ] `~/.local/share/claude/versions/<v>/` PID-lock contention under parallel scenarios is a pre-existing concern — not introduced by isolation, but worth a separate fix.
 
-### FR-BENCH-GUARDS: Resource Guards For Spawned Agents
+### FR-ACCEPT-GUARDS: Resource Guards For Spawned Agents
 
-- **Desc:** `SpawnedAgent` MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a `flowai-skill-configure-deno-commands` scenario produced a `deno test -A` chain that grew to ~720 descendants in 90 s); (2) **bloat-OOM** — a single agent process leaks/holds memory until the kernel VM compressor saturates (incident at 07:50: `compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel found "no eligible processes" to jetsam, `SystemUIServer` froze in TCC checks, host hung until forced reboot at 08:53). Container-based isolation is unavailable (see FR-BENCH-ISOLATION trade-offs), so guards run in userspace on the host.
+- **Desc:** `SpawnedAgent` MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a `flowai-skill-configure-deno-commands` scenario produced a `deno test -A` chain that grew to ~720 descendants in 90 s); (2) **bloat-OOM** — a single agent process leaks/holds memory until the kernel VM compressor saturates (incident at 07:50: `compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel found "no eligible processes" to jetsam, `SystemUIServer` froze in TCC checks, host hung until forced reboot at 08:53). Container-based isolation is unavailable (see FR-ACCEPT-ISOLATION trade-offs), so guards run in userspace on the host.
 - **Scenario:** A bench scenario triggers either (a) a runaway shell command that forks recursively or (b) a long-context turn that pushes the agent's V8 heap past available RAM. The guard MUST kill the agent's entire process tree (root PID + all descendants) and proceed to the judge with an `exit_code_zero` failure verdict, instead of letting the kernel hang the host. A pre-flight check MUST refuse to spawn the next agent when the host is already under enough pressure that the next spawn risks the same compressor-shortage state.
-- **Mechanism (`scripts/benchmarks/lib/process_watchdog.ts` + `system_health.ts` + `setpgrp_exec.py`):**
+- **Mechanism (`scripts/acceptance-tests/lib/process_watchdog.ts` + `system_health.ts` + `setpgrp_exec.py`):**
   - **Process-group isolation**: every spawn is wrapped in `python3 setpgrp_exec.py <agent> <args>`. The wrapper calls `os.setsid()` then `os.execvp()`, making the agent the leader of a new process group whose PGID equals the agent's PID. All descendants inherit the PGID — even after re-parenting to PID 1 when an intermediate parent dies. Required because the prior PPID-walk approach killed only direct descendants; orphaned grandchildren kept forking and ultimately required a host reboot on 2026-05-09 12:12.
   - **Fork-loop guard**: poll `pgrep -g <pgid>` for group members (orphans included). When `members.length - 1 > BENCH_MAX_DESCENDANTS` (default 5) for `BENCH_WATCHDOG_CONFIRM` (default 2) consecutive samples → `/bin/kill -TERM -- -<pgid>`, wait `graceMs` (default 1500, cancellable via AbortController), `/bin/kill -KILL -- -<pgid>`. Trip cause = `"fork-loop"`.
   - **RSS-bloat guard**: same poll loop, additionally read `ps -o pid=,rss=` for the group, sum bytes. When sum > `BENCH_MAX_RSS_GB` × 1 GiB (default 6 GiB) for `BENCH_WATCHDOG_CONFIRM` consecutive samples → same group-kill sequence. Trip cause = `"rss-bloat"`. Required because `setrlimit RLIMIT_AS / RLIMIT_DATA` is useless against V8-based agents on macOS — V8 over-reserves virtual address space (~485 GiB VSZ at 95 MiB RSS observed for `claude`), so any `-v` cap small enough to constrain RSS will also clip the V8 reservation and crash the binary at startup; `RLIMIT_RSS` exists in shell but the kernel does not enforce it on macOS or Linux.
   - **Pre-flight system-health gate**: before each `cmd.spawn()` the agent calls `assertHealthy()`. Reads `vm_stat` + `sysctl vm.swapusage` + `sysctl vm.loadavg` + `sysctl hw.ncpu`. Throws `SystemUnhealthyError` when either: (a) **effective memory headroom** = `availableRAM + freeSwap × BENCH_SWAP_DISCOUNT` (default 0.3) falls below `BENCH_MIN_HEADROOM_MB` (default 2048) MB; or (b) 1-min load avg per CPU > `BENCH_MAX_LOAD_PER_CPU` (default 4). The combined-headroom metric replaces the earlier independent-threshold scheme (`BENCH_MIN_FREE_PCT` + `BENCH_MAX_SWAP_PCT`) which over-aborted when one axis was tight but the other had ample slack. Caught in `start()`, surfaced as exit code 75 (`EX_TEMPFAIL`). Linux returns a neutral snapshot and never trips. **No env-var escape hatch**: thresholds may be tuned, but the gate cannot be disabled — to bypass, free resources or hand off to a healthier host.
 - **Acceptance:**
   - [x] Fork-loop trip kills entire process group, INCLUDING orphans that re-parented to PID 1 after their immediate parent died.
-    Evidence: `deno test -A scripts/benchmarks/lib/process_watchdog_test.ts --filter "trips on fork-loop"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts --filter "trips on fork-loop"`.
   - [x] RSS-bloat trip kills the entire process group when group RSS exceeds the threshold.
-    Evidence: `deno test -A scripts/benchmarks/lib/process_watchdog_test.ts --filter "rss-bloat"`.
+    Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts --filter "rss-bloat"`.
   - [ ] Pre-flight health snapshot is logged in every run's `judge-evidence.md` (`[health] available … MB (…%), compressor … MB, swap …/… MB (…%), load1 … on … CPU (…/CPU)`).
-    Evidence: `grep -h '\[health\]' benchmarks/runs/latest/*/run-*/judge-evidence.md`.
+    Evidence: `grep -h '\[health\]' acceptance-tests/runs/latest/*/run-*/judge-evidence.md`.
   - [x] When `assertHealthy` throws, `SpawnedAgent.start` catches `SystemUnhealthyError`, logs `[health] aborting spawn: ...`, and surfaces exit code 75 without spawning.
-    Evidence: `deno test -A scripts/benchmarks/lib/system_health_test.ts` (covers threshold-trip path).
+    Evidence: `deno test -A scripts/acceptance-tests/lib/system_health_test.ts` (covers threshold-trip path).
   - [ ] Watchdog publishes the `trip` object BEFORE killing (so consumers reading `watchdog.trip()` after `child.status` resolves on SIGTERM see the verdict, not `null`).
     Evidence: `process_watchdog.ts:tripNow` sets `trip` before awaiting `killTree`.
 - **Non-acceptance (explicit trade-offs):**
@@ -140,32 +140,32 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - Aggregate RSS accumulator across all live `SpawnedAgent` instances. Activate only when `task-bench.ts` adds concurrent scenario execution; current runner is sequential.
   - End-to-end re-validation on a low-memory host with the original fork-loop scenario re-introduced. Verified indirectly on 2026-05-09: re-ran `flowai-skill-configure-deno-commands-trigger-pos-{1,2,3}` (the `-2`/`-3` scenarios were later consolidated into `-1` on 2026-05-10), `-basic`, `flowai-skill-setup-ai-ide-devcontainer-{deno-claude,feature-discovery}` after the SKILL.md fix — six previously-dangerous scenarios passed without tripping the watchdog and without measurable swap pressure.
 
-### FR-BENCH-CACHE: Benchmark Result Cache
+### FR-ACCEPT-CACHE: Acceptance Test Result Cache
 
-- **Desc:** Commit per-scenario benchmark verdicts to the repo; re-run only when a cache-key input changes. Makes `deno task bench` an incremental operation.
-- **Scenario:** Contributor runs `deno task bench`; unchanged scenarios hit the cache and return instantly with zero LLM calls. A touched primitive or fixture forces re-execution. `--cache-check` is a CI gate that fails when the cache is stale.
+- **Desc:** Commit per-scenario acceptance test verdicts to the repo; re-run only when a cache-key input changes. Makes `deno task acceptance-tests` an incremental operation.
+- **Scenario:** Contributor runs `deno task acceptance-tests`; unchanged scenarios hit the cache and return instantly with zero LLM calls. A touched primitive or fixture forces re-execution. `--cache-check` is a CI gate that fails when the cache is stale.
 - **Acceptance:**
-  - [x] Cache files live under `benchmarks/cache/<pack>/<scenario-id>/<ide>.json`, tracked by git (directory not excluded in `.gitignore`).
+  - [x] Cache files live under `acceptance-tests/cache/<pack>/<scenario-id>/<ide>.json`, tracked by git (directory not excluded in `.gitignore`).
   - [x] Cache hit: no agent/judge CLI is invoked; `runScenario` is skipped entirely.
-  - [x] Cache key covers: scenario `mod.ts` + `fixture/`, primitive directory (excluding `benchmarks/`), `framework/<pack>/pack.yaml`, `framework/core/assets/AGENTS.template.md`, `scripts/benchmarks/lib/**`, `scripts/task-bench.ts`, `cli/src/transform.ts`, `cli/src/sync.ts`, `scripts/utils.ts`, full `benchmarks/config.json`, CLI args (`ide`, `agentModel`, `runs`), and best-effort `<cli> --version`.
+  - [x] Cache key covers: scenario `mod.ts` + `fixture/`, primitive directory (excluding `benchmarks/`), `framework/<pack>/pack.yaml`, `framework/core/assets/AGENTS.template.md`, `scripts/acceptance-tests/lib/**`, `scripts/task-bench.ts`, `cli/src/transform.ts`, `cli/src/sync.ts`, `scripts/utils.ts`, full `acceptance-tests/config.json`, CLI args (`ide`, `agentModel`, `runs`), and best-effort `<cli> --version`.
   - [x] Flags `--no-cache`, `--refresh-cache`, `--cache-check`, `--cache-with-runs` parsed in `scripts/task-bench.ts` and documented in `--help`. First three are mutually exclusive (enforced at arg-parse time).
   - [x] Failed runs never write cache (prevents freezing broken scenarios at green).
   - [x] Skipped scenarios (`scenario.skip` set) bypass cache entirely.
   - [x] Judge `reason` strings are truncated to 200 characters with a trailing `…` marker.
   - [x] IDE CLI version probe fails open: timeout / missing binary / non-zero exit all yield `""` without crashing.
-  - [x] Cache-key algorithm documented in `scripts/benchmarks/lib/cache.ts` module docstring.
-  - [x] Drift guard: `cache_test.ts` parses `scripts/benchmarks/lib/**` imports and asserts every escaping import is whitelisted in `cache.ts`.
+  - [x] Cache-key algorithm documented in `scripts/acceptance-tests/lib/cache.ts` module docstring.
+  - [x] Drift guard: `cache_test.ts` parses `scripts/acceptance-tests/lib/**` imports and asserts every escaping import is whitelisted in `cache.ts`.
 - **Non-acceptance (explicit trade-offs):**
   - RED-phase cost: the first failing scenario re-runs on every invocation until GREEN (no `--cache-failures` flag). Use `--no-cache` during tight RED/GREEN iteration if needed.
   - Judge drift invisibility: the LLM judge is non-deterministic; cache stores the first green verdict and does not re-validate it. Use `--no-cache` or a scheduled full sweep as a sanity probe.
-  - Cold-start cost: first run on a fresh clone is a full sweep; a maintainer commits the warmed `benchmarks/cache/` once.
+  - Cold-start cost: first run on a fresh clone is a full sweep; a maintainer commits the warmed `acceptance-tests/cache/` once.
 - **Open (follow-up):**
-  - [ ] CI step `deno task bench --cache-check` that fails a PR when a primitive was touched without refreshing the cache.
+  - [ ] CI step `deno task acceptance-tests --cache-check` that fails a PR when a primitive was touched without refreshing the cache.
 
-### FR-BENCH.RULES: AGENTS.md Rules Benchmarks
+### FR-ACCEPT.RULES: AGENTS.md Rules Benchmarks
 
-- **Description:** Pack-level benchmarks (`framework/core/benchmarks/agents-rules-*/`) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). Template stored at `framework/core/assets/AGENTS.template.md`.
-- **Acceptance verified by benchmarks:**
+- **Description:** Pack-level acceptance tests (`framework/core/acceptance-tests/agents-rules-*/`) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). Template stored at `framework/core/assets/AGENTS.template.md`.
+- **Acceptance verified by acceptance tests:**
   - [x] `agents-rules-tdd-cycle` — TDD RED→GREEN→REFACTOR→CHECK
   - [x] `agents-rules-fail-fast` — no stubs, fix source not test, stop on missing config
   - [x] `agents-rules-stop-analysis` — 5-WHY, STOP on unfixable problem
@@ -180,12 +180,12 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [ ] `agents-rules-no-silent-fallbacks` — don't add defaults/fallbacks without asking
   - [ ] `agents-rules-run-all-tests` — run full test suite, not just changed files
 
-### FR-BENCH.TRIGGER: Skill Description-Matching Verification
+### FR-ACCEPT.TRIGGER: Skill Description-Matching Verification
 
 - **Desc:** Every skill in `framework/<pack>/skills/` MUST have 3 trigger scenarios verifying description-matching correctness: 1 positive (skill should activate), 1 adjacent-negative (a different skill is the right match), 1 false-use-negative (query is in the skill's domain but the wrong intent for it). Catches regressions where a description rewrite makes the skill invisible to the model (false negative) or over-triggered (false positive).
 - **Scope:** Only `framework/<pack>/skills/`. Commands (`framework/<pack>/commands/`) carry `disable-model-invocation: true` (injected at sync) and are triggered by explicit `/name` — out of scope.
-- **Shape:** Regular `BenchmarkSkillScenario` with one `userQuery` and one critical checklist item evaluated by the LLM judge against the trace. No new infra.
-- **Layout:** Sibling folders inside the skill's existing `benchmarks/`:
+- **Shape:** Regular `AcceptanceTestScenario` with one `userQuery` and one critical checklist item evaluated by the LLM judge against the trace. No new infra.
+- **Layout:** Sibling folders inside the skill's existing `acceptance-tests/`:
   - `trigger-pos-1/mod.ts` — query the skill SHOULD activate on
   - `trigger-adj-1/mod.ts` — query an ADJACENT skill is correct for; this skill should stand down
   - `trigger-false-1/mod.ts` — query in this skill's domain but wrong intent (e.g., asking *about* the skill, not asking *to do* the skill's job)
@@ -194,18 +194,18 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - Positives: id `skill_invoked`, critical: true — judge confirms the trace contains a `Skill` tool call or `SKILL.md` read for the target skill, AND the agent acted on it.
   - Negatives (adjacent + false): id `skill_not_invoked`, critical: true — judge confirms the trace does NOT contain a `Skill` tool call or `SKILL.md` read for the target skill (the agent invoked a different skill or responded directly).
 - **Enforcement:** `scripts/check-trigger-coverage.ts` fails `deno task check` on missing/misnamed scenarios. Stray `trigger-{pos,adj,false}-{2,3,...}` directories are reported as misnamed (the previous 3+3+3 layout was reduced to 1+1+1 on 2026-05-10; see `documents/tasks/2026/05/trigger-n1-retry.md`).
-- **Cost note:** Full sweep adds N×3 scenarios to `deno task bench` (was N×9). The result cache (FR-BENCH-CACHE) absorbs unchanged scenarios; refreshes are scoped to skill-description edits.
-- **Retry:** Judge-level retry-on-error (`scripts/benchmarks/lib/judge.ts:103`) absorbs transient judge failures. Agent-level retry on result is intentionally NOT performed — re-running a "skill not invoked" scenario until it passes would mask real description regressions. Suspected agent variance is investigated by manual re-run (`deno task bench -f <scenario-id>`); if empirical flake rate at N=1 proves > 5% per scenario, add a scenario-level `retryOnFail` field as a separate FR.
-- **Acceptance verified by benchmarks:** every `framework/*/skills/flowai-skill-*/benchmarks/trigger-{pos,adj,false}-1/mod.ts` (verified by `scripts/check-trigger-coverage.ts`).
-- **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/benchmarks/trigger-*' | wc -l` equals (skill count) × 3.
+- **Cost note:** Full sweep adds N×3 scenarios to `deno task bench` (was N×9). The result cache (FR-ACCEPT-CACHE) absorbs unchanged scenarios; refreshes are scoped to skill-description edits.
+- **Retry:** Judge-level retry-on-error (`scripts/acceptance-tests/lib/judge.ts:103`) absorbs transient judge failures. Agent-level retry on result is intentionally NOT performed — re-running a "skill not invoked" scenario until it passes would mask real description regressions. Suspected agent variance is investigated by manual re-run (`deno task bench -f <scenario-id>`); if empirical flake rate at N=1 proves > 5% per scenario, add a scenario-level `retryOnFail` field as a separate FR.
+- **Acceptance verified by acceptance tests:** every `framework/*/skills/flowai-skill-*/acceptance-tests/trigger-{pos,adj,false}-1/mod.ts` (verified by `scripts/check-trigger-coverage.ts`).
+- **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/acceptance-tests/trigger-*' | wc -l` equals (skill count) × 3.
 - **Status:** [x]
 
 ### FR-EXP: Experiments Subsystem (RELOCATED)
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). Requirement retained here as a stub so historical traceability links keep resolving.
-- **Description:** Parameterized empirical studies of AI agent platforms (model × IDE × memory layout × workload). Distinct from regression benchmarks (which stay in this repo). Results are committed numeric evidence, not pass/fail tests.
+- **Description:** Parameterized empirical studies of AI agent platforms (model × IDE × memory layout × workload). Distinct from regression acceptance tests (which stay in this repo). Results are committed numeric evidence, not pass/fail tests.
 - **Rationale for split:** Experiments had zero runtime overlap with the framework product, inflated the `flow` clone with ever-growing committed results, and required live Claude CLI + macOS keychain auth that this repo's CI cannot provide.
-- **Scope in `flow`:** This repo no longer contains experiment code, the `deno task experiment` entry point, or the `writeMemoryFile` / `getCleanroomEnv` / `MemoryScope` adapter extensions. The `AgentAdapter` contract returns to benchmark-only responsibilities.
+- **Scope in `flow`:** This repo no longer contains experiment code, the `deno task experiment` entry point, or the `writeMemoryFile` / `getCleanroomEnv` / `MemoryScope` adapter extensions. The `AgentAdapter` contract returns to acceptance-test-only responsibilities.
 
 ### FR-EXP.MEMORY-LENGTH: AGENTS.md/CLAUDE.md Max Length Experiment (RELOCATED)
 
@@ -213,13 +213,13 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 ### FR-COMPONENT: Component Coverage
 
-All 41 skills have at least one benchmark scenario. Coverage is the source of truth: `find framework -name "mod.ts" -path "*/benchmarks/*" | wc -l`. Agents (4 canonical definitions) are not benchmarked individually — they are exercised as subagents within skill benchmarks.
+All 41 skills have at least one acceptance test scenario. Coverage is the source of truth: `find framework/*/acceptance-tests/*" | wc -l`. Agents (4 canonical definitions) are not tested individually via acceptance tests — they are exercised as subagents within skill acceptance tests.
 
 ### FR-INIT: Project Initialization
 
 - **Description:** The `flowai-init` skill bootstraps AI agent understanding of a project by analyzing codebase, generating a single AGENTS.md file from the pack-level asset template, and scaffolding documentation (CLAUDE.md, SRS, SDS). Uses `generate_agents.ts` (Deno/TS, read-only) for project analysis. The AGENTS.md template is a pack-level asset (not a flowai-init scaffold) — its updates are tracked independently via `assets:` in `pack.yaml`. Legacy three-file layouts (`documents/AGENTS.md`, `scripts/AGENTS.md`) are detected and collapsed into the single root file during brownfield initialization.
 - **Use case scenario:** User runs `/flowai-init` on existing or new project. Agent runs the analysis script, determines Greenfield vs Brownfield by its own judgment, interviews user (Greenfield) or reverse-engineers architecture (Brownfield), generates AGENTS.md, documentation (SRS, SDS, task file), and configures development commands.
-- **Acceptance verified by benchmarks:** `flowai-init-greenfield`, `flowai-init-brownfield`, `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`, `flowai-init-vision-integration`, `flowai-init-claude-md-symlinks`
+- **Acceptance verified by acceptance tests:** `flowai-init-greenfield`, `flowai-init-brownfield`, `flowai-init-brownfield-update`, `flowai-init-brownfield-idempotent`, `flowai-init-vision-integration`, `flowai-init-claude-md-symlinks`
 - **Infrastructure acceptance (code/scripts):**
   - [x] **FR-INIT.STACK Stack detection**: `generate_agents.ts` detects 6 stacks via marker files.
   - [x] **FR-INIT.TESTS Unit tests**: `generate_agents.test.ts` covers 8 scenarios.
@@ -344,14 +344,14 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 - **Desc:** Standalone skill that re-adapts the project's AGENTS.md when the upstream template changes significantly. Reads the installed template from `{ide}/assets/AGENTS.template.md` (path resolved per scope), diffs it against `<cwd>/AGENTS.md`, proposes a merge preserving project-specific sections, shows the diff, and writes on user approval. Installable in both scopes (no `scope:` field).
 - **Scenario:** User updates flowai → new template lands in `~/.claude/assets/AGENTS.template.md` (global) or `.claude/assets/AGENTS.template.md` (project). User invokes `/flowai-skill-adapt-instructions` → agent reads template, diffs with project AGENTS.md, shows merged proposal, asks confirmation, writes on approval.
-- **Acceptance verified by benchmark:** `flowai-skill-adapt-instructions-basic`.
+- **Acceptance verified by acceptance test:** `flowai-skill-adapt-instructions-basic`.
 - **Acceptance criteria:**
   - [x] Skill lives at `framework/core/skills/flowai-skill-adapt-instructions/SKILL.md` (agent-auto-invocable, `flowai-skill-*` prefix per FR-PACKS.STRUCT naming).
     Evidence: file existence.
   - [x] SKILL.md body references `{ide}/assets/AGENTS.template.md` (no template duplication inside the skill).
     Evidence: `grep -n "AGENTS.template.md" framework/core/skills/flowai-skill-adapt-instructions/SKILL.md`.
   - [x] Benchmark `flowai-skill-adapt-instructions-basic` verifies the read-template → diff → merge → confirm flow.
-    Evidence: `framework/core/skills/flowai-skill-adapt-instructions/benchmarks/basic/mod.ts`.
+    Evidence: `framework/core/skills/flowai-skill-adapt-instructions/acceptance-tests/basic/mod.ts`.
 
 #### FR-DIST.FILTER Selective Sync
 - **Desc:** `.flowai.yaml` controls which skills/agents to sync.
@@ -576,24 +576,24 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 - **Description:** Add `agent:` as a new commit type in Conventional Commits convention used by `flowai-commit`. Covers changes to agents, skills, `AGENTS.md`, and other AI-agent-related configuration in IDE directories.
 - **Use case scenario:** Developer modifies a skill's `SKILL.md` or updates an agent definition. On commit, the message is prefixed with `agent:` (e.g., `agent: update flowai-commit skill with atomic grouping rules`).
-- **Acceptance verified by benchmarks:** `flowai-commit-agent-type`
+- **Acceptance verified by acceptance tests:** `flowai-commit-agent-type`
 
 ### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `flowai-review-and-commit`
 
 - **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
-- **Acceptance verified by benchmarks:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
+- **Acceptance verified by acceptance tests:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
 
 ### FR-DO-WITH-PLAN: Full-Cycle Workflow — `flowai-do-with-plan`
 
 - **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (per `flowai-review-and-commit-beta` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). All phases inlined verbatim from source skills; sync enforced by [scripts/check-skill-sync.ts](../scripts/check-skill-sync.ts).
 - **Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md)
-- **Acceptance verified by benchmarks:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
+- **Acceptance verified by acceptance tests:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
 - **Status:** [x]
 
 ### FR-DEVCONTAINER: AI Devcontainer Setup — flowai-skill-setup-ai-ide-devcontainer
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.
-- **Acceptance verified by benchmarks:** `flowai-skill-setup-ai-ide-devcontainer-node-basic`, `flowai-skill-setup-ai-ide-devcontainer-deno-with-claude`, `flowai-skill-setup-ai-ide-devcontainer-deno-flowai`, `flowai-skill-setup-ai-ide-devcontainer-brownfield-existing`, `flowai-skill-setup-ai-ide-devcontainer-feature-discovery`, `flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli`
+- **Acceptance verified by acceptance tests:** `flowai-skill-setup-ai-ide-devcontainer-node-basic`, `flowai-skill-setup-ai-ide-devcontainer-deno-with-claude`, `flowai-skill-setup-ai-ide-devcontainer-deno-flowai`, `flowai-skill-setup-ai-ide-devcontainer-brownfield-existing`, `flowai-skill-setup-ai-ide-devcontainer-feature-discovery`, `flowai-skill-setup-ai-ide-devcontainer-opencode-multi-cli`
 
 ### FR-UNIVERSAL: Universal Skill & Script Requirements
 
@@ -635,7 +635,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Acceptance:**
   - [x] `scripts/check-skills.ts` validates `framework/<pack>/{skills,commands}/**/SKILL.md` bodies against forbidden patterns: `gpt-5(?:\.\d+)?(?:-\w+)?`, `claude-opus-\d(?:-\d+)?`, `claude-sonnet-\d(?:-\d+)?`. Violations fail the check with criterion tag `FR-UNIVERSAL.IDE-NEUTRAL`.
   - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
-  - [x] Benchmarks directory (`framework/*/benchmarks/`) and `.claude/skills/` dev resources are exempt (not distributed).
+  - [x] Acceptance tests directory (`framework/*/acceptance-tests/`) and `.claude/skills/` dev resources are exempt (not distributed).
 
 #### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
 
@@ -689,13 +689,13 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-UPDATE: Framework Update — `flowai-update`
 
 - **Description:** Single entry point for updating the flowai framework. Handles CLI update, skill/agent sync via `flowai sync`, migration of the AGENTS.md asset artifact (from the pack-level template), and migration of scaffolded project artifacts using template diffs as migration source. Detects legacy three-file AGENTS.md layouts and collapses them into a single root file.
-- **Acceptance verified by benchmarks:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
+- **Acceptance verified by acceptance tests:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
 
 ### FR-ADAPT: Standalone Primitive Adaptation — `flowai-adapt`
 
 - **Description:** On-demand adaptation of all installed framework primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of the update cycle. Uses `flowai-skill-adapter` subagent for skills and `flowai-agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
 - **Use case scenario:** Developer installs flowai on a Python project. All skills contain generic Deno examples. Runs `/flowai-adapt` to adapt all primitives to Python/pytest/ruff. Can also run `/flowai-adapt --skills flowai-commit` to adapt a single skill.
-- **Acceptance verified by benchmarks:** `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`
+- **Acceptance verified by acceptance tests:** `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`
 
 #### FR-ADAPT.SKILLS Skill Adaptation
 
@@ -838,7 +838,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism
 
 - **Description:** Reflection skills (`flowai-skill-reflect`, `flowai-skill-reflect-by-history`) must search session history for similar errors/mistakes, identify patterns, and include findings in output. Before presenting the final report, the agent must perform self-criticism — validate findings, check for false positives and blind spots, evaluate proportionality of proposed fixes, and revise the report accordingly.
-- **Acceptance verified by benchmarks:** `flowai-skill-reflect-session-history-pattern`, `flowai-skill-reflect-context-inefficiency`, `flowai-skill-reflect-process-loop`, `flowai-skill-reflect-self-criticism`, `flowai-skill-reflect-by-history-self-criticism`
+- **Acceptance verified by acceptance tests:** `flowai-skill-reflect-session-history-pattern`, `flowai-skill-reflect-context-inefficiency`, `flowai-skill-reflect-process-loop`, `flowai-skill-reflect-self-criticism`, `flowai-skill-reflect-by-history-self-criticism`
 
 ### FR-CICD: CI/CD Pipeline Security
 
@@ -853,7 +853,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-WB-CLEANUP: Task File Cleanup on Commit
 
 - **Description:** `flowai-commit` deletes referenced task file after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale task files from accumulating.
-- **Acceptance verified by benchmarks:** `flowai-commit-task-cleanup`, `flowai-commit-task-cleanup-partial`
+- **Acceptance verified by acceptance tests:** `flowai-commit-task-cleanup`, `flowai-commit-task-cleanup-partial`
 
 ### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit
 
@@ -861,7 +861,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - Review owns: project checks (lint/test), hygiene scan, code quality verdict
   - Commit owns: documentation audit, atomic grouping, commit execution, task file cleanup
   - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks.
-- **Acceptance verified by benchmarks:** `flowai-commit-no-checks`, `flowai-skill-review-no-grouping`
+- **Acceptance verified by acceptance tests:** `flowai-commit-no-checks`, `flowai-skill-review-no-grouping`
 
 ### FR-JIT-REVIEW: JIT Review Skill — `flowai-skill-jit-review`
 
@@ -883,18 +883,18 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - MUST NOT modify production code; MUST NOT write tests into the main test tree without explicit user consent.
   - Diff > ~10 files or > ~500 LOC → warn the user and suggest splitting.
   - Mutant budget: ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. Report top-5 catching tests by severity × uniqueness.
-- **Acceptance verified by benchmarks:** `flowai-skill-jit-review-catch-regression`, `flowai-skill-jit-review-no-change-no-alarm`
+- **Acceptance verified by acceptance tests:** `flowai-skill-jit-review-catch-regression`, `flowai-skill-jit-review-no-change-no-alarm`
 
 ### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `flowai-skill-diagnose-benchmark-failure`
 
-- **Description:** Agent-invocable skill that, given a failed benchmark scenario ID, reads the run artifacts (`benchmarks/runs/latest/<scenario-id>/run-1/judge-evidence.md`, the sandbox copy of the failing primitive's `SKILL.md`, and the scenario `mod.ts`), pattern-matches the symptoms against a documented failure-mode taxonomy (MD-PRIOR-BULLETS, HEADING-INSTEAD-OF-ITEM, STALE-SKILL-IN-SANDBOX, SKILL-NOT-MOUNTED, COMPOSITE-DELEGATION-BYPASS, PERSONA-MISMATCH, TEST-FITTING-PERSONA, CROSS-PACK-REFERENCE-MISSING), and produces an evidence-grounded diagnostic report.
-- **Scope:** Lives under `framework/engineering/skills/flowai-skill-diagnose-benchmark-failure/`. Model-invocable. Triggered by user prompts about diagnosing/investigating a specific failed benchmark run, or by an agent's own follow-up after observing a benchmark failure during Benchmark TDD.
+- **Description:** Agent-invocable skill that, given a failed benchmark scenario ID, reads the run artifacts (`acceptance-tests/runs/latest/<scenario-id>/run-1/judge-evidence.md`, the sandbox copy of the failing primitive's `SKILL.md`, and the scenario `mod.ts`), pattern-matches the symptoms against a documented failure-mode taxonomy (MD-PRIOR-BULLETS, HEADING-INSTEAD-OF-ITEM, STALE-SKILL-IN-SANDBOX, SKILL-NOT-MOUNTED, COMPOSITE-DELEGATION-BYPASS, PERSONA-MISMATCH, TEST-FITTING-PERSONA, CROSS-PACK-REFERENCE-MISSING), and produces an evidence-grounded diagnostic report.
+- **Scope:** Lives under `framework/engineering/skills/flowai-skill-diagnose-benchmark-failure/`. Model-invocable. Triggered by user prompts about diagnosing/investigating a specific failed benchmark run, or by an agent's own follow-up after observing a benchmark failure during Acceptance Test TDD.
 - **Constraints:**
   - Read-only: MUST NOT edit any source file (no `SKILL.md`, `mod.ts`, SRS/SDS, etc.). Output is a report; downstream agents apply fixes.
   - Evidence-grounded: every claim in the report must cite a quoted line from `judge-evidence.md`, the sandbox `SKILL.md`, or the scenario `mod.ts`. Hypotheses without artifact citations are invalid.
   - Fail-closed: if any of the three required artifacts is missing, the skill stops and reports the gap rather than proceeding with partial data.
   - Taxonomy-grounded: classifications use the documented codes; novel modes only when the documented set is empirically ruled out.
-- **Acceptance verified by benchmarks:** `flowai-skill-diagnose-benchmark-failure-md-prior-bullets`
+- **Acceptance verified by acceptance tests:** `flowai-skill-diagnose-benchmark-failure-md-prior-bullets`
 - **Status:** [x]
 
 ### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `flowai-skill-ai-ide-runner`
@@ -908,7 +908,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - If the native provider fails (auth / not configured / model ID mismatch), MUST report the failure and stop — MUST NOT silently retry with a routed variant.
   - MUST apply the `CLAUDECODE=""` environment override when the caller is itself Claude Code and the child is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
   - MUST NOT install or authenticate CLIs, persist transcripts, or judge output quality automatically.
-- **Acceptance verified by benchmarks:** `flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-skill-ai-ide-runner-opencode-provider-format`, `flowai-skill-ai-ide-runner-single-cursor-read-only`, `flowai-skill-ai-ide-runner-default-native-ide-for-model`
+- **Acceptance verified by acceptance tests:** `flowai-skill-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-skill-ai-ide-runner-opencode-provider-format`, `flowai-skill-ai-ide-runner-single-cursor-read-only`, `flowai-skill-ai-ide-runner-default-native-ide-for-model`
 
 ### FR-LOOP: Non-Interactive Runner — `flowai loop`
 
@@ -934,7 +934,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - From ekadetov-llm-wiki: active memex detection (walk up from cwd), entity types (concept / person / source-summary), backlink audit via grep, deterministic audit script, contradiction callouts.
   - From nvk-llm-wiki: nested `AGENTS.md` as portable schema (vs `CLAUDE.md`), frontmatter-as-data, optional dual-link `[[slug|Name]] ([Name](slug.md))` when the memex is an Obsidian vault, structural-guardian nudge on session start, honest-gaps rule, ask-answer promotion two-step (file then offer promote).
 - **Out of scope (intentionally minimal vs nvk):** multi-memex hub, research / thesis / librarian / projects commands, volatility / freshness scoring, qmd dependency.
-- **Acceptance verified by benchmarks:** `flowai-skill-memex-save-new`, `flowai-skill-memex-save-update`, `flowai-skill-memex-ask-citations`, `flowai-skill-memex-ask-honest-gap`, `flowai-skill-memex-audit-clean`, `flowai-skill-memex-audit-defects`.
+- **Acceptance verified by acceptance tests:** `flowai-skill-memex-save-new`, `flowai-skill-memex-save-update`, `flowai-skill-memex-ask-citations`, `flowai-skill-memex-ask-honest-gap`, `flowai-skill-memex-audit-clean`, `flowai-skill-memex-audit-defects`.
 - **Acceptance verified by tests:** `framework/memex/scripts/flowai-memex-audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/flowai-memex-status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
 - **Status:** [x]
 
@@ -949,7 +949,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 ### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map
 
 - **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` (= root `AGENTS.md` symlink target) to GFM links into requirements.md / design.md / README.md.
-- **Scenario:** `git grep "// FR-"` returns zero hits in code outside `documents/` and benchmark scenarios. `scripts/check-traceability.ts` reports `All N comment doc-link(s) resolve. 0 legacy "// FR-<ID>" shortcuts.` for the current commit.
+- **Scenario:** `git grep "// FR-"` returns zero hits in code outside `documents/` and acceptance test scenarios. `scripts/check-traceability.ts` reports `All N comment doc-link(s) resolve. 0 legacy "// FR-<ID>" shortcuts.` for the current commit.
 - **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (18 tests covering `computeAutoSlug`, `extractHeadingSlugs`, `extractCommentLinks`, `detectLegacyFrComments`, task-frontmatter parsing, and `validateTaskRefs`).
 - **Status:** [x]
 
@@ -957,7 +957,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 
 - **Description:** `flowai-skill-plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write; never scaffolded by `flowai-init`.
 - **Scenario:** Agent plans a task that introduces FR-XYZ → adds FR-XYZ section to SRS → appends `- [FR-XYZ](requirements.md#fr-xyz-...) — <summary> — [ ]` under `## FR` in `documents/index.md`. Subsequent status flip to `[x]` updates the same row.
-- **Acceptance verified by benchmarks:** `flowai-skill-plan-updates-index-on-new-fr`.
+- **Acceptance verified by acceptance tests:** `flowai-skill-plan-updates-index-on-new-fr`.
 - **Status:** [x]
 
 ### FR-DOC-TASKS: First-Class Committed Tasks
@@ -968,7 +968,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - Path MUST match `documents/tasks/<YYYY>/<MM>/<slug>.md` (kebab-case slug).
   - `status` value MUST come from the 3-state set; legacy ADR statuses (`accepted` / `implemented` / `proposed`) are rejected by the validator.
   - Tasks NEVER deleted by commit-cleanup (persistent canonical records).
-- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter`.
+- **Acceptance verified by acceptance tests:** `flowai-plan-exp-permanent-tasks-writes-task-new-frontmatter`.
 - **Status:** [x]
 
 ### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills
@@ -979,27 +979,27 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - MUST run only on commits — no out-of-band flips.
   - MUST be idempotent: re-committing an already-derived task is a no-op.
   - MUST NOT downgrade `done`. Other transitions are bidirectional.
-- **Acceptance verified by benchmarks:** `flowai-commit-flips-task-status`, `flowai-commit-derives-in-progress-status`, `flowai-review-and-commit-flips-task-status`.
+- **Acceptance verified by acceptance tests:** `flowai-commit-flips-task-status`, `flowai-commit-derives-in-progress-status`, `flowai-review-and-commit-flips-task-status`.
 - **Status:** [x]
 
 ### FR-DOC-TASK-CONTEXT: Plan Skill Loads Related Tasks into Step 2
 
 - **Description:** `flowai-plan-exp-permanent-tasks` Step 2 ("Deep Context & Uncertainty") globs `documents/tasks/**/*.md`, parses each task's frontmatter `implements:` array, and reads (Read tool) tasks whose `implements:` set intersects the new task's `implements:` set. Cap: 10 most recent (by `date:`) related tasks. Loaded content informs the variant analysis and DoD synthesis so prior decisions are not contradicted. Empty `implements:` → no related-task lookup.
 - **Scenario:** User runs `/flowai-plan-exp-permanent-tasks` for a task that `implements: [FR-CACHE]`. Step 2 finds two prior tasks under `documents/tasks/` whose frontmatter also lists `FR-CACHE`, reads both, and references them in the variant analysis.
-- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-loads-related-tasks`.
+- **Acceptance verified by acceptance tests:** `flowai-plan-exp-permanent-tasks-loads-related-tasks`.
 - **Status:** [x]
 
 ### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer
 
 - **Description:** `flowai-plan-exp-permanent-tasks` (and `flowai-skill-epic`) inserts/extends a `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)[, ...]` line directly after the `**Description:**` line in each SRS FR section listed in the new task's `implements:`. Surgical edit: only this single line is touched in the SRS — no other SRS content modified. Idempotent: re-running on the same task does not duplicate the link. Replaces the now-removed `## ADR` section in `documents/index.md` as the navigation surface from FR → its driving tasks.
 - **Scenario:** New task `documents/tasks/2026/05/add-cache.md` declares `implements: [FR-CACHE]`. Skill opens `documents/requirements.md`, finds `### FR-CACHE`, and inserts `- **Tasks:** [add-cache](tasks/2026/05/add-cache.md)` after the existing `**Description:**` line. Subsequent task `clear-cache.md` for the same FR appends `, [clear-cache](tasks/2026/05/clear-cache.md)` to the existing line.
-- **Acceptance verified by benchmarks:** `flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer`.
+- **Acceptance verified by acceptance tests:** `flowai-plan-exp-permanent-tasks-updates-srs-task-back-pointer`.
 - **Status:** [x]
 
 ### FR-DOC-RESCUE: Reflect Surfaces Decisions for Task Capture
 
 - **Description:** `flowai-skill-reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighed alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a chat message naming the decision and recommends `/flowai-plan-exp-permanent-tasks` (the canonical-record writer) on its `**Recommended action:**` line. Reflect itself remains read-only — it never writes a task file, never edits SRS/SDS, never creates an ADR (the `documents/adr/` directory has been phased out). Recording is owned exclusively by `/flowai-plan-exp-permanent-tasks`.
-- **Acceptance verified by benchmarks:** `flowai-skill-reflect-rescues-decision-as-task`.
+- **Acceptance verified by acceptance tests:** `flowai-skill-reflect-rescues-decision-as-task`.
 - **Status:** [x]
 
 ### FR-DOC-LINT: Documentation Health Category in Maintenance
@@ -1011,7 +1011,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - **SRS↔SDS contradictions** — pairs of statements where SRS and SDS describe the same component or behavior with mutually exclusive constraints.
   - **`documents/index.md` drift** — index rows disagreeing with the artifact (status mismatch, stale summary, missing row for an FR that exists in SRS).
 - **Scope:** Maintenance keeps its existing interactive issue-by-issue UX; Documentation Health integrates as one of the categories (slot 9 — preserved across later category additions). Findings appear under a clearly labeled "Documentation Health" group in the numbered summary.
-- **Acceptance verified by benchmarks:** `flowai-skill-maintenance-detects-doc-health-issues`.
+- **Acceptance verified by acceptance tests:** `flowai-skill-maintenance-detects-doc-health-issues`.
 - **Status:** [x]
 
 ## 4. Non-functional requirements
