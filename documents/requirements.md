@@ -259,7 +259,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] Core-level assets (`framework/<pack>/assets/`) synced to `{ide_dir}/assets/`. Asset changes reported as `ASSETS UPDATED` in sync output with mapped project artifact paths (from `pack.yaml` `assets:` field).
   - [x] `--global` / `-g` flag switches scope to global; scope-aware filter excludes `scope: project-only` primitives in global mode and `scope: global-only` in project mode.
   - [x] `--dry-run` / `-n` flag skips all writes; plan still produced and rendered.
-    Evidence: `cli/src/sync_test.ts::sync - dry-run does not write files but produces plan actions` + `::sync - dry-run global mode does not touch user dirs`.
+    Evidence: `cli/src/sync_modes_test.ts::sync - dry-run does not write files but produces plan actions` + `::sync - dry-run global mode does not touch user dirs`.
   - [x] Exit code: `0` on success (no errors, or any dry-run), `1` when at least one write failed.
     Evidence: `cli/src/cli.ts` `runSync` returns `number`; command handlers call `Deno.exit(code)` when non-zero.
   - [x] Truthful header: `flowai sync complete.` on success; `flowai sync FAILED: N error(s).` on errors (red when color enabled).
@@ -315,9 +315,9 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] IDE guard bypassed when resolved scope is global.
     Evidence: `cli/src/cli.ts` guard conditional on resolved scope; `cli/src/ide_test.ts::CLI - sync subcommand works even inside IDE`.
   - [x] Global mode installs templates to `{home}/.{ide}/assets/AGENTS.template.md`.
-    Evidence: `cli/src/sync.ts` asset step runs in both scopes; `cli/src/sync_test.ts::global mode installs templates`.
+    Evidence: `cli/src/sync.ts` asset step runs in both scopes; `cli/src/sync_modes_test.ts::global mode installs templates`.
   - [x] Global mode skips artifact sync and scaffolds (no `<cwd>/AGENTS.md` diff).
-    Evidence: `cli/src/sync_test.ts::global mode skips artifact sync`.
+    Evidence: `cli/src/sync_modes_test.ts::global mode skips artifact sync`.
   - [x] Hook writer resolves global path when scope=global.
     Evidence: `cli/src/hook_writer.ts` uses `resolveIdeBaseDir`; `cli/src/hooks_test.ts::global merge preserves user hooks`.
   - [x] Per-project mode unchanged when `<cwd>/.flowai.yaml` exists.
@@ -338,7 +338,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] `scripts/resource-types.ts` Zod schema accepts `scope: "project-only" | "global-only"` (optional).
     Evidence: `scripts/check-skills_test.ts::validateScopeField`.
   - [x] CLI filter in `cli/src/sync.ts::resolvePackResources` excludes `scope: project-only` primitives when scope=global, excludes `scope: global-only` when scope=project.
-    Evidence: `cli/src/sync_test.ts::scope filter respects global mode` + `cli/src/sync_test.ts::scope filter respects project mode`.
+    Evidence: `cli/src/sync_modes_test.ts::scope filter respects global mode` + `cli/src/sync_modes_test.ts::scope filter respects project mode`.
 
 #### FR-ADAPT-INSTRUCTIONS Standalone AGENTS.md Re-Adaptation — `flowai-skill-adapt-instructions`
 
@@ -516,7 +516,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] User-hand-edited `[agents.user-agent]` tables (no `flowai-` prefix) survive a sync round-trip.
   - [x] Malformed `.codex/config.toml` throws with file path + underlying parse error; file contents are preserved.
   - [x] Legacy `.codex/flowai-agents.json` manifest is deleted on next sync after upgrade (one-shot migration).
-    Evidence: `cli/src/sync_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
+    Evidence: `cli/src/sync_codex_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
 
 #### FR-DIST.CLEAN-PREFIX Prefix-Based Orphan Cleanup
 
@@ -536,9 +536,9 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
   - [x] `computePrefixOrphansPlan(targetDir, keepNames, fs, type, { prefix, ext })` in `cli/src/sync.ts` returns a delete plan covering the four invariants above (prefix match, keep-set, symlink skip, absent-target = empty plan).
     Evidence: `cli/src/prefix_cleanup_test.ts::computePrefixOrphansPlan - removes renamed skill dir` + `- removes renamed agent file` + `- preserves non-flowai entries` + `- skips symlinks` + `- empty plan when no orphans` + `- empty plan when target dir missing`.
   - [x] Framework sync invokes `computePrefixOrphansPlan` once per managed dir per IDE (skills-dir unified pass after skills+commands write; agents-dir pass).
-    Evidence: `cli/src/sync_test.ts::sync - removes orphan skill dir after framework rename`.
+    Evidence: `cli/src/sync_modes_test.ts::sync - removes orphan skill dir after framework rename`.
   - [x] Codex `mergeCodexConfig` removes stale `flowai-*` tables without a manifest; `syncCodexAgents` removes orphan `flowai-*.toml` sidecars via prefix scan and deletes legacy `flowai-agents.json` if present.
-    Evidence: `cli/src/toml_merge_test.ts::mergeCodexConfig - removes stale flowai- tables by prefix` + `cli/src/sync_test.ts::sync - codex target: removes stale agent on second run when excluded` + `cli/src/sync_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
+    Evidence: `cli/src/toml_merge_test.ts::mergeCodexConfig - removes stale flowai- tables by prefix` + `cli/src/sync_codex_test.ts::sync - codex target: removes stale agent on second run when excluded` + `cli/src/sync_codex_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
   - [x] `runUserSync` is unaffected — no prefix cleanup there (framework entries already filtered out at scan stage).
     Evidence: `cli/src/user_sync.ts` (`isFramework(name)` guard) + `cli/src/user_sync_test.ts::runUserSync - flowai-* agent not synced`.
 
@@ -588,7 +588,7 @@ All 41 skills have at least one benchmark scenario. Coverage is the source of tr
 - **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (per `flowai-review-and-commit-beta` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). All phases inlined verbatim from source skills; sync enforced by [scripts/check-skill-sync.ts](../scripts/check-skill-sync.ts).
 - **Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md)
 - **Acceptance verified by benchmarks:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DEVCONTAINER: AI Devcontainer Setup — flowai-skill-setup-ai-ide-devcontainer
 
