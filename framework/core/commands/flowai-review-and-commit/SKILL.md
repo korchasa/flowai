@@ -1,6 +1,6 @@
 ---
 name: flowai-review-and-commit
-description: "Two-phase workflow: review changes, then commit if approved. Verdict gate between phases. Self-contained — execute the inlined steps directly, do NOT invoke other skills via the Skill tool."
+description: "Streamlined two-phase workflow: review, then commit. Verdict gate between phases. Self-contained — execute the inlined steps directly, do NOT invoke other skills via the Skill tool."
 ---
 
 # Task: Review and Commit
@@ -9,12 +9,21 @@ description: "Two-phase workflow: review changes, then commit if approved. Verdi
 
 Two-phase command: first review current changes (QA + code review), then commit
 only if approved. A verdict gate between the phases ensures only approved changes
-get committed.
+get committed. Streamlined version: Phase 2 reuses diff from Phase 1, targeted
+doc sync, inline commit grouping.
 
 ## Context
 
 <context>
-Single command to review and commit. Inlines two phases: Phase 1 (review) — QA + code review, produces verdict; Phase 2 (commit) — documentation audit, atomic grouping, commit. Gate logic prevents committing code with critical issues.
+The user has completed a coding task and wants a single command to review and
+commit. This command inlines both workflows:
+1. **Phase 1 — Review** (from `flowai-skill-review`): QA + code review, produces verdict
+2. **Phase 2 — Commit** (from `flowai-commit-beta`): targeted doc sync, inline
+   grouping, commit
+
+The gate logic prevents committing code that has critical issues.
+
+Maintainer note (NOT for runtime): Phase 2 stays synced with `flowai-commit-beta/SKILL.md` via `scripts/check-skill-sync.ts`; steps 1, 4, and 5 diverge intentionally for review-phase diff reuse and task lifecycle semantics. Source-of-truth bookkeeping only.
 </context>
 
 ## Rules & Constraints
@@ -29,9 +38,11 @@ Single command to review and commit. Inlines two phases: Phase 1 (review) — QA
 4. **No partial commit**: If Phase 1 itself fails (errors, crashes), STOP — do
    not proceed to Phase 2.
 5. **Transparency**: Output both review findings and commit results to the user.
-6. **Planning**: Use a task management tool (e.g., `todo_write`, `todowrite`)
-   to track steps.
-7. **Session Scope**: By default exclude files already modified/untracked at session start (compare to git-status snapshot from system context); note them but do not review or commit. Exception: include pre-existing files when the user's request names them explicitly ("review and commit the sum function"). Ask before staging if unsure.
+6. **Session Scope**: Compare current `git status` with the git status snapshot
+   from session start (available in system context). Files already
+   modified/untracked at session start are outside the review and commit scope —
+   note them but do not review or commit. Focus on changes made in the current
+   session. If unsure which changes are yours, ask the user before staging.
 </rules>
 
 ## Instructions
@@ -210,68 +221,73 @@ After completing the review report above:
 
 <step_by_step>
 
-1. **Initialize**
-   - Use a task management tool (e.g., todo write) to create a plan based on these steps.
-   - Run `git status` to identify ALL changes: modified (unstaged), staged, and **untracked** files.
-   - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
-2. **Documentation Audit & Compression** _(mandatory — do NOT skip)_
-   - **Gather change context** from three sources:
-     1. **Git diff**: `git diff` (unstaged) + `git diff --cached` (staged). Primary source of WHAT changed.
-     2. **Active task file**: If the user referenced a task file or plan in this session, read that specific file from `documents/tasks/`. Use it to understand the WHY behind changes. Do NOT scan all task files — only read one explicitly linked to the current task.
-     3. **Session context**: User messages in this conversation explaining intent, decisions, or requirements.
-   - **Discover document list** (if `./documents` exists):
-     - If `./AGENTS.md` exists → read its `## Documentation Hierarchy` section → extract all document paths listed there.
-     - Classify each document: `READ-ONLY` (explicitly marked), `derived` (e.g. README — "Derived from..."), or `editable` (default).
-     - If `./AGENTS.md` does not exist → use default list: `requirements.md`, `design.md`, `AGENTS.md` (all editable).
-   - **Audit each editable document** against the combined context (diff + task file + session):
-     - For each document: does the change context reveal new/changed/removed information relevant to this document's scope? If yes → update. If no → note reason.
-     - For `derived` documents (e.g. README.md): update only when changes are significant (new public API, changed installation steps, new features).
-     - Skip `READ-ONLY` documents entirely.
-   - **Apply Compression Rules**:
-     - Use **combined extractive + abstractive summarization** (preserve all facts, minimize words).
-     - Use compact formats: lists, tables, YAML, or Mermaid diagrams.
-     - Optimize lexicon: use concise language, remove filler phrases, and use abbreviations after first mention.
-   - **Execute Updates**: Perform necessary edits in `./documents` BEFORE proceeding to grouping.
-   - **Output Documentation Audit Report** (always, even if no updates needed):
-     ```
-     ### Documentation Audit
-     - <doc-name>: [updated | no changes — <reason>] (for each discovered document)
-     - Task file context: [used <filename> | none found]
-     ```
-   - **Gate**: If code changes exist but zero documents were updated, re-examine — new exports, functions, changed signatures, or new modules almost always require an update. Only proceed without updates if justified in the audit report.
-   - **FR Acceptance Gate** _(blocking — see Requirements Lifecycle in AGENTS.md)_: If the diff adds or modifies FR sections in `documents/requirements.md`, each new/modified FR MUST contain a filled `**Acceptance:**` field pointing to a runnable test, benchmark id, verification command, or `manual — <reviewer>`. If any FR lacks this, STOP and ask the user to fill it (or route the plan back through `flowai-skill-plan`). Do not commit SRS sections that violate the lifecycle contract.
-3. **Atomic Grouping Strategy (Subagent)**
-   - Use the `flowai-diff-specialist` subagent to analyze changes and generate a commit plan.
-   - Pass the following prompt to the subagent: "Analyze the current git changes. Default to ONE commit for all changes. Split into multiple commits ONLY if changes serve genuinely different, unrelated purposes. If the user explicitly requested a split, follow that request. Return a JSON structure with proposed commits."
-   - The subagent will return a JSON structure with proposed commits.
-   - **Review the plan critically**: If the subagent proposes >2 commits, verify each split is justified by genuinely independent purposes. Merge groups that serve the same purpose.
-   - **Formulate a Commit Plan** based on the subagent's output:
-     - Default: all changes = one commit.
-     - Split only when changes serve different, unrelated purposes OR the user explicitly requested a split.
-     - Documentation describing a code change goes in the same commit as that code.
-      - Use appropriate type: `feat:`, `fix:`, `refactor:`, `build:`, `test:`, `agent:`, `docs:` (standalone only), `style:` (standalone only).
-   - _Hunk-level splitting (isolating changes within a single file) is an exceptional measure. Use ONLY when the user explicitly requests it or when changes within one file serve genuinely unrelated purposes._
+1. **Verify Unchanged State**
+   - The diff and file list are already in context from Phase 1. Do NOT re-read them.
+   - Run only `git status -s` to confirm nothing changed between phases.
+   - If new changes appeared (unexpected), report and STOP.
+2. **Documentation Sync** _(mandatory — do NOT skip)_
+   - **Determine scope**: look at the file paths from step 1. Classify the change:
+     - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), acceptance tests (`acceptance-tests/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/acceptance-tests)`.
+     - **Product changes**: anything else → proceed with doc sync below.
+   - **Find the mapping**: check if `./AGENTS.md` has a `## Documentation Map` section. If yes → use the path→document mapping from there. If no → use the default mapping:
+     - New/changed exported functions, classes, types → SDS (component section)
+     - New feature, CLI command, skill, agent → SRS (new FR) + SDS (new component section)
+     - Removed feature/component → remove from SRS + SDS
+     - Changed behavior (fix that alters documented contract) → SDS (update description)
+     - Renamed/moved modules → SDS (update paths and structure)
+     - Config/build changes → SDS only if architecture section references them
+     - README.md → update only for user-facing changes (new install steps, new features, changed API)
+   - **Sync each affected document**:
+     - For each changed file, identify which document section describes its component (using the mapping).
+     - **READ** that specific section from the document.
+     - **COMPARE** the section text with the actual code after your changes. Ask: "Does this section accurately describe the code as it is NOW?"
+     - If inaccurate → update the section. If accurate → no change needed.
+     - For **new** functionality with no corresponding section → add a new section.
+     - For **removed** functionality → remove the section.
+   - **Gather change context** for commit message and doc updates:
+     1. **Active task file**: If the user referenced a task file in this session, read it from `documents/tasks/`. Do NOT scan all task files.
+     2. **Session context**: User messages explaining intent, decisions, requirements.
+   - **Apply Compression Rules** to any doc updates:
+     - Use combined extractive + abstractive summarization (preserve all facts, minimize words).
+     - Compact formats: lists, YAML, Mermaid diagrams.
+     - Concise language, abbreviations after first mention.
+   - **Execute Updates**: Edit documents BEFORE proceeding to grouping.
+3. **Commit Grouping**
+   - Review the diff from step 1. Determine the primary business purpose.
+   - **Default: ALL changes → 1 commit.** Only split if:
+     a. Changes serve genuinely different, unrelated purposes (no causal link), OR
+     b. The user explicitly requested a split.
+   - Documentation describing a code change → same commit as that code.
+   - Tests for a feature → same commit as that feature.
+   - If splitting: use appropriate Conventional Commits types for each group.
+   - Hunk-level splitting (within a single file) — ONLY when user explicitly requests it.
 4. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
-     3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter `status` and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
-     4. Commit with a Conventional Commits message (now including the optional task-status frontmatter edit).
+     3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
+     4. Commit with a Conventional Commits message (including any task-status frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
    - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
    - **Legacy tasks** (flat path, no `date:` frontmatter): if all DoD items satisfied → `git rm` and commit; if any unsatisfied → ask user "Delete or keep?"; if no DoD → ask user.
-6. **Verify Clean State**
-   - Run `git status` to confirm all changes are committed.
-   - If uncommitted changes remain, investigate and report to the user.
-7. **Session Complexity Check → Suggest Reflect**
+6. **Session Complexity Check → Auto-Invoke Reflect**
    - After all commits are done, analyze the current conversation for complexity signals:
      - Errors or failed attempts occurred (test failures, lint errors, build errors).
      - Agent retried the same action multiple times.
      - User corrected the agent's approach or output.
      - Workarounds or non-obvious solutions were applied.
-   - If **any** of these signals are detected, suggest:
-     "This session had [errors/retries/corrections/workarounds]. Consider running `/flowai-skill-reflect` to capture improvements for project instructions."
+   - Also check the **user's invocation message** for explicit complexity descriptors: phrases like "rough session", "had to retry", "wrong approach", "failed", "had to correct you". These count as direct signals.
+   - If **any** of these signals are detected:
+     a. Announce briefly which signals fired (one line, e.g., "Detected retries and user correction — running /flowai-skill-reflect").
+     b. **Pre-command signal check**: if the signals appear only in the invocation message (i.e., the problematic interactions predated this command and are not visible in the conversation history), output: "You mentioned a rough session — briefly describe what went wrong and what you corrected. This will be included as reflect context." Use the user's answer as additional context when invoking reflect.
+     c. Invoke the `flowai-skill-reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
+     d. Do NOT ask the user for confirmation before invoking; proceed autonomously (the context question in step b is not a confirmation request — it gathers missing information).
    - If none detected, skip silently.
+7. **Post-Reflect Cleanup Commit** _(skip if reflect produced no edits)_
+   - Run `git status`. If reflect left working-tree edits (typically `AGENTS.md`, `**/CLAUDE.md`, `framework/**`, `.claude/**`, `documents/**`): stage them and commit as `agent: apply reflect-suggested improvements` (or narrower scope, e.g. `agent(flowai-commit-beta): tighten doc-audit gate`). Do NOT amend earlier commits — keep reflect-driven edits as a separate commit. If `git status` is clean, skip.
+8. **Verify Clean State**
+   - Run `git status` to confirm all changes are committed.
+   - If uncommitted changes remain, investigate and report to the user.
 </step_by_step>
 
 ### Final Combined Report
@@ -287,11 +303,12 @@ Output a combined summary:
 [ ] Pre-flight project check executed (or skipped — no code changes since last check).
 [ ] Review phase completed with structured report.
 [ ] Verdict gate enforced: only Approve proceeds to commit.
-[ ] Documentation audit performed and files updated.
+[ ] Documentation sync performed: affected sections updated or justified skip.
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
 [ ] Task lifecycle: every staged new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. Never downgrades `done`. Warn-only on parse errors.
 [ ] Task file cleanup: legacy flat-path tasks — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted.
-[ ] Session complexity check performed; `/flowai-skill-reflect` suggested if signals detected.
+[ ] Session complexity check performed; `/flowai-skill-reflect` auto-invoked if signals detected.
+[ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.
 [ ] Both review and commit results reported to user.
 </verification>

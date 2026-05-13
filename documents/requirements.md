@@ -581,11 +581,11 @@ All 41 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `flowai-review-and-commit`
 
 - **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
-- **Acceptance verified by acceptance tests:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-suggest-reflect`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
+- **Acceptance verified by acceptance tests:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-auto-invoke-reflect`, `flowai-review-and-commit-phase-2-diff-eliminated`, `flowai-review-and-commit-post-reflect-cleanup-commit`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
 
 ### FR-DO-WITH-PLAN: Full-Cycle Workflow — `flowai-do-with-plan`
 
-- **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (per `flowai-review-and-commit-beta` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). All phases inlined verbatim from source skills; sync enforced by [scripts/check-skill-sync.ts](../scripts/check-skill-sync.ts).
+- **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (same streamlined commit flow as `flowai-review-and-commit` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). All phases inlined verbatim from source skills; sync enforced by [scripts/check-skill-sync.ts](../scripts/check-skill-sync.ts).
 - **Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md)
 - **Acceptance verified by acceptance tests:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
 - **Status:** [x]

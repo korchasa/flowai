@@ -1,6 +1,6 @@
 /**
  * Checks that flowai-review-and-commit contains the step_by_step sections
- * from both flowai-skill-review and flowai-commit skills.
+ * from both flowai-skill-review and flowai-commit-beta skills.
  *
  * flowai-review-and-commit inlines both workflows to avoid fragile
  * "skill calls skill" delegation. This script ensures the inlined
@@ -42,17 +42,10 @@ const SYNC_CHECKS: Array<{
     composite: "flowai-review-and-commit",
     sources: [
       { skill: "flowai-skill-review", phase: "Review Phase" },
-      { skill: "flowai-commit", phase: "Commit Phase" },
-    ],
-  },
-  {
-    composite: "flowai-review-and-commit-beta",
-    sources: [
-      { skill: "flowai-skill-review", phase: "Review Phase" },
       {
         skill: "flowai-commit-beta",
         phase: "Commit Phase",
-        allowedDivergentSteps: [1],
+        allowedDivergentSteps: [1, 4, 5],
       },
     ],
   },

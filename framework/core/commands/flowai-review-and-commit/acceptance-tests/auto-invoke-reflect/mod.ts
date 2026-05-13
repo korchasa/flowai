@@ -1,11 +1,13 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
-export const SuggestReflectBench = new class extends AcceptanceTestScenario {
-  id = "flowai-review-and-commit-suggest-reflect";
-  name = "Suggest Reflect After Complex Session";
+export const ReviewAndCommitAutoInvokeReflectBench = new class
+  extends AcceptanceTestScenario {
+  id = "flowai-review-and-commit-auto-invoke-reflect";
+  name =
+    "Auto-invoke /flowai-skill-reflect after complex review+commit session";
   skill = "flowai-review-and-commit";
-  maxSteps = 25;
+  maxSteps = 30;
   stepTimeoutMs = 420_000;
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
@@ -20,7 +22,7 @@ export const SuggestReflectBench = new class extends AcceptanceTestScenario {
     }],
     untracked: ["utils.ts"],
     expectedOutcome:
-      "Agent reviews untracked utils.ts, approves, commits, and suggests /flowai-skill-reflect due to complex session",
+      "Agent reviews untracked utils.ts, approves, commits, detects session complexity, and auto-invokes /flowai-skill-reflect (actually executes the reflect workflow)",
   };
 
   override async setup(sandboxPath: string) {
@@ -32,12 +34,10 @@ export const SuggestReflectBench = new class extends AcceptanceTestScenario {
       "-m",
       "Remove utils.ts from tracking",
     ]);
-
-    // utils.ts is now untracked — agent will review and commit it
   }
 
   userQuery =
-    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach that I had to correct. Now the code is ready. /flowai-review-and-commit Review and commit the new utility functions.";
+    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready. /flowai-review-and-commit Review and commit the new utility functions.";
 
   userPersona =
     `You are a developer who had a difficult session with many errors and retries before reaching this point.
@@ -64,10 +64,16 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
-      id: "suggest_reflect",
+      id: "reflect_auto_invoked",
       description:
-        "At any point during the workflow (before or after the commit), did the agent suggest running `/flowai-skill-reflect` (or mention flowai-skill-reflect), citing session complexity signals like errors, retries, or user corrections?",
+        "At any point during the workflow (before or after the commit), did the agent AUTO-INVOKE /flowai-skill-reflect — meaning it actually started executing the reflect workflow (creating a reflection plan, analyzing the session for behavioral/technical/context issues, listing concrete findings or proposed improvements)? Merely printing a one-line suggestion like 'Consider running /flowai-skill-reflect' is NOT sufficient — the agent must have actually run the reflect workflow.",
       critical: true,
+    },
+    {
+      id: "reflect_not_asking_permission",
+      description:
+        "Did the agent proceed autonomously (without asking the user 'should I run /flowai-skill-reflect?' or waiting for confirmation) once it detected session-complexity signals?",
+      critical: false,
     },
   ];
 }();

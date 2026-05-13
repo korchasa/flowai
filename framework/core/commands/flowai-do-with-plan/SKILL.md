@@ -30,7 +30,7 @@ The user wants the full task lifecycle in a single invocation. The composite inl
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: Plan, Implement, and Review-and-Commit phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-plan-exp-permanent-tasks`, `flowai-skill-plan`, `flowai-skill-review`, `flowai-commit`, `flowai-commit-beta`, `flowai-review-and-commit`, `flowai-review-and-commit-beta`, or any other skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
+1. **No delegation**: Plan, Implement, and Review-and-Commit phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-plan-exp-permanent-tasks`, `flowai-skill-plan`, `flowai-skill-review`, `flowai-commit`, `flowai-commit-beta`, `flowai-review-and-commit`, or any other skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
 2. **Three Phases, Strict Order**: Execute Plan fully, then Implement fully, then Review-and-Commit fully. Never interleave.
 3. **Plan → Implement Gate**: After Plan Phase, the user MUST have selected a variant. If the user declines or aborts, STOP without entering Implement Phase.
 4. **Implement → Review-and-Commit Gate**: Before Review-and-Commit, run the project check command (per the manifest-detection rule below). If it fails, STOP. If `git status` is clean (no diff after Implement), STOP — nothing to review.

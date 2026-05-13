@@ -1,18 +1,18 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
-// Verifies the beta-specific delta: Post-Reflect Cleanup Commit (SKILL.md
+// Verifies the promoted streamlined behavior: Post-Reflect Cleanup Commit (SKILL.md
 // step 7). When auto-invoked /flowai-skill-reflect leaves working-tree edits,
 // the workflow MUST stage and commit them as a SEPARATE
 // `agent: apply reflect-suggested improvements` commit (or narrower scope)
 // before exiting — never amend the user's commit, never leave the tree dirty.
 // Conditional: if reflect produces no edits, step 7 is skipped and the tree
 // must still be clean.
-export const ReviewAndCommitBetaPostReflectCleanupCommitBench = new class
+export const ReviewAndCommitPostReflectCleanupCommitBench = new class
   extends AcceptanceTestScenario {
-  id = "flowai-review-and-commit-beta-post-reflect-cleanup-commit";
+  id = "flowai-review-and-commit-post-reflect-cleanup-commit";
   name = "Post-reflect edits land as separate cleanup commit";
-  skill = "flowai-review-and-commit-beta";
+  skill = "flowai-review-and-commit";
   maxSteps = 35;
   stepTimeoutMs = 480_000;
   agentsTemplateVars = {
@@ -41,7 +41,7 @@ export const ReviewAndCommitBetaPostReflectCleanupCommitBench = new class
   }
 
   userQuery =
-    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready. /flowai-review-and-commit-beta Review and commit the new utility functions.";
+    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready. /flowai-review-and-commit Review and commit the new utility functions.";
 
   userPersona =
     `You are a developer who had a difficult session with many errors and retries before reaching this point.
@@ -71,7 +71,7 @@ Keep answers brief and affirmative.`;
     {
       id: "cleanup_commit_correct",
       description:
-        "If reflect produced working-tree edits (visible via `git status` after reflect ran), did the agent stage and commit them as a SEPARATE commit whose message starts with `agent:` (e.g., `agent: apply reflect-suggested improvements` or a narrower-scope variant like `agent(flowai-review-and-commit-beta): ...`)? The cleanup commit MUST NOT be an amend of the user-change commit. If reflect produced NO edits, step 7 is correctly skipped and this item passes vacuously.",
+        "If reflect produced working-tree edits (visible via `git status` after reflect ran), did the agent stage and commit them as a SEPARATE commit whose message starts with `agent:` (e.g., `agent: apply reflect-suggested improvements` or a narrower-scope variant like `agent(flowai-review-and-commit): ...`)? The cleanup commit MUST NOT be an amend of the user-change commit. If reflect produced NO edits, step 7 is correctly skipped and this item passes vacuously.",
       critical: true,
     },
     {

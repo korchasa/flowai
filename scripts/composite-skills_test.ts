@@ -44,7 +44,6 @@ Deno.test("COMPOSITE_SKILLS contains the expected skills", () => {
     [
       "flowai-do-with-plan",
       "flowai-review-and-commit",
-      "flowai-review-and-commit-beta",
     ].sort(),
   );
 });

@@ -13,7 +13,6 @@
  */
 export const COMPOSITE_SKILLS = [
   "flowai-review-and-commit",
-  "flowai-review-and-commit-beta",
   "flowai-do-with-plan",
 ] as const;
 
