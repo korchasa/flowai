@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.9](https://github.com/korchasa/flowai/compare/v0.12.8...v0.12.9) (2026-05-13)
+
+
+### Features
+
+* **review-and-commit:** promote beta workflow ([239052b](https://github.com/korchasa/flowai/commit/239052b3b0f61300a624562a6c042978eddd92e0))
+
 ### [0.12.8](https://github.com/korchasa/flowai/compare/v0.12.7...v0.12.8) (2026-05-11)
 
 
