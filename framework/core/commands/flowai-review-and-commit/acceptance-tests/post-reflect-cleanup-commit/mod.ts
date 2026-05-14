@@ -2,7 +2,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 // Verifies the promoted streamlined behavior: Post-Reflect Cleanup Commit (SKILL.md
-// step 7). When auto-invoked /flowai-skill-reflect leaves working-tree edits,
+// step 7). When auto-invoked /flowai-reflect leaves working-tree edits,
 // the workflow MUST stage and commit them as a SEPARATE
 // `agent: apply reflect-suggested improvements` commit (or narrower scope)
 // before exiting — never amend the user's commit, never leave the tree dirty.
@@ -28,7 +28,7 @@ export const ReviewAndCommitPostReflectCleanupCommitBench = new class
     }],
     untracked: ["utils.ts"],
     expectedOutcome:
-      "Agent reviews, approves, commits utils.ts, auto-invokes /flowai-skill-reflect; if reflect produces edits, those edits are committed as a SEPARATE `agent: apply reflect-suggested improvements` commit (not amended into the user commit). Final git status MUST be clean.",
+      "Agent reviews, approves, commits utils.ts, auto-invokes /flowai-reflect; if reflect produces edits, those edits are committed as a SEPARATE `agent: apply reflect-suggested improvements` commit (not amended into the user commit). Final git status MUST be clean.",
   };
 
   override async setup(sandboxPath: string) {
@@ -65,7 +65,7 @@ Keep answers brief and affirmative.`;
     {
       id: "reflect_executed",
       description:
-        "Did the agent actually start the /flowai-skill-reflect workflow (not merely suggest it as text)? The trace should show reflect-related actions: creating a reflection plan, analyzing the session, listing findings or proposed improvements.",
+        "Did the agent actually start the /flowai-reflect workflow (not merely suggest it as text)? The trace should show reflect-related actions: creating a reflection plan, analyzing the session, listing findings or proposed improvements.",
       critical: true,
     },
     {

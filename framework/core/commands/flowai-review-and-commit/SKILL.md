@@ -17,7 +17,7 @@ doc sync, inline commit grouping.
 <context>
 The user has completed a coding task and wants a single command to review and
 commit. This command inlines both workflows:
-1. **Phase 1 — Review** (from `flowai-skill-review`): QA + code review, produces verdict
+1. **Phase 1 — Review** (from `flowai-review`): QA + code review, produces verdict
 2. **Phase 2 — Commit** (from `flowai-commit-beta`): targeted doc sync, inline
    grouping, commit
 
@@ -29,7 +29,7 @@ Maintainer note (NOT for runtime): Phase 2 stays synced with `flowai-commit-beta
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: Phase 1 and Phase 2 are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-skill-review`, `flowai-commit`, `flowai-commit-beta`, or any other skill via the Skill tool — they would re-enter without the composite's verdict gate and the workflow would silently exit after the review step.
+1. **No delegation**: Phase 1 and Phase 2 are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-review`, `flowai-commit`, `flowai-commit-beta`, or any other skill via the Skill tool — they would re-enter without the composite's verdict gate and the workflow would silently exit after the review step.
 2. **Two Phases**: Execute Phase 1 (review) fully before considering Phase 2
    (commit). Never interleave.
 3. **Gate Logic**: After Phase 1, check the verdict. Only **Approve** proceeds
@@ -278,9 +278,9 @@ After completing the review report above:
      - Workarounds or non-obvious solutions were applied.
    - Also check the **user's invocation message** for explicit complexity descriptors: phrases like "rough session", "had to retry", "wrong approach", "failed", "had to correct you". These count as direct signals.
    - If **any** of these signals are detected:
-     a. Announce briefly which signals fired (one line, e.g., "Detected retries and user correction — running /flowai-skill-reflect").
+     a. Announce briefly which signals fired (one line, e.g., "Detected retries and user correction — running /flowai-reflect").
      b. **Pre-command signal check**: if the signals appear only in the invocation message (i.e., the problematic interactions predated this command and are not visible in the conversation history), output: "You mentioned a rough session — briefly describe what went wrong and what you corrected. This will be included as reflect context." Use the user's answer as additional context when invoking reflect.
-     c. Invoke the `flowai-skill-reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
+     c. Invoke the `flowai-reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
      d. Do NOT ask the user for confirmation before invoking; proceed autonomously (the context question in step b is not a confirmation request — it gathers missing information).
    - If none detected, skip silently.
 7. **Post-Reflect Cleanup Commit** _(skip if reflect produced no edits)_
@@ -308,7 +308,7 @@ Output a combined summary:
 [ ] Commits executed with Conventional Commits format.
 [ ] Task lifecycle: every staged new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. Never downgrades `done`. Warn-only on parse errors.
 [ ] Task file cleanup: legacy flat-path tasks — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted.
-[ ] Session complexity check performed; `/flowai-skill-reflect` auto-invoked if signals detected.
+[ ] Session complexity check performed; `/flowai-reflect` auto-invoked if signals detected.
 [ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.
 [ ] Both review and commit results reported to user.
 </verification>

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "d9738a9ae71d33c7485957934b677963b452ec3e8780ffb0faa766166ecca807",
+  "scenarioId": "flowai-browser-automation-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T02:02:31.567Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 105672.826,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first action is a `Skill` tool call with `\"skill\": \"flowai-browser-automation\"`, clearly loading and acting on the skill. Subsequently, the agent used playwright-cli and other …"
+      }
+    }
+  }
+}

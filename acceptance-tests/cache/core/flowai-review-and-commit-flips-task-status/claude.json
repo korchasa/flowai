@@ -34,7 +34,7 @@
       },
       "no_skill_tool_delegation": {
         "pass": true,
-        "reason": "Inspecting all tool calls in the agent logs: TodoWrite, Bash, Read, Edit, and one ToolSearch (for 'select:TodoWrite'). There are NO calls to the Skill tool targeting flowai-skill-review, flowai-commi…"
+        "reason": "Inspecting all tool calls in the agent logs: TodoWrite, Bash, Read, Edit, and one ToolSearch (for 'select:TodoWrite'). There are NO calls to the Skill tool targeting flowai-review, flowai-commi…"
       },
       "task_file_not_deleted": {
         "pass": true,

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "1949efa5b63913e2adca5cd926198d88f00f66d298b6023ce48aeb9d3e4454b4",
+  "scenarioId": "flowai-plan-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:01:05.516Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 8805.4204160003,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly with a one-paragraph answer without invoking any skills or tools. There is no evidence in the logs of `flowai-plan/SKILL.md` being read or the `Skill` tool being ca…"
+      }
+    }
+  }
+}

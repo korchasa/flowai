@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "7d4bdcfc42e1b283113399d6842a54ab8ae2fde7eff860c206bba5d10e0dd15e",
+  "scenarioId": "flowai-browser-automation-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:53:28.297Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 11298.400082999999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly to the user's CSS/flexbox question without invoking the Skill tool or loading flowai-browser-automation/SKILL.md at any point. The agent logs show only a direct tex…"
+      }
+    }
+  }
+}

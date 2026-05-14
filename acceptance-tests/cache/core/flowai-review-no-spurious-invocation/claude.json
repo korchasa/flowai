@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "83245df9d6e9fda51a6e259794ac94d1631222680236b54fe0ce01ddb85c0f19",
+  "scenarioId": "flowai-review-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:58:34.890Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 8019.020958000794,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_review_workflow": {
+        "pass": true,
+        "reason": "The agent responded with a direct conceptual answer about TypeScript strict mode. There is no evidence of any review workflow execution, no verdict (Approve/Request Changes/Needs Discussion), no find…"
+      },
+      "no_git_diff": {
+        "pass": true,
+        "reason": "The agent logs show only a conceptual text response. There is no evidence of any git diff, git status, or git diff --cached commands being executed."
+      },
+      "conceptual_answer": {
+        "pass": true,
+        "reason": "The agent directly answered the conceptual question about TypeScript strict mode, explaining that `\"strict\": true` in tsconfig.json is a good practice, listing benefits (catching null/undefined deref…"
+      }
+    }
+  }
+}

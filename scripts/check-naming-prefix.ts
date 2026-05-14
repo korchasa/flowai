@@ -3,24 +3,22 @@
  *
  * Checks:
  * - NP-1: All primitives must start with "flowai-".
- * - NP-2: Commands under `<pack>/commands/` must match `/^flowai-/` AND must NOT match `/^flowai-skill-/` — user-only workflow prefixes.
- * - NP-3: Skills under `<pack>/skills/` must match `/^flowai-skill-/` — agent-invocable capability prefix.
+ * - NP-2: Commands under `<pack>/commands/` must match `/^flowai-/` AND must not use the retired skill-name infix.
+ * - NP-3: Skills under `<pack>/skills/` must match `/^flowai-/` AND must not use the retired skill-name infix.
+ * - NP-4: Installed names must be unique across commands and skills because both install into `.{ide}/skills/`.
  *
- * NP-2 and NP-3 exist to catch misplacement: a primitive whose name shape does
- * not match its directory classification is either in the wrong directory or
- * has the wrong name, both of which are author mistakes.
+ * NP-2 and NP-3 keep the retired skill-name namespace out of new
+ * primitives after the naming migration.
  *
  * Exits with code 1 if any violation is found.
  */
 import { join } from "@std/path";
 
 const REQUIRED_PREFIX = "flowai-";
-// Skill names — must start with `flowai-skill-`. Checked first because the
-// command pattern overlaps with the `flowai-` baseline.
-const SKILL_PREFIX_RE = /^flowai-skill-/;
-// Command names — must start with `flowai-` but NOT with `flowai-skill-`.
-// The `flowai-setup-*` subfamily is a command (setup workflow), not a skill.
-const COMMAND_PREFIX_RE = /^flowai-(?!skill-)/;
+const RETIRED_SKILL_PREFIX = "flowai-" + "skill-";
+// Command and skill names share `flowai-`; their kind is determined by path.
+const COMMAND_PREFIX_RE = /^flowai-/;
+const SKILL_PREFIX_RE = /^flowai-/;
 
 export type NamingError = {
   name: string;
@@ -59,23 +57,32 @@ export function validateNamingPrefix(
   // Commands are user-invoked workflows; skills are agent-invocable capabilities.
   // A name in the wrong shape for its directory is almost always a misplaced
   // primitive — surface it loudly at validation time.
-  if (kind === "command" && !COMMAND_PREFIX_RE.test(name)) {
+  if (
+    kind === "command" &&
+    (!COMMAND_PREFIX_RE.test(name) || name.startsWith(RETIRED_SKILL_PREFIX))
+  ) {
     return [{
       name,
       kind,
       criterion: "NP-2",
       message:
-        `command '${name}' must start with 'flowai-' but not 'flowai-skill-' ` +
-        `(user-only workflow; 'flowai-skill-*' is reserved for skills/)`,
+        `command '${name}' must start with 'flowai-' without the retired ` +
+        `skill-name infix ` +
+        `(retired skill-name prefix)`,
     }];
   }
-  if (kind === "skill" && !SKILL_PREFIX_RE.test(name)) {
+  if (
+    kind === "skill" &&
+    (!SKILL_PREFIX_RE.test(name) || name.startsWith(RETIRED_SKILL_PREFIX))
+  ) {
     return [{
       name,
       kind,
       criterion: "NP-3",
-      message: `skill '${name}' must match /^flowai-skill-/ ` +
-        `(agent-invocable capability)`,
+      message:
+        `skill '${name}' must start with 'flowai-' without the retired ` +
+        `skill-name infix ` +
+        `(agent-invocable capability; kind is determined by skills/)`,
     }];
   }
 
@@ -89,6 +96,7 @@ export async function validateAllNamingPrefixes(
   frameworkDir: string,
 ): Promise<NamingError[]> {
   const errors: NamingError[] = [];
+  const installedSkillNames = new Map<string, string[]>();
 
   let packs: Deno.DirEntry[];
   try {
@@ -109,6 +117,9 @@ export async function validateAllNamingPrefixes(
       for await (const entry of Deno.readDir(skillsDir)) {
         if (entry.isDirectory) {
           errors.push(...validateNamingPrefix(entry.name, "skill"));
+          const owners = installedSkillNames.get(entry.name) ?? [];
+          owners.push(`${pack.name}/skills`);
+          installedSkillNames.set(entry.name, owners);
         }
       }
     } catch { /* no skills/ */ }
@@ -119,6 +130,9 @@ export async function validateAllNamingPrefixes(
       for await (const entry of Deno.readDir(commandsDir)) {
         if (entry.isDirectory) {
           errors.push(...validateNamingPrefix(entry.name, "command"));
+          const owners = installedSkillNames.get(entry.name) ?? [];
+          owners.push(`${pack.name}/commands`);
+          installedSkillNames.set(entry.name, owners);
         }
       }
     } catch { /* no commands/ */ }
@@ -143,6 +157,18 @@ export async function validateAllNamingPrefixes(
         }
       }
     } catch { /* no hooks/ */ }
+  }
+
+  for (const [name, owners] of installedSkillNames.entries()) {
+    if (owners.length <= 1) continue;
+    errors.push({
+      name,
+      kind: "skill",
+      criterion: "NP-4",
+      message: `installed skill name '${name}' is duplicated across ${
+        owners.join(", ")
+      }`,
+    });
   }
 
   return errors;

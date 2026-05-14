@@ -137,16 +137,16 @@ export function formatStatus(s: Status): string {
     lines.push(`[memex] Last audit: ${s.lastAuditDate}`);
   } else if (s.pageCount > 0) {
     lines.push(
-      `[memex] No audit recorded yet — consider running flowai-skill-memex-audit.`,
+      `[memex] No audit recorded yet — consider running flowai-memex-audit.`,
     );
   }
   if (s.uncompiled >= 5) {
     lines.push(
-      `[memex] ${s.uncompiled} uncompiled raw sources (no memex page references them). Consider re-running flowai-skill-memex-save on them.`,
+      `[memex] ${s.uncompiled} uncompiled raw sources (no memex page references them). Consider re-running flowai-memex-save on them.`,
     );
   }
   lines.push(
-    `[memex] Skills: flowai-skill-memex-save, flowai-skill-memex-ask, flowai-skill-memex-audit.`,
+    `[memex] Skills: flowai-memex-save, flowai-memex-ask, flowai-memex-audit.`,
   );
   return lines.join("\n");
 }

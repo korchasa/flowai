@@ -227,7 +227,7 @@ export async function resolveResourcesForSync(
 
   // Collision guard: skills and commands land in the same target dir
   // (.{ide}/skills/), so their names MUST be disjoint. Disjointness is
-  // enforced upstream by the naming prefix convention (flowai-skill-* vs
+  // enforced upstream by the naming prefix convention (flowai-* vs
   // flowai-*), but we verify here to catch accidental duplication before
   // it clobbers files on disk.
   const skillNameSet = new Set(skillNames);

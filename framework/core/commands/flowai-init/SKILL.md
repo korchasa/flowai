@@ -151,8 +151,8 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 
 10. **Configure Development Commands**
    - Read analysis output to get detected stack.
-   - **Check Interview Data**: If `use_deno_tooling: true`, FORCE usage of `flowai-skill-configure-deno-commands`.
-   - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flowai-skill-configure-deno-commands`).
+   - **Check Interview Data**: If `use_deno_tooling: true`, FORCE usage of `flowai-configure-deno-commands`.
+   - **Skill Lookup**: For each stack item, check if a specialized skill exists (e.g., `Deno` -> `flowai-configure-deno-commands`).
    - If specialized skill exists: Read and follow its `SKILL.md`.
    - If NO specialized skill:
      1. Detect the project's existing command runner (Makefile, package.json scripts, deno.json tasks, justfile, etc.).
@@ -166,7 +166,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - **For Greenfield**: Check `use_devcontainer` from interview data.
    - **For Brownfield**: Ask the user: "Would you like to set up a devcontainer for reproducible development environments?"
    - **If user declines**: Skip this step entirely.
-   - **If user agrees**: Delegate to the `flowai-skill-setup-ai-ide-devcontainer` skill. Read and follow its `SKILL.md`.
+   - **If user agrees**: Delegate to the `flowai-setup-ai-ide-devcontainer` skill. Read and follow its `SKILL.md`.
 
 12. **Cleanup & Verify**
     - Remove temporary files: `project_info.json`, `interview_data.json` (if created).

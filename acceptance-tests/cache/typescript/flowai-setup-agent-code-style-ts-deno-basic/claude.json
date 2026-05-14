@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "2b7a327f79b6fbed7e8538db2bb360a2e74ab6ac5174dd02d46cb903129dab9d",
+  "scenarioId": "flowai-setup-agent-code-style-ts-deno-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:02:53.034Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 26242.470958,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "code_style_section_added": {
+        "pass": true,
+        "reason": "The AGENTS.md file clearly contains the section '## Code Style (Deno + TypeScript)' with two subsections: '### Dependency Imports' and '### Dockerfile Optimization', as visible in the generated AGENT…"
+      },
+      "injection_location_correct": {
+        "pass": true,
+        "reason": "The agent's Edit tool explicitly replaced the string between '## Project tooling Stack\\n- Language: TypeScript\\n- Runtime: Deno\\n\\n## Architecture' to insert the new section in between, and the resul…"
+      },
+      "bare_specifiers_rule": {
+        "pass": true,
+        "reason": "The injected content includes explicit rules: 'Use bare specifiers for dependencies defined in deno.json/imports', 'Avoid direct jsr:/npm:/https: imports in source code', and a concrete example contr…"
+      },
+      "dockerfile_optimization_rule": {
+        "pass": true,
+        "reason": "The injected content includes a '### Dockerfile Optimization' subsection covering: using 'deno compile' for static binaries, multi-stage builds (denoland/deno:latest for compilation, debian slim for …"
+      },
+      "no_duplicate_sections": {
+        "pass": true,
+        "reason": "The agent performed a single Edit operation targeting exactly one replacement location. The resulting AGENTS.md content shows only one '## Code Style (Deno + TypeScript)' section with no duplicates v…"
+      },
+      "existing_content_preserved": {
+        "pass": true,
+        "reason": "The AGENTS.md output shows '## Project tooling Stack' with 'Language: TypeScript' and 'Runtime: Deno' still intact, and '## Architecture' with 'src/' and 'scripts/' entries still present. The agent's…"
+      },
+      "valid_markdown": {
+        "pass": true,
+        "reason": "The resulting AGENTS.md uses proper markdown heading hierarchy: '## Code Style (Deno + TypeScript)' at level 2 (consistent with sibling sections), with '### Dependency Imports' and '### Dockerfile Op…"
+      }
+    }
+  }
+}

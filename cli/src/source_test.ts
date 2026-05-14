@@ -166,11 +166,11 @@ Deno.test("extractPackSkillNames - extracts skills within a pack", () => {
 
 Deno.test("extractPackSkillNames - ignores commands/ subtree", () => {
   const paths = [
-    "framework/core/skills/flowai-skill-foo/SKILL.md",
+    "framework/core/skills/flowai-foo/SKILL.md",
     "framework/core/commands/flowai-bar/SKILL.md",
     "framework/core/commands/flowai-baz/SKILL.md",
   ];
-  assertEquals(extractPackSkillNames(paths, "core"), ["flowai-skill-foo"]);
+  assertEquals(extractPackSkillNames(paths, "core"), ["flowai-foo"]);
 });
 
 Deno.test("extractPackCommandNames - extracts commands within a pack", () => {
@@ -179,7 +179,7 @@ Deno.test("extractPackCommandNames - extracts commands within a pack", () => {
     "framework/core/commands/flowai-commit/SKILL.md",
     "framework/core/commands/flowai-commit/scripts/helper.ts",
     "framework/core/commands/flowai-review-and-commit/SKILL.md",
-    "framework/core/skills/flowai-skill-foo/SKILL.md",
+    "framework/core/skills/flowai-foo/SKILL.md",
     "framework/typescript/commands/flowai-bar/SKILL.md",
   ];
   assertEquals(
@@ -195,7 +195,7 @@ Deno.test("extractPackCommandNames - extracts commands within a pack", () => {
 
 Deno.test("extractPackCommandNames - ignores skills/ subtree", () => {
   const paths = [
-    "framework/core/skills/flowai-skill-foo/SKILL.md",
+    "framework/core/skills/flowai-foo/SKILL.md",
     "framework/core/commands/flowai-bar/SKILL.md",
   ];
   assertEquals(extractPackCommandNames(paths, "core"), ["flowai-bar"]);
@@ -205,12 +205,12 @@ Deno.test("extractCommandNames - extracts unique command names (legacy flat)", (
   const paths = [
     "framework/commands/flowai-commit/SKILL.md",
     "framework/commands/flowai-commit/refs/a.md",
-    "framework/commands/flowai-skill-plan/SKILL.md",
-    "framework/skills/flowai-skill-foo/SKILL.md",
+    "framework/commands/flowai-plan/SKILL.md",
+    "framework/skills/flowai-foo/SKILL.md",
   ];
   assertEquals(extractCommandNames(paths), [
     "flowai-commit",
-    "flowai-skill-plan",
+    "flowai-plan",
   ]);
 });
 

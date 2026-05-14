@@ -170,8 +170,8 @@ Deno.test("sync - pack commands install into .{ide}/skills/ with injected flag",
         "export const X = 1;\n",
       ],
       [
-        "framework/core/skills/flowai-skill-foo/SKILL.md",
-        "---\nname: flowai-skill-foo\ndescription: A demo skill\n---\n\n# Skill\n",
+        "framework/core/skills/flowai-foo/SKILL.md",
+        "---\nname: flowai-foo\ndescription: A demo skill\n---\n\n# Skill\n",
       ],
     ]),
   );
@@ -196,7 +196,7 @@ Deno.test("sync - pack commands install into .{ide}/skills/ with injected flag",
     "/project/.claude/skills/flowai-demo/SKILL.md",
   );
   const skillSkillMd = await fs.readFile(
-    "/project/.claude/skills/flowai-skill-foo/SKILL.md",
+    "/project/.claude/skills/flowai-foo/SKILL.md",
   );
 
   // Command SKILL.md was augmented with the injected flag.

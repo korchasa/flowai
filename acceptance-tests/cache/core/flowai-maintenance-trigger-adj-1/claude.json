@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "a16b3b9b966dbc8f49191bf3f745633dd5f99c7611cd3544592bd6c49c3da608",
+  "scenarioId": "flowai-maintenance-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:05:41.692Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 14680.685208000243,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent invoked `flowai-review` (not `flowai-maintenance`). The logs show `\"skill\": \"flowai-review\"` in the Skill tool call, and there is no evidence of `flowai-maintenance/…"
+      }
+    }
+  }
+}

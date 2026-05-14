@@ -8,7 +8,7 @@ export interface BenchmarkScenario {
   id: string;
   name: string;
   targetAgentPath?: string; // Path to the agent/skill .md file
-  skill?: string; // Skill identifier (e.g., "flowai-skill-plan")
+  skill?: string; // Skill identifier (e.g., "flowai-plan")
 
   /** Pack name this scenario belongs to (auto-populated by discovery). */
   pack?: string;

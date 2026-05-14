@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "b8db4697a69ca2011e4681c2bbf1210d82f307623fae7e2ba9b9eafda17028f0",
+  "scenarioId": "flowai-analyze-context-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:55:39.075Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 262329.36320799997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent correctly routed the reflection request to `flowai-reflect` (first tool call: `Skill` with `{\"skill\": \"flowai-reflect\"}`), never calling the `Skill` tool with `flowai-anal…"
+      }
+    }
+  }
+}

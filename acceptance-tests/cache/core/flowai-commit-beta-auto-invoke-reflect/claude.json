@@ -26,11 +26,11 @@
       },
       "reflect_auto_invoked": {
         "pass": true,
-        "reason": "After verifying the commit, the agent explicitly invoked the Skill tool with skill='flowai-skill-reflect' and proceeded to execute the full reflect workflow: it created a multi-step TodoWrite plan, r…"
+        "reason": "After verifying the commit, the agent explicitly invoked the Skill tool with skill='flowai-reflect' and proceeded to execute the full reflect workflow: it created a multi-step TodoWrite plan, r…"
       },
       "reflect_not_asking_permission": {
         "pass": true,
-        "reason": "After verifying the clean working tree, the agent immediately stated 'Контекст из сообщения достаточен — запускаю /flowai-skill-reflect' and directly invoked the Skill tool without asking the user fo…"
+        "reason": "After verifying the clean working tree, the agent immediately stated 'Контекст из сообщения достаточен — запускаю /flowai-reflect' and directly invoked the Skill tool without asking the user fo…"
       }
     }
   }

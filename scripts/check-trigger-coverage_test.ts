@@ -24,7 +24,7 @@ Deno.test("validateSkillTriggerCoverage: complete skill returns no errors", asyn
     }
     const errors = await validateSkillTriggerCoverage(
       "core",
-      "flowai-skill-foo",
+      "flowai-foo",
       tmp,
     );
     assertEquals(errors, []);
@@ -45,13 +45,13 @@ Deno.test("validateSkillTriggerCoverage: missing one scenario reports one error"
     }
     const errors = await validateSkillTriggerCoverage(
       "core",
-      "flowai-skill-foo",
+      "flowai-foo",
       tmp,
     );
     assertEquals(errors.length, 1);
     assertEquals(errors[0].missing, required[required.length - 1]);
     assertEquals(errors[0].pack, "core");
-    assertEquals(errors[0].skill, "flowai-skill-foo");
+    assertEquals(errors[0].skill, "flowai-foo");
   } finally {
     await Deno.remove(tmp, { recursive: true });
   }
@@ -67,7 +67,7 @@ Deno.test("validateSkillTriggerCoverage: dir without mod.ts counts as missing", 
     // No mod.ts written for any of them
     const errors = await validateSkillTriggerCoverage(
       "core",
-      "flowai-skill-foo",
+      "flowai-foo",
       tmp,
     );
     assertEquals(errors.length, 3);
@@ -92,7 +92,7 @@ Deno.test("validateSkillTriggerCoverage: misnamed trigger-* dir is reported", as
     );
     const errors = await validateSkillTriggerCoverage(
       "core",
-      "flowai-skill-foo",
+      "flowai-foo",
       tmp,
     );
     assertEquals(errors.length, 1);
@@ -125,12 +125,12 @@ Deno.test("validateAllTriggerCoverage: tmp framework with one complete + one inc
   const tmp = await Deno.makeTempDir();
   try {
     const fw = join(tmp, "framework");
-    const completeSkill = join(fw, "core", "skills", "flowai-skill-complete");
+    const completeSkill = join(fw, "core", "skills", "flowai-complete");
     const incompleteSkill = join(
       fw,
       "core",
       "skills",
-      "flowai-skill-incomplete",
+      "flowai-incomplete",
     );
     for (const dir of expectedTriggerDirs()) {
       await Deno.mkdir(join(completeSkill, "acceptance-tests", dir), {
@@ -147,14 +147,14 @@ Deno.test("validateAllTriggerCoverage: tmp framework with one complete + one inc
     // 3 missing for the incomplete skill, 0 for the complete one
     assertEquals(errors.length, 3);
     for (const e of errors) {
-      assertEquals(e.skill, "flowai-skill-incomplete");
+      assertEquals(e.skill, "flowai-incomplete");
     }
   } finally {
     await Deno.remove(tmp, { recursive: true });
   }
 });
 
-Deno.test("validateAllTriggerCoverage: ignores non-flowai-skill-* directories", async () => {
+Deno.test("validateAllTriggerCoverage: ignores non-flowai-* directories", async () => {
   const tmp = await Deno.makeTempDir();
   try {
     const fw = join(tmp, "framework");

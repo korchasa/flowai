@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "5978832f7aa31459ddf77bfde6f196ba2a87cd03ec26bf2c85fb9351d09d68af",
+  "scenarioId": "flowai-ai-ide-runner-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:50:32.644Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 6300.938916,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly with a text recommendation without invoking any tools, reading any SKILL.md files, or calling the Skill tool with 'flowai-ai-ide-runner'. The agent logs show only a…"
+      }
+    }
+  }
+}

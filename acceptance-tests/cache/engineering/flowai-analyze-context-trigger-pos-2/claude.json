@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "02a67a7356fab612e7d013be2c1c1cfda714a0961e21af23d1fc43969a0bd5c4",
+  "scenarioId": "flowai-analyze-context-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:49:22.351Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 63437.708583,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first action in the trace is a `Skill` tool call with `{\"skill\": \"flowai-analyze-context\"}`, confirming the skill was loaded. The agent then acted on it by running a Bash comma…"
+      }
+    }
+  }
+}

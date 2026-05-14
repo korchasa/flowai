@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "key": "8e7e5df94be72794530b7cb466bcaef70195d9cb1324b81caefd31df4e38b473",
+  "scenarioId": "flowai-setup-ai-ide-devcontainer-opencode-multi-cli",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:32:31.678Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 69367.44200000004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "devcontainer_json_created": {
+        "pass": true,
+        "reason": "File `.devcontainer/devcontainer.json` was created and is present in the generated files. It is valid JSONC (comments are permitted in devcontainer.json spec)."
+      },
+      "python_base_image": {
+        "pass": true,
+        "reason": "The image field is set to `mcr.microsoft.com/devcontainers/python:3`, which clearly contains 'python' in the image name."
+      },
+      "claude_code_configured": {
+        "pass": true,
+        "reason": "Claude Code CLI is installed via `\"claude-cli\": \"curl -fsSL https://claude.ai/install.sh | bash\"` in the `postCreateCommand` object. This is the official curl-based install method."
+      },
+      "opencode_configured": {
+        "pass": true,
+        "reason": "OpenCode is configured via the devcontainer registry feature `\"ghcr.io/jsburckhardt/devcontainer-features/opencode:1\": {}` in the `features` block."
+      },
+      "claude_global_skills_mount": {
+        "pass": true,
+        "reason": "A read-only bind mount is present: `\"source=${localEnv:HOME}/.claude,target=/home/vscode/.claude-host,type=bind,readonly\"` — mounts host `~/.claude` to a separate path `~/.claude-host` inside the con…"
+      },
+      "opencode_global_skills_mount": {
+        "pass": true,
+        "reason": "A read-only bind mount is present: `\"source=${localEnv:HOME}/.config/opencode,target=/home/vscode/.config/opencode-host,type=bind,readonly\"` — mounts host `~/.config/opencode` to a separate path `~/.…"
+      },
+      "post_start_skills_sync": {
+        "pass": true,
+        "reason": "No skills-sync step was generated. According to the checklist, skills sync is optional per SKILL.md — absence is acceptable. The `postStartCommand` only sets a git safe.directory config, which is unr…"
+      },
+      "no_hardcoded_secrets": {
+        "pass": true,
+        "reason": "No hardcoded API keys, tokens, or credentials were found in any of the generated files (`devcontainer.json`, `setup-container.sh`). All sensitive config uses environment variable interpolation or is …"
+      },
+      "python_deps_install": {
+        "pass": true,
+        "reason": "The `postCreateCommand` includes `\"deps\": \"pip install -e .\"`, which installs Python project dependencies from the detected `pyproject.toml` (hatchling-based FastAPI project)."
+      },
+      "auth_policy_compliance": {
+        "pass": true,
+        "reason": "All auth policy conditions are met: (a) no `remoteEnv` block with auth vars; (b) no `secrets` block; (c) no `initializeCommand`; (d) no automation of `gh auth login`, `claude login`, or `opencode aut…"
+      },
+      "stable_volume_names": {
+        "pass": true,
+        "reason": "Both named volumes use `${localWorkspaceFolderBasename}` as the stable prefix: `${localWorkspaceFolderBasename}-claude-config` for Claude Code and `${localWorkspaceFolderBasename}-opencode-config` fo…"
+      }
+    }
+  }
+}

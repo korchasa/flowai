@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "cdc0fa93c6c67ff3351c2ad9d179e6834a9cc0c1f048d2387f8872d43846d360",
+  "scenarioId": "flowai-plan-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:38:14.290Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 110051.34637499973,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent logs show an explicit `Tool: Skill` call with `\"skill\": \"flowai-plan\"` at the very beginning of execution, confirming the agent loaded and acted on the `flowai-plan` skill in re…"
+      }
+    }
+  }
+}

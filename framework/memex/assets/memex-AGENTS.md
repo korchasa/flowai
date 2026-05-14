@@ -18,9 +18,9 @@ This file defines how this memex (long-term knowledge bank for AI agents) is str
 
 Three skills, invoked by the agent on the user's request:
 
-- `flowai-skill-memex-save <path|url|text>` — read source → store in `raw/articles/` → extract entities → create or update memex pages → backlink audit → update `pages/index.md` → append `log.md`. One source typically touches 5–15 memex pages.
-- `flowai-skill-memex-ask <question>` — read `pages/index.md` → open relevant pages → follow one level of `[[wikilinks]]` → synthesize answer with citations → file to `pages/answers/<slug>.md` → optionally promote to `pages/<slug>.md`.
-- `flowai-skill-memex-audit` — run deterministic structural checks → propose fixes → optionally apply.
+- `flowai-memex-save <path|url|text>` — read source → store in `raw/articles/` → extract entities → create or update memex pages → backlink audit → update `pages/index.md` → append `log.md`. One source typically touches 5–15 memex pages.
+- `flowai-memex-ask <question>` — read `pages/index.md` → open relevant pages → follow one level of `[[wikilinks]]` → synthesize answer with citations → file to `pages/answers/<slug>.md` → optionally promote to `pages/<slug>.md`.
+- `flowai-memex-audit` — run deterministic structural checks → propose fixes → optionally apply.
 
 ## Entity Types
 
@@ -198,5 +198,5 @@ A single save typically touches 5–15 pages. This is normal.
    - Orphan page → suggest where to add inbound links.
    - Missing `## Counter-Arguments and Gaps` section in concept page → add empty section.
    - Index drift → recompute `pages/index.md` from on-disk files.
-3. Suggest 3–5 questions the memex cannot yet answer well — candidates for `flowai-skill-memex-ask`.
+3. Suggest 3–5 questions the memex cannot yet answer well — candidates for `flowai-memex-ask`.
 4. Append a `## [YYYY-MM-DD] audit | …` entry to `log.md`.

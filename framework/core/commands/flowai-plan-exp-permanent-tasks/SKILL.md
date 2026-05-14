@@ -1,6 +1,6 @@
 ---
 name: flowai-plan-exp-permanent-tasks
-description: Experimental committed-tasks variant of flowai-skill-plan. User-invoked. Writes tasks at documents/tasks/<YYYY>/<MM>/<slug>.md with extended frontmatter (date, status, implements, tags, related_tasks).
+description: Experimental committed-tasks variant of flowai-plan. User-invoked. Writes tasks at documents/tasks/<YYYY>/<MM>/<slug>.md with extended frontmatter (date, status, implements, tags, related_tasks).
 argument-hint: task description or issue URL
 effort: high
 ---

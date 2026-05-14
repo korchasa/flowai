@@ -4,7 +4,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 export const CommitBetaAutoInvokeReflectBench = new class
   extends AcceptanceTestScenario {
   id = "flowai-commit-beta-auto-invoke-reflect";
-  name = "Auto-invoke /flowai-skill-reflect after error-prone session";
+  name = "Auto-invoke /flowai-reflect after error-prone session";
   skill = "flowai-commit-beta";
   stepTimeoutMs = 420_000;
   maxSteps = 30;
@@ -17,7 +17,7 @@ export const CommitBetaAutoInvokeReflectBench = new class
     commits: [],
     modified: ["utils.ts"],
     expectedOutcome:
-      "Agent commits utils.ts, detects session complexity signals, and auto-invokes /flowai-skill-reflect (actually executes the reflect workflow, not merely suggests it)",
+      "Agent commits utils.ts, detects session complexity signals, and auto-invokes /flowai-reflect (actually executes the reflect workflow, not merely suggests it)",
   };
 
   override async setup(sandboxPath: string) {
@@ -51,13 +51,13 @@ export const CommitBetaAutoInvokeReflectBench = new class
     {
       id: "reflect_auto_invoked",
       description:
-        "At any point during the workflow (before or after the commit), did the agent AUTO-INVOKE /flowai-skill-reflect — meaning it actually started executing the reflect workflow (e.g., creating a reflection plan, analyzing the session for behavioral/technical/context issues, listing concrete findings or proposed improvements)? Merely printing a one-line suggestion like 'Consider running /flowai-skill-reflect' is NOT sufficient — the agent must have actually run the reflect workflow.",
+        "At any point during the workflow (before or after the commit), did the agent AUTO-INVOKE /flowai-reflect — meaning it actually started executing the reflect workflow (e.g., creating a reflection plan, analyzing the session for behavioral/technical/context issues, listing concrete findings or proposed improvements)? Merely printing a one-line suggestion like 'Consider running /flowai-reflect' is NOT sufficient — the agent must have actually run the reflect workflow.",
       critical: true,
     },
     {
       id: "reflect_not_asking_permission",
       description:
-        "Did the agent proceed autonomously (without asking the user 'should I run /flowai-skill-reflect?' or waiting for confirmation) once it detected session-complexity signals?",
+        "Did the agent proceed autonomously (without asking the user 'should I run /flowai-reflect?' or waiting for confirmation) once it detected session-complexity signals?",
       critical: false,
     },
   ];

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "b884924a82b3ec13975216e90350dde9dbf8a93a40b2c72dcac60eee284067ea",
+  "scenarioId": "flowai-deep-research-trigger-adj-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T02:00:37.128Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 44226.782875000004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never invoked the `flowai-deep-research` skill. All tool calls in the logs are limited to `Bash` (for file listing, directory creation, and git operations) and `Write` (to create the …"
+      }
+    }
+  }
+}

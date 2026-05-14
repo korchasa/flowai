@@ -160,7 +160,7 @@ Deno.test("registers_rate_limit", () => {
     {
       id: "no_skill_tool_delegation",
       description:
-        "Inspect the agent's tool calls. Did the agent invoke the `Skill` tool to call `flowai-skill-review`, `flowai-commit`, or `flowai-commit-beta`? If yes, this is a composite-skill violation — Phase 1 and Phase 2 must be inlined. The check passes ONLY if NO such Skill-tool calls occurred.",
+        "Inspect the agent's tool calls. Did the agent invoke the `Skill` tool to call `flowai-review`, `flowai-commit`, or `flowai-commit-beta`? If yes, this is a composite-skill violation — Phase 1 and Phase 2 must be inlined. The check passes ONLY if NO such Skill-tool calls occurred.",
       critical: true,
     },
     {

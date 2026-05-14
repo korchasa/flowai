@@ -1,25 +1,27 @@
 import { assertEquals } from "@std/assert";
+import { join } from "@std/path";
 import {
   validateAllNamingPrefixes,
   validateNamingPrefix,
 } from "./check-naming-prefix.ts";
 
 const PREFIX = "flowai-";
+const RETIRED_PREFIX = "flowai-" + "skill-";
 
 // --- validateNamingPrefix ---
 
-Deno.test("validateNamingPrefix: skill name flowai-skill-* passes", () => {
-  assertEquals(validateNamingPrefix("flowai-skill-fix-tests", "skill"), []);
+Deno.test("validateNamingPrefix: skill name flowai-* passes", () => {
+  assertEquals(validateNamingPrefix("flowai-fix-tests", "skill"), []);
 });
 
 Deno.test("validateNamingPrefix: command name flowai-* passes", () => {
   assertEquals(validateNamingPrefix("flowai-commit", "command"), []);
 });
 
-Deno.test("validateNamingPrefix: skill name flowai-skill-setup-* passes", () => {
+Deno.test("validateNamingPrefix: skill name flowai-setup-* passes", () => {
   assertEquals(
     validateNamingPrefix(
-      "flowai-skill-setup-agent-code-style-ts-deno",
+      "flowai-setup-agent-code-style-ts-deno",
       "skill",
     ),
     [],
@@ -60,26 +62,23 @@ Deno.test("validateNamingPrefix: empty name is error", () => {
 
 // --- NP-2: command prefix convention ---
 
-Deno.test("validateNamingPrefix: command with flowai-skill-* prefix is error (NP-2)", () => {
+Deno.test("validateNamingPrefix: command with retired skill-name prefix is error (NP-2)", () => {
   // This name pattern belongs under skills/, not commands/.
-  const errors = validateNamingPrefix("flowai-skill-foo", "command");
+  const errors = validateNamingPrefix(`${RETIRED_PREFIX}foo`, "command");
   assertEquals(errors.length, 1);
   assertEquals(errors[0].criterion, "NP-2");
 });
 
 // --- NP-3: skill prefix convention ---
 
-Deno.test("validateNamingPrefix: skill with bare flowai-* prefix is error (NP-3)", () => {
-  // "flowai-commit" shape is a command, not a skill.
-  const errors = validateNamingPrefix("flowai-commit", "skill");
+Deno.test("validateNamingPrefix: skill with retired skill-name prefix is error (NP-3)", () => {
+  const errors = validateNamingPrefix(`${RETIRED_PREFIX}foo`, "skill");
   assertEquals(errors.length, 1);
   assertEquals(errors[0].criterion, "NP-3");
 });
 
-Deno.test("validateNamingPrefix: skill with flowai-setup-* prefix is error (NP-3)", () => {
-  const errors = validateNamingPrefix("flowai-setup-foo", "skill");
-  assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "NP-3");
+Deno.test("validateNamingPrefix: skill with command-shaped flowai-* prefix passes", () => {
+  assertEquals(validateNamingPrefix("flowai-commit", "skill"), []);
 });
 
 // --- validateAllNamingPrefixes (integration with real framework/) ---
@@ -108,4 +107,22 @@ Deno.test("validateAllNamingPrefixes: non-existent dir returns empty", async () 
     "/tmp/non-existent-fw-dir-99999",
   );
   assertEquals(errors, []);
+});
+
+Deno.test("validateAllNamingPrefixes: duplicate command and skill installed name is error (NP-4)", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    const fw = join(tmp, "framework");
+    await Deno.mkdir(join(fw, "core", "commands", "flowai-review"), {
+      recursive: true,
+    });
+    await Deno.mkdir(join(fw, "core", "skills", "flowai-review"), {
+      recursive: true,
+    });
+    const errors = await validateAllNamingPrefixes(fw);
+    assertEquals(errors.length, 1);
+    assertEquals(errors[0].criterion, "NP-4");
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
 });

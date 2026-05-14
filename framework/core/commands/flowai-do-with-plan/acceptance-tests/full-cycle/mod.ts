@@ -68,7 +68,7 @@ export const DoWithPlanFullCycleBench = new class
     {
       id: "no_skill_delegation",
       description:
-        "Did the agent execute the inlined steps directly without invoking `flowai-plan-exp-permanent-tasks`, `flowai-skill-review`, `flowai-commit-beta`, or `flowai-review-and-commit` via the Skill tool? Inspect tool-call traces.",
+        "Did the agent execute the inlined steps directly without invoking `flowai-plan-exp-permanent-tasks`, `flowai-review`, `flowai-commit-beta`, or `flowai-review-and-commit` via the Skill tool? Inspect tool-call traces.",
       critical: true,
     },
   ];

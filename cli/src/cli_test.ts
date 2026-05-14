@@ -39,7 +39,7 @@ Deno.test("renderSyncOutput - no actions when all ok", () => {
   const result = baseSyncResult();
   result.skillActions = [
     { name: "flowai-commit", action: "ok", scaffolds: [] },
-    { name: "flowai-skill-plan", action: "ok", scaffolds: [] },
+    { name: "flowai-plan", action: "ok", scaffolds: [] },
   ];
   result.agentActions = [
     { name: "console-expert", action: "ok", scaffolds: [] },
@@ -80,7 +80,7 @@ Deno.test("renderSyncOutput - shows updated skills with scaffolds", () => {
       scaffolds: ["AGENTS.md"],
     },
     { name: "flowai-commit", action: "update", scaffolds: [] },
-    { name: "flowai-skill-plan", action: "ok", scaffolds: [] },
+    { name: "flowai-plan", action: "ok", scaffolds: [] },
   ];
 
   const output = captureOutput(() => renderSyncOutput(result));

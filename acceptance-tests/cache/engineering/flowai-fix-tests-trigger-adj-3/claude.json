@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "8aecc00d14db9319bdb9d9a93784efb53e569c63562cc7aedac0d4bc4c598802",
+  "scenarioId": "flowai-fix-tests-trigger-adj-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:04:02.906Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 20036.070499999998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never invoked `flowai-fix-tests` or read its SKILL.md. The agent only ran two bash commands (`git status && git diff --cached` and `git log --oneline`) and then responded directly to …"
+      }
+    }
+  }
+}

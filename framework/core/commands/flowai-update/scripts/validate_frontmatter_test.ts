@@ -284,8 +284,8 @@ Deno.test("validateAll - .claude: skill dir without SKILL.md", async () => {
 
 Deno.test("validateAll - .cursor: valid skills and agents", async () => {
   const root = await createTempTree({
-    ".cursor/skills/flowai-skill-plan/SKILL.md": `---
-name: flowai-skill-plan
+    ".cursor/skills/flowai-plan/SKILL.md": `---
+name: flowai-plan
 description: Plan tasks
 ---
 # Plan`,
@@ -342,8 +342,8 @@ Body`,
 
 Deno.test("validateAll - .opencode: valid skills and agents", async () => {
   const root = await createTempTree({
-    ".opencode/skills/flowai-skill-review/SKILL.md": `---
-name: flowai-skill-review
+    ".opencode/skills/flowai-review/SKILL.md": `---
+name: flowai-review
 description: Code review skill
 ---
 # Review`,

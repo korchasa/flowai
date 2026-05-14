@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "af3d6c57603c89c564ac516940be5b79819b258dde94d755ff57fa6f205049cc",
+  "scenarioId": "flowai-reflect-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-30T00:08:03.779Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 6575.132666000165,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_reflect_workflow": {
+        "pass": true,
+        "reason": "The agent did not execute any flowai-reflect workflow. It simply provided a two-sentence direct answer without generating any process/technical/context/knowledge sections, listing 'behavioral e…"
+      },
+      "no_reflection_file": {
+        "pass": true,
+        "reason": "The git status shows 'nothing to commit, working tree clean' and the git diff shows no new files were created. No reflection artifacts (e.g., documents/reflections/, reflection.md) were produced."
+      },
+      "direct_answer": {
+        "pass": true,
+        "reason": "The agent answered directly and concisely in exactly two sentences: stating it had not called any tools in the conversation, and noting this was the first user message. This is a plain, appropriate r…"
+      }
+    }
+  }
+}

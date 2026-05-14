@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "0fcaa9d939d3d27376f64780947dae0bd243607a61e9dbac01acc4dff51f478b",
+  "scenarioId": "flowai-deno-deploy-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:20:20.319Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 7381.511042000027,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly with a drafted Slack message without invoking any skills or reading any SKILL.md files. There is no mention of `flowai-deno-deploy` or the `Skill` tool anywhere in …"
+      }
+    }
+  }
+}

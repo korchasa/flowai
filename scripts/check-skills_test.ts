@@ -370,16 +370,16 @@ Deno.test("validateKindInvariants: command WITH flag fails", () => {
 });
 
 Deno.test("validateKindInvariants: skill without flag passes", () => {
-  const errors = validateKindInvariants("flowai-skill-foo", "skill", {
-    name: "flowai-skill-foo",
+  const errors = validateKindInvariants("flowai-foo", "skill", {
+    name: "flowai-foo",
     description: "y",
   });
   assertEquals(errors, []);
 });
 
 Deno.test("validateKindInvariants: skill WITH flag fails", () => {
-  const errors = validateKindInvariants("flowai-skill-bar", "skill", {
-    name: "flowai-skill-bar",
+  const errors = validateKindInvariants("flowai-bar", "skill", {
+    name: "flowai-bar",
     description: "y",
     "disable-model-invocation": true,
   });

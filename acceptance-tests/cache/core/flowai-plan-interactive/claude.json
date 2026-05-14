@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "eb4f1cc088f2d7ac7abdfcce386bfd08a7d541f72edb4655a442569c270fe07b",
+  "scenarioId": "flowai-plan-interactive",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:18:48.189Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 177047.58016700018,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "variants_presented": {
+        "pass": true,
+        "reason": "The agent explicitly presented two implementation variants in the chat: Variant 1 (Single-file script with console.log directly in main.ts) and Variant 2 (Entrypoint + separate logic module with gree…"
+      },
+      "question_asked": {
+        "pass": true,
+        "reason": "After presenting the variants, the agent explicitly asked 'Какой вариант выбираете?' (Which variant do you choose?), prompting the user to select."
+      },
+      "solution_filled": {
+        "pass": true,
+        "reason": "The Solution section in documents/tasks/2026/05/hello-world-cli.md contains concrete technical details: selected variant declaration, 7 numbered implementation steps (bootstrap deno.json, add SRS, RE…"
+      },
+      "no_switch_mode": {
+        "pass": true,
+        "reason": "No 'SwitchMode' appears anywhere in the agent logs or file diffs."
+      }
+    }
+  }
+}

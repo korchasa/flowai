@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "key": "c51294018ee25a4fbe684f196f5a88fc53036f7ccc99589d6d78b01e3c194ca2",
+  "scenarioId": "flowai-write-prd-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.213Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 75778.94762500003,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "prd_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/prd-push-notifications.md' as confirmed by both the Write tool call in the logs and the generated files section showing 10512 bytes of content."
+      },
+      "has_executive_summary": {
+        "pass": true,
+        "reason": "Section 1 'Executive Summary' explicitly contains all three required elements: Problem Statement ('Users have no real-time visibility into order status changes...'), Proposed Solution ('Implement pus…"
+      },
+      "has_success_metrics": {
+        "pass": true,
+        "reason": "Section 2 'Success Metrics (KPIs)' defines specific numeric targets: Primary Metric (≥40% reduction in support tickets within 60 days), Secondary Metrics (opt-in rate ≥60%, delivery rate ≥98%, notifi…"
+      },
+      "has_user_stories": {
+        "pass": true,
+        "reason": "Section 3 contains 5 user stories (US-1 through US-5) in standard 'As a customer, I want to [action] so that [benefit]' format, each with numbered acceptance criteria. Example: 'As a customer, I want…"
+      },
+      "has_out_of_scope": {
+        "pass": true,
+        "reason": "Section 3 contains an explicit 'Out of Scope' subsection listing: marketing/promotional push notifications, web push (browser) notifications, SMS or email fallback, rich media in notifications (v2), …"
+      },
+      "has_functional_requirements": {
+        "pass": true,
+        "reason": "Section 4 'Functional Requirements' covers 7 subsections with business rules and edge cases: Order Event Triggers (6 event types with notification templates), Device Token Management (storage schema,…"
+      },
+      "has_non_functional_requirements": {
+        "pass": true,
+        "reason": "Section 5 'Non-Functional Requirements' covers Performance (≤5s p95 latency, 5× burst capacity), Reliability (exponential backoff, dead-letter queue), Security (AES-256 at rest, JWT auth, rate limiti…"
+      },
+      "has_risks_and_dependencies": {
+        "pass": true,
+        "reason": "Section 7 'Dependencies & Risks' lists 5 specific dependencies (FCM, APNs, OMS, Mobile SDK, Backend Notification Service) and a risk table with 5 risks, each having Likelihood, Impact, and Mitigation…"
+      },
+      "specific_not_vague": {
+        "pass": true,
+        "reason": "Requirements throughout are highly specific and measurable: dispatch latency '≤5 s p95', delivery rate '≥98%', opt-in rate '≥60% within 30 days', encryption 'AES-256', compatibility 'iOS 14+, Android…"
+      }
+    }
+  }
+}

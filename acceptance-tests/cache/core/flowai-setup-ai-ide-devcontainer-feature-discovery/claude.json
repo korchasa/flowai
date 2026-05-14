@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "key": "d2786b3deb60d7f3b691be612d01c26f0b3ff3dd7228d56ad4085c3c1ceaa066",
+  "scenarioId": "flowai-setup-ai-ide-devcontainer-feature-discovery",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:51:19.267Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 157831.29249999998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "devcontainer_json_created": {
+        "pass": true,
+        "reason": "File `.devcontainer/devcontainer.json` was created as confirmed by both the Write tool call and the GENERATED FILES section. It uses JSONC format (JSON with comments), which is valid per the devconta…"
+      },
+      "feature_suggestions_shown": {
+        "pass": true,
+        "reason": "Before generating the config, the agent presented an explicit list of discovered/suggested features categorized as 'Автодобавление (высокая уверенность)', 'Предложено (принято по условию задачи)', an…"
+      },
+      "postgres_feature_suggested": {
+        "pass": true,
+        "reason": "PostgreSQL was explicitly suggested with rationale: 'PostgreSQL-клиент (найден docker-compose.yml с postgres + prisma/schema.prisma с провайдером postgresql)'. It was included in postCreateCommand as…"
+      },
+      "redis_feature_suggested": {
+        "pass": true,
+        "reason": "Redis was explicitly suggested with rationale: 'Redis-клиент (найден docker-compose.yml с redis + зависимость ioredis)'. Included in postCreateCommand as `sudo apt-get install -y ... redis-tools`."
+      },
+      "docker_in_docker_suggested": {
+        "pass": true,
+        "reason": "Docker-in-Docker was suggested with rationale 'найден docker-compose.yml' and added as `ghcr.io/devcontainers/features/docker-in-docker:2` in the features section of devcontainer.json."
+      },
+      "direnv_feature_detected": {
+        "pass": true,
+        "reason": "direnv was detected from the `.envrc` file (the agent read it explicitly) and added as `ghcr.io/devcontainers-extra/features/direnv:1` under 'Auto-add: direnv (found .envrc)' comment in devcontainer.…"
+      },
+      "features_in_config": {
+        "pass": true,
+        "reason": "Beyond the base common-utils and github-cli features, devcontainer.json includes 3 additional features: `ghcr.io/devcontainers-extra/features/direnv:1`, `ghcr.io/devcontainers/features/docker-in-dock…"
+      },
+      "detection_rationale": {
+        "pass": true,
+        "reason": "The agent explicitly explained the trigger for each feature: direnv ← `.envrc`, Docker-in-Docker ← `docker-compose.yml`, PostgreSQL ← `docker-compose.yml` + `prisma/schema.prisma`, Redis ← `docker-co…"
+      },
+      "claude_code_via_install_script": {
+        "pass": true,
+        "reason": "Claude Code is installed via the official install script in postCreateCommand: `\"claude-cli\": \"curl -fsSL https://claude.ai/install.sh | bash\"`. No registry feature like `ghcr.io/devcontainers-extra/…"
+      },
+      "node_base_image": {
+        "pass": true,
+        "reason": "devcontainer.json specifies `\"image\": \"mcr.microsoft.com/devcontainers/typescript-node:1\"`, which is a Node.js/TypeScript base image from Microsoft's devcontainers registry."
+      },
+      "no_hardcoded_secrets": {
+        "pass": true,
+        "reason": "No hardcoded API keys, tokens, or credentials were found in any generated file. The setup-container.sh only contains `chown` commands. The devcontainer.json uses volume mounts and references environm…"
+      }
+    }
+  }
+}

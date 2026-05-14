@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "0cbcb8b3ad6aabc040f321ed371ed1b4fc6db0751819be5f5882378889483c6a",
+  "scenarioId": "flowai-deno-deploy-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:20:04.923Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 49495.44104200002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent logs show an explicit `Skill` tool call with `{\"skill\": \"flowai-deno-deploy\"}` at the very start of execution, confirming the skill was loaded and acted upon in response to the query."
+      }
+    }
+  }
+}

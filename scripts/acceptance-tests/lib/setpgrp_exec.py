@@ -5,7 +5,7 @@ Used by `SpawnedAgent` so the resource watchdog can SIGKILL the entire
 process group rooted at the agent — including grandchildren that reparent
 to PID 1 after their immediate parent dies. Without `setsid()`, killing the
 agent's tree-by-PPID misses orphaned descendants and lets them keep
-forking (observed on 2026-05-09 during a `flowai-skill-configure-deno-commands`
+forking (observed on 2026-05-09 during a `flowai-configure-deno-commands`
 trigger-pos scenario, which leaked ~hundreds of `deno test` orphans after
 the watchdog fired and ultimately required a host reboot).
 

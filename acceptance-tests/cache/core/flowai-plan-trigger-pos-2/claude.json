@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "ecd56202bd4a2893f1e29272ca1cf01040d96b3da0e62e1f127d813ec46c76d9",
+  "scenarioId": "flowai-plan-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:12:51.397Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 104927.27670799941,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's very first action in the trace is a `Skill` tool call with `\"skill\": \"flowai-plan\"`, directly invoking the flowai-plan skill in response to the user's query."
+      }
+    }
+  }
+}

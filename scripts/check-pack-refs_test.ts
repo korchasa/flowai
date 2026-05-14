@@ -3,17 +3,17 @@ import { findCrossPackRefs } from "./check-pack-refs.ts";
 
 const primitiveMap = new Map([
   ["flowai-commit", "core"],
-  ["flowai-skill-plan", "core"],
-  ["flowai-skill-fix-tests", "engineering"],
-  ["flowai-skill-deep-research", "engineering"],
-  ["flowai-skill-engineer-skill", "devtools"],
-  ["flowai-skill-deno-cli", "deno"],
+  ["flowai-plan", "core"],
+  ["flowai-fix-tests", "engineering"],
+  ["flowai-deep-research", "engineering"],
+  ["flowai-engineer-skill", "devtools"],
+  ["flowai-deno-cli", "deno"],
 ]);
 
 // --- Allowed references ---
 
 Deno.test("pack-refs: intra-pack reference is OK", () => {
-  const content = "See `flowai-skill-fix-tests` for details.";
+  const content = "See `flowai-fix-tests` for details.";
   const errors = findCrossPackRefs(
     content,
     "engineering",
@@ -37,7 +37,7 @@ Deno.test("pack-refs: non-core referencing core is OK", () => {
 // --- Forbidden references ---
 
 Deno.test("pack-refs: core referencing non-core is ERROR", () => {
-  const content = "Delegate to `flowai-skill-fix-tests`.";
+  const content = "Delegate to `flowai-fix-tests`.";
   const errors = findCrossPackRefs(
     content,
     "core",
@@ -45,14 +45,14 @@ Deno.test("pack-refs: core referencing non-core is ERROR", () => {
     primitiveMap,
   );
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].referencedName, "flowai-skill-fix-tests");
+  assertEquals(errors[0].referencedName, "flowai-fix-tests");
   assertEquals(errors[0].referencedPack, "engineering");
   assertEquals(errors[0].pack, "core");
   assertEquals(errors[0].line, 1);
 });
 
 Deno.test("pack-refs: non-core-A referencing non-core-B is ERROR", () => {
-  const content = "Use `flowai-skill-engineer-skill` to create skills.";
+  const content = "Use `flowai-engineer-skill` to create skills.";
   const errors = findCrossPackRefs(
     content,
     "engineering",
@@ -60,13 +60,12 @@ Deno.test("pack-refs: non-core-A referencing non-core-B is ERROR", () => {
     primitiveMap,
   );
   assertEquals(errors.length, 1);
-  assertEquals(errors[0].referencedName, "flowai-skill-engineer-skill");
+  assertEquals(errors[0].referencedName, "flowai-engineer-skill");
   assertEquals(errors[0].referencedPack, "devtools");
 });
 
 Deno.test("pack-refs: multiple violations on different lines", () => {
-  const content =
-    "Line 1\nUse `flowai-skill-fix-tests`.\nAlso `flowai-skill-deno-cli`.";
+  const content = "Line 1\nUse `flowai-fix-tests`.\nAlso `flowai-deno-cli`.";
   const errors = findCrossPackRefs(
     content,
     "devtools",
@@ -92,7 +91,7 @@ Deno.test("pack-refs: no references means no errors", () => {
 });
 
 Deno.test("pack-refs: core referencing core is OK", () => {
-  const content = "See `flowai-skill-plan` for planning.";
+  const content = "See `flowai-plan` for planning.";
   const errors = findCrossPackRefs(
     content,
     "core",

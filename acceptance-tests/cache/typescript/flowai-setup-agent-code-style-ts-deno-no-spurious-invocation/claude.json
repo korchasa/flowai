@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "92e92639603d8b748b145fe0ec1bd5d5e1243b77a2b5cc4095100936cd86902d",
+  "scenarioId": "flowai-setup-agent-code-style-ts-deno-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T18:02:53.035Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 11082.822375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_agents_md_write": {
+        "pass": true,
+        "reason": "The git diff between init and HEAD is empty — no commits were made by the agent. The working tree is clean. AGENTS.md exists only from the init commit and was not touched by the agent."
+      },
+      "no_style_rules": {
+        "pass": true,
+        "reason": "The git log shows no commits after init, and the diff is empty. The agent made zero file modifications, so no code-style rules were appended to any project file."
+      },
+      "conceptual_answer": {
+        "pass": true,
+        "reason": "The agent responded with a single paragraph (in Russian) correctly explaining that Deno is a TypeScript/JavaScript runtime created by Ryan Dahl in 2018, and contrasting it with Node.js on four key di…"
+      }
+    }
+  }
+}

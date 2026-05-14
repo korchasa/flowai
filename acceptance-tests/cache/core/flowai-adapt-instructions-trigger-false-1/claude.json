@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "44827682fee11b3d4d9c6dda910aff43ee8bbdb3f5aba474924209870036eb8a",
+  "scenarioId": "flowai-adapt-instructions-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:06:59.971Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 31602.76,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show only Grep, Glob, and Read tool calls used to search for the typo 'verfication' in AGENTS.md. The agent never invoked the `flowai-adapt-instructions` skill, never read its SK…"
+      }
+    }
+  }
+}

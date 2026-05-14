@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "3be80003c70a53b6c0fe8c14d460a732861675699a76180b94c73ef5eb4c6716",
+  "scenarioId": "flowai-engineer-prompts-for-reasoning-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.211Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 23826.776208000258,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "uses_structured_context": {
+        "pass": true,
+        "reason": "The generated prompt uses multiple XML-style tags throughout: <objective>, <context>, <rules>, <codebase>, and <instructions>. Each major section is wrapped in these structured tags, clearly satisfyi…"
+      },
+      "has_role_section": {
+        "pass": true,
+        "reason": "The prompt opens with a dedicated '# ROLE' section that explicitly states: 'You are a Senior Application Security Engineer specializing in Python security audits.' — a clear, domain-specific role def…"
+      },
+      "has_goal_or_objective": {
+        "pass": true,
+        "reason": "The prompt contains a '# GOAL' section with an <objective> block: 'Analyze the provided Python codebase for security vulnerabilities and produce a prioritized remediation report, ordered by severity …"
+      },
+      "has_instructions_or_steps": {
+        "pass": true,
+        "reason": "The '# INSTRUCTIONS' section with <instructions> tags contains a numbered 3-step plan-first approach: (1) scan and draft candidate vulnerabilities in <findings_draft> tags, (2) verify each is a real …"
+      },
+      "defines_success_criteria": {
+        "pass": true,
+        "reason": "The '# OUTPUT FORMAT' section defines exactly what a good output looks like: an Executive Summary with severity counts and top-3 issues, per-finding entries with required fields (Location, Descriptio…"
+      },
+      "has_rules_or_constraints": {
+        "pass": true,
+        "reason": "The '# RULES' section with <rules> tags lists 6 explicit constraints: never invent vulnerabilities, assign CRITICAL/HIGH/MEDIUM/LOW/INFO severity, include file path and line numbers, require concrete…"
+      }
+    }
+  }
+}

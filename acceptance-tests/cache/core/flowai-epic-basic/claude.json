@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "key": "a9f005737fd54e7eb75434a82dd636c64401ead9f478d5df16103bd0b55cfcbf",
+  "scenarioId": "flowai-epic-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-07T10:09:40.206Z",
+  "result": {
+    "success": true,
+    "score": 92.85714285714286,
+    "errorsCount": 0,
+    "warningsCount": 1,
+    "durationMs": 324056.52924999996,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "epic_file_at_new_path": {
+        "pass": true,
+        "reason": "The agent created the file at `documents/tasks/2026/05/07/epic-skill-versioning.md`, which matches the required pattern: date-hierarchy directories (2026/05/07), slug starts with `epic-` (`epic-skill…"
+      },
+      "frontmatter_has_new_keys": {
+        "pass": true,
+        "reason": "The epic frontmatter contains all required keys: `date: \"2026-05-07\"`, `status: to do`, `tags: [skills, versioning, semver, cli, framework]`, and `related_tasks: []`."
+      },
+      "goal_section": {
+        "pass": true,
+        "reason": "The epic contains a `## Goal` section clearly stating business value: enabling independent, reproducible versioning so teams can pin to specific versions, audit changes, and roll back safely, with co…"
+      },
+      "non_goals_section": {
+        "pass": true,
+        "reason": "The epic contains a `## Non-Goals` section with 9 explicit exclusions, including no UI dashboard, no automatic semver bumping, no agent-runtime version resolution, no pre-release suffix support in Ph…"
+      },
+      "boundaries_section": {
+        "pass": true,
+        "reason": "The epic contains `## Architecture & Boundaries` with all three required subsections: `### Always (agent autonomy)`, `### Ask First`, and `### Never`, each with clear items."
+      },
+      "phases_present": {
+        "pass": true,
+        "reason": "The epic contains 5 phases, each including Status, Prerequisites, Goal, Scope, Tasks, Verification, and Notes subsections — well exceeding the minimum of 2 phases."
+      },
+      "phases_in_chat": {
+        "pass": true,
+        "reason": "The agent explicitly presented all 5 phases in chat (with Goal, Scope, Dependencies, and Task count per phase) as a Final Result before writing them to the file, and then waited for user approval ('A…"
+      },
+      "critique_offered": {
+        "pass": true,
+        "reason": "After writing all phases to the file, the agent offered a detailed self-critique identifying 6 specific issues (missing directory bootstrap, validator source confusion, ADR gate not explicit, backwar…"
+      },
+      "definition_of_done": {
+        "pass": true,
+        "reason": "The epic contains a `## Definition of Done` section with 10 measurable checkbox criteria covering frontmatter validation, `deno task check`, multi-version coexistence, CLI pinning, config documentati…"
+      },
+      "only_epic_file_modified": {
+        "pass": true,
+        "reason": "The git status shows only `documents/` as untracked (new). The git diff confirms no changes to any existing source files. Only the epic file `documents/tasks/2026/05/07/epic-skill-versioning.md` was …"
+      },
+      "phase_size_guard": {
+        "pass": true,
+        "reason": "Phase 1 has 8 tasks, Phase 2 has 7+1 gate task, Phase 3 has 6 tasks, Phase 4 has 6 tasks, Phase 5 has 5 tasks. All well within the 50-task limit per phase."
+      },
+      "task_file_target": {
+        "pass": false,
+        "reason": "Phase 1 Task 6 explicitly describes copying '~15 remaining skills from `.claude/skills/`' with `version: 1.0.0` added — this is a single task targeting potentially 15+ files, which exceeds the 5-file…"
+      },
+      "no_switch_mode": {
+        "pass": true,
+        "reason": "The agent logs contain no mention of 'SwitchMode' anywhere in the execution trace."
+      },
+      "dependency_ordering": {
+        "pass": true,
+        "reason": "Phases have a clear linear dependency chain: Phase 1 (no prerequisites) → Phase 2 (requires Phase 1) → Phase 3 (requires Phase 2) → Phase 4 (requires Phase 3) → Phase 5 (requires Phases 3 and 4). No …"
+      }
+    }
+  }
+}

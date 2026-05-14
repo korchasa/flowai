@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "f2a7ab1b94a5ef5a48928f2732d9b696b1c2228fae3e2b11db2bda068566824e",
+  "scenarioId": "flowai-plan-migration",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T20:37:30.057Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 98880.38825000031,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "identify_deprecated": {
+        "pass": true,
+        "reason": "The plan explicitly identifies both deprecated patterns in the Overview/Context section: '1. HTTP — uses the npm package `request` (deprecated since 2020; unmaintained)' and '2. File I/O — uses `fs.w…"
+      },
+      "propose_fetch": {
+        "pass": true,
+        "reason": "The plan proposes native `fetch` as the replacement in both implementation variants. The Goal section states 'native `fetch` and `fs/promises`', the Constraints section specifies 'Node.js ≥ 18 (globa…"
+      },
+      "propose_async_await": {
+        "pass": true,
+        "reason": "Async/await conversion is a central theme throughout the plan. The Goal states 'switching the public API to async/await', the Context section lists 'Control flow — callback (err, body) pattern instea…"
+      },
+      "error_handling": {
+        "pass": true,
+        "reason": "The plan addresses error handling updates. The Constraints section explicitly states 'Must not silently swallow HTTP errors (non-2xx responses) — fail fast.' Both code variants include an HTTP status…"
+      }
+    }
+  }
+}

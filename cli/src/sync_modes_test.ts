@@ -33,9 +33,9 @@ assets:
 `,
   );
   files.set(
-    "framework/core/skills/flowai-skill-demo/SKILL.md",
+    "framework/core/skills/flowai-demo/SKILL.md",
     `---
-name: flowai-skill-demo
+name: flowai-demo
 description: Demo skill
 ---
 Body.
@@ -100,12 +100,12 @@ Deno.test("global mode skips artifact sync", async () => {
   }
   assertEquals(await fs.exists("/project/CLAUDE.md"), false);
   assertEquals(
-    await fs.exists("/project/.claude/skills/flowai-skill-demo/SKILL.md"),
+    await fs.exists("/project/.claude/skills/flowai-demo/SKILL.md"),
     false,
   );
   assertEquals(
     await fs.exists(
-      "/home/user/.claude/skills/flowai-skill-demo/SKILL.md",
+      "/home/user/.claude/skills/flowai-demo/SKILL.md",
     ),
     true,
   );
@@ -173,11 +173,11 @@ Deno.test("both modes coexist - independent targets", async () => {
   );
 
   assertEquals(
-    await fs.exists("/project/.claude/skills/flowai-skill-demo/SKILL.md"),
+    await fs.exists("/project/.claude/skills/flowai-demo/SKILL.md"),
     true,
   );
   assertEquals(
-    await fs.exists("/home/user/.claude/skills/flowai-skill-demo/SKILL.md"),
+    await fs.exists("/home/user/.claude/skills/flowai-demo/SKILL.md"),
     true,
   );
 });
@@ -200,12 +200,12 @@ Deno.test("sync - dry-run does not write files but produces plan actions", async
 
   assertEquals(fs.files.size, filesBefore, "dry-run must leave fs untouched");
   assertEquals(
-    await fs.exists("/project/.claude/skills/flowai-skill-demo/SKILL.md"),
+    await fs.exists("/project/.claude/skills/flowai-demo/SKILL.md"),
     false,
   );
   assert(
     result.skillActions.some(
-      (a) => a.name === "flowai-skill-demo" && a.action === "create",
+      (a) => a.name === "flowai-demo" && a.action === "create",
     ),
     "dry-run must still compute skillActions from plan",
   );
@@ -237,7 +237,7 @@ Deno.test("sync - dry-run global mode does not touch user dirs", async () => {
 
   assertEquals(fs.files.size, filesBefore);
   assertEquals(
-    await fs.exists("/home/user/.claude/skills/flowai-skill-demo/SKILL.md"),
+    await fs.exists("/home/user/.claude/skills/flowai-demo/SKILL.md"),
     false,
   );
 });
@@ -251,7 +251,7 @@ Deno.test("sync - removes orphan skill dir after framework rename", async () => 
 
   // Pre-existing installation: the old primitive dir from a previous sync.
   await fs.writeFile(
-    "/project/.claude/skills/flowai-skill-old/SKILL.md",
+    "/project/.claude/skills/flowai-old/SKILL.md",
     "old body",
   );
   // A user-owned skill that must survive cleanup.
@@ -267,9 +267,9 @@ Deno.test("sync - removes orphan skill dir after framework rename", async () => 
         "name: core\nversion: 1.0.0\ndescription: core\n",
       ],
       [
-        "framework/core/skills/flowai-skill-new/SKILL.md",
+        "framework/core/skills/flowai-new/SKILL.md",
         `---
-name: flowai-skill-new
+name: flowai-new
 description: New name after rename
 ---
 Body.
@@ -294,12 +294,12 @@ Body.
   });
 
   assertEquals(
-    await fs.exists("/project/.claude/skills/flowai-skill-new/SKILL.md"),
+    await fs.exists("/project/.claude/skills/flowai-new/SKILL.md"),
     true,
     "new name must be present after sync",
   );
   assertEquals(
-    await fs.exists("/project/.claude/skills/flowai-skill-old"),
+    await fs.exists("/project/.claude/skills/flowai-old"),
     false,
     "stale flowai-* dir must be removed by prefix cleanup",
   );

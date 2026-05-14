@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "d5b35a3850b10d8aefd273be46b8f23acf31a0ffeea05da203f0e3bdafade557",
+  "scenarioId": "flowai-write-agent-benchmarks-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.211Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 78558.59649999999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "scenario_file_created": {
+        "pass": true,
+        "reason": "The agent created 'framework/skills/flowai-example/benchmarks/rename-variable/mod.ts', which matches the required path pattern 'framework/skills/flowai-example/benchmarks/*/mod.ts'. This …"
+      },
+      "extends_base_class": {
+        "pass": true,
+        "reason": "The scenario uses 'new class extends BenchmarkSkillScenario { ... }()' as shown in the generated mod.ts. The import 'import { BenchmarkSkillScenario } from \"@bench/types.ts\"' is also present, and the…"
+      },
+      "has_checklist": {
+        "pass": true,
+        "reason": "The scenario defines a checklist array with 5 items: 'renamed_in_main' (critical:true), 'renamed_in_utils' (critical:true), 'no_old_name_remaining' (critical:true), 'types_unchanged' (critical:false)…"
+      },
+      "has_user_query": {
+        "pass": true,
+        "reason": "The scenario contains a realistic userQuery: \"Rename the variable `userData` to `userProfile` across all files in the project. Make sure every occurrence is updated — including variable declarations,…"
+      },
+      "has_setup_or_fixture": {
+        "pass": true,
+        "reason": "The scenario declares 'fixturePath = join(import.meta.dirname!, \"fixture\")' and the agent created three fixture files: fixture/src/main.ts (uses userData variable), fixture/src/utils.ts (uses userDat…"
+      },
+      "evidence_based_checks": {
+        "pass": true,
+        "reason": "All checklist items verify observable file state rather than agent self-reports: 'renamed_in_main' and 'renamed_in_utils' check for string presence/absence in specific files; 'no_old_name_remaining' …"
+      }
+    }
+  }
+}

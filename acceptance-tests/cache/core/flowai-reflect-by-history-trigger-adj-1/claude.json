@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "c9b87429e33fe5157da8478a4191ce3db7b8d710bcbd16f81d871ee2274fd1cc",
+  "scenarioId": "flowai-reflect-by-history-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T01:13:27.262Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 204666.91083399998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent invoked `flowai-reflect` (not `flowai-reflect-by-history`). The logs show `Skill: flowai-reflect` was called, and there is no evidence of reading `flowai-reflect-by-…"
+      }
+    }
+  }
+}

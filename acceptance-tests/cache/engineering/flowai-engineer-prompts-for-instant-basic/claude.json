@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "b08c714d4fb6ee9fb8b80d4686462e8b9d1a7b6a081bbe0dc17bdd001faaf4f4",
+  "scenarioId": "flowai-engineer-prompts-for-instant-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.213Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 13044.39862500038,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "uses_4part_formula": {
+        "pass": true,
+        "reason": "The prompt explicitly uses four labeled sections: '# ROLE' (data extraction specialist), '# TASK' (extract product names and prices), '# RULES' (output format and constraints), and '# EXAMPLES' (thre…"
+      },
+      "includes_few_shot_examples": {
+        "pass": true,
+        "reason": "The prompt includes three few-shot examples, each with a clearly labeled Input and Output. Example 1 shows normal extraction, Example 2 shows a product with a missing price, and Example 3 shows an em…"
+      },
+      "specifies_output_format": {
+        "pass": true,
+        "reason": "The RULES section explicitly states: 'Output a JSON array of objects with keys: \"product\" and \"price\".' The concrete structure is further demonstrated in all three examples, e.g. [{\"product\": \"Blue W…"
+      },
+      "includes_negative_constraints": {
+        "pass": true,
+        "reason": "The RULES section contains multiple explicit negative constraints: 'no currency symbols', 'Return ONLY the JSON. No explanations, no markdown code blocks.' The agent also adds a follow-up tip to add …"
+      },
+      "handles_edge_cases": {
+        "pass": true,
+        "reason": "The prompt addresses three edge cases: (1) missing price — 'If a product has no price, set \"price\" to null'; (2) ambiguous currency — 'If currency is ambiguous, extract the numeric value'; (3) no pro…"
+      }
+    }
+  }
+}

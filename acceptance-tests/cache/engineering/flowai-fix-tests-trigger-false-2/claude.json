@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6bccca63b48d871b73e3d5fdfd830ab01976c8b17068cff9a56272c31cb466c0",
+  "scenarioId": "flowai-fix-tests-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-02T16:05:35.337Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 116352.402542,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never read `flowai-fix-tests/SKILL.md` or called the `Skill` tool with `flowai-fix-tests`. It correctly handled the request to write new unit tests directly — searching for the …"
+      }
+    }
+  }
+}

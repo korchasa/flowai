@@ -39,7 +39,7 @@ The project already has a precedent for composite commands: `flowai-review-and-c
   4. Verdict gates MUST tell the agent what to do for EACH verdict (including success).
 - **Sync infrastructure:** `scripts/check-skill-sync.ts` is wired into `deno task check`. Add a third entry mapping `flowai-do-with-plan` → its three (or two) source skills, with `allowedDivergentSteps` for any phase-boundary steps that need composite-specific wording.
 - **FR placement:** No existing FR covers this. Closest neighbours are `FR-CMD-EXEC` (general) and `FR-REVIEW-COMMIT` (sibling composite). New FR section needed. SRS already has a precedent for naming an FR after a composite (`FR-REVIEW-COMMIT`).
-- **Naming:** `framework/core/commands/flowai-do-with-plan/` — `flowai-*` prefix (not `flowai-skill-*`) confirms user-only. CLI writer auto-injects `disable-model-invocation: true` at sync time. `check-naming-prefix.ts` (NP-3) enforces the prefix split.
+- **Naming:** `framework/core/commands/flowai-do-with-plan/` — directory placement confirms user-only. CLI writer auto-injects `disable-model-invocation: true` at sync time. `check-naming-prefix.ts` enforces shared `flowai-*` naming plus command/skill uniqueness.
 
 ### Constraints
 
@@ -214,7 +214,6 @@ effort: high
 
 ## Follow-ups
 
-- Once `flowai-plan-exp-permanent-tasks` is promoted (renamed to `flowai-skill-plan` per the parent task `replace-adr-with-tasks.md`), update the sync-check entry's `skill` field for the Plan Phase source.
+- Once `flowai-plan-exp-permanent-tasks` is promoted (renamed to `flowai-plan` per the parent task `replace-adr-with-tasks.md`), update the sync-check entry's `skill` field for the Plan Phase source.
 - Add a "Phase 2 short-circuit" / "Empty Phase-2 diff" benchmark: agent invokes `/flowai-do-with-plan` on a task that turns out to need no code (only doc updates) — composite should still reach Phase 3 and produce the doc commit, OR stop cleanly if the Solution genuinely had no work.
 - Consider a `scripts/check-composite-description.ts` validator: ensures composite SKILL.md descriptions contain "Self-contained" and do NOT name source skills. Defers from this task — current canon enforced by code review only.
-

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "2def83b052b5af789d7a974bdbad6ffcc96b7012846f25f9586706c86d8fcc20",
+  "scenarioId": "flowai-ai-ide-runner-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:52:41.006Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 38150.223875,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly made a `Skill` tool call with `\"skill\": \"flowai-ai-ide-runner\"` as its first action in response to the query, directly satisfying the checklist requirement."
+      }
+    }
+  }
+}

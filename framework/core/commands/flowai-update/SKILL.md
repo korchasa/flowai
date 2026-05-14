@@ -96,7 +96,7 @@ flowai generates three types of outputs:
 6. **Verify and migrate asset artifacts** *(runs unconditionally — even when sync reports no changes)*
    - Read `pack.yaml` from each installed pack (e.g., `.{ide}/skills/flowai-update/../../pack.yaml` or discover via `.flowai.yaml`) to get the `assets:` mapping (template name → artifact path). If pack.yaml is unavailable, use the default mapping: `AGENTS.template.md` → `AGENTS.md` (single entry).
 
-   - **Preferred path**: for the default `AGENTS.template.md` → `AGENTS.md` mapping, delegate the re-adaptation to `/flowai-skill-adapt-instructions` (a dedicated skill that reads the installed template from `.{ide}/assets/AGENTS.template.md`, diffs it against the project `AGENTS.md`, shows a merge proposal, and writes on confirmation). Invoke it explicitly and skip the manual comparison below. Use the manual path only for non-AGENTS asset mappings or when `/flowai-skill-adapt-instructions` is not installed.
+   - **Preferred path**: for the default `AGENTS.template.md` → `AGENTS.md` mapping, delegate the re-adaptation to `/flowai-adapt-instructions` (a dedicated skill that reads the installed template from `.{ide}/assets/AGENTS.template.md`, diffs it against the project `AGENTS.md`, shows a merge proposal, and writes on confirmation). Invoke it explicitly and skip the manual comparison below. Use the manual path only for non-AGENTS asset mappings or when `/flowai-adapt-instructions` is not installed.
 
    - **6a. Detect legacy layout** — check whether `documents/AGENTS.md` or `scripts/AGENTS.md` exists in the project root. If either file exists, this is a legacy three-file install:
      a. Read all three files: `AGENTS.md`, `documents/AGENTS.md`, `scripts/AGENTS.md` (skip any that don't exist).

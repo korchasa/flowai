@@ -9,7 +9,7 @@ acceptance-tests/acceptance-tests.lock
 framework/*/skills/*/acceptance-tests/runs/
 framework/*/commands/*/acceptance-tests/runs/
 framework/*/agents/*/acceptance-tests/runs/
-framework/**/flowai-skill-example/
+framework/**/flowai-example/
 .env
 __pycache__/
 _research_tmp/

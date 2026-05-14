@@ -68,8 +68,8 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). At the framework source level they are split into two sibling directories per pack, which is the **primary classifier**:
 
-- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/flowai-commit`); the agent does not auto-discover them. Name: `flowai-*` but NOT `flowai-skill-*` (e.g. `flowai-commit`, `flowai-review-and-commit`, `flowai-update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the CLI writer injects `disable-model-invocation: true` at sync time based on directory placement.
-- **Skills** — `framework/<pack>/skills/<name>/SKILL.md`. Agent-invocable capabilities (e.g. `flowai-skill-draw-mermaid-diagrams`). Name: `flowai-skill-*`. Source SKILL.md MUST NOT declare `disable-model-invocation`.
+- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/flowai-commit`); the agent does not auto-discover them. Name: `flowai-*` (e.g. `flowai-commit`, `flowai-review-and-commit`, `flowai-update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the CLI writer injects `disable-model-invocation: true` at sync time based on directory placement.
+- **Skills** — `framework/<pack>/skills/<name>/SKILL.md`. Agent-invocable capabilities (e.g. `flowai-draw-mermaid-diagrams`). Name: `flowai-*`; command-vs-skill classification is determined by source directory. Source SKILL.md MUST NOT declare `disable-model-invocation`.
 
 ### Two meanings of "command" — don't confuse them
 
@@ -108,7 +108,7 @@ the mapped section contradicts new code → update the section.
 - `cli/src/user_sync.ts` → [FR-DIST.USER-SYNC](documents/requirements.md#fr-dist.user-sync-cross-ide-user-resource-sync), [SDS §3.5](documents/design.md#3.5-global-framework-distribution-fr-dist-cli)
 - `cli/src/update.ts` → [FR-DIST.UPDATE](documents/requirements.md#fr-dist.update-pre-flight-update-notice) / [FR-DIST.UPDATE-CMD](documents/requirements.md#fr-dist.update-cmd-self-update-subcommand), [SDS §3.10 Framework Update](documents/design.md#3.10-framework-update-skill-flowai-update)
 - `cli/src/loop.ts` → [FR-LOOP](documents/requirements.md#fr-loop-non-interactive-runner-flowai-loop), [SDS §3.11 Loop Command](documents/design.md#3.11-loop-command-non-interactive-runner-fr-loop-clisrcloop.ts)
-- `cli/src/adapt.ts` → [FR-ADAPT-INSTRUCTIONS](documents/requirements.md#fr-adapt-instructions-standalone-agents.md-re-adaptation-flowai-skill-adapt-instructions), [SDS §3.5.1](documents/design.md#3.5.1-agents.md-re-adaptation-skill-flowai-skill-adapt-instructions) + [§3.12](documents/design.md#3.12-standalone-primitive-adaptation-flowai-adapt)
+- `cli/src/adapt.ts` → [FR-ADAPT-INSTRUCTIONS](documents/requirements.md#fr-adapt-instructions-standalone-agents.md-re-adaptation-flowai-adapt-instructions), [SDS §3.5.1](documents/design.md#3.5.1-agents.md-re-adaptation-skill-flowai-adapt-instructions) + [§3.12](documents/design.md#3.12-standalone-primitive-adaptation-flowai-adapt)
 - `scripts/acceptance-tests/` → SRS `FR-ACCEPT*` clauses, [SDS §3.4 Acceptance Test System](documents/design.md#3.4-benchmark-system-benchmarks-scriptsbenchmarks)
 - `scripts/acceptance-tests/lib/cache.ts` / `acceptance-tests/cache/` → [FR-ACCEPT-CACHE](documents/requirements.md#fr-bench-cache-benchmark-result-cache), [SDS §3.4.1 Acceptance Test Result Cache](documents/design.md#3.4.1-benchmark-result-cache-fr-bench-cache-scriptsbenchmarkslibcache.ts)
 - `scripts/acceptance-tests/lib/process_watchdog.ts` / `scripts/acceptance-tests/lib/system_health.ts` → [FR-ACCEPT-GUARDS](documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents), [SDS §3.4.2 Resource Guards](documents/design.md#3.4.2-resource-guards-for-spawned-agents-fr-bench-guards-scriptsbenchmarkslibprocess_watchdog.ts-system_health.ts)
@@ -131,7 +131,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
   2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence):
      Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
-- **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a benchmark scenario ID (flowai's own idiom, matched by `check-fr-coverage.ts`), a test `path::name`, a verification command, or `manual — <reviewer>`. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Enforced by `flowai-skill-plan` (DoD tuple), `flowai-skill-review` / `flowai-review-and-commit` (FR Coverage Audit — blocking), and `flowai-commit` / `flowai-review-and-commit` (FR Acceptance Gate on SRS edits).
+- **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a benchmark scenario ID (flowai's own idiom, matched by `check-fr-coverage.ts`), a test `path::name`, a verification command, or `manual — <reviewer>`. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Enforced by `flowai-plan` (DoD tuple), `flowai-review` / `flowai-review-and-commit` (FR Coverage Audit — blocking), and `flowai-commit` / `flowai-review-and-commit` (FR Acceptance Gate on SRS edits).
 
 ### SRS Format (`documents/requirements.md`)
 
@@ -209,8 +209,8 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 When a task creates a new framework primitive, decide the subdir FIRST:
 
-- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with `flowai-*` prefix (but NOT `flowai-skill-*`). Examples: `/flowai-commit`, `/flowai-update`, `/flowai-review-and-commit`.
-- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with `flowai-skill-*` prefix. Examples: `flowai-skill-fix-tests`, `flowai-skill-deep-research`.
+- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with `flowai-*` names. Examples: `/flowai-commit`, `/flowai-update`, `/flowai-review-and-commit`.
+- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with `flowai-*` names. Examples: `flowai-fix-tests`, `flowai-deep-research`.
 
 Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
 

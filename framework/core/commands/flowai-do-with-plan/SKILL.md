@@ -30,7 +30,7 @@ The user wants the full task lifecycle in a single invocation. The composite inl
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: Plan, Implement, and Review-and-Commit phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-plan-exp-permanent-tasks`, `flowai-skill-plan`, `flowai-skill-review`, `flowai-commit`, `flowai-commit-beta`, `flowai-review-and-commit`, or any other skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
+1. **No delegation**: Plan, Implement, and Review-and-Commit phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke `flowai-plan-exp-permanent-tasks`, `flowai-plan`, `flowai-review`, `flowai-commit`, `flowai-commit-beta`, `flowai-review-and-commit`, or any other skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
 2. **Three Phases, Strict Order**: Execute Plan fully, then Implement fully, then Review-and-Commit fully. Never interleave.
 3. **Plan → Implement Gate**: After Plan Phase, the user MUST have selected a variant. If the user declines or aborts, STOP without entering Implement Phase.
 4. **Implement → Review-and-Commit Gate**: Before Review-and-Commit, run the project check command (per the manifest-detection rule below). If it fails, STOP. If `git status` is clean (no diff after Implement), STOP — nothing to review.
@@ -395,9 +395,9 @@ After completing the review report above:
      - Workarounds or non-obvious solutions were applied.
    - Also check the **user's invocation message** for explicit complexity descriptors: phrases like "rough session", "had to retry", "wrong approach", "failed", "had to correct you". These count as direct signals.
    - If **any** of these signals are detected:
-     a. Announce briefly which signals fired (one line, e.g., "Detected retries and user correction — running /flowai-skill-reflect").
+     a. Announce briefly which signals fired (one line, e.g., "Detected retries and user correction — running /flowai-reflect").
      b. **Pre-command signal check**: if the signals appear only in the invocation message (i.e., the problematic interactions predated this command and are not visible in the conversation history), output: "You mentioned a rough session — briefly describe what went wrong and what you corrected. This will be included as reflect context." Use the user's answer as additional context when invoking reflect.
-     c. Invoke the `flowai-skill-reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
+     c. Invoke the `flowai-reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
      d. Do NOT ask the user for confirmation before invoking; proceed autonomously (the context question in step b is not a confirmation request — it gathers missing information).
    - If none detected, skip silently.
 7. **Post-Reflect Cleanup Commit** _(skip if reflect produced no edits)_
@@ -429,7 +429,7 @@ Output a combined summary:
 [ ] Changes grouped by logical purpose (default 1 commit).
 [ ] Commits used Conventional Commits format.
 [ ] Task file cleanup: completed task files deleted, partial task files confirmed with user.
-[ ] Session complexity check performed; `/flowai-skill-reflect` auto-invoked if signals detected.
+[ ] Session complexity check performed; `/flowai-reflect` auto-invoked if signals detected.
 [ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.
 [ ] Plan / Implement / Review / Commit results all reported to user.
 </verification>

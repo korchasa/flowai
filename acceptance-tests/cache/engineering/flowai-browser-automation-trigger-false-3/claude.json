@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "e59887a3d411fdc2b49e591c62ab6c6a2f567471643444d42f8cdbf3fe8e954c",
+  "scenarioId": "flowai-browser-automation-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:58:22.419Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 15651.601208,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never invoked flowai-browser-automation or read its SKILL.md. It correctly handled the task by running a filesystem `find` command and asking the user for the file path, which is appr…"
+      }
+    }
+  }
+}

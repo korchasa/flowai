@@ -42,7 +42,7 @@ Every skill under `framework/<pack>/skills/<name>/` carries 9 trigger scenarios 
 - 360 trigger scenarios at present (40 skills × 9). Cost amortized by [FR-ACCEPT-CACHE](../requirements.md#fr-bench-cache-benchmark-result-cache) — only skill-description edits force refresh.
 - No new runner code. Failure surface unchanged; one filter substring (`trigger-`) selects the cohort.
 - Adjacent-negative drift: when a new skill is added, sibling skills' adjacent-negative scenarios may become stale. Coverage check catches missing files, NOT semantic drift — relies on author discipline at skill-add time.
-- SRS gained `FR-ACCEPT.TRIGGER`; SDS gained naming/placement subsection; authoring guide [flowai-skill-write-agent-benchmarks](../../framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md) documents the pattern.
+- SRS gained `FR-ACCEPT.TRIGGER`; SDS gained naming/placement subsection; authoring guide [flowai-write-agent-benchmarks](../../framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md) documents the pattern.
 - `deno task bench` full sweep is dominated by trigger scenarios — keep the cache warm in CI or filter by skill prefix for local edits.
 
 ## Definition of Done
@@ -63,7 +63,7 @@ All items below are evidenced as currently satisfied (this ADR is retrospective)
   - Evidence: removing one trigger folder causes `deno task check` to exit non-zero
 - [x] FR-ACCEPT.TRIGGER: authoring guide documents the pattern.
   - Test: manual — korchasa
-  - Evidence: `grep -c trigger framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md` ≥ 1
+  - Evidence: `grep -c trigger framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md` ≥ 1
 - [x] FR-ACCEPT.TRIGGER: framework contract mentions trigger scenarios.
   - Test: manual — korchasa
   - Evidence: `grep -c trigger framework/CLAUDE.md` ≥ 1
@@ -80,7 +80,7 @@ All items below are evidenced as currently satisfied (this ADR is retrospective)
 5. **Coverage enforcement** — [scripts/check-trigger-coverage.ts](../../scripts/check-trigger-coverage.ts) walks `framework/*/skills/*/`, asserts 9 scenarios per skill matching the naming convention. Wired into `scripts/task-check.ts`.
 6. **SRS update** — add `### FR-ACCEPT.TRIGGER` under `### FR-ACCEPT: Benchmarking` in [documents/requirements.md](../requirements.md).
 7. **SDS update** — naming + enforcement subsection in [documents/design.md](../design.md).
-8. **Authoring guide** — extend [flowai-skill-write-agent-benchmarks/SKILL.md](../../framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md) with a "Trigger scenarios" section pointing to FR-ACCEPT.TRIGGER.
+8. **Authoring guide** — extend [flowai-write-agent-benchmarks/SKILL.md](../../framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md) with a "Trigger scenarios" section pointing to FR-ACCEPT.TRIGGER.
 9. **RED verification** — pick one skill, mangle its `description` temporarily, confirm the matching `trigger-pos-1` scenario fails. Revert. (Performed once during initial rollout; not a recurring requirement.)
 10. **Filtering** — `deno task bench -f trigger-` runs the cohort; per-skill substring (`-f <skill-id>-trigger-`) for targeted refresh.
 

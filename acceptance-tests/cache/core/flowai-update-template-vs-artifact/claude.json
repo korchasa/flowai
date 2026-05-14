@@ -18,11 +18,11 @@
     "checklistResults": {
       "detected_multiple_changes": {
         "pass": true,
-        "reason": "The agent explicitly ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md .claude/skills/flowai-skill-reflect/SKILL.md .claude/skills/flowai-skill-review/SKILL.md .claude/assets/AGENTS.templat…"
+        "reason": "The agent explicitly ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md .claude/skills/flowai-reflect/SKILL.md .claude/skills/flowai-review/SKILL.md .claude/assets/AGENTS.templat…"
       },
       "read_project_agents_md": {
         "pass": true,
-        "reason": "The agent explicitly used the Read tool on both `/sandbox/.claude/assets/AGENTS.template.md` and `/sandbox/AGENTS.md` (the project artifact). The flowai-skill-adapt-instructions subskill read both fi…"
+        "reason": "The agent explicitly used the Read tool on both `/sandbox/.claude/assets/AGENTS.template.md` and `/sandbox/AGENTS.md` (the project artifact). The flowai-adapt-instructions subskill read both fi…"
       },
       "found_missing_proactive_resolution": {
         "pass": true,

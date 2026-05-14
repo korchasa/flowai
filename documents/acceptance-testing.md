@@ -69,7 +69,7 @@ The benchmark runner injects `framework/core/assets/AGENTS.template.md` as the s
 - **Documentation Hierarchy** → `Tasks (documents/tasks/<YYYY-MM-DD>-<slug>.md): Temporary plans and notes. One file per task or session.`
 - **Planning Rules → Plan Persistence** → `save the detailed plan to documents/tasks/<...>.md — chat-only plans are lost between sessions.`
 
-**Effect on scenarios**: A skill whose final output looks task-like (structured report, timestamped header, categorized findings) can be pushed by these priors toward persisting to `documents/tasks/` even when the local SKILL.md says "inline only". Observed in practice: `flowai-skill-maintenance-tooling-relevance` intermittently saved an audit file after an early refactor that added a `Do NOT save to file` rule but left the file-shaped example in Phase 9.
+**Effect on scenarios**: A skill whose final output looks task-like (structured report, timestamped header, categorized findings) can be pushed by these priors toward persisting to `documents/tasks/` even when the local SKILL.md says "inline only". Observed in practice: `flowai-maintenance-tooling-relevance` intermittently saved an audit file after an early refactor that added a `Do NOT save to file` rule but left the file-shaped example in Phase 9.
 
 **Two rules for scenario and skill authors**:
 
@@ -104,16 +104,16 @@ The trace is a structured HTML document designed for readability and detailed in
 | `flowai-commit-sync-docs` | PASSED | 0 | 0 | 21.5 | |
 | `flowai-commit-atomic-hunk` | PASSED | 0 | 0 | 27.0 | |
 | `flowai-init-brownfield` | FAILED | 5 | 0 | 31.0 | Claims to create files (AGENTS.md, docs) but doesn't |
-| `flowai-skill-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
-| `flowai-skill-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include task file in evidence |
-| `flowai-skill-plan-context` | PASSED | 0 | 0 | 25.5 | |
-| `flowai-skill-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
-| `flowai-skill-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
-| `flowai-skill-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
-| `flowai-skill-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
-| `flowai-skill-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No task file, no variants, no tradeoffs |
-| `flowai-skill-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Task file not created |
-| `flowai-skill-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims task file update but doesn't; missed TODO |
+| `flowai-investigate-basic` | PASSED | 0 | 0 | 14.7 | |
+| `flowai-plan-basic` | PASSED | 0 | 0 | 39.0 | Fixed runner.ts to include task file in evidence |
+| `flowai-plan-context` | PASSED | 0 | 0 | 25.5 | |
+| `flowai-plan-db` | PASSED | 0 | 0 | 22.7 | Generalized environment side-effects rule |
+| `flowai-plan-interactive` | PASSED | 0 | 0 | 35.9 | Full multi-turn flow with SimulatedUser and resume |
+| `flowai-plan-migration` | PASSED | 0 | 0 | 19.0 | Correctly proposed fetch and async/await |
+| `flowai-plan-refactor` | FAILED | 1 | 0 | 17.9 | Missing test preservation step |
+| `flowai-plan-variants-complex` | FAILED | 3 | 0 | 30.5 | No task file, no variants, no tradeoffs |
+| `flowai-plan-variants-obvious` | FAILED | 1 | 0 | 17.1 | Task file not created |
+| `flowai-maintenance-basic` | FAILED | 2 | 0 | 118.7 | Claims task file update but doesn't; missed TODO |
 
 ## 6. Experiments Subsystem (RELOCATED)
 

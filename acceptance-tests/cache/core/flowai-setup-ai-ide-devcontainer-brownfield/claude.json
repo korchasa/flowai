@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "key": "1687ab28ff2da9f7d65862cc5a013986d58c9b06802c401e451418b74dc84a7e",
+  "scenarioId": "flowai-setup-ai-ide-devcontainer-brownfield",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T18:45:13.497Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 97091.29091600003,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "diff_shown": {
+        "pass": true,
+        "reason": "The agent explicitly showed a diff in the planning phase before writing, displaying the old config (ubuntu:20.04, old-config) vs the new proposed config in a markdown diff block."
+      },
+      "confirmation_asked": {
+        "pass": true,
+        "reason": "The agent invoked AskUserQuestion tool with options 'Да, записать файлы' and 'Нет, отменить' before writing files. However, it then immediately proceeded without waiting for a response, citing that t…"
+      },
+      "python_base_image": {
+        "pass": true,
+        "reason": "The devcontainer.json uses `\"image\": \"mcr.microsoft.com/devcontainers/python:latest\"`, which clearly references a Python base image."
+      },
+      "claude_code_extension": {
+        "pass": true,
+        "reason": "The extensions array in devcontainer.json includes `\"anthropic.claude-code\"` explicitly."
+      },
+      "pip_install": {
+        "pass": true,
+        "reason": "postCreateCommand includes `\"deps\": \"pip install -e .\"`, which installs Python dependencies from the project's pyproject.toml."
+      },
+      "valid_json": {
+        "pass": true,
+        "reason": "The final devcontainer.json is syntactically valid JSON with properly nested objects, arrays, and quoted strings — no trailing commas or syntax errors visible."
+      },
+      "volume_ownership_fix": {
+        "pass": true,
+        "reason": "The chown logic is placed inside setup-container.sh as a self-healing guard: `if [ -d \"$dir\" ] && [ ! -w \"$dir\" ]; then sudo chown -R ...`. It is invoked via the 'setup' key in postCreateCommand, not…"
+      },
+      "auth_policy_compliance": {
+        "pass": true,
+        "reason": "All Auth Policy conditions are met: (a) no remoteEnv block with auth vars; (b) no secrets block; (c) no initializeCommand; (d) no `claude login` or `gh auth login` automation — the claude-cli entry o…"
+      },
+      "feature_discovery_performed": {
+        "pass": true,
+        "reason": "The agent ran a Glob with `**/*` pattern to scan all project files, then read pyproject.toml (discovering Flask as the only dependency) and the existing devcontainer.json. While no explicit check for…"
+      }
+    }
+  }
+}

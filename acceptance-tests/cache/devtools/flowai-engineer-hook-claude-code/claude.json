@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "a187fe4e74907d19492123214f74c134136454abaf947f1a73c47ce30370a291",
+  "scenarioId": "flowai-engineer-hook-claude-code",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.211Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 107063.1138749998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detects_claude_code": {
+        "pass": true,
+        "reason": "The agent immediately read `.claude/settings.json` as its first action, attempted to create `.claude/hooks/` directory, and used Claude Code-specific hook structures throughout. The user's query also…"
+      },
+      "settings_json_format": {
+        "pass": true,
+        "reason": "The agent both attempted (via Edit tool) and explicitly showed the correct nested Claude Code hook structure in its final output: `hooks.PreToolUse[{matcher: 'Bash', hooks: [{type: 'command', command…"
+      },
+      "correct_event": {
+        "pass": true,
+        "reason": "The agent used `PreToolUse` as the event name with `matcher: 'Bash'` — the correct Claude Code-specific event and tool matcher. No Cursor-specific event names (like `beforeShellExecution`) were used."
+      },
+      "script_created": {
+        "pass": true,
+        "reason": "The agent created `scripts/guard-rm-rf.sh` (confirmed by git status showing `scripts/` as untracked and the generated file diff). The script reads JSON from stdin via `input=$(cat)`, parses `.tool_in…"
+      }
+    }
+  }
+}

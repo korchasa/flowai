@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "3592e8997643afbba4f78c78164f38691549c4e5ac4b7b48df00f57432d6be4e",
+  "scenarioId": "flowai-review-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T02:43:31.069Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 7578.071916000918,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show only a single `git log --oneline` bash command was executed, followed by a direct response explaining the commit doesn't exist. There is no evidence of the agent loading `flowai-s…"
+      }
+    }
+  }
+}

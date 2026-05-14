@@ -10,7 +10,7 @@
  *       0 of N → "to do"; 1..N-1 of N → "in progress"; N of N → "done".
  *     No DoD section → warning, status untouched.
  *
- * Legacy rule (warn-only, coexistence with current flowai-skill-plan output):
+ * Legacy rule (warn-only, coexistence with current flowai-plan output):
  *   - Path: documents/tasks/<slug>.md (including legacy <YYYY-MM-DD>-<slug>.md form).
  *   - Emits a deprecation warning; does not gate `deno task check`.
  *

@@ -146,7 +146,7 @@ async function syncSkillsAndCommandsForIde(
   // [FR-DIST.CLEAN-PREFIX](../../documents/requirements.md#fr-dist.clean-prefix-prefix-based-orphan-cleanup) — unified prefix-based orphan cleanup for the
   // shared .{ide}/skills/ dir. Single pass after BOTH skills and commands
   // have been written; keep-set = union of both. Catches renames
-  // (flowai-plan → flowai-skill-plan) that the old name-list comparison
+  // (flowai-plan → flowai-plan) that the old name-list comparison
   // missed.
   const skillCommandKeep = new Set([...skillNames, ...commandNames]);
   const skillOrphansPlan = await computePrefixOrphansPlan(

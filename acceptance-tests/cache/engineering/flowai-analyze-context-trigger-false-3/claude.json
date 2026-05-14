@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "d58c5b9354ee39c83044f4815efc5acfc3dfe92e28270c48d8bd3a6416df95bf",
+  "scenarioId": "flowai-analyze-context-trigger-false-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:56:24.754Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 26499.085958000003,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never invoked `flowai-analyze-context` or read its SKILL.md. All tool calls were web-related (WebFetch, WebSearch) and a pricing-lookup subagent. The agent correctly responded directl…"
+      }
+    }
+  }
+}

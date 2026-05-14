@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "4064d4196cb9cc690f6103aae971069f4daa6b2bd9d70f2a1a6eadc357055508",
+  "scenarioId": "flowai-ai-ide-runner-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:48:42.994Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 12578.720375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent responded directly to the user's query about running Llama with Ollama without invoking any skills. There is no evidence in the logs of the Skill tool being called, no reading of flowai-ski…"
+      }
+    }
+  }
+}

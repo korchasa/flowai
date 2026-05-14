@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "40648b72609fea2ffc0228c4f740df2fb6b4d1cfbca700c097cd3be21581aa16",
+  "scenarioId": "flowai-ai-ide-runner-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T01:57:34.598Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 113532.303166,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `flowai-ai-ide-runner` skill as its first action using the `Skill` tool with the exact user query as args. It then acted on the skill by running bash commands t…"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6e5a17ab8a4d4ef4687b68bd688e3c4652abe34ea9fcde73742b2e2e5b6e8b9a",
+  "scenarioId": "flowai-deno-cli-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T18:12:51.019Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 52215.13124999999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `flowai-deno-cli` skill via the `Skill` tool call with the argument 'Format the code and run the linter across the repo. Check deno.json for available tasks fir…"
+      }
+    }
+  }
+}

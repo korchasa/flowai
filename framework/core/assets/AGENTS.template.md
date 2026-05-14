@@ -52,7 +52,7 @@ Cross-references between any two pieces of project knowledge — doc-to-doc, **a
 
 - **Heading IDs are conventions, not slugs** — section headings may carry mnemonic prefixes for readability (e.g., `### FR-CMD-EXEC: Command Execution`, `### FR-DOC-TASKS: First-Class Tasks`), but the link target is always the **GFM auto-slug** of the heading text, never a separate ID-derived identifier. If a heading is rewritten, links must be updated — this is the cost of standard tooling, not a bug.
 
-- **Drift discipline** — removing or renaming a heading obliges updating every link to it. Checked mechanically by `scripts/check-traceability.ts` (link-resolution: file exists, anchor exists) where the project ships such a script, and semantically by `flowai-skill-maintenance` (Documentation health category).
+- **Drift discipline** — removing or renaming a heading obliges updating every link to it. Checked mechanically by `scripts/check-traceability.ts` (link-resolution: file exists, anchor exists) where the project ships such a script, and semantically by `flowai-maintenance` (Documentation health category).
 
 ## Documentation Map
 
@@ -207,9 +207,9 @@ Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance referen
 
 Requirements are only real when a machine can verify them. Each phase of the cycle has a concrete, non-skippable binding between FR and acceptance test.
 
-- **Plan** (`flowai-skill-plan` / `flowai-skill-epic`): a task plan is not accepted without (a) `implements:` frontmatter listing every FR it touches, (b) each DoD item paired with `(FR-ID, test-path-or-benchmark, evidence-command)`. If an FR is new, add its section to SRS with the `**Acceptance:**` field filled in the same pass.
+- **Plan** (`flowai-plan` / `flowai-epic`): a task plan is not accepted without (a) `implements:` frontmatter listing every FR it touches, (b) each DoD item paired with `(FR-ID, test-path-or-benchmark, evidence-command)`. If an FR is new, add its section to SRS with the `**Acceptance:**` field filled in the same pass.
 - **Develop** (TDD): RED = write the acceptance test first, using the path declared in the plan, and confirm it fails. GREEN = minimal code + `// FR-<ID>` comment next to the implementing logic. CHECK = the project's `check` command passes, including the new test.
-- **Review** (`flowai-skill-review` / `flowai-review-and-commit` / `flowai-skill-jit-review`): for every FR in scope, verify (a) SRS declares runnable acceptance, (b) the acceptance test exists and passes in the current diff, (c) source files carry `// FR-<ID>` markers. Any gap → `[critical]`, verdict cannot be `Approve`.
+- **Review** (`flowai-review` / `flowai-review-and-commit` / `flowai-jit-review`): for every FR in scope, verify (a) SRS declares runnable acceptance, (b) the acceptance test exists and passes in the current diff, (c) source files carry `// FR-<ID>` markers. Any gap → `[critical]`, verdict cannot be `Approve`.
 - **Commit** (`flowai-commit` / `flowai-review-and-commit`): before committing, if the diff adds/modifies FR sections in SRS, each new/modified FR MUST have a filled `**Acceptance:**` field. If it touches implementing code, the paired acceptance test MUST pass. Missing either → block commit.
 
 Scope discipline prevents over-formalization: (1) pure bug fixes reuse an existing FR — add a regression test, no new FR; (2) refactors that preserve behavior cite the FR already covering the behavior; (3) only user-visible or contract-level changes introduce new FRs. The gate applies to new/changed FRs, not to every edit.

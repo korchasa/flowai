@@ -41,16 +41,16 @@ export const FlowUpdateTemplateVsArtifactBench = new class
         message: "Initial sync (baseline)",
         files: [
           ".claude/assets/AGENTS.template.md",
-          ".claude/skills/flowai-skill-reflect/SKILL.md",
-          ".claude/skills/flowai-skill-review/SKILL.md",
+          ".claude/skills/flowai-reflect/SKILL.md",
+          ".claude/skills/flowai-review/SKILL.md",
           ".claude/skills/flowai-commit/SKILL.md",
         ],
       },
     ],
     modified: [
       ".claude/assets/AGENTS.template.md",
-      ".claude/skills/flowai-skill-reflect/SKILL.md",
-      ".claude/skills/flowai-skill-review/SKILL.md",
+      ".claude/skills/flowai-reflect/SKILL.md",
+      ".claude/skills/flowai-review/SKILL.md",
       ".claude/skills/flowai-commit/SKILL.md",
     ],
     expectedOutcome:
@@ -109,8 +109,8 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
     // 2. Create additional formatting-only noise in other skills
     const noisySkills = [
-      "flowai-skill-reflect",
-      "flowai-skill-review",
+      "flowai-reflect",
+      "flowai-review",
       "flowai-commit",
     ];
     const noisyOldVersions: Map<string, { path: string; newContent: string }> =

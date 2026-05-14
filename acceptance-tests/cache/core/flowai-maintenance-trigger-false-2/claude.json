@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "23b0bfffc8767c136c21ad51a993344badf45fafd9f30b8e9ceae0781a5ce8a2",
+  "scenarioId": "flowai-maintenance-trigger-false-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:21:52.863Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 13179.36449999921,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show no invocation of `flowai-maintenance` at any point. The agent directly attempted to read `src/utils/format.ts`, discovered it didn't exist via a `find` command, and responde…"
+      }
+    }
+  }
+}

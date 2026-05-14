@@ -77,7 +77,7 @@ Keep answers brief and affirmative.`;
     {
       id: "no_reflect_suggestion",
       description:
-        "Did the agent correctly skip the /flowai-skill-reflect suggestion? In a simple session without errors, retries, or user corrections, the agent must NOT suggest running /flowai-skill-reflect.",
+        "Did the agent correctly skip the /flowai-reflect suggestion? In a simple session without errors, retries, or user corrections, the agent must NOT suggest running /flowai-reflect.",
       critical: false,
     },
     {

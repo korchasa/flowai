@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "cdde40b7f7992338f6644757e954c9c8219f8308c1c1d5a8a43a9619e9ce4601",
+  "scenarioId": "flowai-deno-deploy-trigger-adj-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:28:52.398Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 29183.885624999995,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never invoked `flowai-deno-deploy` or read its SKILL.md. The agent ran a `find` command to explore the sandbox, determined there was no application code, and responded directly with a…"
+      }
+    }
+  }
+}

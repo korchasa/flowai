@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "f171bab26c46bc9e1f656c745fd33289f01708b5c23abc9308738d01be761c7b",
+  "scenarioId": "flowai-engineer-subagent-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.210Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 33182.97929199971,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detects_ide": {
+        "pass": true,
+        "reason": "The agent explicitly stated 'Создаю subagent для Cursor в `.cursor/agents/`' and also ran bash commands to verify the `.cursor/` directory exists. The user's specification of 'This is a Cursor projec…"
+      },
+      "correct_file_location": {
+        "pass": true,
+        "reason": "The file was created at `.cursor/agents/security-reviewer.md`, which is the correct location for Cursor subagents. The git status confirms the `.cursor/` directory was created as an untracked file."
+      },
+      "valid_frontmatter": {
+        "pass": true,
+        "reason": "The file contains valid YAML frontmatter with both required fields: `name: security-reviewer` and `description: Security-focused code review specialist...`. Additional valid fields `model: inherit` a…"
+      },
+      "description_third_person": {
+        "pass": true,
+        "reason": "The description is written in third person ('Security-focused code review specialist. Proactively checks for...'), includes WHAT it does (checks for hardcoded secrets, SQL injection, XSS, insecure de…"
+      },
+      "focused_specialization": {
+        "pass": true,
+        "reason": "The subagent is narrowly focused on security code review only. It has a targeted checklist covering exactly the four requested security categories with no scope creep into general code quality, forma…"
+      },
+      "has_workflow": {
+        "pass": true,
+        "reason": "The system prompt defines a clear workflow: a 'When invoked' section with 3 actionable steps (run git diff, focus on modified files, begin analysis), a detailed 'Review Checklist' with 4 categorized …"
+      },
+      "security_concerns_covered": {
+        "pass": true,
+        "reason": "All four requested security concerns are explicitly covered with dedicated sections: 'Hardcoded Secrets' (API keys, tokens, passwords, base64-encoded secrets, connection strings), 'SQL Injection' (st…"
+      }
+    }
+  }
+}

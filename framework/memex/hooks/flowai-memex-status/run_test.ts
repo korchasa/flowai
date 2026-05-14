@@ -66,7 +66,7 @@ Deno.test("formatStatus includes nudge when 5+ uncompiled", async () => {
   status.uncompiled = 7;
   const out = formatStatus(status);
   assertStringIncludes(out, "uncompiled raw sources");
-  assertStringIncludes(out, "flowai-skill-memex-save");
+  assertStringIncludes(out, "flowai-memex-save");
   await Deno.remove(dir, { recursive: true });
 });
 

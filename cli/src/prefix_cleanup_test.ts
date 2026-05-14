@@ -7,21 +7,21 @@ Deno.test("computePrefixOrphansPlan - removes renamed skill dir", async () => {
   const fs = new InMemoryFsAdapter();
   // Old renamed primitive still on disk. writeFile auto-populates ancestor
   // dirs so /ide/skills exists for the readDir scan.
-  await fs.writeFile("/ide/skills/flowai-plan/SKILL.md", "old");
+  await fs.writeFile("/ide/skills/flowai-old-plan/SKILL.md", "old");
   // Current bundle contains only the new name.
-  await fs.writeFile("/ide/skills/flowai-skill-plan/SKILL.md", "new");
+  await fs.writeFile("/ide/skills/flowai-plan/SKILL.md", "new");
 
   const plan = await computePrefixOrphansPlan(
     "/ide/skills",
-    new Set(["flowai-skill-plan"]),
+    new Set(["flowai-plan"]),
     fs,
     "skill",
   );
 
   assertEquals(plan.length, 1);
-  assertEquals(plan[0].name, "flowai-plan");
+  assertEquals(plan[0].name, "flowai-old-plan");
   assertEquals(plan[0].action, "delete");
-  assertEquals(plan[0].targetPath, "/ide/skills/flowai-plan");
+  assertEquals(plan[0].targetPath, "/ide/skills/flowai-old-plan");
 });
 
 Deno.test("computePrefixOrphansPlan - removes renamed agent file (.md)", async () => {
@@ -83,8 +83,8 @@ Deno.test("computePrefixOrphansPlan - skips symlinks", async () => {
   const fs = new InMemoryFsAdapter();
   await fs.mkdir("/ide/skills");
   await fs.symlink(
-    "/elsewhere/flowai-skill-foo",
-    "/ide/skills/flowai-skill-foo",
+    "/elsewhere/flowai-foo",
+    "/ide/skills/flowai-foo",
   );
 
   const plan = await computePrefixOrphansPlan(
@@ -103,11 +103,11 @@ Deno.test("computePrefixOrphansPlan - skips symlinks", async () => {
 
 Deno.test("computePrefixOrphansPlan - empty plan when no orphans", async () => {
   const fs = new InMemoryFsAdapter();
-  await fs.writeFile("/ide/skills/flowai-skill-a/SKILL.md", "a");
+  await fs.writeFile("/ide/skills/flowai-a/SKILL.md", "a");
 
   const plan = await computePrefixOrphansPlan(
     "/ide/skills",
-    new Set(["flowai-skill-a"]),
+    new Set(["flowai-a"]),
     fs,
     "skill",
   );

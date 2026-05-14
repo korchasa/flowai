@@ -35,7 +35,7 @@ Current contract (FR-ACCEPT.TRIGGER, 2026-05-03): every skill has 9 trigger scen
 - `scripts/check-trigger-coverage.ts:20` — `TRIGGER_INDEXES = [1, 2, 3]`.
 - `scripts/check-trigger-coverage_test.ts` — assertions hardcode 9.
 - `framework/CLAUDE.md:11` — mentions "exactly 9 per skill".
-- `framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md:212` — authoring guide says 9.
+- `framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md:212` — authoring guide says 9.
 - 39 skills × 9 = 351 directories, named `trigger-{pos,adj,false}-{1,2,3}/`.
 
 ### Constraints
@@ -60,7 +60,7 @@ Current contract (FR-ACCEPT.TRIGGER, 2026-05-03): every skill has 9 trigger scen
   - Test: `find framework -type d -path '*/skills/*/benchmarks/trigger-*' | wc -l` = 117
   - Evidence: 234 directories deleted; coverage script reports clean.
 - [x] FR-ACCEPT.TRIGGER: authoring guide (SKILL.md) updated.
-  - Test: `grep -c "exactly 3 scenarios" framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md` ≥ 1
+  - Test: `grep -c "exactly 3 scenarios" framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md` ≥ 1
   - Evidence: edit landed.
 - [x] FR-ACCEPT.TRIGGER: framework/CLAUDE.md (and AGENTS.md target) updated.
   - Test: `grep -c "exactly 9 per skill" framework/CLAUDE.md framework/AGENTS.md` = 0
@@ -96,7 +96,7 @@ Current contract (FR-ACCEPT.TRIGGER, 2026-05-03): every skill has 9 trigger scen
    rm -rf framework/<pack>/skills/<skill>/acceptance-tests/trigger-{pos,adj,false}-{2,3}
    ```
    Mechanical. 234 directories total.
-6. **Update authoring SKILL.md** (`framework/devtools/skills/flowai-skill-write-agent-benchmarks/SKILL.md:212-272`):
+6. **Update authoring SKILL.md** (`framework/devtools/skills/flowai-write-agent-benchmarks/SKILL.md:212-272`):
    - "exactly 9" → "exactly 3"
    - Drop "3 different phrasings" guidance; add "the single query must carry the full description-match weight — pick the most likely failure phrasing".
 7. **Update framework/CLAUDE.md** (line 11): "exactly 9 per skill" → "exactly 3 per skill".

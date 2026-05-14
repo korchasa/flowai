@@ -38,7 +38,7 @@
       },
       "no_reflect_suggestion": {
         "pass": true,
-        "reason": "There is no mention of /flowai-skill-reflect anywhere in the agent logs or final result. The agent correctly skipped this suggestion in a simple, error-free session."
+        "reason": "There is no mention of /flowai-reflect anywhere in the agent logs or final result. The agent correctly skipped this suggestion in a simple, error-free session."
       },
       "two_phases_sequential": {
         "pass": true,

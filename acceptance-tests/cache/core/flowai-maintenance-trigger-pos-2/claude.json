@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "377fba5f6eeb9d38ca19b4aab5a16f5ded24bbf2bcb77f8d8f41cf433125f443",
+  "scenarioId": "flowai-maintenance-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T03:24:59.358Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 176124.10458399914,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The very first tool call in the agent trace is `Skill` with `{\"skill\": \"flowai-maintenance\"}`, confirming the agent explicitly loaded and acted on the `flowai-maintenance` skill. The agen…"
+      }
+    }
+  }
+}

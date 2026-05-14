@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "f2fb363dcca59df35b007649e052ef91a3c6dee56a5bcfcff46f9cd6fde81412",
+  "scenarioId": "flowai-epic-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-30T21:02:36.728Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 6017.296416999772,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_epic_file": {
+        "pass": true,
+        "reason": "The git status shows 'nothing to commit, working tree clean' and the git diff (init..HEAD) is empty — no files were created after the initial commit. No documents/tasks/epic-*.md file was created."
+      },
+      "no_phase_decomposition": {
+        "pass": true,
+        "reason": "The agent's entire response was a single-sentence definition. There is no phased decomposition, no Goal/Non-Goals/Architecture/Phase sections, and no GODS-format task document was produced."
+      },
+      "definitional_answer": {
+        "pass": true,
+        "reason": "The agent responded with a concise, accurate definition: 'Эпик (epic) — это крупная единица работы в agile, которая разбивается на несколько пользовательских историй (user story). Описывает значимую …"
+      }
+    }
+  }
+}

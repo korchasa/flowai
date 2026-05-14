@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "d14f82edb7ff77203b8b9244be381526dc19f278118342380bcfcad23cb2c145",
+  "scenarioId": "flowai-browser-automation-navigate-and-screenshot",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-04-19T23:34:43.213Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 32542.43104099948,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "detects_tool": {
+        "pass": true,
+        "reason": "The agent used ToolSearch to find browser automation tools, explicitly selecting 'mcp__plugin_foxcode_foxcode__evalInBrowser' and 'mcp__plugin_foxcode_foxcode__status'. It then called the status tool…"
+      },
+      "navigates_to_url": {
+        "pass": true,
+        "reason": "The agent first attempted navigation via 'api.navigate(\"https://example.com\")' in evalInBrowser. When the browser extension was unavailable (0 connected clients), it fell back to WebFetch with url='h…"
+      },
+      "captures_structure": {
+        "pass": true,
+        "reason": "The agent captured the full page structure via WebFetch and saved it to 'example-com-structure.md', including: title ('Example Domain'), H1 heading, paragraph text, and links ('Learn more' → iana.org…"
+      },
+      "takes_screenshot": {
+        "pass": true,
+        "reason": "The agent attempted to take a screenshot through the browser extension (the evalInBrowser call included snapshot/screenshot logic), but the extension had 0 connected clients. The agent explicitly sta…"
+      },
+      "cleans_up": {
+        "pass": true,
+        "reason": "No browser session was actually opened — the FoxCode extension reported 0 connected clients, so evalInBrowser failed without establishing a session. There was nothing to clean up, and this is not a f…"
+      },
+      "snapshot_first": {
+        "pass": true,
+        "reason": "In the evalInBrowser call, the agent sequenced: navigate → getTitle → getUrl → snapshot(), which correctly places observation (snapshot) right after navigation and before any potential interactions. …"
+      }
+    }
+  }
+}

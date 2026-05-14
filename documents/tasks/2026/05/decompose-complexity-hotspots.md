@@ -14,7 +14,7 @@ migrated_from: "ADR-0003 (status: accepted)"
 
 ## Context
 
-A `/flowai-skill-maintenance` scan on 2026-04-19 surfaced five files where a single function spanned 150–540 lines and owned multiple concerns: [cli/src/sync.ts](../../cli/src/sync.ts) `sync()` (541 lines), [scripts/task-bench.ts](../../scripts/task-bench.ts) `main()` (540 lines), [scripts/acceptance-tests/lib/runner.ts](../../scripts/acceptance-tests/lib/runner.ts) `runScenario()` (488 lines), [cli/src/cli.ts](../../cli/src/cli.ts) (three hotspots — `runSync` 152, render 160, `main` 195), [scripts/acceptance-tests/lib/trace-renderer.ts](../../scripts/acceptance-tests/lib/trace-renderer.ts) renderer (191 lines). The concrete cost: a cache-key change in `runner.ts` required re-reading ~500 lines to confirm nothing else broke. Existing test suites cover all five files — they bound the refactor.
+A `/flowai-maintenance` scan on 2026-04-19 surfaced five files where a single function spanned 150–540 lines and owned multiple concerns: [cli/src/sync.ts](../../cli/src/sync.ts) `sync()` (541 lines), [scripts/task-bench.ts](../../scripts/task-bench.ts) `main()` (540 lines), [scripts/acceptance-tests/lib/runner.ts](../../scripts/acceptance-tests/lib/runner.ts) `runScenario()` (488 lines), [cli/src/cli.ts](../../cli/src/cli.ts) (three hotspots — `runSync` 152, render 160, `main` 195), [scripts/acceptance-tests/lib/trace-renderer.ts](../../scripts/acceptance-tests/lib/trace-renderer.ts) renderer (191 lines). The concrete cost: a cache-key change in `runner.ts` required re-reading ~500 lines to confirm nothing else broke. Existing test suites cover all five files — they bound the refactor.
 
 ## Alternatives
 

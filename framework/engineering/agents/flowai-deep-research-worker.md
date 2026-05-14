@@ -1,6 +1,6 @@
 ---
 name: flowai-deep-research-worker
-description: Research worker for a single direction within a deep research task. Receives a direction, queries, and acceptance criteria; searches the web, evaluates sources, extracts facts, and saves structured output to a temp file. Spawned sequentially by the flowai-skill-deep-research orchestrator — do NOT invoke directly for general research.
+description: Research worker for a single direction within a deep research task. Receives a direction, queries, and acceptance criteria; searches the web, evaluates sources, extracts facts, and saves structured output to a temp file. Spawned sequentially by the flowai-deep-research orchestrator — do NOT invoke directly for general research.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 disallowedTools: Write, Edit
 readonly: true

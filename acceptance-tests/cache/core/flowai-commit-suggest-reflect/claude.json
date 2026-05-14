@@ -26,7 +26,7 @@
       },
       "suggest_reflect": {
         "pass": true,
-        "reason": "The agent explicitly suggested running /flowai-skill-reflect in its final output, citing the user's mention of 'several failed attempts': 'Рекомендую запустить `/flowai-skill-reflect`, чтобы зафиксир…"
+        "reason": "The agent explicitly suggested running /flowai-reflect in its final output, citing the user's mention of 'several failed attempts': 'Рекомендую запустить `/flowai-reflect`, чтобы зафиксир…"
       }
     }
   }

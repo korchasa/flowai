@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "15fff00194fa01e635cf692be0d7313cf8f81d8ba9125a022b1518ac5895148e",
+  "scenarioId": "flowai-setup-ai-ide-devcontainer-trigger-pos-3",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:39:09.768Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 158043.2394999999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's first action in the logs is a `Skill` tool call with `\"skill\": \"flowai-setup-ai-ide-devcontainer\"`, directly invoking the required skill. The agent then also read reference files fr…"
+      }
+    }
+  }
+}

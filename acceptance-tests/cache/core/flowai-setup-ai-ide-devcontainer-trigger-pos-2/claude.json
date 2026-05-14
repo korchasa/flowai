@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "1b68296dadded33ea7eb6e9a3ee0a8c544271129948ef6f17add9751aba853fd",
+  "scenarioId": "flowai-setup-ai-ide-devcontainer-trigger-pos-2",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-09T00:42:16.103Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 103072.7052920002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `flowai-setup-ai-ide-devcontainer` skill as the very first action (Tool: Skill with `\"skill\": \"flowai-setup-ai-ide-devcontainer\"`), and subsequently read …"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "985971f3383abad31fbc3388dd59b8f53af63ea2d30145d2250ec36e663dee92",
+  "scenarioId": "flowai-deno-deploy-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-08T18:18:00.994Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 27049.74466700002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show only Glob, Bash, and Read tool calls used to explore the sandbox directory. There is no invocation of the Skill tool with 'flowai-deno-deploy', nor any reading of 'flowai-sk…"
+      }
+    }
+  }
+}

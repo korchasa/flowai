@@ -127,17 +127,17 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-adapt` — adapt installed skills/agents/hooks/assets to project specifics (standalone)
 
 **Skills:**
-- `flowai-skill-plan` — task planning (GODS format, gitignored task file)
+- `flowai-plan` — task planning (GODS format, gitignored task file)
 - `/flowai-plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done`, `implements`, `tags`, `related_tasks`); status auto-derives from DoD by commit skills
-- `flowai-skill-epic` — structured feature specification for multi-session features
-- `flowai-skill-review` — QA + code review of current changes
-- `flowai-skill-reflect` — self-analysis of the current session
-- `flowai-skill-reflect-by-history` — cross-session analysis of past IDE transcripts
-- `flowai-skill-investigate` — deep bug investigation via hypothesis-driven experiments
-- `flowai-skill-maintenance` — project health audit (16-category scan + interactive resolution)
-- `flowai-skill-adapt-instructions` — re-adapt root AGENTS.md after upstream template change
-- `flowai-skill-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
-- `flowai-skill-configure-deno-commands` — configure Deno tasks
+- `flowai-epic` — structured feature specification for multi-session features
+- `flowai-review` — QA + code review of current changes
+- `flowai-reflect` — self-analysis of the current session
+- `flowai-reflect-by-history` — cross-session analysis of past IDE transcripts
+- `flowai-investigate` — deep bug investigation via hypothesis-driven experiments
+- `flowai-maintenance` — project health audit (16-category scan + interactive resolution)
+- `flowai-adapt-instructions` — re-adapt root AGENTS.md after upstream template change
+- `flowai-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
+- `flowai-configure-deno-commands` — configure Deno tasks
 
 **Agents:**
 - `flowai-console-expert` — complex console tasks and command execution
@@ -150,21 +150,21 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 
 **Skills:**
-- `flowai-skill-deep-research` — multi-source web research with sub-agents
-- `flowai-skill-draw-mermaid-diagrams` — Mermaid diagrams
-- `flowai-skill-fix-tests` — fix failing tests
-- `flowai-skill-jit-review` — JIT review: synthesize ephemeral tests that pass on parent and fail on diff
-- `flowai-skill-ai-ide-runner` — run prompts in Claude Code / OpenCode / Cursor / Codex CLIs; fan-out and compare
-- `flowai-skill-write-prd` — Product Requirements Documents
-- `flowai-skill-write-dep` — Development Enhancement Proposals
-- `flowai-skill-write-gods-tasks` — GODS-format tasks
-- `flowai-skill-write-in-informational-style` — informational writing style
-- `flowai-skill-manage-github-tickets` — GitHub issue management
-- `flowai-skill-browser-automation` — browser automation
-- `flowai-skill-analyze-context` — token usage analysis
-- `flowai-skill-engineer-prompts-for-instant` — prompts for fast models
-- `flowai-skill-engineer-prompts-for-reasoning` — prompts for reasoning models
-- `flowai-skill-interactive-teaching-materials` — interactive HTML teaching materials
+- `flowai-deep-research` — multi-source web research with sub-agents
+- `flowai-draw-mermaid-diagrams` — Mermaid diagrams
+- `flowai-fix-tests` — fix failing tests
+- `flowai-jit-review` — JIT review: synthesize ephemeral tests that pass on parent and fail on diff
+- `flowai-ai-ide-runner` — run prompts in Claude Code / OpenCode / Cursor / Codex CLIs; fan-out and compare
+- `flowai-write-prd` — Product Requirements Documents
+- `flowai-write-dep` — Development Enhancement Proposals
+- `flowai-write-gods-tasks` — GODS-format tasks
+- `flowai-write-in-informational-style` — informational writing style
+- `flowai-manage-github-tickets` — GitHub issue management
+- `flowai-browser-automation` — browser automation
+- `flowai-analyze-context` — token usage analysis
+- `flowai-engineer-prompts-for-instant` — prompts for fast models
+- `flowai-engineer-prompts-for-reasoning` — prompts for reasoning models
+- `flowai-interactive-teaching-materials` — interactive HTML teaching materials
 
 **Agents:**
 - `flowai-deep-research-worker` — research worker for deep research sub-tasks
@@ -174,28 +174,28 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 Skill and agent authoring tools.
 
 **Skills:**
-- `flowai-skill-engineer-skill` — create/modify a skill
-- `flowai-skill-engineer-command` — create/modify a command
-- `flowai-skill-engineer-rule` — create/modify a rule
-- `flowai-skill-engineer-hook` — create/modify a hook
-- `flowai-skill-engineer-subagent` — create/modify a subagent
-- `flowai-skill-write-agent-benchmarks` — agent acceptance tests
+- `flowai-engineer-skill` — create/modify a skill
+- `flowai-engineer-command` — create/modify a command
+- `flowai-engineer-rule` — create/modify a rule
+- `flowai-engineer-hook` — create/modify a hook
+- `flowai-engineer-subagent` — create/modify a subagent
+- `flowai-write-agent-benchmarks` — agent acceptance tests
 
 ### deno
 
 Deno-specific skills.
 
 **Skills:**
-- `flowai-skill-deno-cli` — Deno CLI operations
-- `flowai-skill-deno-deploy` — Deno Deploy management
+- `flowai-deno-cli` — Deno CLI operations
+- `flowai-deno-deploy` — Deno Deploy management
 
 ### typescript
 
 TypeScript-specific setup skills.
 
 **Skills:**
-- `flowai-skill-setup-agent-code-style-ts-deno` — Deno/TS code style
-- `flowai-skill-setup-agent-code-style-ts-strict` — strict TypeScript
+- `flowai-setup-agent-code-style-ts-deno` — Deno/TS code style
+- `flowai-setup-agent-code-style-ts-strict` — strict TypeScript
 
 ## CLI Commands
 
@@ -246,13 +246,13 @@ Run Claude Code non-interactively with real-time stream-json output. Base primit
 flowai loop "read deno.json and tell me the version"
 
 # Invoke a skill via prompt
-flowai loop "/flowai-skill-analyze-context"
+flowai loop "/flowai-analyze-context"
 
 # With agent and auto-approve
 flowai loop --yolo --agent console-expert "list all TODO comments"
 
 # Repeated execution with pause
-flowai loop --yolo --interval 5m --max-iterations 10 "/flowai-skill-maintenance"
+flowai loop --yolo --interval 5m --max-iterations 10 "/flowai-maintenance"
 ```
 
 Options: `--agent`, `--model`, `--cwd`, `--yolo`, `--timeout`, `--interval`, `--max-iterations`. Run `flowai loop --help` for details.
@@ -271,15 +271,15 @@ Initialize the project structure and documentation:
 Every task follows the same supervised loop:
 
 1. **Task** — describe what needs to be done
-2. **Plan** (`flowai-skill-plan`) — AI proposes a plan in GODS format. You review, adjust, approve
+2. **Plan** (`flowai-plan`) — AI proposes a plan in GODS format. You review, adjust, approve
 3. **Execute** — AI implements the approved plan. You watch the diffs
 4. **Verify** — `deno task check` (or your project's equivalent) must pass. No exceptions
 5. **Review & Commit** (`flowai-review-and-commit`) — AI reviews changes, then prepares atomic commits. You review before push
 
 ### 3. Maintenance
 
-- `flowai-skill-maintenance` — project health audit
-- `flowai-skill-investigate` — root cause analysis for complex bugs
+- `flowai-maintenance` — project health audit
+- `flowai-investigate` — root cause analysis for complex bugs
 
 ## Key Principles
 

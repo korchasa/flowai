@@ -31,7 +31,7 @@ Deno.test("isComposite returns true for known composites", () => {
 });
 
 Deno.test("isComposite returns false for non-composites", () => {
-  assertEquals(isComposite("flowai-skill-plan"), false);
+  assertEquals(isComposite("flowai-plan"), false);
   assertEquals(isComposite("flowai-commit"), false);
   assertEquals(isComposite("nonexistent-skill"), false);
 });
