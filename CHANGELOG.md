@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.10](https://github.com/korchasa/flowai/compare/v0.12.9...v0.12.10) (2026-05-15)
+
+
+### Code Refactoring
+
+* **framework:** remove skill infix from skill names ([291fae9](https://github.com/korchasa/flowai/commit/291fae9b557974981124b2bc9f6ea0ab09698b6c))
+
 ### [0.12.9](https://github.com/korchasa/flowai/compare/v0.12.8...v0.12.9) (2026-05-13)
 
 
