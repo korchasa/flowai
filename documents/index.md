@@ -5,7 +5,10 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 ## FR
 
 - [FR-ACCEPT.TRIGGER](requirements.md#fr-bench.trigger-skill-description-matching-verification) — Skill description-matching verified by 3 trigger scenarios per skill — [x]
+- [FR-CICD](requirements.md#fr-cicd-cicd-pipeline-security) — CI/CD pipeline follows supply-chain security and least-privilege practices — [x]
 - [FR-DIAGNOSE-BENCH](requirements.md#fr-diagnose-bench-benchmark-failure-diagnostic-skill-flowai-diagnose-benchmark-failure) — Benchmark failure diagnostic skill — [x]
+- [FR-DIST](requirements.md#fr-dist-global-framework-distribution-flowai) — flowai CLI syncs framework skills/agents into project-local IDE config dirs — [x]
+- [FR-DIST.BUNDLE](requirements.md#fr-dist.bundle-bundled-source) — Framework files bundled into the CLI at publish time; zero runtime network dependency — [x]
 - [FR-DO-WITH-PLAN](requirements.md#fr-do-with-plan-full-cycle-workflow-flowai-do-with-plan) — Full-cycle workflow command: plan → implement → review-and-commit (composite, user-only) — [x]
 - [FR-DOC-IDS](requirements.md#fr-doc-ids-gfm-link-migration-code-comments-and-documentation-map) — GFM link migration: code comments and documentation map — [x]
 - [FR-DOC-INDEX](requirements.md#fr-doc-index-agent-maintained-documentation-index) — Agent-maintained documentation index — [x]

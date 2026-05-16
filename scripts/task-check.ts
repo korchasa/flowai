@@ -64,7 +64,7 @@ export function buildCheckPlan(): CheckPlan {
       // Tests: CLI
       {
         cmd: "deno",
-        args: ["test", "-A", "cli/src"],
+        args: ["test", "-A", "cli/src", "cli/scripts"],
       },
       // Tests: framework hooks and scripts
       {

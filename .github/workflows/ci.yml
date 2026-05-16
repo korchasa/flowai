@@ -100,11 +100,61 @@ jobs:
           deno task bundle
           deno publish --allow-dirty
 
+      # Produce a reproducible framework.tar.gz so the external flowai-cli
+      # repo can pin a specific framework revision by SHA-256 and bundle from
+      # this asset.
+      # implements [FR-DIST.BUNDLE.PIN](../../documents/requirements.md#fr-dist.bundle.pin-pinned-tarball-bundle-source-post-split)
+      - name: Build framework tarball
+        id: framework-tarball
+        if: steps.releasable.outputs.should_release == 'true'
+        env:
+          VERSION: ${{ steps.create-release.outputs.version }}
+        run: |
+          set -euo pipefail
+          # Deterministic mtime tied to the release commit (UTC).
+          SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
+          export SOURCE_DATE_EPOCH
+          # GNU tar (ubuntu-latest): sorted entries, numeric IDs, fixed mtime.
+          # gzip -n omits filename + timestamp in the gzip header.
+          tar --sort=name \
+              --owner=0 --group=0 --numeric-owner \
+              --mtime="@${SOURCE_DATE_EPOCH}" \
+              -cf framework.tar framework/
+          gzip -n -9 framework.tar
+          sha256sum framework.tar.gz > framework.tar.gz.sha256
+          ACTUAL=$(sha256sum framework.tar.gz | awk '{print $1}')
+          echo "framework_sha256=${ACTUAL}" >> "$GITHUB_OUTPUT"
+          echo "framework_version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Framework tarball SHA-256: ${ACTUAL}"
+
       - name: Create GitHub Release
         if: steps.releasable.outputs.should_release == 'true'
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           tag_name: v${{ steps.create-release.outputs.version }}
           body_path: ${{ steps.create-release.outputs.notes_file }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Parallel "framework-v*" release carries the bundle source for the
+      # external flowai-cli repo. Uses the same tag SHA as the CLI release;
+      # both releases coexist until Phase 4 decommissions the JSR publish.
+      # implements [FR-DIST.BUNDLE.PIN](../../documents/requirements.md#fr-dist.bundle.pin-pinned-tarball-bundle-source-post-split)
+      # implements [FR-CICD.SPLIT](../../documents/requirements.md#fr-cicd-cicd-pipeline-security)
+      - name: Create Framework Release
+        if: steps.releasable.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          tag_name: framework-v${{ steps.framework-tarball.outputs.framework_version }}
+          name: framework-v${{ steps.framework-tarball.outputs.framework_version }}
+          body: |
+            Framework snapshot for downstream CLI bundling.
+
+            Consumed by [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) via `framework.lock` (FR-DIST.BUNDLE.PIN).
+
+            **SHA-256**: `${{ steps.framework-tarball.outputs.framework_sha256 }}`
+          files: |
+            framework.tar.gz
+            framework.tar.gz.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
