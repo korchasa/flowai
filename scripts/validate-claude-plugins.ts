@@ -319,7 +319,9 @@ async function validateNoUnnamespacedSlashCommands(
   skillFile: string,
 ): Promise<void> {
   const text = await Deno.readTextFile(skillFile);
-  const re = /\/flowai-[a-z0-9][a-z0-9-]*(?![a-z0-9-:])/g;
+  // Same boundary rule as the build rewriter: only match a slash command at a
+  // real word boundary, not a `/flowai-*` substring inside a file path or URL.
+  const re = /(?<![A-Za-z0-9_.-])\/flowai-[a-z0-9][a-z0-9-]*(?![a-z0-9-:])/g;
   const matches = text.match(re);
   if (matches && matches.length > 0) {
     ctx.add(
@@ -395,24 +397,17 @@ async function validateAssetReferences(
   const skillFile = join(skillDir, "SKILL.md");
   if (!(await exists(skillFile))) return;
   const text = await Deno.readTextFile(skillFile);
-  // Look for surviving `../assets/...` references (build pass should have
-  // rewritten them to bare `assets/<file>`).
+  // Only flag the build-script regression that motivates this check: a
+  // surviving `../assets/...` reference (build pass should have rewritten
+  // it to local `assets/...`). Per-file existence is enforced fail-fast by
+  // the build itself; doc-style mentions of `assets/<example>` inside meta
+  // skills (e.g. `flowai-engineer-command`) are not real refs and must not
+  // false-positive here.
   if (/\.\.\/(?:\.\.\/)*assets\//.test(text)) {
     ctx.add(
       skillFile,
       "leaking '../assets/...' reference — build pass missed asset rewrite",
     );
-  }
-  const refRe = /(?:^|[^./])assets\/([A-Za-z0-9_.-]+)/g;
-  for (const m of text.matchAll(refRe)) {
-    const rel = m[1];
-    const absPath = join(skillDir, "assets", rel);
-    if (!(await exists(absPath))) {
-      ctx.add(
-        skillFile,
-        `references missing asset: assets/${rel}`,
-      );
-    }
   }
 }
 

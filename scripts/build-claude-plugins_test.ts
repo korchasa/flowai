@@ -532,6 +532,51 @@ Deno.test("strips-cli-only-fences", async () => {
   }
 });
 
+Deno.test("slash-rewriter-skips-file-paths-and-identifiers", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-slash-path-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "skills", "flowai-a"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "skills", "flowai-a", "SKILL.md"),
+      [
+        "---",
+        "name: flowai-a",
+        "description: d",
+        "---",
+        "Real slash command: /flowai-commit (should rewrite).",
+        "File path: scripts/flowai-memex-audit.ts (must NOT rewrite).",
+        "URL: https://example.com/flowai-skills (must NOT rewrite).",
+        "Module name: import 'X/flowai-tools' (must NOT rewrite).",
+      ].join("\n") + "\n",
+    );
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const emitted = await Deno.readTextFile(
+      join(out, "plugins", "flowai-core", "skills", "a", "SKILL.md"),
+    );
+    assertStringIncludes(emitted, "/flowai-core:commit");
+    assertStringIncludes(emitted, "scripts/flowai-memex-audit.ts");
+    assertStringIncludes(emitted, "https://example.com/flowai-skills");
+    assertStringIncludes(emitted, "'X/flowai-tools'");
+  } finally {
+    await Deno.remove(fx, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
 Deno.test("rewrites-cross-skill-slash-invocations", async () => {
   const fx = await Deno.makeTempDir({ prefix: "flowai-slash-" });
   const out = await tempOut();

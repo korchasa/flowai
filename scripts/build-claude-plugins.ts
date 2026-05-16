@@ -33,6 +33,14 @@ import { copy, ensureDir, exists } from "@std/fs";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
 export const DEFAULT_MARKETPLACE_NAME = "flowai-plugins";
+export const DEFAULT_PACKS = [
+  "core",
+  "deno",
+  "devtools",
+  "engineering",
+  "memex",
+  "typescript",
+] as const;
 const DEFAULT_OWNER_NAME = "korchasa";
 const DEFAULT_REPO = "https://github.com/korchasa/flowai";
 const DEFAULT_HOMEPAGE =
@@ -390,18 +398,13 @@ function transformSkillFile(
  * skip occurrences that already contain `:` immediately after the suffix.
  */
 function makeSlashRewriter(pluginName: string): (text: string) => string {
-  // Match /flowai-<name> followed by NOT-`:` (so already-rewritten invocations
-  // like /flowai-core:commit are left alone — the negative lookahead on `:`
-  // ensures idempotency).
-  const re = /\/flowai-([a-z0-9][a-z0-9-]*)(?![a-z0-9-:])/g;
+  // Match `/flowai-<name>` only at a real word boundary — the leading `/` must
+  // not be preceded by an identifier / path char (rules out file paths like
+  // `scripts/flowai-foo.ts`). Trailing negative lookahead on `:` keeps the
+  // rewrite idempotent against already-namespaced `/flowai-core:commit`.
+  const re = /(?<![A-Za-z0-9_.-])\/flowai-([a-z0-9][a-z0-9-]*)(?![a-z0-9-:])/g;
   return (text: string) =>
-    text.replace(re, (match, suffix: string) => {
-      // Defensive: do not rewrite when the captured suffix already starts with
-      // the pack name + `:` separator (cannot happen with the lookahead, but
-      // makes the intent explicit).
-      if (match.includes(":")) return match;
-      return `/${pluginName}:${suffix}`;
-    });
+    text.replace(re, (_match, suffix: string) => `/${pluginName}:${suffix}`);
 }
 
 function orderObjectKeys(
@@ -640,7 +643,9 @@ if (import.meta.main) {
   const cwd = Deno.cwd();
   const frameworkDir = flags.framework ?? join(cwd, "framework");
   const outDir = flags.out ?? join(cwd, "dist", "claude-plugins");
-  const packs = flags.packs.length === 0 ? ["core"] : flags.packs;
+  const packs: string[] = flags.packs.length === 0
+    ? [...DEFAULT_PACKS]
+    : flags.packs;
 
   await buildClaudePlugins({
     packs,

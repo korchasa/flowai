@@ -72,24 +72,28 @@ Framework primitives MAY declare `scope: project-only` or `scope: global-only` i
 
 `flowai migrate <from> <to>` requires an explicit `--global` or `--local` flag — it never auto-resolves, since cross-IDE migrations have different semantics in each scope.
 
-### Claude Code plugin marketplace (pilot)
+### Claude Code plugin marketplace
 
-In addition to the `flowai` CLI, Claude Code users can install the `core` pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace:
+In addition to the `flowai` CLI, Claude Code users can install any pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace. All six packs (`core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
 
 ```sh
 # Inside a Claude Code session:
 /plugin marketplace add korchasa/flowai-plugins
 /plugin install flowai-core@flowai-plugins
+# Optional, pick whichever stacks you use:
+/plugin install flowai-deno@flowai-plugins
+/plugin install flowai-typescript@flowai-plugins
+/plugin install flowai-engineering@flowai-plugins
+/plugin install flowai-devtools@flowai-plugins
+/plugin install flowai-memex@flowai-plugins
 /reload-plugins
 ```
 
-Skills are invoked under the `/flowai-core:` namespace, e.g. `/flowai-core:commit`, `/flowai-core:plan`, `/flowai-core:review`. The `flowai-` prefix is stripped from the namespaced part to avoid a `/flowai-core:flowai-commit` double prefix. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai-core:adapt-instructions` and `/flowai-core:init` work out of the box without a separate `flowai sync` step.
+Skills are invoked under the `/flowai-<pack>:` namespace, e.g. `/flowai-core:commit`, `/flowai-core:plan`, `/flowai-engineering:deep-research`, `/flowai-memex:memex-save`. The `flowai-` prefix is stripped from the namespaced part to avoid a `/flowai-core:flowai-commit` double prefix. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai-core:adapt-instructions` and `/flowai-core:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools` and `memex` are translated to Claude Code's `hooks.json` format automatically.
 
 > **CLI and plugin install are mutually exclusive:** if you install via the plugin marketplace, do NOT also run `flowai sync` for Claude Code in the same project — the CLI detects an installed flowai plugin and aborts to avoid dual installs (one in `.claude/skills/`, one under Claude Code's plugin store). Pick one channel.
 
-> **Security:** Claude Code plugins execute arbitrary code at your user privilege. Only install marketplaces and plugins from sources you trust. The `korchasa/flowai-plugins` repository is a CI-generated mirror of this framework's `core` pack and contains no human-authored content beyond `README.md` and `LICENSE`. See [FR-DIST.MARKETPLACE](documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot) for the build / distribution contract.
-
-The remaining packs (`devtools`, `engineering`, `deno`, `typescript`, `memex`) continue to ship via the `flowai` CLI. Multi-pack marketplace rollout follows after the pilot validates the pipeline.
+> **Security:** Claude Code plugins execute arbitrary code at your user privilege. Only install marketplaces and plugins from sources you trust. The `korchasa/flowai-plugins` repository is a CI-generated mirror of this framework's packs and contains no human-authored content beyond `README.md` and `LICENSE`. See [FR-DIST.MARKETPLACE](documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot) for the build / distribution contract.
 
 ### Quick Start Prompt
 

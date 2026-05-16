@@ -331,7 +331,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 #### FR-DIST.MARKETPLACE Claude Code Plugin Marketplace (Pilot)
 
-- **Desc:** Additional distribution channel for Claude Code users. The framework publishes a Claude-Code-native plugin marketplace at the downstream repo `korchasa/flowai-plugins`. The catalog (`.claude-plugin/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-claude-plugins.ts` on every framework release (CI step inside the existing `release` job, gated on `framework-v*` tag publication). No plugin artefacts are committed to this repo (`dist/` is gitignored). Pilot ships only the `core` pack as plugin `flowai-core`; remaining packs follow as separate tasks. flowai CLI distribution (FR-DIST.SYNC) is unaffected and remains the channel for Cursor / OpenCode / Codex.
+- **Desc:** Additional distribution channel for Claude Code users. The framework publishes a Claude-Code-native plugin marketplace at the downstream repo `korchasa/flowai-plugins`. The catalog (`.claude-plugin/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-claude-plugins.ts` on every framework release (CI step inside the existing `release` job, gated on `framework-v*` tag publication). No plugin artefacts are committed to this repo (`dist/` is gitignored). All six packs ship as separate plugins (`flowai-core`, `flowai-deno`, `flowai-devtools`, `flowai-engineering`, `flowai-memex`, `flowai-typescript`); users opt-in per pack via `/plugin install <name>@flowai-plugins`. flowai CLI distribution (FR-DIST.SYNC) is unaffected and remains the channel for Cursor / OpenCode / Codex.
 - **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md)
 - **Scenario:** A user on Claude Code runs `/plugin marketplace add korchasa/flowai-plugins` once, then `/plugin install flowai-core@flowai-plugins`. Skills become available as `/flowai-core:<short-name>` — the `flowai-` prefix is stripped from skill / command directory names during build so invocations avoid the `/flowai-core:flowai-commit` double-prefix. Updates flow via Claude Code's `/plugin update` / auto-update tied to the downstream repo's commit SHA, so one framework release maps to exactly one plugin update event.
 - **Build contract:** `scripts/build-claude-plugins.ts` reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks}` and emits:
@@ -378,7 +378,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [ ] CLI aborts with an explicit message when it detects an installed Claude Code plugin for the same pack (cross-repo: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli)).
     Evidence: manual — install plugin, run `flowai sync`, confirm non-zero exit with the documented message.
 - **Status:** [ ] (flips to `[x]` once pilot ships and the first `framework-v*` release lands the downstream commit)
-- **Out of scope (pilot):** multi-pack rollout (separate tasks per remaining pack); submission to the official Anthropic marketplace (`claude-plugins-official`); `latest` / `dev` release channel; npm-source plugin distribution.
+- **Out of scope:** submission to the official Anthropic marketplace (`claude-plugins-official`); `latest` / `dev` release channel; npm-source plugin distribution.
 
 #### FR-PACKS.SCOPE Scope Frontmatter Field
 

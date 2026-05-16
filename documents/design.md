@@ -333,7 +333,7 @@ graph TD
 - **Failure modes:**
   - Build failure on invariant violation → CI step fails before downstream checkout; downstream untouched.
   - Downstream auth failure or push rejection → CI step fails; framework release tag is preserved (already published) and the workflow can be re-run after credentials are restored. Idempotent re-publish: `git diff --cached --quiet` short-circuits empty commits, `git tag -f` + `git push --force-with-lease` tolerates a re-shot tag.
-- **Drift surface (acknowledged):** agent transform logic is vendored in `build-claude-plugins.ts` for the pilot rather than shared with `flowai-cli`'s `crossTransformAgent`. Drift risk bounded by FR-DIST.MAPPING coverage in tests; follow-up tracked as extraction of `@korchasa/flowai-transforms` to JSR once multi-pack rollout exposes pressure.
+- **Drift surface (acknowledged):** agent transform logic is vendored in `build-claude-plugins.ts` rather than shared with `flowai-cli`'s `crossTransformAgent`. Drift risk bounded by FR-DIST.MAPPING coverage in tests; follow-up tracked as extraction of `@korchasa/flowai-transforms` to JSR once a second consumer surfaces.
 
 ### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`)
 
