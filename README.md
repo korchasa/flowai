@@ -4,10 +4,11 @@ An Assisted Engineering framework: the developer remains the architect and revie
 
 The developer sets the task, approves the plan, and controls every diff.
 
-> **Repository layout:**
+> **The flowai project spans four sibling GitHub repositories:**
 > - **this repo (`korchasa/flowai`)** — the framework: skills, commands, agents, packs.
 > - **[`korchasa/flowai-cli`](https://github.com/korchasa/flowai-cli)** — the distribution CLI (`flowai` command). Bundles a SHA-256-pinned framework release tarball at publish time. Published to JSR as `@korchasa/flowai`.
-> - **[`korchasa/flowai-pipelines`](https://github.com/korchasa/flowai-pipelines)** — multi-agent SDLC pipelines (separate product).
+> - **[`korchasa/flowai-workflow`](https://github.com/korchasa/flowai-workflow)** — universal DAG-based engine for orchestrating AI agents (YAML workflows, execution, validation, loops, resume). Published to JSR as `@korchasa/flowai-workflow`. Separate product, shares the flowai design philosophy.
+> - **[`korchasa/flowai-experiments`](https://github.com/korchasa/flowai-experiments)** — parameterized empirical studies of AI agent platforms (e.g. max `CLAUDE.md`/`AGENTS.md` token budget at which an agent still follows an embedded rule). Informs framework design decisions.
 
 ## The Assisted Engineering Paradigm
 
