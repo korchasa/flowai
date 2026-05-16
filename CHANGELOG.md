@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.14](https://github.com/korchasa/flowai/compare/v0.12.13...v0.12.14) (2026-05-16)
+
+
+### Features
+
+* **dist:** pre-publish validator for plugin marketplace (FR-DIST.MARKETPLACE) ([ea98a4e](https://github.com/korchasa/flowai/commit/ea98a4e8e3b8a6f7b0f22d84bf75a3376770e463))
+
 ### [0.12.13](https://github.com/korchasa/flowai/compare/v0.12.12...v0.12.13) (2026-05-16)
 
 
