@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.15](https://github.com/korchasa/flowai/compare/v0.12.14...v0.12.15) (2026-05-16)
+
+
+### Bug Fixes
+
+* **dist:** move category + keywords to marketplace entry (FR-DIST.MARKETPLACE) ([8f81c16](https://github.com/korchasa/flowai/commit/8f81c16b9566f28c713042ab6941d205c92733b7))
+
 ### [0.12.14](https://github.com/korchasa/flowai/compare/v0.12.13...v0.12.14) (2026-05-16)
 
 
