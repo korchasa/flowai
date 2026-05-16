@@ -405,10 +405,10 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Desc:** After the CLI is extracted to a standalone repo (`korchasa/flowai-cli`), `bundleFrameworkDir` consumes framework content from a downloaded GitHub-release tarball instead of an adjacent `framework/` directory. The CLI repo pins the framework revision via a committed `framework.lock` file (version, commit_sha, tarball_sha256). The bundle script downloads `framework.tar.gz` from `https://github.com/korchasa/flowai/releases/download/framework-v<version>/`, verifies its SHA-256 against `tarball_sha256`, and aborts on any mismatch. Runtime stays offline — only the bundle step touches the network.
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
 - **Acceptance:**
-  - [ ] `framework.lock` schema enforces all three mandatory fields (`version` matches `^\d+\.\d+\.\d+$`, `commit_sha` matches `^[0-9a-f]{40}$`, `tarball_sha256` matches `^[0-9a-f]{64}$`); bundle script aborts with the offending field name on schema violation.
-  - [ ] Bundle script aborts with non-zero exit and diagnostic (expected vs. actual SHA-256) on tarball checksum mismatch.
-  - [ ] Bundle output produced from the pinned tarball is byte-identical to the monorepo bundle output for the same framework commit SHA (Phase 3 parity acceptance).
-  - [ ] No fallback path: download / 404 / checksum failures all abort. The script never reads a stale cached tarball.
+  - [x] `framework.lock` schema enforces all three mandatory fields (`version` matches `^\d+\.\d+\.\d+$`, `commit_sha` matches `^[0-9a-f]{40}$`, `tarball_sha256` matches `^[0-9a-f]{64}$`); bundle script aborts with the offending field name on schema violation. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) — see upstream framework-lock test suite.
+  - [x] Bundle script aborts with non-zero exit and diagnostic (expected vs. actual SHA-256) on tarball checksum mismatch. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) `scripts/bundle-framework.ts` (lines verifying `sha256Hex` vs `lock.tarball_sha256`).
+  - [x] Bundle output produced from the pinned tarball is byte-identical to the monorepo bundle output for the same framework commit SHA (Phase 3 parity acceptance verified for commit `656151d`).
+  - [x] No fallback path: download / 404 / checksum failures all abort. The script never reads a stale cached tarball.
 
 #### FR-DIST.USER-SYNC Cross-IDE User Resource Sync
 
@@ -861,7 +861,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-CICD.PRIV Least privilege**: Check job uses `contents: read` only. Write permissions (`contents: write`, `id-token: write`) granted only to release job, gated on `push` to `main`.
   - [x] **FR-CICD.INTEGRITY File integrity**: After third-party setup steps (`checkout`, `setup-deno`) and after `deno task check`, verify no unexpected file modifications via `git diff --exit-code` + untracked file check. Fail pipeline if integrity violated.
   - [x] **FR-CICD.JOBS Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
-  - [ ] **FR-CICD.SPLIT Two-repo topology (post-split)**: After CLI extraction (see FR-DIST.BUNDLE.PIN), CI splits across two repos. Framework repo (`korchasa/flowai`) keeps the `check` job and adds a `release-framework-tarball` step that uploads `framework.tar.gz` + `framework.tar.gz.sha256` as assets of a `framework-v<version>` GitHub release; framework repo no longer publishes to JSR. CLI repo (`korchasa/flowai-cli`) runs its own `check` job (fmt, lint, TS tests; no framework validators, no acceptance tests) on PR/`main` and publishes `@korchasa/flowai` to JSR via OIDC on tag `v*`. OIDC trust binding for `@korchasa/flowai` rebound from `korchasa/flowai` to `korchasa/flowai-cli` exactly once at the Phase 3 cutover.
+  - [x] **FR-CICD.SPLIT Two-repo topology (post-split)**: After CLI extraction (see FR-DIST.BUNDLE.PIN), CI splits across two repos. Framework repo (`korchasa/flowai`) keeps the `check` job and adds a `release-framework-tarball` step that uploads `framework.tar.gz` + `framework.tar.gz.sha256` as assets of a `framework-v<version>` GitHub release; framework repo no longer publishes to JSR. CLI repo (`korchasa/flowai-cli`) runs its own `check` job (fmt, lint, TS tests; no framework validators, no acceptance tests) on PR/`main` and publishes `@korchasa/flowai` to JSR via OIDC on tag `v*`. OIDC trust binding for `@korchasa/flowai` rebound from `korchasa/flowai` to `korchasa/flowai-cli` exactly once at the Phase 3 cutover.
 
 ### FR-WB-CLEANUP: Task File Cleanup on Commit
 

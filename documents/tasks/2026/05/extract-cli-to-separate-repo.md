@@ -1,6 +1,6 @@
 ---
 date: "2026-05-16"
-status: to do
+status: done
 implements:
   - FR-DIST
   - FR-DIST.BUNDLE
@@ -53,34 +53,34 @@ Decouple the CLI release cadence from the framework so that:
 
 ## Definition of Done
 
-- [ ] FR-DIST.BUNDLE: CLI bundle script in the new `flowai-cli` repo downloads `framework/` from a pinned framework GitHub release tarball, verifies integrity, and produces `cli/src/bundled.json` identical (byte-for-byte) to what the monorepo currently produces for the same framework revision.
+- [x] FR-DIST.BUNDLE: CLI bundle script in the new `flowai-cli` repo downloads `framework/` from a pinned framework GitHub release tarball, verifies integrity, and produces `cli/src/bundled.json` identical (byte-for-byte) to what the monorepo currently produces for the same framework revision.
   - Test: `cli/scripts/bundle-framework_test.ts::tarball-bundle-matches-monorepo-snapshot` (new, in `flowai-cli` repo)
   - Evidence: in `flowai-cli` repo, `deno task bundle && diff <(jq -S . cli/src/bundled.json) <(curl -sL https://github.com/korchasa/flowai/releases/download/framework-vX.Y.Z/bundled.json | jq -S .)` exits 0
-- [ ] FR-DIST: Published JSR package `@korchasa/flowai` from the new repo installs and runs `flowai --help` and `flowai` (sync) against a sample project with same observable behavior as the pre-split release.
+- [x] FR-DIST: Published JSR package `@korchasa/flowai` from the new repo installs and runs `flowai --help` and `flowai` (sync) against a sample project with same observable behavior as the pre-split release.
   - Test: `cli/src/main_test.ts::CLI - --help` and `::CLI - sync golden-path` (preserved from monorepo)
   - Evidence: `deno install -A --global -n flowai jsr:@korchasa/flowai@<post-split-version> && flowai --help | grep -q "flowai"` exits 0 in a clean container
-- [ ] FR-CICD: New `flowai-cli` repo CI runs `deno task check` (fmt + lint + TS tests + CLI-scoped validators) on PR and `main`; on tagged push, publishes to JSR via OIDC (no long-lived secrets).
+- [x] FR-CICD: New `flowai-cli` repo CI runs `deno task check` (fmt + lint + TS tests + CLI-scoped validators) on PR and `main`; on tagged push, publishes to JSR via OIDC (no long-lived secrets).
   - Test: `manual — korchasa` (one preview PR + one release dry-run); GH Actions log must show OIDC token exchange line.
   - Evidence: `gh run list --repo korchasa/flowai-cli --workflow ci.yml --limit 1 --json conclusion -q '.[0].conclusion'` returns `success`
-- [ ] FR-DIST.BUNDLE: Framework repo publishes a `framework-vX.Y.Z` GitHub release on every framework version bump, with a `framework.tar.gz` and `framework.tar.gz.sha256` asset attached.
+- [x] FR-DIST.BUNDLE: Framework repo publishes a `framework-vX.Y.Z` GitHub release on every framework version bump, with a `framework.tar.gz` and `framework.tar.gz.sha256` asset attached.
   - Test: `manual — korchasa` (first release + tag triggers asset upload)
   - Evidence: `gh release view framework-v0.13.0 --repo korchasa/flowai --json assets -q '.assets[].name' | sort` includes both `framework.tar.gz` and `framework.tar.gz.sha256`
-- [ ] FR-DIST: Old monorepo stops publishing `@korchasa/flowai` (removes JSR publish step from its CI). Final monorepo CLI version emits a one-line deprecation notice on `flowai --version` pointing to the new repo, OR (alternative if no transitional release is shipped) the JSR README is updated to point to the new repo before the next publish from the new repo.
+- [x] FR-DIST: Old monorepo stops publishing `@korchasa/flowai` (removes JSR publish step from its CI). Final monorepo CLI version emits a one-line deprecation notice on `flowai --version` pointing to the new repo, OR (alternative if no transitional release is shipped) the JSR README is updated to point to the new repo before the next publish from the new repo.
   - Test: `manual — korchasa`
   - Evidence: `grep -L "deno publish" .github/workflows/ci.yml` (monorepo) is empty (i.e. file contains no `deno publish` after split); `jq -r .name deno.json` no longer returns `@korchasa/flowai` (root deno.json is repurposed or removed)
-- [ ] FR-DIST: Update SRS section `FR-DIST.BUNDLE` to reflect the new bundle source (pinned framework GitHub release tarball, not adjacent `framework/` dir) and add subsection `FR-DIST.BUNDLE.PIN` for the SHA-256 pinning contract.
+- [x] FR-DIST: Update SRS section `FR-DIST.BUNDLE` to reflect the new bundle source (pinned framework GitHub release tarball, not adjacent `framework/` dir) and add subsection `FR-DIST.BUNDLE.PIN` for the SHA-256 pinning contract.
   - Test: `manual — korchasa`
   - Evidence: `grep -n "framework-v.*\.tar\.gz" documents/requirements.md` returns a non-empty match under the `FR-DIST.BUNDLE` heading
-- [ ] FR-DIST.BUNDLE: `framework.lock` schema (version, commit_sha, tarball_sha256) is documented in SRS under FR-DIST.BUNDLE.PIN and enforced at bundle time — bundle script aborts when any field is missing, malformed, or fails checksum.
+- [x] FR-DIST.BUNDLE: `framework.lock` schema (version, commit_sha, tarball_sha256) is documented in SRS under FR-DIST.BUNDLE.PIN and enforced at bundle time — bundle script aborts when any field is missing, malformed, or fails checksum.
   - Test: `cli/scripts/bundle-framework_test.ts::lock-validation-missing-field` and `::lock-validation-sha-mismatch` (new, in `flowai-cli` repo)
   - Evidence: `deno test -A scripts/bundle-framework_test.ts -- --filter 'lock-validation'` exits 0
-- [ ] FR-DIST.BUNDLE: Bundle output is byte-deterministic — running `deno task bundle` twice in a row produces identical `bundled.json` bytes (no walk-order or timestamp drift).
+- [x] FR-DIST.BUNDLE: Bundle output is byte-deterministic — running `deno task bundle` twice in a row produces identical `bundled.json` bytes (no walk-order or timestamp drift).
   - Test: `cli/scripts/bundle-framework_test.ts::byte-deterministic-rerun` (new, in `flowai-cli` repo)
   - Evidence: `deno test -A scripts/bundle-framework_test.ts -- --filter 'byte-deterministic'` exits 0
-- [ ] FR-CICD: Update SRS `FR-CICD` and add subsection `FR-CICD.SPLIT` describing the two-repo CI topology (framework repo: check + release-tarball; CLI repo: check + JSR publish) and the OIDC trust relationship per repo.
+- [x] FR-CICD: Update SRS `FR-CICD` and add subsection `FR-CICD.SPLIT` describing the two-repo CI topology (framework repo: check + release-tarball; CLI repo: check + JSR publish) and the OIDC trust relationship per repo.
   - Test: `manual — korchasa`
   - Evidence: `grep -n "FR-CICD.SPLIT" documents/requirements.md` returns a match
-- [ ] FR-DIST: Documentation Map in `CLAUDE.md` updated — `cli/src/*` rows removed from this repo's map; CLI repo gets its own root `AGENTS.md`/`CLAUDE.md` with code-only Documentation Map.
+- [x] FR-DIST: Documentation Map in `CLAUDE.md` updated — `cli/src/*` rows removed from this repo's map; CLI repo gets its own root `AGENTS.md`/`CLAUDE.md` with code-only Documentation Map.
   - Test: `manual — korchasa`
   - Evidence: `grep -c "^- \`cli/" CLAUDE.md` returns `0`
 
