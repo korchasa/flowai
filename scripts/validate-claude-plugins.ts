@@ -127,10 +127,15 @@ export const MarketplaceSchema = z.object({
   plugins: z.array(PluginEntrySchema).min(1),
 }).passthrough();
 
+const Semver = z.string().regex(
+  /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/,
+  "version must be semver MAJOR.MINOR.PATCH (optionally with -pre / +build)",
+);
+
 export const PluginManifestSchema = z.object({
   name: KebabName,
   description: z.string().optional(),
-  version: z.string().optional(),
+  version: Semver,
   author: Author.optional(),
   homepage: z.string().url().optional(),
   repository: z.string().optional(),
@@ -140,6 +145,23 @@ export const PluginManifestSchema = z.object({
   tags: z.array(z.string()).optional(),
   strict: z.boolean().optional(),
 }).passthrough();
+
+// Claude Code plugin hook schema: per docs, hooks/hooks.json is
+//   { hooks: { <EventName>: [{ matcher: string, hooks: [{ type, command, timeout? }] }] } }
+const HookCommandSchema = z.object({
+  type: z.literal("command"),
+  command: z.string().min(1),
+  timeout: z.number().int().positive().optional(),
+}).strict();
+
+const HookEntrySchema = z.object({
+  matcher: z.string(),
+  hooks: z.array(HookCommandSchema).min(1),
+}).strict();
+
+export const HooksFileSchema = z.object({
+  hooks: z.record(z.string(), z.array(HookEntrySchema)),
+}).strict();
 
 // ---------- Validator ----------
 
@@ -282,6 +304,30 @@ async function validateSkillsDir(
       requireName: true,
       requireDescription: true,
     });
+    await validateAssetReferences(ctx, join(skillsDir, entry.name));
+    await validateNoUnnamespacedSlashCommands(ctx, skillFile);
+  }
+}
+
+/**
+ * Catches build regressions where `/flowai-foo` references survive into the
+ * emitted SKILL.md — under a plugin namespace those slash commands resolve to
+ * `/<plugin>:foo`. Only flags raw `/flowai-<name>` without a `:`.
+ */
+async function validateNoUnnamespacedSlashCommands(
+  ctx: ValidationContext,
+  skillFile: string,
+): Promise<void> {
+  const text = await Deno.readTextFile(skillFile);
+  const re = /\/flowai-[a-z0-9][a-z0-9-]*(?![a-z0-9-:])/g;
+  const matches = text.match(re);
+  if (matches && matches.length > 0) {
+    ctx.add(
+      skillFile,
+      `leaking unnamespaced slash invocation(s): ${
+        Array.from(new Set(matches)).join(", ")
+      }`,
+    );
   }
 }
 
@@ -304,10 +350,69 @@ async function validateHooksFile(
   hooksPath: string,
 ): Promise<void> {
   if (!(await exists(hooksPath))) return;
+  let parsed: unknown;
   try {
-    JSON.parse(await Deno.readTextFile(hooksPath));
+    parsed = JSON.parse(await Deno.readTextFile(hooksPath));
   } catch (e) {
     ctx.add(hooksPath, `invalid JSON: ${(e as Error).message}`);
+    return;
+  }
+  const result = HooksFileSchema.safeParse(parsed);
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      ctx.add(
+        hooksPath,
+        `schema: ${issue.path.join(".") || "<root>"}: ${issue.message}`,
+      );
+    }
+    return;
+  }
+  // Cross-check: every `command` references a file that exists on disk.
+  const hooksDir = hooksPath.replace(/\/hooks\.json$/, "");
+  const cmdRe = /\$\{CLAUDE_PLUGIN_ROOT\}\/hooks\/([^\s]+\.ts)/;
+  for (const arr of Object.values(result.data.hooks)) {
+    for (const entry of arr) {
+      for (const h of entry.hooks) {
+        const m = h.command.match(cmdRe);
+        if (!m) continue;
+        const rel = m[1];
+        const absPath = join(hooksDir, rel);
+        if (!(await exists(absPath))) {
+          ctx.add(
+            hooksPath,
+            `hook command references missing file: ${rel}`,
+          );
+        }
+      }
+    }
+  }
+}
+
+async function validateAssetReferences(
+  ctx: ValidationContext,
+  skillDir: string,
+): Promise<void> {
+  const skillFile = join(skillDir, "SKILL.md");
+  if (!(await exists(skillFile))) return;
+  const text = await Deno.readTextFile(skillFile);
+  // Look for surviving `../assets/...` references (build pass should have
+  // rewritten them to bare `assets/<file>`).
+  if (/\.\.\/(?:\.\.\/)*assets\//.test(text)) {
+    ctx.add(
+      skillFile,
+      "leaking '../assets/...' reference — build pass missed asset rewrite",
+    );
+  }
+  const refRe = /(?:^|[^./])assets\/([A-Za-z0-9_.-]+)/g;
+  for (const m of text.matchAll(refRe)) {
+    const rel = m[1];
+    const absPath = join(skillDir, "assets", rel);
+    if (!(await exists(absPath))) {
+      ctx.add(
+        skillFile,
+        `references missing asset: assets/${rel}`,
+      );
+    }
   }
 }
 

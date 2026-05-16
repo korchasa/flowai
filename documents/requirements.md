@@ -361,8 +361,24 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
     Evidence: manual — `git -C <downstream-clone> log --oneline -- README.md LICENSE` returns exactly the bootstrap commit after any number of CI publishes.
   - [ ] Smoke install end-to-end on a fresh checkout: `deno task build-plugins` → `/plugin marketplace add ./dist/claude-plugins` → `/plugin install flowai-core@flowai-plugins` → invoke `/flowai-core:<skill>`.
     Evidence: manual — korchasa (transcript captured in pilot PR).
+  - [x] Scope filter: `scope: project-only` primitives (e.g. `flowai-update`) are excluded from the plugin tree.
+    Evidence: `scripts/build-claude-plugins_test.ts::scope-filter-excludes-project-only-primitives`.
+  - [x] Pack-level `assets/*` files referenced by a SKILL.md are copied into the consuming skill's own dir, and `../assets/...` paths in the body are rewritten to `assets/...`.
+    Evidence: `scripts/build-claude-plugins_test.ts::copies-pack-assets-into-consuming-skill-dirs` + validator `validateAssetReferences`.
+  - [x] CLI-only blocks fenced with `<!-- begin: cli-only-skill-update --> ... <!-- end: cli-only-skill-update -->` are stripped during plugin emit.
+    Evidence: `scripts/build-claude-plugins_test.ts::strips-cli-only-fences`.
+  - [x] Cross-skill slash invocations `/flowai-<name>` in SKILL.md bodies are rewritten to `/flowai-<pack>:<name>`.
+    Evidence: `scripts/build-claude-plugins_test.ts::rewrites-cross-skill-slash-invocations` + validator `validateNoUnnamespacedSlashCommands`.
+  - [x] `version` is injected into `plugin.json` and the marketplace entry from the upstream `deno.json` `.version` (semver-validated).
+    Evidence: `scripts/build-claude-plugins_test.ts::injects-version-from-upstream-deno-json` + validator schema requires semver.
+  - [x] Skill frontmatter `tags:` arrays are unioned, sorted, capped at 8, and emitted on the marketplace entry only (never plugin.json).
+    Evidence: `scripts/build-claude-plugins_test.ts::collects-tags-into-marketplace-entry-only`.
+  - [x] Pack hooks (`framework/<pack>/hooks/<name>/{hook.yaml,run.ts}`) are translated to `hooks/hooks.json` referencing `${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts`, with the runner file co-emitted.
+    Evidence: `scripts/build-claude-plugins_test.ts::transforms-hook-yaml-into-hooks-json` + validator `HooksFileSchema` + per-command file-existence cross-check.
+  - [ ] CLI aborts with an explicit message when it detects an installed Claude Code plugin for the same pack (cross-repo: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli)).
+    Evidence: manual — install plugin, run `flowai sync`, confirm non-zero exit with the documented message.
 - **Status:** [ ] (flips to `[x]` once pilot ships and the first `framework-v*` release lands the downstream commit)
-- **Out of scope (pilot):** multi-pack rollout (separate tasks per remaining pack); submission to the official Anthropic marketplace (`claude-plugins-official`); `latest` / `dev` release channel; npm-source plugin distribution; hook transform validation (no hooks in `core`).
+- **Out of scope (pilot):** multi-pack rollout (separate tasks per remaining pack); submission to the official Anthropic marketplace (`claude-plugins-official`); `latest` / `dev` release channel; npm-source plugin distribution.
 
 #### FR-PACKS.SCOPE Scope Frontmatter Field
 

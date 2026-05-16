@@ -2,19 +2,31 @@
 // implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot)
 // Build a Claude-Code-native plugin tree from framework/<pack>/.
 //
-// Reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks}` and emits a
-// plugin-shaped tree at `--out`:
+// Reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks,assets}` and
+// emits a plugin-shaped tree at `--out`:
 //
 //   <out>/.claude-plugin/marketplace.json
 //   <out>/plugins/flowai-<pack>/.claude-plugin/plugin.json
-//   <out>/plugins/flowai-<pack>/skills/<stripped-name>/SKILL.md     (+ subdirs)
+//   <out>/plugins/flowai-<pack>/skills/<stripped-name>/SKILL.md     (+ subdirs, + per-skill assets/)
 //   <out>/plugins/flowai-<pack>/agents/<name>.md
 //   <out>/plugins/flowai-<pack>/hooks/hooks.json                    (if any hooks)
+//   <out>/plugins/flowai-<pack>/hooks/<name>/run.ts                 (per hook)
 //
-// The `flowai-` prefix is stripped from skill and command directory names so
-// invocations appear as /flowai-<pack>:<short-name> instead of
-// /flowai-<pack>:flowai-<short-name>. Commands gain `disable-model-invocation:
-// true` per FR-PACKS.CMD-INVARIANT parity with flowai CLI.
+// Transform passes (in order):
+//   (a) scope filter — drop primitives with `scope: project-only`.
+//   (b) emit skills + commands; commands get disable-model-invocation injected.
+//   (c) asset copy + path rewrite — pack-level `assets/*` referenced by SKILL.md
+//       is copied INTO the consuming skill's own dir, paths rewritten to local.
+//   (d) flowai-init fence strip — block between
+//       `<!-- begin: cli-only-skill-update -->` and `<!-- end: cli-only-skill-update -->`
+//       is removed during plugin emit.
+//   (e) cross-skill slash rewrite — `/flowai-foo` → `/flowai-<pack>:foo`.
+//   (f) version inject — read upstream deno.json `.version`, inject into
+//       plugin.json AND marketplace entry.
+//   (g) tag union — collect SKILL.md `tags:` arrays, dedupe + sort + cap 8,
+//       inject into marketplace plugin entry only.
+//   (h) hook transform — `framework/<pack>/hooks/<name>/{hook.yaml,run.ts}` →
+//       `hooks/hooks.json` + per-hook run.ts copy.
 
 import { join, relative } from "@std/path";
 import { copy, ensureDir, exists } from "@std/fs";
@@ -27,8 +39,11 @@ const DEFAULT_HOMEPAGE =
   "https://github.com/korchasa/flowai#claude-code-plugin-marketplace";
 const DEFAULT_KEYWORDS = ["ai", "workflow", "framework", "assistflow"];
 const DEFAULT_CATEGORY = "development-workflows";
+const MAX_TAGS_PER_PLUGIN = 8;
 
-// Universal agent → Claude-native: fields kept verbatim.
+const CLI_ONLY_FENCE_RE =
+  /<!--\s*begin:\s*cli-only-skill-update\s*-->[\s\S]*?<!--\s*end:\s*cli-only-skill-update\s*-->\n?/g;
+
 const CLAUDE_AGENT_KEEP = new Set([
   "name",
   "description",
@@ -41,7 +56,6 @@ const CLAUDE_AGENT_KEEP = new Set([
   "isolation",
   "color",
 ]);
-// Stable emission order for Claude agent frontmatter.
 const CLAUDE_AGENT_KEY_ORDER = [
   "name",
   "description",
@@ -55,8 +69,6 @@ const CLAUDE_AGENT_KEY_ORDER = [
   "color",
 ];
 
-// Skill frontmatter: known keys, in stable emission order. Unknown keys are
-// preserved and appended after the known set in source order.
 const SKILL_KEY_ORDER = [
   "name",
   "description",
@@ -87,7 +99,6 @@ export function resolveModelTier(
     case undefined:
       return undefined;
     default:
-      // Non-tier values (already a model name) pass through verbatim.
       return tier;
   }
 }
@@ -98,13 +109,18 @@ export interface BuildOptions {
   outDir: string;
   marketplaceName?: string;
   ownerName?: string;
+  /**
+   * Optional override for the version injected into plugin.json + marketplace
+   * entries. Defaults to reading `<frameworkDir>/../deno.json` `.version`.
+   */
+  version?: string;
 }
 
 export async function buildClaudePlugins(opts: BuildOptions): Promise<void> {
   const marketplaceName = opts.marketplaceName ?? DEFAULT_MARKETPLACE_NAME;
   const ownerName = opts.ownerName ?? DEFAULT_OWNER_NAME;
+  const version = opts.version ?? await readUpstreamVersion(opts.frameworkDir);
 
-  // Wipe and recreate the output dir so the build is hermetic.
   await Deno.remove(opts.outDir, { recursive: true }).catch(() => {});
   await ensureDir(opts.outDir);
 
@@ -118,13 +134,11 @@ export async function buildClaudePlugins(opts: BuildOptions): Promise<void> {
       packName,
       packDir,
       outDir: opts.outDir,
+      version,
     });
     pluginEntries.push(entry);
   }
 
-  // Top-level marketplace.json. Each plugin entry carries a full relative
-  // `source` ("./plugins/<id>") resolved from the marketplace root; we
-  // intentionally omit `metadata.pluginRoot` to avoid double-prefixing.
   const marketplace: Record<string, unknown> = {
     name: marketplaceName,
     owner: { name: ownerName },
@@ -138,10 +152,23 @@ export async function buildClaudePlugins(opts: BuildOptions): Promise<void> {
   );
 }
 
+async function readUpstreamVersion(frameworkDir: string): Promise<string> {
+  const denoJsonPath = join(frameworkDir, "..", "deno.json");
+  const raw = await Deno.readTextFile(denoJsonPath);
+  const parsed = JSON.parse(raw) as { version?: unknown };
+  if (typeof parsed.version !== "string" || parsed.version.length === 0) {
+    throw new Error(
+      `upstream deno.json at ${denoJsonPath} has no .version string`,
+    );
+  }
+  return parsed.version;
+}
+
 interface PackContext {
   packName: string;
   packDir: string;
   outDir: string;
+  version: string;
 }
 
 async function buildPack(
@@ -151,7 +178,6 @@ async function buildPack(
   const pluginRoot = join(ctx.outDir, "plugins", pluginName);
   await ensureDir(pluginRoot);
 
-  // Pack manifest → plugin description.
   const packYamlPath = join(ctx.packDir, "pack.yaml");
   const packManifest = parseYaml(
     await Deno.readTextFile(packYamlPath),
@@ -160,37 +186,39 @@ async function buildPack(
     packManifest.description ?? `flowai ${ctx.packName} pack`,
   );
 
-  // Emit primitives. `kind === "command"` triggers
-  // disable-model-invocation injection.
+  const collectedTags = new Set<string>();
+  const slashRewriter = makeSlashRewriter(pluginName);
+
   await emitPrimitives({
     sourceDir: join(ctx.packDir, "commands"),
     outDir: join(pluginRoot, "skills"),
     kind: "command",
+    packDir: ctx.packDir,
+    collectedTags,
+    slashRewriter,
   });
   await emitPrimitives({
     sourceDir: join(ctx.packDir, "skills"),
     outDir: join(pluginRoot, "skills"),
     kind: "skill",
+    packDir: ctx.packDir,
+    collectedTags,
+    slashRewriter,
   });
   await emitAgents({
     sourceDir: join(ctx.packDir, "agents"),
     outDir: join(pluginRoot, "agents"),
   });
-  // Hooks: stub for multi-pack rollout (core has none).
   await emitHooks({
     sourceDir: join(ctx.packDir, "hooks"),
     outDir: join(pluginRoot, "hooks"),
   });
 
-  // Plugin manifest. `category` and `keywords` deliberately live ONLY in the
-  // marketplace entry (returned below) — putting them here trips Claude Code's
-  // `claude plugin validate` ("Field 'category' belongs in the marketplace
-  // entry, not plugin.json. It's harmless here but unused"). version is
-  // omitted so the downstream commit SHA is the version key.
   const license = await readLicenseId(ctx.packDir).catch(() => undefined);
   const plugin: Record<string, unknown> = {
     name: pluginName,
     description,
+    version: ctx.version,
     author: { name: DEFAULT_OWNER_NAME },
     repository: DEFAULT_REPO,
     homepage: DEFAULT_HOMEPAGE,
@@ -202,19 +230,27 @@ async function buildPack(
     JSON.stringify(plugin, null, 2) + "\n",
   );
 
-  return {
+  const entry: Record<string, unknown> = {
     name: pluginName,
     source: `./plugins/${pluginName}`,
     description,
+    version: ctx.version,
     keywords: DEFAULT_KEYWORDS,
     category: DEFAULT_CATEGORY,
   };
+  if (collectedTags.size > 0) {
+    entry.tags = Array.from(collectedTags).sort().slice(0, MAX_TAGS_PER_PLUGIN);
+  }
+  return entry;
 }
 
 interface EmitPrimitivesOpts {
   sourceDir: string;
   outDir: string;
   kind: "command" | "skill";
+  packDir: string;
+  collectedTags: Set<string>;
+  slashRewriter: (text: string) => string;
 }
 
 async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
@@ -233,28 +269,47 @@ async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
     if (!(await exists(skillFile))) {
       throw new Error(`missing SKILL.md in ${srcPath}`);
     }
+
+    // (a) Scope filter — skip project-only primitives entirely.
+    const sourceText = await Deno.readTextFile(skillFile);
+    const m = sourceText.match(/^---\n([\s\S]*?)\n---\n?/);
+    if (!m) throw new Error(`missing frontmatter in ${skillFile}`);
+    const rawFm = m[1];
+    const fmPeek = parseYaml(rawFm) as Record<string, unknown>;
+    if (fmPeek.scope === "project-only") {
+      console.error(`skipped (project-only): ${srcName}`);
+      continue;
+    }
+
     const stripped = stripFlowaiPrefix(srcName);
     const dstDir = join(opts.outDir, stripped);
     await ensureDir(dstDir);
 
-    // Copy all supporting files first (subdirs like references/, scripts/),
-    // then overwrite SKILL.md with the transformed version.
     for await (const child of Deno.readDir(srcPath)) {
       if (child.name === "SKILL.md") continue;
-      // Skip acceptance-tests — they're framework-side only.
       if (child.name === "acceptance-tests") continue;
       const childSrc = join(srcPath, child.name);
       const childDst = join(dstDir, child.name);
       await copy(childSrc, childDst, { overwrite: true });
     }
 
-    // Transform SKILL.md frontmatter.
-    const sourceText = await Deno.readTextFile(skillFile);
     const transformed = transformSkillFile(sourceText, {
       kind: opts.kind,
       sourceFile: skillFile,
+      slashRewriter: opts.slashRewriter,
+      collectedTags: opts.collectedTags,
     });
-    await Deno.writeTextFile(join(dstDir, "SKILL.md"), transformed);
+
+    // (c) Copy pack-level assets referenced by this skill into its own dir,
+    // then rewrite the body to use local relative paths.
+    const finalText = await copyReferencedAssets({
+      skillText: transformed,
+      skillFile,
+      packDir: opts.packDir,
+      dstDir,
+    });
+
+    await Deno.writeTextFile(join(dstDir, "SKILL.md"), finalText);
   }
 }
 
@@ -265,6 +320,8 @@ function stripFlowaiPrefix(name: string): string {
 interface TransformSkillCtx {
   kind: "command" | "skill";
   sourceFile: string;
+  slashRewriter: (text: string) => string;
+  collectedTags: Set<string>;
 }
 
 function transformSkillFile(
@@ -279,7 +336,6 @@ function transformSkillFile(
   const body = text.slice(m[0].length);
   const fm = parseYaml(rawFm) as Record<string, unknown>;
 
-  // Invariant guards — FR-PACKS.CMD-INVARIANT / FR-PACKS.SKILL-INVARIANT.
   if (ctx.kind === "command" && "disable-model-invocation" in fm) {
     throw new Error(
       `FR-PACKS.CMD-INVARIANT violated: ${ctx.sourceFile} carries disable-model-invocation in source. ` +
@@ -297,16 +353,55 @@ function transformSkillFile(
     fm["disable-model-invocation"] = true;
   }
 
-  // Resolve `model` tier if present.
   if (typeof fm.model === "string") {
     const resolved = resolveModelTier(fm.model);
     if (resolved === undefined) delete fm.model;
     else fm.model = resolved;
   }
 
+  // (g) Collect tags for the marketplace entry, then drop from frontmatter —
+  // tags belong only on the marketplace entry per claude plugin validate.
+  if (Array.isArray(fm.tags)) {
+    for (const t of fm.tags) {
+      if (typeof t === "string" && t.length > 0) ctx.collectedTags.add(t);
+    }
+    delete fm.tags;
+  }
+
   const orderedFm = orderObjectKeys(fm, SKILL_KEY_ORDER);
   const yaml = stringifyYaml(orderedFm).trimEnd();
-  return `---\n${yaml}\n---\n${body}`;
+
+  // (d) Strip CLI-only fenced blocks before any other body transform.
+  let processedBody = body.replace(CLI_ONLY_FENCE_RE, "");
+
+  // (e) Rewrite cross-skill slash invocations.
+  processedBody = ctx.slashRewriter(processedBody);
+
+  return `---\n${yaml}\n---\n${processedBody}`;
+}
+
+/**
+ * Rewrites `/flowai-foo` → `/flowai-<pack>:foo` in skill bodies.
+ *
+ * The replacement is idempotent: `/flowai-core:commit` does not match because
+ * the trailing `:` is not part of the captured suffix and the `\b` after the
+ * suffix would still match — but the second pass would produce
+ * `/flowai-<pack>:core:commit` which is wrong. To stay idempotent we explicitly
+ * skip occurrences that already contain `:` immediately after the suffix.
+ */
+function makeSlashRewriter(pluginName: string): (text: string) => string {
+  // Match /flowai-<name> followed by NOT-`:` (so already-rewritten invocations
+  // like /flowai-core:commit are left alone — the negative lookahead on `:`
+  // ensures idempotency).
+  const re = /\/flowai-([a-z0-9][a-z0-9-]*)(?![a-z0-9-:])/g;
+  return (text: string) =>
+    text.replace(re, (match, suffix: string) => {
+      // Defensive: do not rewrite when the captured suffix already starts with
+      // the pack name + `:` separator (cannot happen with the lookahead, but
+      // makes the intent explicit).
+      if (match.includes(":")) return match;
+      return `/${pluginName}:${suffix}`;
+    });
 }
 
 function orderObjectKeys(
@@ -317,11 +412,66 @@ function orderObjectKeys(
   for (const k of preferredOrder) {
     if (k in obj) out[k] = obj[k];
   }
-  // Append unknown keys in original insertion order.
   for (const k of Object.keys(obj)) {
     if (!(k in out)) out[k] = obj[k];
   }
   return out;
+}
+
+interface CopyAssetsOpts {
+  skillText: string;
+  skillFile: string;
+  packDir: string;
+  dstDir: string;
+}
+
+/**
+ * Finds `assets/<name>` references in the skill body and copies the matching
+ * pack-level file to `<dstDir>/assets/<name>`. The skill text is left intact
+ * apart from collapsing leading `../`-prefixed paths to the local form, so
+ * sentences like "Read template file from `../../assets/AGENTS.template.md`"
+ * become "Read template file from `assets/AGENTS.template.md`".
+ */
+async function copyReferencedAssets(
+  opts: CopyAssetsOpts,
+): Promise<string> {
+  const packAssetsDir = join(opts.packDir, "assets");
+  const packAssetsExist = await exists(packAssetsDir);
+
+  // Catch all references of the form `assets/<file>` even when prefixed by
+  // `../` or `../../`. Files cited inside frontmatter `description:` are part
+  // of skillText because we re-emit the frontmatter unchanged.
+  const refRe = /(?:\.\.\/)*assets\/([A-Za-z0-9_.-]+)/g;
+  const referenced = new Set<string>();
+  for (const m of opts.skillText.matchAll(refRe)) {
+    referenced.add(m[1]);
+  }
+
+  if (packAssetsExist && referenced.size > 0) {
+    const localAssetsDir = join(opts.dstDir, "assets");
+    await ensureDir(localAssetsDir);
+    for (const name of referenced) {
+      const srcAsset = join(packAssetsDir, name);
+      if (!(await exists(srcAsset))) {
+        throw new Error(
+          `asset reference not found: ${name} referenced by ${opts.skillFile}`,
+        );
+      }
+      await copy(srcAsset, join(localAssetsDir, name), { overwrite: true });
+    }
+  }
+
+  // Rewrite leading `../` prefixes so paths become local to the skill. Done
+  // for file references AND bare directory references — both can appear in
+  // doc-like sentences such as "Read templates from `../../assets/`".
+  const withFilesRewritten = opts.skillText.replace(
+    refRe,
+    (_match, file: string) => `assets/${file}`,
+  );
+  return withFilesRewritten.replace(
+    /(?:\.\.\/)+assets(\/|\b)/g,
+    "assets$1",
+  );
 }
 
 interface EmitAgentsOpts {
@@ -361,10 +511,6 @@ async function emitAgents(opts: EmitAgentsOpts): Promise<void> {
 
 /**
  * Universal agent frontmatter → Claude-native subset.
- * - Keeps: name, description, tools, disallowedTools, model, effort, maxTurns,
- *   background, isolation, color (FR-DIST.MAPPING).
- * - Drops: readonly, mode, opencode_tools, and any unknown key.
- * - Resolves `model` tier names to Claude model strings.
  */
 export function transformAgentFrontmatter(
   src: Record<string, unknown>,
@@ -387,29 +533,84 @@ interface EmitHooksOpts {
   outDir: string;
 }
 
+/**
+ * Translates `framework/<pack>/hooks/<name>/{hook.yaml,run.ts}` into Claude
+ * plugin hooks/hooks.json. Per Claude Code plugin docs hooks/hooks.json holds
+ *   { hooks: { <EventName>: [{ matcher, hooks: [{ type: "command", command }] }] } }
+ * The `command` field shells `deno run -A ${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts`.
+ *
+ * Core has zero hooks today; the code path exists for devtools / memex rollout.
+ */
 async function emitHooks(opts: EmitHooksOpts): Promise<void> {
   if (!(await exists(opts.sourceDir))) return;
-  // The contract: read every framework/<pack>/hooks/<name>/hook.yaml and
-  // assemble a Claude-Code hooks/hooks.json. For the pilot pack (core),
-  // there are no hooks — short-circuit. Multi-pack rollout (devtools) will
-  // exercise this path.
+
   const hookDirs: string[] = [];
   for await (const e of Deno.readDir(opts.sourceDir)) {
     if (e.isDirectory) hookDirs.push(e.name);
   }
   if (hookDirs.length === 0) return;
+  hookDirs.sort();
 
-  // Stub: emit a hooks.json scaffold so multi-pack consumers can extend.
-  // Real transform lives in flowai-cli; vendoring is deferred per Solution.
   await ensureDir(opts.outDir);
+  const eventBuckets: Record<
+    string,
+    Array<
+      {
+        matcher: string;
+        hooks: Array<{ type: "command"; command: string; timeout?: number }>;
+      }
+    >
+  > = {};
+
+  for (const hookName of hookDirs) {
+    const hookDir = join(opts.sourceDir, hookName);
+    const yamlPath = join(hookDir, "hook.yaml");
+    if (!(await exists(yamlPath))) {
+      throw new Error(`hook missing hook.yaml: ${hookDir}`);
+    }
+    const meta = parseYaml(await Deno.readTextFile(yamlPath)) as Record<
+      string,
+      unknown
+    >;
+    const event = typeof meta.event === "string" ? meta.event : "";
+    const matcher = typeof meta.matcher === "string" ? meta.matcher : "";
+    const timeout = typeof meta.timeout === "number" ? meta.timeout : undefined;
+    if (event === "") {
+      throw new Error(`hook ${hookDir}: hook.yaml missing 'event'`);
+    }
+
+    const runSrc = join(hookDir, "run.ts");
+    if (!(await exists(runSrc))) {
+      throw new Error(`hook ${hookDir}: run.ts missing`);
+    }
+    await ensureDir(join(opts.outDir, hookName));
+    await Deno.copyFile(runSrc, join(opts.outDir, hookName, "run.ts"));
+
+    const command =
+      `deno run -A \${CLAUDE_PLUGIN_ROOT}/hooks/${hookName}/run.ts`;
+    const hookSpec: {
+      type: "command";
+      command: string;
+      timeout?: number;
+    } = { type: "command", command };
+    if (timeout !== undefined) hookSpec.timeout = timeout;
+
+    if (!eventBuckets[event]) eventBuckets[event] = [];
+    eventBuckets[event].push({ matcher, hooks: [hookSpec] });
+  }
+
+  // Stable key order: sort event names so the output is byte-deterministic.
+  const sortedEvents: Record<string, unknown> = {};
+  for (const ev of Object.keys(eventBuckets).sort()) {
+    sortedEvents[ev] = eventBuckets[ev];
+  }
   await Deno.writeTextFile(
     join(opts.outDir, "hooks.json"),
-    JSON.stringify({ hooks: {} }, null, 2) + "\n",
+    JSON.stringify({ hooks: sortedEvents }, null, 2) + "\n",
   );
 }
 
 async function readLicenseId(packDir: string): Promise<string | undefined> {
-  // Walk up to find LICENSE or deno.json with a license field.
   let dir = packDir;
   for (let i = 0; i < 6; i++) {
     const license = join(dir, "LICENSE");

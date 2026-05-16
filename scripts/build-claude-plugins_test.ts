@@ -51,20 +51,20 @@ Deno.test("emits-marketplace-and-plugin-manifest-for-core", async () => {
     assertEquals(plugins.length, 1);
     assertEquals(plugins[0].name, "flowai-core");
     assertEquals(plugins[0].source, "./plugins/flowai-core");
-    // keywords + category live on the marketplace entry, not plugin.json —
-    // mirrors what `claude plugin validate` expects.
     assert(Array.isArray(plugins[0].keywords));
     assertEquals(plugins[0].category, "development-workflows");
+    assert(
+      typeof plugins[0].version === "string" &&
+        (plugins[0].version as string).length > 0,
+      "marketplace entry must carry a version",
+    );
 
     const pj = await readJson(
       join(out, "plugins", "flowai-core", ".claude-plugin", "plugin.json"),
     ) as Record<string, unknown>;
     assertEquals(pj.name, "flowai-core");
     assert(typeof pj.description === "string");
-    // version deliberately omitted — commit SHA is the version
-    assertEquals(pj.version, undefined);
-    // category and keywords explicitly NOT in plugin.json (would trip the
-    // official validator with a 'belongs in marketplace entry' warning).
+    assertEquals(pj.version, plugins[0].version);
     assertEquals(pj.category, undefined);
     assertEquals(pj.keywords, undefined);
   } finally {
@@ -93,7 +93,6 @@ Deno.test("skill-and-command-dirs-have-prefix-stripped", async () => {
         `skill dir "${n}" still has flowai- prefix`,
       );
     }
-    // sanity: at least the canonical primitives are present (under stripped names)
     assert(names.includes("commit"), "commit (from flowai-commit) missing");
     assert(names.includes("plan"), "plan (from flowai-plan) missing");
     assert(names.includes("review"), "review (from flowai-review) missing");
@@ -113,7 +112,6 @@ Deno.test(
         outDir: out,
       });
 
-      // commit comes from framework/core/commands/flowai-commit → must have flag
       const cmdFm = await readFrontmatter(
         join(out, "plugins", "flowai-core", "skills", "commit", "SKILL.md"),
       );
@@ -123,7 +121,6 @@ Deno.test(
         "command must carry disable-model-invocation: true",
       );
 
-      // review comes from framework/core/skills/flowai-review → must NOT have flag
       const sklFm = await readFrontmatter(
         join(out, "plugins", "flowai-core", "skills", "review", "SKILL.md"),
       );
@@ -139,15 +136,14 @@ Deno.test(
 );
 
 Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
-  // Pure unit test against the transform — no FS.
   const universal = {
     name: "ag",
     description: "d",
     tools: "Bash",
     disallowedTools: "Write",
-    readonly: true, // must be dropped
-    mode: "subagent", // must be dropped
-    opencode_tools: { write: false }, // must be dropped
+    readonly: true,
+    mode: "subagent",
+    opencode_tools: { write: false },
     model: "smart" as const,
     effort: "medium" as const,
     maxTurns: 15,
@@ -160,13 +156,12 @@ Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
   assertEquals(out.description, "d");
   assertEquals(out.tools, "Bash");
   assertEquals(out.disallowedTools, "Write");
-  assertEquals(out.model, "sonnet"); // smart → sonnet
+  assertEquals(out.model, "sonnet");
   assertEquals(out.effort, "medium");
   assertEquals(out.maxTurns, 15);
   assertEquals(out.background, false);
   assertEquals(out.isolation, "worktree");
   assertEquals(out.color, "blue");
-  // dropped
   assertEquals((out as Record<string, unknown>).readonly, undefined);
   assertEquals((out as Record<string, unknown>).mode, undefined);
   assertEquals((out as Record<string, unknown>).opencode_tools, undefined);
@@ -193,7 +188,6 @@ Deno.test("marketplace-and-plugin-json-schema-valid", async () => {
     const mp = await readJson(
       join(out, ".claude-plugin", "marketplace.json"),
     ) as Record<string, unknown>;
-    // Required fields per the Claude Code marketplace schema
     assert(
       typeof mp.name === "string" && /^[a-z0-9-]+$/.test(mp.name as string),
     );
@@ -230,7 +224,6 @@ Deno.test("byte-deterministic-rerun", async () => {
       outDir: b,
     });
 
-    // Walk both trees and compare byte content per relative path.
     const filesA = await listAllFiles(a);
     const filesB = await listAllFiles(b);
     assertEquals(
@@ -280,10 +273,12 @@ Deno.test("fails-fast-on-cmd-invariant-violation", async () => {
   const fx = await Deno.makeTempDir({ prefix: "flowai-fix-cmd-" });
   const out = await tempOut();
   try {
-    // synthetic framework with one pack and one *command* that wrongly carries
-    // disable-model-invocation in source — must fail build.
-    const pack = join(fx, "core");
+    const pack = join(fx, "framework", "core");
     await Deno.mkdir(join(pack, "commands", "flowai-bad"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
     await Deno.writeTextFile(
       join(pack, "pack.yaml"),
       'name: core\nversion: "1.0.0"\ndescription: t\n',
@@ -296,7 +291,7 @@ Deno.test("fails-fast-on-cmd-invariant-violation", async () => {
     try {
       await buildClaudePlugins({
         packs: ["core"],
-        frameworkDir: fx,
+        frameworkDir: join(fx, "framework"),
         outDir: out,
       });
     } catch (e) {
@@ -323,8 +318,12 @@ Deno.test("fails-fast-on-skill-invariant-violation", async () => {
   const fx = await Deno.makeTempDir({ prefix: "flowai-fix-skl-" });
   const out = await tempOut();
   try {
-    const pack = join(fx, "core");
+    const pack = join(fx, "framework", "core");
     await Deno.mkdir(join(pack, "skills", "flowai-bad"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
     await Deno.writeTextFile(
       join(pack, "pack.yaml"),
       'name: core\nversion: "1.0.0"\ndescription: t\n',
@@ -337,7 +336,7 @@ Deno.test("fails-fast-on-skill-invariant-violation", async () => {
     try {
       await buildClaudePlugins({
         packs: ["core"],
-        frameworkDir: fx,
+        frameworkDir: join(fx, "framework"),
         outDir: out,
       });
     } catch (e) {
@@ -362,8 +361,6 @@ Deno.test("preserves-skill-subdirectories", async () => {
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
-    // flowai-init in core/commands has supporting files (scripts/ in some setups).
-    // We just assert that every stripped-name dir contains SKILL.md at minimum.
     const skillsDir = join(out, "plugins", "flowai-core", "skills");
     for await (const e of Deno.readDir(skillsDir)) {
       if (!e.isDirectory) continue;
@@ -392,7 +389,6 @@ Deno.test("emits-agents-with-claude-native-frontmatter", async () => {
     assert(names.length > 0, "no agents emitted");
     for (const n of names) {
       const fm = await readFrontmatter(join(agentsDir, n));
-      // Drop set
       assertEquals(fm.mode, undefined, `${n}: mode should be dropped`);
       assertEquals(
         fm.opencode_tools,
@@ -400,11 +396,299 @@ Deno.test("emits-agents-with-claude-native-frontmatter", async () => {
         `${n}: opencode_tools should be dropped`,
       );
       assertEquals(fm.readonly, undefined, `${n}: readonly should be dropped`);
-      // Keep set: name and description always present
       assert(typeof fm.name === "string", `${n}: name missing`);
       assert(typeof fm.description === "string", `${n}: description missing`);
     }
   } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// ---------- New round-2 transforms ----------
+
+Deno.test("scope-filter-excludes-project-only-primitives", async () => {
+  const out = await tempOut();
+  try {
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    const skillsDir = join(out, "plugins", "flowai-core", "skills");
+    const names: string[] = [];
+    for await (const e of Deno.readDir(skillsDir)) {
+      if (e.isDirectory) names.push(e.name);
+    }
+    // flowai-update declares scope: project-only and must be excluded.
+    assert(
+      !names.includes("update"),
+      `update (from flowai-update, scope: project-only) must NOT be present, got: ${
+        names.join(", ")
+      }`,
+    );
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("injects-version-from-upstream-deno-json", async () => {
+  const out = await tempOut();
+  try {
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    const upstream = JSON.parse(
+      await Deno.readTextFile(join(Deno.cwd(), "deno.json")),
+    ) as { version: string };
+    const pj = await readJson(
+      join(out, "plugins", "flowai-core", ".claude-plugin", "plugin.json"),
+    ) as Record<string, unknown>;
+    assertEquals(pj.version, upstream.version);
+    const mp = await readJson(
+      join(out, ".claude-plugin", "marketplace.json"),
+    ) as { plugins: Array<Record<string, unknown>> };
+    assertEquals(mp.plugins[0].version, upstream.version);
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("copies-pack-assets-into-consuming-skill-dirs", async () => {
+  const out = await tempOut();
+  try {
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    // adapt-instructions body cites `.{ide}/assets/AGENTS.template.md` in
+    // several places — the file must be copied to the per-skill location.
+    const skillDir = join(
+      out,
+      "plugins",
+      "flowai-core",
+      "skills",
+      "adapt-instructions",
+    );
+    const localAsset = join(skillDir, "assets", "AGENTS.template.md");
+    const stat = await Deno.stat(localAsset);
+    assert(
+      stat.isFile,
+      "AGENTS.template.md not copied into adapt-instructions/assets/",
+    );
+    const skillText = await Deno.readTextFile(join(skillDir, "SKILL.md"));
+    assertStringIncludes(skillText, "assets/AGENTS.template.md");
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("strips-cli-only-fences", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-fence-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "skills", "flowai-x"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "skills", "flowai-x", "SKILL.md"),
+      [
+        "---",
+        "name: flowai-x",
+        "description: d",
+        "---",
+        "before",
+        "<!-- begin: cli-only-skill-update -->",
+        "SECRET BLOCK",
+        "<!-- end: cli-only-skill-update -->",
+        "after",
+      ].join("\n") + "\n",
+    );
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const emitted = await Deno.readTextFile(
+      join(out, "plugins", "flowai-core", "skills", "x", "SKILL.md"),
+    );
+    assert(!emitted.includes("SECRET BLOCK"));
+    assert(!emitted.includes("begin: cli-only-skill-update"));
+    assert(!emitted.includes("end: cli-only-skill-update"));
+    assertStringIncludes(emitted, "before");
+    assertStringIncludes(emitted, "after");
+  } finally {
+    await Deno.remove(fx, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("rewrites-cross-skill-slash-invocations", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-slash-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "skills", "flowai-a"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "skills", "flowai-a", "SKILL.md"),
+      [
+        "---",
+        "name: flowai-a",
+        "description: d",
+        "---",
+        "Run /flowai-commit then /flowai-plan, finally /flowai-review.",
+        "Already-rewritten /flowai-core:other stays untouched.",
+      ].join("\n") + "\n",
+    );
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const emitted = await Deno.readTextFile(
+      join(out, "plugins", "flowai-core", "skills", "a", "SKILL.md"),
+    );
+    assertStringIncludes(emitted, "/flowai-core:commit");
+    assertStringIncludes(emitted, "/flowai-core:plan");
+    assertStringIncludes(emitted, "/flowai-core:review");
+    assertStringIncludes(emitted, "/flowai-core:other");
+    assert(
+      !/\/flowai-(commit|plan|review)\b/.test(emitted),
+      `unrewritten /flowai-* command leaked: ${emitted}`,
+    );
+  } finally {
+    await Deno.remove(fx, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("collects-tags-into-marketplace-entry-only", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-tags-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "skills", "flowai-one"), { recursive: true });
+    await Deno.mkdir(join(pack, "skills", "flowai-two"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "skills", "flowai-one", "SKILL.md"),
+      "---\nname: flowai-one\ndescription: d\ntags: [alpha, shared]\n---\nbody\n",
+    );
+    await Deno.writeTextFile(
+      join(pack, "skills", "flowai-two", "SKILL.md"),
+      "---\nname: flowai-two\ndescription: d\ntags: [beta, shared]\n---\nbody\n",
+    );
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const mp = await readJson(
+      join(out, ".claude-plugin", "marketplace.json"),
+    ) as { plugins: Array<Record<string, unknown>> };
+    const tags = mp.plugins[0].tags as string[];
+    assertEquals(tags, ["alpha", "beta", "shared"]);
+    // Plugin.json must NOT carry tags (Claude validator rejects them).
+    const pj = await readJson(
+      join(out, "plugins", "flowai-core", ".claude-plugin", "plugin.json"),
+    ) as Record<string, unknown>;
+    assertEquals(pj.tags, undefined);
+    // Skill frontmatter must have `tags` stripped (they migrated upward).
+    const fm = await readFrontmatter(
+      join(out, "plugins", "flowai-core", "skills", "one", "SKILL.md"),
+    );
+    assertEquals(fm.tags, undefined);
+  } finally {
+    await Deno.remove(fx, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("transforms-hook-yaml-into-hooks-json", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-hooks-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "hooks", "my-hook"), { recursive: true });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "hooks", "my-hook", "hook.yaml"),
+      "event: SessionStart\nmatcher: startup|resume\ntimeout: 10\n",
+    );
+    await Deno.writeTextFile(
+      join(pack, "hooks", "my-hook", "run.ts"),
+      'console.log("hi");\n',
+    );
+    await buildClaudePlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const hooksPath = join(
+      out,
+      "plugins",
+      "flowai-core",
+      "hooks",
+      "hooks.json",
+    );
+    const hooks = await readJson(hooksPath) as {
+      hooks: Record<
+        string,
+        Array<{
+          matcher: string;
+          hooks: Array<{ type: string; command: string; timeout?: number }>;
+        }>
+      >;
+    };
+    assert(
+      Array.isArray(hooks.hooks.SessionStart),
+      "SessionStart bucket missing",
+    );
+    assertEquals(hooks.hooks.SessionStart[0].matcher, "startup|resume");
+    assertEquals(hooks.hooks.SessionStart[0].hooks[0].type, "command");
+    assertStringIncludes(
+      hooks.hooks.SessionStart[0].hooks[0].command,
+      "${CLAUDE_PLUGIN_ROOT}/hooks/my-hook/run.ts",
+    );
+    assertEquals(hooks.hooks.SessionStart[0].hooks[0].timeout, 10);
+    // Run.ts must be copied alongside.
+    const runStat = await Deno.stat(
+      join(out, "plugins", "flowai-core", "hooks", "my-hook", "run.ts"),
+    );
+    assert(runStat.isFile);
+  } finally {
+    await Deno.remove(fx, { recursive: true });
     await Deno.remove(out, { recursive: true });
   }
 });

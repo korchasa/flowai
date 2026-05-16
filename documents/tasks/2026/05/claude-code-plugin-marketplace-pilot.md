@@ -394,3 +394,35 @@ Skills are then invoked under the `/flowai-core:` namespace, e.g. `/flowai-core:
 - **Submission to official Anthropic marketplace** (`claude-plugins-official`) via the in-app submission form (https://claude.ai/settings/plugins/submit). Re-evaluate once `flowai-plugins` has shipped ≥ 3 framework releases and we have user-feedback evidence.
 
 <!-- Captured during step 7 (critique triage). Items classified "defer" land here. -->
+
+## Round 2: Full-featured plugin install
+
+After the pilot landed, several core skills broke or degraded under plugin install because the tree lacked artefacts the CLI install provides. Round 2 closes the gap. Plan: [/Users/korchasa/.claude/plans/1-2-transient-simon.md](../../../../../../.claude/plans/1-2-transient-simon.md).
+
+### Round 2 DoD
+
+- [x] **FR-DIST.MARKETPLACE**: scope filter excludes `scope: project-only` primitives from the plugin tree.
+  - Test: `scripts/build-claude-plugins_test.ts::scope-filter-excludes-project-only-primitives`
+  - Evidence: `deno test -A scripts/build-claude-plugins_test.ts --filter scope-filter`
+- [x] **FR-DIST.MARKETPLACE**: pack-level `assets/<file>` referenced by SKILL.md is copied into the per-skill `assets/` and body paths are rewritten.
+  - Test: `scripts/build-claude-plugins_test.ts::copies-pack-assets-into-consuming-skill-dirs` + validator `validateAssetReferences`
+  - Evidence: `deno task validate-plugins`
+- [x] **FR-DIST.MARKETPLACE**: `<!-- begin: cli-only-skill-update --> ... <!-- end: cli-only-skill-update -->` blocks are stripped during plugin emit.
+  - Test: `scripts/build-claude-plugins_test.ts::strips-cli-only-fences`
+  - Evidence: `deno test -A scripts/build-claude-plugins_test.ts --filter strips-cli-only-fences`
+- [x] **FR-DIST.MARKETPLACE**: `/flowai-<name>` references in SKILL.md bodies are rewritten to `/flowai-<pack>:<name>`.
+  - Test: `scripts/build-claude-plugins_test.ts::rewrites-cross-skill-slash-invocations` + validator `validateNoUnnamespacedSlashCommands`
+  - Evidence: `deno task validate-plugins`
+- [x] **FR-DIST.MARKETPLACE**: `version` injected into plugin.json and marketplace entry from upstream `deno.json` (semver-validated by validator).
+  - Test: `scripts/build-claude-plugins_test.ts::injects-version-from-upstream-deno-json`
+  - Evidence: `jq '.version' dist/claude-plugins/plugins/flowai-core/.claude-plugin/plugin.json`
+- [x] **FR-DIST.MARKETPLACE**: skill `tags:` unioned, sorted, capped at 8, emitted on marketplace entry only.
+  - Test: `scripts/build-claude-plugins_test.ts::collects-tags-into-marketplace-entry-only`
+  - Evidence: synthetic-fixture test (core skills declare no tags yet)
+- [x] **FR-DIST.MARKETPLACE**: pack hooks (`framework/<pack>/hooks/<name>/{hook.yaml,run.ts}`) → `hooks/hooks.json` + per-hook `run.ts` copy; validator parses the JSON schema and cross-checks command files exist.
+  - Test: `scripts/build-claude-plugins_test.ts::transforms-hook-yaml-into-hooks-json`
+  - Evidence: synthetic-fixture test (core has zero hooks)
+- [ ] **FR-DIST.MARKETPLACE**: CLI aborts with an explicit message when a Claude Code plugin install for the same pack is detected. Cross-repo: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli).
+  - Test: TBD in `flowai-cli` repo
+  - Evidence: manual — install plugin, run `flowai sync`, confirm non-zero exit.
+
