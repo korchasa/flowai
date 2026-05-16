@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "45bf4ff390ec53841f65c2b1660cca34a015868ad87dce239f5aba201c1242da",
+  "scenarioId": "flowai-delegate-to-ide-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-16T22:22:58.923Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 51780.699958000005,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `flowai-delegate-to-ide` skill via a `Skill` tool call with `\"skill\": \"flowai-delegate-to-ide\"`. This is clearly visible in the agent logs: `## Tool: Skill { \"skill\":…"
+      }
+    }
+  }
+}

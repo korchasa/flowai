@@ -1,0 +1,3 @@
+name: ide-bridge
+version: "0.1.0"
+description: Cross-IDE delegation. One-shot relay and context-isolated subagent for running CLIs of other AI IDEs (claude / codex / opencode / cursor-agent).

@@ -181,7 +181,6 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `flowai-draw-mermaid-diagrams` — Mermaid diagrams
 - `flowai-fix-tests` — fix failing tests
 - `flowai-jit-review` — JIT review: synthesize ephemeral tests that pass on parent and fail on diff
-- `flowai-ai-ide-runner` — run prompts in Claude Code / OpenCode / Cursor / Codex CLIs; fan-out and compare
 - `flowai-write-prd` — Product Requirements Documents
 - `flowai-write-dep` — Development Enhancement Proposals
 - `flowai-write-gods-tasks` — GODS-format tasks
@@ -195,6 +194,17 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 
 **Agents:**
 - `flowai-deep-research-worker` — research worker for deep research sub-tasks
+
+### ide-bridge
+
+Cross-IDE delegation: run a task in another AI IDE's CLI from the current session.
+
+**Skills:**
+- `flowai-ai-ide-runner` — one-shot relay / fan-out comparison across Claude Code / OpenCode / Cursor / Codex CLIs; child's stdout relayed verbatim
+- `flowai-delegate-to-ide` — delegate a task to another IDE via an isolated-context subagent so the child's transcript stays out of the parent's context
+
+**Agents:**
+- `flowai-ide-bridge-worker` — single-shot cross-IDE CLI worker; spawned by `flowai-delegate-to-ide`
 
 ### devtools
 

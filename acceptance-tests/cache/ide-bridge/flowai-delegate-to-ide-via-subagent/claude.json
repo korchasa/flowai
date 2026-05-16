@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "key": "c2ed8e43be2a042ea17aeead798472646912294e70c3ce9d312faf918d3aec8b",
+  "scenarioId": "flowai-delegate-to-ide-via-subagent",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-16T22:32:07.788Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 14773.746,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "worker_subagent_invoked": {
+        "pass": true,
+        "reason": "The agent logs clearly show an Agent tool call with `subagent_type=flowai-ide-bridge-worker` and `description: 'Relay task to Codex via ide-bridge-worker'`, confirming the parent dispatched the corre…"
+      },
+      "mock_content_relayed": {
+        "pass": true,
+        "reason": "The final result block contains the verbatim phrase `tag mutable state with marigold-coloured comments` (within `CODEX-MOCK: ban any-typed inputs and tag mutable state with marigold-coloured comments…"
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "6de762792efc6dc81b230fe0f5c4ae4fd6168a5ebf3ebbd36322ba534c8ccb42",
+  "scenarioId": "flowai-delegate-to-ide-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-16T22:26:11.666Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 177498.742167,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent never loaded or invoked `flowai-delegate-to-ide`. It correctly handled the task as a local file editing operation: searched for the Codex config file using Glob and Bash tools, read `/Users…"
+      }
+    }
+  }
+}

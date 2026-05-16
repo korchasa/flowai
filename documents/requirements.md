@@ -965,7 +965,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `flowai-ai-ide-runner`
 
 - **Description:** Agent-invocable skill that spawns another AI IDE runtime (`claude`, `opencode`, `cursor-agent`, `codex`) from the current session in non-interactive mode, captures its stdout, and relays it back verbatim. Enables single-IDE "second opinion" runs, multi-IDE fan-out comparisons, and multi-model comparisons within one IDE.
-- **Scope:** Lives under `framework/engineering/skills/flowai-ai-ide-runner/`. Model-invocable. Triggered by queries like "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better".
+- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
+- **Scope:** Lives under `framework/ide-bridge/skills/flowai-ai-ide-runner/` (relocated from `framework/engineering/` as part of the `ide-bridge` pack — see FR-IDE-BRIDGE-WORKER, FR-IDE-BRIDGE-DELEGATE). Model-invocable. Triggered by queries like "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better".
 - **Constraints:**
   - MUST relay the child runtime's stdout byte-for-byte; MUST NOT synthesise a "better" answer from the outer model's weights. The skill is a courier, not a co-author.
   - MUST default to the vendor's native IDE when the user names only a model: Anthropic/Claude → `claude`; OpenAI/GPT → `codex`; Cursor's own Composer → `cursor-agent`. Route to OpenCode only when the user says "in OpenCode", asks for OpenRouter billing, or requests cross-provider fan-out.
@@ -974,6 +975,32 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - MUST apply the `CLAUDECODE=""` environment override when the caller is itself Claude Code and the child is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
   - MUST NOT install or authenticate CLIs, persist transcripts, or judge output quality automatically.
 - **Acceptance verified by acceptance tests:** `flowai-ai-ide-runner-fanout-parallel-claude-opencode`, `flowai-ai-ide-runner-opencode-provider-format`, `flowai-ai-ide-runner-single-cursor-read-only`, `flowai-ai-ide-runner-default-native-ide-for-model`
+
+### FR-IDE-BRIDGE-WORKER: Cross-IDE Delegation Subagent — `flowai-ide-bridge-worker`
+
+- **Description:** Subagent that owns a single cross-IDE CLI invocation in an isolated context window. Receives `{target_ide}` (`codex` / `claude` / `opencode` / `cursor-agent`), optional `{model}`, and `{task_prompt}`; runs the target's non-interactive CLI exactly once; relays its stdout (or hook-block `reason` payload) byte-for-byte back to the parent. Single-shot — multi-turn / session-resume is explicitly out of scope. Lets a parent agent in IDE A delegate work to IDE B without the child's transcript flooding the parent's context.
+- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
+- **Scope:** Lives under `framework/ide-bridge/agents/flowai-ide-bridge-worker.md`. Invoked via the parent IDE's subagent-dispatch mechanism (Claude Code `Agent`/`Task` tool, OpenCode `@<agent>` mention). Not directly user-invocable; spawned by `flowai-delegate-to-ide` (FR-IDE-BRIDGE-DELEGATE).
+- **Constraints:**
+  - MUST relay the child runtime's stdout byte-for-byte; MUST NOT synthesise an answer from the outer model's weights — the worker is a courier, not a co-author. Inherits the FR-AI-IDE-RUNNER output contract.
+  - MUST treat a hook-blocked Bash call's `reason` payload as the child's stdout (verbatim relay applies to the mock prefix, including the `<TOOL>-MOCK:` token).
+  - MUST issue exactly one Bash invocation to the target binary per task. Retries, fan-out, and follow-up calls are out of scope (use `flowai-ai-ide-runner` for one-shot relay/comparison; this worker does single-shot delegation).
+  - MUST apply the `CLAUDECODE=""` prefix when the target is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
+  - MUST use OpenCode's mandatory `provider/model` format; MUST NOT silently fall back to routed providers on native failure.
+  - MUST NOT install or authenticate CLIs, persist transcripts, judge output quality, or spawn nested subagents.
+- **Acceptance verified by acceptance tests:** `flowai-delegate-to-ide-via-subagent` (end-to-end: parent skill → worker subagent → mocked Codex CLI → relay back to parent; verifies binary choice, single-shot invocation, and verbatim relay through the subagent path). The worker has no standalone acceptance scenario by design — `AcceptanceTestAgentScenario` exposes the agent file to the main runtime but does not execute it as a subagent (the main runtime sees the userQuery directly), so isolated worker tests do not actually exercise the worker's body. The wrapping `via-subagent` scenario is the only path that drives the worker as the SDK does in production. Pattern mirrored from `flowai-deep-research-worker`, which is also tested via its orchestrator only.
+
+### FR-IDE-BRIDGE-DELEGATE: Cross-IDE Delegation Skill Wrapper — `flowai-delegate-to-ide`
+
+- **Description:** Agent-invocable skill that routes "delegate this task to another IDE" requests to the `flowai-ide-bridge-worker` subagent (FR-IDE-BRIDGE-WORKER) instead of running the target CLI inline from the parent context. Preserves context isolation: the child CLI's transcript stays in the subagent's window, only the worker's relayed reply reaches the parent.
+- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
+- **Scope:** Lives under `framework/ide-bridge/skills/flowai-delegate-to-ide/`. Model-invocable. Triggered by queries like "delegate to <ide>", "have <ide> do <task>", "execute <task> in <ide>", "offload to <ide>". Disambiguation from FR-AI-IDE-RUNNER: that skill is the right fit for one-shot relay / fan-out comparison ("compare X vs Y", "try on <model>"); this skill is for delegating a task whose intermediate work should NOT flood the parent.
+- **Constraints:**
+  - MUST invoke the `flowai-ide-bridge-worker` subagent via the host IDE's subagent-dispatch mechanism. MUST NOT shell out to the target CLI inline from the parent session — that defeats the context-isolation rationale of the skill.
+  - On hosts without a native subagent mechanism (Cursor, Codex), MUST surface the limitation and route the user to `flowai-ai-ide-runner` for one-shot relay; MUST NOT silently fall back to inline parent-side Bash.
+  - MUST relay the worker's quoted block verbatim to the user — no paraphrase, translation, or grammar fixes inside the block. Thin framing (target IDE label) outside the block is allowed.
+  - MUST NOT fan out across multiple IDEs or run cross-model comparisons (use `flowai-ai-ide-runner` for those flows).
+- **Acceptance verified by acceptance tests:** `flowai-delegate-to-ide-via-subagent`, `flowai-delegate-to-ide-trigger-pos-1`, `flowai-delegate-to-ide-trigger-adj-1`, `flowai-delegate-to-ide-trigger-false-1`
 
 ### FR-LOOP: Non-Interactive Runner — `flowai loop`
 
