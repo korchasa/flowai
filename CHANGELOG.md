@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.13](https://github.com/korchasa/flowai/compare/v0.12.12...v0.12.13) (2026-05-16)
+
+
+### Features
+
+* **dist:** Claude Code plugin marketplace pilot (FR-DIST.MARKETPLACE) ([45d98a7](https://github.com/korchasa/flowai/commit/45d98a73dea1710633b63ca0f877bb96671ab1cc))
+
+
+### Documentation
+
+* mark extract-cli-to-separate-repo task as done ([9525a34](https://github.com/korchasa/flowai/commit/9525a343d705c3ddbd89118bf9f942552f5b9a9d))
+* **readme:** fix sibling-repo callout (flowai-pipelines → flowai-workflow) ([f5b837e](https://github.com/korchasa/flowai/commit/f5b837ebd04fc286334aa8b6818f4abe2d54bdd5))
+* **readme:** reflect post-split repo layout ([dc6ede9](https://github.com/korchasa/flowai/commit/dc6ede9e644d8e265ddf0d98e7dc518518f6ad97))
+
 ### [0.12.12](https://github.com/korchasa/flowai/compare/v0.12.11...v0.12.12) (2026-05-16)
 
 
