@@ -4,7 +4,10 @@ An Assisted Engineering framework: the developer remains the architect and revie
 
 The developer sets the task, approves the plan, and controls every diff.
 
-> **Note:** Multi-agent SDLC pipelines have been moved to a separate project: [flowai-pipelines](https://github.com/korchasa/flowai-pipelines).
+> **Repository layout:**
+> - **this repo (`korchasa/flowai`)** — the framework: skills, commands, agents, packs.
+> - **[`korchasa/flowai-cli`](https://github.com/korchasa/flowai-cli)** — the distribution CLI (`flowai` command). Bundles a SHA-256-pinned framework release tarball at publish time. Published to JSR as `@korchasa/flowai`.
+> - **[`korchasa/flowai-pipelines`](https://github.com/korchasa/flowai-pipelines)** — multi-agent SDLC pipelines (separate product).
 
 ## The Assisted Engineering Paradigm
 
@@ -292,7 +295,7 @@ Every task follows the same supervised loop:
 ## Project Structure
 
 ```
-framework/              # THE PRODUCT — distributed to users via flowai CLI
+framework/              # THE PRODUCT — distributed to users via the flowai CLI
   core/                 #   Core workflow commands and agents
   engineering/          #   Procedural engineering knowledge
   devtools/             #   Skill/agent authoring tools
@@ -300,18 +303,46 @@ framework/              # THE PRODUCT — distributed to users via flowai CLI
   typescript/           #   TypeScript-specific setup skills
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure
-acceptance-tests/             # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
+acceptance-tests/       # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
 deno.json               # Imports, tasks, lint/fmt config
 AGENTS.md               # Project vision, rules, agent instructions
-
-# CLI lives in a separate repo (post-split):
-#   https://github.com/korchasa/flowai-cli
-# It consumes framework-v<version>.tar.gz assets released from this repo
-# and publishes @korchasa/flowai to JSR.
 
 .claude/                # INTERNAL — dev tooling + framework resources
   skills/               #   Dev-only skills (tracked) + framework skills (via flowai)
   agents/               #   Dev-only agents (tracked) + framework agents (via flowai)
+```
+
+### Distribution flow
+
+The CLI is no longer in this repo (see [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli)). End-users still install the same JSR package (`@korchasa/flowai`); only the source-of-truth for CLI code moved.
+
+```
+korchasa/flowai (this repo)                  korchasa/flowai-cli
+─────────────────────────────                ─────────────────────────────
+feat/fix/refactor on main                    framework.lock (pinned version)
+        │                                            │
+        ▼                                            │
+release job:                                         │
+  • bump deno.json version                           │
+  • upload framework.tar.gz +                        │
+    framework.tar.gz.sha256 as                       │
+    assets of framework-v<X> ─────────────┐          │
+                                          │  GitHub  │
+                                          │  release │
+                                          ▼          ▼
+                                       scripts/bundle-framework.ts
+                                         (downloads tarball,
+                                          verifies SHA-256, untars,
+                                          bundles into src/bundled.json)
+                                                     │
+                                                     ▼
+                                        tag v<Y> on flowai-cli
+                                                     │
+                                                     ▼
+                                            JSR @korchasa/flowai
+                                                     │
+                                                     ▼
+                                      deno install -g -A jsr:@korchasa/flowai
 ```
 
 ## Documentation as Memory
@@ -327,7 +358,7 @@ The agent reads these at session start. If the docs are outdated, the agent work
 
 ## Development Setup
 
-For contributors working on flowai itself (not end-user installation):
+For contributors working on **the framework** (skills, commands, agents, packs):
 
 **Prerequisites:** [Deno](https://deno.land), Git
 
@@ -338,6 +369,8 @@ deno task check
 ```
 
 Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (tracked in git). Framework skills/agents are installed by flowai from bundled source.
+
+For contributors working on **the CLI itself** (sync engine, IDE adapters, bundle pipeline) — go to [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli). That repo has its own `deno task check`, its own test suite, and publishes `@korchasa/flowai` to JSR on tag `v*`. It pins a framework revision via `framework.lock`; bump it with `deno task bump-framework <version>` after a new `framework-v*` release lands here.
 
 ## License
 
