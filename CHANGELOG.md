@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.12](https://github.com/korchasa/flowai/compare/v0.12.11...v0.12.12) (2026-05-16)
+
+
+### Code Refactoring
+
+* decommission monorepo CLI (Phase 4) ([04c9806](https://github.com/korchasa/flowai/commit/04c9806c794a874aea94e45ce0437c8318bb3a7b))
+
 ### [0.12.11](https://github.com/korchasa/flowai/compare/v0.12.10...v0.12.11) (2026-05-16)
 
 
