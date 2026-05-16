@@ -148,12 +148,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build Claude Code plugin marketplace tree and publish to downstream
-      # repo korchasa/flowai-plugins on the same release event.
+      # Build Claude Code plugin marketplace tree, validate the output, then
+      # publish to downstream repo korchasa/flowai-plugins on the same release
+      # event. Validation is a pre-publish gate: any schema / cross-link /
+      # frontmatter issue aborts the run BEFORE the downstream is touched.
       # implements [FR-DIST.MARKETPLACE](../../documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot)
-      - name: Build Claude Code plugin marketplace
+      - name: Build and validate Claude Code plugin marketplace
         if: steps.releasable.outputs.should_release == 'true'
-        run: deno task build-plugins
+        run: deno task validate-plugins
 
       - name: Checkout flowai-plugins (downstream)
         if: steps.releasable.outputs.should_release == 'true'

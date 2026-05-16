@@ -122,13 +122,13 @@ export async function buildClaudePlugins(opts: BuildOptions): Promise<void> {
     pluginEntries.push(entry);
   }
 
-  // Top-level marketplace.json. metadata.pluginRoot lets us write relative
-  // sources as "./plugins/<id>" without repeating the prefix.
+  // Top-level marketplace.json. Each plugin entry carries a full relative
+  // `source` ("./plugins/<id>") resolved from the marketplace root; we
+  // intentionally omit `metadata.pluginRoot` to avoid double-prefixing.
   const marketplace: Record<string, unknown> = {
     name: marketplaceName,
     owner: { name: ownerName },
     description: "AssistFlow framework — Claude Code plugin marketplace",
-    metadata: { pluginRoot: "./plugins" },
     plugins: pluginEntries,
   };
   await ensureDir(join(opts.outDir, ".claude-plugin"));
