@@ -182,8 +182,11 @@ async function buildPack(
     outDir: join(pluginRoot, "hooks"),
   });
 
-  // Plugin manifest. version intentionally omitted so the downstream commit
-  // SHA is the version key (Claude Code resolves per FR-DIST.MARKETPLACE).
+  // Plugin manifest. `category` and `keywords` deliberately live ONLY in the
+  // marketplace entry (returned below) — putting them here trips Claude Code's
+  // `claude plugin validate` ("Field 'category' belongs in the marketplace
+  // entry, not plugin.json. It's harmless here but unused"). version is
+  // omitted so the downstream commit SHA is the version key.
   const license = await readLicenseId(ctx.packDir).catch(() => undefined);
   const plugin: Record<string, unknown> = {
     name: pluginName,
@@ -191,8 +194,6 @@ async function buildPack(
     author: { name: DEFAULT_OWNER_NAME },
     repository: DEFAULT_REPO,
     homepage: DEFAULT_HOMEPAGE,
-    keywords: DEFAULT_KEYWORDS,
-    category: DEFAULT_CATEGORY,
   };
   if (license) plugin.license = license;
   await ensureDir(join(pluginRoot, ".claude-plugin"));
@@ -205,6 +206,8 @@ async function buildPack(
     name: pluginName,
     source: `./plugins/${pluginName}`,
     description,
+    keywords: DEFAULT_KEYWORDS,
+    category: DEFAULT_CATEGORY,
   };
 }
 

@@ -51,16 +51,22 @@ Deno.test("emits-marketplace-and-plugin-manifest-for-core", async () => {
     assertEquals(plugins.length, 1);
     assertEquals(plugins[0].name, "flowai-core");
     assertEquals(plugins[0].source, "./plugins/flowai-core");
+    // keywords + category live on the marketplace entry, not plugin.json —
+    // mirrors what `claude plugin validate` expects.
+    assert(Array.isArray(plugins[0].keywords));
+    assertEquals(plugins[0].category, "development-workflows");
 
     const pj = await readJson(
       join(out, "plugins", "flowai-core", ".claude-plugin", "plugin.json"),
     ) as Record<string, unknown>;
     assertEquals(pj.name, "flowai-core");
     assert(typeof pj.description === "string");
-    assert(Array.isArray(pj.keywords));
-    assertEquals(pj.category, "development-workflows");
     // version deliberately omitted — commit SHA is the version
     assertEquals(pj.version, undefined);
+    // category and keywords explicitly NOT in plugin.json (would trip the
+    // official validator with a 'belongs in marketplace entry' warning).
+    assertEquals(pj.category, undefined);
+    assertEquals(pj.keywords, undefined);
   } finally {
     await Deno.remove(out, { recursive: true });
   }
