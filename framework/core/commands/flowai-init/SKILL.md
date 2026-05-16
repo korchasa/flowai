@@ -116,8 +116,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - For **Brownfield**: ask "Create missing components? Update existing via diff? [create missing / update all / select]"
 
 6. **Generate AGENTS.md File**
-   - Read template file from `../../assets/` directory (pack-level shared assets):
-     - `AGENTS.template.md` — reference for `./AGENTS.md` (single file containing all sections)
+   - Read the pack-level template at `../../assets/AGENTS.template.md` (reference for `./AGENTS.md`, single file containing all sections).
 
    - **For Greenfield**: Fill template with interview data. Replace `{{PLACEHOLDERS}}` with actual values.
 
