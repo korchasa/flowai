@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.11](https://github.com/korchasa/flowai/compare/v0.12.10...v0.12.11) (2026-05-16)
+
+
+### Code Refactoring
+
+* **cli:** prep for CLI extraction to standalone repo ([656151d](https://github.com/korchasa/flowai/commit/656151dbcb5e6e7f4f6ec4e139cbd061587560a3))
+
 ### [0.12.10](https://github.com/korchasa/flowai/compare/v0.12.9...v0.12.10) (2026-05-15)
 
 

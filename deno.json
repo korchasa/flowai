@@ -1,6 +1,6 @@
 {
   "name": "@korchasa/flowai",
-  "version": "0.12.10",
+  "version": "0.12.11",
   "exports": "./cli/src/main.ts",
   "license": "MIT",
   "publish": {
