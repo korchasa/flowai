@@ -295,6 +295,37 @@ graph TD
 - **Relation to `flowai-update`:** `flowai-update` (scope: `project-only`) delegates the AGENTS.md migration step to `/flowai-adapt-instructions` rather than re-implementing template diffing.
 - **Behavioral requirements:** See acceptance test `flowai-adapt-instructions-basic`.
 
+### 3.5.2 Claude Code Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-claude-plugins.ts`)
+
+- **Purpose:** Additional, additive distribution channel that publishes flowai packs as native Claude Code plugins through a marketplace at `korchasa/flowai-plugins`. flowai CLI (3.5) remains primary for Cursor / OpenCode / Codex and stays supported for Claude Code; marketplace is offered alongside, not as a replacement.
+- **Location:** `scripts/build-claude-plugins.ts` (build), `scripts/build-claude-plugins_test.ts` (tests), `.github/workflows/ci.yml` step `Build Claude Code plugin marketplace` + downstream sync (publish). Output tree at `dist/claude-plugins/` is gitignored.
+- **Interfaces:**
+  - CLI: `deno task build-plugins [--pack core] [--framework ./framework] [--out ./dist/claude-plugins] [--marketplace-name flowai-plugins]`. Defaults: pack=`core`, out=`dist/claude-plugins`, marketplace-name from `DEFAULT_MARKETPLACE_NAME` constant in the build script.
+  - CI: steps inside the existing `release` job, gated on the same `should_release == 'true'` condition that produces `framework-v*` tags. Order: build framework tarball → publish framework release → build plugin tree → checkout downstream → sync + commit + push.
+  - Downstream: repository `korchasa/flowai-plugins`. `main` is updated by CI on each framework release; tags `framework-vX.Y.Z` mirror the upstream framework version. CI auth via deploy key secret `FLOWAI_PLUGINS_DEPLOY_KEY` (write-enabled).
+- **Generated layout:**
+  - `<out>/.claude-plugin/marketplace.json` — top-level catalog.
+  - `<out>/plugins/flowai-<pack>/.claude-plugin/plugin.json` — per-pack manifest.
+  - `<out>/plugins/flowai-<pack>/skills/<stripped>/SKILL.md` (+ supporting subdirs) — commands and skills merged into one dir; commands carry injected `disable-model-invocation: true`.
+  - `<out>/plugins/flowai-<pack>/agents/<name>.md` — agents with Claude-native frontmatter.
+  - `<out>/plugins/flowai-<pack>/hooks/hooks.json` — generated only when the pack has hooks (no hooks in `core`).
+- **Stripped names:** outermost source directory `flowai-<short>` → emitted `<short>`. Applies to both `commands/` and `skills/`. Eliminates the `/flowai-core:flowai-commit` double prefix by mapping to `/flowai-core:commit`. Source tree retains canonical `flowai-*` names; the stripping is a build-time concern only.
+- **Frontmatter transforms:**
+  - SKILL.md: command source → inject `disable-model-invocation: true`; skill source → no injection. Resolve `model` tier (`max|smart|fast|cheap|inherit`) → `opus|sonnet|haiku|haiku|(drop)`.
+  - Agent .md: keep `{name, description, tools, disallowedTools, model, effort, maxTurns, background, isolation, color}`; drop `{readonly, mode, opencode_tools}` and any unknown key (per FR-DIST.MAPPING universal → Claude column).
+- **Invariant guards (fail-fast):**
+  - FR-PACKS.CMD-INVARIANT: a source SKILL.md under `framework/<pack>/commands/` that already carries `disable-model-invocation` aborts the build with the offending path. The flag belongs to the writer, not the source.
+  - FR-PACKS.SKILL-INVARIANT: same flag in `framework/<pack>/skills/` aborts the build (primitive should be under `commands/` if user-only).
+- **Determinism:** sorted directory walk, sorted plugin entry list (alphabetical pack name), stable YAML / JSON serialization with fixed key ordering (commands first frontmatter keys: `name`, `description`, `disable-model-invocation`, ...; agent frontmatter: `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color`). Building twice produces byte-identical output (verified by `byte-deterministic-rerun` test).
+- **Version policy:** `plugin.json` and marketplace entry both omit `version`. Claude Code falls back to the git commit SHA of the downstream repo. Because CI only pushes downstream on `framework-v*` tag, users with auto-update receive exactly one update per framework release.
+- **Pre-conditions:**
+  - Local smoke test (`/plugin marketplace add ./dist/claude-plugins` → `/plugin install flowai-core@flowai-plugins`) requires Claude Code CLI installed.
+  - Downstream repo bootstrap is manual once: create `korchasa/flowai-plugins`, commit `README.md` + `LICENSE`, register write-enabled deploy key, expose private key as upstream `FLOWAI_PLUGINS_DEPLOY_KEY` secret.
+- **Failure modes:**
+  - Build failure on invariant violation → CI step fails before downstream checkout; downstream untouched.
+  - Downstream auth failure or push rejection → CI step fails; framework release tag is preserved (already published) and the workflow can be re-run after credentials are restored. Idempotent re-publish: `git diff --cached --quiet` short-circuits empty commits, `git tag -f` + `git push --force-with-lease` tolerates a re-shot tag.
+- **Drift surface (acknowledged):** agent transform logic is vendored in `build-claude-plugins.ts` for the pilot rather than shared with `flowai-cli`'s `crossTransformAgent`. Drift risk bounded by FR-DIST.MAPPING coverage in tests; follow-up tracked as extraction of `@korchasa/flowai-transforms` to JSR once multi-pack rollout exposes pressure.
+
 ### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`)
 
 - **Purpose:** One-way migration of all IDE primitives (skills, agents, commands) from one IDE config dir to another. Unlike `user_sync` (bidirectional, mtime-based, user resources only), `migrate` is explicit, one-directional, includes all resources (`flowai-*` + user-created), and requires no `.flowai.yaml`.

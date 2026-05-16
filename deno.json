@@ -22,6 +22,7 @@
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
     "acceptance-tests": "deno run -A scripts/task-acceptance-tests.ts",
+    "build-plugins": "deno run -A scripts/build-claude-plugins.ts",
     "release": "deno run -A npm:standard-version --skip.tag"
   },
   "lint": {

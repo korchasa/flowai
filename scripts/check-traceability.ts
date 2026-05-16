@@ -245,6 +245,10 @@ const NAME_SKIP = new Set([
   ".opencode",
   "documents",
   ".git",
+  // Generated artefacts (Claude Code plugin marketplace, FR-DIST.MARKETPLACE).
+  // The build script copies SKILL.md bodies verbatim, so doc-link comments
+  // inside copied scripts have stale relative paths once they live under dist/.
+  "dist",
 ]);
 /** Path-context skips: skip when the absolute path matches any pattern.
  *  Differentiates framework acceptance-test-scenario folders (fixture data, not

@@ -283,6 +283,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 #### FR-DIST.GLOBAL Scope Selection (Global / Local / Auto)
 
 - **Desc:** `flowai` / `flowai sync` select scope via one of three mutually exclusive flags: `--global` / `-g` (user-level install), `--local` / `-l` (project-local install), and `--auto` (default). In `--auto` the CLI prefers the project config when present and falls back to the global config, eliminating accidental project-local installs on top of an existing global setup. Scope drives every path resolution decision: config file location, IDE base dir per IDE, asset split (templates installed both modes; artifact diff project-only), scaffold sync (project-only), and hook merge path. Scope is also a filter key on the `scope:` frontmatter field of skills and commands (see FR-PACKS.SCOPE).
+- **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md)
 - **Target paths per IDE** (see also SDS section 3.5):
   - Claude Code: `~/.claude/`
   - Cursor: `~/.cursor/`
@@ -303,7 +304,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Asset split:** Template install (`assets/AGENTS.template.md` → `{ide}/assets/`) runs in **both** modes. Artifact sync (diff/merge `<cwd>/AGENTS.md` from template) runs in **project** mode only. Scaffolds (`.devcontainer/*`, SRS/SDS stubs) run in **project** mode only.
 - **Hook merge:** In global mode the hook writer resolves `~/.claude/settings.json` (and equivalent per IDE). The existing manifest-based merge already preserves user hooks not tracked by flowai; path change is the only new behavior.
 - **Coexistence:** `~/.flowai.yaml` and per-project `.flowai.yaml` may coexist. In `--auto`, project wins when both exist; explicit `--global`/`--local` flags always override.
-- **Not in scope:** Auto-migration from project to global; native marketplace plugin packaging.
+- **Not in scope:** Auto-migration from project to global. (Native marketplace packaging — see FR-DIST.MARKETPLACE.)
 - **Acceptance:**
   - [x] `--global` flag drives every scope-dependent path (config, IDE base, hooks, user_sync).
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
@@ -327,6 +328,41 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `flowai migrate` requires explicit `--global` or `--local` (no auto-resolution).
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+
+#### FR-DIST.MARKETPLACE Claude Code Plugin Marketplace (Pilot)
+
+- **Desc:** Additional distribution channel for Claude Code users. The framework publishes a Claude-Code-native plugin marketplace at the downstream repo `korchasa/flowai-plugins`. The catalog (`.claude-plugin/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-claude-plugins.ts` on every framework release (CI step inside the existing `release` job, gated on `framework-v*` tag publication). No plugin artefacts are committed to this repo (`dist/` is gitignored). Pilot ships only the `core` pack as plugin `flowai-core`; remaining packs follow as separate tasks. flowai CLI distribution (FR-DIST.SYNC) is unaffected and remains the channel for Cursor / OpenCode / Codex.
+- **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md)
+- **Scenario:** A user on Claude Code runs `/plugin marketplace add korchasa/flowai-plugins` once, then `/plugin install flowai-core@flowai-plugins`. Skills become available as `/flowai-core:<short-name>` — the `flowai-` prefix is stripped from skill / command directory names during build so invocations avoid the `/flowai-core:flowai-commit` double-prefix. Updates flow via Claude Code's `/plugin update` / auto-update tied to the downstream repo's commit SHA, so one framework release maps to exactly one plugin update event.
+- **Build contract:** `scripts/build-claude-plugins.ts` reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks}` and emits:
+  - `<out>/.claude-plugin/marketplace.json` — catalog (top-level `name`, `owner`, `metadata.pluginRoot`, `plugins[]`).
+  - `<out>/plugins/flowai-<pack>/.claude-plugin/plugin.json` — manifest. `version` deliberately omitted so the downstream commit SHA is the version key; `keywords` + `category` populated for discoverability.
+  - `<out>/plugins/flowai-<pack>/skills/<stripped>/SKILL.md` (+ supporting subdirs except `acceptance-tests/`). `disable-model-invocation: true` injected on commands (source under `framework/<pack>/commands/`) and absent on skills (source under `framework/<pack>/skills/`). FR-PACKS.CMD-INVARIANT / SKILL-INVARIANT enforced fail-fast: any source SKILL.md that already carries the flag aborts the build with the offending path.
+  - `<out>/plugins/flowai-<pack>/agents/<name>.md` — frontmatter passed through the universal → Claude-native mapping from FR-DIST.MAPPING (keeps `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color`; drops `readonly`, `mode`, `opencode_tools`; resolves `model` tier `max|smart|fast|cheap` to `opus|sonnet|haiku|haiku`, drops `inherit`).
+  - `<out>/plugins/flowai-<pack>/hooks/hooks.json` only when the source pack carries hooks (no hooks in `core`).
+  - Output is byte-deterministic across runs.
+- **Distribution contract:** CI step `Sync generated artefacts to downstream` checks out `korchasa/flowai-plugins` via deploy key `FLOWAI_PLUGINS_DEPLOY_KEY`, replaces every top-level entry except `README.md` / `LICENSE` / `.git`, commits as `release: framework-vX.Y.Z`, and force-pushes the matching tag. Idempotent across re-runs (`git diff --cached --quiet` short-circuits; `git tag -f` + `git push --force-with-lease` tolerates a re-shot tag).
+- **Acceptance:**
+  - [ ] `scripts/build-claude-plugins.ts` produces a deterministic plugin tree from `framework/core/`.
+    Evidence: `deno test -A scripts/build-claude-plugins_test.ts --filter 'byte-deterministic-rerun'`.
+  - [ ] Skill / command directory names have the `flowai-` prefix stripped.
+    Evidence: `scripts/build-claude-plugins_test.ts::skill-and-command-dirs-have-prefix-stripped`.
+  - [ ] `disable-model-invocation: true` injected for commands, absent for skills.
+    Evidence: `scripts/build-claude-plugins_test.ts::commands-get-disable-model-invocation-injected-skills-do-not`.
+  - [ ] Agent frontmatter transformed to Claude-native shape per FR-DIST.MAPPING.
+    Evidence: `scripts/build-claude-plugins_test.ts::agent-frontmatter-matches-claude-native-mapping` + `::emits-agents-with-claude-native-frontmatter`.
+  - [ ] Build fails fast on FR-PACKS.CMD-INVARIANT / SKILL-INVARIANT violations naming the offending file.
+    Evidence: `scripts/build-claude-plugins_test.ts::fails-fast-on-cmd-invariant-violation` + `::fails-fast-on-skill-invariant-violation`.
+  - [ ] Marketplace and plugin manifest schemas validate.
+    Evidence: `scripts/build-claude-plugins_test.ts::marketplace-and-plugin-json-schema-valid`; additionally `claude plugin validate ./dist/claude-plugins` (manual smoke).
+  - [ ] CI step publishes to `korchasa/flowai-plugins` on each framework release. Idempotent across re-runs.
+    Evidence: manual — first preview tag round-trip (one CI run, then inspect `korchasa/flowai-plugins` `main` for `release: framework-vX.Y.Z` commit and matching tag).
+  - [ ] Downstream `README.md` and `LICENSE` survive every CI sync unchanged.
+    Evidence: manual — `git -C <downstream-clone> log --oneline -- README.md LICENSE` returns exactly the bootstrap commit after any number of CI publishes.
+  - [ ] Smoke install end-to-end on a fresh checkout: `deno task build-plugins` → `/plugin marketplace add ./dist/claude-plugins` → `/plugin install flowai-core@flowai-plugins` → invoke `/flowai-core:<skill>`.
+    Evidence: manual — korchasa (transcript captured in pilot PR).
+- **Status:** [ ] (flips to `[x]` once pilot ships and the first `framework-v*` release lands the downstream commit)
+- **Out of scope (pilot):** multi-pack rollout (separate tasks per remaining pack); submission to the official Anthropic marketplace (`claude-plugins-official`); `latest` / `dev` release channel; npm-source plugin distribution; hook transform validation (no hooks in `core`).
 
 #### FR-PACKS.SCOPE Scope Frontmatter Field
 

@@ -72,6 +72,23 @@ Framework primitives MAY declare `scope: project-only` or `scope: global-only` i
 
 `flowai migrate <from> <to>` requires an explicit `--global` or `--local` flag — it never auto-resolves, since cross-IDE migrations have different semantics in each scope.
 
+### Claude Code plugin marketplace (pilot)
+
+In addition to the `flowai` CLI, Claude Code users can install the `core` pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace:
+
+```sh
+# Inside a Claude Code session:
+/plugin marketplace add korchasa/flowai-plugins
+/plugin install flowai-core@flowai-plugins
+/reload-plugins
+```
+
+Skills are invoked under the `/flowai-core:` namespace, e.g. `/flowai-core:commit`, `/flowai-core:plan`, `/flowai-core:review`. The `flowai-` prefix is stripped from the namespaced part to avoid a `/flowai-core:flowai-commit` double prefix.
+
+> **Security:** Claude Code plugins execute arbitrary code at your user privilege. Only install marketplaces and plugins from sources you trust. The `korchasa/flowai-plugins` repository is a CI-generated mirror of this framework's `core` pack and contains no human-authored content beyond `README.md` and `LICENSE`. See [FR-DIST.MARKETPLACE](documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot) for the build / distribution contract.
+
+The remaining packs (`devtools`, `engineering`, `deno`, `typescript`, `memex`) continue to ship via the `flowai` CLI. Multi-pack marketplace rollout follows after the pilot validates the pipeline.
+
 ### Quick Start Prompt
 
 Copy and paste the following prompt into your AI IDE (Claude Code, Cursor, OpenCode, OpenAI Codex) to install and initialize flowai in your project:

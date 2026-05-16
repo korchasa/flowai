@@ -147,3 +147,43 @@ jobs:
             framework.tar.gz.sha256
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build Claude Code plugin marketplace tree and publish to downstream
+      # repo korchasa/flowai-plugins on the same release event.
+      # implements [FR-DIST.MARKETPLACE](../../documents/requirements.md#fr-dist.marketplace-claude-code-plugin-marketplace-pilot)
+      - name: Build Claude Code plugin marketplace
+        if: steps.releasable.outputs.should_release == 'true'
+        run: deno task build-plugins
+
+      - name: Checkout flowai-plugins (downstream)
+        if: steps.releasable.outputs.should_release == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: korchasa/flowai-plugins
+          ssh-key: ${{ secrets.FLOWAI_PLUGINS_DEPLOY_KEY }}
+          path: downstream
+
+      - name: Sync generated artefacts to downstream
+        if: steps.releasable.outputs.should_release == 'true'
+        env:
+          TAG: framework-v${{ steps.framework-tarball.outputs.framework_version }}
+        run: |
+          set -euo pipefail
+          # Preserve hand-authored files (README.md, LICENSE, .git) and
+          # replace every other top-level entry with the freshly built tree.
+          find downstream -mindepth 1 -maxdepth 1 \
+            ! -name README.md ! -name LICENSE ! -name .git -exec rm -rf {} +
+          cp -r dist/claude-plugins/. downstream/
+          cd downstream
+          git config user.name 'flowai-release-bot'
+          git config user.email 'release-bot@flowai.local'
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No artefact changes; skipping commit."
+          else
+            git commit -m "release: ${TAG}"
+          fi
+          # Tag may already exist on a re-run; replace it and force-push the ref.
+          git tag -f "${TAG}"
+          git push origin main
+          git push --force-with-lease origin "refs/tags/${TAG}"

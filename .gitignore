@@ -27,5 +27,8 @@ _research_tmp/
 cli/src/bundled.json
 cli/src/_version.ts
 
+# Generated artifacts (Claude Code plugin marketplace — FR-DIST.MARKETPLACE)
+dist/
+
 .flowai/runs/
 .claude/scheduled_tasks.lock
