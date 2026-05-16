@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.16](https://github.com/korchasa/flowai/compare/v0.12.15...v0.12.16) (2026-05-16)
+
+
+### Features
+
+* **dist:** full-featured Claude Code plugin install (FR-DIST.MARKETPLACE round 2) ([c445c9f](https://github.com/korchasa/flowai/commit/c445c9f0189137954c513726881109295e37b73b))
+* **dist:** publish all six packs to Claude Code marketplace ([0e34ee6](https://github.com/korchasa/flowai/commit/0e34ee63725759a3ec0309cd6be2ee88113e35a6))
+
+
+### Agent Changes
+
+* apply reflect-suggested improvements ([8fcffc0](https://github.com/korchasa/flowai/commit/8fcffc05b262b042b2a9e39951361c4170410237))
+
 ### [0.12.15](https://github.com/korchasa/flowai/compare/v0.12.14...v0.12.15) (2026-05-16)
 
 
