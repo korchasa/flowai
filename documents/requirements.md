@@ -237,7 +237,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 ### FR-DIST: Global Framework Distribution — flowai
 
-- **Description:** `flowai` CLI tool (`cli/` monorepo directory, published to JSR as `@korchasa/flowai`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime).
+- **Description:** `flowai` CLI tool (developed in the external [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) repo, published to JSR as `@korchasa/flowai`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime). The CLI repo pins a framework revision via `framework.lock` and consumes a SHA-256-verified `framework.tar.gz` released from this repo (FR-DIST.BUNDLE.PIN).
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
 - **Def/Abbr:** CLI = flowai, BundledSource = JSON artifact with all framework files baked at publish time.
 
@@ -260,17 +260,17 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Core-level assets (`framework/<pack>/assets/`) synced to `{ide_dir}/assets/`. Asset changes reported as `ASSETS UPDATED` in sync output with mapped project artifact paths (from `pack.yaml` `assets:` field).
   - [x] `--global` / `-g` flag switches scope to global; scope-aware filter excludes `scope: project-only` primitives in global mode and `scope: global-only` in project mode.
   - [x] `--dry-run` / `-n` flag skips all writes; plan still produced and rendered.
-    Evidence: `cli/src/sync_modes_test.ts::sync - dry-run does not write files but produces plan actions` + `::sync - dry-run global mode does not touch user dirs`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Exit code: `0` on success (no errors, or any dry-run), `1` when at least one write failed.
-    Evidence: `cli/src/cli.ts` `runSync` returns `number`; command handlers call `Deno.exit(code)` when non-zero.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Truthful header: `flowai sync complete.` on success; `flowai sync FAILED: N error(s).` on errors (red when color enabled).
-    Evidence: `cli/src/cli_test.ts::renderSyncOutput - header says FAILED when errors present` + `::renderSyncOutput - header says complete when no errors`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] ERRORS rendered as final block (after ACTIONS REQUIRED / NO ACTIONS REQUIRED), not interleaved with success sections. Red when color enabled, plain otherwise (respects `NO_COLOR` and `Deno.stdout.isTerminal()`).
-    Evidence: `cli/src/cli_test.ts::renderSyncOutput - errors rendered as final block, not inside ACTIONS REQUIRED` + `::renderSyncOutput - ANSI red for header and errors when color=true` + `::renderSyncOutput - no ANSI codes when color=false`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] CREATED/UPDATED counters show `written/planned` when a subset of writes failed; failed items move to the ERRORS block and are hidden from the success list.
-    Evidence: `cli/src/cli_test.ts::renderSyncOutput - partial write shows written/planned counter`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Global-mode plan preview includes `Target dirs:` listing resolved user-level base dirs (including Codex's `~/.agents/skills` split) before the confirmation prompt.
-    Evidence: `cli/src/cli_test.ts::formatSyncPlan - global mode lists resolved Target dirs` + `::formatSyncPlan - project mode does NOT list global Target dirs block`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
 #### FR-DIST.CONFIG Config Generation
 - **Desc:** Interactive `.flowai.yaml` creation when config missing. Path depends on scope: `<cwd>/.flowai.yaml` (project) or `~/.flowai.yaml` (global). Both files may coexist; project scope wins when both are present and no flag is passed.
@@ -306,27 +306,27 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Not in scope:** Auto-migration from project to global; native marketplace plugin packaging.
 - **Acceptance:**
   - [x] `--global` flag drives every scope-dependent path (config, IDE base, hooks, user_sync).
-    Evidence: `cli/src/scope.ts` (`resolveConfigPath`, `resolveIdeBaseDir`, `resolveScope`) + `cli/src/scope_test.ts`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `--local` flag forces project scope even when `~/.flowai.yaml` exists.
-    Evidence: `cli/src/cli_test.ts::resolveEffectiveScope - --local forces project`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `--auto` (default) resolves project→global→prompt per the priority ladder above.
-    Evidence: `cli/src/scope_test.ts::resolveAutoScope - project config present wins` + `cli/src/cli_test.ts::resolveEffectiveScope - auto: falls back to global with flag set` + `cli/src/cli_test.ts::resolveEffectiveScope - auto: both missing signals needsPrompt`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `--global` + `--local` together surfaces an error and exits non-zero.
-    Evidence: `cli/src/cli_test.ts::CLI - --global + --local exits 1 with clear error`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] IDE guard bypassed when resolved scope is global.
-    Evidence: `cli/src/cli.ts` guard conditional on resolved scope; `cli/src/ide_test.ts::CLI - sync subcommand works even inside IDE`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Global mode installs templates to `{home}/.{ide}/assets/AGENTS.template.md`.
-    Evidence: `cli/src/sync.ts` asset step runs in both scopes; `cli/src/sync_modes_test.ts::global mode installs templates`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Global mode skips artifact sync and scaffolds (no `<cwd>/AGENTS.md` diff).
-    Evidence: `cli/src/sync_modes_test.ts::global mode skips artifact sync`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Hook writer resolves global path when scope=global.
-    Evidence: `cli/src/hook_writer.ts` uses `resolveIdeBaseDir`; `cli/src/hooks_test.ts::global merge preserves user hooks`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Per-project mode unchanged when `<cwd>/.flowai.yaml` exists.
-    Evidence: existing `cli/src/sync_test.ts` suite continues to pass unmodified.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `user_sync` scans user-level dirs under global scope.
-    Evidence: `cli/src/user_sync.ts` threads scope; `cli/src/user_sync_test.ts::user_sync in global mode`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `flowai migrate` requires explicit `--global` or `--local` (no auto-resolution).
-    Evidence: `cli/src/cli_test.ts::CLI - migrate without scope flag exits 1` + `cli/src/cli_test.ts::CLI - migrate with --global + --local exits 1`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
 #### FR-PACKS.SCOPE Scope Frontmatter Field
 
@@ -339,7 +339,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `scripts/resource-types.ts` Zod schema accepts `scope: "project-only" | "global-only"` (optional).
     Evidence: `scripts/check-skills_test.ts::validateScopeField`.
   - [x] CLI filter in `cli/src/sync.ts::resolvePackResources` excludes `scope: project-only` primitives when scope=global, excludes `scope: global-only` when scope=project.
-    Evidence: `cli/src/sync_modes_test.ts::scope filter respects global mode` + `cli/src/sync_modes_test.ts::scope filter respects project mode`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
 #### FR-ADAPT-INSTRUCTIONS Standalone AGENTS.md Re-Adaptation — `flowai-adapt-instructions`
 
@@ -394,14 +394,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `runSelfUpdate()` used only by `flowai update`; `flowai` / `flowai sync` use notify-only `notifyUpdateAvailable()`.
 
 #### FR-DIST.BUNDLE Bundled Source
-- **Desc:** Framework files bundled into `cli/src/bundled.json` at publish time. No network dependency during sync.
+- **Desc:** Framework files bundled into the CLI package's `src/bundled.json` at publish time. No network dependency during sync. The CLI lives in the external [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) repo; this repo provides the framework content via a SHA-256-pinned tarball release (see FR-DIST.BUNDLE.PIN).
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
 - **Acceptance:**
-  - [x] `scripts/bundle-framework.ts` generates bundle from `../framework/`.
-  - [x] `BundledSource` reads bundle.
-  - [x] Guard: `task-check.ts` runs bundle before tests.
-  - [x] Bundling logic extracted into reusable `bundleFrameworkDir` / `writeVersionFile` helpers in `cli/scripts/bundle-framework-lib.ts`; entry script `cli/scripts/bundle-framework.ts` is a thin wrapper.
-  - [x] Bundle output is byte-deterministic (sorted keys, stable JSON serialisation) — verified by `cli/scripts/bundle-framework_test.ts::bundleFrameworkDir: byte-deterministic across two runs`.
+  - [x] `BundledSource` (in flowai-cli) reads `src/bundled.json` baked at publish time.
+  - [x] Bundling logic lives in `scripts/bundle-framework-lib.ts` (in flowai-cli); entry script `scripts/bundle-framework.ts` is a thin wrapper.
+  - [x] Bundle output is byte-deterministic (sorted keys, stable JSON serialisation) — verified by `scripts/bundle-framework_test.ts::bundleFrameworkDir: byte-deterministic across two runs` (in flowai-cli).
 
 #### FR-DIST.BUNDLE.PIN Pinned-Tarball Bundle Source (Post-Split)
 - **Desc:** After the CLI is extracted to a standalone repo (`korchasa/flowai-cli`), `bundleFrameworkDir` consumes framework content from a downloaded GitHub-release tarball instead of an adjacent `framework/` directory. The CLI repo pins the framework revision via a committed `framework.lock` file (version, commit_sha, tarball_sha256). The bundle script downloads `framework.tar.gz` from `https://github.com/korchasa/flowai/releases/download/framework-v<version>/`, verifies its SHA-256 against `tarball_sha256`, and aborts on any mismatch. Runtime stays offline — only the bundle step touches the network.
@@ -522,14 +520,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Scenario:** `flowai sync` with `ides: [codex]` and a set of universal agents writes each agent body to `.codex/agents/<name>.toml` (with `name`/`description`/`developer_instructions`) and merges `[agents.<name>]` entries into `.codex/config.toml` via `mergeCodexConfig`. Removing (or renaming) an agent removes its table and sidecar on next run via the prefix rule. Malformed TOML in `.codex/config.toml` throws a clear error naming the file path — does NOT silently overwrite user config.
 - **Acceptance:**
   - [x] `mergeCodexConfig(tomlText, changes)` is pure (no FS). It upserts `[agents.<name>]` for each change and deletes any existing `[agents.<k>]` where `k.startsWith("flowai-")` and `k` is not in `changes`. Non-prefix tables are left untouched.
-    Evidence: `cli/src/toml_merge_test.ts::mergeCodexConfig - removes stale flowai- tables by prefix` + `::mergeCodexConfig - preserves user-authored tables`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `writeCodexAgents(plan, fs, cwd)` in `cli/src/writer.ts` writes sidecars + TOML block atomically.
-  - [x] Running `sync` twice is idempotent for Codex (no diff on second run). Evidence: `cli/src/sync_test.ts` Codex idempotency case.
+  - [x] Running `sync` twice is idempotent for Codex (no diff on second run). Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Removing or renaming an agent in `.flowai.yaml` / framework removes the `[agents.<name>]` block and `.codex/agents/<name>.toml` on next sync via prefix-based orphan cleanup (see FR-DIST.CLEAN-PREFIX).
   - [x] User-hand-edited `[agents.user-agent]` tables (no `flowai-` prefix) survive a sync round-trip.
   - [x] Malformed `.codex/config.toml` throws with file path + underlying parse error; file contents are preserved.
   - [x] Legacy `.codex/flowai-agents.json` manifest is deleted on next sync after upgrade (one-shot migration).
-    Evidence: `cli/src/sync_codex_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
 #### FR-DIST.CLEAN-PREFIX Prefix-Based Orphan Cleanup
 
@@ -547,13 +545,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - Prefix other than `flowai-` — out of scope.
 - **Acceptance:**
   - [x] `computePrefixOrphansPlan(targetDir, keepNames, fs, type, { prefix, ext })` in `cli/src/sync.ts` returns a delete plan covering the four invariants above (prefix match, keep-set, symlink skip, absent-target = empty plan).
-    Evidence: `cli/src/prefix_cleanup_test.ts::computePrefixOrphansPlan - removes renamed skill dir` + `- removes renamed agent file` + `- preserves non-flowai entries` + `- skips symlinks` + `- empty plan when no orphans` + `- empty plan when target dir missing`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Framework sync invokes `computePrefixOrphansPlan` once per managed dir per IDE (skills-dir unified pass after skills+commands write; agents-dir pass).
-    Evidence: `cli/src/sync_modes_test.ts::sync - removes orphan skill dir after framework rename`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] Codex `mergeCodexConfig` removes stale `flowai-*` tables without a manifest; `syncCodexAgents` removes orphan `flowai-*.toml` sidecars via prefix scan and deletes legacy `flowai-agents.json` if present.
-    Evidence: `cli/src/toml_merge_test.ts::mergeCodexConfig - removes stale flowai- tables by prefix` + `cli/src/sync_codex_test.ts::sync - codex target: removes stale agent on second run when excluded` + `cli/src/sync_codex_test.ts::sync - codex target: removes legacy flowai-agents.json manifest on upgrade`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `runUserSync` is unaffected — no prefix cleanup there (framework entries already filtered out at scan stage).
-    Evidence: `cli/src/user_sync.ts` (`isFramework(name)` guard) + `cli/src/user_sync_test.ts::runUserSync - flowai-* agent not synced`.
+    Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
 #### FR-DIST.CODEX-HOOKS OpenAI Codex Hook Sync (Experimental)
 
@@ -575,14 +573,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - `source.path` — local `framework/` dir path. Mutually exclusive with `source.ref`.
   - No `source` field → bundled (backward compatible).
 - **Acceptance:**
-  - [x] `source.ref` alone → clone default repo. Evidence: `cli/src/source.ts:95-96`, `cli/src/source_test.ts:306-319`
-  - [x] `source.git` + `source.ref` → clone custom repo. Evidence: `cli/src/source.ts:95`, `cli/src/source_test.ts:321-332`
-  - [x] `source.path` → LocalSource. Evidence: `cli/src/sync.ts:64-65`
-  - [x] `source.git` without `ref` → validation error. Evidence: `cli/src/config.ts:97-100`, `cli/src/config_test.ts:424-434`
-  - [x] `source.ref` + `source.path` → validation error. Evidence: `cli/src/config.ts:101-104`, `cli/src/config_test.ts:436-446`
-  - [x] No `source` → BundledSource (backward compatible). Evidence: `cli/src/sync.ts:66-68`, `cli/src/config_test.ts:419-421`
-  - [x] CLI logs source type. Evidence: `cli/src/cli.ts:101-110`
-  - [x] Cleanup on failure (tmpdir removed). Evidence: `cli/src/source.ts:115-116`
+  - [x] `source.ref` alone → clone default repo. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] `source.git` + `source.ref` → clone custom repo. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] `source.path` → LocalSource. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] `source.git` without `ref` → validation error. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] `source.ref` + `source.path` → validation error. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] No `source` → BundledSource (backward compatible). Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] CLI logs source type. Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
+  - [x] Cleanup on failure (tmpdir removed). Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `deno task check` passes with all new tests. Evidence: 255 tests pass.
 
 ### FR-AGENT-COMMIT: Conventional Commits — `agent` Type

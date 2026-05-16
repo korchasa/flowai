@@ -61,8 +61,8 @@ Assumes users will follow the defined workflows and keep documentation up-to-dat
 - `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework commands + skills install into `.claude/skills/` (commands get `disable-model-invocation: true` injected by the CLI writer).
 - `documents/`: SRS/SDS and supporting documentation
 - `scripts/`: Deno task scripts
-- `cli/`: Distribution tool (flowai). Published to JSR as `@korchasa/flowai`. Bundles `framework/` into `cli/src/bundled.json` at publish time — zero network dependency. Uses root `deno.json` (single config). Has own tests and `CLAUDE.md`.
-- `.github/workflows/ci.yml`: Unified CI/CD — checks framework + CLI, publishes to JSR on main.
+- **CLI distribution** (external): the `flowai` command-line tool lives in the standalone repo [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (JSR: `@korchasa/flowai`). This repo no longer publishes to JSR. Framework content reaches the CLI via a SHA-256-pinned `framework.tar.gz` asset on `framework-v<version>` GitHub releases of this repo (FR-DIST.BUNDLE.PIN, FR-CICD.SPLIT).
+- `.github/workflows/ci.yml`: CI/CD for this (framework) repo — runs `deno task check` and, on `feat:`/`fix:` commits, cuts a `chore(release)` plus a `framework-v<version>` GitHub release with the reproducible tarball.
 
 ## Terminology (agentskills.io)
 
@@ -103,12 +103,7 @@ the mapped section contradicts new code → update the section.
 - `framework/<pack>/hooks/` → SRS `FR-HOOK-*` clauses, [SDS §3.1.1 Product Packs](documents/design.md#3.1.1-product-packs-framework) (hook subsection)
 - `framework/<pack>/pack.yaml` → [FR-PACKS](documents/requirements.md#fr-packs-pack-system-modular-resource-installation), [SDS §3.1.1 Product Packs](documents/design.md#3.1.1-product-packs-framework); [README §Packs](README.md#packs) when a pack is added/removed
 - `framework/<pack>/assets/AGENTS.template.md` → [FR-INIT](documents/requirements.md#fr-init-project-initialization) (template variables); check README mentions
-- `cli/src/sync.ts` / `cli/src/sync_resolution.ts` / `cli/src/sync_kinds.ts` / `cli/src/sync_plan_ops.ts` / `cli/src/writer.ts` / `cli/src/plan.ts` → [FR-DIST.SYNC](documents/requirements.md#fr-dist.sync-sync-command-flowai) / [FR-DIST.CONFIG](documents/requirements.md#fr-dist.config-config-generation) / [FR-DIST.FILTER](documents/requirements.md#fr-dist.filter-selective-sync), [SDS §3.5 Global Framework Distribution](documents/design.md#3.5-global-framework-distribution-fr-dist-cli), [README §CLI Commands](README.md#cli-commands)
-- `cli/src/migrate.ts` → [FR-DIST.MIGRATE](documents/requirements.md#fr-dist.migrate-one-way-ide-migration), [SDS §3.6 Migrate Command](documents/design.md#3.6-migrate-command-fr-dist.migrate-clisrcmigrate.ts)
-- `cli/src/user_sync.ts` → [FR-DIST.USER-SYNC](documents/requirements.md#fr-dist.user-sync-cross-ide-user-resource-sync), [SDS §3.5](documents/design.md#3.5-global-framework-distribution-fr-dist-cli)
-- `cli/src/update.ts` → [FR-DIST.UPDATE](documents/requirements.md#fr-dist.update-pre-flight-update-notice) / [FR-DIST.UPDATE-CMD](documents/requirements.md#fr-dist.update-cmd-self-update-subcommand), [SDS §3.10 Framework Update](documents/design.md#3.10-framework-update-skill-flowai-update)
-- `cli/src/loop.ts` → [FR-LOOP](documents/requirements.md#fr-loop-non-interactive-runner-flowai-loop), [SDS §3.11 Loop Command](documents/design.md#3.11-loop-command-non-interactive-runner-fr-loop-clisrcloop.ts)
-- `cli/src/adapt.ts` → [FR-ADAPT-INSTRUCTIONS](documents/requirements.md#fr-adapt-instructions-standalone-agents.md-re-adaptation-flowai-adapt-instructions), [SDS §3.5.1](documents/design.md#3.5.1-agents.md-re-adaptation-skill-flowai-adapt-instructions) + [§3.12](documents/design.md#3.12-standalone-primitive-adaptation-flowai-adapt)
+- CLI source files (`src/sync.ts`, `src/migrate.ts`, `src/user_sync.ts`, `src/update.ts`, `src/loop.ts`, `src/adapt.ts`, etc.) → live in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli); the FR clauses in this repo's SRS (`FR-DIST.SYNC`, `FR-DIST.MIGRATE`, `FR-DIST.USER-SYNC`, `FR-DIST.UPDATE`, `FR-LOOP`, `FR-ADAPT-INSTRUCTIONS`) define the contract those files must satisfy.
 - `scripts/acceptance-tests/` → SRS `FR-ACCEPT*` clauses, [SDS §3.4 Acceptance Test System](documents/design.md#3.4-benchmark-system-benchmarks-scriptsbenchmarks)
 - `scripts/acceptance-tests/lib/cache.ts` / `acceptance-tests/cache/` → [FR-ACCEPT-CACHE](documents/requirements.md#fr-bench-cache-benchmark-result-cache), [SDS §3.4.1 Acceptance Test Result Cache](documents/design.md#3.4.1-benchmark-result-cache-fr-bench-cache-scriptsbenchmarkslibcache.ts)
 - `scripts/acceptance-tests/lib/process_watchdog.ts` / `scripts/acceptance-tests/lib/system_health.ts` → [FR-ACCEPT-GUARDS](documents/requirements.md#fr-bench-guards-resource-guards-for-spawned-agents), [SDS §3.4.2 Resource Guards](documents/design.md#3.4.2-resource-guards-for-spawned-agents-fr-bench-guards-scriptsbenchmarkslibprocess_watchdog.ts-system_health.ts)
@@ -351,7 +346,7 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
 - When writing scripts, respect the `NO_COLOR` env var (https://no-color.org/) — disable ANSI colors when it is set.
 - All project scripts auto-detect AI agent environments (`CLAUDECODE=1`) and disable ANSI colors automatically. Manual `NO_COLOR=1` prefix is not required when running from Claude Code.
 - When backgrounding a long command (`run_in_background`, fire-and-poll, etc.), do NOT pipe through `tail -N` — `tail` without `-f` buffers to EOF, so the output file stays empty until the upstream exits and you cannot tell "still running" from "hung". Either let the command write directly to the output file, or use `Monitor` with `tail -f <path>`. To inspect a stuck background command, check process state with `ps -p <pid> -o pid,pcpu,etime,command` rather than relying on output presence.
-- **Pre-flight hygiene before `deno task check`**: stale CLI children from prior sessions can hold the test runner indefinitely. Verify with `ps aux | grep -E 'cli/src/main\.ts|deno test -A cli/src' | grep -v grep`. If any have run more than ~5 min at high CPU, they are leaks — kill them. The CLI test suite spawns subprocesses via `cli/src/main.ts`; abandoned children block subsequent `deno test -A cli/src` runs (suspected port contention and lock on `cli/src/bundled.json`).
+- **Pre-flight hygiene before `deno task check`**: stale `deno test` children from prior sessions can hold the runner indefinitely. Verify with `ps aux | grep -E 'deno test -A' | grep -v grep`. If any have run more than ~5 min at high CPU, they are leaks — kill them.
 
 ### Responsibility
 
@@ -377,7 +372,7 @@ Build tooling, verification, and acceptance test infrastructure for flowai.
 - `deno task acceptance-tests` (check deno.json)
 
 ### CLI Test Caveat
-- CLI tests (`cli/src/`) require `-A` flag and MUST be run from **repo root**, not from `cli/` subdir. See `cli/CLAUDE.md` for details.
+- CLI test suite moved to [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) — run `deno task check` there for the CLI side. This repo's `deno task check` covers framework + scripts only.
 
 ### `deno task check` Output Quirks
 

@@ -1,6 +1,8 @@
 import { join } from "@std/path";
-import { transformAgent } from "../../../cli/src/transform.ts";
-import { injectDisableModelInvocation } from "../../../cli/src/sync.ts";
+import {
+  injectDisableModelInvocation,
+  transformAgent,
+} from "./cli-internals.ts";
 
 const TMP_DIR = join(Deno.cwd(), "tmp");
 

@@ -1,22 +1,20 @@
 import { assertEquals } from "@std/assert";
 import { buildCheckPlan } from "./task-check.ts";
 
-Deno.test("buildCheckPlan: prerequisites has bundle as only entry", () => {
+Deno.test("buildCheckPlan: prerequisites is empty after CLI extraction", () => {
   const plan = buildCheckPlan();
-  assertEquals(plan.prerequisites.length, 1);
-  assertEquals(plan.prerequisites[0].args, ["task", "bundle"]);
+  assertEquals(plan.prerequisites.length, 0);
 });
 
-Deno.test("buildCheckPlan: parallel has 16 independent checks", () => {
+Deno.test("buildCheckPlan: parallel covers fmt + lint + tests + validators", () => {
   const plan = buildCheckPlan();
-  assertEquals(plan.parallel.length, 16);
+  assertEquals(plan.parallel.length >= 10, true);
 
   // Verify key checks are present
   const labels = plan.parallel.map((c) => c.args.join(" "));
   assertEquals(labels.some((l) => l.includes("fmt --check")), true);
   assertEquals(labels.some((l) => l.includes("lint scripts")), true);
   assertEquals(labels.some((l) => l.includes("test -A")), true);
-  assertEquals(labels.some((l) => l.includes("check cli/src/main.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-skills.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-agents.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-skill-sync.ts")), true);

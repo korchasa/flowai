@@ -67,7 +67,7 @@ export function inferKind(skillsDir: string): SkillKind {
  *
  * - Under `commands/`: the source SKILL.md must NOT carry
  *   `disable-model-invocation`. The writer injects the flag at sync time
- *   (see `injectDisableModelInvocation` in cli/src/sync.ts); having it in
+ *   (see `injectDisableModelInvocation` in flowai-cli); having it in
  *   source means either a stale migration artifact or an author trying to
  *   hand-maintain the flag despite directory-based classification.
  *
@@ -358,8 +358,8 @@ export async function validateSkill(
 
   // [FR-UNIVERSAL.IDE-NEUTRAL](../documents/requirements.md#fr-universal.ide-neutral-framework-ide-neutrality): framework skills/commands/agents must not name
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
-  // Model IDs belong in cli/src/transform.ts `DEFAULT_MODEL_MAPS`, not in
-  // user-facing skill bodies.
+  // Model IDs belong in the CLI's `DEFAULT_MODEL_MAPS` (in flowai-cli), not
+  // in user-facing skill bodies.
   if (skillsDir.replace(/\\/g, "/").includes("/framework/")) {
     errors.push(...validateIdeNeutrality(dirName, content));
   }

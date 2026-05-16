@@ -37,11 +37,6 @@ jobs:
           git diff --exit-code || { echo "::error::Unexpected file modifications after checks"; exit 1; }
           [ -z "$(git ls-files --others --exclude-standard)" ] || { echo "::error::Unexpected untracked files after checks"; exit 1; }
 
-      - name: Verify CLI install
-        run: |
-          deno install --global -A --config deno.json --name flowai ./cli/src/main.ts
-          flowai --help
-
   release:
     needs: check
     if: |
@@ -93,12 +88,6 @@ jobs:
           git push --follow-tags origin main
           echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
           echo "notes_file=${NOTES_FILE}" >> $GITHUB_OUTPUT
-
-      - name: Publish to JSR
-        if: steps.releasable.outputs.should_release == 'true'
-        run: |
-          deno task bundle
-          deno publish --allow-dirty
 
       # Produce a reproducible framework.tar.gz so the external flowai-cli
       # repo can pin a specific framework revision by SHA-256 and bundle from

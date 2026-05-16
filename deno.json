@@ -1,17 +1,6 @@
 {
-  "name": "@korchasa/flowai",
   "version": "0.12.11",
-  "exports": "./cli/src/main.ts",
   "license": "MIT",
-  "publish": {
-    "include": [
-      "cli/src/"
-    ],
-    "exclude": [
-      "!cli/src/bundled.json",
-      "!cli/src/_version.ts"
-    ]
-  },
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0",
     "@cliffy/prompt": "jsr:@cliffy/prompt@^1.0.0",
@@ -33,9 +22,6 @@
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
     "acceptance-tests": "deno run -A scripts/task-acceptance-tests.ts",
-    "sync-local": "deno run -A scripts/task-sync-local.ts",
-    "sync-global": "deno run -A scripts/task-sync-global.ts",
-    "bundle": "deno run -A cli/scripts/bundle-framework.ts",
     "release": "deno run -A npm:standard-version --skip.tag"
   },
   "lint": {

@@ -298,14 +298,16 @@ framework/              # THE PRODUCT — distributed to users via flowai CLI
   devtools/             #   Skill/agent authoring tools
   deno/                 #   Deno-specific skills
   typescript/           #   TypeScript-specific setup skills
-cli/                    # Distribution tool — published to JSR as @korchasa/flowai
-  src/                  #   CLI source (BundledSource, sync, transform, plan)
-  scripts/              #   Bundle script (generates bundled.json + _version.ts)
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure
 acceptance-tests/             # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
-deno.json               # Single config: JSR metadata, imports, tasks
+deno.json               # Imports, tasks, lint/fmt config
 AGENTS.md               # Project vision, rules, agent instructions
+
+# CLI lives in a separate repo (post-split):
+#   https://github.com/korchasa/flowai-cli
+# It consumes framework-v<version>.tar.gz assets released from this repo
+# and publishes @korchasa/flowai to JSR.
 
 .claude/                # INTERNAL — dev tooling + framework resources
   skills/               #   Dev-only skills (tracked) + framework skills (via flowai)

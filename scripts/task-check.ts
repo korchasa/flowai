@@ -16,13 +16,7 @@ export type CheckPlan = {
  */
 export function buildCheckPlan(): CheckPlan {
   return {
-    prerequisites: [
-      // Bundle framework (generates cli/src/bundled.json + cli/src/_version.ts)
-      {
-        cmd: "deno",
-        args: ["task", "bundle"],
-      },
-    ],
+    prerequisites: [],
     parallel: [
       // Format
       {
@@ -31,8 +25,6 @@ export function buildCheckPlan(): CheckPlan {
           "fmt",
           "--check",
           "scripts",
-          "cli/src",
-          "cli/scripts",
           "framework",
           "deno.json",
         ],
@@ -40,7 +32,7 @@ export function buildCheckPlan(): CheckPlan {
       // Lint: project code (strict)
       {
         cmd: "deno",
-        args: ["lint", "scripts", "cli/src", "cli/scripts"],
+        args: ["lint", "scripts"],
       },
       // Lint: framework (relaxed — scripts use jsr: specifiers for standalone-runnable)
       {
@@ -61,11 +53,6 @@ export function buildCheckPlan(): CheckPlan {
           "scripts",
         ],
       },
-      // Tests: CLI
-      {
-        cmd: "deno",
-        args: ["test", "-A", "cli/src", "cli/scripts"],
-      },
       // Tests: framework hooks and scripts
       {
         cmd: "deno",
@@ -75,11 +62,6 @@ export function buildCheckPlan(): CheckPlan {
           "--ignore=framework/*/skills/*/acceptance-tests,framework/*/commands/*/acceptance-tests,framework/*/agents/*/acceptance-tests,framework/*/acceptance-tests/*/fixture",
           "framework",
         ],
-      },
-      // Type-check CLI entry point (catches errors missed by tests but found by deno publish)
-      {
-        cmd: "deno",
-        args: ["check", "cli/src/main.ts"],
       },
       // Skill/agent validation
       {

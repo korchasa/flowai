@@ -27,8 +27,6 @@
  *       "pack.yaml":            fileHash(framework/<pack>/pack.yaml),
  *       "agents.template":      fileHash(framework/core/assets/AGENTS.template.md),
  *       "runner:<relpath>":     fileHash(f) for f in scripts/acceptance-tests/lib/** ∪ scripts/task-acceptance-tests.ts,
- *       "cli:transform":        fileHash(cli/src/transform.ts),
- *       "cli:sync":             fileHash(cli/src/sync.ts),
  *       "config:full":          fileHash(acceptance-tests/config.json),
  *     }),
  *   }))
@@ -72,8 +70,6 @@ export const MAX_REASON_LEN = 200;
  * Must be kept in sync with actual imports — enforced by `cache_test.ts`.
  */
 export const whitelistedCrossPackageFiles: readonly string[] = [
-  "cli/src/transform.ts",
-  "cli/src/sync.ts",
   "scripts/utils.ts",
 ];
 
