@@ -5,5 +5,10 @@
 # and re-checked by scripts/check-pack-refs.ts `--leakage` mode.
 # Never shipped to user IDE configs.
 schema_version: 1
-atoms: {}
+atoms:
+  flowai-plan-exp-permanent-tasks:
+    source: framework/core/commands/flowai-plan-exp-permanent-tasks/_atom.md
+    target: framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md
+    default_params:
+      TERMINATION: TOTAL_STOP
 composites: {}

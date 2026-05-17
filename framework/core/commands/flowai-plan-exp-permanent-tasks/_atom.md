@@ -3,9 +3,12 @@ name: flowai-plan-exp-permanent-tasks
 description: Experimental committed-tasks variant of flowai-plan. User-invoked. Writes tasks at documents/tasks/<YYYY>/<MM>/<slug>.md with extended frontmatter (date, status, implements, tags, related_tasks).
 argument-hint: task description or issue URL
 effort: high
+_params:
+  TERMINATION:
+    choices: [TOTAL_STOP, HAND_OFF_TO_NEXT]
+    default: TOTAL_STOP
+    description: Final-step behaviour — TOTAL_STOP for standalone use; HAND_OFF_TO_NEXT when consumed inside a composite (flowai-do-with-plan, flowai-ship) so the agent continues into the next phase instead of stopping.
 ---
-
-<!-- GENERATED FROM framework/core/commands/flowai-plan-exp-permanent-tasks/_atom.md via scripts/generate-skill-composites.ts — DO NOT EDIT BY HAND -->
 
 # Task Planning (committed-tasks variant)
 
@@ -120,7 +123,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - Edit the task file to incorporate every **apply** item (update Solution, DoD, Overview, or Follow-ups as appropriate). The edit MUST happen AFTER the critique was emitted.
    - Do NOT ask the user which items to address — the triage IS the answer. Do NOT prompt with phrases like "which would you like addressed", "should I apply", "do you want me to incorporate".
    - Report the applied/discarded/deferred counts in chat so the user can override any classification on their next turn.
-8. **TOTAL STOP**
+{{TERMINATION}}
 
 </step_by_step>
 
@@ -138,3 +141,13 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 - [ ] For every FR-ID in `implements:` whose SRS section already exists, `documents/requirements.md` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>
+
+<param-branch name="TERMINATION" value="TOTAL_STOP">
+8. **TOTAL STOP**
+</param-branch>
+
+<param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
+8. **Hand off to the next phase**
+   - Announce: "Plan complete at `documents/tasks/<YYYY>/<MM>/<slug>.md`. Entering the next phase."
+   - Do NOT issue a TOTAL STOP. Continue immediately into the next phase of the composite workflow.
+</param-branch>

@@ -132,6 +132,12 @@ export function validateStructure(
 
   for (const entry of entries) {
     if (entry.name === "SKILL.md") continue;
+    // Generator inputs (FR-SKILL-COMPOSE): siblings of SKILL.md, excluded
+    // from framework.tar.gz, consumed by scripts/generate-skill-composites.ts.
+    if (
+      entry.isFile &&
+      (entry.name === "_atom.md" || entry.name === "_composite.md")
+    ) continue;
     if (entry.isDirectory && ALLOWED_SUBDIRS.has(entry.name)) continue;
     errors.push({
       skill: dirName,
