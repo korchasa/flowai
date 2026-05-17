@@ -74,10 +74,6 @@ export function buildCheckPlan(): CheckPlan {
       },
       {
         cmd: "deno",
-        args: ["run", "-A", "scripts/check-skill-sync.ts"],
-      },
-      {
-        cmd: "deno",
         args: ["run", "-A", "scripts/check-pack-refs.ts"],
       },
       // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)

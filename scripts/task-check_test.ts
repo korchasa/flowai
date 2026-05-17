@@ -17,8 +17,13 @@ Deno.test("buildCheckPlan: parallel covers fmt + lint + tests + validators", () 
   assertEquals(labels.some((l) => l.includes("test -A")), true);
   assertEquals(labels.some((l) => l.includes("check-skills.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-agents.ts")), true);
-  assertEquals(labels.some((l) => l.includes("check-skill-sync.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-pack-refs.ts")), true);
+  assertEquals(
+    labels.some((l) =>
+      l.includes("generate-skill-composites.ts") && l.includes("--check")
+    ),
+    true,
+  );
   assertEquals(labels.some((l) => l.includes("check-naming-prefix.ts")), true);
   assertEquals(labels.some((l) => l.includes("check-srs-evidence.ts")), true);
   assertEquals(

@@ -243,7 +243,25 @@ Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills still hit the catalog (fron
   );
 });
 
-Deno.test("FR-UNIVERSAL.DISCLOSURE: regular skill (not in COMPOSITE_SKILLS) still hits the token cap", () => {
+Deno.test("token_cap_exempts_composites_from_manifest: every composite in framework/composites.yaml is exempt", async () => {
+  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly) — the exemption list is now derived live from the
+  // manifest via scripts/lib/composite-list.ts, not a hardcoded TS array.
+  const { compositeNames } = await import("./lib/composite-list.ts");
+  const content = "x".repeat(40000); // 10000 tokens — would fail without exemption
+  for (const name of compositeNames()) {
+    const errors = validateProgressiveDisclosure(name, content, {
+      name,
+      description: "y",
+    });
+    assertEquals(
+      errors.some((e) => e.message.includes("tokens")),
+      false,
+      `${name} (from manifest) must be exempt from the 5000-token cap`,
+    );
+  }
+});
+
+Deno.test("FR-UNIVERSAL.DISCLOSURE: regular skill (not in composites manifest) still hits the token cap", () => {
   const content = "x".repeat(20001);
   const fm = { name: "regular-skill", description: "y" };
   const errors = validateProgressiveDisclosure(
