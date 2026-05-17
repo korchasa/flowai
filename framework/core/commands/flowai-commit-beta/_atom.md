@@ -1,9 +1,12 @@
 ---
 name: flowai-commit-beta
 description: Streamlined commit workflow — fewer tool calls, targeted doc sync
+_params:
+  DIFF_SOURCE:
+    choices: [FRESH_READ, REUSE_PRIOR_PHASE]
+    default: FRESH_READ
+    description: How step 1 acquires the diff. FRESH_READ collects git state from scratch (standalone usage); REUSE_PRIOR_PHASE assumes a prior phase already ran `git diff` and only verifies the tree did not change (composite usage).
 ---
-
-<!-- GENERATED FROM framework/core/commands/flowai-commit-beta/_atom.md via scripts/generate-skill-composites.ts — DO NOT EDIT BY HAND -->
 
 # Commit Workflow
 
@@ -54,10 +57,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 
 <step_by_step>
 
-1. **Gather Changes**
-   - Collect all git state in a single command:
-     `git status -s && echo '---DIFF---' && git diff && echo '---CACHED---' && git diff --cached && echo '---LOG---' && git log --oneline -5`
-   - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
+{{DIFF_SOURCE}}
 2. **Documentation Sync** _(mandatory — do NOT skip)_
    - **Determine scope**: look at the file paths from step 1. Classify the change:
      - **Infra-only**: ALL changed files are tests (`*_test.*`, `*.test.*`), CI (`.github/`), acceptance tests (`acceptance-tests/`), formatting, or dev-environment (`.devcontainer/`). → Skip doc sync. Output: `Documentation sync: skipped — infra-only changes (tests/CI/acceptance-tests)`.
@@ -135,3 +135,17 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 - [ ] Session complexity check performed; `/flowai-reflect` auto-invoked if signals detected.
 - [ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.
 </verification>
+
+<param-branch name="DIFF_SOURCE" value="FRESH_READ">
+1. **Gather Changes**
+   - Collect all git state in a single command:
+     `git status -s && echo '---DIFF---' && git diff && echo '---CACHED---' && git diff --cached && echo '---LOG---' && git log --oneline -5`
+   - If working directory is clean (no changes at all), report "Nothing to commit" and STOP.
+</param-branch>
+
+<param-branch name="DIFF_SOURCE" value="REUSE_PRIOR_PHASE">
+1. **Verify Unchanged State**
+   - The diff and file list are already in context from the prior phase. Do NOT re-read them.
+   - Run only `git status -s` to confirm nothing changed between phases.
+   - If new changes appeared (unexpected), report and STOP.
+</param-branch>

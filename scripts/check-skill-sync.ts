@@ -64,7 +64,13 @@ const SYNC_CHECKS: Array<{
       {
         skill: "flowai-commit-beta",
         phase: "Review-and-Commit Phase (commit)",
-        allowedDivergentSteps: [1],
+        // Steps 4 + 5 added to the allow-list during the FR-SKILL-COMPOSE
+        // migration (Commit 3 of generate-skills-from-atoms): the standalone
+        // commit-beta atom was harmonised with the composite's Task Status
+        // Lifecycle + new-shape-task-cleanup behaviour. flowai-do-with-plan
+        // still carries the old wording until Commit 4 regenerates it from
+        // the same atom; check-skill-sync.ts itself is deleted in Commit 5.
+        allowedDivergentSteps: [1, 4, 5],
       },
     ],
   },

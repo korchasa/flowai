@@ -11,4 +11,12 @@ atoms:
     target: framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
+  flowai-review:
+    source: framework/core/skills/flowai-review/_atom.md
+    target: framework/core/skills/flowai-review/SKILL.md
+  flowai-commit-beta:
+    source: framework/core/commands/flowai-commit-beta/_atom.md
+    target: framework/core/commands/flowai-commit-beta/SKILL.md
+    default_params:
+      DIFF_SOURCE: FRESH_READ
 composites: {}

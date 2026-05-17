@@ -3,8 +3,6 @@ name: flowai-review
 description: Use when the user asks to review CURRENT uncommitted changes (staged, unstaged, or branch diff) as QA + lead engineer before committing — verdict on task completion, code quality, architecture, cleanup. Requires an existing diff. Do NOT trigger on generic "is this code good?" questions without a diff, or on post-merge code review of historical commits.
 ---
 
-<!-- GENERATED FROM framework/core/skills/flowai-review/_atom.md via scripts/generate-skill-composites.ts — DO NOT EDIT BY HAND -->
-
 # Task: Review Changes
 
 ## Overview
