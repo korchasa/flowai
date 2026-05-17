@@ -24,6 +24,11 @@ atoms:
     target: framework/core/skills/flowai-do/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
+  flowai-push:
+    source: framework/core/commands/flowai-push/_atom.md
+    target: framework/core/commands/flowai-push/SKILL.md
+    default_params:
+      TERMINATION: TOTAL_STOP
 composites:
   flowai-review-and-commit:
     target: framework/core/commands/flowai-review-and-commit/SKILL.md
