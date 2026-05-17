@@ -149,11 +149,14 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-commit` — atomic commits with QA and self-reflection
 - `flowai-commit-beta` — streamlined commit (targeted doc sync, inline grouping)
 - `flowai-review-and-commit` — streamlined review + commit (reuses diff across phases)
-- `flowai-do-with-plan` — full plan → implement → review-and-commit cycle (user-only composite)
+- `flowai-do-with-plan` — full plan → implement → review-and-commit cycle (user-only composite, **deprecated** — prefer `flowai-ship`)
+- `flowai-push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
+- `flowai-ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
 - `flowai-update` — update flowai framework (sync skills/agents, migrate artifacts)
 - `flowai-adapt` — adapt installed skills/agents/hooks/assets to project specifics (standalone)
 
 **Skills:**
+- `flowai-do` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
 - `flowai-plan` — task planning (GODS format, gitignored task file)
 - `/flowai-plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done`, `implements`, `tags`, `related_tasks`); status auto-derives from DoD by commit skills
 - `flowai-epic` — structured feature specification for multi-session features
@@ -403,6 +406,8 @@ deno task check
 ```
 
 Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (tracked in git). Framework skills/agents are installed by flowai from bundled source.
+
+**Composite SKILL.md files are generator output.** Source of truth is `framework/composites.yaml` (manifest) + per-skill `_atom.md` (parametrized step bodies) + per-composite `_composite.md` (wrappers). Regenerate via `deno run -A scripts/generate-skill-composites.ts --write`; CI runs `--check` and fails on drift. Generator inputs are excluded from `framework.tar.gz` via `tar --exclude` in `.github/workflows/ci.yml`, and re-verified by `scripts/check-pack-refs.ts --leakage`. See `framework/AGENTS.md § Composite Skill Authoring` for the canon rules.
 
 For contributors working on **the CLI itself** (sync engine, IDE adapters, bundle pipeline) — go to [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli). That repo has its own `deno task check`, its own test suite, and publishes `@korchasa/flowai` to JSR on tag `v*`. It pins a framework revision via `framework.lock`; bump it with `deno task bump-framework <version>` after a new `framework-v*` release lands here.
 

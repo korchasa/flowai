@@ -1,6 +1,6 @@
 ---
 name: flowai-do-with-plan
-description: "Self-contained — execute the inlined steps directly. Three-phase full-cycle workflow: write a committed plan, implement under TDD, then review and commit with a verdict gate. Do NOT invoke other skills via the Skill tool."
+description: "Self-contained — execute the inlined steps directly. Three-phase full-cycle workflow: write a committed plan, implement under TDD, then review and commit with a verdict gate. Do NOT invoke other skills via the Skill tool. Deprecated — prefer `flowai-ship` for new work."
 argument-hint: task description or issue URL
 effort: high
 ---

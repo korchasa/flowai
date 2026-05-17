@@ -644,12 +644,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `flowai-review-and-commit`
 
 - **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
+- **Generated origin:** `framework/composites.yaml` + `framework/core/commands/flowai-review-and-commit/_composite.md` per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `flowai-review-and-commit-approve`, `flowai-review-and-commit-reject`, `flowai-review-and-commit-auto-docs`, `flowai-review-and-commit-auto-invoke-reflect`, `flowai-review-and-commit-phase-2-diff-eliminated`, `flowai-review-and-commit-post-reflect-cleanup-commit`, `flowai-review-and-commit-parallel-delegation`, `flowai-review-and-commit-non-deno-project`
 
 ### FR-DO-WITH-PLAN: Full-Cycle Workflow — `flowai-do-with-plan`
 
 - **Description:** User-invoked composite command that drives the canonical task lifecycle end-to-end in one invocation: Plan Phase (writes `documents/tasks/<YYYY>/<MM>/<slug>.md` per `flowai-plan-exp-permanent-tasks`), Implement Phase (TDD per AGENTS.md), Review-and-Commit Phase (same streamlined commit flow as `flowai-review-and-commit` with verdict gate). Three explicit phase gates: variant-selection (Plan→Implement), green project check + non-empty diff (Implement→Review-and-Commit), verdict ≠ Approve halts (review→commit). Generated from `framework/core/commands/flowai-do-with-plan/_composite.md` + atom phases per FR-SKILL-COMPOSE; canon machine-enforced by the generator.
+- **Deprecated:** Prefer `flowai-ship` (FR-SHIP) for new work. Primitive remains functional; removal scheduled in a follow-up task.
 - **Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md), [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `flowai-do-with-plan-full-cycle`, `flowai-do-with-plan-rejects-on-changes-requested`, `flowai-do-with-plan-pauses-for-variant-selection`
 - **Status:** [x]
@@ -661,28 +663,28 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `scripts/generate-skill-composites_test.ts` (manifest loading + render + drift detection + canon validation); `scripts/check-pack-refs_test.ts` (bundle-leakage detection); plus the full acceptance-test suites for every regenerated primitive (`flowai-plan-exp-permanent-tasks`, `flowai-review`, `flowai-commit-beta`, `flowai-review-and-commit`, `flowai-do-with-plan`) as semantic-equivalence gate.
 - **Evidence:** `deno test -A scripts/generate-skill-composites_test.ts && deno test -A scripts/check-pack-refs_test.ts && deno run -A scripts/generate-skill-composites.ts --check && deno run -A scripts/check-pack-refs.ts --leakage`
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-ATOM-DO: TDD Implement Atom — `flowai-do`
 
 - **Description:** Model-invocable skill that drives the canonical TDD cycle (RED → GREEN → REFACTOR → CHECK, per [AGENTS.md § TDD Flow](../framework/AGENTS.md)) against a written plan's Solution section. Triggers on "implement under TDD per task plan" prompts without overlapping `flowai-plan` (planning), `flowai-review` (post-implement review), or `flowai-fix-tests` (existing-test repair). Source: `framework/core/skills/flowai-do/_atom.md`. Generated SKILL.md materialized by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts) per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
-- **Acceptance verified by acceptance tests:** `flowai-do-tdd-cycle-completes`, `flowai-do-returns-to-red-on-check-failure`, `flowai-do-trigger-mixed-1`. The trigger scenario is consolidated (1 positive + 3 negatives covering plan/review/fix-tests neighbours) rather than the standard 3-scenario triplet; deviation documented here for `check-trigger-coverage.ts` exemption.
-- **Status:** [ ]
+- **Acceptance verified by acceptance tests:** `flowai-do-tdd-cycle-completes`, `flowai-do-returns-to-red-on-check-failure`, `flowai-do-trigger-pos-1`, `flowai-do-trigger-adj-1`, `flowai-do-trigger-false-1`. (Implementation deviates from the task's "consolidated mixed-1" plan to keep `check-trigger-coverage.ts` happy without an exemption.)
+- **Status:** [x]
 
 ### FR-ATOM-PUSH: Git Push Atom — `flowai-push`
 
 - **Description:** User-invoked command (kind=command; CLI writer injects `disable-model-invocation: true` at sync time) that pushes the current branch to its remote with a strict safety contract: (a) `--force` is forbidden; (b) `--force-with-lease` is permitted ONLY with explicit per-push user authorization in chat (not via a session-long flag); (c) if upstream is unset → run `--set-upstream` automatically AFTER explicit user confirmation that the branch should track; (d) when the remote branch is `main`/`master` AND the remote has commits the local does not have, ask the user before any push attempt; (e) when the local branch is unprotected but the user typed a target other than the current branch, refuse. Post-push verification: `git rev-parse @{u}` matches `HEAD`. Source: `framework/core/commands/flowai-push/_atom.md`.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `flowai-push-happy-path`, `flowai-push-sets-upstream-on-first-push`, `flowai-push-refuses-force-on-divergence`. No trigger scenario (commands carry no trigger scenarios anywhere in the codebase).
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-SHIP: Terminal Full-Cycle Workflow — `flowai-ship`
 
 - **Description:** User-invoked composite command: plan → implement → review → commit → push. Five phases, four explicit gates (variant-selection after Plan, green-check before Review, verdict gate before Commit, clean-tree + branch-protection check before Push). Generated from `framework/core/commands/flowai-ship/_composite.md` + the five atoms (`flowai-plan-exp-permanent-tasks`, `flowai-do`, `flowai-review`, `flowai-commit-beta`, `flowai-push`) per FR-SKILL-COMPOSE. Composite canon (no delegation, "Self-contained — execute the inlined steps directly" marker, explicit verdict-gate branches, 500-line cap) is machine-enforced by the generator.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `flowai-ship-full-cycle-success`, `flowai-ship-pauses-for-variant-selection`, `flowai-ship-rejects-on-changes-requested`, `flowai-ship-refuses-push-on-dirty-tree`. No trigger scenario (command convention).
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-DEVCONTAINER: AI Devcontainer Setup — flowai-setup-ai-ide-devcontainer
 
