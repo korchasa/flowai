@@ -398,14 +398,207 @@ export function validateAtomCanon(
   }
 }
 
-/** Placeholder for the composite-render pipeline (Commit 4). */
-export function renderCompositeTarget(
-  _id: string,
-  _m: Manifest,
+/**
+ * Render a composite SKILL.md from its wrapper + phase sources.
+ *
+ * The wrapper (`_composite.md`) provides everything OUTSIDE `## Instructions`
+ * (description, overview, context, rules, verification, final report). It
+ * places a `{{PHASES}}` marker where phase bodies should be inlined.
+ *
+ * Per-phase rendering:
+ *   - atom phase (`atom: <id>` in manifest): emits `### <title>` heading,
+ *     then the atom's rendered `<step_by_step>` block, with phase-specific
+ *     param overrides.
+ *   - inline phase (`inline: true`): looks up the matching
+ *     `<inline-phase index="<i+1>">...</inline-phase>` block in the wrapper
+ *     and emits it verbatim.
+ *
+ * Inter-phase gates:
+ *   - After phase i (1-based), if the wrapper has `<gate after="<i>">...</gate>`,
+ *     its body is emitted between phase i and phase i+1.
+ *
+ * Composite canon validated after render (see validateCompositeCanon).
+ */
+export async function renderCompositeTarget(
+  id: string,
+  manifest: Manifest,
 ): Promise<RenderedTarget> {
-  throw new Error(
-    "[generate-skill-composites] composite rendering not implemented yet (Commit 4 introduces it)",
+  const entry = manifest.composites[id];
+  if (!entry) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' not in manifest`,
+    );
+  }
+  const wrapperRaw = await Deno.readTextFile(entry.wrapper);
+  const wrapperParsed = parseAtomSource(wrapperRaw, entry.wrapper);
+  // Wrappers MUST NOT declare _params: (no parametrization at the wrapper level).
+  if (wrapperParsed.params.size > 0) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' (${entry.wrapper}): wrappers MUST NOT declare _params: (use atom-level params instead)`,
+    );
+  }
+  // Extract <inline-phase index="N"> and <gate after="N"> blocks BEFORE the
+  // {{PHASES}} placeholder is consumed.
+  const inlinePhases = new Map<number, string>();
+  const gates = new Map<number, string>();
+  let wrapperBody = wrapperParsed.body;
+  const inlineRe =
+    /<inline-phase\s+index="(\d+)">\n?([\s\S]*?)\n?<\/inline-phase>\n?/g;
+  wrapperBody = wrapperBody.replace(
+    inlineRe,
+    (_full, idx: string, body: string) => {
+      inlinePhases.set(parseInt(idx, 10), body);
+      return "";
+    },
   );
+  const gateRe = /<gate\s+after="(\d+)">\n?([\s\S]*?)\n?<\/gate>\n?/g;
+  wrapperBody = wrapperBody.replace(
+    gateRe,
+    (_full, idx: string, body: string) => {
+      gates.set(parseInt(idx, 10), body);
+      return "";
+    },
+  );
+  if (!wrapperBody.includes("{{PHASES}}")) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' (${entry.wrapper}): wrapper missing {{PHASES}} placeholder`,
+    );
+  }
+  // Render phases.
+  const sources = [entry.wrapper];
+  const phaseBlocks: string[] = [];
+  for (const [i, phase] of entry.phases.entries()) {
+    const idx = i + 1;
+    let block: string;
+    if (phase.inline === true) {
+      const inlineBody = inlinePhases.get(idx);
+      if (inlineBody === undefined) {
+        throw new Error(
+          `[generate-skill-composites] composite '${id}': phase #${idx} is inline but wrapper has no <inline-phase index="${idx}">`,
+        );
+      }
+      block = inlineBody.trimEnd();
+    } else {
+      const atomEntry = manifest.atoms[phase.atom!];
+      if (!atomEntry) {
+        throw new Error(
+          `[generate-skill-composites] composite '${id}': phase #${idx} references unknown atom '${phase.atom}'`,
+        );
+      }
+      sources.push(atomEntry.source);
+      const atomRaw = await Deno.readTextFile(atomEntry.source);
+      const atomParsed = parseAtomSource(atomRaw, atomEntry.source);
+      const params = {
+        ...(atomEntry.default_params ?? {}),
+        ...(phase.params ?? {}),
+      };
+      const renderedBody = substituteParams(
+        atomParsed.body,
+        atomParsed.params,
+        params,
+        atomEntry.source,
+      );
+      const stepBlock = extractStepByStepBlock(renderedBody, atomEntry.source);
+      block = `### ${phase.title}\n\n${stepBlock.trimEnd()}`;
+    }
+    phaseBlocks.push(block);
+    if (idx < entry.phases.length) {
+      const gateBody = gates.get(idx);
+      if (gateBody !== undefined) {
+        phaseBlocks.push(gateBody.trimEnd());
+      }
+    }
+  }
+  const phasesRendered = phaseBlocks.join("\n\n");
+  const finalBody = wrapperBody.replace("{{PHASES}}", phasesRendered);
+  validateCompositeCanon(
+    id,
+    wrapperParsed.frontmatter,
+    finalBody,
+    entry.target,
+    manifest,
+  );
+  const marker = `<!-- GENERATED FROM ${
+    [
+      entry.wrapper,
+      ...entry.phases.filter((p) => p.atom).map((p) =>
+        manifest.atoms[p.atom!].source
+      ),
+    ].join(", ")
+  } via scripts/generate-skill-composites.ts — DO NOT EDIT BY HAND -->`;
+  const out =
+    `---\n${wrapperParsed.frontmatterYaml}\n---\n\n${marker}\n\n${finalBody.trim()}\n`;
+  return { target: entry.target, sources, body: out };
+}
+
+/**
+ * Extracts the FIRST `<step_by_step>...</step_by_step>` block from an atom's
+ * rendered body (including the tags) so the composite can re-emit it under
+ * a phase heading.
+ */
+function extractStepByStepBlock(body: string, source: string): string {
+  const m = body.match(/<step_by_step>[\s\S]*?<\/step_by_step>/);
+  if (!m) {
+    throw new Error(
+      `[generate-skill-composites] ${source}: atom body has no <step_by_step> block`,
+    );
+  }
+  return m[0];
+}
+
+/**
+ * Composite canon — machine-enforced replacement for the rules previously
+ * documented in framework/AGENTS.md § Composite Skill Authoring:
+ *   1. **No delegation** rule present in <rules>.
+ *   2. Description contains "Self-contained — execute the inlined steps directly".
+ *   3. Description does NOT name any source skill (lexical check against the
+ *      manifest's atoms map).
+ *   4. Every verdict gate has both Approve and Reject branches (heuristic:
+ *      "Approve" + ("Request Changes" OR "Reject") in the same gate body).
+ *   5. 500-line cap on the emitted file.
+ */
+export function validateCompositeCanon(
+  id: string,
+  frontmatter: Record<string, unknown>,
+  body: string,
+  target: string,
+  manifest: Manifest,
+): void {
+  const desc = typeof frontmatter.description === "string"
+    ? frontmatter.description
+    : "";
+  if (!desc.includes("Self-contained — execute the inlined steps directly")) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' (${target}): description MUST include "Self-contained — execute the inlined steps directly"`,
+    );
+  }
+  for (const atomId of Object.keys(manifest.atoms)) {
+    if (desc.includes(atomId)) {
+      throw new Error(
+        `[generate-skill-composites] composite '${id}' (${target}): description MUST NOT name source skill '${atomId}'`,
+      );
+    }
+  }
+  if (!body.includes("**No delegation**")) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' (${target}): body MUST contain the **No delegation** rule in <rules>`,
+    );
+  }
+  // Verdict gate completeness: any block containing "Verdict Gate" OR
+  // "Approve" must also have a reject path nearby.
+  if (/Approve.*?DO NOT commit/s.test(body) || /Verdict Gate/.test(body)) {
+    if (!/Request Changes|Needs Discussion|Reject/.test(body)) {
+      throw new Error(
+        `[generate-skill-composites] composite '${id}' (${target}): verdict gate missing Request Changes / Needs Discussion / Reject branch`,
+      );
+    }
+  }
+  const lineCount = body.split("\n").length;
+  if (lineCount > 500) {
+    throw new Error(
+      `[generate-skill-composites] composite '${id}' (${target}): ${lineCount} lines exceeds 500-line cap`,
+    );
+  }
 }
 
 /** Compare rendered targets against on-disk; return per-target unified diffs. */

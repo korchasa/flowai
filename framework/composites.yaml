@@ -19,4 +19,30 @@ atoms:
     target: framework/core/commands/flowai-commit-beta/SKILL.md
     default_params:
       DIFF_SOURCE: FRESH_READ
-composites: {}
+composites:
+  flowai-review-and-commit:
+    target: framework/core/commands/flowai-review-and-commit/SKILL.md
+    wrapper: framework/core/commands/flowai-review-and-commit/_composite.md
+    phases:
+      - title: Phase 1 — Review
+        atom: flowai-review
+      - title: Phase 2 — Commit
+        atom: flowai-commit-beta
+        params:
+          DIFF_SOURCE: REUSE_PRIOR_PHASE
+  flowai-do-with-plan:
+    target: framework/core/commands/flowai-do-with-plan/SKILL.md
+    wrapper: framework/core/commands/flowai-do-with-plan/_composite.md
+    phases:
+      - title: Plan Phase
+        atom: flowai-plan-exp-permanent-tasks
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Implement Phase
+        inline: true
+      - title: Review-and-Commit Phase (review)
+        atom: flowai-review
+      - title: Commit Steps (continuation of Review-and-Commit Phase)
+        atom: flowai-commit-beta
+        params:
+          DIFF_SOURCE: REUSE_PRIOR_PHASE
