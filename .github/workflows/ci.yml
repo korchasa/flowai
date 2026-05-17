@@ -119,6 +119,8 @@ jobs:
               --mtime="@${SOURCE_DATE_EPOCH}" \
               --exclude='_atom.md' \
               --exclude='_composite.md' \
+              --exclude='*/atoms' \
+              --exclude='*/composites' \
               --exclude='composites.yaml' \
               -cf framework.tar framework/
           gzip -n -9 framework.tar
@@ -129,8 +131,7 @@ jobs:
           echo "Framework tarball SHA-256: ${ACTUAL}"
 
       # implements [FR-SKILL-COMPOSE](../../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
-      # verify the bundle did not leak any _atom.md / _composite.md /
-      # composites.yaml. Runs between the tarball build and the Framework
+      # verify the bundle did not leak any generator inputs. Runs between the tarball build and the Framework
       # Release step so a missing --exclude aborts the release.
       - name: Verify framework tarball contains no generator-input leaks
         if: steps.releasable.outputs.should_release == 'true'

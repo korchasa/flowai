@@ -21,7 +21,7 @@ import { parse as parseYaml } from "@std/yaml";
 export const MANIFEST_PATH = "framework/composites.yaml";
 
 export interface AtomEntry {
-  /** Source `_atom.md` path (sibling of generated SKILL.md). */
+  /** Source atom path under framework/atoms/. */
   source: string;
   /** Target `SKILL.md` path. */
   target: string;
@@ -43,7 +43,7 @@ export interface CompositePhase {
 export interface CompositeEntry {
   /** Target `SKILL.md` path. */
   target: string;
-  /** Wrapper `_composite.md` path (sibling of generated SKILL.md). */
+  /** Source composite wrapper path under framework/composites/. */
   wrapper: string;
   /** Ordered list of phases. */
   phases: CompositePhase[];
@@ -162,7 +162,7 @@ export async function renderAll(manifest: Manifest): Promise<RenderedTarget[]> {
   return out;
 }
 
-/** Parameter spec extracted from `_atom.md` frontmatter `_params:`. */
+/** Parameter spec extracted from atom frontmatter `_params:`. */
 export interface ParamSpec {
   name: string;
   choices: string[];
@@ -171,7 +171,7 @@ export interface ParamSpec {
 }
 
 /**
- * Splits a raw `_atom.md` (or `_composite.md`) source into:
+ * Splits a raw atom or composite wrapper source into:
  *   - frontmatter YAML (with `_params:` stripped — extracted into paramSpecs)
  *   - body (with `<param-branch>` blocks parsed out)
  *   - paramSpecs (zero or more parameters with their branch bodies)
@@ -401,7 +401,7 @@ export function validateAtomCanon(
 /**
  * Render a composite SKILL.md from its wrapper + phase sources.
  *
- * The wrapper (`_composite.md`) provides everything OUTSIDE `## Instructions`
+ * The wrapper (`framework/composites/<name>.md`) provides everything OUTSIDE `## Instructions`
  * (description, overview, context, rules, verification, final report). It
  * places a `{{PHASES}}` marker where phase bodies should be inlined.
  *

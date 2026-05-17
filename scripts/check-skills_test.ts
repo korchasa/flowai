@@ -68,6 +68,20 @@ Deno.test("FR-UNIVERSAL.STRUCT: non-standard file at root is error", () => {
   );
 });
 
+Deno.test("FR-UNIVERSAL.STRUCT: generator inputs at root are errors", () => {
+  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  const entries = [
+    { name: "SKILL.md", isDirectory: false, isFile: true },
+    { name: "_atom.md", isDirectory: false, isFile: true },
+    { name: "_composite.md", isDirectory: false, isFile: true },
+  ];
+  const errors = validateStructure("my-skill", entries);
+  assertEquals(errors.map((e) => e.message), [
+    "Non-standard entry at skill root: _atom.md",
+    "Non-standard entry at skill root: _composite.md",
+  ]);
+});
+
 Deno.test("FR-UNIVERSAL.STRUCT: non-standard directory at root is error", () => {
   const entries = [
     { name: "SKILL.md", isDirectory: false, isFile: true },

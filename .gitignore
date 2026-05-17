@@ -31,7 +31,7 @@ cli/src/_version.ts
 dist/
 
 # Generated composite/atom SKILL.md (FR-SKILL-COMPOSE).
-# Source of truth: _atom.md + _composite.md + framework/composites.yaml.
+# Source of truth: framework/atoms/*.md + framework/composites/*.md + framework/composites.yaml.
 # Every consumer regenerates via `deno run -A scripts/generate-skill-composites.ts --write`
 # before reading. Keep this list in lock-step with `--list-targets` output;
 # scripts/check-skills.ts enforces parity.

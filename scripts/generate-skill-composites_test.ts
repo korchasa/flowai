@@ -50,6 +50,30 @@ Deno.test("manifest_loads: real framework manifest parses", async () => {
   assertEquals(m.schema_version, 1);
 });
 
+Deno.test("manifest_layout: generator inputs live outside primitive directories", async () => {
+  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  const m = await loadManifest(MANIFEST_PATH);
+  const primitiveInputRe =
+    /^framework\/[^/]+\/(?:commands|skills)\/[^/]+\/_(?:atom|composite)\.md$/;
+
+  for (const [id, atom] of Object.entries(m.atoms)) {
+    assertEquals(
+      primitiveInputRe.test(atom.source),
+      false,
+      `atom '${id}' source must not live in a command/skill directory: ${atom.source}`,
+    );
+    assertStringIncludes(atom.source, "framework/atoms/");
+  }
+  for (const [id, composite] of Object.entries(m.composites)) {
+    assertEquals(
+      primitiveInputRe.test(composite.wrapper),
+      false,
+      `composite '${id}' wrapper must not live in a command/skill directory: ${composite.wrapper}`,
+    );
+    assertStringIncludes(composite.wrapper, "framework/composites/");
+  }
+});
+
 Deno.test("empty_manifest_no_op: renderAll returns []", async () => {
   const empty: Manifest = { schema_version: 1, atoms: {}, composites: {} };
   const out = await renderAll(empty);
@@ -100,7 +124,7 @@ atoms: {}
 composites:
   foo:
     target: framework/core/commands/foo/SKILL.md
-    wrapper: framework/core/commands/foo/_composite.md
+    wrapper: framework/composites/foo.md
     phases:
       - title: P
 `;
@@ -142,7 +166,7 @@ _params:
 `;
 
 Deno.test("parseAtomSource: strips _params from frontmatter + extracts branches", () => {
-  const parsed = parseAtomSource(SAMPLE_ATOM, "sample/_atom.md");
+  const parsed = parseAtomSource(SAMPLE_ATOM, "framework/atoms/sample.md");
   assertEquals(parsed.frontmatter.name, "sample");
   assertEquals(parsed.frontmatter._params, undefined);
   assertEquals(parsed.params.size, 1);
@@ -159,37 +183,37 @@ Deno.test("parseAtomSource: strips _params from frontmatter + extracts branches"
 });
 
 Deno.test("substituteParams: missing_param_falls_back_to_default", () => {
-  const parsed = parseAtomSource(SAMPLE_ATOM, "sample/_atom.md");
+  const parsed = parseAtomSource(SAMPLE_ATOM, "framework/atoms/sample.md");
   const rendered = substituteParams(
     parsed.body,
     parsed.params,
     {},
-    "sample/_atom.md",
+    "framework/atoms/sample.md",
   );
   assertStringIncludes(rendered, "**TOTAL STOP**");
   assertEquals(rendered.includes("**Hand off"), false);
 });
 
 Deno.test("substituteParams: explicit override uses HAND_OFF_TO_NEXT branch", () => {
-  const parsed = parseAtomSource(SAMPLE_ATOM, "sample/_atom.md");
+  const parsed = parseAtomSource(SAMPLE_ATOM, "framework/atoms/sample.md");
   const rendered = substituteParams(
     parsed.body,
     parsed.params,
     { TERMINATION: "HAND_OFF_TO_NEXT" },
-    "sample/_atom.md",
+    "framework/atoms/sample.md",
   );
   assertStringIncludes(rendered, "**Hand off to next phase**");
   assertEquals(rendered.includes("**TOTAL STOP**"), false);
 });
 
 Deno.test("substituteParams: unknown_param_value_fails_with_suggestion", () => {
-  const parsed = parseAtomSource(SAMPLE_ATOM, "sample/_atom.md");
+  const parsed = parseAtomSource(SAMPLE_ATOM, "framework/atoms/sample.md");
   try {
     substituteParams(
       parsed.body,
       parsed.params,
       { TERMINATION: "TOTAL_STOPP" }, // typo
-      "sample/_atom.md",
+      "framework/atoms/sample.md",
     );
     throw new Error("expected throw");
   } catch (e) {
@@ -217,7 +241,7 @@ _params:
 <param-branch name="KNOWN" value="A">y</param-branch>
 `;
   try {
-    parseAtomSource(bad, "bad/_atom.md");
+    parseAtomSource(bad, "framework/atoms/bad.md");
     throw new Error("expected throw");
   } catch (e) {
     assertStringIncludes(
@@ -244,7 +268,7 @@ _params:
 <param-branch name="TERMINATION" value="TOTAL_STOP">a</param-branch>
 `;
   try {
-    parseAtomSource(bad, "bad/_atom.md");
+    parseAtomSource(bad, "framework/atoms/bad.md");
     throw new Error("expected throw");
   } catch (e) {
     assertStringIncludes(
@@ -257,7 +281,7 @@ _params:
 Deno.test("renderAtomTarget: writes deterministic output across runs", async () => {
   const tmp = await Deno.makeTempDir({ prefix: "flowai-atom-test-" });
   try {
-    const src = join(tmp, "_atom.md");
+    const src = join(tmp, "sample.md");
     await Deno.writeTextFile(src, SAMPLE_ATOM);
     const entry = {
       source: src,
@@ -304,7 +328,7 @@ atoms: {}
 composites:
   foo:
     target: framework/core/commands/foo/SKILL.md
-    wrapper: framework/core/commands/foo/_composite.md
+    wrapper: framework/composites/foo.md
     phases:
       - title: P
         atom: nonexistent

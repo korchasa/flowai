@@ -88,8 +88,9 @@ export function buildCheckPlan(): CheckPlan {
       },
       // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
       // bundle-leakage gate: builds framework.tar locally with the same
-      // --exclude flags as CI, unpacks it, fails on any _atom.md /
-      // _composite.md / composites.yaml leak into user IDE configs.
+      // --exclude flags as CI, unpacks it, fails on any generator input
+      // (framework/atoms, framework/composites, manifest, or legacy source)
+      // leaking into user IDE configs.
       {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-pack-refs.ts", "--leakage"],

@@ -4,6 +4,7 @@ import {
   checkCiExcludes,
   findCrossPackRefs,
   findLeakedFiles,
+  LEAKED_DIRNAMES,
   LEAKED_FILENAMES,
 } from "./check-pack-refs.ts";
 
@@ -166,6 +167,32 @@ Deno.test("leakage: detects_leaked_manifest at top of framework/", async () => {
   );
 });
 
+Deno.test("leakage: detects_leaked_atoms_dir at top of framework", async () => {
+  await withTempTree(
+    {
+      "framework/atoms/push.md": "leak",
+      "framework/core/skills/x/SKILL.md": "ok",
+    },
+    async (root) => {
+      const leaks = await findLeakedFiles(root);
+      assertEquals(leaks, ["framework/atoms/"]);
+    },
+  );
+});
+
+Deno.test("leakage: detects_leaked_composites_dir at top of framework", async () => {
+  await withTempTree(
+    {
+      "framework/composites/ship.md": "leak",
+      "framework/core/skills/x/SKILL.md": "ok",
+    },
+    async (root) => {
+      const leaks = await findLeakedFiles(root);
+      assertEquals(leaks, ["framework/composites/"]);
+    },
+  );
+});
+
 Deno.test("leakage: passes_on_clean_tarball (no leak files present)", async () => {
   await withTempTree(
     {
@@ -186,6 +213,10 @@ Deno.test("leakage: LEAKED_FILENAMES list is stable", () => {
     "_composite.md",
     "composites.yaml",
   ]);
+});
+
+Deno.test("leakage: LEAKED_DIRNAMES list is stable", () => {
+  assertEquals([...LEAKED_DIRNAMES], ["atoms", "composites"]);
 });
 
 Deno.test("leakage: checkCiExcludes passes on the real .github/workflows/ci.yml", async () => {

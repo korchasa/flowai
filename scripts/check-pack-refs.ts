@@ -12,8 +12,9 @@
  *
  * 2. `--leakage [--tarball <path>]` — generator-input leakage gate
  *    (FR-SKILL-COMPOSE). Builds framework.tar locally if no tarball is given,
- *    unpacks it into a temp dir, fails with exit 1 + filename list if any of
- *    `_atom.md`, `_composite.md`, or `composites.yaml` is present. Sister
+ *    unpacks it into a temp dir, fails with exit 1 + path list if any
+ *    generator input (`framework/atoms/`, `framework/composites/`,
+ *    legacy `_atom.md` / `_composite.md`, or `composites.yaml`) is present. Sister
  *    mitigation to the `tar --exclude` flags in .github/workflows/ci.yml.
  *    See documents/tasks/2026/05/generate-skills-from-atoms.md (Commit 1).
  */
@@ -24,7 +25,11 @@ export const LEAKED_FILENAMES = [
   "_composite.md",
   "composites.yaml",
 ] as const;
-const TAR_EXCLUDES = LEAKED_FILENAMES.map((f) => `--exclude=${f}`);
+export const LEAKED_DIRNAMES = ["atoms", "composites"] as const;
+const TAR_EXCLUDES = [
+  ...LEAKED_FILENAMES.map((f) => `--exclude=${f}`),
+  ...LEAKED_DIRNAMES.map((d) => `--exclude=*/${d}`),
+];
 
 export interface PackRefError {
   file: string;
@@ -198,14 +203,20 @@ export async function validatePackRefs(
 export async function findLeakedFiles(
   rootDir: string,
   targets: readonly string[] = LEAKED_FILENAMES,
+  targetDirs: readonly string[] = LEAKED_DIRNAMES,
 ): Promise<string[]> {
   const targetSet = new Set(targets);
+  const targetDirSet = new Set(targetDirs);
   const leaks: string[] = [];
   async function walk(dir: string, rel: string): Promise<void> {
     for await (const entry of Deno.readDir(dir)) {
       const next = join(dir, entry.name);
       const nextRel = rel ? `${rel}/${entry.name}` : entry.name;
       if (entry.isDirectory) {
+        if (targetDirSet.has(entry.name)) {
+          leaks.push(`${nextRel}/`);
+          continue;
+        }
         await walk(next, nextRel);
       } else if (entry.isFile && targetSet.has(entry.name)) {
         leaks.push(nextRel);
@@ -286,6 +297,14 @@ export async function checkCiExcludes(
       missing.push(f);
     }
   }
+  for (const d of LEAKED_DIRNAMES) {
+    if (
+      !content.includes(`--exclude='*/${d}'`) &&
+      !content.includes(`--exclude=*/${d}`)
+    ) {
+      missing.push(`*/${d}`);
+    }
+  }
   return missing;
 }
 
@@ -320,7 +339,7 @@ async function runLeakageMode(args: string[]): Promise<number> {
     const missingCi = await checkCiExcludes();
     if (leaks.length === 0 && missingCi.length === 0) {
       console.log(
-        "[check-pack-refs] bundle leakage check passed (no _atom.md / _composite.md / composites.yaml in tarball)",
+        "[check-pack-refs] bundle leakage check passed (no generator inputs in tarball)",
       );
       return 0;
     }

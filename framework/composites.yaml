@@ -7,32 +7,32 @@
 schema_version: 1
 atoms:
   flowai-plan-exp-permanent-tasks:
-    source: framework/core/commands/flowai-plan-exp-permanent-tasks/_atom.md
+    source: framework/atoms/plan-exp-permanent-tasks.md
     target: framework/core/commands/flowai-plan-exp-permanent-tasks/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
   flowai-review:
-    source: framework/core/skills/flowai-review/_atom.md
+    source: framework/atoms/review.md
     target: framework/core/skills/flowai-review/SKILL.md
   flowai-commit-beta:
-    source: framework/core/commands/flowai-commit-beta/_atom.md
+    source: framework/atoms/commit-beta.md
     target: framework/core/commands/flowai-commit-beta/SKILL.md
     default_params:
       DIFF_SOURCE: FRESH_READ
   flowai-do:
-    source: framework/core/skills/flowai-do/_atom.md
+    source: framework/atoms/do.md
     target: framework/core/skills/flowai-do/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
   flowai-push:
-    source: framework/core/commands/flowai-push/_atom.md
+    source: framework/atoms/push.md
     target: framework/core/commands/flowai-push/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
 composites:
   flowai-review-and-commit:
     target: framework/core/commands/flowai-review-and-commit/SKILL.md
-    wrapper: framework/core/commands/flowai-review-and-commit/_composite.md
+    wrapper: framework/composites/review-and-commit.md
     phases:
       - title: Phase 1 — Review
         atom: flowai-review
@@ -42,7 +42,7 @@ composites:
           DIFF_SOURCE: REUSE_PRIOR_PHASE
   flowai-do-with-plan:
     target: framework/core/commands/flowai-do-with-plan/SKILL.md
-    wrapper: framework/core/commands/flowai-do-with-plan/_composite.md
+    wrapper: framework/composites/do-with-plan.md
     phases:
       - title: Plan Phase
         atom: flowai-plan-exp-permanent-tasks
@@ -58,7 +58,7 @@ composites:
           DIFF_SOURCE: REUSE_PRIOR_PHASE
   flowai-ship:
     target: framework/core/commands/flowai-ship/SKILL.md
-    wrapper: framework/core/commands/flowai-ship/_composite.md
+    wrapper: framework/composites/ship.md
     phases:
       - title: Plan Phase
         atom: flowai-plan-exp-permanent-tasks
