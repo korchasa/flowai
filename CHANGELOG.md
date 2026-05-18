@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.18](https://github.com/korchasa/flowai/compare/v0.12.17...v0.12.18) (2026-05-18)
+
+
+### Documentation
+
+* **plugins:** record codex marketplace smoke evidence ([606bca6](https://github.com/korchasa/flowai/commit/606bca6a4f121101bd4ecb4f25dd56a128f3383f))
+
+
+### Code Refactoring
+
+* **skills:** move composite sources out of primitives ([72d6f1b](https://github.com/korchasa/flowai/commit/72d6f1b633f5872d160a197073fd70ce67c2116f))
+
 ### [0.12.17](https://github.com/korchasa/flowai/compare/v0.12.16...v0.12.17) (2026-05-17)
 
 
