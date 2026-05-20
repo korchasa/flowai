@@ -3,7 +3,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
- * Simulates a framework update where flowai-init's AGENTS.template.md gained a CHECK step.
+ * Simulates a framework template update where AGENTS.template.md gained a CHECK step.
  *
  * Runner sequence: copy fixtures → copy framework → write AGENTS.md → setup().
  * In setup(), .claude/ already contains the full framework.
@@ -11,13 +11,13 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * Strategy:
  * 1. Read real AGENTS.template.md from .claude/assets/
  * 2. Create an "old" version by stripping the CHECK step
- * 3. Commit everything (old template = baseline, "previous sync")
+ * 3. Commit everything (old template = baseline)
  * 4. Restore real version → only this template shows as modified in git
- * 5. Agent detects change, maps flowai-init → AGENTS.md, proposes adding CHECK step
+ * 5. Agent compares template → AGENTS.md and proposes adding CHECK step
  */
 export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
   id = "flowai-update-basic";
-  name = "Detect framework changes and propose AGENTS.md migration";
+  name = "Detect template changes and propose AGENTS.md migration";
   skill = "flowai-update";
   stepTimeoutMs = 300_000;
 
@@ -38,7 +38,7 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     ],
     modified: [".claude/assets/AGENTS.template.md"],
     expectedOutcome:
-      "Agent detects template change, maps flowai-init to AGENTS.md, proposes adding CHECK step to TDD Flow section",
+      "Agent detects template change, compares it to AGENTS.md, and proposes adding CHECK step to TDD Flow section",
   };
 
   override async setup(sandboxPath: string) {
@@ -85,26 +85,26 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     await runGit(sandboxPath, ["add", "-A"]);
     await runGit(sandboxPath, ["commit", "-m", "Initial sync (baseline)"]);
 
-    // Restore real (new) version — simulates "flowai sync" bringing updates
+    // Restore real (new) version — simulates an updated framework template source.
     await Deno.writeTextFile(templatePath, newContent);
 
     // Now only .claude/assets/AGENTS.template.md is modified
   }
 
   userQuery =
-    "/flowai-update I already ran `flowai sync` and it updated some skills. Please skip the sync step and start from step 2: detect what changed in .claude/ via git, then migrate my project artifacts.";
+    "/flowai-update Reconcile my project AGENTS.md with the currently installed flowai framework template. Do not run flowai CLI commands or rewrite installed skills.";
 
   checklist = [
     {
       id: "detected_asset_change",
       description:
-        "Did the agent detect that `.claude/assets/AGENTS.template.md` has changed (via git diff or git status)?",
+        "Did the agent detect or read `.claude/assets/AGENTS.template.md` as the read-only framework template source?",
       critical: true,
     },
     {
       id: "identified_agents_md",
       description:
-        "Did the agent identify `AGENTS.md` as an artifact affected by the flowai-init change?",
+        "Did the agent identify `AGENTS.md` as the project artifact to reconcile?",
       critical: true,
     },
     {
@@ -138,9 +138,8 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
       critical: false,
     },
     {
-      id: "atomic_commit",
-      description:
-        "If the agent committed changes, were all synced files and migrated artifacts staged together in ONE commit? (FR-UPDATE.ATOMIC-COMMIT)",
+      id: "did_not_commit",
+      description: "Did the agent avoid staging or committing automatically?",
       critical: false,
     },
   ];

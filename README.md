@@ -68,7 +68,7 @@ flowai
 
 **Opting a project into local install:** create a `<cwd>/.flowai.yaml` (or run `flowai --local` to generate one). The mere presence of that file is the opt-in marker — subsequent runs without flags will use it.
 
-Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically (e.g. `/flowai-update` is `project-only` because it requires project context).
+Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically. `/flowai-update` has no scope field because it is plugin/user-level installable and writes only current-project artifacts.
 
 `flowai migrate <from> <to>` requires an explicit `--global` or `--local` flag — it never auto-resolves, since cross-IDE migrations have different semantics in each scope.
 
@@ -95,7 +95,7 @@ codex plugin marketplace add korchasa/flowai-plugins
 # Then open Codex /plugins and install flowai-core or any pack you use.
 ```
 
-Skills are invoked under the `/flowai-<pack>:` namespace, e.g. `/flowai-core:commit`, `/flowai-core:plan`, `/flowai-engineering:deep-research`, `/flowai-memex:memex-save`. The `flowai-` prefix is stripped from the namespaced part to avoid a `/flowai-core:flowai-commit` double prefix. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai-core:adapt-instructions` and `/flowai-core:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools` and `memex` are translated to Claude Code's `hooks.json` format automatically.
+Skills are invoked under the `/flowai-<pack>:` namespace, e.g. `/flowai-core:commit`, `/flowai-core:plan`, `/flowai-core:update`, `/flowai-engineering:deep-research`, `/flowai-memex:memex-save`. The `flowai-` prefix is stripped from the namespaced part to avoid a `/flowai-core:flowai-commit` double prefix. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai-core:update` and `/flowai-core:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools` and `memex` are translated to Claude Code's `hooks.json` format automatically.
 
 Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`. Codex hook execution is feature-gated; enable `[features].plugin_hooks = true` in Codex before relying on plugin hooks.
 
@@ -115,14 +115,14 @@ Copy and paste the following prompt into your AI IDE (Claude Code, Cursor, OpenC
 
 ## Updating
 
-Run `/flowai-update` in your AI IDE. It handles the full update cycle:
+Run `/flowai-update` (or plugin namespaced `/flowai-core:update`) in your AI IDE. It reconciles the current project with the installed framework templates:
 
-1. Updates the `flowai` CLI to the latest version (wraps `flowai update`)
-2. Syncs skills and agents into IDE config directories
-3. Detects convention changes in framework templates
-4. Proposes per-file migrations for scaffolded artifacts (AGENTS.md, devcontainer, deno.json tasks) — with diffs and confirmation for each file
+1. Reads framework templates from project-local assets, plugin-local assets, or user-level assets
+2. Compares them with project-owned artifacts (`AGENTS.md`, `CLAUDE.md`, scaffolded docs/config)
+3. Proposes per-file migrations with diffs and confirmation
+4. Leaves installed skills, agents, plugin caches, and user-level dirs untouched
 
-To self-update the CLI binary only (no sync, no migration), run `flowai update` directly. `flowai` and `flowai sync` only notify when a new version is available and never install it.
+To update the CLI binary or sync project-local primitives, use the standalone `flowai` CLI. To adapt project-local installed primitives, run `/flowai-adapt`.
 
 ## How It Works
 
@@ -160,8 +160,8 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-do-with-plan` — full plan → implement → review-and-commit cycle (user-only composite, **deprecated** — prefer `flowai-ship`)
 - `flowai-push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `flowai-ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
-- `flowai-update` — update flowai framework (sync skills/agents, migrate artifacts)
-- `flowai-adapt` — adapt installed skills/agents/hooks/assets to project specifics (standalone)
+- `flowai-update` — reconcile project AGENTS.md/CLAUDE.md/scaffolded artifacts with framework templates
+- `flowai-adapt` — adapt project-local skills/agents/hooks/assets to project specifics (standalone)
 
 **Skills:**
 - `flowai-do` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
@@ -173,7 +173,6 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `flowai-reflect-by-history` — cross-session analysis of past IDE transcripts
 - `flowai-investigate` — deep bug investigation via hypothesis-driven experiments
 - `flowai-maintenance` — project health audit (16-category scan + interactive resolution)
-- `flowai-adapt-instructions` — re-adapt root AGENTS.md after upstream template change
 - `flowai-setup-ai-ide-devcontainer` — AI IDE devcontainer setup
 - `flowai-configure-deno-commands` — configure Deno tasks
 

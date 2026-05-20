@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "c95bf788f8ec67fca518e37ef0d428b6e6496dfa2736823bb77d90447b1ee6f6",
+  "scenarioId": "flowai-adapt-all",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-20T12:36:09.853Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 152803.277125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "adapted_skills": {
+        "pass": true,
+        "reason": "The agent adapted both skill files. For flowai-commit/SKILL.md, it replaced 'deno test' → 'go test ./...', 'deno lint' → 'golangci-lint run', 'deno fmt' → 'gofmt -w .'. For flowai-configure-deno-comm…"
+      },
+      "adapted_agents": {
+        "pass": true,
+        "reason": "The agent adapted .claude/agents/flowai-console-expert.md, replacing 'deno task check' → 'make check', 'deno test' → 'go test ./...', 'deno lint' → 'golangci-lint run', 'deno fmt' → 'gofmt -l .', and…"
+      },
+      "verified_assets": {
+        "pass": true,
+        "reason": "The agent explicitly read both .claude/assets/AGENTS.template.md and AGENTS.md, ran 'git diff --no-index -- .claude/assets/AGENTS.template.md AGENTS.md' to compare them, and reported the discrepancy:…"
+      },
+      "showed_diffs": {
+        "pass": true,
+        "reason": "The agent ran 'git diff HEAD' for all three modified files and presented formatted before/after comparisons in the final output. It showed line-level diffs for flowai-commit (deno→go commands), descr…"
+      },
+      "produced_summary": {
+        "pass": true,
+        "reason": "The agent produced a final output summarizing: Skill 1 (flowai-commit) with specific diff details, Skill 2 (flowai-configure-deno-commands) with description of changes, Agent (flowai-console-expert) …"
+      },
+      "asked_confirmation": {
+        "pass": true,
+        "reason": "The agent attempted to use the AskUserQuestion tool (twice) and then explicitly asked in text: 'Принять все три изменения? Пожалуйста, ответьте да / нет (для каждого или для всех сразу).' However, no…"
+      }
+    }
+  }
+}

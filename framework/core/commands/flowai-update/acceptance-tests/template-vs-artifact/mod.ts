@@ -13,7 +13,7 @@ import { runGit } from "@acceptance-tests/utils.ts";
  *
  * Scenario setup:
  * 1. AGENTS.template.md changed — with formatting noise
- * 2. Several other skill SKILL.md files changed — formatting only (noise)
+ * 2. Several other project-local skill SKILL.md files changed — formatting only (noise)
  * 3. ONE substantive change hidden in AGENTS.template.md: new "Proactive
  *    Resolution" planning rule
  * 4. Project AGENTS.md is missing that rule
@@ -139,7 +139,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     await runGit(sandboxPath, ["add", "-A"]);
     await runGit(sandboxPath, ["commit", "-m", "Initial sync (baseline)"]);
 
-    // --- Restore "new" version (simulate flowai sync) ---
+    // --- Restore "new" version (simulate updated installed framework files) ---
     await Deno.writeTextFile(mainTemplatePath, newMainTemplate);
 
     for (const [, { path, newContent }] of noisyOldVersions) {
@@ -152,13 +152,19 @@ export const FlowUpdateTemplateVsArtifactBench = new class
   }
 
   userQuery =
-    "/flowai-update I already ran `flowai sync` and it updated some skills. Please skip the CLI update and sync steps. Analyze the changes and propose any needed migrations to the project.";
+    "/flowai-update Reconcile my project AGENTS.md with the currently installed flowai framework template. Some project-local installed skill files also changed, but do not adapt or rewrite skills and do not run flowai CLI commands.";
 
   checklist = [
     {
       id: "detected_multiple_changes",
       description:
-        "Did the agent detect multiple changed files in `.claude/skills/` (not just one template)?",
+        "Did the agent notice multiple changed files in `.claude/skills/` but avoid treating them as update work for this command?",
+      critical: true,
+    },
+    {
+      id: "did_not_adapt_skills",
+      description:
+        "Did the agent avoid adapting or rewriting changed `.claude/skills/*/SKILL.md` files and instead keep focus on project artifacts?",
       critical: true,
     },
     {

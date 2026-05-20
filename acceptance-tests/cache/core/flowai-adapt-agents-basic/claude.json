@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "acc689577ea480f5231a10edde4bc8f6fb034d71a2d00e62af0291626946e553",
+  "key": "9df674d9894b1d38ddc9dda3b5a74283f591dce06507abf0501824fe90732af3",
   "scenarioId": "flowai-adapt-agents-basic",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-08T01:10:28.888Z",
+  "recordedAt": "2026-05-20T12:43:31.675Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 179456.04162499998,
+    "durationMs": 117343.49520899996,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,27 +18,27 @@
     "checklistResults": {
       "scanned_agents": {
         "pass": true,
-        "reason": "The agent explicitly ran `ls .claude/agents/` commands and noted 'В `.claude/agents/` найдено 4 агента с префиксом `flowai-*`', identifying all four agents: flowai-agent-adapter.md, flowai-console-ex…"
+        "reason": "The agent ran `ls .claude/agents/` and then used Tool: Read to individually read all 4 agent files (flowai-agent-adapter.md, flowai-console-expert.md, flowai-diff-specialist.md, flowai-skill-adapter.…"
       },
       "launched_agent_adapter": {
         "pass": true,
-        "reason": "The agent launched four separate `Tool: Agent` calls with `subagent_type: 'flowai-agent-adapter'` — one for each discovered flowai-* agent file — running them in parallel as described in the TodoWrit…"
+        "reason": "The agent launched two Tool: Agent calls with 'subagent_type': 'flowai-agent-adapter' — one for flowai-console-expert.md and one for flowai-diff-specialist.md. Both calls explicitly requested the flo…"
       },
       "showed_diff": {
         "pass": true,
-        "reason": "The agent ran `git diff HEAD -- .claude/agents/<file>.md` for each of the four agent files, and then provided a detailed textual summary listing what changed per file (e.g., 'все deno-команды заменен…"
+        "reason": "The agent ran `git diff HEAD -- .claude/agents/flowai-console-expert.md` and `git diff HEAD -- .claude/agents/flowai-diff-specialist.md`, then displayed a formatted diff summary in the final response…"
       },
       "adapted_to_python": {
         "pass": true,
-        "reason": "The written content for flowai-console-expert.md explicitly contains Python-specific commands: `poetry run ruff check . && poetry run ruff format --check . && poetry run pytest`, `poetry run pytest`,…"
+        "reason": "The bash cat command written by the agent for flowai-console-expert.md contains `poetry run ruff check . && poetry run pytest`, `poetry run pytest`, `poetry run ruff check .`, `poetry run ruff format…"
       },
       "preserved_frontmatter": {
         "pass": true,
-        "reason": "The agent wrote the same frontmatter that existed in HEAD for flowai-console-expert.md (name, description, tools, mode, model unchanged). Similarly for the other agents: flowai-diff-specialist.md ret…"
+        "reason": "For flowai-console-expert.md, the agent preserved the HEAD frontmatter byte-for-byte (name: flowai-console-expert, description without quotes, tools without quotes, mode: subagent, model: fast). For …"
       },
       "asked_confirmation": {
         "pass": true,
-        "reason": "The agent used `Tool: AskUserQuestion` with three separate questions (one per changed agent), each offering 'Принять' (Accept) or 'Откатить' (Revert) options, explicitly asking for user confirmation …"
+        "reason": "The agent used Tool: AskUserQuestion with two separate questions — one for flowai-console-expert.md ('Принять адаптацию?') and one for flowai-diff-specialist.md — each offering 'Принять' (keep) or 'О…"
       }
     }
   }

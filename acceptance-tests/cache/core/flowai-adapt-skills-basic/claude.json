@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "a2ec579cef6b96fe2587d4bed96dee8cd0906962d07a1acb6399542445a766c5",
+  "scenarioId": "flowai-adapt-skills-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-20T12:40:02.701Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 193129.0385,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "scanned_skills": {
+        "pass": true,
+        "reason": "The agent ran `grep -rl 'deno' .claude/skills/*/SKILL.md` and found 13 skills, then checked specific ones (flowai-commit, flowai-do, flowai-review, flowai-review-and-commit, flowai-configure-deno-com…"
+      },
+      "launched_adapter_subagent": {
+        "pass": true,
+        "reason": "The agent explicitly invoked `Tool: Agent` with `\"subagent_type\": \"flowai-skill-adapter\"` and description 'Adapt flowai-commit skill for Python/pytest/ruff/poetry stack', passing full context includi…"
+      },
+      "showed_diff": {
+        "pass": true,
+        "reason": "The agent ran `git diff HEAD -- .claude/skills/flowai-commit/SKILL.md` and also explicitly rendered a before/after diff in the Final Result output showing `deno test` → `pytest`, `deno lint` → `ruff …"
+      },
+      "adapted_to_python": {
+        "pass": true,
+        "reason": "The adapted SKILL.md replaces all Deno commands with Python equivalents: `deno test` → `pytest`, `deno lint` → `ruff check .`, `deno fmt` → `ruff format .`. These match the standard commands defined …"
+      },
+      "asked_confirmation": {
+        "pass": true,
+        "reason": "The agent used `Tool: AskUserQuestion` with the question 'Принять адаптацию скила flowai-commit?' offering 'Принять'/'Отклонить' options, and also asked in plain text 'Принять эту адаптацию? (да / не…"
+      },
+      "produced_summary": {
+        "pass": true,
+        "reason": "The agent produced a clear summary in the Final Result titled 'Адаптация flowai-commit', explicitly listing all replaced commands in a diff format and explaining the changes. Earlier it also produced…"
+      }
+    }
+  }
+}

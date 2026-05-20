@@ -4,16 +4,16 @@ import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * Tests that the agent checks project artifacts against templates even when
- * `flowai sync` reports NO asset changes.
+ * no installed primitive or template file changed in the working tree.
  *
  * Reproduces the real failure: `.claude/assets/` already matches upstream
- * templates (sync says "ok"), but the project artifact (AGENTS.md) has
+ * templates, but the project artifact (AGENTS.md) has
  * drifted — it's missing framework-originated content. The agent must
  * still compare templates vs artifacts and detect the gap.
  *
  * Scenario setup:
  * 1. `.claude/assets/AGENTS.template.md` is committed and unchanged
- *    (no git diff → sync would report "ok")
+ *    (no git diff)
  * 2. Project `AGENTS.md` is missing the "Proactive Resolution" planning
  *    rule that IS present in the template
  * 3. No other files changed — clean working tree except for the
@@ -47,7 +47,7 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
     ],
     // No modified files — clean working tree. The drift is in committed state.
     expectedOutcome:
-      "Agent compares templates against project artifacts despite sync reporting no changes, finds missing Proactive Resolution rule in AGENTS.md",
+      "Agent compares templates against project artifacts despite clean working tree, finds missing Proactive Resolution rule in AGENTS.md",
   };
 
   override async setup(sandboxPath: string) {
@@ -91,19 +91,19 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
   }
 
   userQuery =
-    "/flowai-update I already ran `flowai sync -y --skip-update-check`. It reported: '>>> NO ACTIONS REQUIRED — All skills, agents, assets, and hooks are up to date.' Skip CLI update and sync steps. Proceed directly to step 6 (verify and migrate asset artifacts).";
+    "/flowai-update Reconcile my project AGENTS.md with the currently installed flowai framework template. The working tree is clean, but I suspect AGENTS.md drifted. Do not run flowai CLI commands.";
 
   checklist = [
     {
-      id: "skipped_sync_correctly",
+      id: "did_not_run_cli_lifecycle",
       description:
-        "Did the agent skip the sync step as instructed (not run `flowai sync`) and proceed to artifact verification?",
+        "Did the agent avoid running `flowai update`, `flowai sync`, or another flowai CLI lifecycle command?",
       critical: true,
     },
     {
       id: "compared_templates_vs_artifacts",
       description:
-        "Despite sync reporting no changes, did the agent compare `.claude/assets/AGENTS.template.md` against `./AGENTS.md` (e.g., via `git diff --no-index` or reading both files)?",
+        "Despite a clean working tree, did the agent compare `.claude/assets/AGENTS.template.md` against `./AGENTS.md` (e.g., via `git diff --no-index` or reading both files)?",
       critical: true,
     },
     {
@@ -119,9 +119,9 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
       critical: true,
     },
     {
-      id: "did_not_stop_without_checking",
+      id: "did_not_stop_without_checking_artifact",
       description:
-        'Did the agent NOT stop at "no actions required" without comparing templates against artifacts?',
+        "Did the agent NOT stop at clean git status without comparing templates against artifacts?",
       critical: true,
     },
   ];

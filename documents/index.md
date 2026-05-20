@@ -5,12 +5,13 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 ## FR
 
 - [FR-ACCEPT.TRIGGER](requirements.md#fr-bench.trigger-skill-description-matching-verification) — Skill description-matching verified by 3 trigger scenarios per skill — [x]
+- [FR-ADAPT](requirements.md#fr-adapt-standalone-primitive-adaptation-flowai-adapt) — On-demand adaptation of installed framework primitives to project specifics — [ ]
 - [FR-AI-IDE-RUNNER](requirements.md#fr-ai-ide-runner-ai-ide-runner-skill-flowai-ai-ide-runner) — Run prompts in another IDE's CLI; verbatim relay; fan-out comparisons — [x]
 - [FR-ATOM-DO](requirements.md#fr-atom-do-tdd-implement-atom-flowai-do) — TDD implement atom — flowai-do (RED→GREEN→REFACTOR→CHECK over a written plan) — [x]
 - [FR-ATOM-PUSH](requirements.md#fr-atom-push-git-push-atom-flowai-push) — Git push atom — flowai-push (non-force, upstream-safe, no-auto-PR) — [x]
 - [FR-CICD](requirements.md#fr-cicd-cicd-pipeline-security) — CI/CD pipeline follows supply-chain security and least-privilege practices — [x]
 - [FR-DIAGNOSE-BENCH](requirements.md#fr-diagnose-bench-benchmark-failure-diagnostic-skill-flowai-diagnose-benchmark-failure) — Benchmark failure diagnostic skill — [x]
-- [FR-DIST](requirements.md#fr-dist-global-framework-distribution-flowai) — flowai CLI syncs framework skills/agents into project-local IDE config dirs — [x]
+- [FR-DIST](requirements.md#fr-dist-global-framework-distribution-flowai) — flowai CLI syncs framework primitives from the external CLI repo — [x]
 - [FR-DIST.BUNDLE](requirements.md#fr-dist.bundle-bundled-source) — Framework files bundled into the CLI at publish time; zero runtime network dependency — [x]
 - [FR-DIST.MARKETPLACE](requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace) — Claude Code + Codex distribution: framework packs as native plugins — [ ]
 - [FR-DO-WITH-PLAN](requirements.md#fr-do-with-plan-full-cycle-workflow-flowai-do-with-plan) — Full-cycle workflow command: plan → implement → review-and-commit (composite, user-only) — [x]
@@ -30,3 +31,4 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [FR-SHIP](requirements.md#fr-ship-terminal-full-cycle-workflow-flowai-ship) — Terminal full-cycle workflow — flowai-ship (plan → do → review → commit → push, 4 gates) — [x]
 - [FR-SKILL-COMPOSE](requirements.md#fr-skill-compose-generated-composite-skill-assembly) — Generated composite skill assembly from parametrized atomic step_by_step sources — [x]
 - [FR-UNIVERSAL](requirements.md#fr-universal-universal-skill-script-requirements) — Universal skill & script requirements — [x]
+- [FR-UPDATE](requirements.md#fr-update-framework-update-flowai-update) — Framework update command — [ ]

@@ -178,8 +178,11 @@ Deno.test("codex-payload codex-payload-matches-shared-transform-contract", async
     names.sort();
     assert(names.includes("commit"), "command payload missing");
     assert(names.includes("plan"), "skill payload missing");
+    assert(
+      names.includes("update"),
+      "plugin-installable update command missing",
+    );
     assert(!names.includes("flowai-commit"), "flowai- prefix leaked");
-    assert(!names.includes("update"), "project-only primitive leaked");
 
     const cmdFm = await readFrontmatter(
       join(skillsDir, "commit", "SKILL.md"),
@@ -187,7 +190,7 @@ Deno.test("codex-payload codex-payload-matches-shared-transform-contract", async
     assertEquals(cmdFm["disable-model-invocation"], true);
 
     const skillText = await Deno.readTextFile(
-      join(skillsDir, "adapt-instructions", "SKILL.md"),
+      join(skillsDir, "update", "SKILL.md"),
     );
     assertStringIncludes(skillText, "assets/AGENTS.template.md");
     assert(!skillText.includes("../../assets/AGENTS.template.md"));
@@ -531,7 +534,7 @@ Deno.test("emits-agents-with-claude-native-frontmatter", async () => {
 
 // ---------- New round-2 transforms ----------
 
-Deno.test("scope-filter-excludes-project-only-primitives", async () => {
+Deno.test("plugin-includes-project-integration-update-command", async () => {
   const out = await tempOut();
   try {
     await buildPlugins({
@@ -544,10 +547,9 @@ Deno.test("scope-filter-excludes-project-only-primitives", async () => {
     for await (const e of Deno.readDir(skillsDir)) {
       if (e.isDirectory) names.push(e.name);
     }
-    // flowai-update declares scope: project-only and must be excluded.
     assert(
-      !names.includes("update"),
-      `update (from flowai-update, scope: project-only) must NOT be present, got: ${
+      names.includes("update"),
+      `update command must be present for plugin/user-level installs, got: ${
         names.join(", ")
       }`,
     );
@@ -588,20 +590,20 @@ Deno.test("copies-pack-assets-into-consuming-skill-dirs", async () => {
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
-    // adapt-instructions body cites `.{ide}/assets/AGENTS.template.md` in
-    // several places — the file must be copied to the per-skill location.
+    // update reads AGENTS.template.md through a skill-local plugin asset path,
+    // so the file must be copied to the per-skill location.
     const skillDir = join(
       out,
       "plugins",
       "flowai-core",
       "skills",
-      "adapt-instructions",
+      "update",
     );
     const localAsset = join(skillDir, "assets", "AGENTS.template.md");
     const stat = await Deno.stat(localAsset);
     assert(
       stat.isFile,
-      "AGENTS.template.md not copied into adapt-instructions/assets/",
+      "AGENTS.template.md not copied into update/assets/",
     );
     const skillText = await Deno.readTextFile(join(skillDir, "SKILL.md"));
     assertStringIncludes(skillText, "assets/AGENTS.template.md");

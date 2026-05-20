@@ -1,176 +1,155 @@
 ---
 name: flowai-update
 description: >-
-  Update flowai framework: sync skills/agents, adapt skills to project specifics, and migrate scaffolded project artifacts.
-scope: project-only
+  Reconcile project-owned AGENTS.md, CLAUDE.md, and scaffolded artifacts with the current flowai framework templates.
+argument-hint: "[--instructions|--scaffolds|--all]"
 ---
 
-# Task: Update flowai Framework
+# Task: Update Project Integration with flowai
 
 ## Overview
 
-Single entry point for updating the flowai framework in a project. Handles CLI update, skill/agent sync, skill adaptation to project specifics, and migration of scaffolded project artifacts. All migration intelligence comes from `flowai sync` output — no manual discovery needed.
+Reconcile project-owned flowai artifacts with the currently installed framework templates. This command does **not** manage the flowai CLI, does **not** sync or rewrite installed primitives, and does **not** adapt skills or agents. CLI lifecycle belongs to the standalone flowai CLI repository. Primitive adaptation belongs to `flowai-adapt`.
 
 ## Context
 
 <context>
-flowai generates three types of outputs:
-- **Synced** (skills/, agents/) — updated automatically by `flowai sync`, then adapted to the project
-- **Assets** (AGENTS.md template) — pack-level template synced to `.{ide}/assets/`. When the template changes, the project artifact (root AGENTS.md) may need migration. Asset-to-artifact mapping declared in pack.yaml `assets:` field.
-- **Scaffolded** (.devcontainer/, CLAUDE.md, documents/requirements.md, documents/design.md) — created once by setup skills (flowai-init, flowai-setup-agent-*, stack-specific configure-commands skills), then owned by the project. Exact artifact list varies by project stack and is declared in each pack's `pack.yaml` `scaffolds:` field.
+Most users receive flowai through an IDE plugin or a user-level install. Project-local installs still exist, but they are no longer the assumed path. Therefore this command treats framework sources as read-only inputs and writes only project-owned artifacts in the current working tree.
 
-`flowai sync` overwrites skills with upstream versions. This skill detects the overwrite via `git diff HEAD` and re-adapts, merging upstream changes with previous project customizations. Adaptation state is tracked entirely through git history — no extra frontmatter fields needed.
+Project-owned artifacts:
+- `AGENTS.md`
+- `CLAUDE.md` when it is a project compatibility file or symlink
+- scaffolded project docs/configs created by flowai setup commands
 
-`flowai sync` outputs an `>>> ACTIONS REQUIRED` section listing exactly which skills/assets changed and which artifacts they affect. This skill follows those instructions.
+Read-only framework sources:
+- project-local asset copies such as `.{ide}/assets/AGENTS.template.md`
+- skill-local plugin assets such as `.{ide}/skills/flowai-update/assets/AGENTS.template.md`
+- user-level assets such as `~/.claude/assets/AGENTS.template.md` or `~/.codex/assets/AGENTS.template.md`
+- plugin cache files
 
-**IMPORTANT**: `flowai sync` only compares templates with their cached copies in `.{ide}/assets/`. It does NOT check whether the project artifact (root AGENTS.md) matches the template. The artifact can drift without sync detecting it. Therefore, asset artifact verification (step 6) runs **unconditionally** — even when sync reports "NO ACTIONS REQUIRED".
+If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/`, hooks, or scripts, this command reports that they can be adapted with `flowai-adapt`. It must not rewrite them.
 </context>
 
 ## Rules & Constraints
 
 <rules>
-1. **Explicit sync only**: Never auto-sync. Always run `flowai sync` explicitly.
-2. **Per-file confirmation**: Show diffs and ask user before modifying each adapted skill or scaffolded artifact. Never silently overwrite.
-3. **Preserve user content**: Only update framework-originated sections. Do not touch project-specific customizations.
-4. **No changes without evidence**: Only propose migrations when diffs show relevant changes.
-5. **Cross-IDE**: Must work for Cursor, Claude Code, and OpenCode projects.
-6. **Mandatory tracking**: Use a task management tool (e.g., todo write) to track execution steps.
-7. **Atomic commit**: Stage synced files + adapted skills + migrated artifacts together in one commit.
-8. **Parallel adaptation**: Launch one `flowai-skill-adapter` subagent per updated skill — all in parallel.
+1. **No CLI lifecycle.** Do not run `flowai update`, `flowai sync`, `flowai migrate`, or parse sync output.
+2. **Project writes only.** Modify only current-project artifacts (`AGENTS.md`, `CLAUDE.md`, scaffolded docs/config). Never write plugin cache files, user-level skill directories, or installed primitive files.
+3. **Read-only sources.** Read templates/assets wherever installed, including plugin/user-level locations, but treat those files as immutable.
+4. **Preserve user content.** Update framework-originated sections only. Keep project-specific sections and local conventions unless the user explicitly approves a change.
+5. **Diff before write.** Show proposed per-file changes and ask for confirmation before writing.
+6. **Cross-IDE.** Detect Claude Code, Cursor, OpenCode, and Codex config dirs when looking for project-local sources.
+7. **Mandatory tracking.** Use a task management tool (todo write, TodoWrite, etc.) to track execution steps.
+8. **No auto-commit.** Leave changes unstaged unless the user explicitly asks to stage or commit.
 </rules>
 
 ## Instructions
 
 <step_by_step>
 
-1. **Update CLI**
-   - Run `flowai update`. It checks JSR for a newer version and installs it automatically.
-   - If not installed, inform the user: `deno install -gArf jsr:@korchasa/flowai` and stop.
-   - If the output contains "Updated to X.Y.Z. Please re-run flowai." — the binary was replaced. Re-run `/flowai-update` from the beginning.
-   - If the output contains "Already up to date" — proceed to the next step.
+1. **Detect scope and arguments**
+   - Work from the current project root.
+   - Parse flags:
+     - no args or `--all` -> check instructions and scaffolded artifacts.
+     - `--instructions` -> check only `AGENTS.md` / `CLAUDE.md`.
+     - `--scaffolds` -> check only known scaffolded project artifacts.
+   - Detect project IDE config dirs: `.claude/`, `.cursor/`, `.opencode/`, `.codex/`.
 
-2. **Sync framework**
-   - Run `flowai sync -y --skip-update-check` via shell. Capture the full stdout output.
-     - IMPORTANT: `sync` is a **subcommand** — always `flowai sync [flags]`, never bare `flowai [flags]`.
-     - Bare `flowai` is blocked in IDE context and will print a help message instead of syncing.
+2. **Locate AGENTS template sources** (for `--instructions` / `--all`)
+   - Check skill-local plugin asset paths first. When present, these are the most accurate source for plugin/user-level installs because the asset was copied next to the invoking command:
+     - `.claude/skills/flowai-update/assets/AGENTS.template.md`
+     - `.cursor/skills/flowai-update/assets/AGENTS.template.md`
+     - `.opencode/skills/flowai-update/assets/AGENTS.template.md`
+     - `.codex/skills/flowai-update/assets/AGENTS.template.md`
+     - namespace-stripped plugin paths such as `*/skills/update/assets/AGENTS.template.md` when visible in the project.
+   - Then check project-local asset paths:
+     - `.claude/assets/AGENTS.template.md`
+     - `.cursor/assets/AGENTS.template.md`
+     - `.opencode/assets/AGENTS.template.md`
+     - `.codex/assets/AGENTS.template.md`
+   - Check user-level paths:
+     - `~/.claude/assets/AGENTS.template.md`
+     - `~/.cursor/assets/AGENTS.template.md`
+     - `~/.config/opencode/assets/AGENTS.template.md`
+     - `~/.codex/assets/AGENTS.template.md`
+   - If any skill-local plugin asset exists, use it as the authoritative template source for this run. If other templates differ, report them as secondary/stale sources; do not switch to a project-local or user-level template by modified time.
+   - If no skill-local template exists and multiple same-tier templates differ, report the paths and choose the newest modified file only after warning the user.
+   - If none exist, stop with: "AGENTS.template.md not found. Update or install flowai through your plugin manager or flowai CLI, then rerun flowai-update."
 
-3. **Re-read self after sync (bootstrap)**
-   - Check if `flowai-update` itself appears in the sync output (SKILLS UPDATED or SKILLS CREATED).
-   - If yes: re-read the updated SKILL.md from disk (e.g., `.claude/skills/flowai-update/SKILL.md`) and **restart from step 4** using the new instructions. This ensures newly added steps take effect immediately.
-   - If no: continue with current instructions.
+3. **Read project instructions artifacts**
+   - Read `./AGENTS.md`.
+   - If `AGENTS.md` is missing, stop and tell the user to run `flowai-init` first. Do not create a new root file here.
+   - Inspect `./CLAUDE.md`:
+     - If it is a symlink to `AGENTS.md`, it is up to date.
+     - If missing in a Claude Code project, propose creating a compatibility symlink to `AGENTS.md`.
+     - If it is a regular file, compare it with `AGENTS.md`; propose replacing it with a symlink only after showing the diff/risk.
 
-4. **Parse sync output**
-   - Look for `>>> ACTIONS REQUIRED:` section in the output.
-   - If `>>> NO ACTIONS REQUIRED` appears with no actions section — note it, but **do NOT stop**. Continue to step 6 (asset artifact verification always runs).
-   - Extract each numbered action item:
-     - **CONFIG MIGRATED**: Note that `.flowai.yaml` needs committing.
-     - **SKILLS UPDATED**: Extract skill names and their `(scaffolds: ...)` lists.
-     - **SKILLS CREATED**: Extract skill names (new skills to adapt from scratch).
-     - **SKILLS DELETED**: Note for commit message.
-     - **AGENTS UPDATED**: Note for commit message.
-     - **AGENTS CREATED**: Note for commit message (new agents installed).
-     - **AGENTS DELETED**: Note for commit message. Check if deleted agents are referenced in project docs.
-     - **ASSETS UPDATED**: Extract template name and its `(artifacts: ...)` list. This is the pack-level template (AGENTS.md) that changed — the project artifact needs migration.
-     - **ASSETS CREATED**: New asset templates installed. Check if corresponding project artifacts exist.
-     - **HOOKS INSTALLED**: Note for commit message (new hooks auto-configured).
-     - **HOOKS UPDATED**: Note for commit message.
-     - **HOOKS DELETED**: Note for commit message (hooks removed from IDE config).
-     - **ERRORS**: Report to user and stop if critical.
+4. **Compare template against project artifact**
+   - Compare template content against `AGENTS.md`.
+   - Ignore unresolved placeholders such as `{{PROJECT_NAME}}` and `{{TOOLING_STACK}}`.
+   - Focus on framework-originated sections: core rules, documentation rules, planning rules, TDD flow, acceptance-test flow, development commands, and safety constraints.
+   - Classify each difference:
+     - framework section missing or outdated -> propose update.
+     - project-specific section -> preserve.
+     - framework section customized by project -> propose a merge that keeps local constraints.
+     - obsolete legacy sections (`documents/AGENTS.md`, `scripts/AGENTS.md`) -> propose collapsing them into root `AGENTS.md`.
+   - When a section has missing named rules, list each missing rule by name instead of summarizing the count. For Planning Rules, explicitly name missing rules such as `Proactive Resolution`.
 
-5. **Adapt updated skills to project**
-   - Collect all skills from SKILLS UPDATED and SKILLS CREATED lists.
-   - For each skill, detect the IDE config directory (e.g., `.claude/skills/<name>/`).
-   - Launch one `flowai-skill-adapter` subagent per skill — **all in parallel**. Each subagent receives:
-     - Skill name and path to the skill directory
-     - The subagent autonomously reads:
-       - Working tree SKILL.md (new upstream version, written by sync)
-       - `git show HEAD:<path>/SKILL.md` (previous version with project adaptations, if exists)
-       - Project context from CLAUDE.md → AGENTS.md (automatic)
-   - The subagent performs a 3-way merge:
-     - Keeps all upstream changes (new rules, steps, corrections)
-     - Preserves project-specific adaptations (custom commands, examples, removed irrelevant sections)
-   - Wait for all subagents to complete.
-   - Review each adaptation result: show the diff (`git diff HEAD -- <skill-path>`) to the user.
-   - Wait for user approval/rejection per skill. Revert rejected adaptations with `git checkout HEAD -- <skill-path>`.
+5. **Check scaffolded artifacts** (for `--scaffolds` / `--all`)
+   - Use known scaffold mappings from visible pack metadata when available. Default known project scaffolds:
+     - `documents/requirements.md`
+     - `documents/design.md`
+     - `.devcontainer/devcontainer.json`
+     - `.devcontainer/Dockerfile`
+     - `.devcontainer/init-firewall.sh`
+     - `.devcontainer/setup-container.sh`
+     - `deno.json`
+     - `scripts/check.ts`
+   - Only compare files that already exist in the project unless an explicit scaffold mapping says a missing file should exist.
+   - Read the corresponding template/source if visible in the project-local install or skill-local plugin assets. If no source is visible, skip with a clear note instead of guessing.
+   - Propose updates only when a framework-originated section is stale.
 
-6. **Verify and migrate asset artifacts** *(runs unconditionally — even when sync reports no changes)*
-   - Read `pack.yaml` from each installed pack (e.g., `.{ide}/skills/flowai-update/../../pack.yaml` or discover via `.flowai.yaml`) to get the `assets:` mapping (template name → artifact path). If pack.yaml is unavailable, use the default mapping: `AGENTS.template.md` → `AGENTS.md` (single entry).
+6. **Detect local primitives but do not adapt them**
+   - Look for project-local flowai primitives:
+     - `.{ide}/skills/flowai-*`
+     - `.{ide}/skills/*` with `name: flowai-*`
+     - `.{ide}/agents/flowai-*`
+     - flowai hook/script files under project IDE config dirs
+   - Do not edit those files.
+   - If any exist, report: "Project-local flowai primitives detected. Run flowai-adapt for primitive adaptation."
 
-   - **Preferred path**: for the default `AGENTS.template.md` → `AGENTS.md` mapping, delegate the re-adaptation to `/flowai-adapt-instructions` (a dedicated skill that reads the installed template from `.{ide}/assets/AGENTS.template.md`, diffs it against the project `AGENTS.md`, shows a merge proposal, and writes on confirmation). Invoke it explicitly and skip the manual comparison below. Use the manual path only for non-AGENTS asset mappings or when `/flowai-adapt-instructions` is not installed.
+7. **Propose changes**
+   - For each affected artifact, show:
+     - source template path
+     - current project section
+     - proposed project section
+     - reason for the change, including the practical risk or benefit. Example: if proposing the TDD `CHECK` step, explain that skipping it leaves formatter, linter, and regression failures undetected after GREEN.
+   - Use a unified diff or compact before/after blocks.
+   - Keep proposals per file so the user can approve or reject each one.
 
-   - **6a. Detect legacy layout** — check whether `documents/AGENTS.md` or `scripts/AGENTS.md` exists in the project root. If either file exists, this is a legacy three-file install:
-     a. Read all three files: `AGENTS.md`, `documents/AGENTS.md`, `scripts/AGENTS.md` (skip any that don't exist).
-     b. Merge non-root sections from `documents/AGENTS.md` and `scripts/AGENTS.md` into root `AGENTS.md`. Preserve existing root content; append sections that only exist in the subsidiary files.
-     c. Show the merged diff to the user and explain that the project is migrating from three AGENTS.md files to a single root file.
-     d. On user confirmation: overwrite root `AGENTS.md` with the merged content, then `git rm` the two old files (`documents/AGENTS.md`, `scripts/AGENTS.md`) plus their `CLAUDE.md` symlinks (`documents/CLAUDE.md`, `scripts/CLAUDE.md`) if they exist.
-     e. After legacy collapse, continue with the normal template-vs-artifact comparison below.
+8. **Apply approved changes**
+   - Ask for confirmation before each file write.
+   - Apply only approved project-artifact edits.
+   - Never modify read-only template/source files.
+   - Never stage or commit unless the user explicitly asks.
 
-   - For each template → artifact pair:
-     a. **MUST read** the actual project artifact file (`./AGENTS.md`).
-     b. **MUST read** the framework template (e.g., `.claude/assets/AGENTS.template.md`).
-     c. Compare using `git diff --no-index`:
-        ```
-        git diff --no-index -- .claude/assets/AGENTS.template.md ./AGENTS.md
-        ```
-     d. Primary comparison is **template content vs project artifact**, not just template git history.
-     e. Templates contain `{{PLACEHOLDERS}}` — ignore placeholder sections in the diff. Focus on **framework-originated sections** (rules, planning rules, TDD flow, doc formats, standard interface).
-     f. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
-   - If no gaps found — proceed to scaffolded artifacts.
-
-7. **Migrate scaffolded artifacts**
-   - For each SKILLS UPDATED entry that has scaffolds listed:
-     a. Run `git diff` on the skill directory (e.g., `.claude/skills/flowai-init/`) to understand what changed in the template.
-     b. For each scaffolded artifact path listed:
-        - **MUST read** the actual project artifact file (e.g., `./documents/design.md`).
-        - **MUST read** the corresponding skill template or script to understand what changed.
-        - Primary comparison is **template content vs project artifact**, not just template git history.
-     c. Determine: does the project artifact contain all substantive content from the template? If yes — no migration needed. If no — record what's missing.
-   - If no gaps found in any artifact — skip to commit.
-
-8. **Propose changes**
-   - For each affected artifact (from both asset and scaffold migration), show **all three**:
-     a. **What changed in template** — cite the diff lines or section names
-     b. **Current project artifact section** — show the outdated version (before/quote)
-     c. **Proposed update** — show the complete updated section with project-specific content preserved (after/quote)
-   - Use diff format or before/after block quotes — make changes visually clear.
-   - Clearly explain **why** the change is recommended.
-
-9. **Apply with confirmation**
-   - Show per-file diff to the user.
-   - Wait for user approval/rejection of each change.
-   - Apply only approved changes.
-
-10. **Validate frontmatter**
-    - Detect all IDE config directories present in the project (`.claude/`, `.cursor/`, `.opencode/`).
-    - Run the validation script, passing all detected config dirs:
-      ```
-      deno run -A <flowai-update-skill-dir>/scripts/validate_frontmatter.ts .claude .cursor
-      ```
-    - The script scans `skills/*/SKILL.md` and `agents/*.md` in each config dir and checks frontmatter (required fields, name format, name match).
-    - If validation fails: show errors to the user. Fix the frontmatter issues before committing (re-adapt or manually correct).
-    - If validation passes: proceed to commit.
-
-11. **Commit**
-    - Stage all synced files + adapted skills + migrated artifacts.
-    - Commit with message: `chore(framework): update flowai framework`
-    - Include list of adapted skills, created/deleted agents, installed/updated/deleted hooks, migrated assets, and migrated artifacts in commit body.
+9. **Verify**
+   - Show the resulting `git diff -- AGENTS.md CLAUDE.md documents/requirements.md documents/design.md .devcontainer deno.json scripts/check.ts` limited to touched files.
+   - Confirm plugin/user-level files and installed primitives were not modified.
+   - End with a short summary of updated, skipped, and deferred items.
 
 </step_by_step>
 
 ## Verification
 
 <verification>
-[ ] CLI updated via `flowai update` (or confirmed already up to date).
-[ ] `flowai sync -y --skip-update-check` executed successfully.
-[ ] Self-bootstrap: re-read own SKILL.md if flowai-update was in SKILLS UPDATED.
-[ ] Sync output parsed: all action types extracted (skills, agents, assets, hooks, errors).
-[ ] Updated skills adapted to project via `flowai-skill-adapter` subagents (parallel).
-[ ] Each skill adaptation shown to user and approved/rejected.
-[ ] Legacy layout detected and collapsed (if `documents/AGENTS.md` or `scripts/AGENTS.md` existed): merged into root AGENTS.md, old files removed.
-[ ] Asset artifact compared: AGENTS.template.md vs root AGENTS.md using `git diff --no-index`.
-[ ] Scaffolded artifacts compared for skills with scaffolds listed.
-[ ] Proposed changes shown with before/after for each affected artifact.
-[ ] User confirmed each change before applying.
-[ ] Frontmatter validation passed for all IDE config dirs.
-[ ] Single atomic commit with descriptive body (adapted skills, migrated assets/artifacts, created/deleted resources).
+[ ] Did not run `flowai update`, `flowai sync`, `flowai migrate`, or any flowai CLI lifecycle command.
+[ ] Located a read-only framework template source or stopped with a clear install/update instruction.
+[ ] Read actual project `AGENTS.md` and compared template content against the artifact, not only template git history.
+[ ] Proposed only project-owned artifact changes.
+[ ] Preserved project-specific sections and local conventions.
+[ ] Asked confirmation before each write.
+[ ] Did not modify plugin cache, user-level skill dirs, or installed primitive files.
+[ ] Reported project-local primitive adaptation as a `flowai-adapt` follow-up when relevant.
+[ ] Did not stage or commit automatically.
 </verification>

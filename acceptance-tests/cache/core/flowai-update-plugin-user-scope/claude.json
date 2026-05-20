@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "7aebe5860a69835d7061153485c010ed35232f627b0774d11b56c943915195cf",
+  "scenarioId": "flowai-update-plugin-user-scope",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-20T11:22:06.079Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 157232.50579199998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "did_not_run_flowai_cli": {
+        "pass": true,
+        "reason": "The agent's Bash commands were limited to: directory listings (`ls`, `find`), `git diff`, and `git status`. No `flowai update`, `flowai sync`, or any other flowai CLI lifecycle command was executed a…"
+      },
+      "used_readonly_framework_source": {
+        "pass": true,
+        "reason": "The agent explicitly read `.claude/skills/flowai-update/assets/AGENTS.template.md` and declared it the authoritative source ('skill-local, наиболее актуальный для плагин/user-level инсталляции'). It …"
+      },
+      "updated_only_project_artifacts": {
+        "pass": true,
+        "reason": "The final `git status` shows only `AGENTS.md` as modified. The agent explicitly left `.claude/skills/flowai-*` and `.claude/agents/flowai-*` untouched, citing plugin/user-level installation scope. No…"
+      },
+      "did_not_adapt_primitive": {
+        "pass": true,
+        "reason": "The large diff to `.claude/skills/flowai-commit/SKILL.md` (reducing it to 8 lines) is part of the 'Initial project state' benchmark setup commit, not an agent action. The final `git status` confirms …"
+      },
+      "found_missing_proactive_resolution": {
+        "pass": true,
+        "reason": "The agent correctly identified the missing rule: 'Раздел `## Planning Rules`: отсутствует правило `**Proactive Resolution**`'. It then added the exact rule from the template — '- **Proactive Resoluti…"
+      }
+    }
+  }
+}

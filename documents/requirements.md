@@ -238,7 +238,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-DIST: Global Framework Distribution — flowai
 
 - **Description:** `flowai` CLI tool (developed in the external [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) repo, published to JSR as `@korchasa/flowai`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime). The CLI repo pins a framework revision via `framework.lock` and consumes a SHA-256-verified `framework.tar.gz` released from this repo (FR-DIST.BUNDLE.PIN).
-- **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
+- **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md), [simplify-flowai-update-boundaries](tasks/2026/05/simplify-flowai-update-boundaries.md)
 - **Def/Abbr:** CLI = flowai, BundledSource = JSON artifact with all framework files baked at publish time.
 
 #### FR-DIST.SYNC Sync Command (`flowai`)
@@ -371,8 +371,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
     Evidence: manual — korchasa (transcript captured in pilot PR).
   - [ ] Codex smoke install end-to-end on a fresh checkout: `deno task build-plugins` → `codex plugin marketplace add ./dist/claude-plugins` → `/plugins` → install `flowai-core` → new thread shows an installed flowai skill.
     Evidence: manual — korchasa (transcript captured in implementation PR).
-  - [x] Scope filter: `scope: project-only` primitives (e.g. `flowai-update`) are excluded from the plugin tree.
-    Evidence: `scripts/build-plugins_test.ts::scope-filter-excludes-project-only-primitives`.
+  - [x] Plugin-installable project integration command: `flowai-update` is emitted into the plugin tree and reads local copied assets instead of requiring CLI sync.
+    Evidence: `scripts/build-plugins_test.ts::plugin-includes-project-integration-update-command`.
   - [x] Pack-level `assets/*` files referenced by a SKILL.md are copied into the consuming skill's own dir, and `../assets/...` paths in the body are rewritten to `assets/...`.
     Evidence: `scripts/build-plugins_test.ts::copies-pack-assets-into-consuming-skill-dirs` + validator `validateAssetReferences`.
   - [x] CLI-only blocks fenced with `<!-- begin: cli-only-skill-update --> ... <!-- end: cli-only-skill-update -->` are stripped during plugin emit.
@@ -394,27 +394,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 - **Desc:** SKILL.md frontmatter under `framework/<pack>/{commands,skills}/*/` MAY declare an optional `scope` field with values `project-only` | `global-only`. Absent = installable in both modes. The CLI filters primitives in `resolvePackResources()` based on the active scope.
 - **Usage:**
-  - `scope: project-only` on `flowai-update` — requires project context (CLI+sync+artifact migration).
+  - `scope: project-only` only for primitives that cannot run from plugin/user-level installs.
   - `scope: global-only` reserved for future primitives that make no sense per-project.
-  - Absent on `flowai-adapt-instructions` and others — installable in both modes.
+  - Absent on `flowai-update`; it is plugin/user-level installable and writes only current-project artifacts.
 - **Acceptance:**
   - [x] `scripts/resource-types.ts` Zod schema accepts `scope: "project-only" | "global-only"` (optional).
     Evidence: `scripts/check-skills_test.ts::validateScopeField`.
   - [x] CLI filter in `cli/src/sync.ts::resolvePackResources` excludes `scope: project-only` primitives when scope=global, excludes `scope: global-only` when scope=project.
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
-
-#### FR-ADAPT-INSTRUCTIONS Standalone AGENTS.md Re-Adaptation — `flowai-adapt-instructions`
-
-- **Desc:** Standalone skill that re-adapts the project's AGENTS.md when the upstream template changes significantly. Reads the installed template from `{ide}/assets/AGENTS.template.md` (path resolved per scope), diffs it against `<cwd>/AGENTS.md`, proposes a merge preserving project-specific sections, shows the diff, and writes on user approval. Installable in both scopes (no `scope:` field).
-- **Scenario:** User updates flowai → new template lands in `~/.claude/assets/AGENTS.template.md` (global) or `.claude/assets/AGENTS.template.md` (project). User invokes `/flowai-adapt-instructions` → agent reads template, diffs with project AGENTS.md, shows merged proposal, asks confirmation, writes on approval.
-- **Acceptance verified by acceptance test:** `flowai-adapt-instructions-basic`.
-- **Acceptance criteria:**
-  - [x] Skill lives at `framework/core/skills/flowai-adapt-instructions/SKILL.md` (agent-auto-invocable, `flowai-*` prefix per FR-PACKS.STRUCT naming).
-    Evidence: file existence.
-  - [x] SKILL.md body references `{ide}/assets/AGENTS.template.md` (no template duplication inside the skill).
-    Evidence: `grep -n "AGENTS.template.md" framework/core/skills/flowai-adapt-instructions/SKILL.md`.
-  - [x] Benchmark `flowai-adapt-instructions-basic` verifies the read-template → diff → merge → confirm flow.
-    Evidence: `framework/core/skills/flowai-adapt-instructions/acceptance-tests/basic/mod.ts`.
 
 #### FR-DIST.FILTER Selective Sync
 - **Desc:** `.flowai.yaml` controls which skills/agents to sync.
@@ -792,14 +779,16 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **Cross-IDE discovery**: Skills discoverable by IDEs via IDE-specific config dirs (e.g., `.claude/skills/`). flowai handles placement per IDE.
   - [x] **Name collision**: Project-level skills override user-level skills when names collide (per agentskills.io client implementation guide). flowai overwrites on sync. Documented in SDS (section 3.1.4).
 
-### FR-UPDATE: Framework Update — `flowai-update`
+### FR-UPDATE: Project Integration Update — `flowai-update`
 
-- **Description:** Single entry point for updating the flowai framework. Handles CLI update, skill/agent sync via `flowai sync`, migration of the AGENTS.md asset artifact (from the pack-level template), and migration of scaffolded project artifacts using template diffs as migration source. Detects legacy three-file AGENTS.md layouts and collapses them into a single root file.
-- **Acceptance verified by acceptance tests:** `flowai-update-basic`, `flowai-update-skill-adaptation`, `flowai-update-sync-command`, `flowai-update-template-vs-artifact`
+- **Description:** Project integration command that reconciles current-project artifacts with the installed flowai framework templates. It handles `AGENTS.md`/`CLAUDE.md`, scaffolded project artifacts, and legacy three-file AGENTS.md collapse. It never runs `flowai update`, `flowai sync`, or rewrites installed primitives/plugin caches/user-level dirs; local primitive adaptation is delegated to `flowai-adapt`.
+- **Tasks:** [simplify-flowai-update-boundaries](tasks/2026/05/simplify-flowai-update-boundaries.md)
+- **Acceptance verified by acceptance tests:** `flowai-update-basic`, `flowai-update-asset-drift-no-sync`, `flowai-update-template-vs-artifact`, `flowai-update-plugin-user-scope`
 
 ### FR-ADAPT: Standalone Primitive Adaptation — `flowai-adapt`
 
-- **Description:** On-demand adaptation of all installed framework primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of the update cycle. Uses `flowai-skill-adapter` subagent for skills and `flowai-agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
+- **Description:** On-demand adaptation of project-local flowai primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `flowai-update`. Plugin-installed and user-level primitives are read-only and skipped. Uses `flowai-skill-adapter` subagent for skills and `flowai-agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
+- **Tasks:** [simplify-flowai-update-boundaries](tasks/2026/05/simplify-flowai-update-boundaries.md)
 - **Use case scenario:** Developer installs flowai on a Python project. All skills contain generic Deno examples. Runs `/flowai-adapt` to adapt all primitives to Python/pytest/ruff. Can also run `/flowai-adapt --skills flowai-commit` to adapt a single skill.
 - **Acceptance verified by acceptance tests:** `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`
 

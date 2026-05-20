@@ -306,7 +306,7 @@ graph TD
   - `PlanItem`: `{ type: skill|agent|hook|script|asset, name, action: create|update|ok|conflict, sourcePath, targetPath, content }`
 - **Agent transformation rules** (per IDE): See 3.2 IDE frontmatter formats.
 - **Pack resolution flow:** Load config → expand `packs:` to resource lists (skills, agents, hooks, scripts from `framework/*/`) → apply `skills.include/exclude` filter → compute plan → write. `resolvePackResources()` returns `hookNames` and `scriptNames` alongside skills/agents.
-- **Rich sync output:** `flowai sync` produces instruction-oriented output. Layout (top→bottom): truthful header (`flowai sync complete.` on success / `flowai sync FAILED: N error(s).` on errors, red via `cli/src/color.ts` when stdout is TTY and `NO_COLOR` unset) → `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agents, hooks, assets with artifact mappings; counter shown as `N/M` when partial writes failed and failed items are hidden from the success list) → `>>> NO ACTIONS REQUIRED` summary → `>>> ERRORS (N):` block (red) listing failed writes — last so it stays visible in scrollback. Failed status is propagated by `markFailedActions()` (`cli/src/resource_index.ts`) cross-referencing `result.errors` with each section's `ResourceAction[]`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]`, `assetActions[]`, `errors[]` (with `name`/`type` for failure attribution), and `dryRun?: boolean`. Post-sync frontmatter validation via `flowai-update/scripts/validate_frontmatter.ts` (scans IDE config dirs for skills + agents).
+- **Rich sync output:** `flowai sync` produces instruction-oriented output. Layout (top→bottom): truthful header (`flowai sync complete.` on success / `flowai sync FAILED: N error(s).` on errors, red via `cli/src/color.ts` when stdout is TTY and `NO_COLOR` unset) → `>>> ACTIONS REQUIRED` (config migration, updated/created/deleted skills with inline scaffolds, agents, hooks, assets with artifact mappings; counter shown as `N/M` when partial writes failed and failed items are hidden from the success list) → `>>> NO ACTIONS REQUIRED` summary → `>>> ERRORS (N):` block (red) listing failed writes — last so it stays visible in scrollback. Failed status is propagated by `markFailedActions()` (`cli/src/resource_index.ts`) cross-referencing `result.errors` with each section's `ResourceAction[]`. `SyncResult` includes `configMigrated`, `skillActions[]`, `agentActions[]`, `hookActions[]`, `assetActions[]`, `errors[]` (with `name`/`type` for failure attribution), and `dryRun?: boolean`.
 - **Sync plan preview:** `formatSyncPlan(config, {scope, home})` (`cli/src/cli.ts`, pure string builder for testability) prints Source/IDEs/Skills/Agents block before the confirmation prompt. In global mode it appends a `Target dirs:` list of resolved user-level base dirs per IDE — including the Codex split (`~/.codex` for agents + `~/.agents` for skills) — surfacing the blast radius before any writes.
 - **Dry-run (`--dry-run` / `-n`):** Compute and render the full plan without writing. Implemented via `wrapDryRun(fs)` in `cli/src/sync.ts` — a read-through `FsAdapter` that turns `writeFile`/`mkdir`/`symlink`/`remove` into no-ops, leaving every downstream write site unaware. `processPlan` short-circuits before `writeFiles` so `totalWritten` stays 0 and the renderer reports the run truthfully. Dry-run skips the spinner, the `notifyUpdateAvailable` pre-flight step, the new-config generator, and conflict prompts; exits 0 always.
 - **Exit code:** `runSync` returns `number`; root command and `sync` subcommand call `Deno.exit(code)` when non-zero. `1` if `result.errors.length > 0` after a real run; `0` for any dry-run.
@@ -319,15 +319,7 @@ graph TD
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 - **Scope + global mode (FR-DIST.GLOBAL):** `SyncScope = "project" | "global"` threaded via `cli/src/scope.ts`. CLI exposes three mutually exclusive flags on `flowai` / `flowai sync`: `--global` / `-g` (force global), `--local` / `-l` (force project), `--auto` (default). **Resolution in `--auto`** (via `resolveAutoScope(cwd, home, fs)` in `scope.ts`): (1) `<cwd>/.flowai.yaml` exists → `"project"`; (2) else `~/.flowai.yaml` exists → `"global"` (CLI logs `Using global config at ~/.flowai.yaml`); (3) both missing → `null` (caller prompts interactively, or defaults to global in `-y` mode). **Explicit flags** skip the ladder: `--global` loads/creates `~/.flowai.yaml`, `--local` loads/creates `<cwd>/.flowai.yaml`; conflicting flags (`--global` + `--local`) exit non-zero. **`migrate` subcommand** requires explicit `--global`/`--local`; no auto-resolution. **IDE guard** (`isInsideIDE()`) fires only when resolved scope is `"project"`; global scope bypasses the guard. Project mode: targets `<cwd>/.{ide}/`, scaffolds + artifact sync enabled, hooks merged into `<cwd>/.claude/settings.json`. Global mode: targets per IDE native user dir (see Components bullet for `scope.ts`), scaffolds + artifact sync SKIPPED (templates still install), hooks merged into `~/.claude/settings.json` (same manifest-based logic). `resolvePackResources()` filters by the `scope:` frontmatter field: `project-only` primitives skipped in global mode, `global-only` primitives skipped in project mode, absent = both (FR-PACKS.SCOPE).
 
-### 3.5.1 AGENTS.md Re-Adaptation Skill — `flowai-adapt-instructions`
-
-- **Purpose:** Standalone skill (installable in both scopes) that re-adapts the project's AGENTS.md when the upstream template changes significantly. Reads the installed template (`{ide}/assets/AGENTS.template.md`, path resolved per scope), diffs against `<cwd>/AGENTS.md`, proposes a merge preserving project-specific sections, writes on user approval.
-- **Location:** `framework/core/skills/flowai-adapt-instructions/SKILL.md` + `acceptance-tests/basic/mod.ts` (agent-auto-invocable, placed under `skills/` with `flowai-*` prefix per FR-PACKS.STRUCT naming).
-- **No template duplication:** The skill does NOT carry its own copy of the AGENTS.md template. It relies on the pack-level asset installed by `flowai sync` into `{ide}/assets/`.
-- **Relation to `flowai-update`:** `flowai-update` (scope: `project-only`) delegates the AGENTS.md migration step to `/flowai-adapt-instructions` rather than re-implementing template diffing.
-- **Behavioral requirements:** See acceptance test `flowai-adapt-instructions-basic`.
-
-### 3.5.2 Claude Code + Codex Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-plugins.ts`)
+### 3.5.1 Claude Code + Codex Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-plugins.ts`)
 
 - **Purpose:** Additional, additive distribution channel that publishes flowai packs as native Claude Code + Codex plugins through one generated marketplace at `korchasa/flowai-plugins`. flowai CLI (3.5) remains primary for Cursor / OpenCode and stays supported for Claude Code / Codex; marketplace install is offered alongside, not as a replacement.
 - **Location:** `scripts/build-plugins.ts` (build), `scripts/validate-plugins.ts` (validator), `scripts/build-plugins_test.ts` + `scripts/validate-plugins_test.ts` (tests), `.github/workflows/ci.yml` step `Build and validate plugin marketplace` + downstream sync (publish). Compatibility wrappers `scripts/build-claude-plugins.ts` and `scripts/validate-claude-plugins.ts` call the new scripts for one transition release. Output tree at `dist/claude-plugins/` is gitignored.
@@ -355,7 +347,7 @@ graph TD
 - **Version policy:** Claude + Codex `plugin.json` and Claude marketplace entries carry upstream `deno.json` `.version` (validated as semver by `validate-plugins.ts`). Auto-update is tied to the downstream commit SHA; the semver field is supplementary metadata so plugin UIs show a human-readable version.
 - **Codex validation:** `CodexMarketplaceSchema` validates `.agents/plugins/marketplace.json`; `CodexPluginManifestSchema` validates `.codex-plugin/plugin.json`. Path rules: marketplace `source.path` and manifest component paths start with `./`, stay inside the marketplace/plugin root after resolution, and point to existing files/dirs. Malformed Codex output aborts `deno task validate-plugins` before downstream sync.
 - **Build transforms (execution order, FR-DIST.MARKETPLACE round 2):**
-  1. **Scope filter** — primitives with `scope: project-only` (e.g. `flowai-update`) are skipped before any per-skill copy. They have no meaning in plugin context.
+  1. **Scope filter** — primitives with `scope: project-only` are skipped before any per-skill copy. `flowai-update` has no scope field because it is plugin/user-level installable and writes only current-project artifacts.
   2. **Skill / command emit** — copy support files, transform SKILL.md frontmatter, inject `disable-model-invocation: true` on commands.
   3. **Asset copy + path rewrite** — `framework/<pack>/assets/<file>` files referenced by SKILL.md (with or without `../` prefixes) are copied to `plugins/<plugin>/skills/<skill>/assets/<file>` and body paths rewritten to the local form. Bare directory refs like `../../assets/` also get normalized to `assets/`.
   4. **CLI-only fence strip** — `<!-- begin: cli-only-skill-update --> ... <!-- end: cli-only-skill-update -->` blocks are removed from emitted SKILL.md (left intact in source, where the CLI install reads them).
@@ -402,12 +394,13 @@ graph TD
 - **Behavioral requirements:** See acceptance tests `flowai-setup-ai-ide-devcontainer-*` (6 scenarios).
 - **Deps:** None (pure SKILL.md, agent-driven generation).
 
-### 3.10 Framework Update Skill — `flowai-update`
+### 3.10 Project Integration Update Skill — `flowai-update`
 
-- **Purpose:** Single entry point for updating framework + migrating asset-mapped and scaffolded artifacts.
-- **Asset artifacts:** AGENTS.md template mapped via `pack.yaml` `assets:` field (single template → single project artifact). Tracked independently from skills — changes detected even when no skills are updated.
-- **Scaffolded artifacts:** Remaining artifacts mapped via `pack.yaml` `scaffolds:` field (skill → artifact paths).
-- **CLI integration:** `flowai` bare command is no-op inside IDE. `flowai sync` required explicitly.
+- **Purpose:** Reconcile current-project artifacts with installed flowai framework templates without managing CLI lifecycle or installed primitives.
+- **Install channel:** Works from project-local, plugin, or user-level installs. Framework template sources are read-only.
+- **Asset artifacts:** AGENTS.md template mapped to project `AGENTS.md`; comparison is template content vs project artifact, not sync output.
+- **Scaffolded artifacts:** Existing project docs/configs are checked only when a visible template/source is available. Missing sources are skipped with a clear note.
+- **Boundary:** Never runs `flowai update`, `flowai sync`, or rewrites plugin cache/user-level dirs/project-local primitives. Primitive adaptation is a `flowai-adapt` responsibility.
 - **Behavioral requirements:** See acceptance tests `flowai-update-*` (4 scenarios).
 
 ### 3.11 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`)
@@ -431,13 +424,13 @@ graph TD
 
 ### 3.12 Standalone Primitive Adaptation — `flowai-adapt`
 
-- **Purpose:** On-demand adaptation of all installed framework primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `flowai-update`.
+- **Purpose:** On-demand adaptation of project-local framework primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `flowai-update`.
 - **Command:** `framework/core/commands/flowai-adapt/SKILL.md`. User-only primitive under `commands/` directory; `disable-model-invocation: true` is injected by the CLI writer at sync time.
 - **Subagents:**
   - `flowai-skill-adapter` — adapts skill SKILL.md (reused from flowai-update).
   - `flowai-agent-adapter` — adapts agent `.md` body, preserves YAML frontmatter.
 - **Workflow:**
-  1. Detect IDE config dirs (`.claude/`, `.cursor/`, `.opencode/`).
+  1. Detect project-local IDE config dirs (`.claude/`, `.cursor/`, `.opencode/`).
   2. Parse args: type filter (`--skills`/`--agents`/`--assets`/`--hooks`) + optional name.
   3. Adapt skills: scan `{ide}/skills/`, parallel subagents, diff + confirm.
   4. Adapt agents: scan `{ide}/agents/`, parallel subagents, diff + confirm.
@@ -445,7 +438,7 @@ graph TD
   6. Adapt hooks: check for stack-specific commands, skip agnostic.
   7. Summary.
 - **Git tracking:** Adaptation state tracked through git history. Working tree = current version; `git show HEAD:<path>` = previous adapted version. No extra metadata fields.
-- **Relation to flowai-update:** `flowai-update` ties adaptation to the sync cycle. `flowai-adapt` runs standalone — after first install, stack change, or selectively.
+- **Relation to flowai-update:** `flowai-update` handles project-owned artifact reconciliation. `flowai-adapt` handles project-local primitive adaptation — after first local install, stack change, or selectively. Plugin/user-level primitives stay read-only.
 - **Behavioral requirements:** See acceptance tests `flowai-adapt-skills-basic`, `flowai-adapt-agents-basic`.
 
 ### 3.13 JIT Review Skill — `flowai-jit-review`

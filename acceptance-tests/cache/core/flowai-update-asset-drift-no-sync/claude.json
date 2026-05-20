@@ -1,40 +1,40 @@
 {
   "schema": 1,
-  "key": "ae8b4ce4d511aa1c0d901d466d3c578476425376035dda1379948c8a96a9cde6",
+  "key": "3ff51b695761f9fc67334c70c85e7a23dbcbbf12790545c0226f718a35ea0d52",
   "scenarioId": "flowai-update-asset-drift-no-sync",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-04-19T17:19:21.340Z",
+  "recordedAt": "2026-05-20T11:32:08.091Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 283607.639291,
+    "durationMs": 122003.29937499994,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
     "model": "claude-sonnet-4-6",
     "checklistResults": {
-      "skipped_sync_correctly": {
+      "did_not_run_cli_lifecycle": {
         "pass": true,
-        "reason": "The agent explicitly started with 'Начинаю с шага 6 — проверка и миграция артефактов ассетов' (Starting with step 6) and proceeded directly to listing directories and checking files without executing…"
+        "reason": "The agent's Bash commands were limited to filesystem navigation (`ls`, `find`). No `flowai update`, `flowai sync`, or any other flowai CLI lifecycle commands were invoked, fully respecting the user's…"
       },
       "compared_templates_vs_artifacts": {
         "pass": true,
-        "reason": "The agent explicitly read both `.claude/assets/AGENTS.template.md` and `./AGENTS.md` using the Read tool, then created a proposed merged file at `/tmp/proposed_agents.md` and ran `git diff --no-index…"
+        "reason": "The agent explicitly read both files using the `Read` tool: `.claude/assets/AGENTS.template.md` and `AGENTS.md` in the sandbox root. It then performed a detailed section-by-section comparison, listin…"
       },
       "found_missing_proactive_resolution": {
         "pass": true,
-        "reason": "In the Final Result, the agent explicitly called out '+ добавить `Proactive Resolution` (новое в шаблоне)' under the ОБНОВИТЬ category for `## Planning Rules`. The current `AGENTS.md` (shown in git d…"
+        "reason": "The agent explicitly called out in its analysis: '**Отсутствует** правило `Proactive Resolution` (новое в шаблоне): \"Before asking the user, exhaust available resources to find the answer autonomousl…"
       },
       "proposed_adding_rule": {
         "pass": true,
-        "reason": "The proposed merged file (`/tmp/proposed_agents.md`) includes the full 'Proactive Resolution' rule: '- **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, w…"
+        "reason": "In the '## Предлагаемое изменение' section the agent explicitly proposed: 'добавить недостающий `Proactive Resolution`' as part of the update to bring AGENTS.md in line with the template."
       },
-      "did_not_stop_without_checking": {
+      "did_not_stop_without_checking_artifact": {
         "pass": true,
-        "reason": "The agent never paused or stopped upon the user's mention of 'NO ACTIONS REQUIRED'. It immediately proceeded to step 6, located the template, read both files, computed diffs, and produced a full merg…"
+        "reason": "The agent never mentioned the clean git working tree as a reason to stop. It immediately proceeded to locate and read both the template and the project AGENTS.md, performing a full comparison without…"
       }
     }
   }
