@@ -219,7 +219,6 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `deep-research` — multi-source web research with sub-agents
 - `draw-mermaid-diagrams` — Mermaid diagrams
 - `fix-tests` — fix failing tests
-- `jit-review` — JIT review: synthesize ephemeral tests that pass on parent and fail on diff
 - `write-prd` — Product Requirements Documents
 - `write-dep` — Development Enhancement Proposals
 - `write-gods-tasks` — GODS-format tasks

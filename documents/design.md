@@ -249,7 +249,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Naming convention:** Scenario `id` is `<skill-id>-trigger-<type>-1` where `<type>` is `pos`, `adj`, or `false`. The trailing `-1` is preserved for backward compatibility with existing trace tooling; only `n=1` is permitted (the previous 3+3+3 layout was reduced to 1+1+1 on 2026-05-10).
 - **Type semantics:**
   - `trigger-pos-*` (positive): user query that naturally matches the skill's description. Skill MUST activate.
-  - `trigger-adj-*` (adjacent-negative): user query for which a *different, neighboring* skill is the right match (e.g., for `fix-tests` an adjacent query targets `jit-review`). The skill under test MUST stand down.
+  - `trigger-adj-*` (adjacent-negative): user query for which a *different, neighboring* skill is the right match (e.g., for `fix-tests` an adjacent query targets `review` to scrutinize uncommitted changes). The skill under test MUST stand down.
   - `trigger-false-*` (false-use-negative): user query inside the skill's general domain but with the wrong intent — typically asking *about* the skill, asking how it works, requesting documentation on its idiom, or asking for something semantically close but explicitly excluded by the description. The skill under test MUST stand down.
 - **Scenario shape:** Plain `AcceptanceTestScenario` instance with `id`, `name`, `skill`, `agentsTemplateVars`, `userQuery`, and `checklist` (1 critical item). No `setup`, no `fixturePath` (default empty sandbox is sufficient — trigger decisions happen before any project state matters).
 - **Checklist phrasing (stable, judge-friendly):**
@@ -264,7 +264,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Coverage enforcement:** `scripts/check-trigger-coverage.ts` walks every `framework/*/skills/*` source skill and asserts each contains exactly the 3 expected `acceptance-tests/trigger-{pos,adj,false}-1/mod.ts` files. Wired into `scripts/task-check.ts`. Failure messages list the missing/misnamed paths. Stray `trigger-{pos,adj,false}-{2,3,...}` directories are reported as misnamed.
 - **Selection guidance for authors** (also in the authoring skill):
   - `pos` query should sound like a real user — short, natural, no `/skill-name` invocation, no over-specified jargon. With N=1, the single phrasing carries the full description-match weight: pick the phrasing most likely to expose a description regression (typically the most natural / least-jargonized form a user would use).
-  - `adj` query picks the *most likely confusion* skill — usually a sibling in the same pack, or a skill with overlapping vocabulary. Examples: `fix-tests` ↔ `jit-review`; `plan` ↔ `epic`.
+  - `adj` query picks the *most likely confusion* skill — usually a sibling in the same pack, or a skill with overlapping vocabulary. Examples: `fix-tests` ↔ `review`; `plan` ↔ `epic`.
   - `false` query probes the skill's hardest no-go case. Recommended patterns: surface-vocabulary match where the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense; a fix-tests skill receiving a "speed up the test runner" perf request); reverse-intent traps (e.g., write *new* tests vs fix *failing* ones). **Do NOT use meta-questions about the skill itself** ("what does X cover?", "how does X work?", "when should I use X?") as false-use. Under Claude Code, installed skills are exposed as a `.claude/skills/` directory listing; a meta-query is legitimately answered by reading the skill's `SKILL.md`, so the agent will rightly load it and the judge will record activation. Treat meta-questions as positives or omit them.
 - **Cost / cache:** Each scenario runs the agent once and the judge once. Trigger benchmarks compose with `FR-ACCEPT-CACHE` (no special handling). Skill-description edits invalidate exactly the affected skill's 3 scenarios.
 - **Retry:** Judge-level retry-on-error (`scripts/acceptance-tests/lib/judge.ts:103`) absorbs transient judge failures. Agent-level retry-on-result is intentionally NOT applied — re-running a "skill not invoked" until it passes would mask real description regressions. Suspected agent variance is investigated by manual re-run (`deno task bench -f <scenario-id>`).
@@ -445,31 +445,31 @@ graph TD
 - **Relation to update:** `update` handles project-owned artifact reconciliation. `adapt` handles project-local primitive adaptation — after first local install, stack change, or selectively. Plugin/user-level primitives stay read-only.
 - **Behavioral requirements:** See acceptance tests `adapt-skills-basic`, `adapt-agents-basic`.
 
-### 3.13 JIT Review Skill — `jit-review`
+### 3.13 JiT Subset of Review Atom — FR-JIT-REVIEW
 
-- **Purpose:** Diff-centric risk hunter. Generates ephemeral "Catching JiTTests" — tests that pass on parent and fail on diff — to catch regressions the author missed, without polluting the static test suite. Implements FR-JIT-REVIEW.
-- **Location:** `framework/engineering/skills/jit-review/SKILL.md`. Model-invocable (no `disable-model-invocation`).
+- **Purpose:** Diff-centric regression probe interleaved into the `review` atom. Generates ephemeral "Catching JiTTests" — tests that pass on parent and fail on diff — to catch behavioural regressions the author missed, without polluting the static test suite. Implements FR-JIT-REVIEW. No longer a standalone skill; activates automatically inside every `review` invocation and every composite that uses it.
+- **Location:** Interleaved into `framework/atoms/review.md` as steps 2b (parent baseline), 3d-e (intent hints + inference), 6-8 side-channel risk hypotheses, 8a (mutant + ephemeral test synthesis), 8b (dual-run + filter), extended step 10 (report sections), and step 11 (ephemeral dispose).
 - **Dependencies:**
   - `git` (worktree, diff, log, show) for diff collection and parent reconstruction.
   - `test` / `check` command declared in the project's AGENTS.md "Development Commands" section — the only stack integration point.
   - `gh pr view` (optional) for PR-body intent hints; falls back to commit message if unavailable.
-- **Interface:** Triggered by user queries matching descriptions like "check diff for hidden bugs", "JIT review this commit", "insure against regression". Takes optional diff scope hint (staged / unstaged / `<sha>..<sha>`). Returns a markdown report with catching tests, uncovered risks, and next-step prompt (save / discard).
-- **Pipeline (Intent-Aware, adapted from Meta JiTTests):**
-  1. **Scope & diff collection** — select staged / unstaged / commit-range; collect parent sources via `git worktree add <session-scoped-name>` (fallback: `git show HEAD:<path>`); gather intent hints from commit message + optional PR body.
-  2. **Parent baseline** — run the AGENTS.md `test` command in the worktree; abort if parent is red.
-  3. **Intent inference** — ≤5 intents per diff: "what the author tried to do" + "what invariants should hold".
-  4. **Risk modeling** — ≤3 hypotheses per intent: targeted failure modes tied to that intent (not generic code smells).
-  5. **Mutant synthesis** — one mutant patch per risk modeling a specific failure (swapped comparator, removed guard, inverted return, skipped branch). Empty list allowed for pure-deletion diffs.
-  6. **Test synthesis** — one test per mutant, written to an agent-chosen ephemeral directory (outside main test tree, not under git, session-stable).
-  7. **Dual-run verification** — (a) parent: must pass; (b) diff: failures = catching tests; (c) mutants: kill-rate probe. Sub-stage (c) is **skipped under time-budget degradation** (single `test`-run > 30 s) while preserving the catching invariant.
-  8. **Filter ensemble** — drop flaky (inconsistent across repeats), assertion-duplicates, and zero-kill tests (if 7c ran).
-  9. **Report** — top-5 catching tests by severity × uniqueness, uncovered risks, explicit degradation notes. Diff > ~10 files or > ~500 LOC → warn and suggest splitting.
-  10. **Ephemeral dispose** — interactive prompt: `save` moves a test into the main test tree (agent proposes a path); `discard` deletes the scratch directory.
+- **Interface:** Activated as part of `/review` (or any composite that uses the review phase). No separate user-facing entry point. Returns a unified review report whose `### Intents`, `### Catching Tests`, `### Uncovered Risks`, and `### Degradation Notes` sections expose the JiT findings alongside QA / Code Review / Automated Checks. Surviving catching tests are `[critical]` findings that push verdict to `Request Changes` via the shared review verdict gate.
+- **Pipeline (Intent-Aware, adapted from Meta JiTTests, interleaved into review):**
+  1. **Parent baseline** (review step 2b) — run the AGENTS.md `test`/`check` command in a session-id'd `git worktree`; on red parent, JiT disables itself (graceful degradation) and review continues.
+  2. **Intent hints + inference** (review steps 3d-e) — collect commit-message + optional PR-body hints; derive ≤5 intents from task DoD + commit messages + diff.
+  3. **Risk hypotheses** (review steps 6-8 side-channel) — ≤3 diff-specific hypotheses per intent; collected while reading hunks for design / implementation / readability review.
+  4. **Mutant synthesis** (step 8a) — one mutant per risk (≤15 total) modelling a specific failure (swapped comparator, removed guard, inverted return, skipped branch, off-by-one, swapped args). Skipped on pure-deletion diffs or JiT-disabled flag.
+  5. **Test synthesis** (step 8a) — one test per mutant, written to a session-id'd ephemeral directory (`.flowai/review-jit/<sid>/` or `$(mktemp -d)/review-jit-<sid>/`).
+  6. **Dual-run verification** (step 8b) — (a) parent: must pass; (b) diff: failures = catching tests; (c) mutants: kill-rate probe. Sub-stage (c) is **skipped under time-budget degradation** (single `test`-run > 30 s) while preserving the catching invariant.
+  7. **Filter ensemble** (step 8b) — drop flaky (3-rerun flip), assertion-duplicates, and zero-kill tests (if 7c ran).
+  8. **Report** (extended review step 10) — top-5 catching tests by severity × uniqueness; uncovered risks; explicit degradation notes. Diff > ~10 files or > ~500 LOC → warn and suggest splitting; if user does not narrow, JiT silently disables.
+  9. **Ephemeral dispose** (step 11) — interactive prompt: `save` moves a test into the main test tree (agent proposes a path); `discard` deletes the scratch directory.
 - **Test-catalogue criterion:** A test `T` is *catching* for diff `D` iff `T` passes on `parent(D)` and fails on `D`. This is the only objective signal; other metrics (mutant kill-rate, LOC coverage) are auxiliary.
-- **Ephemeral-directory rules:** (a) outside main test tree; (b) not in git (under `.gitignore` or system temp); (c) stable path within the session so the skill can relocate tests if the user says `save`; (d) deleted on `discard`. Agent picks the concrete path from context.
+- **Ephemeral-directory rules:** (a) outside main test tree; (b) not in git (under `.gitignore` or system temp); (c) session-id'd path so parallel review runs do not clobber each other and the skill can relocate tests on `save`; (d) deleted on `discard`. Atom Rule 11 enforces `.gitignore` precondition for the repo-local form.
 - **Budget:** ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. After dedup / filter, typically 5–10 tests; user sees the top 5.
-- **Fail-fast:** If AGENTS.md declares no `test`- or `check`-command, the skill aborts with an explicit error — no guessing (`npm test`, `pytest`, etc.).
-- **Behavioral requirements:** See acceptance tests `jit-review-catch-regression`, `jit-review-no-change-no-alarm`.
+- **Graceful degradation:** If AGENTS.md declares no `test`/`check` command, OR parent baseline is red, OR diff is pure-deletion, OR diff exceeds the >10-file / >500-LOC guardrail, the JiT subset disables itself silently and the review continues. The lost signal is recorded in the report's `### Degradation Notes` section so it is visible (not absent).
+- **Verdict gate is shared with review:** catching tests that fail-on-diff are `[critical]` findings; no second JiT gate.
+- **Behavioral requirements:** See acceptance tests `review-catches-regression-via-jittests`, `review-no-change-no-alarm`.
 
 ### 3.14 AI IDE Runner Skill — `ai-ide-runner`
 

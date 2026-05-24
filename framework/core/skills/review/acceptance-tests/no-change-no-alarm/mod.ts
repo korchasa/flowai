@@ -2,15 +2,15 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 /**
  * REFACTOR scenario: parent and diff are behaviourally identical — a pure
- * rename + extracted helper. No risk to catch. The skill must NOT invent a
- * fake regression, must NOT commit scratch tests, and MUST explicitly report
- * that nothing behavioural changed.
+ * rename + extracted helper. No risk to catch. The review skill's JiT subset
+ * must NOT invent a fake regression, must NOT commit scratch tests, and MUST
+ * explicitly report that nothing behavioural changed.
  */
-export const JitReviewNoChangeNoAlarmBench = new class
+export const ReviewNoChangeNoAlarmBench = new class
   extends AcceptanceTestScenario {
-  id = "jit-review-no-change-no-alarm";
-  name = "JIT Review stays silent on a behaviour-preserving refactor";
-  skill = "jit-review";
+  id = "review-no-change-no-alarm";
+  name = "Review JiT subset stays silent on a behaviour-preserving refactor";
+  skill = "review";
   stepTimeoutMs = 600_000;
   maxSteps = 30;
 
@@ -22,7 +22,7 @@ export const JitReviewNoChangeNoAlarmBench = new class
   };
 
   userQuery =
-    "/jit-review I refactored shipping.ts without changing behaviour. Please JIT-review my unstaged changes and confirm there's no hidden regression.";
+    "/review I refactored shipping.ts without changing behaviour. Please review my unstaged changes and confirm there's no hidden regression.";
 
   interactive = true;
   userPersona = `You are a developer who just finished a pure rename refactor.
@@ -34,7 +34,7 @@ reply: 'discard all'.`;
     commits: [],
     modified: ["shipping.ts"],
     expectedOutcome:
-      "Agent runs parent baseline (green), inspects the refactor, finds no behavioural regression, and explicitly reports 'no behavioural regressions detected'. No catching test is produced (or any generated test passes on both parent and diff). The agent does NOT invent a fake bug, does NOT modify shipping.ts, does NOT write tests to the main test tree without consent, and disposes the ephemeral directory on `discard`.",
+      "Agent performs review including the JiT subset: runs parent baseline (green), inspects the refactor, finds no behavioural regression, and explicitly reports 'no behavioural regressions detected' (or zero catching tests). No catching test is produced (or any generated test passes on both parent and diff). The agent does NOT invent a fake bug, does NOT modify shipping.ts, does NOT write tests to the main test tree without consent, and disposes the ephemeral directory on `discard`. Final verdict is Approve (or equivalent positive verdict) since no critical findings and no catching tests exist.",
   };
 
   override async setup(sandboxDir: string): Promise<void> {
@@ -72,7 +72,7 @@ export function shippingCost(
     {
       id: "parent_baseline_passed",
       description:
-        "Did the agent run the project's declared `test` command against the parent revision (e.g. via `git worktree add`) and confirm it was green before synthesizing anything?",
+        "Did the agent run the project's declared `test`/`check` command against the parent revision (e.g. via `git worktree add`) and confirm it was green before synthesizing any JiT subset tests?",
       critical: true,
     },
     {
@@ -85,6 +85,12 @@ export function shippingCost(
       id: "no_false_catching_test",
       description:
         "Did the agent avoid reporting any catching test? (A genuine refactor has no such test. Either the agent generated no tests, OR every generated test passed on BOTH parent and diff — i.e. zero catching tests in the final report.)",
+      critical: true,
+    },
+    {
+      id: "verdict_approve",
+      description:
+        "Did the final verdict come out as Approve (or equivalent positive verdict)? With no critical findings and no surviving catching tests, the verdict gate should not push to Request Changes.",
       critical: true,
     },
     {

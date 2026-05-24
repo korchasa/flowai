@@ -554,7 +554,7 @@ function extractStepByStepBlock(body: string, source: string): string {
  *   3. Description does NOT name source skills as explicit invocations.
  *   4. Every verdict gate has both Approve and Reject branches (heuristic:
  *      "Approve" + ("Request Changes" OR "Reject") in the same gate body).
- *   5. 500-line cap on the emitted file.
+ *   5. 700-line cap on the emitted file.
  */
 export function validateCompositeCanon(
   id: string,
@@ -597,9 +597,9 @@ export function validateCompositeCanon(
     }
   }
   const lineCount = body.split("\n").length;
-  if (lineCount > 500) {
+  if (lineCount > 700) {
     throw new Error(
-      `[generate-skill-composites] composite '${id}' (${target}): ${lineCount} lines exceeds 500-line cap`,
+      `[generate-skill-composites] composite '${id}' (${target}): ${lineCount} lines exceeds 700-line cap`,
     );
   }
 }

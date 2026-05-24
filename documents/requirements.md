@@ -978,25 +978,27 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 ### FR-JIT-REVIEW: JIT Review Skill — `jit-review`
 
-- **Description:** Agent-invocable skill that, given a diff (staged, unstaged, or commit-range), synthesizes ephemeral **Catching JiTTests** — temporary tests that pass on the parent revision and fail on the diff revision. Adapts Meta's Intent-Aware JiTTests pipeline (FSE 2026) to flowai's language-agnostic `test`-command interface declared in AGENTS.md.
-- **Scope:** Lives under `framework/engineering/skills/jit-review/`. Model-invocable (no `disable-model-invocation`). Triggered by user queries such as "check my staged changes for hidden bugs", "do a JIT review of this commit", "insure against regression".
-- **Scenario:** Developer prepares a diff (staged or unstaged). They ask the agent for a JIT review. The agent:
-  1. Collects the diff target (staged / unstaged / range) and resolves the parent revision via `git worktree add`.
-  2. Runs the declared `test` command on parent; aborts if parent baseline is red.
-  3. Infers ≤5 intents per diff and ≤3 risks per intent.
-  4. Synthesizes one mutant per risk (≤15 mutants total); skips on pure code deletion.
-  5. Writes catching-test candidates into an ephemeral directory (outside the main test tree, not under git, stable within session).
-  6. Dual-runs tests on parent and diff; optionally mutant-probes unless the time-budget degradation is active (>30s per test run).
+- **Description:** JiT-subset of the `review` atom. Given a diff (staged, unstaged, or commit-range), the review skill synthesizes ephemeral **Catching JiTTests** — temporary tests that pass on the parent revision and fail on the diff revision — as part of the same review pass. Adapts Meta's Intent-Aware JiTTests pipeline (FSE 2026) to flowai's language-agnostic `test`-command interface declared in AGENTS.md. Activates automatically inside every `review` invocation and every composite that uses it (`review-and-commit`, `do-with-plan`, `ship`); no separate user-facing skill or command.
+- **Tasks:** [merge-jit-review-into-review-atom](tasks/2026/05/merge-jit-review-into-review-atom.md)
+- **Scope:** Interleaved into `framework/atoms/review.md` as step 2b (parent baseline), 3d-e (intent hints + inference), 6/7/8 side-channel risk hypotheses, 8a (mutant + ephemeral test synthesis), 8b (dual-run + filter), extended step 10 (report sections: Intents, Catching Tests, Uncovered Risks, Degradation Notes), and step 11 (ephemeral dispose prompt). NOT a standalone skill.
+- **Scenario:** Developer prepares a diff (staged or unstaged) and invokes `/review` (or a composite that runs `review` as a phase). The agent:
+  1. Collects the diff target and resolves the parent revision via `git worktree add` (or `git show` fallback).
+  2. Runs the declared `test`/`check` command on parent (step 2b); if parent baseline is red, JiT subset disables itself and review continues (graceful degradation).
+  3. Infers ≤5 intents per diff and ≤3 risk hypotheses per intent as a side-channel during the existing code-review reading passes (steps 3e, 6, 7, 8).
+  4. Synthesizes one mutant per risk (≤15 mutants total); skips on pure code deletion or other degradation triggers.
+  5. Writes catching-test candidates into a session-id'd ephemeral directory (outside the main test tree, not under git, stable within session).
+  6. Dual-runs tests on parent and diff; optionally mutant-probes unless the time-budget degradation is active (>30s per test invocation).
   7. Filters flaky / duplicate / zero-kill tests.
-  8. Reports the top-5 catching tests, uncovered risks, and degradation notes.
+  8. Reports surviving catching tests as `[critical]` findings inside the existing review verdict gate (no separate JiT gate); a surviving catching test pushes verdict to `Request Changes`.
   9. Interactively asks the user to `save` (move to main test tree) or `discard` (delete scratch dir).
 - **Constraints:**
-  - Language-agnostic: MUST use the `test`-command declared in AGENTS.md "Development Commands"; MUST NOT hardcode stack-specific runners (deno/npm/pytest/etc.).
-  - Fail-fast: if AGENTS.md declares no `test`- or `check`-command, skill aborts with a clear error and does not guess.
-  - MUST NOT modify production code; MUST NOT write tests into the main test tree without explicit user consent.
-  - Diff > ~10 files or > ~500 LOC → warn the user and suggest splitting.
+  - Language-agnostic: MUST use the `test`/`check` command declared in AGENTS.md "Development Commands"; MUST NOT hardcode stack-specific runners (deno/npm/pytest/etc.).
+  - Graceful degradation, not fail-fast: if AGENTS.md declares no `test`/`check` command, OR parent baseline is red, OR diff is pure-deletion, OR diff exceeds ~10 files / ~500 LOC, the JiT subset disables itself silently. Review continues; the lost signal is recorded in the report's `### Degradation Notes` section.
+  - MUST NOT modify production code; MUST NOT write tests into the main test tree without explicit user `save` consent.
   - Mutant budget: ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. Report top-5 catching tests by severity × uniqueness.
-- **Acceptance verified by acceptance tests:** `jit-review-catch-regression`, `jit-review-no-change-no-alarm`
+  - Verdict gate is shared with `review`: catching tests that fail-on-diff are `[critical]` findings; no second gate.
+  - Ephemeral tests live under a session-id'd scratch directory (`.flowai/review-jit/<sid>/` with `.gitignore` ensure, or `$(mktemp -d)/review-jit-<sid>/`); session-id MUST be unique per invocation so parallel reviews do not clobber each other.
+- **Acceptance verified by acceptance tests:** `review-catches-regression-via-jittests`, `review-no-change-no-alarm`
 
 ### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `diagnose-benchmark-failure`
 

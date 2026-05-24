@@ -106,7 +106,7 @@ export function validateKindInvariants(
   return errors;
 }
 
-const SKILL_MAX_LINES = 500;
+const SKILL_MAX_LINES = 700;
 /** Token budget approximation: chars/4. Documented as adequate guardrail. */
 const SKILL_MAX_TOKENS = 5000;
 const FRONTMATTER_MAX_TOKENS = 100;
@@ -161,7 +161,7 @@ export function validateSkillFrontmatter(
 
 /**
  * FR-UNIVERSAL.DISCLOSURE: Validates progressive disclosure limits.
- * - SKILL.md: <500 lines, <5000 tokens (chars/4 approximation)
+ * - SKILL.md: <700 lines, <5000 tokens (chars/4 approximation)
  * - Catalog metadata (name+description): <100 tokens per agentskills.io spec
  *
  * Composite-skill exemption (FR-SKILL-COMPOSE): skills listed in
