@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.12.19](https://github.com/korchasa/flowai/compare/v0.12.18...v0.12.19) (2026-05-20)
+
+
+### Features
+
+* **flowai-update:** narrow update to project integration ([195cbe6](https://github.com/korchasa/flowai/commit/195cbe6e0f468cd272cef32b666aa585a8573c6c))
+* **workflow:** add flowai-workflow pack ([61f4bff](https://github.com/korchasa/flowai/commit/61f4bffe3c195407eabc20fdde79fd4e5cfa972e))
+
 ### [0.12.18](https://github.com/korchasa/flowai/compare/v0.12.17...v0.12.18) (2026-05-18)
 
 
