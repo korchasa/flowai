@@ -28,6 +28,88 @@
 
 ## 3. Components
 
+### 3.0 Primitive Inventory
+
+Single-page catalog of every primitive shipped by `framework/`. The generator
+pipeline `framework/atoms/*.md` + `framework/composites/*.md` +
+`framework/composites.yaml` → `scripts/generate-skill-composites.ts` produces
+the **generated** SKILL.md targets listed below (all gitignored — edit the
+source, not the target). All other primitives are **standalone** (hand-written,
+tracked in git). Detailed per-component descriptions live in §3.1 onwards.
+
+#### Generation pipeline
+
+- atom `commit-beta`: `framework/atoms/commit-beta.md` → `framework/core/commands/commit-beta/SKILL.md` (used by 3 composites)
+- atom `do`: `framework/atoms/do.md` → `framework/core/skills/do/SKILL.md` (used by 1 composite)
+- atom `plan-exp-permanent-tasks`: `framework/atoms/plan-exp-permanent-tasks.md` → `framework/core/commands/plan-exp-permanent-tasks/SKILL.md` (used by 2 composites)
+- atom `push`: `framework/atoms/push.md` → `framework/core/commands/push/SKILL.md` (used by 1 composite)
+- atom `review`: `framework/atoms/review.md` → `framework/core/skills/review/SKILL.md` (used by 3 composites)
+- composite `review-and-commit`: `framework/composites/review-and-commit.md` → `framework/core/commands/review-and-commit/SKILL.md` (atoms: review + commit-beta)
+- composite `do-with-plan` ⚠️ deprecated: `framework/composites/do-with-plan.md` → `framework/core/commands/do-with-plan/SKILL.md` (atoms: plan-exp-permanent-tasks, review, commit-beta + 1 inline phase)
+- composite `ship`: `framework/composites/ship.md` → `framework/core/commands/ship/SKILL.md` (atoms: plan-exp-permanent-tasks, do, review, commit-beta, push)
+
+#### Commands by pack (10) — all in `core`
+
+- `adapt` — standalone — `framework/core/commands/adapt/SKILL.md`
+- `commit` ⚠️ legacy — standalone — `framework/core/commands/commit/SKILL.md`
+- `commit-beta` — generated from atom `commit-beta`
+- `do-with-plan` ⚠️ deprecated — generated from composite `do-with-plan`
+- `init` — standalone — `framework/core/commands/init/SKILL.md`
+- `plan-exp-permanent-tasks` — generated from atom `plan-exp-permanent-tasks`
+- `push` — generated from atom `push`
+- `review-and-commit` — generated from composite `review-and-commit`
+- `ship` — generated from composite `ship`
+- `update` — standalone — `framework/core/commands/update/SKILL.md`
+
+#### Skills by pack (39)
+
+**core (10):**
+
+- `configure-deno-commands` — standalone
+- `do` — generated from atom `do`
+- `epic` — standalone
+- `investigate` — standalone
+- `maintenance` — standalone
+- `plan` — standalone
+- `reflect` — standalone
+- `reflect-by-history` — standalone
+- `review` — generated from atom `review`
+- `setup-ai-ide-devcontainer` — standalone
+
+**deno (2):** `cli`, `deploy` — standalone
+
+**devtools (6):** `engineer-command`, `engineer-hook`, `engineer-rule`,
+`engineer-skill`, `engineer-subagent`, `write-agent-benchmarks` — all standalone
+
+**engineering (14):** `analyze-context`, `browser-automation`, `deep-research`,
+`diagnose-benchmark-failure`, `draw-mermaid-diagrams`,
+`engineer-prompts-for-instant`, `engineer-prompts-for-reasoning`, `fix-tests`,
+`interactive-teaching-materials`, `manage-github-tickets`, `write-dep`,
+`write-gods-tasks`, `write-in-informational-style`, `write-prd` — all standalone
+
+**ide-bridge (2):** `ai-ide-runner`, `delegate-to-ide` — standalone
+
+**memex (3):** `ask`, `audit`, `save` — standalone
+
+**typescript (2):** `setup-agent-code-style-deno`,
+`setup-agent-code-style-strict` — standalone
+
+#### Agents by pack (6) — all standalone
+
+- `framework/core/agents/agent-adapter.md`
+- `framework/core/agents/console-expert.md`
+- `framework/core/agents/diff-specialist.md`
+- `framework/core/agents/skill-adapter.md`
+- `framework/engineering/agents/deep-research-worker.md`
+- `framework/ide-bridge/agents/worker.md`
+
+#### Summary
+
+- Commands: 10 (3 atom-generated, 3 composite-generated, 4 standalone) — all in `core`.
+- Skills: 39 (2 atom-generated in `core`, 37 standalone across 7 packs).
+- Agents: 6 (all standalone — 4 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
+- Gitignored generated paths: 8 (5 atom targets + 3 composite targets).
+
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`)
 
 - **Purpose:** Dev-only skills and agents for flowai development. Not distributed to users.
