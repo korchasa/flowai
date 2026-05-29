@@ -20,6 +20,16 @@ type CheckPlanOptions = {
  * Builds the check plan: bundle first (prerequisite), then all checks in parallel.
  */
 export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
+  // implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+  // When the dogfood loop is engaged, the build step must bake the dogfood
+  // marketplace name into the catalog up-front so the subsequent
+  // `sync-plugins-local --no-build` re-uses a correctly-named dist. CI / casual
+  // `deno task check` runs (no flag) keep emitting the upstream-default name.
+  const buildPluginsArgs = ["run", "-A", "scripts/build-plugins.ts"];
+  if (options.syncPluginsLocal === true) {
+    buildPluginsArgs.push("--marketplace-name", "flowai-plugins-local");
+  }
+
   const prerequisites: CommandSpec[] = [
     // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
     // Generated SKILL.md files are gitignored build artefacts; the generator
@@ -30,12 +40,11 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
       cmd: "deno",
       args: ["run", "-A", "scripts/generate-skill-composites.ts", "--write"],
     },
-    // implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
     // The plugin marketplace is a generated distribution surface and must stay
     // buildable before the rest of the project is considered healthy.
     {
       cmd: "deno",
-      args: ["run", "-A", "scripts/build-plugins.ts"],
+      args: buildPluginsArgs,
     },
     {
       cmd: "deno",
@@ -43,7 +52,6 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
     },
   ];
 
-  // implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
   // Optional dogfood loop: when AUTO_INSTALL_PLUGINS=true is set in env or
   // .env, install the freshly built local marketplace into Claude Code /
   // Codex at user scope. Off by default — most consumers of `deno task check`

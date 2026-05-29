@@ -102,13 +102,14 @@ Skills are invoked under the plugin namespace: core uses `/flowai:`, while optio
 
 Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`. Codex hook execution is feature-gated; enable `[features].plugin_hooks = true` in Codex before relying on plugin hooks.
 
-`deno task check` always rebuilds and validates the local plugin marketplace before running the rest of the project checks. By default it does NOT touch your installed plugins. To dogfood your local framework edits in Claude Code / Codex run `deno task sync-plugins-local`: it rebuilds `./dist/claude-plugins`, re-points the `flowai-plugins` marketplace at that absolute path in each available CLI, and installs / updates every emitted pack at user scope. Re-pointing replaces the downstream-tracking source — return to `korchasa/flowai-plugins` by removing the local marketplace and adding the GitHub source again. Missing `claude` or `codex` CLIs are reported as warnings and skipped, not fatal. Set `AUTO_INSTALL_PLUGINS=true` in env or `.env` to opt `deno task check` into running the sync automatically after every successful build/validate prerequisite.
+`deno task check` always rebuilds and validates the local plugin marketplace before running the rest of the project checks. By default it does NOT touch your installed plugins and emits the upstream marketplace name `flowai-plugins`. To dogfood your local framework edits in Claude Code / Codex run `deno task sync-plugins-local`: it rebuilds `./dist/claude-plugins` with the dogfood marketplace name `flowai-plugins-local`, re-points that namespace at the absolute dist path in each available CLI, and installs / refreshes every emitted pack at user scope as `<pack>@flowai-plugins-local` unless the user explicitly disabled that dogfood plugin. The upstream `flowai-plugins` marketplace registration is intentionally NOT touched, so any pre-existing `<pack>@flowai-plugins` install keeps working side-by-side. Revert to upstream-only by removing the local marketplace: `claude plugin marketplace remove flowai-plugins-local` (and the Codex equivalent). Missing `claude` or `codex` CLIs are reported as warnings and skipped, not fatal. Set `AUTO_INSTALL_PLUGINS=true` in env or `.env` to opt `deno task check` into rebuilding with the dogfood name and running the sync automatically after every successful build/validate prerequisite.
 
 Local marketplace smoke:
 
 ```sh
 # One-shot dogfood install of the local build into Claude Code + Codex at
-# user scope (re-points the `flowai-plugins` marketplace at ./dist/claude-plugins):
+# user scope under the `flowai-plugins-local` namespace (upstream
+# `flowai-plugins` registration is left untouched):
 deno task sync-plugins-local
 
 # Or run the steps individually for inspection:
@@ -193,7 +194,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 **Skills:**
 - `implement` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
 - `plan` — task planning (GODS format, gitignored task file)
-- `/plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done`, `implements`, `tags`, `related_tasks`); status auto-derives from DoD by commit skills
+- `/plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done | superseded`, `implements`, `tags`, `related_tasks`, `superseded_by`); non-superseded status auto-derives from DoD by commit skills
 - `epic` — structured feature specification for multi-session features
 - `review` — QA + code review of current changes
 - `reflect` — self-analysis of the current session

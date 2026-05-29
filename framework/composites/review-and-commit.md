@@ -64,7 +64,7 @@ Output a combined summary:
 [ ] Documentation sync performed: affected sections updated or justified skip.
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
-[ ] Task lifecycle: every staged new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. Never downgrades `done`. Warn-only on parse errors.
+[ ] Task lifecycle: every staged non-superseded new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. `status: superseded` records were preserved and checked for `superseded_by:`. Never downgrades `done`. Warn-only on parse errors.
 [ ] Task file cleanup: legacy flat-path tasks — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted.
 [ ] Session complexity check performed; `/reflect` auto-invoked if signals detected.
 [ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.

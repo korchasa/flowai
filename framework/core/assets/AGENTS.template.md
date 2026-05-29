@@ -146,8 +146,8 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Examples: `documents/tasks/2026/03/add-dark-mode.md`, `documents/tasks/2026/03/fix-auth-bug.md`.
 - Do not reuse another session's task file — create a new file. Old tasks are persistent canonical records.
 - Use GODS format (see below). Architectural decisions are recorded as regular tasks with weighed alternatives in the body — there is no separate ADR primitive.
-- Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags`, optional `related_tasks` (markdown links to other task files), optional `migrated_from` for provenance.
-- Status auto-derives from `## Definition of Done` checkbox count on every commit (commit workflows handle this — never edit `status` manually mid-flight).
+- Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done | superseded` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags`, optional `related_tasks` (markdown links to other task files), optional `migrated_from` for provenance, optional `superseded_by` (required when `status: superseded`).
+- Status auto-derives from `## Definition of Done` checkbox count on every commit for non-superseded tasks (commit workflows handle this — never edit `status` manually mid-flight). `status: superseded` preserves provenance and is excluded from DoD derivation.
 - Directory is **NOT gitignored** — tasks are persistent records. Validated by `scripts/check-task-format.ts` (path regex, status enum, status↔DoD consistency).
 
 ### GODS Format

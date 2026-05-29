@@ -372,7 +372,11 @@ async function emitCodexPluginManifest(
     keywords: DEFAULT_CODEX_KEYWORDS,
     skills: "./skills/",
     interface: {
-      displayName: `flowai ${opts.packName}`,
+      // displayName MUST equal pluginName so Codex renders the same identifier
+      // a user installs (`flowai`, `flowai-deno`, …). Deriving from packName
+      // produced `flowai core` → Codex UI rendered as `flowai-core`, hiding
+      // the actual plugin id.
+      displayName: opts.pluginName,
       shortDescription: opts.description,
       developerName: DEFAULT_OWNER_NAME,
       category: DEFAULT_CODEX_CATEGORY,

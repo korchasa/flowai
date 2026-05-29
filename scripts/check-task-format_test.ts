@@ -248,6 +248,46 @@ Deno.test("validateNewShapeTask: status mismatch with DoD → error", () => {
   assertEquals(mismatchErr?.level, "error");
 });
 
+Deno.test("validateNewShapeTask: superseded skips stale DoD derivation when superseded_by is present", () => {
+  const fm = [
+    "---",
+    "date: 2026-05-07",
+    "status: superseded",
+    "superseded_by: 2026/05/replacement-task.md",
+    "implements:",
+    "  - FR-DOC-TASKS",
+    "---",
+  ].join("\n");
+  const body = [
+    "# Title",
+    "",
+    "## Definition of Done",
+    "",
+    "- [ ] FR-DOC-TASKS: stale original DoD",
+  ].join("\n");
+  assertEquals(
+    validateNewShapeTask("documents/tasks/2026/05/x.md", fm + "\n" + body),
+    [],
+  );
+});
+
+Deno.test("validateNewShapeTask: superseded requires superseded_by", () => {
+  const fm = [
+    "---",
+    "date: 2026-05-07",
+    "status: superseded",
+    "implements:",
+    "  - FR-DOC-TASKS",
+    "---",
+  ].join("\n");
+  const errs = validateNewShapeTask(
+    "documents/tasks/2026/05/x.md",
+    fm + "\n" + validBody,
+  );
+  const supersededErr = errs.find((e) => e.message.includes("'superseded_by'"));
+  assertEquals(supersededErr?.level, "error");
+});
+
 Deno.test("validateNewShapeTask: no DoD → warning, not error", () => {
   const body = "# Title\n\nNo DoD here.\n";
   const errs = validateNewShapeTask(

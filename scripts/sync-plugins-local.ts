@@ -3,18 +3,22 @@
 // `deno task sync-plugins-local` — framework-developer dogfood loop.
 //
 // Rebuilds the plugin marketplace at ./dist/claude-plugins, re-points the
-// `flowai-plugins` marketplace in Claude Code and Codex at that local path,
-// and installs / refreshes every emitted pack at user scope. Distinct from the
-// downstream-tracking install flow that end users follow against
-// korchasa/flowai-plugins on GitHub.
+// `flowai-plugins-local` marketplace in Claude Code and Codex at that local
+// path, and installs / refreshes every emitted pack at user scope. Distinct
+// from the downstream-tracking install flow that end users follow against
+// `korchasa/flowai-plugins` on GitHub — that marketplace is the upstream
+// channel and is intentionally left untouched by the dogfood loop, so
+// developers can compare released vs in-development behaviour side-by-side.
 //
 // Missing `claude` or `codex` CLIs (or older Codex without `plugin
 // marketplace`) are reported and skipped, not fatal.
 
 import { isAbsolute, join, resolve } from "@std/path";
+import { buildPlugins, DEFAULT_PACKS } from "./build-plugins.ts";
 
 const DEFAULT_OUT_DIR = "dist/claude-plugins";
-const MARKETPLACE_NAME = "flowai-plugins";
+const MARKETPLACE_NAME = "flowai-plugins-local";
+const LEGACY_MARKETPLACE_NAME = "flowai-plugins";
 
 export const ENV_AUTO_INSTALL_PLUGINS = "AUTO_INSTALL_PLUGINS";
 
@@ -390,6 +394,90 @@ async function readClaudePluginList(): Promise<ClaudePluginListEntry[]> {
   return parsed as ClaudePluginListEntry[];
 }
 
+/**
+ * Pure path resolver: returns the on-disk path Codex uses to cache a local
+ * marketplace's payload (`<CODEX_HOME>/plugins/cache/<marketplace>`). Honours
+ * `CODEX_HOME`; falls back to `<HOME>/.codex`. Exported for unit tests so the
+ * cache-wipe behaviour stays env-aware without spying on FS calls.
+ */
+export function codexCachePathFor(
+  marketplaceName: string,
+  env: { codexHome?: string; home?: string },
+): string {
+  const root = env.codexHome ?? `${env.home ?? ""}/.codex`;
+  return join(root, "plugins", "cache", marketplaceName);
+}
+
+/**
+ * Migration guard for pre-split dogfood installs. Older local syncs registered
+ * this repo's dist under `flowai-plugins`; Codex keeps that payload cache even
+ * after the marketplace is removed. Wipe that legacy cache only when the legacy
+ * marketplace is absent or still points at the same local dist. A real upstream
+ * `flowai-plugins` marketplace is left untouched.
+ */
+export function shouldWipeLegacyCodexCache(
+  configText: string,
+  legacyMarketplaceName: string,
+  currentLocalSource: string,
+): boolean {
+  const header = new RegExp(
+    `^\\s*\\[marketplaces\\.(?:"${escapeRegex(legacyMarketplaceName)}"|${
+      escapeRegex(legacyMarketplaceName)
+    })\\]\\s*(?:#.*)?$`,
+  );
+  const sectionHeader = /^\s*\[/;
+  const sourceTypeLine = /^\s*source_type\s*=\s*["']([^"']*)["']/;
+  const sourceLine = /^\s*source\s*=\s*["']([^"']*)["']/;
+
+  let inSection = false;
+  let found = false;
+  let sourceType: string | undefined;
+  let source: string | undefined;
+  for (const line of configText.replace(/\r\n/g, "\n").split("\n")) {
+    if (sectionHeader.test(line)) {
+      if (inSection) break;
+      if (header.test(line)) {
+        inSection = true;
+        found = true;
+      }
+      continue;
+    }
+    if (!inSection) continue;
+    sourceType = sourceType ?? line.match(sourceTypeLine)?.[1];
+    source = source ?? line.match(sourceLine)?.[1];
+  }
+
+  if (!found) return true;
+  return source === currentLocalSource &&
+    (sourceType === undefined || sourceType === "local");
+}
+
+/**
+ * Pure check: given the parsed catalog JSON, returns null when its top-level
+ * `name` matches the expected dogfood namespace, otherwise an error message
+ * tailored for `--no-build`'s precondition failure. Exported for unit tests.
+ */
+export function validateCatalogMarketplaceName(
+  catalogJson: string,
+  expected: string,
+  outDir: string,
+): string | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(catalogJson);
+  } catch (error) {
+    return `Failed to parse ${outDir}/.claude-plugin/marketplace.json: ${
+      error instanceof Error ? error.message : String(error)
+    }`;
+  }
+  const name = (parsed as { name?: unknown }).name;
+  if (name === expected) return null;
+  return `${outDir}/.claude-plugin/marketplace.json carries name=${
+    JSON.stringify(name)
+  }, expected ${JSON.stringify(expected)}. ` +
+    `Rebuild with \`deno run -A scripts/build-plugins.ts --marketplace-name ${expected} --out ${outDir}\` or drop --no-build.`;
+}
+
 async function ensureBuild(outDir: string, skipBuild: boolean): Promise<void> {
   if (skipBuild) {
     const stat = await Deno.stat(outDir).catch(() => null);
@@ -398,16 +486,37 @@ async function ensureBuild(outDir: string, skipBuild: boolean): Promise<void> {
         `--no-build was set but ${outDir} does not exist. Run \`deno task build-plugins\` first.`,
       );
     }
+    // Fail-fast: catalog must already carry the dogfood marketplace name.
+    // Otherwise `claude marketplace add <abs>` would register under the WRONG
+    // namespace and silently overwrite upstream state.
+    const catalogPath = join(outDir, ".claude-plugin", "marketplace.json");
+    const catalogJson = await Deno.readTextFile(catalogPath);
+    const err = validateCatalogMarketplaceName(
+      catalogJson,
+      MARKETPLACE_NAME,
+      outDir,
+    );
+    if (err !== null) throw new Error(err);
     return;
   }
-  console.log(`[sync-plugins-local] Building plugin marketplace at ${outDir}`);
+  // Regenerate composite SKILL.md atoms first. When `sync-plugins-local`
+  // runs standalone (no preceding `deno task check`) composites could be
+  // stale; the build below reads SKILL.md from disk. Idempotent, ~200ms.
+  // Mirrors the wrapper-level call in `build-plugins.ts` we bypass via the
+  // in-process API.
   await runInherited("deno", [
     "run",
     "-A",
-    "scripts/build-plugins.ts",
-    "--out",
-    outDir,
+    "scripts/generate-skill-composites.ts",
+    "--write",
   ]);
+  console.log(`[sync-plugins-local] Building plugin marketplace at ${outDir}`);
+  await buildPlugins({
+    packs: [...DEFAULT_PACKS],
+    frameworkDir: resolve("framework"),
+    outDir,
+    marketplaceName: MARKETPLACE_NAME,
+  });
 }
 
 async function syncClaude(absoluteOutDir: string): Promise<void> {
@@ -484,6 +593,48 @@ async function syncCodex(absoluteOutDir: string): Promise<void> {
     "remove",
     MARKETPLACE_NAME,
   ]);
+  // Codex caches the marketplace payload at
+  // `<CODEX_HOME>/plugins/cache/<marketplace>/<plugin>/<version>/` on
+  // `marketplace add` and skips re-copying when that path already exists.
+  // Dist rebuilds with the same version (every dogfood iteration that does
+  // not bump deno.json) would otherwise leave the user pinned to whatever
+  // was in cache at first add. `marketplace upgrade` only works for
+  // git-source marketplaces, so for local sources we wipe the cache dir
+  // ourselves to force Codex to repopulate it. NotFound = first-ever sync,
+  // safe to ignore.
+  const codexEnv = {
+    codexHome: Deno.env.get("CODEX_HOME"),
+    home: Deno.env.get("HOME"),
+  };
+  const cacheDir = codexCachePathFor(MARKETPLACE_NAME, {
+    codexHome: codexEnv.codexHome,
+    home: codexEnv.home,
+  });
+  console.log(`[sync-plugins-local] Wiping Codex payload cache at ${cacheDir}`);
+  await Deno.remove(cacheDir, { recursive: true }).catch((error) => {
+    if (!(error instanceof Deno.errors.NotFound)) throw error;
+  });
+  const codexHome = codexEnv.codexHome ?? `${codexEnv.home}/.codex`;
+  const configText = await Deno.readTextFile(join(codexHome, "config.toml"))
+    .catch((error) => {
+      if (error instanceof Deno.errors.NotFound) return "";
+      throw error;
+    });
+  if (
+    shouldWipeLegacyCodexCache(
+      configText,
+      LEGACY_MARKETPLACE_NAME,
+      absoluteOutDir,
+    )
+  ) {
+    const legacyCacheDir = codexCachePathFor(LEGACY_MARKETPLACE_NAME, codexEnv);
+    console.log(
+      `[sync-plugins-local] Wiping legacy Codex payload cache at ${legacyCacheDir}`,
+    );
+    await Deno.remove(legacyCacheDir, { recursive: true }).catch((error) => {
+      if (!(error instanceof Deno.errors.NotFound)) throw error;
+    });
+  }
   await runInherited("codex", [
     "plugin",
     "marketplace",
@@ -491,6 +642,8 @@ async function syncCodex(absoluteOutDir: string): Promise<void> {
     absoluteOutDir,
   ]);
 
+  // Plugin names match across Claude/Codex catalogs; reading the Claude one
+  // avoids parsing the Codex source-shape twice.
   const marketplaceJson = await Deno.readTextFile(
     join(absoluteOutDir, ".claude-plugin", "marketplace.json"),
   );

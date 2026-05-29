@@ -46,6 +46,27 @@ Deno.test("buildCheckPlan: sync-plugins-local is gated by env flag", () => {
   );
 });
 
+Deno.test("buildCheckPlan: build-plugins gets --marketplace-name flowai-plugins-local when syncPluginsLocal is on", () => {
+  const withFlag = buildCheckPlan({ syncPluginsLocal: true });
+  const buildArgs = withFlag.prerequisites
+    .find((c) =>
+      c.cmd === "deno" && c.args.includes("scripts/build-plugins.ts")
+    )?.args;
+  assertEquals(buildArgs?.includes("--marketplace-name"), true);
+  assertEquals(buildArgs?.includes("flowai-plugins-local"), true);
+});
+
+Deno.test("buildCheckPlan: build-plugins runs without --marketplace-name in default plan", () => {
+  // CI / casual contributor flow MUST keep the upstream-name catalog so
+  // downstream `flowai-plugins` mirror sees the unaltered build.
+  const plan = buildCheckPlan();
+  const buildArgs = plan.prerequisites
+    .find((c) =>
+      c.cmd === "deno" && c.args.includes("scripts/build-plugins.ts")
+    )?.args;
+  assertEquals(buildArgs?.includes("--marketplace-name"), false);
+});
+
 Deno.test("buildCheckPlan: parallel covers fmt + lint + tests + validators", () => {
   const plan = buildCheckPlan();
   assertEquals(plan.parallel.length >= 10, true);

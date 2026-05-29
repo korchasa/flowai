@@ -1,6 +1,6 @@
 ---
 date: "2026-05-16"
-status: to do
+status: done
 implements:
   - FR-DIST.MARKETPLACE
   - FR-DIST.GLOBAL
@@ -425,4 +425,3 @@ After the pilot landed, several core skills broke or degraded under plugin insta
 - **External follow-up** (not gating this task): CLI aborts with an explicit message when a Claude Code plugin install for the same pack is detected. Cross-repo: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli).
   - Test: TBD in `flowai-cli` repo
   - Evidence: manual — install plugin, run `flowai sync`, confirm non-zero exit.
-

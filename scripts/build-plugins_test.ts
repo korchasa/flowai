@@ -125,6 +125,44 @@ Deno.test("codex-marketplace emits-codex-marketplace-for-all-packs", async () =>
   }
 });
 
+Deno.test("codex-plugin-manifest displayName matches pluginName for every pack", async () => {
+  // Regression guard for the "flowai-core" UI bug: when `displayName` derives
+  // from `flowai ${packName}`, Codex renders the `core` pack as `flowai-core`
+  // even though `name` is `flowai`. Locking displayName to pluginName keeps the
+  // user-visible label aligned with the install identifier.
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["core", "deno", "engineering"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    for (
+      const [packName, pluginName] of [
+        ["core", "flowai"],
+        ["deno", "flowai-deno"],
+        ["engineering", "flowai-engineering"],
+      ] as const
+    ) {
+      const manifest = await readJson(
+        join(out, "plugins", pluginName, ".codex-plugin", "plugin.json"),
+      ) as Record<string, unknown>;
+      assertEquals(
+        manifest.name,
+        pluginName,
+        `${packName} pack: manifest name`,
+      );
+      assertEquals(
+        (manifest.interface as Record<string, unknown>).displayName,
+        pluginName,
+        `${packName} pack: displayName must equal pluginName`,
+      );
+    }
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
 Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
   const out = await tempOut();
   try {
@@ -144,7 +182,7 @@ Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
     assertEquals((manifest.author as Record<string, unknown>).name, "korchasa");
     assertEquals(
       (manifest.interface as Record<string, unknown>).displayName,
-      "flowai core",
+      "flowai",
     );
     assertEquals(
       (manifest.interface as Record<string, unknown>).category,
@@ -368,6 +406,49 @@ Deno.test("model-tier-resolution", () => {
   assertEquals(resolveModelTier("cheap"), "haiku");
   assertEquals(resolveModelTier("inherit"), undefined);
   assertEquals(resolveModelTier(undefined), undefined);
+});
+
+// Regression guards for the `marketplaceName` override that
+// `sync-plugins-local.ts` relies on to emit the dogfood
+// `flowai-plugins-local` namespace. The override path was already supported
+// before this change; these tests lock the API surface so future refactors
+// cannot quietly remove it.
+Deno.test("builds-catalog-with-marketplace-name-override", async () => {
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+      marketplaceName: "flowai-plugins-local",
+    });
+    const mp = await readJson(
+      join(out, ".claude-plugin", "marketplace.json"),
+    ) as Record<string, unknown>;
+    assertEquals(mp.name, "flowai-plugins-local");
+    const plugins = mp.plugins as Array<Record<string, unknown>>;
+    assertEquals(plugins[0].name, "flowai");
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+Deno.test("codex-marketplace honours-marketplace-name-override", async () => {
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+      marketplaceName: "flowai-plugins-local",
+    });
+    const mp = await readJson(
+      join(out, ".agents", "plugins", "marketplace.json"),
+    ) as Record<string, unknown>;
+    assertEquals(mp.name, "flowai-plugins-local");
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
 });
 
 Deno.test("marketplace-and-plugin-json-schema-valid", async () => {

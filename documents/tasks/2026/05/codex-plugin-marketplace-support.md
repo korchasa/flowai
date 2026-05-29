@@ -1,6 +1,6 @@
 ---
 date: "2026-05-17"
-status: in progress
+status: done
 implements:
   - FR-DIST.MARKETPLACE
 tags: [distribution, codex, plugins, marketplace]

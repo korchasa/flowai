@@ -29,6 +29,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [FR-IDE-BRIDGE-DELEGATE](requirements.md#fr-ide-bridge-delegate-cross-ide-delegation-skill-wrapper-delegate-to-ide) — Cross-IDE delegation skill wrapper that invokes the worker subagent — [ ]
 - [FR-IDE-BRIDGE-WORKER](requirements.md#fr-worker-cross-ide-delegation-subagent-worker) — Cross-IDE delegation subagent; single-shot, verbatim relay — [ ]
 - [FR-JIT-REVIEW](requirements.md#fr-jit-review-jit-review-skill-jit-review) — JiT-subset of `review` atom: ephemeral Catching JiTTests (pass-on-parent / fail-on-diff) — [x]
+- [FR-MAINT](requirements.md#fr-maint-project-maintenance) — Automated project maintenance via `deno task check` (composite gen, marketplace build/validate, lint, test) — [x]
 - [FR-MEMEX](requirements.md#fr-memex-memex-pack-memex) — Memex pack — [x]
 - [FR-PACKS](requirements.md#fr-packs-pack-system-modular-resource-installation) — Modular resource installation through self-contained framework packs — [ ]
 - [FR-REVIEW-COMMIT](requirements.md#fr-review-commit-review-and-commit-workflow-review-and-commit) — Composite command: review → gate (Approve only) → commit — [x]

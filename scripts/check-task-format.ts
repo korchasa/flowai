@@ -3,7 +3,10 @@
  *
  * New-shape rule (full validation):
  *   - Path: documents/tasks/<YYYY>/<MM>/<slug>.md
- *   - Frontmatter required keys: date (YYYY-MM-DD), status (to do | in progress | done).
+ *   - Frontmatter required keys: date (YYYY-MM-DD), status
+ *     (to do | in progress | done | superseded).
+ *   - `status: superseded` requires `superseded_by` and skips stale DoD
+ *     derivation because the original DoD no longer maps to current reality.
  *   - Optional: implements (array of FR-IDs — present for FR-driven tasks; omitted
  *     for internal/maintenance tasks), tags (array), related_tasks (array).
  *   - Status must match derivation from `## Definition of Done` checkbox count:
@@ -31,7 +34,7 @@ export type TaskValidationError = {
 
 export type TaskClassification = "new-shape" | "legacy" | "ignored";
 
-const STATUS_VALUES = new Set(["to do", "in progress", "done"]);
+const STATUS_VALUES = new Set(["to do", "in progress", "done", "superseded"]);
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const FR_ID_RE = /^FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*$/;
 const NEW_PATH_RE =
@@ -130,7 +133,7 @@ export function validateNewShapeTask(
     errs.push({
       file: filePath,
       message:
-        `Frontmatter 'status' must be one of: 'to do' | 'in progress' | 'done' (got: ${
+        `Frontmatter 'status' must be one of: 'to do' | 'in progress' | 'done' | 'superseded' (got: ${
           JSON.stringify(fm.status)
         })`,
       level: "error",
@@ -175,6 +178,20 @@ export function validateNewShapeTask(
       level: "error",
     });
   }
+
+  const isSuperseded = fm.status === "superseded";
+  if (
+    isSuperseded &&
+    (typeof fm.superseded_by !== "string" || fm.superseded_by.trim() === "")
+  ) {
+    errs.push({
+      file: filePath,
+      message:
+        "Frontmatter 'superseded_by' must be a non-empty task path when status is 'superseded'",
+      level: "error",
+    });
+  }
+  if (isSuperseded) return errs;
 
   const dod = deriveStatusFromDoD(content);
   if (dod.total === 0) {

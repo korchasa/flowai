@@ -98,10 +98,10 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
      2. Verify the staged content matches the group's intent.
-     3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
+     3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged `documents/tasks/**/*.md` with `date:` frontmatter (skip legacy flat-path), first check frontmatter `status:`. If it is `superseded`, require/keep `superseded_by:` and skip DoD derivation because the stale original DoD no longer maps to current reality. Otherwise count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
      4. Commit with a Conventional Commits message (including any task-status frontmatter edit).
 5. **Task file Cleanup** _(only if a task file was used in step 2)_
-   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action.
+   - **New-shape tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md` with `date:` frontmatter): NEVER delete — persistent canonical records. Status auto-flip in step 4.3 is the only lifecycle action for non-superseded tasks; `status: superseded` records are preserved.
    - **Legacy tasks** (flat path, no `date:` frontmatter): if all DoD items satisfied → `git rm` and commit; if any unsatisfied → ask user "Delete or keep?"; if no DoD → ask user.
 6. **Session Complexity Check → Auto-Invoke Reflect**
    - After all commits are done, analyze the current conversation for complexity signals:

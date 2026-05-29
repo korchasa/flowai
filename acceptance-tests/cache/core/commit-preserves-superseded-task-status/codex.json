@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "a123965739860f26cdde1af0bee2d94eee3b6d6c5f3968ae8c061e96da03a622",
+  "scenarioId": "commit-preserves-superseded-task-status",
+  "ide": "codex",
+  "agentModel": "gpt-5.3-codex",
+  "recordedAt": "2026-05-29T09:56:03.438Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 89555.379708,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "gpt-5.3-codex",
+    "checklistResults": {
+      "code_committed": {
+        "pass": true,
+        "reason": "The git log shows commit ca0d0c051e1d14906e71b6cbdc427bf86e041bae with message 'fix(auth): add replacement session refresh helper' includes src/auth/session_refresh.ts (4 insertions). The git diff (i…"
+      },
+      "superseded_status_preserved": {
+        "pass": true,
+        "reason": "The agent read documents/tasks/2026/05/old-auth-refresh.md and its frontmatter shows 'status: superseded'. The git diff (init..HEAD) only includes src/auth/session_refresh.ts — the task file was neve…"
+      },
+      "superseded_by_preserved": {
+        "pass": true,
+        "reason": "The agent read documents/tasks/2026/05/old-auth-refresh.md which shows 'superseded_by: 2026/05/session-auth-refresh.md' in its frontmatter. The file was not touched in any agent commit (git diff init…"
+      },
+      "no_task_status_diff_committed": {
+        "pass": true,
+        "reason": "The git diff (init..HEAD) shows only src/auth/session_refresh.ts was added. There is no mention of documents/tasks/2026/05/old-auth-refresh.md in any commit diff. The agent explicitly staged only src…"
+      },
+      "clean_status": {
+        "pass": true,
+        "reason": "The final git status output shown in the evidence is 'On branch main / nothing to commit, working tree clean', confirming a clean working tree."
+      }
+    }
+  }
+}
