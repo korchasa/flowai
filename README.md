@@ -92,10 +92,16 @@ In addition to the `flowai` CLI, Claude Code and Codex users can install any pac
 ```sh
 # From a shell with Codex CLI installed:
 codex plugin marketplace add korchasa/flowai-plugins
-# Adding the marketplace registers all flowai-* plugins in `~/.codex/config.toml`
-# with `enabled = true` automatically. Start a new Codex thread to load them; no
-# interactive `/plugins` step is required. Edit individual `[plugins."<name>@flowai-plugins"]`
-# tables in `~/.codex/config.toml` if you want to disable specific packs.
+codex plugin add flowai@flowai-plugins
+# Optional, pick whichever stacks you use:
+codex plugin add flowai-deno@flowai-plugins
+codex plugin add flowai-typescript@flowai-plugins
+codex plugin add flowai-engineering@flowai-plugins
+codex plugin add flowai-devtools@flowai-plugins
+codex plugin add flowai-memex@flowai-plugins
+# Start a new Codex thread to load newly installed plugins. Edit individual
+# `[plugins."<name>@flowai-plugins"]` tables in `~/.codex/config.toml` if you
+# want to disable specific packs.
 ```
 
 Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools` and `memex` are translated to Claude Code's `hooks.json` format automatically.
@@ -123,11 +129,12 @@ claude plugin validate ./dist/claude-plugins
 claude plugin marketplace add ./dist/claude-plugins
 claude plugin install flowai@flowai-plugins --scope user
 
-# Codex, local marketplace registration:
+# Codex, persistent local user install:
 codex plugin marketplace add ./dist/claude-plugins
+codex plugin add flowai@flowai-plugins
 ```
 
-After `codex plugin marketplace add`, Codex 0.130.0+ auto-registers every plugin from the marketplace as `[plugins."<name>@flowai-plugins"] enabled = true` in `~/.codex/config.toml` and a fresh Codex thread loads them. `codex plugin` exposes marketplace management only (`marketplace add|upgrade|remove`); there is no `codex plugin install` — refresh happens via `codex plugin marketplace upgrade flowai-plugins`. Disable individual packs by setting `enabled = false` (or removing the table) in `~/.codex/config.toml`.
+After `codex plugin marketplace add`, run `codex plugin add <plugin>@flowai-plugins` for each pack you want active. `plugin add` materializes the plugin payload under `~/.codex/plugins/cache/` and writes `[plugins."<name>@flowai-plugins"] enabled = true`; a fresh Codex thread then loads its skills and hooks. Refresh happens by re-running `codex plugin marketplace upgrade flowai-plugins` and `codex plugin add <plugin>@flowai-plugins`. Disable individual packs by setting `enabled = false` (or removing the table) in `~/.codex/config.toml`.
 
 > **CLI and plugin install are mutually exclusive:** if you install via the plugin marketplace, do NOT also run `flowai sync` for the same IDE in the same project — the CLI detects an installed flowai plugin and aborts to avoid dual installs. Pick one channel.
 

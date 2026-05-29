@@ -6,6 +6,7 @@ import {
   parseAndStripFlowaiTables,
   parseArgs,
   planClaudeActions,
+  planCodexPluginAdds,
   readMarketplacePluginNames,
   reconcileCodexFlowaiPluginEntries,
   shouldWipeLegacyCodexCache,
@@ -77,6 +78,17 @@ Deno.test("planClaudeActions: ignores project-scope and other-marketplace disabl
   );
   assertEquals(plan.install, ["flowai@flowai-plugins-local"]);
   assertEquals(plan.skipped, []);
+});
+
+Deno.test("planCodexPluginAdds: every emitted plugin is installed to materialize cache", () => {
+  assertEquals(
+    planCodexPluginAdds(["flowai", "flowai-deno", "flowai-memex"]),
+    [
+      "flowai@flowai-plugins-local",
+      "flowai-deno@flowai-plugins-local",
+      "flowai-memex@flowai-plugins-local",
+    ],
+  );
 });
 
 Deno.test("parseAndStripFlowaiTables: removes 2-line blocks and records enabled state", () => {
@@ -308,6 +320,31 @@ enabled = false
     ),
     true,
     "new dogfood flowai-deno defaults to enabled=true",
+  );
+});
+
+Deno.test("reconcileCodexFlowaiPluginEntries: preserved enabled map wins after codex plugin add", () => {
+  const afterCodexAdd = `[plugins."flowai@flowai-plugins-local"]
+enabled = true
+
+[plugins."flowai-deno@flowai-plugins-local"]
+enabled = true
+`;
+  const next = reconcileCodexFlowaiPluginEntries(
+    afterCodexAdd,
+    ["flowai", "flowai-deno"],
+    "flowai-plugins-local",
+    new Map([["flowai-deno", false]]),
+  );
+  assertEquals(
+    next.includes(
+      '[plugins."flowai-deno@flowai-plugins-local"]\nenabled = false',
+    ),
+    true,
+  );
+  assertEquals(
+    next.includes('[plugins."flowai@flowai-plugins-local"]\nenabled = true'),
+    true,
   );
 });
 

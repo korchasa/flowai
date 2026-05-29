@@ -90,18 +90,18 @@ Business value:
   - Evidence: `grep -n 'Codex' documents/requirements.md documents/design.md | grep 'FR-DIST.MARKETPLACE'` returns non-empty matches
 - [x] FR-DIST.MARKETPLACE: local smoke instructions exist for Codex marketplace install.
   - Test: manual — korchasa
-  - Evidence: README documents `codex plugin marketplace add ./dist/claude-plugins`, interactive `/plugins` install, and the current lack of `codex plugin install`.
-- [x] FR-DIST.MARKETPLACE: Codex local install is automated by `deno task check` with `AUTO_INSTALL_PLUGINS=true` (declared in `.env`). `scripts/sync-plugins-local.ts` runs `codex plugin marketplace remove flowai-plugins` + `codex plugin marketplace add <abs dist path>`; Codex 0.130+ auto-registers every pack with `enabled = true` in `~/.codex/config.toml`.
+  - Evidence: README documents `codex plugin marketplace add ./dist/claude-plugins` and `codex plugin add flowai@flowai-plugins`.
+- [x] FR-DIST.MARKETPLACE: Codex local install is automated by `deno task check` with `AUTO_INSTALL_PLUGINS=true` (declared in `.env`). `scripts/sync-plugins-local.ts` runs `codex plugin marketplace remove flowai-plugins-local` + `codex plugin marketplace add <abs dist path>` + `codex plugin add <name>@flowai-plugins-local` for every emitted pack.
   - Test: runnable — `AUTO_INSTALL_PLUGINS=true deno task check` exits 0.
-  - Evidence: `grep -cE '^\[plugins\."flowai[^\"]*@flowai-plugins\"\]' ~/.codex/config.toml` returns `6`; every following `enabled = true`. Verified 2026-05-24.
+  - Evidence: `codex plugin list` shows every `flowai*@flowai-plugins-local` plugin as `installed, enabled`. Verified 2026-05-29.
 
 ## Solution
 
 Selected variant: **1 — shared generator, shared downstream repository**.
 
-Implementation status: local build, validation, tests, docs, push, CI, downstream publication, and local install instructions are done. Interactive Codex `/plugins` install smoke remains open.
+Implementation status: local build, validation, tests, docs, push, CI, downstream publication, local install instructions, and non-interactive Codex install smoke are done.
 
-Smoke note (2026-05-18): `codex plugin marketplace add /Users/korchasa/www/flowai/flowai/dist/claude-plugins` succeeds against a clean temporary Codex home and writes `[marketplaces.flowai-plugins]`. `codex plugin` currently exposes marketplace management only (`marketplace add|upgrade|remove`), not a non-interactive plugin install command. A full smoke still requires opening Codex `/plugins`, installing `flowai`, and starting a new thread. A `codex exec` attempt with temporary `-c` marketplace/plugin overrides reached the model, but the visible `flowai-plan` source was the existing global `r0/flowai-plan/SKILL.md`, so it does not prove plugin-store loading.
+Smoke note (2026-05-29): `codex plugin marketplace add /Users/korchasa/www/flowai/flowai/dist/claude-plugins` only registers the local source; `codex plugin list` still reports `flowai*@flowai-plugins-local` as `not installed`. `codex plugin add flowai@flowai-plugins-local` creates `~/.codex/plugins/cache/flowai-plugins-local/flowai/<version>/`, writes `[plugins."flowai@flowai-plugins-local"] enabled = true`, and changes `codex plugin list` status to `installed, enabled`. Therefore automated dogfood sync must run `codex plugin add` per emitted pack after every local marketplace re-point.
 
 ### Architecture
 

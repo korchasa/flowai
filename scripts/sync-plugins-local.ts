@@ -150,6 +150,7 @@ export function reconcileCodexFlowaiPluginEntries(
   configText: string,
   emittedNames: string[],
   marketplaceName: string = MARKETPLACE_NAME,
+  preservedEnabled: Map<string, boolean> = new Map(),
 ): string {
   if (emittedNames.length === 0) {
     throw new Error(
@@ -164,15 +165,24 @@ export function reconcileCodexFlowaiPluginEntries(
   const trimmed = stripped.replace(/\n+$/, "");
   const blocks = emittedNames
     .map((name) => {
-      const enabled = previousEnabled.get(name) ?? true;
+      const enabled = preservedEnabled.get(name) ?? previousEnabled.get(name) ??
+        true;
       return `[plugins."${name}@${marketplaceName}"]\nenabled = ${enabled}\n`;
     })
     .join("\n");
   return `${trimmed}\n\n${blocks}`;
 }
 
+export function planCodexPluginAdds(
+  emittedNames: string[],
+  marketplaceName: string = MARKETPLACE_NAME,
+): string[] {
+  return emittedNames.map((name) => `${name}@${marketplaceName}`);
+}
+
 async function rewriteCodexPluginEntries(
   emittedNames: string[],
+  preservedEnabled: Map<string, boolean> = new Map(),
 ): Promise<void> {
   if (emittedNames.length === 0) {
     throw new Error(
@@ -194,7 +204,12 @@ async function rewriteCodexPluginEntries(
     }
     throw error;
   }
-  const next = reconcileCodexFlowaiPluginEntries(original, emittedNames);
+  const next = reconcileCodexFlowaiPluginEntries(
+    original,
+    emittedNames,
+    MARKETPLACE_NAME,
+    preservedEnabled,
+  );
   if (next === original) return;
   await Deno.writeTextFile(configPath, next);
   console.log(
@@ -620,6 +635,8 @@ async function syncCodex(absoluteOutDir: string): Promise<void> {
       if (error instanceof Deno.errors.NotFound) return "";
       throw error;
     });
+  const preservedEnabled = parseAndStripFlowaiTables(configText)
+    .previousEnabled;
   if (
     shouldWipeLegacyCodexCache(
       configText,
@@ -648,7 +665,11 @@ async function syncCodex(absoluteOutDir: string): Promise<void> {
     join(absoluteOutDir, ".claude-plugin", "marketplace.json"),
   );
   const emitted = readMarketplacePluginNames(marketplaceJson);
-  await rewriteCodexPluginEntries(emitted);
+  for (const id of planCodexPluginAdds(emitted)) {
+    console.log(`[sync-plugins-local] Installing Codex ${id}`);
+    await runInherited("codex", ["plugin", "add", id]);
+  }
+  await rewriteCodexPluginEntries(emitted, preservedEnabled);
 }
 
 /**
