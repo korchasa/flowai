@@ -169,7 +169,7 @@ The payload under `plugins/flowai-<pack>/` remains shared. Only the top-level ma
      {
        "name": "flowai-plugins",
        "interface": {
-         "displayName": "flowai Plugins"
+         "displayName": "flowai-plugins"
        },
        "plugins": [
          {

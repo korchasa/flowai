@@ -87,7 +87,7 @@ Deno.test("codex-marketplace emits-codex-marketplace-for-all-packs", async () =>
     assertEquals(mp.name, DEFAULT_MARKETPLACE_NAME);
     assertEquals(
       (mp.interface as Record<string, unknown>).displayName,
-      "flowai Plugins",
+      DEFAULT_MARKETPLACE_NAME,
     );
     assert(Array.isArray(mp.plugins));
     const plugins = mp.plugins as Array<Record<string, unknown>>;
@@ -446,6 +446,10 @@ Deno.test("codex-marketplace honours-marketplace-name-override", async () => {
       join(out, ".agents", "plugins", "marketplace.json"),
     ) as Record<string, unknown>;
     assertEquals(mp.name, "flowai-plugins-local");
+    assertEquals(
+      (mp.interface as Record<string, unknown>).displayName,
+      "flowai-plugins-local",
+    );
   } finally {
     await Deno.remove(out, { recursive: true });
   }

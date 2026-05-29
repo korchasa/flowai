@@ -224,7 +224,11 @@ async function emitCodexMarketplace(
   const marketplace = {
     name: marketplaceName,
     interface: {
-      displayName: "flowai Plugins",
+      // Codex renders this label in marketplace/plugin lists. Keep it equal
+      // to the technical marketplace id so local dogfood installs are visibly
+      // distinct from upstream installs (`flowai-plugins-local` vs
+      // `flowai-plugins`), matching flowai-workflow's technical-name UX.
+      displayName: marketplaceName,
     },
     plugins,
   };
