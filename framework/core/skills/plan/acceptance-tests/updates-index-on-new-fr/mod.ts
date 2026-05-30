@@ -24,7 +24,7 @@ Do NOT request changes to the plan structure or to file outputs.`;
     {
       id: "task_file_created",
       description:
-        "Did the agent create a task file in 'documents/tasks/<YYYY-MM-DD>-<slug>.md'?",
+        "Did the agent create a task file in 'documents/tasks/<YYYY>/<MM>/<slug>.md'?",
       critical: true,
     },
     {

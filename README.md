@@ -200,8 +200,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 
 **Skills:**
 - `implement` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
-- `plan` — task planning (GODS format, gitignored task file)
-- `/plan-exp-permanent-tasks` (command) — experimental committed-tasks variant; writes a persistent task at `documents/tasks/<YYYY>/<MM>/<slug>.md` with new-shape frontmatter (`date`, `status: to do | in progress | done | superseded`, `implements`, `tags`, `related_tasks`, `superseded_by`); non-superseded status auto-derives from DoD by commit skills
+- `plan` — task planning; writes persistent GODS tasks at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
 - `epic` — structured feature specification for multi-session features
 - `review` — QA + code review of current changes
 - `reflect` — self-analysis of the current session

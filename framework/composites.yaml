@@ -6,9 +6,9 @@
 # Never shipped to user IDE configs.
 schema_version: 1
 atoms:
-  plan-exp-permanent-tasks:
-    source: framework/atoms/plan-exp-permanent-tasks.md
-    target: framework/core/commands/plan-exp-permanent-tasks/SKILL.md
+  plan:
+    source: framework/atoms/plan.md
+    target: framework/core/skills/plan/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
   review:
@@ -45,7 +45,7 @@ composites:
     wrapper: framework/composites/ship.md
     phases:
       - title: Plan Phase
-        atom: plan-exp-permanent-tasks
+        atom: plan
         params:
           TERMINATION: HAND_OFF_TO_NEXT
       - title: Implement Phase

@@ -70,7 +70,7 @@ When proposing a fix, classify *where* it belongs:
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
 5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 6. **Pattern Validation**: Before proposing a fix for an issue found in the current session, check session history to determine whether it is a **recurring pattern** or an **isolated incident**. Prioritize systemic fixes for recurring patterns over one-off corrections.
-7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/plan-exp-permanent-tasks` and MUST NOT write under `documents/tasks/`, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `plan-exp-permanent-tasks`.
+7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/plan` and MUST NOT write under `documents/tasks/`, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `plan`.
 </rules>
 
 ## Instructions
@@ -87,11 +87,11 @@ When proposing a fix, classify *where* it belongs:
    - Scan the source for **decision passages**: ≥2 weighed alternatives + explicit reasoning ("picked X over Y because …", "rejected Z due to …"). Headings like `## Decision` / `## Solution` with bulleted alternatives are strong signals.
    - If any decisions are found, emit ONE chat block immediately (not buffered into the final report), titled `### Decisions for Task Capture`. For each decision use this template (literal text + substituted fields):
      - `**Decision detected:** <≤8-word title>`
-     - `**Recommended action:** invoke \`/plan-exp-permanent-tasks <title>\` — that skill writes the task file as a persistent canonical record of the decision.`
+     - `**Recommended action:** invoke \`/plan <title>\` — that skill writes the task file as a persistent canonical record of the decision.`
      - `**Alternatives weighed:** <bullet list, 1 line each>`
      - `**Chosen:** <chosen alternative + 1-sentence rationale>`
-   - The literal token `/plan-exp-permanent-tasks` MUST appear on the Recommended action line — that is the user's invocation signal. After emitting, this finding is DONE; do not revisit it later in steps 12 or 14.
-   - FORBIDDEN: writing under `documents/tasks/`; drafting the full task body in chat as if preparing to save it; offering "shall I create the task?" / "Хотите, чтобы я создал…?" / equivalent; listing "create task file" under step 12's Corrective Actions. Reflect detects + recommends; `/plan-exp-permanent-tasks` writes — clean separation.
+   - The literal token `/plan` MUST appear on the Recommended action line — that is the user's invocation signal. After emitting, this finding is DONE; do not revisit it later in steps 12 or 14.
+   - FORBIDDEN: writing under `documents/tasks/`; drafting the full task body in chat as if preparing to save it; offering "shall I create the task?" / "Хотите, чтобы я создал…?" / equivalent; listing "create task file" under step 12's Corrective Actions. Reflect detects + recommends; `/plan` writes — clean separation.
    - If no decision passages exist in the source, skip silently — do NOT fabricate one. Continue to step 3.
 
 3. **Load Session History**
@@ -219,5 +219,5 @@ When proposing a fix, classify *where* it belongs:
    - Present the revised report from steps 12–13.
    - Clearly mark which findings were adjusted during self-criticism and why.
    - List the proposed actionable items.
-   - Ask the user if they want to apply these changes immediately. **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/plan-exp-permanent-tasks` separately. Do not re-list them here; do not offer to write the task file yourself.
+   - Ask the user if they want to apply these changes immediately. **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/plan` separately. Do not re-list them here; do not offer to write the task file yourself.
 </step_by_step>

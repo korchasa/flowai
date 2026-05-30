@@ -1,13 +1,13 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 // Verifies FR-DOC-RESCUE: reflect detects decision passages in
-// the source task file and recommends `/plan-exp-permanent-tasks` as
+// the source task file and recommends `/plan` as
 // the canonical-record writer. Reflect itself MUST NOT write any files.
 export const ReflectRescuesDecisionAsTaskBench = new class
   extends AcceptanceTestScenario {
   id = "reflect-rescues-decision-as-task";
   name =
-    "Reflect surfaces decision passages and recommends task capture via /plan-exp-permanent-tasks";
+    "Reflect surfaces decision passages and recommends task capture via /plan";
   skill = "reflect";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -32,21 +32,21 @@ export const ReflectRescuesDecisionAsTaskBench = new class
       critical: true,
     },
     {
-      id: "plan_exp_skill_recommended",
+      id: "plan_skill_recommended",
       description:
-        "Did the agent's chat output explicitly recommend invoking '/plan-exp-permanent-tasks' (by that exact slash-command form) to record the decision as a persistent task? The literal token '/plan-exp-permanent-tasks' MUST appear on the Recommended action line.",
+        "Did the agent's chat output explicitly recommend invoking '/plan' (by that exact slash-command form) to record the decision as a persistent task? The literal token '/plan' MUST appear on the Recommended action line.",
       critical: true,
     },
     {
       id: "no_old_adr_skill_recommended",
       description:
-        "Did the agent NOT recommend the deprecated '/plan-adr' command on its '**Recommended action:**' line? The rescue contract now points to '/plan-exp-permanent-tasks' exclusively. Pass if the only Recommended action line(s) in the rescue block name '/plan-exp-permanent-tasks' (the agent may MENTION 'plan-adr' elsewhere as historical context, e.g. quoting old AGENTS.md text — that is allowed; the failing condition is recommending it as the action to invoke).",
+        "Did the agent NOT recommend the deprecated '/plan-adr' or removed '/plan-exp-permanent-tasks' command on its '**Recommended action:**' line? The rescue contract now points to '/plan' exclusively. Pass if the only Recommended action line(s) in the rescue block name '/plan'.",
       critical: true,
     },
     {
       id: "no_task_file_written_by_reflect",
       description:
-        "Did the agent NOT itself create a NEW task file? Reflect must NOT write under 'documents/tasks/' — that is owned by '/plan-exp-permanent-tasks'. Pass if the only file present in 'documents/tasks/' is the pre-existing fixture 'cache-strategy.md'; the agent did NOT create any other task or write a sibling task file.",
+        "Did the agent NOT itself create a NEW task file? Reflect must NOT write under 'documents/tasks/' — that is owned by '/plan'. Pass if the only file present in 'documents/tasks/' is the pre-existing fixture 'cache-strategy.md'; the agent did NOT create any other task or write a sibling task file.",
       critical: true,
     },
     {

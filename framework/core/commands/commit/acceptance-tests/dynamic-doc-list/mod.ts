@@ -31,7 +31,7 @@ export const CommitDynamicDocListBench = new class
 2. **SRS** (\`documents/requirements.md\`): "What" & "Why". Source of truth for requirements.
 3. **SDS** (\`documents/design.md\`): "How". Architecture and implementation. Depends on SRS.
 4. **API Reference** (\`documents/api-reference.md\`): API endpoints, request/response formats, authentication.
-5. **Tasks** (\`documents/tasks/<YYYY-MM-DD>-<slug>.md\`): Temporary plans/notes per task.
+5. **Tasks** (\`documents/tasks/<YYYY>/<MM>/<slug>.md\`): Persistent committed plans/notes per task.
 6. **\`README.md\`**: Public-facing overview.
 
 `,

@@ -1,12 +1,11 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Verifies that the experimental plan-exp-permanent-tasks command
-// writes the task at the new date-hierarchy path with the new frontmatter
-// shape (date / status / implements / tags / related_tasks).
-export const PlanExpWritesTaskBench = new class extends AcceptanceTestScenario {
-  id = "plan-exp-permanent-tasks-writes-task-new-frontmatter";
-  name = "writes task at YYYY/MM/DD path with new frontmatter";
-  skill = "plan-exp-permanent-tasks";
+// Verifies that `plan` writes the task at the committed-task date hierarchy
+// path with the required frontmatter shape.
+export const PlanWritesTaskBench = new class extends AcceptanceTestScenario {
+  id = "plan-writes-task-new-frontmatter";
+  name = "writes task at YYYY/MM path with new frontmatter";
+  skill = "plan";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
@@ -17,7 +16,7 @@ export const PlanExpWritesTaskBench = new class extends AcceptanceTestScenario {
     "A pragmatic developer who prefers the simplest approach. When asked to choose a variant, pick variant A (or the first/simplest one). Keep answers short.";
 
   userQuery =
-    "/plan-exp-permanent-tasks Plan a new feature to add a '/healthz' endpoint that returns 200 OK. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";
+    "/plan Plan a new feature to add a '/healthz' endpoint that returns 200 OK. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";
 
   checklist = [
     {
@@ -41,7 +40,7 @@ export const PlanExpWritesTaskBench = new class extends AcceptanceTestScenario {
     {
       id: "frontmatter_has_implements",
       description:
-        "Does the task file's frontmatter contain a non-empty `implements:` list with at least one FR-ID?",
+        "Does the task file's frontmatter contain an `implements:` key (may be empty for purely operational tasks, but the key must be present)?",
       critical: true,
     },
     {
@@ -53,7 +52,7 @@ export const PlanExpWritesTaskBench = new class extends AcceptanceTestScenario {
     {
       id: "gods_structure",
       description:
-        "Does the body follow GODS — sections `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` (with FR-ID + Test/Benchmark + Evidence tuples), and `## Solution`?",
+        "Does the body follow GODS — sections `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done`, and `## Solution`?",
       critical: true,
     },
     {

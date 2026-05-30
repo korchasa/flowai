@@ -1,6 +1,6 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: /plan-exp-permanent-tasks (record an already-chosen
+// Adjacent skill: /plan (record an already-chosen
 // architectural decision as a committed task, not propose a new technical
 // improvement).
 export const WriteDepTriggerAdj1 = new class extends AcceptanceTestScenario {

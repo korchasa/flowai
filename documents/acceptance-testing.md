@@ -66,7 +66,7 @@ Benchmarks support multiple IDEs (Cursor, Claude Code) via an adapter pattern.
 
 The benchmark runner injects `framework/core/assets/AGENTS.template.md` as the sandbox `AGENTS.md` (symlinked to `CLAUDE.md` for Claude Code). This template carries project-level rules that propagate into every scenario and can override local SKILL.md guidance when a skill's output resembles a "task artifact":
 
-- **Documentation Hierarchy** → `Tasks (documents/tasks/<YYYY-MM-DD>-<slug>.md): Temporary plans and notes. One file per task or session.`
+- **Documentation Hierarchy** → `Tasks (documents/tasks/<YYYY>/<MM>/<slug>.md): Persistent committed plans and notes. One file per task or session.`
 - **Planning Rules → Plan Persistence** → `save the detailed plan to documents/tasks/<...>.md — chat-only plans are lost between sessions.`
 
 **Effect on scenarios**: A skill whose final output looks task-like (structured report, timestamped header, categorized findings) can be pushed by these priors toward persisting to `documents/tasks/` even when the local SKILL.md says "inline only". Observed in practice: `flowai-maintenance-tooling-relevance` intermittently saved an audit file after an early refactor that added a `Do NOT save to file` rule but left the file-shaped example in Phase 9.

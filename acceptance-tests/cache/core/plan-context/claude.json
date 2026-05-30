@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "6dbd9df71cbd3b57e53907609cbb5e66e583c2dde97415cffa8847d86c2a3e4d",
+  "key": "164bb1b2c22fce7abcdbfc6e04d5a3ebc2a64f91933a0369fcc4999a60ba9d27",
   "scenarioId": "plan-context",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T01:53:53.495Z",
+  "recordedAt": "2026-05-30T12:07:29.204Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 104096.68800000008,
+    "durationMs": 61200.10125,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "context_read": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: .../sandbox/documents/requirements.md) as shown in the agent logs."
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T12-06-10/plan-context/run-1/sandbox/documents/r…"
       },
       "context_read_sds": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: .../sandbox/documents/design.md) as shown in the agent logs."
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T12-06-10/plan-context/run-1/sandbox/documents/design.…"
       },
       "task_file_context": {
         "pass": true,
-        "reason": "The file 'documents/tasks/2026/05/add-dark-mode-preference.md' was created and prominently mentions 'dark mode' — in the title ('Add Dark Mode Preference'), in the Goal section ('set and retrieve a d…"
+        "reason": "The created task file 'documents/tasks/2026/05/dark-mode-preference.md' has the title '# Dark Mode Preference' and extensively mentions dark mode throughout — in the Goal section ('switch between lig…"
       }
     }
   }

@@ -17,7 +17,7 @@ Execute the `## Solution` section of an existing task plan strictly under the TD
 ## Context
 
 <context>
-The user has already produced a plan (typically via `plan-exp-permanent-tasks` or `plan`). The plan file is at `documents/tasks/<YYYY>/<MM>/<slug>.md` and contains a `## Solution` section enumerating the concrete steps to implement. This skill is the Implement Phase of the canonical task lifecycle and is consumed by the `ship` composite as its second phase. The phase BEFORE this one writes the plan; the phase AFTER reviews the diff.
+The user has already produced a plan. The plan file is at `documents/tasks/<YYYY>/<MM>/<slug>.md` and contains a `## Solution` section enumerating the concrete steps to implement. This skill is the Implement Phase of the canonical task lifecycle and is consumed by the `ship` composite as its second phase. The phase BEFORE this one writes the plan; the phase AFTER reviews the diff.
 </context>
 
 ## Rules & Constraints

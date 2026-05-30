@@ -313,11 +313,11 @@ Deno.test("validateAtomCanon: rejects multiple <step_by_step> blocks", () => {
 });
 
 Deno.test("renderAtomTarget: drift detection on edited target", async () => {
-  // Renders the real plan-exp-permanent-tasks atom. Output should match
-  // on-disk SKILL.md byte-for-byte (Commit 2 regenerated it).
+  // Renders the real plan atom. Output should match on-disk SKILL.md
+  // byte-for-byte after regeneration.
   const m = await loadManifest();
-  const entry = m.atoms["plan-exp-permanent-tasks"];
-  const r = await renderAtomTarget("plan-exp-permanent-tasks", entry);
+  const entry = m.atoms["plan"];
+  const r = await renderAtomTarget("plan", entry);
   const onDisk = await Deno.readTextFile(entry.target);
   assertEquals(r.body, onDisk);
 });
