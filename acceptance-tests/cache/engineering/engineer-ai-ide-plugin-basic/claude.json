@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "78e85740d093891a09d989780c09f0b6eb713a295240be4c6d096fd2edd9932d",
+  "scenarioId": "engineer-ai-ide-plugin-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-30T01:04:16.983Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 168875.63404200002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "target_ide_contract": {
+        "pass": true,
+        "reason": "The agent explicitly defined separate plugin contracts for both Claude Code and Codex: separate manifests (.claude-plugin/plugin.json and .codex-plugin/plugin.json), separate hooks configurations, se…"
+      },
+      "official_docs_first": {
+        "pass": true,
+        "reason": "The agent fetched official docs at the start (https://code.claude.com/docs/en/plugins and https://developers.openai.com/codex/plugins/build) and explicitly flagged what could NOT be confirmed yet, pr…"
+      },
+      "packaging_included": {
+        "pass": true,
+        "reason": "Packaging is fully embedded in the main plan: the canonical file layout includes manifests (.claude-plugin/plugin.json, .codex-plugin/plugin.json), assets (assets/icon.png, assets/README.md), and mar…"
+      },
+      "surface_adapters": {
+        "pass": true,
+        "reason": "The agent creates a clear three-way split: (1) shared core — mcp/server.ts (review_diff implementation), hooks/block-dangerous.sh (blocking logic), skills/review-guard/SKILL.md; (2) Claude Code-speci…"
+      },
+      "validation_plan": {
+        "pass": true,
+        "reason": "A dedicated 'Матрица валидации' section provides per-IDE validation steps: for Claude Code — 'claude plugin validate', 'claude --plugin-dir ./review-guard', '/reload-plugins', and a smoke test verify…"
+      }
+    }
+  }
+}

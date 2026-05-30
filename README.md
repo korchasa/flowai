@@ -232,6 +232,9 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `manage-github-tickets` — GitHub issue management
 - `browser-automation` — browser automation
 - `analyze-context` — token usage analysis
+- `engineer-ai-ide-plugin` — AI IDE plugin design and packaging
+- `engineer-plugin-mcp` — AI IDE plugin MCP servers and host wiring
+- `engineer-plugin-hooks` — AI IDE plugin hook adapters
 - `engineer-prompts-for-instant` — prompts for fast models
 - `engineer-prompts-for-reasoning` — prompts for reasoning models
 - `interactive-teaching-materials` — interactive HTML teaching materials

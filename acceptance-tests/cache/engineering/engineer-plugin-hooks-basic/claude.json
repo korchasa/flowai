@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "e46fde6ebf01e410a6ef73016e029aa07cb11a6b4b23e353bb2b5388bf93a47b",
+  "scenarioId": "engineer-plugin-hooks-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-30T01:13:18.897Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 102243.911834,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "official_docs_first": {
+        "pass": true,
+        "reason": "The agent made multiple explicit WebFetch calls to official documentation URLs for both hosts before designing: https://docs.claude.ai/en/docs/claude-code/hooks for Claude Code, and https://platform.…"
+      },
+      "shared_policy": {
+        "pass": true,
+        "reason": "The design cleanly separates a single shared policy script (policy/deploy-prod-guard.sh containing all logic) from two thin host-specific configuration adapters: plugin/.claude/settings.json for Clau…"
+      },
+      "claude_semantics": {
+        "pass": true,
+        "reason": "The agent fetched https://docs.claude.ai/en/docs/claude-code/hooks and attributed each design field to that source, e.g., 'matcher: Bash — точное имя инструмента согласно документации Claude Code' an…"
+      },
+      "codex_semantics": {
+        "pass": true,
+        "reason": "The agent attempted multiple official Codex URL patterns and attributed Codex-specific details to those sources: concurrent hook execution behavior ('Согласно документации Codex, несколько совпадающи…"
+      },
+      "interactive_caveat": {
+        "pass": true,
+        "reason": "Section 7 (Оговорки) explicitly states: 'Не тестировать через неинтерактивный codex exec как окончательное доказательство — поведение trust-review в неинтерактивном режиме может отличаться от реально…"
+      }
+    }
+  }
+}

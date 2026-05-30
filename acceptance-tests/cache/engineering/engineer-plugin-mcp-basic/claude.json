@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "1652e8d3bf0c5c1dbf87e3c269e2c7aad23af907dd5b02d7fd2fb2e86fad1d0a",
+  "scenarioId": "engineer-plugin-mcp-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-30T01:21:27.830Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 226438.156042,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "official_docs_first": {
+        "pass": true,
+        "reason": "The agent explicitly stated 'Сначала получу актуальную документацию по MCP-протоколу и хостам перед реализацией' and issued WebFetch calls to all three official sources before designing anything: mod…"
+      },
+      "stdio_jsonrpc": {
+        "pass": true,
+        "reason": "The agent explicitly chose stdio transport (JSON-RPC 2.0 via stdin/stdout) and implemented it using `StdioServerTransport` from the official `@modelcontextprotocol/sdk`. Protocol version '2025-11-25'…"
+      },
+      "stable_tool_schema": {
+        "pass": true,
+        "reason": "The agent defined a concise, domain-specific tool schema: tool name 'analyze', input fields {path, content, rules}, and output contract {passed, summary, issues[]}. No full MCP protocol schema was co…"
+      },
+      "host_wiring": {
+        "pass": true,
+        "reason": "Claude Code and Codex wiring are fully separated into distinct sections (§3 and §4). Claude Code covers plugin.json (variant A), .mcp.json (variant B), and `claude mcp add` CLI, with host-specific fi…"
+      },
+      "tool_name_mapping": {
+        "pass": true,
+        "reason": "Section 5 explicitly maps host-specific tool names: Claude Code exposes it as 'mcp__review_guard__analyze' (following mcp__<server>__<tool> convention) while Codex exposes it as 'review_guard__analyz…"
+      }
+    }
+  }
+}

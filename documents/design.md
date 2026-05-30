@@ -58,7 +58,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `ship` — generated from composite `ship`
 - `update` — standalone — `framework/core/commands/update/SKILL.md`
 
-#### Skills by pack (39)
+#### Skills by pack (42)
 
 **core (10):**
 
@@ -78,11 +78,13 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 **devtools (6):** `engineer-command`, `engineer-hook`, `engineer-rule`,
 `engineer-skill`, `engineer-subagent`, `write-agent-benchmarks` — all standalone
 
-**engineering (14):** `analyze-context`, `browser-automation`, `deep-research`,
+**engineering (17):** `analyze-context`, `browser-automation`, `deep-research`,
 `diagnose-benchmark-failure`, `draw-mermaid-diagrams`,
+`engineer-ai-ide-plugin`, `engineer-plugin-hooks`, `engineer-plugin-mcp`,
 `engineer-prompts-for-instant`, `engineer-prompts-for-reasoning`, `fix-tests`,
-`interactive-teaching-materials`, `manage-github-tickets`, `write-dep`,
-`write-gods-tasks`, `write-in-informational-style`, `write-prd` — all standalone
+`interactive-teaching-materials`,
+`manage-github-tickets`, `write-dep`, `write-gods-tasks`,
+`write-in-informational-style`, `write-prd` — all standalone
 
 **ide-bridge (2):** `ai-ide-runner`, `delegate-to-ide` — standalone
 
@@ -103,7 +105,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 #### Summary
 
 - Commands: 8 (3 atom-generated, 2 composite-generated, 3 standalone) — all in `core`.
-- Skills: 39 (2 atom-generated in `core`, 37 standalone across 7 packs).
+- Skills: 42 (2 atom-generated in `core`, 40 standalone across 7 packs).
 - Agents: 6 (all standalone — 4 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
