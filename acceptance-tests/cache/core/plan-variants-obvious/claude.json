@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "553c844552b0625b2cd449a0e9e8cbcda8bed3b21478a24733596f70a03fb37f",
+  "key": "f5e9840b7a2120d4612e719168e6eb93a122c75600ef0122f9913217d95dd70d",
   "scenarioId": "plan-variants-obvious",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T02:31:47.372Z",
+  "recordedAt": "2026-05-30T22:12:56.420Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 167833.63816699944,
+    "durationMs": 82265.73674999969,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "task_file_created": {
         "pass": true,
-        "reason": "The agent created the file 'documents/tasks/2026/05/create-hello-txt.md' as confirmed by both the agent logs (Write tool call) and the file diffs section showing the generated file with full content.…"
+        "reason": "The agent created a task file at 'documents/tasks/2026/05/create-hello-txt.md' using the Write tool. This is confirmed both in the agent logs (Write tool call) and in the GENERATED FILES section of t…"
       },
       "single_variant": {
         "pass": true,
-        "reason": "The agent explicitly analyzed the task and concluded it is an obvious single-path case, stating 'Единственный вариант: создать файл напрямую' (Single variant: create the file directly). The Solution …"
+        "reason": "The agent presented exactly one implementation variant ('Вариант 1 (единственный): создать `hello.txt` вручную / командой'), explicitly labeled it as 'единственный' (the only one), and explained why …"
       }
     }
   }

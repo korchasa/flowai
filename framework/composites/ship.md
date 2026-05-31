@@ -11,7 +11,7 @@ effort: high
 
 Single user-invoked command that drives a task end-to-end and reaches the remote in one invocation:
 
-1. **Plan Phase** — write a committed plan at `documents/tasks/<YYYY>/<MM>/<slug>.md`.
+1. **Plan Phase** — write a committed plan under the `tasks` role resolved from AGENTS.md.
 2. **Implement Phase** — execute the Solution under TDD (RED → GREEN → REFACTOR → CHECK).
 3. **Review Phase** — QA + lead-engineer review of the diff with a structured verdict.
 4. **Commit Phase** — targeted documentation sync + Conventional Commits + task-status auto-flip.
@@ -61,7 +61,7 @@ Output a combined summary:
 ## Verification
 
 <verification>
-[ ] Plan Phase produced a task file at `documents/tasks/<YYYY>/<MM>/<slug>.md` with required frontmatter.
+[ ] Plan Phase produced a task file under the resolved `tasks` role with required frontmatter.
 [ ] Plan → Implement gate enforced — Solution section filled only after user picked a variant.
 [ ] Implement Phase ran TDD (RED → GREEN → REFACTOR → CHECK).
 [ ] Implement → Review gate enforced: project check exit 0 AND `git status` non-empty.

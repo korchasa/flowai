@@ -55,8 +55,11 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 ### FR-DOCS: Documentation Management
 
-- **Description:** The system must define and enforce documentation schemas (SRS/SDS) to maintain project knowledge.
-- **Acceptance:** Enforced by `AGENTS.md` documentation rules section.
+- **Description:** The system must define and enforce documentation schemas (SRS/SDS) to maintain project knowledge. The shipped `AGENTS.md` project-instructions template is the only plugin location allowed to define concrete project-document paths and schema blocks; `CLAUDE.md` exposes the same content only as a compatibility alias/mirror.
+- **Tasks:** [doc-schema-indirection](tasks/2026/05/doc-schema-indirection.md)
+- **Acceptance:**
+  - [x] Project-document path/schema rules live in `AGENTS.md`; `CLAUDE.md` is same-content compatibility, not a second schema source. Evidence: `framework/core/assets/AGENTS.template.md`.
+  - [x] Distributed plugin primitives outside `AGENTS*`/`CLAUDE*` templates avoid concrete SRS/SDS/tasks/index paths and schema blocks. Evidence: `scripts/check-skills_test.ts::doc schema indirection`.
 
 ### FR-HOWTO: Automation & How-To
 
@@ -705,6 +708,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-UNIVERSAL: Universal Skill & Script Requirements
 
 - **Description:** All framework skills MUST conform to the agentskills.io standard and work identically across supported IDEs (Cursor, Claude Code, OpenCode). Scripts bundled with skills MUST be cross-IDE compatible.
+- **Tasks:** [doc-schema-indirection](tasks/2026/05/doc-schema-indirection.md)
 - **Use case scenario:** A developer installs flowai skills via flowai. Skills with bundled scripts work in any of the three supported IDEs without modification.
 - **Priority:** High (foundational for multi-IDE support).
 
@@ -743,6 +747,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `scripts/check-skills.ts` validates `framework/<pack>/{skills,commands}/**/SKILL.md` bodies against forbidden patterns: `gpt-5(?:\.\d+)?(?:-\w+)?`, `claude-opus-\d(?:-\d+)?`, `claude-sonnet-\d(?:-\d+)?`. Violations fail the check with criterion tag `FR-UNIVERSAL.IDE-NEUTRAL`.
   - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
   - [x] Acceptance tests directory (`framework/*/acceptance-tests/`) and `.claude/skills/` dev resources are exempt (not distributed).
+
+#### FR-UNIVERSAL.DOC-SCHEMA Documentation Schema Indirection
+
+- **Desc:** Distributed plugin primitives MUST resolve project documentation through semantic roles declared by the project-instructions artifact before reading/writing docs: `SRS` (requirements), `SDS` (design), `tasks` (persistent plans), `index` (navigation aggregate). Plugin resources MUST NOT encode concrete default paths or embedded SRS/SDS/task schemas, except `AGENTS*`/`CLAUDE*` templates, acceptance-test fixtures/assertions, and code-comment GFM traceability links to SRS/SDS headings. `pack.yaml` `scaffolds:` MAY keep concrete project-relative artifact paths because the external CLI contract consumes them as display/sync metadata; this exception is metadata-only and not an operational fallback.
+- **Acceptance:**
+  - [x] `scripts/check-skills.ts` scans distributed plugin resources (`framework/<pack>/{skills,commands,agents,hooks}/**`, `framework/<pack>/pack.yaml`, `framework/atoms/**`, `framework/composites/**`) and fails with criterion `FR-UNIVERSAL.DOC-SCHEMA`, matched literal, file path, and replacement guidance.
+  - [x] Concrete documentation paths/schema blocks are allowed in `framework/*/assets/AGENTS*.md`, `framework/*/assets/CLAUDE*.md`, and acceptance-test fixtures/assertions. Evidence: `scripts/check-skills_test.ts::doc schema indirection`.
+  - [x] No implicit fallback to default flowai paths in operational primitives; missing role binding is a stop-and-ask condition. Evidence: acceptance scenarios `plan-doc-schema-discovery`, `review-doc-schema-discovery`, `commit-doc-schema-discovery`.
 
 #### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
 

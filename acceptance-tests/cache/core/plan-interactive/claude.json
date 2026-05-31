@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "eb4f1cc088f2d7ac7abdfcce386bfd08a7d541f72edb4655a442569c270fe07b",
+  "key": "00d0207b56e3c52ca8b3400f895fc8b7249a788ee40bb58ba29cff3ca30c5361",
   "scenarioId": "plan-interactive",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T02:18:48.189Z",
+  "recordedAt": "2026-05-30T21:52:19.114Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 177047.58016700018,
+    "durationMs": 206334.23404200003,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "variants_presented": {
         "pass": true,
-        "reason": "The agent explicitly presented two implementation variants in the chat: Variant 1 (Single-file script with console.log directly in main.ts) and Variant 2 (Entrypoint + separate logic module with gree…"
+        "reason": "The agent explicitly presented 'Вариант 1 (единственный): Структурированная точка входа Deno' with detailed pros, risks, and implementation description (three files: src/main.ts, src/main_test.ts, de…"
       },
       "question_asked": {
         "pass": true,
-        "reason": "After presenting the variants, the agent explicitly asked 'Какой вариант выбираете?' (Which variant do you choose?), prompting the user to select."
+        "reason": "The agent explicitly ended its first response with 'Жду выбора варианта (или \"go\" для продолжения с единственным вариантом).' — directly asking the user to select a variant before proceeding."
       },
       "solution_filled": {
         "pass": true,
-        "reason": "The Solution section in documents/tasks/2026/05/hello-world-cli.md contains concrete technical details: selected variant declaration, 7 numbered implementation steps (bootstrap deno.json, add SRS, RE…"
+        "reason": "The Solution section in documents/tasks/2026/05/hello-world-cli.md is fully populated after the user said 'Go'. It contains: selected variant name, Step 1 (deno.json with full JSON content), Step 2 (…"
       },
       "no_switch_mode": {
         "pass": true,
-        "reason": "No 'SwitchMode' appears anywhere in the agent logs or file diffs."
+        "reason": "Scanning the entire agent logs, there is no occurrence of 'SwitchMode' in any tool call or response."
       }
     }
   }

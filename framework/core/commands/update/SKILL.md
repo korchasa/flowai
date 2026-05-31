@@ -96,9 +96,10 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
    - When a section has missing named rules, list each missing rule by name instead of summarizing the count. For Planning Rules, explicitly name missing rules such as `Proactive Resolution`.
 
 5. **Check scaffolded artifacts** (for `--scaffolds` / `--all`)
-   - Use known scaffold mappings from visible pack metadata when available. Default known project scaffolds:
-     - `documents/requirements.md`
-     - `documents/design.md`
+   - Use known scaffold mappings from visible pack metadata when available. Also resolve documentation roles from AGENTS.md; for documentation artifacts, role bindings override template defaults.
+   - Default known project scaffolds by role/type:
+     - `SRS`
+     - `SDS`
      - `.devcontainer/devcontainer.json`
      - `.devcontainer/Dockerfile`
      - `.devcontainer/init-firewall.sh`
@@ -134,7 +135,7 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
    - Never stage or commit unless the user explicitly asks.
 
 9. **Verify**
-   - Show the resulting `git diff -- AGENTS.md CLAUDE.md documents/requirements.md documents/design.md .devcontainer deno.json scripts/check.ts` limited to touched files.
+   - Show the resulting `git diff -- AGENTS.md CLAUDE.md <resolved-SRS> <resolved-SDS> .devcontainer deno.json scripts/check.ts` limited to touched files.
    - Confirm plugin/user-level files and installed primitives were not modified.
    - End with a short summary of updated, skipped, and deferred items.
 

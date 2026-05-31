@@ -140,11 +140,12 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
    - If `opencode_json.exists` is `true` and the `instructions` array contains references to `documents/AGENTS.md` or `scripts/AGENTS.md`: propose **removing only** those stale entries. Do NOT add an `AGENTS.md` replacement entry — OpenCode auto-loads the root file.
 
 9. **Generate Documentation**
-   - Generate core documentation files in `documents/`:
-     - `documents/requirements.md` (SRS): Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
-     - `documents/design.md` (SDS): Create initial structure. Skip if file exists and has more than 50 lines.
-     - `documents/tasks/` directory:
-       - For **Brownfield**: Create `documents/tasks/<YYYY-MM-DD>-init-context.md` with "Discovered Context" (file tree) and README summary.
+   - Resolve documentation roles from the generated `AGENTS.md`: `SRS`, `SDS`, `tasks`, and `index`. If a role is missing, add it to AGENTS.md before generating docs.
+   - Generate core documentation files at the resolved role paths:
+     - `SRS`: Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
+     - `SDS`: Create initial structure. Skip if file exists and has more than 50 lines.
+     - `tasks` directory:
+       - For **Brownfield**: Create an init-context task using the role's layout with "Discovered Context" (file tree) and README summary.
        - For **Greenfield**: Directory will be created on first use by planning/answer skills. No need to initialize.
    - **Note**: Use LLM capabilities to generate high-quality, context-aware content from actual project data -- not empty placeholders.
 

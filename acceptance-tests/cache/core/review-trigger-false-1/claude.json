@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "5978889d1550de8d1c5a2832486922c4c1f205d4701bef6c1d703166018a5748",
+  "key": "0a6ac896faf7f858ed1dfe9106622e2d1a9b4882869c7e904876f2a14f3a7278",
   "scenarioId": "review-trigger-false-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T03:00:28.446Z",
+  "recordedAt": "2026-05-30T22:52:25.579Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 5572.6502499990165,
+    "durationMs": 4118.848624999868,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent responded directly to the Go code question without invoking any skills or tools. The logs show only a direct text response with no mention of reading review/SKILL.md or calling…"
+        "reason": "The agent responded directly to the Go idiom question without invoking the `review` skill or any other skill. The logs show only a direct text response with no calls to Skill tool or loading of any S…"
       }
     }
   }

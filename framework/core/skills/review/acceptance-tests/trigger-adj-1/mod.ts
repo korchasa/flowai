@@ -1,18 +1,16 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: jit-review (synthesize ephemeral tests to catch
-// hidden regressions in a diff — narrower scope than full QA review).
 export const ReviewTriggerAdj1 = new class extends AcceptanceTestScenario {
   id = "review-trigger-adj-1";
-  name = "JIT regression test scan (adjacent)";
+  name = "JIT regression wording routes to review";
   skill = "review";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
     "Tests pass but I'm worried I broke something subtle. Synthesize JIT tests against my staged diff to catch hidden regressions.";
   checklist = [{
-    id: "skill_not_invoked",
+    id: "skill_invoked",
     description:
-      "Did the agent AVOID loading `review`? For this query the skill is not appropriate; the agent should either invoke a different skill or respond directly without reading `review/SKILL.md` or calling the `Skill` tool with `review`.",
+      "Did the agent load `review`? JiT regression probing is now part of the review workflow, so this diff-regression wording should route to `review` rather than being treated as a separate adjacent skill.",
     critical: true,
   }];
 }();

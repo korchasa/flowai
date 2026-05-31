@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Use when the user asks to execute an existing task plan's Solution under TDD — RED → GREEN → REFACTOR → CHECK per AGENTS.md. Requires a written plan at documents/tasks/<YYYY>/<MM>/<slug>.md. Do NOT trigger on planning, reviewing committed changes, or fixing pre-existing failing tests outside a plan.
+description: Use when the user asks to execute an existing task plan's Solution under TDD — RED → GREEN → REFACTOR → CHECK per AGENTS.md. Requires a written plan resolved through the `tasks` role in AGENTS.md. Do NOT trigger on planning, reviewing committed changes, or fixing pre-existing failing tests outside a plan.
 _params:
   TERMINATION:
     choices: [TOTAL_STOP, HAND_OFF_TO_NEXT]
@@ -17,7 +17,7 @@ Execute the `## Solution` section of an existing task plan strictly under the TD
 ## Context
 
 <context>
-The user has already produced a plan. The plan file is at `documents/tasks/<YYYY>/<MM>/<slug>.md` and contains a `## Solution` section enumerating the concrete steps to implement. This skill is the Implement Phase of the canonical task lifecycle and is consumed by the `ship` composite as its second phase. The phase BEFORE this one writes the plan; the phase AFTER reviews the diff.
+The user has already produced a plan. The plan file is resolved through the `tasks` role in AGENTS.md and contains a `## Solution` section enumerating the concrete steps to implement. This skill is the Implement Phase of the canonical task lifecycle and is consumed by the `ship` composite as its second phase. The phase BEFORE this one writes the plan; the phase AFTER reviews the diff.
 </context>
 
 ## Rules & Constraints
@@ -38,7 +38,7 @@ The user has already produced a plan. The plan file is at `documents/tasks/<YYYY
 <step_by_step>
 
 1. **Re-read the Task File**
-   - Read `documents/tasks/<YYYY>/<MM>/<slug>.md` from disk (do NOT rely on memory). The user MUST tell you the path; if it is missing, ask once.
+   - Read the user-provided task file from disk (do NOT rely on memory). If the user gives only an identifier, resolve the `tasks` role from AGENTS.md and locate the matching task there. The user MUST provide either a path or an unambiguous task identifier; if it is missing, ask once.
    - Extract the `## Solution` section. The implementation steps listed there are authoritative.
    - Re-plan the todo list with the Solution's concrete steps. One todo item per RED/GREEN/REFACTOR/CHECK iteration is acceptable, but ensure every Solution bullet is represented.
 

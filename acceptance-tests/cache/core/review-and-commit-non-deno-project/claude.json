@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "5e384f551c7039befe5180c74894e31edae745e83b687012f0b88e17e3d854a1",
+  "key": "4d54b5df11a912806b2d4b9143dd1faa8fbc43fd45627adc0839ba60a965a568",
   "scenarioId": "review-and-commit-non-deno-project",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-24T16:40:45.494Z",
+  "recordedAt": "2026-05-30T23:14:38.188Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 77111.71587499976,
+    "durationMs": 103173.73695799988,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "no_deno_lock_in_status": {
         "pass": true,
-        "reason": "The FINAL GIT STATUS shows 'nothing to commit, working tree clean'. No deno.lock file is present in the working tree at any point."
+        "reason": "The FINAL GIT STATUS shows 'nothing to commit, working tree clean'. There is no mention of deno.lock anywhere in the working tree state."
       },
       "no_deno_lock_in_commits": {
         "pass": true,
-        "reason": "The GIT LOG and GIT DIFF (init..HEAD) only show README.md and main.py as changed files in the agent's commit. No deno.lock appears anywhere in any commit."
+        "reason": "The GIT LOG and GIT DIFF (init..HEAD) show the agent's commit only added README.md and main.py. No deno.lock appears in any commit diff."
       },
       "no_deno_commands_executed": {
         "pass": true,
-        "reason": "Reviewing all Bash commands in the agent logs: git diff, git status, ls, grep for manifest files, Read tool calls, git add, git commit, and git status. Not a single 'deno *' command was executed."
+        "reason": "Reviewing all Bash tool calls in the agent logs: git diff, git status, ls, cat, grep, git add, git commit, git status — no 'deno *' command was ever invoked."
       },
       "stack_aware_check_or_skip": {
         "pass": true,
-        "reason": "The agent explicitly noted 'Нет манифестных файлов (pyproject.toml, Makefile и т.д.) — автоматические проверки не настроены' and in the review report stated '[skipped] — манифестные файлы (pyproject.…"
+        "reason": "In the review report, the agent explicitly wrote: '[skipped] — нет pyproject.toml, Makefile или другого манифеста. Автоматические проверки не настроены.' This is a clear equivalent of 'No automated c…"
       },
       "main_py_committed": {
         "pass": true,
-        "reason": "The GIT LOG shows the commit 'feat: add text statistics utility with word and char count' includes 'main.py | 21 +++++++++++++++++++++' — main.py was committed with 21 new lines."
+        "reason": "The GIT LOG shows commit '7d4a2f1' with message 'feat: add text statistics utility (word_count, char_count)' which includes main.py (2 files changed: README.md and main.py, 36 insertions total). The …"
       },
       "clean_final_status": {
         "pass": true,
-        "reason": "The FINAL GIT STATUS section shows 'On branch main / nothing to commit, working tree clean'. No untracked files, no modifications, no staged files, no deno.lock or temp artifacts."
+        "reason": "FINAL GIT STATUS reads 'On branch main / nothing to commit, working tree clean'. No untracked files, no modified files, no staged files, no deno.lock or other artifacts."
       },
       "review_completed_before_commit": {
         "pass": true,
-        "reason": "The agent clearly completed Phase 1 with a structured review report titled '## Review: Approve' including QA Findings, Code Review Findings, Automated Checks (skipped), and a Summary, followed by an …"
+        "reason": "The agent produced a full structured review report with '## Review: Approve' verdict, QA Findings, Code Review Findings (with a nit), Automated Checks (skipped with reason), and Summary — all before …"
       }
     }
   }

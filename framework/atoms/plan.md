@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Use ONLY when the user explicitly asks to plan a task, create a task file in documents/tasks/, produce a GODS-format breakdown, or prepare a critiqued implementation strategy before coding. Writes tasks at documents/tasks/<YYYY>/<MM>/<slug>.md with extended frontmatter. Do NOT trigger on brief design discussion, ad-hoc code suggestions, or casual "how would you approach X?" questions.
+description: Use ONLY when the user explicitly asks to plan a task, create a role-resolved task file, produce a GODS-format breakdown, or prepare a critiqued implementation strategy before coding. Writes tasks under the `tasks` role with extended frontmatter. Do NOT trigger on brief design discussion, ad-hoc code suggestions, or casual "how would you approach X?" questions.
 argument-hint: task description or issue URL
 effort: high
 _params:
@@ -14,7 +14,7 @@ _params:
 
 ## Overview
 
-Create a clear, critiqued plan in `./documents/tasks/<YYYY>/<MM>/<slug>.md` using the GODS framework. The path uses date hierarchy directories and a slug without a date prefix. Tasks are committed records with extended frontmatter, so they serve as the canonical record of what was decided, planned, and shipped.
+Create a clear, critiqued plan in the `tasks` location resolved from AGENTS.md using the GODS framework. The template default uses date hierarchy directories and a slug without a date prefix, but the project instructions are authoritative. Tasks are committed records with extended frontmatter, so they serve as the canonical record of what was decided, planned, and shipped.
 
 ## Context
 
@@ -26,24 +26,24 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
 ## Rules & Constraints
 
 <rules>
-1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation, EXCEPT the two doc-system navigation artifacts listed below. If the task directory does not exist (`./documents/tasks/<YYYY>/<MM>/`), CREATE it (with intermediate year/month directories). If you catch yourself about to modify any file outside the allow-list — STOP immediately and return to planning.
+1. **Pure Planning — NO IMPLEMENTATION**: You are a planner, NOT an implementer. You MUST NOT create, modify, or delete any project source files, config files, tests, or documentation, EXCEPT the doc-system navigation artifacts listed below. First resolve `SRS`, `tasks`, and `index` from AGENTS.md. If any role is missing, STOP and ask the user to bind it in project instructions. If the resolved task directory does not exist, CREATE it. If you catch yourself about to modify any file outside the allow-list — STOP immediately and return to planning.
    - **Allow-list**:
-     - (a) A single task file at `./documents/tasks/<YYYY>/<MM>/<slug>.md` where `<YYYY>`, `<MM>`, `<DD>` are today's date components (zero-padded month/day) and `<slug>` is derived from the task (kebab-case, ≤40 chars, NO date prefix). Examples: `documents/tasks/2026/03/add-dark-mode.md`, `documents/tasks/2026/03/fix-auth-bug.md`, `documents/tasks/2026/03/refactor-db-layer.md`.
-     - (b) `./documents/index.md` — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
-     - (c) `./documents/requirements.md` — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
+     - (a) A single task file under the resolved `tasks` role where date components and `<slug>` follow the project instructions; if the template default is in force, use `<YYYY>/<MM>/<slug>.md` below the role root.
+     - (b) The resolved `index` role — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
+     - (c) The resolved `SRS` role — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 3. **Chat-First Reasoning**: Implementation variants MUST be presented in CHAT, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool. This is a mandatory rule!
 5. **Proactive Resolution**: Follow `Proactive Resolution` rule from `## Planning Rules` in AGENTS.md.
 6. **Stop-Analysis Protocol**: Follow Stop-Analysis rules from `# YOU MUST` in AGENTS.md.
 7. **AGENTS.md Planning Rules**: Follow all rules from `## Planning Rules` section in AGENTS.md (Environment Side-Effects, Verification Steps, Functionality Preservation, Data-First, Architectural Validation, Variant Analysis, User Decision Gate).
-8. **Traceability & Acceptance Tuple**: If the task creates, modifies, or implements FR-* requirements, the `implements:` YAML frontmatter is REQUIRED with every affected FR-* code. Every item in `## Definition of Done` MUST pair with an FR-ID and a runnable acceptance reference — `Test: <path>::<name>` (or `Benchmark: <scenario-id>`) + `Evidence: <command>`. Exception — `manual — <reviewer>` — only when automation cost exceeds defect cost. DoD items without this tuple are not accepted and must be rewritten before the plan is finalized. The test does not need to exist yet — the develop phase creates it as RED — but the plan MUST fix WHERE it will live. If an FR is new (not yet in `documents/requirements.md`), the plan MUST also list "add FR-XXX section to SRS with `**Acceptance:**` field" as a DoD item, paired with the same tuple.
+8. **Traceability & Acceptance Tuple**: If the task creates, modifies, or implements FR-* requirements, the `implements:` YAML frontmatter is REQUIRED with every affected FR-* code. Every item in `## Definition of Done` MUST pair with an FR-ID and a runnable acceptance reference — `Test: <path>::<name>` (or `Benchmark: <scenario-id>`) + `Evidence: <command>`. Exception — `manual — <reviewer>` — only when automation cost exceeds defect cost. DoD items without this tuple are not accepted and must be rewritten before the plan is finalized. The test does not need to exist yet — the develop phase creates it as RED — but the plan MUST fix WHERE it will live. If an FR is new (not yet in the resolved `SRS`), the plan MUST also list "add FR-XXX section to SRS with `**Acceptance:**` field" as a DoD item, paired with the same tuple.
 9. **Frontmatter Shape**: The task file's YAML frontmatter MUST contain ALL FIVE of the following keys, in this exact order. **Each key MUST be PRESENT even when its value is empty** — write `implements: []`, `tags: []`, `related_tasks: []` rather than omitting the key. Eliding a key is a defect:
    - `date: <YYYY-MM-DD>` — today's date as a quoted ISO string. Use the date you used for the directory hierarchy.
    - `status: to do` — initial value for a freshly-created task with all DoD items unchecked. Other valid values: `in progress`, `done`, `superseded`. Non-superseded status is auto-derived from DoD checkbox state by `commit` / `review-and-commit` on every subsequent commit; do NOT update it manually. Use `superseded` only for provenance records replaced by another task, with `superseded_by:` set.
    - `implements: [FR-..., ...]` — FR-IDs the task touches. May be empty `[]` if the task is purely operational, but prefer naming an FR. **The key itself is mandatory.**
    - `tags: [...]` — short keyword list (lowercase). May be empty `[]`. **The key itself is mandatory.**
-   - `related_tasks: [...]` — relative paths to other tasks under `documents/tasks/`, e.g. `2026/03/20/precursor-task.md`. May be empty `[]`. **The key itself is mandatory.**
+   - `related_tasks: [...]` — relative paths to other tasks under the resolved `tasks` role, e.g. `2026/03/20/precursor-task.md`. May be empty `[]`. **The key itself is mandatory.**
 
    Canonical empty-valued example for an operational task with no FR / tags / related tasks:
 
@@ -73,18 +73,19 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
 
 1. **Initialize**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan based on these steps.
-   - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d` or your environment's date primitive). Hold it as `<DATE>`. Derive `<YYYY>` and `<MM>` (zero-padded) and the eventual file path `documents/tasks/<YYYY>/<MM>/<slug>.md`.
+   - Compute today's date in `YYYY-MM-DD` format (e.g. via `date +%Y-%m-%d` or your environment's date primitive). Hold it as `<DATE>`. Derive `<YYYY>` and `<MM>` (zero-padded). Resolve the `tasks` role from AGENTS.md and then derive the eventual task file path from that role's layout.
 2. **Deep Context & Uncertainty Resolution**
-   - If you don't know the content of `documents/requirements.md` (SRS) and `documents/design.md` (SDS) — read them now.
-   - **Load related committed tasks**: glob `documents/tasks/**/*.md` (the path is recursive — task files live under date-hierarchy subdirs `<YYYY>/<MM>/<slug>.md`). For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
+   - Resolve `SRS` and `SDS` from AGENTS.md. If you don't know their current content, read the resolved files now.
+   - **Load related committed tasks**: glob recursively under the resolved `tasks` role. For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
    - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
    - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 3. **Draft Framework (G-O-D)**
-   - Create the parent directories `documents/tasks/<YYYY>/<MM>/` (use `mkdir -p` or your environment's equivalent).
-   - Write `documents/tasks/<YYYY>/<MM>/<slug>.md` with:
+   - Create the resolved task file's parent directories (use `mkdir -p` or your environment's equivalent).
+   - Write the resolved task file with:
      - Frontmatter containing ALL required keys per Rule 9. Set `status: to do` initially.
      - Body sections per `### GODS Format` from AGENTS.md: `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` (placeholder bullets — fill in step 5a).
+     - For async/callback conversions, include an explicit error-handling DoD item or constraint before variant selection: how callback errors map to Promise rejection / `try`-`catch`, and which tests prove error propagation is preserved.
    - **CRITICAL**: Do NOT fill `## Solution` section yet.
 4. **Strategic Analysis & Variant Selection**
    - Generate variants in chat following `Variant Analysis` from AGENTS.md.
@@ -104,10 +105,10 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
 5a. **Acceptance Tuple Check** — execute immediately, no permission needed
    - Walk every entry in `## Definition of Done`. For each, confirm the tuple `(FR-ID, Test path or Benchmark id, Evidence command)` is present and concrete (no placeholders like `<TBD>` or `TODO`). `manual — <reviewer>` is acceptable only with an explicit reviewer name.
    - If any DoD item lacks the tuple, edit the task file to add it. Prefer reusing an existing FR (for bug fixes and small refactors) over coining a new one. Only introduce a new FR for user-visible or contract-level changes.
-   - If new FRs appear in `implements:` that are absent from `documents/requirements.md`, the task MUST contain an explicit DoD entry "add FR-XXX section to SRS with `**Acceptance:**` field filled".
+   - If new FRs appear in `implements:` that are absent from the resolved `SRS`, the task MUST contain an explicit DoD entry "add FR-XXX section to SRS with `**Acceptance:**` field filled".
    - Do NOT create the test files themselves — that is the develop phase's RED step. This skill only FIXES the test location contract.
 5c. **Write SRS-inline `**Tasks:**` Back-Pointer (FR-DOC-TASK-LINK)** — execute immediately, no permission needed. This is a write step.
-   - For each FR-ID in the task's `implements:` frontmatter, locate the heading `### <FR-ID>:` in `documents/requirements.md`.
+   - For each FR-ID in the task's `implements:` frontmatter, locate the heading `### <FR-ID>:` in the resolved `SRS`.
    - If the heading does not exist (new FR introduced by the same task), SKIP this FR for now and emit a chat note: "FR-XXX SRS section pending — task back-pointer deferred." The develop/commit phase will add the section AND the back-pointer atomically.
    - If the heading exists, find the section's existing `**Description:**` bullet (`- **Description:** ...`). Look at the line(s) immediately following it within the same section.
      - If a `- **Tasks:** [...]` bullet already exists: append `, [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` to the comma-separated list. **Idempotency**: if the exact link `[<slug>](tasks/...)` is already in the list, do nothing for that FR.
@@ -115,8 +116,8 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - **Surgical edit only**: the rest of the SRS file MUST remain byte-identical. Do not re-format, do not touch other sections, do not adjust whitespace anywhere except the inserted/extended line.
 
 5b. **Update Documentation Index (FR-DOC-INDEX)** — execute immediately, no permission needed. This is a write step, not a planning step.
-   - For every FR-ID in the task's `implements:` frontmatter, register a row in `./documents/index.md`.
-   - If `documents/index.md` does not exist, create it with a `## FR` heading (additional sections like `## SDS`, `## NFR` may be added by other skills; do not pre-scaffold them here).
+   - Resolve `index` from AGENTS.md. For every FR-ID in the task's `implements:` frontmatter, register a row there.
+   - If the resolved `index` file does not exist, create it with a `## FR` heading (additional sections like `## SDS`, `## NFR` may be added by other skills; do not pre-scaffold them here).
    - Within `## FR`, ensure exactly one row per FR-ID. Row format:
      `- [<FR-ID>](requirements.md#<anchor>) — <one-line summary> — <status>`
      - `<anchor>` — GFM auto-slug of the SRS heading `### <FR-ID>: <title>` (lowercase, non-alphanumeric → `-`, collapse runs, strip leading/trailing `-`). If the SRS section does not yet exist, use the placeholder `<fr-id-lowercased>-tbd` (e.g. `fr-pause-tbd`); develop/commit will fix the anchor when the SRS section is added.
@@ -146,11 +147,11 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 ## Verification
 
 <verification>
-- [ ] The task file path matches `documents/tasks/<YYYY>/<MM>/<slug>.md` exactly — date hierarchy directories present, slug without date prefix.
+- [ ] The task file path matches the `tasks` role layout from AGENTS.md.
 - [ ] Frontmatter contains `date`, `status: to do`, `implements`, `tags`, `related_tasks` keys (in any order).
-- [ ] Files modified are limited to the task file, `./documents/index.md` (when the task introduces or touches FRs), and surgical `**Tasks:**` line inserts/extends in `./documents/requirements.md`. No other files touched.
-- [ ] For every FR-ID in `implements:`, `documents/index.md` contains a corresponding row under `## FR` with a GFM-link to `requirements.md#<anchor>`.
-- [ ] For every FR-ID in `implements:` whose SRS section already exists, `documents/requirements.md` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
+- [ ] Files modified are limited to the task file, the resolved `index` file (when the task introduces or touches FRs), and surgical `**Tasks:**` line inserts/extends in the resolved `SRS`. No other files touched.
+- [ ] For every FR-ID in `implements:`, the resolved `index` contains a corresponding row under `## FR` with a GFM-link to the SRS heading.
+- [ ] For every FR-ID in `implements:` whose SRS section already exists, the resolved `SRS` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>
 
@@ -160,6 +161,6 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 
 <param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
 8. **Hand off to the next phase**
-   - Announce: "Plan complete at `documents/tasks/<YYYY>/<MM>/<slug>.md`. Entering the next phase."
+   - Announce the resolved task path and: "Entering the next phase."
    - Do NOT issue a TOTAL STOP. Continue immediately into the next phase of the composite workflow.
 </param-branch>

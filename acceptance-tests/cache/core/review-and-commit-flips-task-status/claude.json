@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "eaa84a98f5bc89783b5ec9e171d576ee4f9062d4e73fddf27b8259d044decfeb",
+  "key": "19f8ca3c7219437193ab230883b10c45a7669e663a3f389e5f8114525fd14a59",
   "scenarioId": "review-and-commit-flips-task-status",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-24T16:27:05.225Z",
+  "recordedAt": "2026-05-30T22:54:55.852Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 112383.35383399995,
+    "durationMs": 127718.8254170001,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,31 +18,31 @@
     "checklistResults": {
       "review_phase_executed": {
         "pass": true,
-        "reason": "The agent explicitly executed Phase 1 (Review) before committing. The logs show a structured verdict section titled 'Фаза 1 — Результаты ревью' with 'Review: Approve' verdict, detailed QA findings, c…"
+        "reason": "The agent explicitly executed a review phase before committing. It read all source files, ran tests (`deno test` — 3 passed, 0 failed), performed a code hygiene scan, and emitted a structured '## Rev…"
       },
       "code_committed": {
         "pass": true,
-        "reason": "All four source files are present in the commit '7702195c6f92e1e6f6b5fc11a1dfd05da977c410': src/api/middleware/rate_limit.ts, src/api/middleware/rate_limit_test.ts, src/api/server.ts, and src/api/ser…"
+        "reason": "The git diff confirms all four source files are present in the commit: `src/api/middleware/rate_limit.ts`, `src/api/middleware/rate_limit_test.ts`, `src/api/server.ts`, and `src/api/server_test.ts`. …"
       },
       "task_status_flipped": {
         "pass": true,
-        "reason": "The generated file content for documents/tasks/2026/04/add-rate-limiter.md clearly shows 'status: done' in the frontmatter. The git diff confirms the change from '-status: in progress' to '+status: d…"
+        "reason": "The generated file content for `documents/tasks/2026/04/add-rate-limiter.md` clearly shows `status: done` in the frontmatter. The agent used the Edit tool to change `status: in progress` to `status: …"
       },
       "task_change_in_commit": {
         "pass": true,
-        "reason": "The git diff for commit 7702195c6f92e1e6f6b5fc11a1dfd05da977c410 explicitly shows the diff line '-status: in progress' replaced by '+status: done' in documents/tasks/2026/04/add-rate-limiter.md, conf…"
+        "reason": "The git diff (init..HEAD) for `documents/tasks/2026/04/add-rate-limiter.md` explicitly shows `-status: in progress` and `+status: done` as part of the commit `9a5768d`. The change is committed, not j…"
       },
       "no_skill_tool_delegation": {
         "pass": true,
-        "reason": "Inspecting all tool calls in the agent logs reveals only Bash, Read, and Edit tool invocations. There are no calls to a 'Skill' tool delegating to 'review' or 'commit' sub-skills. Both phases were fu…"
+        "reason": "Reviewing all tool calls in the agent logs, the agent only used Bash, Read, Glob, and Edit tools. There is no invocation of a `Skill` tool to delegate to a `review` or `commit` sub-skill. Both phases…"
       },
       "task_file_not_deleted": {
         "pass": true,
-        "reason": "The task file documents/tasks/2026/04/add-rate-limiter.md was not deleted — it is present in the final state with 'status: done'. The git log shows it was modified (1 deletion, 1 insertion for the st…"
+        "reason": "The task file `documents/tasks/2026/04/add-rate-limiter.md` was modified (status field changed), not deleted. The git diff shows it as a modification (2 +-), and the final generated file content conf…"
       },
       "clean_status": {
         "pass": true,
-        "reason": "The final git status explicitly shows 'On branch main / nothing to commit, working tree clean', confirmed both in the FINAL GIT STATUS section and in the agent's final Bash tool call output."
+        "reason": "The final git status output explicitly states: 'On branch main / nothing to commit, working tree clean'. The agent verified this after the commit with a `git status` call."
       }
     }
   }

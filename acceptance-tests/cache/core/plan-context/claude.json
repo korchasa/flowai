@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "164bb1b2c22fce7abcdbfc6e04d5a3ebc2a64f91933a0369fcc4999a60ba9d27",
+  "key": "42e0bdac0908c73a412a571e61f5d8fc09e830bd63c63c8f90d312ad43454e0f",
   "scenarioId": "plan-context",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T12:07:29.204Z",
+  "recordedAt": "2026-05-30T21:25:08.592Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 61200.10125,
+    "durationMs": 204193.119625,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "context_read": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T12-06-10/plan-context/run-1/sandbox/documents/r…"
+        "reason": "The agent explicitly called the Read tool on '/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T21-21-23/plan-context/run-1/sandbox/documents/requirements.md' as its very first tool …"
       },
       "context_read_sds": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T12-06-10/plan-context/run-1/sandbox/documents/design.…"
+        "reason": "The agent explicitly called the Read tool on the path ending in 'documents/design.md' during the project structure exploration phase, as evidenced by the tool call log entry showing the full sandbox …"
       },
       "task_file_context": {
         "pass": true,
-        "reason": "The created task file 'documents/tasks/2026/05/dark-mode-preference.md' has the title '# Dark Mode Preference' and extensively mentions dark mode throughout — in the Goal section ('switch between lig…"
+        "reason": "The created task file 'documents/tasks/2026/05/dark-mode-preference.md' has the title '# Dark Mode Preference Support' and contains extensive references to dark mode throughout, including: 'Enable us…"
       }
     }
   }

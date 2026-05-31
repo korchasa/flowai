@@ -15,7 +15,8 @@
  *
  * Exits with code 1 if any violation is found.
  */
-import { join } from "@std/path";
+import { walk } from "@std/fs";
+import { join, relative } from "@std/path";
 import { isComposite } from "./lib/composite-list.ts";
 import {
   FRONTMATTER_MAX_TOKENS,
@@ -225,6 +226,43 @@ export function validateProgressiveDisclosure(
 const CUSTOM_PLACEHOLDER_PATTERN = /<this-skill-dir>/;
 /** FR-UNIVERSAL.IDE-VARS: IDE-specific path variable pattern (e.g. ${CLAUDE_SKILL_DIR}, ${CURSOR_SKILL_DIR}). */
 const IDE_PATH_VAR_PATTERN = /\$\{[A-Z_]*SKILL_DIR\}/;
+const DOC_SCHEMA_REPLACEMENT =
+  "resolve role SRS/SDS/tasks/index from project instructions";
+
+const FORBIDDEN_DOC_SCHEMA_PATTERNS: Array<{
+  pattern: RegExp;
+  label: string;
+}> = [
+  {
+    pattern: /\bdocuments\/requirements\.md\b/g,
+    label: "documents/requirements.md",
+  },
+  { pattern: /\bdocuments\/design\.md\b/g, label: "documents/design.md" },
+  { pattern: /\bdocuments\/tasks\//g, label: "documents/tasks/" },
+  { pattern: /\bdocuments\/index\.md\b/g, label: "documents/index.md" },
+  {
+    pattern: /^#{1,6}\s*SRS Format\b.*$/gim,
+    label: "SRS Format schema block",
+  },
+  {
+    pattern: /^#{1,6}\s*SDS Format\b.*$/gim,
+    label: "SDS Format schema block",
+  },
+  {
+    pattern: /^#{1,6}\s*Tasks\s*\(.*$/gim,
+    label: "Tasks schema block",
+  },
+  { pattern: /^#\s*SRS\s*$/gim, label: "# SRS schema block" },
+  { pattern: /^#\s*SDS\s*$/gim, label: "# SDS schema block" },
+  {
+    pattern: /^##\s+3\.\s+Functional Reqs\b.*$/gim,
+    label: "SRS functional requirements schema block",
+  },
+  {
+    pattern: /^##\s+3\.\s+Components\b.*$/gim,
+    label: "SDS components schema block",
+  },
+];
 
 /**
  * FR-UNIVERSAL.XIDE-PATHS: Validates cross-IDE script path resolution.
@@ -256,6 +294,123 @@ export function validatePathResolution(
     });
   }
 
+  return errors;
+}
+
+function normalizePath(path: string): string {
+  return path.replace(/\\/g, "/");
+}
+
+function isDocumentationSchemaAllowedPath(resourcePath: string): boolean {
+  const path = normalizePath(resourcePath);
+  if (path.includes("/acceptance-tests/")) return true;
+  return /^framework\/[^/]+\/assets\/(?:AGENTS|CLAUDE)[^/]*\.md$/.test(path);
+}
+
+function isDocumentationSchemaScannedPath(resourcePath: string): boolean {
+  const path = normalizePath(resourcePath);
+  if (path.includes("/acceptance-tests/")) return false;
+  if (/^framework\/[^/]+\/(?:skills|commands|agents|hooks)\//.test(path)) {
+    return true;
+  }
+  if (/^framework\/[^/]+\/pack\.yaml$/.test(path)) return true;
+  if (/^framework\/atoms\//.test(path)) return true;
+  if (/^framework\/composites\//.test(path)) return true;
+  return false;
+}
+
+function stripPackYamlScaffoldDefaults(
+  resourcePath: string,
+  content: string,
+): string {
+  const path = normalizePath(resourcePath);
+  if (!/^framework\/[^/]+\/pack\.yaml$/.test(path)) return content;
+
+  let inScaffolds = false;
+  return content.split("\n").map((line) => {
+    if (/^scaffolds:\s*$/.test(line)) {
+      inScaffolds = true;
+      return line;
+    }
+    if (inScaffolds && /^\S/.test(line) && line.trim() !== "") {
+      inScaffolds = false;
+    }
+    if (!inScaffolds) return line;
+    return line.replace(
+      /\bdocuments\/(?:requirements\.md|design\.md|tasks\/|index\.md)/g,
+      "<scaffold-path>",
+    );
+  }).join("\n");
+}
+
+function stripTraceabilityCommentLinks(
+  resourcePath: string,
+  content: string,
+): string {
+  const path = normalizePath(resourcePath);
+  if (!/\.(?:ts|js|mjs|cjs|sh|py|yaml|yml)$/.test(path)) return content;
+  return content.split("\n").map((line) => {
+    if (
+      /^\s*(?:\/\/|#)\s*\[FR-[A-Z0-9.-]+\]\([^)]*documents\/(?:requirements|design)\.md#[^)]+\)/
+        .test(
+          line,
+        )
+    ) {
+      return line.replace(
+        /\bdocuments\/(?:requirements|design)\.md/g,
+        "<traceability-link>",
+      );
+    }
+    return line;
+  }).join("\n");
+}
+
+/**
+ * [FR-UNIVERSAL.DOC-SCHEMA](../documents/requirements.md#fr-universal.doc-schema-documentation-schema-indirection):
+ * distributed plugin primitives must not encode
+ * project-specific documentation file paths or SRS/SDS/task schemas. They must
+ * resolve semantic roles from the project instructions artifact instead.
+ */
+export function validateDocumentationSchemaIndirection(
+  resourcePath: string,
+  content: string,
+): SkillError[] {
+  if (isDocumentationSchemaAllowedPath(resourcePath)) return [];
+
+  const errors: SkillError[] = [];
+  const scannedContent = stripTraceabilityCommentLinks(
+    resourcePath,
+    stripPackYamlScaffoldDefaults(resourcePath, content),
+  );
+  for (const { pattern, label } of FORBIDDEN_DOC_SCHEMA_PATTERNS) {
+    pattern.lastIndex = 0;
+    const match = pattern.exec(scannedContent);
+    if (!match) continue;
+    errors.push({
+      skill: normalizePath(resourcePath),
+      criterion: "FR-UNIVERSAL.DOC-SCHEMA",
+      message: `Forbidden documentation schema reference matched "${
+        match[0]
+      }" (${label}); ${DOC_SCHEMA_REPLACEMENT}.`,
+    });
+  }
+  return errors;
+}
+
+export async function collectDocumentationSchemaIndirectionErrors(
+  frameworkDir: string,
+): Promise<SkillError[]> {
+  const errors: SkillError[] = [];
+  for await (const entry of walk(frameworkDir, { includeDirs: false })) {
+    const relPath = normalizePath(
+      join("framework", relative(frameworkDir, entry.path)),
+    );
+    if (!isDocumentationSchemaAllowedPath(relPath)) {
+      if (!isDocumentationSchemaScannedPath(relPath)) continue;
+    }
+    const content = await Deno.readTextFile(entry.path);
+    errors.push(...validateDocumentationSchemaIndirection(relPath, content));
+  }
   return errors;
 }
 
@@ -478,6 +633,9 @@ if (import.meta.main) {
     ...packSkillsDirs,
     ".claude/skills",
   ]);
+  errors.push(
+    ...await collectDocumentationSchemaIndirectionErrors("framework"),
+  );
 
   if (errors.length > 0) {
     for (const e of errors) {

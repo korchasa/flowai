@@ -25,6 +25,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [FR-DOC-TASK-CONTEXT](requirements.md#fr-doc-task-context-plan-skill-loads-related-tasks-into-step-2) — Plan skill loads related tasks into Step 2 — [x]
 - [FR-DOC-TASK-LIFECYCLE](requirements.md#fr-doc-task-lifecycle-task-status-derived-from-dod-by-commit-skills) — Task status derived from DoD by commit skills — [x]
 - [FR-DOC-TASK-LINK](requirements.md#fr-doc-task-link-srs-inline-tasks-back-pointer) — SRS-inline **Tasks:** back-pointer — [x]
+- [FR-DOCS](requirements.md#fr-docs-documentation-management) — The system must define and enforce documentation schemas (SRS/SDS) to maintain project knowledge — [ ]
 - [FR-HOWTO](requirements.md#fr-howto-automation-how-to) — Guides for complex or situational automation tasks — [ ]
 - [FR-IDE-BRIDGE-DELEGATE](requirements.md#fr-ide-bridge-delegate-cross-ide-delegation-skill-wrapper-delegate-to-ide) — Cross-IDE delegation skill wrapper that invokes the worker subagent — [ ]
 - [FR-IDE-BRIDGE-WORKER](requirements.md#fr-worker-cross-ide-delegation-subagent-worker) — Cross-IDE delegation subagent; single-shot, verbatim relay — [ ]

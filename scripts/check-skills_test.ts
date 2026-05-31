@@ -1,7 +1,9 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
   ALLOWED_SUBDIRS,
+  collectDocumentationSchemaIndirectionErrors,
   inferKind,
+  validateDocumentationSchemaIndirection,
   validateIdeNeutrality,
   validateKindInvariants,
   validatePathResolution,
@@ -357,6 +359,167 @@ Deno.test("FR-UNIVERSAL.XIDE-PATHS: multiple violations reported separately", ()
   assertEquals(errors.length, 2);
   assertEquals(errors[0].criterion, "FR-UNIVERSAL.PLACEHOLDERS");
   assertEquals(errors[1].criterion, "FR-UNIVERSAL.IDE-VARS");
+});
+
+// --- validateDocumentationSchemaIndirection (FR-UNIVERSAL.DOC-SCHEMA) ---
+
+Deno.test("doc schema indirection: rejects concrete documentation paths in non-asset skills", () => {
+  const content = [
+    "Read `documents/requirements.md` before coding.",
+    "Update `documents/design.md` after architecture changes.",
+    "Write `documents/tasks/2026/05/example.md`.",
+    "Refresh `documents/index.md`.",
+  ].join("\n");
+  const errors = validateDocumentationSchemaIndirection(
+    "framework/core/skills/plan/SKILL.md",
+    content,
+  );
+
+  assertEquals(errors.map((e) => e.criterion), [
+    "FR-UNIVERSAL.DOC-SCHEMA",
+    "FR-UNIVERSAL.DOC-SCHEMA",
+    "FR-UNIVERSAL.DOC-SCHEMA",
+    "FR-UNIVERSAL.DOC-SCHEMA",
+  ]);
+  assertEquals(errors.map((e) => e.skill), [
+    "framework/core/skills/plan/SKILL.md",
+    "framework/core/skills/plan/SKILL.md",
+    "framework/core/skills/plan/SKILL.md",
+    "framework/core/skills/plan/SKILL.md",
+  ]);
+  assertStringIncludes(errors[0].message, "documents/requirements.md");
+  assertStringIncludes(
+    errors[0].message,
+    "resolve role SRS/SDS/tasks/index from project instructions",
+  );
+});
+
+Deno.test("doc schema indirection: rejects embedded SRS/SDS/task schema blocks in non-asset skills", () => {
+  const content = [
+    "### SRS Format (`documents/requirements.md`)",
+    "```markdown",
+    "# SRS",
+    "## 3. Functional Reqs",
+    "```",
+    "### SDS Format (`documents/design.md`)",
+    "### Tasks (`documents/tasks/`)",
+  ].join("\n");
+  const errors = validateDocumentationSchemaIndirection(
+    "framework/core/skills/plan/SKILL.md",
+    content,
+  );
+
+  assertEquals(errors.length >= 3, true);
+  assertEquals(
+    errors.every((e) => e.criterion === "FR-UNIVERSAL.DOC-SCHEMA"),
+    true,
+  );
+  assertStringIncludes(errors[0].message, "matched");
+});
+
+Deno.test("doc schema indirection: allows concrete paths in AGENTS and CLAUDE templates", () => {
+  const template = [
+    "### SRS Format (`documents/requirements.md`)",
+    "### SDS Format (`documents/design.md`)",
+    "### Tasks (`documents/tasks/`)",
+    "Use `documents/index.md` for navigation.",
+  ].join("\n");
+
+  assertEquals(
+    validateDocumentationSchemaIndirection(
+      "framework/core/assets/AGENTS.template.md",
+      template,
+    ),
+    [],
+  );
+  assertEquals(
+    validateDocumentationSchemaIndirection(
+      "framework/core/assets/CLAUDE.template.md",
+      template,
+    ),
+    [],
+  );
+});
+
+Deno.test("doc schema indirection: allows scaffold defaults in pack metadata only", () => {
+  const content = [
+    'name: "core"',
+    "scaffolds:",
+    "  init:",
+    "    - documents/requirements.md",
+    "    - documents/design.md",
+    "    - documents/tasks/",
+    "notes: documents/requirements.md",
+  ].join("\n");
+  const errors = validateDocumentationSchemaIndirection(
+    "framework/core/pack.yaml",
+    content,
+  );
+
+  assertEquals(errors.length, 1);
+  assertStringIncludes(errors[0].message, "documents/requirements.md");
+});
+
+Deno.test("doc schema indirection: allows GFM traceability links in source comments only", () => {
+  assertEquals(
+    validateDocumentationSchemaIndirection(
+      "framework/core/commands/init/scripts/generate_agents.ts",
+      "// [FR-INIT](../../../../../documents/requirements.md#fr-init-project-initialization) — init\n",
+    ),
+    [],
+  );
+
+  const errors = validateDocumentationSchemaIndirection(
+    "framework/core/commands/init/scripts/generate_agents.ts",
+    'const path = "documents/requirements.md";\n',
+  );
+  assertEquals(errors.length, 1);
+});
+
+Deno.test("doc schema indirection: scans distributed primitive resources", async () => {
+  const root = await Deno.makeTempDir();
+  try {
+    const files = [
+      "framework/core/skills/example/SKILL.md",
+      "framework/core/commands/example/SKILL.md",
+      "framework/core/agents/example.md",
+      "framework/core/hooks/pre_tool_use.ts",
+      "framework/core/pack.yaml",
+      "framework/atoms/plan.md",
+      "framework/composites/ship.md",
+      "framework/core/skills/example/references/notes.md",
+    ];
+    for (const file of files) {
+      const path = `${root}/${file}`;
+      await Deno.mkdir(path.slice(0, path.lastIndexOf("/")), {
+        recursive: true,
+      });
+      await Deno.writeTextFile(path, "Read `documents/requirements.md`.");
+    }
+
+    await Deno.mkdir(`${root}/framework/core/assets`, { recursive: true });
+    await Deno.writeTextFile(
+      `${root}/framework/core/assets/AGENTS.template.md`,
+      "Read `documents/requirements.md`.",
+    );
+    const acceptancePath =
+      `${root}/framework/core/skills/example/acceptance-tests/case/mod.ts`;
+    await Deno.mkdir(acceptancePath.slice(0, acceptancePath.lastIndexOf("/")), {
+      recursive: true,
+    });
+    await Deno.writeTextFile(
+      acceptancePath,
+      'assert("documents/requirements.md");',
+    );
+
+    const errors = await collectDocumentationSchemaIndirectionErrors(
+      `${root}/framework`,
+    );
+
+    assertEquals(errors.map((e) => e.skill).sort(), files.sort());
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
 });
 
 // --- ALLOWED_SUBDIRS ---

@@ -28,7 +28,7 @@ the entire project. Your two hats:
 Input sources:
 - Git diff (`git diff`, `git diff --cached`, `git diff <base>..HEAD`).
 - The original User Request (from chat history).
-- The Plan (task management tool or a task file in `documents/tasks/`).
+- The Plan (task management tool or a task file resolved through the `tasks` role in AGENTS.md).
 - Project conventions (`AGENTS.md`, linter/formatter configs).
 - Parent worktree (reconstructed via `git worktree add <parent-sha>` with a
   session-id'd path, or via `git show <parent-sha>:<file>` as fallback) — used
@@ -111,10 +111,11 @@ Input sources:
      in Degradation Notes; review continues without the JiT subset.
 
 3. **Gather Context**
-   - **First**: check if `documents/requirements.md` (SRS) and
-     `documents/design.md` (SDS) exist (`ls documents/` or equivalent). If
-     they exist and their current content is not already in your context —
-     read them before proceeding.
+   - **First**: resolve `SRS`, `SDS`, and `tasks` from AGENTS.md. If `SRS` or
+     `SDS` exists and its current content is not already in your context —
+     read the resolved file before proceeding. If a required role is missing,
+     report it and continue only for review steps that do not depend on that
+     role.
    - Create a review plan in the task management tool.
    - Collect the diff: `git diff` (unstaged), `git diff --cached` (staged),
      or `git log --oneline <base>..HEAD` + `git diff <base>..HEAD` for
@@ -122,8 +123,8 @@ Input sources:
    - **Untracked files**: `git diff` does NOT show untracked files. Check
      `git status` output from step 1 — for each untracked file, read its
      content directly and include it in the review scope.
-   - Read the original user request and the plan (task file in
-     `documents/tasks/` / task list).
+   - Read the original user request and the plan (task file under the
+     resolved `tasks` role / task list).
    - Look for project conventions in config files (linter, formatter configs).
      Rely on conventions visible in the diff and surrounding code.
    - **3d (intent hints — JiT)**: collect intent-author hints for the JiT
@@ -166,7 +167,7 @@ Input sources:
    - Check for regressions: do changed files break existing functionality?
 
 4a. **FR Coverage Audit** _(blocking gate — see Requirements Lifecycle in AGENTS.md)_
-   - **Identify FRs in scope**: (a) FR-* codes from the task file's `implements:` frontmatter; (b) any FR section added or modified in the diff to `documents/requirements.md`; (c) any `// FR-<ID>` / `# FR-<ID>` markers introduced or touched in the diff.
+   - **Identify FRs in scope**: (a) FR-* codes from the task file's `implements:` frontmatter; (b) any FR section added or modified in the diff to the resolved `SRS`; (c) any `// FR-<ID>` / `# FR-<ID>` markers introduced or touched in the diff.
    - **For each FR in scope**:
      1. SRS section MUST contain `**Acceptance:**` with a runnable reference (test `path::name`, benchmark id, verification command, or `manual — <reviewer>`). Missing or placeholder (`<TBD>`, `TODO`) → `[critical] FR-<ID> has no acceptance reference`.
      2. Run the evidence command (or `deno run -A scripts/check-fr-coverage.ts FR-<ID>` if the script exists). Non-zero exit, failing test, or `manual` without a reviewer name → `[critical] FR-<ID> acceptance fails`.

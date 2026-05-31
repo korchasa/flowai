@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "5a7a482389cf3f156b0702edc2a489eff5914979e588f4f0e1fa238c7520720b",
+  "key": "4c37711078dd8fa93b858b3ba721a45c4791be243050314498859c8d3e0cf5df",
   "scenarioId": "plan-reads-docs",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T02:10:34.997Z",
+  "recordedAt": "2026-05-30T21:44:56.813Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 310282.51425,
+    "durationMs": 239344.30004100013,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "read_srs": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' multiple times (directly and via 'git show 1223044:documents/requirements.md'). The file content is confirmed in the generated…"
+        "reason": "The agent explicitly called the Read tool on 'documents/requirements.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T21-21-23/plan-reads-docs/run-1/sandbox/document…"
       },
       "read_sds": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on 'documents/design.md' multiple times (directly and via 'git show 1223044:documents/design.md'). The file content is shown in the generated files section, …"
+        "reason": "The agent explicitly called the Read tool on 'documents/design.md' (full path: /Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T21-21-23/plan-reads-docs/run-1/sandbox/documents/desi…"
       },
       "task_file_created": {
         "pass": true,
-        "reason": "The agent created 'documents/tasks/2026/05/add-caching-layer.md' using the Write tool. The git status confirms 'documents/tasks/' is listed as an untracked directory, and the full content of the task…"
+        "reason": "The agent created 'documents/tasks/2026/05/add-api-caching-layer.md' using the Write tool. The file is confirmed in git status as untracked under 'documents/tasks/' and its full content (GODS format …"
       }
     }
   }

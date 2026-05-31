@@ -70,7 +70,7 @@ When proposing a fix, classify *where* it belongs:
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
 5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 6. **Pattern Validation**: Before proposing a fix for an issue found in the current session, check session history to determine whether it is a **recurring pattern** or an **isolated incident**. Prioritize systemic fixes for recurring patterns over one-off corrections.
-7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/plan` and MUST NOT write under `documents/tasks/`, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `plan`.
+7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/plan` and MUST NOT write under the `tasks` role resolved from AGENTS.md, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `plan`.
 </rules>
 
 ## Instructions
@@ -91,7 +91,7 @@ When proposing a fix, classify *where* it belongs:
      - `**Alternatives weighed:** <bullet list, 1 line each>`
      - `**Chosen:** <chosen alternative + 1-sentence rationale>`
    - The literal token `/plan` MUST appear on the Recommended action line — that is the user's invocation signal. After emitting, this finding is DONE; do not revisit it later in steps 12 or 14.
-   - FORBIDDEN: writing under `documents/tasks/`; drafting the full task body in chat as if preparing to save it; offering "shall I create the task?" / "Хотите, чтобы я создал…?" / equivalent; listing "create task file" under step 12's Corrective Actions. Reflect detects + recommends; `/plan` writes — clean separation.
+   - FORBIDDEN: writing under the resolved `tasks` role; drafting the full task body in chat as if preparing to save it; offering "shall I create the task?" / "Хотите, чтобы я создал…?" / equivalent; listing "create task file" under step 12's Corrective Actions. Reflect detects + recommends; `/plan` writes — clean separation.
    - If no decision passages exist in the source, skip silently — do NOT fabricate one. Continue to step 3.
 
 3. **Load Session History**

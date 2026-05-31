@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "1fb647dbd49ddf16d8a5a4d338d78197eb33d06b818c7211e2ce98b5bda5be1a",
+  "scenarioId": "plan-doc-schema-discovery",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-31T10:42:37.153Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 220071.928,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_role_srs": {
+        "pass": true,
+        "reason": "The agent explicitly performed a Read tool call on `/sandbox/specs/requirements.md` (the role-configured SRS path) early in execution, before starting any planning work. The log shows: `Read { file_p…"
+      },
+      "read_role_sds": {
+        "pass": true,
+        "reason": "The agent explicitly performed a Read tool call on `/sandbox/architecture/system.md` (the role-configured SDS path) in the same parallel batch as the SRS read. The log shows: `Read { file_path: \".../…"
+      },
+      "wrote_role_task": {
+        "pass": true,
+        "reason": "The agent created the task file at `records/tasks/2026/05/cache-invalidation-api-writes.md`, which matches the role-configured `records/tasks/<YYYY>/<MM>/` path. It did NOT use the default `documents…"
+      },
+      "updated_role_index": {
+        "pass": true,
+        "reason": "The agent edited `records/index.md` (the role-configured index path) by appending a line for FR-CACHE-WRITE. This is confirmed both in the agent log (`Edit` on `records/index.md`) and in the final fi…"
+      }
+    }
+  }
+}

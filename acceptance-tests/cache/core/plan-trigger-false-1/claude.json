@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "7fab5fd048ea45a0616aa808905f1d0461e14817b8692337b51d537d763c496a",
+  "key": "989349cf73ac5adf37db247ba4515ab4bea0c24a0da14e893ee235b5b0e7bb85",
   "scenarioId": "plan-trigger-false-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T02:38:44.789Z",
+  "recordedAt": "2026-05-30T22:27:38.923Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 14295.911000000313,
+    "durationMs": 6535.242874999996,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent only used Glob and Bash tools to inspect the sandbox, then responded directly. There is no evidence of reading `plan/SKILL.md` or invoking the Skill tool with `flowai-pla…"
+        "reason": "The agent responded directly to the user query without invoking the `plan` skill or any other skill. The logs show only a direct conversational response asking for more context, with no evidence of r…"
       }
     }
   }

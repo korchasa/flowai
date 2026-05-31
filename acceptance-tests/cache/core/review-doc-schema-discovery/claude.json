@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "5dee83fbeadaf6ae5924407ef6e4531eb3008c56c867eae30104a5611992dd16",
+  "scenarioId": "review-doc-schema-discovery",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-30T22:49:02.403Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 73604.13058300002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_role_srs": {
+        "pass": true,
+        "reason": "The agent explicitly ran `cat specs/requirements.md` (described as 'Read SRS requirements') and referenced its content in the review — specifically citing `specs/requirements.md#fr-trim-trim-input` i…"
+      },
+      "read_role_sds": {
+        "pass": true,
+        "reason": "The agent explicitly ran `cat architecture/system.md` (described as 'Read SDS architecture') and used its content in the review — the nit about the overly generic function name `process` references t…"
+      },
+      "no_default_doc_read": {
+        "pass": true,
+        "reason": "The agent used only the role-configured paths (`specs/requirements.md` and `architecture/system.md`). It never attempted to read default template paths like `documents/requirements.md` or `documents/…"
+      },
+      "verdict_given": {
+        "pass": true,
+        "reason": "The agent produced a clear and explicit verdict: '## Review: Request Changes', which is one of the three valid verdicts. The verdict is accompanied by a structured summary of 1 critical finding, 1 wa…"
+      }
+    }
+  }
+}

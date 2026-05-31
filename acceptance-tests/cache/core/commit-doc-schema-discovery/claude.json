@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "d38176c000956c6bdf3383ff912f19f2a905526e1fe616b4bf934c214b7f6854",
+  "scenarioId": "commit-doc-schema-discovery",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-31T10:43:54.629Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 57054.421208000014,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "read_role_srs": {
+        "pass": true,
+        "reason": "The agent explicitly read `specs/requirements.md` (Tool: Read) and then updated it via Edit to add the `listUsers()` description under FR-API. The file appears in the final commit diff with the added…"
+      },
+      "read_role_sds": {
+        "pass": true,
+        "reason": "The agent explicitly read `architecture/system.md` (Tool: Read) and then updated it via Edit to add the `listUsers()` export description under the API component. The file appears in the final commit …"
+      },
+      "no_default_docs_created": {
+        "pass": true,
+        "reason": "The agent used only the role-configured paths (`specs/requirements.md` and `architecture/system.md`). There is no evidence of creating or touching the default-path documents (`documents/requirements.…"
+      },
+      "code_committed": {
+        "pass": true,
+        "reason": "The git log shows `api.ts` was included in commit `83730c5b` with `api.ts | 3 +++`, and the diff confirms the `listUsers()` function was added and committed successfully. The working tree is clean af…"
+      }
+    }
+  }
+}

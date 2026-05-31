@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "9c704dbf64d4d446f425c32735f29b97ce05e1412daf553e2d2a60db7123ed32",
+  "key": "4d93e009ef13e2e168198f4964d09a04f03f1ee352a49ca14fba6ec329492dbf",
   "scenarioId": "plan-writes-task-new-frontmatter",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T12:21:32.578Z",
+  "recordedAt": "2026-05-30T22:00:43.748Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 240102.448417,
+    "durationMs": 183101.13645899994,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "task_file_at_new_path": {
         "pass": true,
-        "reason": "The agent created the task file at `documents/tasks/2026/05/add-healthz-endpoint.md`, which matches the required pattern `documents/tasks/<YYYY>/<MM>/<slug>.md` (date hierarchy directories, slug with…"
+        "reason": "The agent created the task file at `documents/tasks/2026/05/add-healthz-endpoint.md`, which exactly matches the required pattern `documents/tasks/<YYYY>/<MM>/<slug>.md` with date-hierarchy directorie…"
       },
       "frontmatter_has_date": {
         "pass": true,
-        "reason": "The frontmatter contains `date: \"2026-05-30\"`, which is a valid YYYY-MM-DD formatted date."
+        "reason": "The frontmatter contains `date: \"2026-05-31\"`, which is a valid YYYY-MM-DD formatted value."
       },
       "frontmatter_has_status_to_do": {
         "pass": true,
@@ -30,19 +30,19 @@
       },
       "frontmatter_has_implements": {
         "pass": true,
-        "reason": "The frontmatter contains an `implements:` key with value `- FR-HEALTHZ`, satisfying the requirement that the key must be present."
+        "reason": "The frontmatter contains an `implements:` key with value `- FR-HEALTHZ`, satisfying the requirement for the key to be present."
       },
       "frontmatter_has_tags_and_related_tasks": {
         "pass": true,
-        "reason": "The frontmatter contains both `tags:` (with values `healthcheck`, `express`, `http`) and `related_tasks: []` (empty array). Both keys are present."
+        "reason": "The frontmatter contains both `tags:` (with values `http`, `express`, `health-check`) and `related_tasks: []` (empty array). Both keys are present."
       },
       "gods_structure": {
         "pass": true,
-        "reason": "The task file body contains all required GODS sections: `## Goal`, `## Overview` (with sub-sections `### Context`, `### Current State`, `### Constraints`), `## Definition of Done`, and `## Solution`."
+        "reason": "The task body follows the GODS format: it has `## Goal`, `## Overview` (with subsections `### Context`, `### Current State`, `### Constraints`), `## Definition of Done`, and `## Solution`. All requir…"
       },
       "no_code_changes": {
         "pass": true,
-        "reason": "The agent only created files under `documents/` (`documents/tasks/2026/05/add-healthz-endpoint.md` and `documents/index.md`). The git diff (init..HEAD) is empty and git status shows only untracked fi…"
+        "reason": "The git status shows only untracked files under `documents/` (the task file and `documents/index.md`). The git diff (init..HEAD) is empty — no source code files were created or modified. The agent on…"
       }
     }
   }

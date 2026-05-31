@@ -60,7 +60,7 @@ Verdict: cite the file:line; propose a typed error / nullable result, an explici
 
 Cross-reference architectural invariants against the test suite. Deeper than Category 2's lightweight pairing — inventory all invariants systematically rather than spot-checking.
 
-- **Architectural invariants without tests**: Extract every SHOULD / MUST / INVARIANT clause from `AGENTS.md`, `CLAUDE.md`, `documents/design.md`. Grep test descriptors (`it("…")`, `Deno.test("…")`, `def test_…`, `func Test…`, `describe(…)`) for matching coverage. Flag every invariant with zero matching test names.
+- **Architectural invariants without tests**: Resolve `SDS` from AGENTS.md, then extract every SHOULD / MUST / INVARIANT clause from `AGENTS.md`, `CLAUDE.md`, and the resolved `SDS`. Grep test descriptors (`it("…")`, `Deno.test("…")`, `def test_…`, `func Test…`, `describe(…)`) for matching coverage. Flag every invariant with zero matching test names.
 - **Stub-only contract tests**: A uniform contract (interface, protocol, capability matrix) is verified across implementations only via stubs / mocks, while the real-binary / real-backend variant is gated behind manual triggers (`E2E=1`, `workflow_dispatch`, `--integration`, opt-in env vars). Recommend an unconditional smoke that exercises the real path on every CI run.
 - **Hand-curated lists without invariant tests**: Reserved-flag arrays, capability matrices, version-gate maps, denylists with no test that proves "everything emitted by builder X appears in array Y" or "every member of enum Z has a handler". Flag the `list + builder` (or `enum + handler`) pair and the missing cross-reference test.
 

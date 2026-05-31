@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "34d35e407c89b7b066211113cc7dbb6a1d17c50e0fe4e86fbace783150e27076",
+  "key": "17f3984cc11c7c822772871783fab55fe023b6b2679256aaabf9454d48b55b27",
   "scenarioId": "plan-loads-related-tasks",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T12:26:23.399Z",
+  "recordedAt": "2026-05-30T21:56:45.863Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 250378.569292,
+    "durationMs": 238034.916709,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "loads_related_login_task": {
         "pass": true,
-        "reason": "The agent explicitly identified and named `documents/tasks/2026/04/add-login-form.md` as a related prior task in the chat output, stating: 'Связанные задачи (пересечение по FR-AUTH-LOGIN): documents/…"
+        "reason": "The agent explicitly identified `documents/tasks/2026/04/add-login-form.md` as a related task in chat, noting its `implements: [FR-AUTH-LOGIN]` intersection with the planned task. The agent stated in…"
       },
       "skips_unrelated_profile_task": {
         "pass": true,
-        "reason": "While the agent did read add-profile-edit.md, it explicitly excluded it from related context, stating: 'add-profile-edit.md — реализует FR-PROFILE-EDIT, без пересечения с FR-AUTH-LOGIN — не в счёт.' …"
+        "reason": "The agent read `add-profile-edit.md` but explicitly excluded it from loaded context, stating: '`documents/tasks/2026/04/add-profile-edit.md` — `implements: [FR-PROFILE-EDIT]` — пересечения с FR-AUTH-…"
       },
       "task_file_at_new_path": {
         "pass": true,
-        "reason": "The agent created the task file at `documents/tasks/2026/05/add-password-reset.md`, which matches the required date-hierarchy pattern `documents/tasks/<YYYY>/<MM>/<slug>.md`. The slug `add-password-r…"
+        "reason": "The agent created the task file at `documents/tasks/2026/05/add-password-reset.md`, which follows the required `documents/tasks/<YYYY>/<MM>/<slug>.md` date-hierarchy format with a slug-only filename …"
       }
     }
   }

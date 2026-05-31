@@ -27,7 +27,7 @@ Categories checked:
 7.  **Doc Coverage**: Missing explanations in code.
 8.  **Instruction Coherence**: Contradictions and ambiguities across project instructions.
 9.  **Tooling Relevance**: Skills, agents, rules, and hooks that don't match the project.
-10. **Documentation Health**: Broken GFM cross-links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, `documents/index.md` drift.
+10. **Documentation Health**: Broken GFM cross-links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, resolved `index` drift.
 11. **Architectural Integrity**: Dependency direction, import cycles, layer leakage, reverse dependencies.
 12. **Conceptual Duplication**: Parallel implementations of one decision; untyped path beside a typed sibling; diverging schema clones.
 13. **API Contract Review**: Capability-vs-implementation mismatch; sentinel-vs-missing conflation; defaults-toward-bug; dead enum values; type-level vs runtime invariant divergence.
@@ -84,7 +84,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
      - Have no assertions.
      - Use trivial assertions (e.g., `expect(true).toBe(true)`, `assert True`).
      - Are commented out.
-   - **Invariant ↔ test pairing (lightweight)**: Extract SHOULD/MUST clauses from `AGENTS.md`, `CLAUDE.md`, `documents/design.md`. Grep test descriptors (`it`, `Deno.test`, `def test_`, `func Test`) for matching coverage; flag invariants with zero matching test names. (Deeper analysis — stub-only tests, hand-curated lists without cross-reference tests — lives in Category 15.)
+   - **Invariant ↔ test pairing (lightweight)**: Resolve `SDS` from AGENTS.md, then extract SHOULD/MUST clauses from `AGENTS.md`, `CLAUDE.md`, and the resolved `SDS`. Grep test descriptors (`it`, `Deno.test`, `def test_`, `func Test`) for matching coverage; flag invariants with zero matching test names. (Deeper analysis — stub-only tests, hand-curated lists without cross-reference tests — lives in Category 15.)
 
 4. **Category 3: Complexity & Hotspots**
    - **Project-context normalization**: Read project vision in `AGENTS.md` / `CLAUDE.md` and pick the LOC bucket BEFORE flagging files. Buckets: **thin wrapper / facade** (declared "wrapper", "adapter", "bindings", "SDK") → 300 lines; **service / framework / tool** (default) → 500 lines; **monolithic app / migration target** → 800 lines. State the bucket and quote the source phrase in the finding.
@@ -118,8 +118,8 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 
 8. **Category 7: Instruction Coherence**
    - **Scope**: Read all instruction files that guide agent/developer behavior:
-     `CLAUDE.md` (root and nested), `AGENTS.md` files, `documents/requirements.md`,
-     `documents/design.md`, and any rules/conventions files.
+     `CLAUDE.md` (root and nested), `AGENTS.md` files, resolved `SRS`,
+     resolved `SDS`, and any rules/conventions files.
    - **Contradictions**: Identify mutually exclusive rules across or within files
      (e.g., "use tabs" in one section vs. "use 2 spaces" in another; "never mock"
      vs. "mock freely").
@@ -152,10 +152,10 @@ Collect all findings into an internal list. Each finding has: category, file/sym
    Audit the project's documentation system for broken or stale cross-references. This category is **DISTINCT** from Category 6 "Documentation Coverage" — coverage is about JSDoc / comments per code symbol; health is about cross-link integrity, FR-status freshness, and SRS↔SDS alignment.
    In the Resolution Phase summary (step 10), findings from THIS category MUST appear under their OWN dedicated header. The header text MUST literally contain the English token `Documentation Health` (case-insensitive, may be followed by a translation in parentheses if the rest of the report is in another language — e.g. `Documentation Health (Здоровье документации)`). Do NOT translate the header outright; do NOT fold these findings into `Documentation Coverage`, `Consistency`, or any other existing category — the dedicated header is what makes the audit's doc-system focus visible to FR-DOC-LINT consumers.
    - **Broken GFM cross-links**: scan project markdown (`documents/*.md`, `README.md`, `AGENTS.md`) and source-code comments for links of the form `[text](path.md#anchor)`. Flag any link where (a) the target file does not exist or (b) the anchor does not match a heading's GFM auto-slug in the target file.
-   - **Stale `[x]` FRs**: read `documents/requirements.md`. For each `### FR-<ID>` block whose `**Status:**` is `[x]`, verify the `**Acceptance:**` reference resolves — test path / benchmark id / command exists. Flag mismatches.
+   - **Stale `[x]` FRs**: read the resolved `SRS`. For each `### FR-<ID>` block whose `**Status:**` is `[x]`, verify the `**Acceptance:**` reference resolves — test path / benchmark id / command exists. Flag mismatches.
    - **Orphan FRs**: for each `[x]` FR in SRS, search source code for any GFM-link reference of the form `[FR-<ID>](.../requirements.md#…)`. Flag FRs with zero references in code.
-   - **SRS ↔ SDS contradictions**: skim `documents/requirements.md` and `documents/design.md` for paired statements about the same component or behavior with mutually exclusive constraints (e.g., SRS says required, SDS says removed). Flag concrete pairs.
-   - **`documents/index.md` drift**: if `documents/index.md` exists, compare its FR rows against `documents/requirements.md` — flag rows whose status, summary, or anchor disagree with the SRS, and SRS FRs missing a row.
+   - **SRS ↔ SDS contradictions**: skim the resolved `SRS` and `SDS` for paired statements about the same component or behavior with mutually exclusive constraints (e.g., SRS says required, SDS says removed). Flag concrete pairs.
+   - **Resolved `index` drift**: if the resolved `index` exists, compare its FR rows against the resolved `SRS` — flag rows whose status, summary, or anchor disagree with the SRS, and SRS FRs missing a row.
    - **Verdict**: each finding must reference the exact file (and line if applicable) and propose a concrete fix.
 
 **Categories 10–16 (architectural review)** — full sub-check details, patterns, thresholds, and verdict shape live in [references/architectural-categories.md](references/architectural-categories.md). READ THAT FILE BEFORE running these checks. Each finding follows the same `- [N] <site>: <problem>. (Fix: <fix>)` shape as Cats 1–9.
@@ -181,7 +181,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       6. `Documentation Coverage` — JSDoc/comments per code symbol.
       7. `Instruction Coherence`
       8. `Tooling Relevance`
-      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED whenever step 10 produced any finding. Distinct from #5 and #6: this group covers DOC-TO-DOC integrity (broken GFM cross-links, stale `[x]` FRs whose acceptance reference is missing, orphan FRs with no source-code link, SRS↔SDS contradictions, `documents/index.md` drift). NEVER fold these findings into `Consistency (Docs vs Code)` or `Documentation Coverage` — they are different concerns and FR-DOC-LINT consumers look specifically for the dedicated `Documentation Health` group.
+      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED whenever step 10 produced any finding. Distinct from #5 and #6: this group covers DOC-TO-DOC integrity (broken GFM cross-links, stale `[x]` FRs whose acceptance reference is missing, orphan FRs with no source-code link, SRS↔SDS contradictions, resolved `index` drift). NEVER fold these findings into `Consistency (Docs vs Code)` or `Documentation Coverage` — they are different concerns and FR-DOC-LINT consumers look specifically for the dedicated `Documentation Health` group.
       10. `Architectural Integrity`
       11. `Conceptual Duplication`
       12. `API Contract Review`
@@ -239,7 +239,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 [ ] Checked for missing code documentation (File/Class/Method).
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
-[ ] Checked Documentation Health (broken GFM links, stale [x] FRs, orphan FRs, SRS↔SDS contradictions, documents/index.md drift) — findings grouped under the dedicated `Documentation Health` header in the summary.
+[ ] Checked Documentation Health (broken GFM links, stale [x] FRs, orphan FRs, SRS↔SDS contradictions, resolved `index` drift) — findings grouped under the dedicated `Documentation Health` header in the summary.
 [ ] Checked Architectural Integrity (cycles, layer leakage, reverse deps) against declared layering.
 [ ] Checked Conceptual Duplication (parallel decision tables, untyped/typed asymmetry, schema clones).
 [ ] Checked API Contract Review (capability-vs-impl, sentinel-vs-missing, default-toward-bug, dead enums, type-vs-runtime divergence).
