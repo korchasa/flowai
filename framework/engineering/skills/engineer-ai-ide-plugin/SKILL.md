@@ -2,7 +2,7 @@
 name: engineer-ai-ide-plugin
 description: >-
   Design or create plugins for one or more AI IDEs, including official-doc
-  lookup, skills, MCP tools, hooks, packaging, assets, manifests,
+  lookup, skills, apps, MCP tools, hooks, packaging, assets, manifests,
   marketplaces, and per-IDE validation.
 ---
 
@@ -10,7 +10,7 @@ description: >-
 
 Use this skill when the user asks for an installable plugin for one or more AI
 IDEs, or asks to package a plugin with manifests, marketplace metadata, assets,
-skills, MCP servers, hooks, agents, or validation.
+skills, apps, MCP servers, hooks, agents, or validation.
 
 For a single element, prefer the focused skill:
 
@@ -68,7 +68,7 @@ two pages.
      directories, manifests, sample servers, hook files, or marketplace files.
 2. Define the plugin contract.
    - Name, purpose, target IDEs, scope, trust model.
-   - Elements: skills, commands, agents, MCP servers, hooks, assets, scripts.
+   - Elements: skills, commands, apps, agents, MCP servers, hooks, assets, scripts.
    - External effects: filesystem writes, network calls, browser control, credentials.
 3. Read official docs for each target IDE.
    - Confirm plugin entrypoints, manifest fields, supported surfaces, install
@@ -76,10 +76,16 @@ two pages.
    - Record doc links in the design or implementation notes.
 4. Split shared vs IDE-specific code.
    - Shared: skill bodies, policy logic, MCP implementation, schemas, assets.
-   - IDE-specific: manifests, marketplace files, hook wrappers, MCP wiring,
-     agent formats, local install commands, trust or approval flows.
+   - IDE-specific: manifests, app wiring, marketplace files, hook wrappers,
+     MCP wiring, agent formats, local install commands, trust or approval flows.
    - Never reuse one IDE's hook or MCP config as another IDE's contract unless
      the current official docs explicitly say the formats are compatible.
+   - When a requested worker, agent, or subagent must ship inside a Codex plugin,
+     model that behavior as one or more bundled skills under `skills/<name>/SKILL.md`.
+     Do not design Codex plugin `agents/` or `subagents/` components unless current
+     official Codex plugin docs explicitly add that surface. If standalone Codex
+     custom agents are relevant, describe them as separate `.codex/agents/*.toml`
+     configuration outside plugin packaging.
 5. Choose behavior surfaces.
    - Prefer MCP for tool-like integrations when each target IDE supports it.
    - Use hooks or native plugin events for lifecycle policy, blocking, audit,
@@ -88,6 +94,9 @@ two pages.
 6. Design packaging in the main plan.
    - Keep one canonical source tree and emit IDE-specific install files.
    - Generate native manifests per IDE instead of forcing one manifest to fit all.
+   - For Codex, wire plugin apps through an `.app.json` file referenced by
+     `.codex-plugin/plugin.json` `apps`, and wire bundled MCP servers through
+     `.mcp.json` referenced by `mcpServers`.
    - Include marketplace files only for IDEs that support them.
    - Keep manifest paths relative to the plugin root where the host requires it.
    - Put assets near the consuming manifest, skill, wrapper, or app config.
@@ -112,7 +121,7 @@ For design-only requests, produce:
 - Plugin element inventory.
 - Canonical file layout.
 - IDE-specific packaging and install plan.
-- MCP, hook, skill, agent, asset, and data contracts as applicable.
+- MCP, app, hook, skill, agent, asset, and data contracts as applicable.
 - Validation matrix by IDE.
 - Risks and open questions.
 

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "4d91eda586c7fcd5556a52e06a62cc33a4a56163d95d14c14b69f6cc91ae87f0",
+  "scenarioId": "engineer-ai-ide-plugin-codex-subagents-as-skills",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-05-31T11:23:42.157Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 218741.878666,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "codex_subagent_as_skill": {
+        "pass": true,
+        "reason": "The agent explicitly states that Codex has no `agents/` surface in its plugin documentation and models the worker as a skill instead. The file layout places the Codex worker at `skills/bug-classifier…"
+      },
+      "host_specific_agent_split": {
+        "pass": true,
+        "reason": "The agent clearly separates the two IDEs: Claude Code uses `agents/bug-classifier.md` (auto-discovered subagent), while Codex uses `skills/bug-classifier/SKILL.md`. The agent explicitly states '`agen…"
+      },
+      "codex_apps_manifest": {
+        "pass": true,
+        "reason": "The agent includes `.app.json` in the canonical file layout as the GitHub Issues connector for Codex, and the Codex manifest (`.codex-plugin/plugin.json`) explicitly references it via `\"apps\": \"./.ap…"
+      },
+      "codex_mcp_manifest": {
+        "pass": true,
+        "reason": "The agent includes `.mcp.json` in the canonical file layout as the MCP configuration pointing to the `mcp-server/` implementation. The Codex manifest (`.codex-plugin/plugin.json`) explicitly referenc…"
+      }
+    }
+  }
+}
