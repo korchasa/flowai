@@ -232,6 +232,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `browser-automation` — browser automation
 - `analyze-context` — token usage analysis
 - `engineer-ai-ide-plugin` — AI IDE plugin design and packaging
+- `engineer-plugin-marketplace` — AI IDE plugin marketplace design and validation
 - `engineer-plugin-mcp` — AI IDE plugin MCP servers and host wiring
 - `engineer-plugin-hooks` — AI IDE plugin hook adapters
 - `engineer-prompts-for-instant` — prompts for fast models

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "2af9cff9cbfd3e4f7069ba44ead6caf0b9afe472fc92d500937139f52086c439",
+  "scenarioId": "engineer-plugin-marketplace-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-01T22:11:47.968Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 15973.339999999967,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent's execution log contains no tool calls of any kind. It responded with a purely conversational, conceptual explanation without reading any SKILL.md file or invoking the Skill tool with 'engi…"
+      }
+    }
+  }
+}

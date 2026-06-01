@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "a51c886a6541e123e38a1890df13ad948a77b16e35825d073db1ab8118e19416",
+  "scenarioId": "engineer-plugin-marketplace-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-01T22:13:15.666Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 34185.886875000004,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly called the `Skill` tool with `{\"skill\": \"engineer-plugin-marketplace\"}` and subsequently read `engineer-plugin-marketplace/references/related-skills.md`. The final response was g…"
+      }
+    }
+  }
+}

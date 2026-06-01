@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "d2dfb3f50676dcf8bd03262580e60096fafcff5061916d2af4a8bc0f4845ee9a",
+  "scenarioId": "engineer-plugin-marketplace-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-01T22:06:01.027Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 140333.06420799997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "host_specific_marketplaces": {
+        "pass": true,
+        "reason": "The agent explicitly required separate payload trees: `dist/claude-code/` (FR-PAYLOAD-CC) and `dist/codex/` (FR-PAYLOAD-CX), each with host-specific manifest schemas. The anti-patterns section names …"
+      },
+      "official_docs_and_evidence": {
+        "pass": true,
+        "reason": "Section 2 (General) states 'Official host docs are authoritative. Any field not present in current official docs must be marked as an open question and must not be implemented until verified.' Four o…"
+      },
+      "requirements_constraints_antipatterns": {
+        "pass": true,
+        "reason": "The document contains: 8 structured functional requirements (FR-CATALOG through FR-TRUST) each with description, scenario, acceptance, and status; Section 6 with named hard constraints and 7 anti-pat…"
+      },
+      "related_skills_links": {
+        "pass": true,
+        "reason": "Section 8 'Related Skills' explicitly references all four required skills: `engineer-ai-ide-plugin` (plugin design and packaging), `engineer-plugin-mcp` (MCP server/tool schemas), `engineer-plugin-ho…"
+      },
+      "install_smoke": {
+        "pass": true,
+        "reason": "FR-LOCAL specifies the local dogfood flow with `deno task dogfood`, `pluginkit-local` namespace to avoid production collision, and preservation of disabled plugin state. Section 7 provides a detailed…"
+      }
+    }
+  }
+}
