@@ -195,6 +195,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `review-and-commit` — streamlined review + commit (reuses diff across phases)
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
+- `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)
 - `update` — reconcile project AGENTS.md/CLAUDE.md/scaffolded artifacts with framework templates
 - `adapt` — adapt project-local skills/agents/hooks/assets to project specifics (standalone)
 

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "f0fa19c630d45107ef3210727f880572176a79a4cd89b0163b92cfefaeb219db",
+  "scenarioId": "ship-task-full-cycle-success",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-02T18:44:11.948Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 183901.649375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "plan_not_re_run": {
+        "pass": true,
+        "reason": "After reading the task file, the agent went directly to implementation without proposing variants or rewriting the `## Solution` section. The diff of add-trim.md shows only `status: to do → done` and…"
+      },
+      "implement_observable_tdd": {
+        "pass": true,
+        "reason": "All three TDD phases are clearly observable: RED — agent wrote strings_test.ts, ran `deno test strings_test.ts`, and confirmed the expected TS2305 failure ('trim не экспортируется. RED подтверждён.')…"
+      },
+      "review_produced_verdict": {
+        "pass": true,
+        "reason": "The Review Phase output begins with '## Review: Approve' as the first line, followed by a structured report covering Intents, QA Findings, Code Review Findings, Automated Checks, and Summary."
+      },
+      "commit_phase_ran": {
+        "pass": true,
+        "reason": "The git log confirms a commit with message 'feat(strings): add trim helper to remove whitespace duplication' — valid Conventional Commits format with the `feat` prefix. The commit SHA 3ad0bf0 covers …"
+      },
+      "no_force_pushed": {
+        "pass": true,
+        "reason": "The push command used was `NO_COLOR=1 GIT_PAGER=cat git push 2>&1` — no `--force` or `--force-with-lease` flags present."
+      },
+      "post_push_verification": {
+        "pass": true,
+        "reason": "After push, the agent ran `git rev-parse @{u} && git rev-parse HEAD` and explicitly confirmed '@{u} совпадает с HEAD. Push верифицирован.' — canonical upstream/HEAD SHA comparison completed."
+      }
+    }
+  }
+}

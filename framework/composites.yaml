@@ -62,3 +62,21 @@ composites:
         atom: push
         params:
           TERMINATION: TOTAL_STOP
+  ship-task:
+    target: framework/core/commands/ship-task/SKILL.md
+    wrapper: framework/composites/ship-task.md
+    phases:
+      - title: Implement Phase
+        atom: implement
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Review Phase
+        atom: review
+      - title: Commit Phase
+        atom: commit
+        params:
+          DIFF_SOURCE: REUSE_PRIOR_PHASE
+      - title: Push Phase
+        atom: push
+        params:
+          TERMINATION: TOTAL_STOP

@@ -39,15 +39,16 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 #### Generation pipeline
 
-- atom `commit`: `framework/atoms/commit.md` → `framework/core/commands/commit/SKILL.md` (used by 2 composites)
-- atom `implement`: `framework/atoms/implement.md` → `framework/core/skills/implement/SKILL.md` (used by 1 composite)
+- atom `commit`: `framework/atoms/commit.md` → `framework/core/commands/commit/SKILL.md` (used by 3 composites)
+- atom `implement`: `framework/atoms/implement.md` → `framework/core/skills/implement/SKILL.md` (used by 2 composites)
 - atom `plan`: `framework/atoms/plan.md` → `framework/core/skills/plan/SKILL.md` (used by 1 composite)
-- atom `push`: `framework/atoms/push.md` → `framework/core/commands/push/SKILL.md` (used by 1 composite)
-- atom `review`: `framework/atoms/review.md` → `framework/core/skills/review/SKILL.md` (used by 2 composites)
+- atom `push`: `framework/atoms/push.md` → `framework/core/commands/push/SKILL.md` (used by 2 composites)
+- atom `review`: `framework/atoms/review.md` → `framework/core/skills/review/SKILL.md` (used by 3 composites)
 - composite `review-and-commit`: `framework/composites/review-and-commit.md` → `framework/core/commands/review-and-commit/SKILL.md` (atoms: review + commit)
 - composite `ship`: `framework/composites/ship.md` → `framework/core/commands/ship/SKILL.md` (atoms: plan, implement, review, commit, push)
+- composite `ship-task`: `framework/composites/ship-task.md` → `framework/core/commands/ship-task/SKILL.md` (atoms: implement, review, commit, push)
 
-#### Commands by pack (7) — all in `core`
+#### Commands by pack (8) — all in `core`
 
 - `adapt` — standalone — `framework/core/commands/adapt/SKILL.md`
 - `commit` — generated from atom `commit`
@@ -55,6 +56,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `push` — generated from atom `push`
 - `review-and-commit` — generated from composite `review-and-commit`
 - `ship` — generated from composite `ship`
+- `ship-task` — generated from composite `ship-task`
 - `update` — standalone — `framework/core/commands/update/SKILL.md`
 
 #### Skills by pack (43)
@@ -104,7 +106,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 #### Summary
 
-- Commands: 8 (3 atom-generated, 2 composite-generated, 3 standalone) — all in `core`.
+- Commands: 9 (3 atom-generated, 3 composite-generated, 3 standalone) — all in `core`.
 - Skills: 43 (2 atom-generated in `core`, 41 standalone across 7 packs).
 - Agents: 6 (all standalone — 4 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
@@ -140,9 +142,10 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - **Categories (by installed prefix):**
   - `commands/<name>`: User-only commands (e.g., `commit`, `review-and-commit`, `update`).
   - `skills/<name>`: Agent-auto-invocable skills (e.g., `plan`, `fix-tests`, `setup-agent-code-style-deno`).
-- **Composition**: Skills can delegate to other skills (e.g., `init` delegates development command configuration to `configure-*-commands`). Composite SKILL.md files (`review-and-commit`, `ship`) are **gitignored build artefacts** — materialized from `framework/atoms/*.md` sources + `framework/composites/*.md` wrappers + `framework/composites.yaml` manifest by `scripts/generate-skill-composites.ts` per FR-SKILL-COMPOSE (see §3.1.1.1). Every consumer regenerates first via `--write`, so drift between source and rendered output is structurally impossible. Composite canon (no delegation, no source-skill names in description, explicit verdict-gate success/failure branches, single `<step_by_step>` per atom slot, 500-line cap) is machine-enforced inside the generator. Never hand-edit a generated SKILL.md.
+- **Composition**: Skills can delegate to other skills (e.g., `init` delegates development command configuration to `configure-*-commands`). Composite SKILL.md files (`review-and-commit`, `ship`, `ship-task`) are **gitignored build artefacts** — materialized from `framework/atoms/*.md` sources + `framework/composites/*.md` wrappers + `framework/composites.yaml` manifest by `scripts/generate-skill-composites.ts` per FR-SKILL-COMPOSE (see §3.1.1.1). Every consumer regenerates first via `--write`, so drift between source and rendered output is structurally impossible. Composite canon (no delegation, no source-skill names in description, explicit verdict-gate success/failure branches, single `<step_by_step>` per atom slot, 700-line cap) is machine-enforced inside the generator. Never hand-edit a generated SKILL.md.
 - **Streamlined commit flow:** `commit` and `review-and-commit` use targeted doc sync, inline grouping, auto-invoked `reflect`, and a *Post-Reflect Cleanup Commit*: when reflect leaves working-tree edits, the workflow stages and commits them as a separate `agent: apply reflect-suggested improvements` commit before exit. `review-and-commit` additionally preserves task-status derivation and persistent new-shape task cleanup semantics required by FR-DOC-TASK-LIFECYCLE.
 - **Terminal full-cycle composite (FR-SHIP):** `ship` (user-only command at `framework/core/commands/ship/`) drives plan → implement → review → commit → push in one invocation. Generated from five atoms: `plan` + `implement` + `review` + `commit` + `push`. Four explicit gates: variant-selection (Plan→Implement), green project check (Implement→Review), verdict gate (Review→Commit), clean-tree + branch-protection check (Commit→Push). Post-push verification: `git rev-parse @{u}` matches local `HEAD`. The Push atom forbids `--force`, gates `--force-with-lease` on per-push user authorization, and refuses divergent pushes to protected branches.
+- **SDLC continuation composite (FR-SHIP-TASK):** `ship-task` (user-only command at `framework/core/commands/ship-task/`) is the post-planning counterpart of `ship`. Takes a path (or unambiguous identifier) to an already-written task file with a filled `## Solution` section and drives implement → review → commit → push. Generated from four atoms: `implement` + `review` + `commit` + `push` (no `plan` atom). Three explicit gates: green project check (Implement→Review), verdict gate (Review→Commit), clean-tree + branch-protection check (Commit→Push). The composite STOPs at the start if the task file is missing or its `## Solution` is empty — it never plans. All Push-atom safety guarantees from FR-SHIP carry over verbatim.
 - **`-beta` lifecycle policy:** Any primitive (skill or command) whose source path ends in `-beta` MUST be either promoted (rename to its stable form, replacing the prior stable variant) or removed within **60 days** of its last functional commit. A `-beta` exists to A/B-test a delta against its stable counterpart via `deno task bench -s, --skill-override`; beyond 60 idle days the A/B comparison is no longer informative and the parallel SKILL.md becomes orphaned doc weight. `maintenance` flags any `-beta` that crosses the 60-day threshold (Documentation Health category). Coverage parity rule: each behavioral delta listed in the `-beta`'s SKILL.md (or its intro commit) MUST have ≥1 dedicated benchmark scenario — without this the A/B signal is unsubstantiated. Promotion: rename source dirs from `<name>-beta` to `<name>`, delete the prior stable, port any `-beta`-specific scenarios into the new stable benchmark dir, update SDS/SRS references. Retirement: delete the `<name>-beta` source dir, its `benchmarks/`, cache entries under `acceptance-tests/cache/<pack>/<name>-beta-*`, and any SDS/SRS mention.
 - **Script independence:** Scripts in pack `scripts/` are installed into user projects without a shared `deno.json`. They MUST be runnable standalone:
   - Use `jsr:` specifiers for Deno std imports (e.g., `jsr:@std/path`), NOT bare specifiers (`@std/path`).
