@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.1](https://github.com/korchasa/flowai/compare/v0.13.0...v0.13.1) (2026-06-02)
+
+
+### Features
+
+* **engineering:** add AI IDE plugin skills ([abd19a7](https://github.com/korchasa/flowai/commit/abd19a7318227acaff9da115dde668c7bb8218e4))
+* **plan:** make persistent tasks canonical ([0a16f2c](https://github.com/korchasa/flowai/commit/0a16f2cbb00a2e808ceff31ee33d6505219dc661))
+
+
+### Bug Fixes
+
+* **engineering:** map Codex plugin subagents to skills ([9fe76ec](https://github.com/korchasa/flowai/commit/9fe76eca3e8d00013ef9049fc355ce106abf8ada))
+* **plugins:** install codex dogfood packs ([52b54f0](https://github.com/korchasa/flowai/commit/52b54f07808a4c1a6a58fec75b688f51aa44198c))
+* **plugins:** isolate local marketplace namespace ([1aaff13](https://github.com/korchasa/flowai/commit/1aaff13646e7244ddf72ad9c25862961e1cf3648))
+* **plugins:** use technical codex marketplace label ([da11837](https://github.com/korchasa/flowai/commit/da118373c7e3420df6020a667d79592cc141818e))
+
+
+### Documentation
+
+* **srs,tasks:** close FR-DIST.MARKETPLACE with runnable evidence ([35b47f2](https://github.com/korchasa/flowai/commit/35b47f21a8c4fa24b21a613e259eae8bad49acaa))
+
+
+### Chores
+
+* **dev:** add session-history-analyzer skill, listing script, and analyzer subagent ([0a4f217](https://github.com/korchasa/flowai/commit/0a4f217e524d320e34d63554ecbf1952cd8b9565))
+
+
+### Agent Changes
+
+* **engineering:** add plugin marketplace skill ([2712b36](https://github.com/korchasa/flowai/commit/2712b36a2b200618c83d9d00e3af57292cbbc155))
+* resolve docs via schema roles ([1b05c1a](https://github.com/korchasa/flowai/commit/1b05c1a8080766e15598df385b06c83b62db6211))
+
 ## [0.13.0](https://github.com/korchasa/flowai/compare/v0.12.19...v0.13.0) (2026-05-24)
 
 
