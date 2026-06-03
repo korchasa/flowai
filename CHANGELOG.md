@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.2](https://github.com/korchasa/flowai/compare/v0.13.1...v0.13.2) (2026-06-03)
+
+
+### Features
+
+* **framework:** introduce SALP anchor protocol — Phase 1 infra ([944c8d7](https://github.com/korchasa/flowai/commit/944c8d7b86d9e3e8678abbca29610d9264c68a86))
+
+
+### Agent Changes
+
+* **core:** add ship-task composite for SDLC continuation from a ready task file ([ef60af1](https://github.com/korchasa/flowai/commit/ef60af189b59c27be93f0807e0a96d4621aec9c0))
+* **framework:** document wrapper-level _params prohibition for composites ([5edd2b8](https://github.com/korchasa/flowai/commit/5edd2b8e7dd6b296260077a58c38ec927202bc28)), closes [#9](https://github.com/korchasa/flowai/issues/9)
+
 ### [0.13.1](https://github.com/korchasa/flowai/compare/v0.13.0...v0.13.1) (2026-06-02)
 
 
