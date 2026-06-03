@@ -16,6 +16,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [FR-DIST.BUNDLE](requirements.md#fr-dist.bundle-bundled-source) — Framework files bundled into the CLI at publish time; zero runtime network dependency — [x]
 - [FR-DIST.MARKETPLACE](requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace) — Claude Code + Codex distribution: framework packs as native plugins — [ ]
 - [FR-DO-WITH-PLAN](requirements.md#fr-do-with-plan-full-cycle-workflow-do-with-plan-removed) — Removed; superseded by `ship` (FR-SHIP) — [x] Removed
+- [FR-DOC-ANCHORS](requirements.md#fr-doc-anchors-salp-as-canonical-anchor-mechanism-ancfrdoc-anchors) — SALP as the canonical anchor mechanism framework-wide — [ ]
 - [FR-DOC-IDS](requirements.md#fr-doc-ids-gfm-link-migration-code-comments-and-documentation-map) — GFM link migration: code comments and documentation map — [x]
 - [FR-DOC-INDEX](requirements.md#fr-doc-index-agent-maintained-documentation-index) — Agent-maintained documentation index — [x]
 - [FR-DOC-LINKS](requirements.md#fr-doc-links-interconnectedness-principle-for-documentation) — Interconnectedness principle for documentation — [x]

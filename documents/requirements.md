@@ -1083,6 +1083,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   1. `save <path|url|text>` — atomic save: store source in `raw/` → extract entities → create / update memex pages → backlink audit → update index → append log. Scaffolds the memex on first call if no `AGENTS.md + pages/` ancestor is found.
   2. `ask <question>` — read index, open relevant pages, follow one wikilink hop, synthesise answer with `[[wikilink]]` citations, file the answer to `pages/answers/`, optionally promote to `pages/`. Honest about gaps; never falls back on training-data knowledge.
   3. `audit [--fix]` — deterministic structural audit (dead links, orphans, missing concept-gap sections, index drift) plus LLM-judgement layer (contradictions, stale claims, gap-question suggestions). `--fix` applies trivial auto-fixes (stub pages, missing-section append, index drift). Never auto-deletes or auto-resolves contradictions.
+- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Pack provides:**
   - `framework/memex/skills/memex-{save,ask,audit}/SKILL.md` — three agent-invocable skills.
   - `framework/memex/scripts/audit.ts` — deterministic Deno audit script (Map-based link graph, frontmatter-aware checks, no external deps).
@@ -1097,9 +1098,28 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by tests:** `framework/memex/scripts/audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
 - **Status:** [x]
 
+### FR-DOC-ANCHORS: SALP as Canonical Anchor Mechanism [ANC:fr:doc-anchors]
+
+- **Description:** Adopt **SALP (Semantic Anchor / Link Protocol)** as the single canonical cross-reference grammar across every project surface — SRS, SDS, README, AGENTS, framework, code comments, memex pages. Grammar:
+  - Anchor — `[ANC:<ns>:<id>]` — declares a named target.
+  - Reference — `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]` — points at a target.
+  - `<ns>` ∈ seed allowlist `{fr, sds, task, mx-concept, mx-person, mx-source, mx-answer}` (additional namespaces `nfr`, `code` are deferred until their first consumer lands).
+  - `<id>` is lower-kebab.
+  Salp-short form (`[ANC:id]` / `[REF:id]` without namespace) is REJECTED — the namespace is what carries the multi-hop disambiguation value the empirical sweep measured. Supersedes `FR-DOC-LINKS` (GFM-link mandate) and `FR-DOC-IDS` (GFM-link migration of `// FR-…` comments). Replaces wikilink (`[[X]]`) inside the memex pack.
+- **Tasks:** [REF:task:2026-06-adopt-salp-anchors | adopt-salp-anchors]
+- **Rationale:** The 2026-05-13/14/15 anchor-systems experiment (`flowai-experiments/anchor-systems/`, 240 trials, gpt-5.4-mini, six formats) measured SALP winning on every variant except `boundary`: mapping 0% → 80%, linting 20% → 100%, multi-hop 13% → 40% versus GFM-link baseline. The namespace is what produces the multi-hop gain (wikilinks lost 26.7% → 40% precisely because they lack namespace disambiguation between `mx-concept:oauth` and `mx-source:oauth`).
+- **Scope:** Atomic replacement, no dual-link transition. After the four-phase cutover lands, no `[FR-X](path.md#…)`, no `[[slug]]`, and no `// FR-X` comment survives in target surfaces (excludes `flowai-experiments/` snapshot and `acceptance-tests/runs/` historical traces).
+- **Out of scope:** First-class `flowai migrate-anchors` CLI verb in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli); downstream users invoke the shipped `scripts/migrate-to-salp.ts` directly per the AGENTS.template "Migrating from GFM" sub-section.
+- **Acceptance verified by tests:** `scripts/lib/salp_test.ts` (22 tests: parse, serialize, salp-short rejection, namespace allowlist, legacy-grammar detection); `scripts/check-salp_test.ts` (7 tests: dead REF, duplicate ANC, unlisted namespace, legacy grammar, clean fixture, cross-file resolution); `scripts/migrate-to-salp_test.ts` (13 tests: GFM-FR conversion, SDS link, wikilink, dual-link, comment migration, idempotency, fail-fast, template-variable preservation); `scripts/check-fr-coverage_test.ts` (FR-DOC-ANCHORS has Acceptance field).
+- **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`, `plan-updates-srs-task-back-pointer` (rewritten checklists assert SALP row format); memex scenarios `save-new`, `save-update`, `ask-citations`, `ask-honest-gap`, `audit-clean`, `audit-defects` (SALP-rewritten fixtures).
+- **Acceptance verified by command:** three grep guards return zero hits across the target surface (post-Phase-4): `! git grep -nE '\[\[[a-z0-9-]+(\|[^]]+)?\]\]' -- framework/ documents/ README.md scripts/ AGENTS.md ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '// FR-[A-Z]' -- scripts/ framework/ ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '\[FR-[A-Z][A-Z-]*\]\(' -- documents/ README.md AGENTS.md framework/ ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`.
+- **Status:** [ ]
+
 ### FR-DOC-LINKS: Interconnectedness Principle for Documentation
 
+- **Superseded by:** [REF:fr:doc-anchors | FR-DOC-ANCHORS] (Phase 2 of the SALP adoption flips this to `superseded` and replaces the template rule).
 - **Description:** `framework/core/assets/AGENTS.template.md` declares that ALL cross-references between project knowledge — doc-to-doc AND code-to-doc — use **standard GFM markdown links** of the form `[descriptive text](relative/path.md#auto-slug)`. Custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), wikilinks (`[[X]]`), ID-only shortcuts (`[FR-XXX]`), and bare ID-string code comments (`// FR-XXX`) are explicitly rejected. The legacy `// FR-<ID>` shortcut is recognized as deprecated for the migration window only.
+- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Scenario:** A new flowai project initialized via `init` receives the principle as part of its AGENTS.md. Agents consuming that AGENTS.md write all cross-references — in code comments, in SDS, in README, in ADR — as `[text](path.md#anchor)` GFM links without consulting external sources.
 - **Out of scope:** Migration of the existing 106 `// FR-XXX` comments in this project's source tree (covered by FR-DOC-IDS) and periodic drift checks (FR-DOC-LINT).
 - **Acceptance verified by tests:** `scripts/check-agents-template_test.ts` (6 tests: principle section present, GFM-link example present, rule applies to both docs and code, ID-only syntax explicitly rejected, namespace table absent, `// <NS>-<ID>` not mandated as canonical marker).
@@ -1108,6 +1128,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map
 
 - **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` (= root `AGENTS.md` symlink target) to GFM links into requirements.md / design.md / README.md.
+- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Scenario:** `git grep "// FR-"` returns zero hits in code outside `documents/` and acceptance test scenarios. `scripts/check-traceability.ts` reports `All N comment doc-link(s) resolve. 0 legacy "// FR-<ID>" shortcuts.` for the current commit.
 - **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (18 tests covering `computeAutoSlug`, `extractHeadingSlugs`, `extractCommentLinks`, `detectLegacyFrComments`, task-frontmatter parsing, and `validateTaskRefs`).
 - **Status:** [x]
@@ -1115,6 +1136,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-DOC-INDEX: Agent-Maintained Documentation Index
 
 - **Description:** `plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write; never scaffolded by `init`.
+- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Scenario:** Agent plans a task that introduces FR-XYZ → adds FR-XYZ section to SRS → appends `- [FR-XYZ](requirements.md#fr-xyz-...) — <summary> — [ ]` under `## FR` in `documents/index.md`. Subsequent status flip to `[x]` updates the same row.
 - **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`.
 - **Status:** [x]
@@ -1151,6 +1173,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer
 
 - **Description:** `plan` (and `epic`) inserts/extends a `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)[, ...]` line directly after the `**Description:**` line in each SRS FR section listed in the new task's `implements:`. Surgical edit: only this single line is touched in the SRS — no other SRS content modified. Idempotent: re-running on the same task does not duplicate the link. Replaces the now-removed `## ADR` section in `documents/index.md` as the navigation surface from FR → its driving tasks.
+- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Scenario:** New task `documents/tasks/2026/05/add-cache.md` declares `implements: [FR-CACHE]`. Skill opens `documents/requirements.md`, finds `### FR-CACHE`, and inserts `- **Tasks:** [add-cache](tasks/2026/05/add-cache.md)` after the existing `**Description:**` line. Subsequent task `clear-cache.md` for the same FR appends `, [clear-cache](tasks/2026/05/clear-cache.md)` to the existing line.
 - **Acceptance verified by acceptance tests:** `plan-updates-srs-task-back-pointer`.
 - **Status:** [x]

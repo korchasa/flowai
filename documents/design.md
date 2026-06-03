@@ -629,6 +629,17 @@ graph TD
 - **No inter-pack dependencies:** `ide-bridge` is self-contained. Enforced by `scripts/check-pack-refs.ts`.
 - **Behavioural requirements:** See acceptance tests `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model` (relocated with the skill); `delegate-to-ide-via-subagent` (end-to-end: covers both FR-IDE-BRIDGE-DELEGATE and FR-IDE-BRIDGE-WORKER, since `AcceptanceTestAgentScenario` does not actually execute a subagent's body in isolation — the wrapping scenario is the only honest test path); `delegate-to-ide-trigger-pos-1`, `delegate-to-ide-trigger-adj-1`, `delegate-to-ide-trigger-false-1`.
 
+### 3.18 SALP Anchor Infrastructure — FR-DOC-ANCHORS (`scripts/lib/salp.ts`, `scripts/check-salp.ts`, `scripts/migrate-to-salp.ts`)
+
+- **Purpose:** Tooling that backs the SALP (Semantic Anchor / Link Protocol) adoption — parser + validator + migration script. Implements [REF:fr:doc-anchors | FR-DOC-ANCHORS].
+- **Components:**
+  - `scripts/lib/salp.ts` — pure parser/serializer. Pins the grammar regex (`[ANC:<ns>:<id>]` and `[REF:<ns>:<id>(?: \| <display>)?]`), exposes `parseAnchors` / `parseRefs` / `serializeAnchor` / `serializeRef` / `validateNamespace` / `detectLegacyGrammars`. Throws `SalpSyntaxError` with `{line, col}` on any grammar violation including salp-short (`[ANC:id]` without namespace).
+  - `scripts/lib/salp-anchor-map.ts` — frozen-at-start anchor map. Walks SRS `### FR-X:` headings → `{ns: "fr", id: lowercase(X)}` keyed by GFM auto-slug; SDS `### N.M[.K] <Title>` → `{ns: "sds", id: "N-M-K"}`. Used by the migration script to translate legacy `[FR-X](path.md#…)` into `[REF:fr:x | FR-X]`.
+  - `scripts/check-salp.ts` — validator. Walks documents/, framework/, scripts/, README.md, AGENTS.md (skipping `flowai-experiments/`, `acceptance-tests/runs|cache/`, `**/fixture/`, `*_test.ts`). For `.md` files strips fenced-code-block and inline-backtick spans; for `.ts`/`.js` keeps only comment lines and strips backticks. Reports four finding kinds: `dead-ref`, `duplicate-anchor`, `unlisted-namespace`, `legacy-grammar` (last gated by `--enforce-no-legacy`).
+  - `scripts/migrate-to-salp.ts` — converter. Pure `migrateText(input, opts)` returns the rewritten string; CLI wrapper applies it to files with `--write`. Handles GFM-FR links, generic GFM links with SDS-anchor targets, bare and display wikilinks, dual-link collapsing, bare `// FR-X` comments, and GFM links in comments. Idempotent. Fail-fast: unresolvable target or wikilink without page-type throws `SalpMigrationError`. Skip-list: paths in `framework/composites.yaml` targets (generator artefacts) excluded.
+- **Integration:** `scripts/task-check.ts` parallel block invokes `check-salp.ts` between `check-traceability` and `check-skills`. Phase 1 ships permissive mode (no `--enforce-no-legacy`); subsequent phases tighten as surfaces migrate.
+- **Acceptance verified by tests:** `scripts/lib/salp_test.ts` (22 tests), `scripts/check-salp_test.ts` (7 tests), `scripts/migrate-to-salp_test.ts` (13 tests), `scripts/check-fr-coverage_test.ts` (1 test asserting FR-DOC-ANCHORS has Acceptance).
+
 ## 4. Data and Storage
 
 - File-based storage only. No database. Entities: Skill (Name, Content, Path), Agent (Name, Prompt, Capabilities).

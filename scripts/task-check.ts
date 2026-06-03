@@ -141,6 +141,13 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-traceability.ts"],
       },
+      // [REF:fr:doc-anchors | FR-DOC-ANCHORS] — SALP validator. Phase 1
+      // ships in permissive mode (no --enforce-no-legacy); later phases
+      // tighten as surfaces migrate.
+      {
+        cmd: "deno",
+        args: ["run", "-A", "scripts/check-salp.ts"],
+      },
       {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-srs-evidence.ts"],
