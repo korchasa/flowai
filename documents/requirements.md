@@ -698,9 +698,16 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-ATOM-PUSH: Git Push Atom — `push` [ANC:fr:atom-push]
 
 - **Description:** User-invoked command (kind=command; CLI writer injects `disable-model-invocation: true` at sync time) that pushes the current branch to its remote with a strict safety contract: (a) `--force` is forbidden; (b) `--force-with-lease` is permitted ONLY with explicit per-push user authorization in chat (not via a session-long flag), **AND ONLY on non-protected branches**; (c) if upstream is unset → run `--set-upstream` automatically AFTER explicit user confirmation that the branch should track; (d) when the remote branch is `main`/`master` AND the remote has commits the local does not have, REFUSE both `--force` and `--force-with-lease` absolutely — explicit per-push authorization does NOT unlock force here (canonical regression: destroying a teammate's commits). The agent asks with exactly two options: pull-rebase or abort. If the user volunteers "force", "overwrite", or similar, the agent restates the refusal; (e) when the local branch is unprotected but the user typed a target other than the current branch, refuse. Post-push verification: `git rev-parse @{u}` matches `HEAD`. Source: `framework/atoms/push.md`.
-- **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
+- **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md), [REF:task:2026-06-push-await-ci | push-await-ci]
 - **Acceptance verified by acceptance tests:** `push-happy-path`, `push-sets-upstream-on-first-push`, `push-refuses-force-on-divergence`. No trigger scenario (commands carry no trigger scenarios anywhere in the codebase).
 - **Status:** [x]
+
+#### FR-ATOM-PUSH.CI-AWAIT: Await CI then Investigate Failures [ANC:fr:atom-push.ci-await]
+
+- **Description:** When the project's `AGENTS.md` declares a `## CI/CD` section (Provider, Status command, optional Logs command, optional Run URL command), the `push` atom MUST, after a successful local push, poll the declared Status command until terminal state, with the cap of 30 iterations × 60s sleep ≈ 30 minutes. Exit codes: 0=green, 1=red (terminal failure), 2=in-progress (continue polling), other=malformed status command (STOP fail-fast). On red the atom hands off to the `investigate` skill with the failed-run URL and a 12 KB log buffer; on timeout the atom STOPs with a timeout report and does NOT invoke investigate; on absence of the `## CI/CD` section the atom skips silently with a one-line note. The wait is unconditional when CI is declared — there is no per-push opt-out param. Status command MUST be a single-shot status query (NOT a blocking wait like `gh run watch --exit-status`); the iteration cap is what bounds wall-clock. Commands receive the pushed SHA via `$SHA` env. The `## CI/CD` section is user-populated (not scaffolded by `init`) — projects without CI omit it entirely and the atom skips. Source: `framework/atoms/push.md` step 6.
+- **Tasks:** [REF:task:2026-06-push-await-ci | push-await-ci]
+- **Acceptance verified by acceptance tests:** `push-skips-ci-await-when-not-declared`, `push-awaits-ci-success`, `push-investigates-ci-failure`, `push-stops-on-malformed-ci-block`. The timeout-branch (30-iteration cap) test (`push-stops-on-ci-timeout`) is intentionally deferred — strict assertion needs runner-level `sleep` shimming, which is out of scope here.
+- **Status:** [ ]
 
 ### FR-SHIP: Terminal Full-Cycle Workflow — `ship` [ANC:fr:ship]
 

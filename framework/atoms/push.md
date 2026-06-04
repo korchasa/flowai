@@ -32,6 +32,7 @@ Push the current branch to its remote with a strict safety contract that reflect
 6. **Post-push verification**: after a successful push, run `git rev-parse @{u}` and `git rev-parse HEAD`; they MUST be equal. If they differ, the push reported success but the upstream did not advance — surface the discrepancy and STOP.
 7. **Git pager off**: use `GIT_PAGER=cat` for all git commands so output is non-interactive.
 8. **No PR creation**: this skill ONLY pushes. PR creation (`gh pr create`, etc.) is out of scope and is left to the user or a separate skill.
+9. **CI-await contract** (FR-ATOM-PUSH.CI-AWAIT): when AGENTS.md declares a `## CI/CD` section, the atom MUST wait for the CI run triggered by the pushed SHA to reach a terminal state (≤30 iterations × 60 s = 30 min cap), and on failure MUST hand off to the `investigate` skill with run URL + failed-job logs. The wait is NOT optional — no per-push opt-out. Malformed `## CI/CD` (missing `Provider` or `Status command`) → STOP fail-fast. Absent section → skip silently. Status command MUST be single-shot (exit 0 / 1 / 2 / other) — blocking-wait commands (`gh run watch --exit-status`, `glab ci status --wait`) defeat the iteration cap and are NOT acceptable.
 </rules>
 
 ## Instructions
@@ -63,7 +64,32 @@ Push the current branch to its remote with a strict safety contract that reflect
    - Equal → push succeeded. Report the remote ref and the pushed SHA.
    - Different → push reported success but upstream did not advance. STOP with "Post-push verification FAILED: @{u} = `<remote>`, HEAD = `<local>`. Investigate before retrying."
 
-6. **{{TERMINATION}}**
+6. **Await CI** (FR-ATOM-PUSH.CI-AWAIT)
+   - Read AGENTS.md `## CI/CD` section.
+     - **Absent**: output `No CI declared in AGENTS.md — skipping CI await.` and continue to step 7 (`{{TERMINATION}}`).
+     - **Malformed** (missing either `Provider:` or `Status command:`): STOP with `## CI/CD section is malformed — required keys: Provider, Status command. Found: <list of present keys>.` Do NOT silently fall back. Do NOT continue to step 7.
+     - **Well-formed**: continue.
+   - Export the pushed SHA into the environment: `export SHA=$(git rev-parse HEAD)`. All CI commands below inherit `$SHA` from the agent's shell.
+   - **Detect run trigger** (≤60 s window; sized at ~2× the slowest realistic provider lag, observed ~30 s for GitLab pipelines registering after push): invoke the `Status command`. Treat:
+     - exit 0 or 1 (terminal on first call) → proceed straight to the poll loop branch.
+     - exit 2 (in-progress — a run exists) → proceed to the poll loop.
+     - any other exit → sleep 5 s and retry. After 12 retries (60 s) with no run detected, STOP with `CI declared but no run was triggered by $SHA within 60 s — verify the workflow trigger configuration.` Do NOT continue to step 7.
+   - **Poll loop** (max 30 iterations × 60 s sleep ≈ 30 min wall-clock; the iteration count — NOT wall-clock — bounds the cap so it stays deterministic across IDE-harness latencies):
+     - Invoke the `Status command`.
+     - exit 0 → CI green. Continue to step 7.
+     - exit 1 → CI red (terminal failure). Go to **Investigate Handoff** below.
+     - exit 2 → still running. Sleep 60 s. Re-invoke. Increment iteration counter.
+     - any other exit → treat as a malformed Status command, STOP with the raw exit code and stderr.
+   - **30-iteration cap**: if 30 iterations completed without a terminal status (exit 0 or 1), STOP with `CI did not finish within 30 iterations (~30 min) — timed out. Run URL: <result of Run URL command if defined, otherwise "not available">.` Do NOT invoke `investigate`. Do NOT continue to step 7.
+   - **Investigate Handoff** (CI red):
+     1. If the `Logs command` is defined in AGENTS.md, execute it. Capture stdout. Truncate to 12 KB (`investigate` can fetch more via the run URL if it needs to drill deeper).
+     2. If the `Run URL command` is defined, execute it. Capture stdout as the run URL.
+     3. The worktree is already clean (step 5 verified `@{u} == HEAD`), so `investigate`'s "Clean Baseline" precondition holds.
+     4. Invoke the `investigate` skill via the host IDE's skill-invocation primitive (Skill tool / `/investigate` slash command / inline expansion of its `SKILL.md`) with this prompt:
+        `CI failed for commit $SHA on branch <CURRENT>. Run URL: <URL or "not available">. Failed-job logs (truncated to 12 KB):\n<LOGS or "not available">\nDiagnose the root cause. Do not apply a fix; report findings.`
+     5. After `investigate` returns its report, STOP. Do NOT continue to step 7 — the push succeeded but the build is broken; the user owns the remediation decision.
+
+7. **{{TERMINATION}}**
 
 </step_by_step>
 
@@ -76,15 +102,19 @@ Push the current branch to its remote with a strict safety contract that reflect
 - [ ] Protected-branch (main/master) divergence: user explicitly resolved (pull/rebase or abort) before any push attempt.
 - [ ] Post-push verification: `git rev-parse @{u}` matches `HEAD`.
 - [ ] Git output streamed to user verbatim (no silenced stderr).
+- [ ] CI await: when AGENTS.md declares `## CI/CD`, atom polled the declared Status command until terminal state or the 30-iteration cap.
+- [ ] CI failure handoff: failing-run logs (truncated to 12 KB) + Run URL passed to the `investigate` skill via skill invocation; atom STOPped after `investigate` returned.
+- [ ] CI absent: when AGENTS.md has no `## CI/CD` section, atom skipped the wait silently with a one-line note.
+- [ ] CI malformed: when `## CI/CD` is present but missing `Provider` or `Status command`, atom STOPped fail-fast and did NOT continue to TERMINATION.
 </verification>
 
 <param-branch name="TERMINATION" value="TOTAL_STOP">
-6. **TOTAL STOP**
-   - Final report: target branch, upstream, pushed SHA, post-push verification result.
+7. **TOTAL STOP**
+   - Final report: target branch, upstream, pushed SHA, post-push verification result, CI await result (`skipped`, `green`, or `not reached — stopped earlier`).
 </param-branch>
 
 <param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
-6. **Hand off to the next phase**
-   - Final report: target branch, upstream, pushed SHA, post-push verification result.
+7. **Hand off to the next phase**
+   - Final report: target branch, upstream, pushed SHA, post-push verification result, CI await result (`skipped`, `green`, or `not reached — stopped earlier`).
    - Announce: "Push complete; entering the next phase of the composite workflow." (If the push step is the last phase of the composite, this branch behaves like TOTAL_STOP — no next phase to enter.)
 </param-branch>

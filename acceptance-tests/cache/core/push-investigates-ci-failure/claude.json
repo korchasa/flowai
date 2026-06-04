@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "cf8b04bb9f58c113cef558ec5ad2c1ccbbac14056e5c4e84460ca7f376717002",
+  "scenarioId": "push-investigates-ci-failure",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T18:26:07.890Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 256822.11800000002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "push_succeeded": {
+        "pass": true,
+        "reason": "The agent ran `git push 2>&1` and logged 'Пуш успешен' (Push succeeded). A post-push verification (`git rev-parse @{u} && git rev-parse HEAD`) confirmed SHA equality between local HEAD and upstream, …"
+      },
+      "status_command_invoked": {
+        "pass": true,
+        "reason": "The agent executed `bash .../sandbox/mock-status.sh` via the command `export SHA=$(git rev-parse HEAD) && echo \"SHA=$SHA\" && bash /Users/korchasa/.../sandbox/mock-status.sh; echo \"exit:$?\"`. This is …"
+      },
+      "ci_red_detected": {
+        "pass": true,
+        "reason": "After running mock-status.sh (which exits 1 per the file contents `exit 1`), the agent explicitly logged 'CI завершился с ошибкой (exit 1)' — correctly identifying CI as red/failed rather than green …"
+      },
+      "logs_command_invoked": {
+        "pass": true,
+        "reason": "The agent ran `bash .../sandbox/mock-logs.sh 2>&1 | head -c 12288` — directly executing the declared Logs command (mock-logs.sh). The output ('FAIL tests/foo_test.ts::add_returns_sum / expected 3, go…"
+      },
+      "investigate_invoked": {
+        "pass": true,
+        "reason": "The agent used a formal `## Tool: Skill` call with `\"skill\": \"investigate\"`, providing the CI run URL (`https://mock-ci.example/run/12345`) and the full failed-job log output as context. This satisfi…"
+      },
+      "normal_termination_skipped": {
+        "pass": true,
+        "reason": "The agent's final message reads 'STOP — пуш успешен, но сборка сломана. Исправление — на усмотрение пользователя.' This is a CI-red stop, not a happy-path 'Push complete' or 'TOTAL STOP' termination …"
+      }
+    }
+  }
+}

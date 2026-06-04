@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "59b76eab573ab2ebe7f7e8fd1551178d04a8815a7ed87d465bacf17b56d90301",
+  "scenarioId": "push-skips-ci-await-when-not-declared",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T18:16:40.130Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 46936.360208,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "push_succeeded": {
+        "pass": true,
+        "reason": "git push completed successfully; post-push verification confirmed @{u} == HEAD at SHA dc0b420, and final git status shows 'Your branch is up to date with origin/feature/x'."
+      },
+      "ci_await_skipped_silently": {
+        "pass": true,
+        "reason": "Agent emitted 'CI/CD в проекте не объявлен — ожидание сборки пропущено' (CI/CD not declared in project — build wait skipped) as a one-line skip note before reaching TERMINATION, correctly reflecting …"
+      },
+      "no_ci_command_executed": {
+        "pass": true,
+        "reason": "All five Bash tool calls are git-only commands (rev-parse, fetch, rev-list, push). No gh run, glab ci, circleci, or any other CI status/logs/run-URL command appears anywhere in the trace."
+      },
+      "termination_reached": {
+        "pass": true,
+        "reason": "The Final Result block explicitly reports all required terminal fields: branch (feature/x), upstream (origin/feature/x), pushed SHA (dc0b420), and post-push verification result (@{u} == HEAD ✓)."
+      }
+    }
+  }
+}

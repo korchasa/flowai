@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "22727822d44c66f90d13e685e39f0baff0f4541c56a95d9ccf40fdb7f6b8cf4b",
+  "scenarioId": "push-stops-on-malformed-ci-block",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T18:29:58.660Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 169667.79525000002,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "push_succeeded": {
+        "pass": true,
+        "reason": "Agent ran 'git push 2>&1', reported success, then verified with 'git rev-parse @{u} && git rev-parse HEAD' confirming @{u} == HEAD. Final git status also shows 'Your branch is up to date with origin/…"
+      },
+      "malformed_detected": {
+        "pass": true,
+        "reason": "After the push, the agent read the sandbox AGENTS.md CI/CD section via grep. It explicitly reported 'СТОП — секция ## CI/CD некорректна', identifying that 'Provider' (mock-ci) was present but the man…"
+      },
+      "no_status_command_executed": {
+        "pass": true,
+        "reason": "All 6 Bash calls are accounted for: branch name, upstream check, fetch+divergence, git push, post-push verification, and grep of AGENTS.md. No CI status command, logs command, or run-URL command was …"
+      },
+      "stopped_before_termination": {
+        "pass": true,
+        "reason": "The agent terminated with a STOP/error message about the malformed CI/CD configuration. There is no happy-path TERMINATION report in the logs — the agent applied fail-fast behavior and did not procee…"
+      },
+      "investigate_not_invoked": {
+        "pass": true,
+        "reason": "No call to 'investigate' appears anywhere in the agent logs or tool invocations. The agent correctly treated this as a missing-config failure (not a broken build), so 'investigate' was never triggere…"
+      }
+    }
+  }
+}

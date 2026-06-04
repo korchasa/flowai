@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "8f9db61e9a98ab2d45d52e62c3fa7766fba9ed7338a016578da07cb8c9a49140",
+  "scenarioId": "push-awaits-ci-success",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T18:20:38.053Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 73955.510125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "push_succeeded": {
+        "pass": true,
+        "reason": "The agent executed `git push 2>&1` and performed post-push verification confirming `@{u}` matches `HEAD`. The final git status shows 'Your branch is up to date with origin/feature/x', and the agent e…"
+      },
+      "status_command_invoked": {
+        "pass": true,
+        "reason": "The agent executed: `SHA=095112838edefd05cd2f4fb939fcb46222014db7 bash /Users/korchasa/www/.../sandbox/mock-status.sh` — this is a direct bash invocation of the sandbox's mock-status.sh script, match…"
+      },
+      "ci_green_reported": {
+        "pass": true,
+        "reason": "The mock-status.sh script exits 0 and prints 'mock-ci: green'. The agent correctly observed this and reported: 'CI вернул статус **green** (выход 0)' (CI returned status green, exit 0). The final rep…"
+      },
+      "investigate_not_invoked": {
+        "pass": true,
+        "reason": "There is no invocation of an `investigate` skill or `/investigate` slash command anywhere in the agent logs. After receiving CI green, the agent proceeded directly to the final report without trigger…"
+      },
+      "termination_reached": {
+        "pass": true,
+        "reason": "After observing CI green (exit 0 from mock-status.sh), the agent produced a structured final report under '## Final Result' with branch name, upstream, pushed SHA, verification status, and CI status …"
+      }
+    }
+  }
+}

@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "5a79f111c1fc02ad85fd58212a2f972596aee76b0d0e6efada6f607e5e4b943e",
+  "key": "e46f66a74e1dfb3631ff93cabae1c8af044afd8d76e5b7e7dbf7a741943c0c26",
   "scenarioId": "push-happy-path",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-17T11:09:03.168Z",
+  "recordedAt": "2026-06-04T18:13:19.899Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 46730.061625,
+    "durationMs": 40677.409125000006,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "no_force_flag": {
         "pass": true,
-        "reason": "The git push command issued was `GIT_PAGER=cat git push 2>&1` — no `--force` or `--force-with-lease` flags were present."
+        "reason": "The agent executed `git push 2>&1; echo \"exit:$?\"` with no `--force` or `--force-with-lease` flags present in the command."
       },
       "push_succeeded": {
         "pass": true,
-        "reason": "The agent reported the push completed successfully, and the final git status confirms 'Your branch is up to date with origin/feature/x', with commit a2be6ad present in the git log, proving a fast-for…"
+        "reason": "The agent reported the push as successful, and the final git status confirms `Your branch is up to date with 'origin/feature/x'`, meaning the fast-forward push to the remote completed successfully."
       },
       "post_push_verification": {
         "pass": true,
-        "reason": "The agent explicitly ran `GIT_PAGER=cat git rev-parse @{u} && GIT_PAGER=cat git rev-parse HEAD` after the push and confirmed both refs matched, reporting 'Верификация прошла успешно — @{u} и HEAD сов…"
+        "reason": "The agent explicitly ran `git rev-parse @{u} && git rev-parse HEAD` after the push and confirmed that `@{u}` matches `HEAD`, completing the required post-push verification step."
       }
     }
   }

@@ -20,6 +20,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:ai-ide-runner | FR-AI-IDE-RUNNER] — Run prompts in another IDE's CLI; verbatim relay; fan-out comparisons — [x]
 - [REF:fr:atom-implement | FR-ATOM-IMPLEMENT] — TDD implement atom — implement (RED→GREEN→REFACTOR→CHECK over a written plan) — [x]
 - [REF:fr:atom-push | FR-ATOM-PUSH] — Git push atom — push (non-force, upstream-safe, no-auto-PR) — [x]
+- [REF:fr:atom-push.ci-await | FR-ATOM-PUSH.CI-AWAIT] — Push atom awaits CI declared in AGENTS.md and invokes investigate on failure — [ ]
 - [REF:fr:cicd | FR-CICD] — CI/CD pipeline follows supply-chain security and least-privilege practices — [x]
 - [REF:fr:cmd-exec | FR-CMD-EXEC] — Executable workflows for common development tasks via chat commands — [ ]
 - [REF:fr:component | FR-COMPONENT] — Component Coverage — [ ]

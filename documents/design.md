@@ -640,6 +640,25 @@ graph TD
 - **Integration:** `scripts/task-check.ts` parallel block invokes `check-salp.ts` between `check-traceability` and `check-skills`. Phase 1 ships permissive mode (no `--enforce-no-legacy`); subsequent phases tighten as surfaces migrate.
 - **Acceptance verified by tests:** `scripts/lib/salp_test.ts` (22 tests), `scripts/check-salp_test.ts` (7 tests), `scripts/migrate-to-salp_test.ts` (13 tests), `scripts/check-fr-coverage_test.ts` (1 test asserting FR-DOC-ANCHORS has Acceptance).
 
+### 3.19 Push Atom CI-Await Contract — FR-ATOM-PUSH.CI-AWAIT (`framework/atoms/push.md`) [ANC:sds:3-19]
+
+- **Purpose:** Define the contract between the `push` atom and the project's CI/CD provider so that, after a successful push, the workflow waits for the build to finish and on failure delegates root-cause analysis to the `investigate` skill. Implements [REF:fr:atom-push.ci-await | FR-ATOM-PUSH.CI-AWAIT].
+- **AGENTS.md schema** (`## CI/CD` section — user-populated, NOT scaffolded by `init`; projects without CI simply omit the section and the atom skips silently):
+  - `Provider:` — free-form provider name (e.g. `github-actions`, `gitlab`, `circleci`). Informational; not used for command lookup.
+  - `Status command:` — REQUIRED. Single-shot status query. Exit 0 = green (terminal success), exit 1 = red (terminal failure), exit 2 = in-progress (atom re-invokes after 60 s), other = malformed (atom STOPs). MUST NOT block indefinitely; the iteration cap is what bounds wall-clock.
+  - `Logs command:` — OPTIONAL. Prints failed-job logs to stdout. Used to seed the `investigate` skill prompt. Output truncated to 12 KB by the atom.
+  - `Run URL command:` — OPTIONAL. Prints the URL of the run triggered by `$SHA`. Used in the final user-facing report and in the `investigate` handoff prompt.
+  - All three commands receive the pushed SHA via the `SHA` environment variable, exported by the atom (`SHA=$(git rev-parse HEAD)`) before invocation.
+- **Atom step (new step 6, between Post-Push Verification and TERMINATION):**
+  1. Read AGENTS.md `## CI/CD`. Absent → emit one-line skip note, continue to TERMINATION. Malformed (missing `Provider` or `Status command`) → STOP fail-fast.
+  2. Export `SHA`. Detect-trigger window: poll Status command at 5 s intervals for up to 60 s waiting for any non-"other" exit code (60 s ≈ 2× slowest realistic provider lag, observed at ~30 s for GitLab pipeline registration).
+  3. Poll loop, max 30 iterations of (invoke Status command, sleep 60 s). Iteration counter bounds wall-clock deterministically across IDE-harness latencies — wall-clock is NOT the gate. Exit 0 → green → TERMINATION. Exit 1 → red → Investigate Handoff. Exit 2 → continue polling. Other → STOP malformed.
+  4. Timeout (30 iterations completed without terminal status) → STOP with run URL; do NOT invoke investigate.
+  5. Investigate Handoff: execute Logs command (if defined; truncate to 12 KB), execute Run URL command (if defined), invoke `investigate` via the host IDE's skill-invocation primitive with a prompt naming the SHA, branch, run URL, and the buffered logs. After investigate returns its report, STOP. The successful push is preserved; the broken build is the user's signal to follow up.
+- **Composite ripple:** the new step inserts between the existing post-push verification and the `{{TERMINATION}}` placeholder, so both consumers (`ship`, `ship-task`) inherit the behaviour via the composite generator (`scripts/generate-skill-composites.ts`) with no `framework/composites.yaml` change. Rendered SKILL.md files must stay under `SKILL_MAX_LINES = 700` (enforced by the generator canon validator).
+- **`investigate` precondition compatibility:** the worktree is provably clean at handoff (step 5 of the atom verifies `@{u} == HEAD`), satisfying investigate's "Clean Baseline" rule without extra coordination.
+- **Acceptance verified by acceptance tests:** `push-skips-ci-await-when-not-declared`, `push-awaits-ci-success`, `push-investigates-ci-failure`, `push-stops-on-malformed-ci-block`. Timeout branch (30-iteration cap) test deferred — requires `sleep` shimming. Composite size budget verified by `wc -l` on `framework/core/commands/ship/SKILL.md` and `framework/core/commands/ship-task/SKILL.md` + the generator's canon check.
+
 ## 4. Data and Storage
 
 - File-based storage only. No database. Entities: Skill (Name, Content, Path), Agent (Name, Prompt, Capabilities).

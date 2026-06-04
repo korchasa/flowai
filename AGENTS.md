@@ -414,6 +414,18 @@ The runner also pre-checks that `scenario.skill` is mounted in the sandbox befor
 - Drift symptom A (lint vs test): `deno task check` lint passes but test phase imports fixtures as production code (`no-explicit-any` errors in `*/fixture/*.ts`).
 - Drift symptom B (lint vs fmt): pre-flight `deno fmt --check` fails on intentionally malformed fixture files (e.g. a fixture seeded with deliberate formatting drift to exercise a scope-violation gate).
 
+## CI/CD
+
+Consumed by the `push` atom (FR-ATOM-PUSH.CI-AWAIT) to await build completion
+and seed `investigate` on failure. The Status command receives the pushed SHA
+via `$SHA` and MUST be single-shot (exit 0 = green, 1 = red, 2 = in-progress);
+the atom enforces the 30-iteration cap by re-invoking.
+
+- **Provider:** github-actions
+- **Status command:** `RID=$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId,status,conclusion); echo "$RID" | jq -e '.[0].status == "completed" and .[0].conclusion == "success"' >/dev/null && exit 0; echo "$RID" | jq -e '.[0].status == "completed"' >/dev/null && exit 1; exit 2`
+- **Logs command:** `gh run view --log-failed "$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
+- **Run URL command:** `gh run view --json url --jq .url "$(gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
+
 ## Code Documentation
 
 - **Module level**: each module gets an `AGENTS.md` describing its responsibility and key decisions.
