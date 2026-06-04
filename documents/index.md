@@ -8,6 +8,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:accept-cache | FR-ACCEPT-CACHE] — Commit per-scenario acceptance test verdicts to the repo; — [ ]
 - [REF:fr:accept-guards | FR-ACCEPT-GUARDS] — SpawnedAgent MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a configure-deno-commands scenario produced a deno test -A chain that grew to ~720 descendants in 90 s); — [ ]
 - [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION] — deno task acceptance-tests MUST judge the sandbox SKILL.md (the one written into <sandbox>/.claude/skills/<name>/), not the developer's user-level installation at ~/.claude/skills/<name>/. — [ ]
+- [REF:fr:accept.opencode | FR-ACCEPT.OPENCODE] — OpencodeAdapter for acceptance-test runner; restores 4-IDE parity (Cursor / Claude / OpenCode / Codex) — [ ]
 - [REF:fr:accept.rules | FR-ACCEPT.RULES] — Pack-level acceptance tests (framework/core/acceptance-tests/agents-rules-*/) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). — [ ]
 - [REF:fr:accept.trigger | FR-ACCEPT.TRIGGER] — Skill description-matching verified by 3 trigger scenarios per skill — [x]
 - [REF:fr:adapt | FR-ADAPT] — On-demand adaptation of installed framework primitives to project specifics — [ ]

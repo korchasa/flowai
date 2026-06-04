@@ -213,6 +213,15 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/acceptance-tests/trigger-*' | wc -l` equals (skill count) × 3.
 - **Status:** [x]
 
+### FR-ACCEPT.OPENCODE: OpenCode Adapter for Acceptance Test Runner [ANC:fr:accept.opencode]
+
+- **Desc:** The acceptance-test runner MUST ship a working `OpencodeAdapter` (`scripts/acceptance-tests/lib/adapters/opencode.ts`) implementing the full `AgentAdapter` interface for the `opencode` CLI. Project docs (README, SDS §2, `documents/ides-difference.md`) list four supported IDEs — Cursor, Claude Code, OpenCode, OpenAI Codex — but the runner currently exposes adapters for only three; `"opencode"` sits in the `AgentAdapter.ide` union as a dead enum value. Closing this gap restores capability parity across the four declared IDEs and lets pack-level scenarios (FR-ACCEPT.RULES, FR-ACCEPT.TRIGGER) execute against OpenCode without per-call special-casing.
+- **Tasks:** [opencode-acceptance-adapter](tasks/2026/06/opencode-acceptance-adapter.md)
+- **Scope:** Runner-side only. Plugin distribution to OpenCode (skill / agent emit, frontmatter transform) is already covered by FR-DIST.* + `cli-internals.ts`; this FR does NOT duplicate that contract — it consumes the existing transform and exposes its output to the benchmark sandbox.
+- **Cross-Implementation Symmetry contract:** Parity with `ClaudeAdapter`, `CodexAdapter`, `CursorAdapter` for: `ide`, `configDir`, `command`, `outputFormat`, `buildArgs`, `parseOutput`, `getEnv`, `setupMocks`, `calculateUsage`, `cliVersion`. `prepareWorkspace` remains optional — implement only if a user-level skill collision analogous to `~/.claude/skills/` shadowing exists for OpenCode.
+- **Acceptance:** `deno test scripts/acceptance-tests/lib/adapters/opencode_test.ts` (to be authored together with the implementation) passes AND at least one existing benchmark scenario runs green against `--ide opencode`. Per-step DoD (file existence, registration in `mod.ts`, unit-test coverage) is tracked in the linked task file.
+- **Status:** [ ]
+
 ### FR-EXP: Experiments Subsystem (RELOCATED) [ANC:fr:exp]
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). Requirement retained here as a stub so historical traceability links keep resolving.
