@@ -14,7 +14,7 @@ related_tasks:
   - 2026/05/2026-05-21-workflow-skills-meta.md
   - 2026/05/claude-code-plugin-marketplace-pilot.md
   - 2026/05/codex-plugin-marketplace-support.md
-  - 2026/05/simplify-flowai-update-boundaries.md
+  - 2026/05/simplify-update-boundaries.md
   - 2026/05/skill-trigger-benchmarks.md
   - 2026/05/trigger-n1-retry.md
 ---

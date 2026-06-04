@@ -120,7 +120,7 @@ The project already has a precedent for composite commands: `flowai-review-and-c
    `allowedDivergentSteps` rationale: step 1 of the plan phase is the composite's own "Initialize" with cycle-context; step 8 (TOTAL STOP) is replaced by a transition to Phase 2; step 1 of the review-and-commit phase is the composite's own "Empty Diff Guard" wording (Phase 2 may have produced no diff if implementation was a no-op — distinct fail message). Adjust the list once the SKILL.md is final and the check reports actual divergent step numbers.
 2. `documents/requirements.md` — insert `### FR-DO-WITH-PLAN: Full-Cycle Workflow — flowai-do-with-plan` after `### FR-REVIEW-COMMIT` (line ~580). Body:
    - `**Description:**` one-line.
-   - `**Tasks:** [flowai-do-with-plan-command](tasks/2026/05/flowai-do-with-plan-command.md)`
+   - `**Tasks:** [do-with-plan-command](tasks/2026/05/do-with-plan-command.md)`
    - `**Acceptance verified by benchmarks:** flowai-do-with-plan-full-cycle, flowai-do-with-plan-rejects-on-changes-requested, flowai-do-with-plan-pauses-for-variant-selection`
    - `**Status:** [x]` only after all three benches pass on main.
 3. `documents/design.md` § 3 — add a short component subsection (siblings of `FR-REVIEW-COMMIT` description). One paragraph: composite kind, inlining contract, phase gates, sync entry path.

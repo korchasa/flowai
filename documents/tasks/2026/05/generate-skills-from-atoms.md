@@ -11,7 +11,7 @@ implements:
   - FR-UNIVERSAL.DISCLOSURE
 tags: [framework, skills, generator, composite, refactor, dx]
 related_tasks:
-  - 2026/05/flowai-do-with-plan-command.md
+  - 2026/05/do-with-plan-command.md
   - 2026/05/decompose-complexity-hotspots.md
 ---
 
