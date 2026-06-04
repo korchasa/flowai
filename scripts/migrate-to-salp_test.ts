@@ -207,6 +207,33 @@ Deno.test("preserves-template-variable-in-display", () => {
   );
 });
 
+Deno.test("ignores-gfm-links-inside-backtick-spans", () => {
+  // Backtick-wrapped GFM-link examples are markdown code-spans (the SRS
+  // quotes the banned legacy grammar inline like `[FR-X](path.md#…)`).
+  // They are illustrative text, not real references — leave untouched.
+  const input =
+    "Forbidden: `[FR-X](path.md#…)` and `[[slug]]` shortcuts are rejected.";
+  const out = migrateText(input, {
+    file: "documents/requirements.md",
+    map: mockMap(),
+    pageType: null,
+  });
+  assertEquals(out, input);
+});
+
+Deno.test("ignores-bare-fr-comment-inside-backtick-span", () => {
+  // Same principle for inline code-spans on prose lines that quote
+  // `// FR-X` as an illustration of the banned grammar.
+  const input =
+    "The legacy form `// FR-CMD-EXEC` is rejected by the validator.";
+  const out = migrateText(input, {
+    file: "documents/requirements.md",
+    map: mockMap(),
+    pageType: null,
+  });
+  assertEquals(out, input);
+});
+
 Deno.test("ignores-non-fr-gfm-links", () => {
   // Generic markdown links (e.g. README.md → external repo) must NOT be
   // touched. The migration only handles FR-shaped link text.

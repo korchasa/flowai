@@ -1,5 +1,5 @@
-// [FR-PACKS.CMD-INVARIANT](../documents/requirements.md#fr-packs.cmd-invariant-command-source-must-not-carry-disable-model-invocation) — commands/ SKILL.md MUST NOT declare `disable-model-invocation`
-// [FR-PACKS.SKILL-INVARIANT](../documents/requirements.md#fr-packs.skill-invariant-skill-source-must-not-carry-disable-model-invocation) — skills/ SKILL.md MUST NOT declare `disable-model-invocation`
+// [REF:fr:packs.cmd-invariant | FR-PACKS.CMD-INVARIANT] — commands/ SKILL.md MUST NOT declare `disable-model-invocation`
+// [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — skills/ SKILL.md MUST NOT declare `disable-model-invocation`
 /**
  * Validates all skill directories against FR-UNIVERSAL.AGENTSKILLS and FR-UNIVERSAL.XIDE-PATHS (agentskills.io compliance).
  *
@@ -366,7 +366,7 @@ function stripTraceabilityCommentLinks(
 }
 
 /**
- * [FR-UNIVERSAL.DOC-SCHEMA](../documents/requirements.md#fr-universal.doc-schema-documentation-schema-indirection):
+ * [REF:fr:universal.doc-schema | FR-UNIVERSAL.DOC-SCHEMA]:
  * distributed plugin primitives must not encode
  * project-specific documentation file paths or SRS/SDS/task schemas. They must
  * resolve semantic roles from the project instructions artifact instead.
@@ -470,7 +470,7 @@ export async function validateSkill(
     });
   }
 
-  // [FR-UNIVERSAL.STRUCT](../documents/requirements.md#fr-universal.struct-directory-structure-agentskills.io): Structure
+  // [REF:fr:universal.struct | FR-UNIVERSAL.STRUCT]: Structure
   errors.push(...validateStructure(dirName, entries));
 
   // Read SKILL.md
@@ -493,10 +493,10 @@ export async function validateSkill(
     return errors;
   }
 
-  // [FR-UNIVERSAL.FRONTMATTER](../documents/requirements.md#fr-universal.frontmatter-frontmatter-agentskills.io): Frontmatter (Zod schema)
+  // [REF:fr:universal.frontmatter | FR-UNIVERSAL.FRONTMATTER]: Frontmatter (Zod schema)
   errors.push(...validateSkillFrontmatter(dirName, fm.data));
 
-  // [FR-PACKS](../documents/requirements.md#fr-packs-pack-system-modular-resource-installation).{CMD,SKILL}-INVARIANT: commands/ vs skills/ directory invariants.
+  // [REF:fr:packs | FR-PACKS].{CMD,SKILL}-INVARIANT: commands/ vs skills/ directory invariants.
   // Only applies to framework source tree; installed copies under .{ide}/skills/
   // legitimately carry `disable-model-invocation: true` on commands because
   // the writer injects it at sync time.
@@ -510,13 +510,13 @@ export async function validateSkill(
     );
   }
 
-  // [FR-UNIVERSAL.DISCLOSURE](../documents/requirements.md#fr-universal.disclosure-progressive-disclosure-agentskills.io): Progressive disclosure
+  // [REF:fr:universal.disclosure | FR-UNIVERSAL.DISCLOSURE]: Progressive disclosure
   errors.push(...validateProgressiveDisclosure(dirName, content, fm.data));
 
-  // [FR-UNIVERSAL.XIDE-PATHS](../documents/requirements.md#fr-universal.xide-paths-cross-ide-script-path-resolution): Cross-IDE script path resolution
+  // [REF:fr:universal.xide-paths | FR-UNIVERSAL.XIDE-PATHS]: Cross-IDE script path resolution
   errors.push(...validatePathResolution(dirName, content));
 
-  // [FR-UNIVERSAL.IDE-NEUTRAL](../documents/requirements.md#fr-universal.ide-neutral-framework-ide-neutrality): framework skills/commands/agents must not name
+  // [REF:fr:universal.ide-neutral | FR-UNIVERSAL.IDE-NEUTRAL]: framework skills/commands/agents must not name
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
   // Model IDs belong in the CLI's `DEFAULT_MODEL_MAPS` (in flowai-cli), not
   // in user-facing skill bodies.
@@ -524,7 +524,7 @@ export async function validateSkill(
     errors.push(...validateIdeNeutrality(dirName, content));
   }
 
-  // [FR-UNIVERSAL.REFS](../documents/requirements.md#fr-universal.refs-file-references-agentskills.io): Reference depth
+  // [REF:fr:universal.refs | FR-UNIVERSAL.REFS]: Reference depth
   errors.push(...await validateReferenceDepth(skillPath, dirName));
 
   return errors;

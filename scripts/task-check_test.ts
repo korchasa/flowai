@@ -3,7 +3,7 @@ import { buildCheckPlan } from "./task-check.ts";
 
 Deno.test("buildCheckPlan: prerequisites regenerates composite SKILL.md files", () => {
   const plan = buildCheckPlan();
-  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
   // generator must run BEFORE any parallel check (fmt, lint, tests,
   // check-skills) so they see the rendered SKILL.md files on disk.
   const prereqLabels = plan.prerequisites.map((c) => c.args.join(" "));

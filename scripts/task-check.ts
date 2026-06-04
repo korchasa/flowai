@@ -1,4 +1,4 @@
-// [FR-MAINT](../documents/requirements.md#fr-maint-project-maintenance) — project maintenance via deno task check
+// [REF:fr:maint | FR-MAINT] — project maintenance via deno task check
 import { shouldAutoInstall } from "./sync-plugins-local.ts";
 import { runCommands, runCommandsInParallelBuffered } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
@@ -20,7 +20,7 @@ type CheckPlanOptions = {
  * Builds the check plan: bundle first (prerequisite), then all checks in parallel.
  */
 export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
-  // implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+  // implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
   // When the dogfood loop is engaged, the build step must bake the dogfood
   // marketplace name into the catalog up-front so the subsequent
   // `sync-plugins-local --no-build` re-uses a correctly-named dist. CI / casual
@@ -31,7 +31,7 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
   }
 
   const prerequisites: CommandSpec[] = [
-    // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+    // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
     // Generated SKILL.md files are gitignored build artefacts; the generator
     // runs as a prerequisite so every downstream consumer (fmt, lint, tests,
     // check-skills, check-pack-refs --leakage) sees up-to-date files. The
@@ -124,7 +124,7 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-pack-refs.ts"],
       },
-      // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+      // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
       // bundle-leakage gate: builds framework.tar locally with the same
       // --exclude flags as CI, unpacks it, fails on any generator input
       // (framework/atoms, framework/composites, manifest, or legacy source)

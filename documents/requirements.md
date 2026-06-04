@@ -42,18 +42,18 @@ FR-DIST.MAPPING open questions (parallel)
 
 Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need user decisions before command sync implementation.
 
-### FR-CMD-EXEC: Command Execution
+### FR-CMD-EXEC: Command Execution [ANC:fr:cmd-exec]
 
 - **Description:** The system must provide executable workflows for common development tasks, accessible via chat commands (`/<command>`).
 - **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
 - **Acceptance verified by acceptance tests:** See Component Coverage Matrix (section 3.8) — all commands benchmarked.
 
-### FR-RULES: Rule Enforcement
+### FR-RULES: Rule Enforcement [ANC:fr:rules]
 
 - **Description:** The system must automatically apply development rules and coding standards (code style, TDD, documentation).
 - **Acceptance verified by acceptance tests:** `setup-agent-code-style-deno-basic`, `setup-agent-code-style-strict-basic`
 
-### FR-DOCS: Documentation Management
+### FR-DOCS: Documentation Management [ANC:fr:docs]
 
 - **Description:** The system must define and enforce documentation schemas (SRS/SDS) to maintain project knowledge. The shipped `AGENTS.md` project-instructions template is the only plugin location allowed to define concrete project-document paths and schema blocks; `CLAUDE.md` exposes the same content only as a compatibility alias/mirror.
 - **Tasks:** [doc-schema-indirection](tasks/2026/05/doc-schema-indirection.md)
@@ -61,13 +61,13 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] Project-document path/schema rules live in `AGENTS.md`; `CLAUDE.md` is same-content compatibility, not a second schema source. Evidence: `framework/core/assets/AGENTS.template.md`.
   - [x] Distributed plugin primitives outside `AGENTS*`/`CLAUDE*` templates avoid concrete SRS/SDS/tasks/index paths and schema blocks. Evidence: `scripts/check-skills_test.ts::doc schema indirection`.
 
-### FR-HOWTO: Automation & How-To
+### FR-HOWTO: Automation & How-To [ANC:fr:howto]
 
 - **Description:** The system must provide short-named guides for complex or situational tasks (QA, testing, diagrams, prompts, research, etc.).
 - **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
 - **Acceptance verified by acceptance tests:** See Component Coverage Matrix (section 3.8) — all skills benchmarked.
 
-### FR-MAINT: Project Maintenance
+### FR-MAINT: Project Maintenance [ANC:fr:maint]
 
 - **Description:** The system must provide automated project maintenance via `deno task check` (composite generation, plugin marketplace build + validation, linting, testing, validation).
 - **Tasks:** [local-marketplace-namespace](tasks/2026/05/local-marketplace-namespace.md)
@@ -81,7 +81,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `AUTO_INSTALL_PLUGINS=true` (env or `.env`) gates an additional `sync-plugins-local` step inside `deno task check`; in this mode the build prerequisite also receives `--marketplace-name flowai-plugins-local` so the auto-installed catalog carries the dogfood name. Default check runs leave the catalog under the upstream name `flowai-plugins`.
     Evidence: `scripts/task-check_test.ts::buildCheckPlan: sync-plugins-local is gated by env flag`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins gets --marketplace-name flowai-plugins-local when syncPluginsLocal is on`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins runs without --marketplace-name in default plan` + `scripts/sync-plugins-local_test.ts` (`autoInstallEnabled`).
 
-### FR-ONBOARD: Developer Onboarding & Workflow Clarity
+### FR-ONBOARD: Developer Onboarding & Workflow Clarity [ANC:fr:onboard]
 
 - **Description:** The project's `README.md` must provide clear, actionable instructions for developers on when and how to use the available tools.
 - **Use case scenario:** A new developer joins the project and reads the `README.md` to understand the workflow for starting the project, implementing a task, and performing periodic maintenance.
@@ -91,14 +91,14 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] Schedule for periodic maintenance (Health Check, Docs Audit, Agent Updates).
   - [x] Guidance for specific cases (Investigate, Answer, Engineer).
 
-### FR-ACCEPT: Benchmarking
+### FR-ACCEPT: Benchmarking [ANC:fr:accept]
 
 - **Description:** Evidence-based acceptance testing system to evaluate agent skill execution quality. `deno task acceptance-tests`.
 - **Key capabilities:** Isolated sandbox execution (`SpawnedAgent`), LLM-based Judge, evidence collection, interactive flows (`UserEmulator`), cost/token tracking, HTML tracing, parallel execution protection.
 - **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/acceptance-tests/` and `framework/<pack>/commands/<command>/acceptance-tests/`), pack-level scenarios (`framework/<pack>/acceptance-tests/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
 - **Implementation:** `scripts/acceptance-tests/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
 
-### FR-ACCEPT-ISOLATION: Sandbox Isolation From User-Level Skills
+### FR-ACCEPT-ISOLATION: Sandbox Isolation From User-Level Skills [ANC:fr:accept-isolation]
 
 - **Desc:** `deno task acceptance-tests` MUST judge the sandbox `SKILL.md` (the one written into `<sandbox>/.claude/skills/<name>/`), not the developer's user-level installation at `~/.claude/skills/<name>/`. Without this, framework-source `SKILL.md` edits never reach the model: Claude Code's Skill tool resolves user-level over project-level on collision, so any DIFF skill silently delivers stale text and the Acceptance Test TDD RED→GREEN cycle produces no observable change.
 - **Scenario:** A contributor edits `framework/<pack>/skills/<name>/SKILL.md` and runs `deno task acceptance-tests -f <name>`. The model must load the edited body, not whatever the user happened to install via `flowai sync` weeks ago. Constraint: the acceptance-tests runner MUST NOT modify, move, symlink, or delete `~/.claude/skills/`.
@@ -123,7 +123,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Open (follow-up):**
   - [ ] `~/.local/share/claude/versions/<v>/` PID-lock contention under parallel scenarios is a pre-existing concern — not introduced by isolation, but worth a separate fix.
 
-### FR-ACCEPT-GUARDS: Resource Guards For Spawned Agents
+### FR-ACCEPT-GUARDS: Resource Guards For Spawned Agents [ANC:fr:accept-guards]
 
 - **Desc:** `SpawnedAgent` MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a `configure-deno-commands` scenario produced a `deno test -A` chain that grew to ~720 descendants in 90 s); (2) **bloat-OOM** — a single agent process leaks/holds memory until the kernel VM compressor saturates (incident at 07:50: `compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel found "no eligible processes" to jetsam, `SystemUIServer` froze in TCC checks, host hung until forced reboot at 08:53). Container-based isolation is unavailable (see FR-ACCEPT-ISOLATION trade-offs), so guards run in userspace on the host.
 - **Scenario:** A bench scenario triggers either (a) a runaway shell command that forks recursively or (b) a long-context turn that pushes the agent's V8 heap past available RAM. The guard MUST kill the agent's entire process tree (root PID + all descendants) and proceed to the judge with an `exit_code_zero` failure verdict, instead of letting the kernel hang the host. A pre-flight check MUST refuse to spawn the next agent when the host is already under enough pressure that the next spawn risks the same compressor-shortage state.
@@ -152,7 +152,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - Aggregate RSS accumulator across all live `SpawnedAgent` instances. Activate only when `task-bench.ts` adds concurrent scenario execution; current runner is sequential.
   - End-to-end re-validation on a low-memory host with the original fork-loop scenario re-introduced. Verified indirectly on 2026-05-09: re-ran `configure-deno-commands-trigger-pos-{1,2,3}` (the `-2`/`-3` scenarios were later consolidated into `-1` on 2026-05-10), `-basic`, `setup-ai-ide-devcontainer-{deno-claude,feature-discovery}` after the SKILL.md fix — six previously-dangerous scenarios passed without tripping the watchdog and without measurable swap pressure.
 
-### FR-ACCEPT-CACHE: Acceptance Test Result Cache
+### FR-ACCEPT-CACHE: Acceptance Test Result Cache [ANC:fr:accept-cache]
 
 - **Desc:** Commit per-scenario acceptance test verdicts to the repo; re-run only when a cache-key input changes. Makes `deno task acceptance-tests` an incremental operation.
 - **Scenario:** Contributor runs `deno task acceptance-tests`; unchanged scenarios hit the cache and return instantly with zero LLM calls. A touched primitive or fixture forces re-execution. `--cache-check` is a CI gate that fails when the cache is stale.
@@ -174,7 +174,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Open (follow-up):**
   - [ ] CI step `deno task acceptance-tests --cache-check` that fails a PR when a primitive was touched without refreshing the cache.
 
-### FR-ACCEPT.RULES: AGENTS.md Rules Benchmarks
+### FR-ACCEPT.RULES: AGENTS.md Rules Benchmarks [ANC:fr:accept.rules]
 
 - **Description:** Pack-level acceptance tests (`framework/core/acceptance-tests/agents-rules-*/`) that verify agents follow AGENTS.md template rules on a real project fixture (ai-skel-ts). Template stored at `framework/core/assets/AGENTS.template.md`.
 - **Acceptance verified by acceptance tests:**
@@ -192,7 +192,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [ ] `agents-rules-no-silent-fallbacks` — don't add defaults/fallbacks without asking
   - [ ] `agents-rules-run-all-tests` — run full test suite, not just changed files
 
-### FR-ACCEPT.TRIGGER: Skill Description-Matching Verification
+### FR-ACCEPT.TRIGGER: Skill Description-Matching Verification [ANC:fr:accept.trigger]
 
 - **Desc:** Every skill in `framework/<pack>/skills/` MUST have 3 trigger scenarios verifying description-matching correctness: 1 positive (skill should activate), 1 adjacent-negative (a different skill is the right match), 1 false-use-negative (query is in the skill's domain but the wrong intent for it). Catches regressions where a description rewrite makes the skill invisible to the model (false negative) or over-triggered (false positive).
 - **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
@@ -213,22 +213,22 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/acceptance-tests/trigger-*' | wc -l` equals (skill count) × 3.
 - **Status:** [x]
 
-### FR-EXP: Experiments Subsystem (RELOCATED)
+### FR-EXP: Experiments Subsystem (RELOCATED) [ANC:fr:exp]
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). Requirement retained here as a stub so historical traceability links keep resolving.
 - **Description:** Parameterized empirical studies of AI agent platforms (model × IDE × memory layout × workload). Distinct from regression acceptance tests (which stay in this repo). Results are committed numeric evidence, not pass/fail tests.
 - **Rationale for split:** Experiments had zero runtime overlap with the framework product, inflated the `flow` clone with ever-growing committed results, and required live Claude CLI + macOS keychain auth that this repo's CI cannot provide.
 - **Scope in `flow`:** This repo no longer contains experiment code, the `deno task experiment` entry point, or the `writeMemoryFile` / `getCleanroomEnv` / `MemoryScope` adapter extensions. The `AgentAdapter` contract returns to acceptance-test-only responsibilities.
 
-### FR-EXP.MEMORY-LENGTH: AGENTS.md/CLAUDE.md Max Length Experiment (RELOCATED)
+### FR-EXP.MEMORY-LENGTH: AGENTS.md/CLAUDE.md Max Length Experiment (RELOCATED) [ANC:fr:exp.memory-length]
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 along with all `claude-md-length` variants and committed results. See `flowai-experiments:scripts/experiments/claude-md-length/README.md` for methodology, first-run headline numbers, and rerun instructions.
 
-### FR-COMPONENT: Component Coverage
+### FR-COMPONENT: Component Coverage [ANC:fr:component]
 
 All 39 skills have at least one acceptance test scenario. Coverage is the source of truth: `find framework/*/acceptance-tests/*" | wc -l`. Agents (5 canonical definitions) are not tested individually via acceptance tests — they are exercised as subagents within skill acceptance tests.
 
-### FR-INIT: Project Initialization
+### FR-INIT: Project Initialization [ANC:fr:init]
 
 - **Description:** The `init` skill bootstraps AI agent understanding of a project by analyzing codebase, generating a single AGENTS.md file from the pack-level asset template, and scaffolding documentation (CLAUDE.md, SRS, SDS). Uses `generate_agents.ts` (Deno/TS, read-only) for project analysis. The AGENTS.md template is a pack-level asset (not a init scaffold) — its updates are tracked independently via `assets:` in `pack.yaml`. Legacy three-file layouts (`documents/AGENTS.md`, `scripts/AGENTS.md`) are detected and collapsed into the single root file during brownfield initialization.
 - **Use case scenario:** User runs `/init` on existing or new project. Agent runs the analysis script, determines Greenfield vs Brownfield by its own judgment, interviews user (Greenfield) or reverse-engineers architecture (Brownfield), generates AGENTS.md, documentation (SRS, SDS, task file), and configures development commands.
@@ -237,7 +237,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-INIT.STACK Stack detection**: `generate_agents.ts` detects 6 stacks via marker files.
   - [x] **FR-INIT.TESTS Unit tests**: `generate_agents.test.ts` covers 8 scenarios.
 
-### FR-DEV-SYNC: Multi-IDE Dev Resource Distribution
+### FR-DEV-SYNC: Multi-IDE Dev Resource Distribution [ANC:fr:dev-sync]
 
 - **Description:** Dev resources (skills, agents, scripts) in `.claude/` are generated by `deno task sync-local` from `framework/` directly. NOT tracked in git. Auto-synced via SessionStart (bootstrap) and SessionEnd (persist changes) hooks.
 - **Use case scenario:** Developer clones project. SessionStart hook detects empty `.claude/skills/` and runs `deno task sync-local` to populate from `framework/`. Changes to `framework/` are re-synced on each SessionEnd.
@@ -248,13 +248,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `deno task sync-local` uses `LocalSource` (reads `framework/` on disk).
   - [x] `check-skills.ts` validates `.claude/skills/` (dev skills).
 
-### FR-DIST: Global Framework Distribution — flowai
+### FR-DIST: Global Framework Distribution — flowai [ANC:fr:dist]
 
 - **Description:** `flowai` CLI tool (developed in the external [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) repo, published to JSR as `@korchasa/flowai`) syncs framework skills/agents into project-local IDE config dirs. Single command, no subcommands. Reads bundled framework data (no network dependency at runtime). The CLI repo pins a framework revision via `framework.lock` and consumes a SHA-256-verified `framework.tar.gz` released from this repo (FR-DIST.BUNDLE.PIN).
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md), [simplify-update-boundaries](tasks/2026/05/simplify-update-boundaries.md), [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
 - **Def/Abbr:** CLI = flowai, BundledSource = JSON artifact with all framework files baked at publish time.
 
-#### FR-DIST.SYNC Sync Command (`flowai`)
+#### FR-DIST.SYNC Sync Command (`flowai`) [ANC:fr:dist.sync]
 - **Desc:** Single command `flowai` run in project dir. Reads bundled framework, syncs skills/agents to IDE config dirs. Supports project scope (default) and global scope (`--global`) — scope drives config path, IDE target path, asset split, hook merge, and scope-field filter (see FR-DIST.GLOBAL and FR-PACKS.SCOPE).
 - **Scenario A (no config, interactive):** `flowai` without `.flowai.yaml` → interactive prompts (IDEs, packs) → generates `.flowai.yaml` → syncs.
 - **Scenario A2 (no config, non-interactive):** `flowai -y` without `.flowai.yaml` → auto-detect IDEs, select all packs → generates `.flowai.yaml` with defaults → syncs.
@@ -285,7 +285,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Global-mode plan preview includes `Target dirs:` listing resolved user-level base dirs (including Codex's `~/.agents/skills` split) before the confirmation prompt.
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
-#### FR-DIST.CONFIG Config Generation
+#### FR-DIST.CONFIG Config Generation [ANC:fr:dist.config]
 - **Desc:** Interactive `.flowai.yaml` creation when config missing. Path depends on scope: `<cwd>/.flowai.yaml` (project) or `~/.flowai.yaml` (global). Both files may coexist; project scope wins when both are present and no flag is passed.
 - **Acceptance:**
   - [x] Prompts: IDEs (auto-detected), skills include/exclude, agents include/exclude.
@@ -293,7 +293,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Writes valid `.flowai.yaml`.
   - [x] Global mode writes `~/.flowai.yaml`; project mode writes `<cwd>/.flowai.yaml`. When both exist and no flag is passed, project config wins.
 
-#### FR-DIST.GLOBAL Scope Selection (Global / Local / Auto)
+#### FR-DIST.GLOBAL Scope Selection (Global / Local / Auto) [ANC:fr:dist.global]
 
 - **Desc:** `flowai` / `flowai sync` select scope via one of three mutually exclusive flags: `--global` / `-g` (user-level install), `--local` / `-l` (project-local install), and `--auto` (default). In `--auto` the CLI prefers the project config when present and falls back to the global config, eliminating accidental project-local installs on top of an existing global setup. Scope drives every path resolution decision: config file location, IDE base dir per IDE, asset split (templates installed both modes; artifact diff project-only), scaffold sync (project-only), and hook merge path. Scope is also a filter key on the `scope:` frontmatter field of skills and commands (see FR-PACKS.SCOPE).
 - **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md)
@@ -342,7 +342,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `flowai migrate` requires explicit `--global` or `--local` (no auto-resolution).
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
-#### FR-DIST.MARKETPLACE Claude Code + Codex Plugin Marketplace
+#### FR-DIST.MARKETPLACE Claude Code + Codex Plugin Marketplace [ANC:fr:dist.marketplace]
 
 - **Desc:** Additional native-plugin distribution channel for Claude Code and Codex users. The framework publishes a generated marketplace at downstream repo `korchasa/flowai-plugins`. Surface catalogs (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-plugins.ts` on every framework release (CI step inside the existing `release` job, gated on `framework-v*` tag publication). No plugin artefacts are committed to this repo (`dist/` is gitignored). Six marketplace packs ship as separate plugins (`flowai`, `flowai-deno`, `flowai-devtools`, `flowai-engineering`, `flowai-memex`, `flowai-typescript`). flowai CLI distribution (FR-DIST.SYNC) remains supported and is the channel for Cursor / OpenCode.
 - **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md), [codex-plugin-marketplace-support](tasks/2026/05/codex-plugin-marketplace-support.md), [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md), [local-marketplace-namespace](tasks/2026/05/local-marketplace-namespace.md)
@@ -409,7 +409,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - CLI aborts with an explicit message when it detects an installed Claude Code plugin for the same pack — implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli). Evidence on completion: install plugin, run `flowai sync`, confirm non-zero exit with the documented message.
 - **Out of scope:** submission to official Anthropic marketplace (`claude-plugins-official`) or public Codex Plugin Directory; `latest` / `dev` release channel; npm-source plugin distribution.
 
-#### FR-PACKS.SCOPE Scope Frontmatter Field
+#### FR-PACKS.SCOPE Scope Frontmatter Field [ANC:fr:packs.scope]
 
 - **Desc:** SKILL.md frontmatter under `framework/<pack>/{commands,skills}/*/` MAY declare an optional `scope` field with values `project-only` | `global-only`. Absent = installable in both modes. The CLI filters primitives in `resolvePackResources()` based on the active scope.
 - **Usage:**
@@ -422,26 +422,26 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] CLI filter in `cli/src/sync.ts::resolvePackResources` excludes `scope: project-only` primitives when scope=global, excludes `scope: global-only` when scope=project.
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
-#### FR-DIST.FILTER Selective Sync
+#### FR-DIST.FILTER Selective Sync [ANC:fr:dist.filter]
 - **Desc:** `.flowai.yaml` controls which skills/agents to sync.
 - **Acceptance:**
   - [x] Include/exclude filters for skills and agents.
   - [x] Include + exclude mutually exclusive.
 
-#### FR-DIST.SYMLINKS CLAUDE.md Symlinks
+#### FR-DIST.SYMLINKS CLAUDE.md Symlinks [ANC:fr:dist.symlinks]
 - **Desc:** When `claude` IDE configured, create `CLAUDE.md -> AGENTS.md` symlink at project root.
 - **Acceptance:**
   - [x] Scans project, creates/updates symlinks.
   - [x] Skips existing regular files.
 
-#### FR-DIST.DETECT IDE Auto-Detection
+#### FR-DIST.DETECT IDE Auto-Detection [ANC:fr:dist.detect]
 - **Desc:** Detect IDEs by config dir presence (`.cursor/`, `.claude/`, `.opencode/`, `.codex/`).
 - **Acceptance:**
   - [x] Detects 4 IDEs (Cursor, Claude Code, OpenCode, OpenAI Codex).
   - [x] Used as default when `ides` not in `.flowai.yaml`.
   - [x] `isInsideIDE()` recognises `CURSOR_AGENT`, `CLAUDECODE`, `OPENCODE`, plus `CODEX_THREAD_ID` / `CODEX_SANDBOX` (Codex sets these in every `codex exec` session).
 
-#### FR-DIST.UPDATE Pre-Flight Update Notice
+#### FR-DIST.UPDATE Pre-Flight Update Notice [ANC:fr:dist.update]
 - **Desc:** Before `flowai` / `flowai sync`, check JSR for a newer version and print a notice only. Never auto-install — users must run `flowai update` to apply. Fail-open (network errors ignored).
 - **Acceptance:**
   - [x] Fetches JSR meta, compares semver.
@@ -451,7 +451,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] On newer version: prints `Update available: X → Y. Run \`flowai update\` to install.`
   - [x] Never spawns `deno install` from `flowai` / `flowai sync`.
 
-#### FR-DIST.UPDATE-CMD Self-Update Subcommand
+#### FR-DIST.UPDATE-CMD Self-Update Subcommand [ANC:fr:dist.update-cmd]
 - **Desc:** `flowai update` subcommand is the ONLY entry point that installs a newer binary. Checks JSR, prompts (or prints command in `-y` mode), installs via `deno install -g -A -f jsr:@korchasa/flowai@<ver>`.
 - **Acceptance:**
   - [x] `flowai update` subcommand registered in CLI.
@@ -461,7 +461,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `yes` mode: prints update command instead of prompting.
   - [x] `runSelfUpdate()` used only by `flowai update`; `flowai` / `flowai sync` use notify-only `notifyUpdateAvailable()`.
 
-#### FR-DIST.BUNDLE Bundled Source
+#### FR-DIST.BUNDLE Bundled Source [ANC:fr:dist.bundle]
 - **Desc:** Framework files bundled into the CLI package's `src/bundled.json` at publish time. No network dependency during sync. The CLI lives in the external [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) repo; this repo provides the framework content via a SHA-256-pinned tarball release (see FR-DIST.BUNDLE.PIN).
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
 - **Acceptance:**
@@ -469,7 +469,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Bundling logic lives in `scripts/bundle-framework-lib.ts` (in flowai-cli); entry script `scripts/bundle-framework.ts` is a thin wrapper.
   - [x] Bundle output is byte-deterministic (sorted keys, stable JSON serialisation) — verified by `scripts/bundle-framework_test.ts::bundleFrameworkDir: byte-deterministic across two runs` (in flowai-cli).
 
-#### FR-DIST.BUNDLE.PIN Pinned-Tarball Bundle Source (Post-Split)
+#### FR-DIST.BUNDLE.PIN Pinned-Tarball Bundle Source (Post-Split) [ANC:fr:dist.bundle.pin]
 - **Desc:** After the CLI is extracted to a standalone repo (`korchasa/flowai-cli`), `bundleFrameworkDir` consumes framework content from a downloaded GitHub-release tarball instead of an adjacent `framework/` directory. The CLI repo pins the framework revision via a committed `framework.lock` file (version, commit_sha, tarball_sha256). The bundle script downloads `framework.tar.gz` from `https://github.com/korchasa/flowai/releases/download/framework-v<version>/`, verifies its SHA-256 against `tarball_sha256`, and aborts on any mismatch. Runtime stays offline — only the bundle step touches the network.
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
 - **Acceptance:**
@@ -478,7 +478,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Bundle output produced from the pinned tarball is byte-identical to the monorepo bundle output for the same framework commit SHA (Phase 3 parity acceptance verified for commit `656151d`).
   - [x] No fallback path: download / 404 / checksum failures all abort. The script never reads a stale cached tarball.
 
-#### FR-DIST.USER-SYNC Cross-IDE User Resource Sync
+#### FR-DIST.USER-SYNC Cross-IDE User Resource Sync [ANC:fr:dist.user-sync]
 
 - **Desc:** When `user_sync: true` in `.flowai.yaml` and ≥2 IDEs configured, propagate user-created resources (non-`flowai-*`, non-framework) across IDE config dirs. Canonical source = newest mtime.
 - **Acceptance:**
@@ -492,7 +492,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Skipped when <2 IDEs.
   - [x] Idempotent: repeated runs produce 0 writes.
 
-#### FR-DIST.MIGRATE One-Way IDE Migration
+#### FR-DIST.MIGRATE One-Way IDE Migration [ANC:fr:dist.migrate]
 
 - **Desc:** `flowai migrate <from> <to>` migrates all primitives (skills, agents, commands) from one IDE config dir to another in a single pass. Includes both framework (`flowai-*`) and user-created resources. Agent frontmatter transformed for target IDE. Rules and hooks excluded (format incompatible).
 - **Acceptance:**
@@ -506,7 +506,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Unknown IDE → error before FS operations.
   - [x] Same from/to → error.
 
-#### FR-DIST.MAPPING Cross-IDE Resource Mapping (universal representation)
+#### FR-DIST.MAPPING Cross-IDE Resource Mapping (universal representation) [ANC:fr:dist.mapping]
 
 - **Desc:** Defines how each logical resource type maps to IDE-specific paths and formats. flowai uses these mappings during framework sync (FR-DIST.SYNC) and user sync (FR-DIST.USER-SYNC).
 
@@ -582,7 +582,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Framework resources excluded from user sync.
   - [ ] Command sync across IDEs (pending open question resolution)
 
-#### FR-DIST.CODEX-AGENTS OpenAI Codex Subagent Sync
+#### FR-DIST.CODEX-AGENTS OpenAI Codex Subagent Sync [ANC:fr:dist.codex-agents]
 
 - **Desc:** Sync universal agent files (`framework/<pack>/agents/*.md`) to OpenAI Codex subagent format. Codex uses TOML configuration (`~/.codex/config.toml` or `<repo>/.codex/config.toml`) with `[agents.<name>]` tables that reference sidecar agent files via `config_file`. Agent prompt body lives in `<repo>/.codex/agents/<name>.toml` as `developer_instructions` (TOML multi-line string). Flowai owns current bundled agent names and legacy `flowai-*` entries only for one-way cleanup (see FR-DIST.CLEAN-PREFIX); user-authored tables outside the bundle are preserved.
 - **Scenario:** `flowai sync` with `ides: [codex]` and a set of universal agents writes each agent body to `.codex/agents/<name>.toml` (with `name`/`description`/`developer_instructions`) and merges `[agents.<name>]` entries into `.codex/config.toml` via `mergeCodexConfig`. Removing (or renaming) an agent removes its table and sidecar on next run via bundled-name ownership plus legacy-prefix cleanup. Malformed TOML in `.codex/config.toml` throws a clear error naming the file path — does NOT silently overwrite user config.
@@ -597,7 +597,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Legacy `.codex/flowai-agents.json` manifest is deleted on next sync after upgrade (one-shot migration).
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
-#### FR-DIST.CLEAN-PREFIX Legacy Prefix Orphan Cleanup
+#### FR-DIST.CLEAN-PREFIX Legacy Prefix Orphan Cleanup [ANC:fr:dist.clean-prefix]
 
 - **Desc:** Framework sync owns current bundled primitive names and treats legacy `flowai-*` installed names as removable migration orphans. After writing the current short-name set, flowai scans managed target dirs and deletes any legacy `flowai-*` entry whose short-name equivalent is in the current keep-set or whose old prefixed name disappeared from the bundle. Supersedes the per-name `computeDeletePlan` comparison and the Codex `flowai-agents.json` manifest — both missed renames where the old name disappeared from the current bundle.
 - **Scenario A (skill/command rename):** Framework renames `flowai-plan` → `plan`. On next `flowai sync`, `{ide}/skills/plan/` is written and legacy `{ide}/skills/flowai-plan/` is removed. User skill `my-skill` and third-party skill `paperclip` are untouched.
@@ -621,7 +621,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `runUserSync` is unaffected — no prefix cleanup there (framework entries already filtered out at scan stage).
     Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
 
-#### FR-DIST.CODEX-HOOKS OpenAI Codex Hook Sync (Experimental)
+#### FR-DIST.CODEX-HOOKS OpenAI Codex Hook Sync (Experimental) [ANC:fr:dist.codex-hooks]
 
 - **Desc:** Sync universal `hook.yaml` definitions to OpenAI Codex `hooks.json` format (`~/.codex/hooks.json` or `<repo>/.codex/hooks.json`). Codex uses Claude-Code-compatible event names (`PreToolUse`, `PostToolUse`, `SessionStart`, `UserPromptSubmit`) and a nested `hooks` structure very similar to Claude. The Codex hook subsystem is feature-gated behind `codex_hooks` (stage: under development) and the flowai sync path is gated behind `experimental.codexHooks: true` in `.flowai.yaml`. When the flag is absent or false, hook sync for Codex is skipped with an info log. This requirement is experimental — tests are tagged `@flaky-until-probed` until a live probe against enabled `codex_hooks` confirms the schema.
 - **Scenario:** With `experimental.codexHooks: true`, `flowai sync` transforms each hook definition via `transformHookForCodex` and calls `mergeCodexHooks` to produce a `hooks.json` with the Claude-style nested shape (`{ "hooks": { "PreToolUse": [{ matcher, hooks: [{ type: "command", command, timeout }] }] } }`). User-added hooks outside the flowai manifest are preserved. Removing a hook from the flowai set removes only its manifest-tracked entries.
@@ -632,7 +632,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `sync` installs hooks into `<cwd>/.codex/hooks.json` when flag is true.
   - [x] `cleanupRemovedHooks` removes only manifest-tracked entries for Codex.
 
-#### FR-SOURCE-OVERRIDE: Source Override (git branch / local path)
+#### FR-SOURCE-OVERRIDE: Source Override (git branch / local path) [ANC:fr:source-override]
 
 - **Desc:** `.flowai.yaml` `source` field overrides default BundledSource. Supports git branch/tag clone and local filesystem path. Default git URL: official repo (`https://github.com/korchasa/flowai.git`).
 - **Config:**
@@ -651,26 +651,26 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Cleanup on failure (tmpdir removed). Evidence: implemented in [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (CLI moved to external repo; see upstream tests).
   - [x] `deno task check` passes with all new tests. Evidence: 255 tests pass.
 
-### FR-AGENT-COMMIT: Conventional Commits — `agent` Type
+### FR-AGENT-COMMIT: Conventional Commits — `agent` Type [ANC:fr:agent-commit]
 
 - **Description:** Add `agent:` as a new commit type in Conventional Commits convention used by `commit`. Covers changes to agents, skills, `AGENTS.md`, and other AI-agent-related configuration in IDE directories.
 - **Use case scenario:** Developer modifies a skill's `SKILL.md` or updates an agent definition. On commit, the message is prefixed with `agent:` (e.g., `agent: update commit skill with atomic grouping rules`).
 - **Acceptance verified by acceptance tests:** `commit-agent-type`
 
-### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `review-and-commit`
+### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `review-and-commit` [ANC:fr:review-commit]
 
 - **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
 - **Generated origin:** `framework/composites.yaml` + `framework/composites/review-and-commit.md` per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `review-and-commit-approve`, `review-and-commit-reject`, `review-and-commit-auto-docs`, `review-and-commit-auto-invoke-reflect`, `review-and-commit-phase-2-diff-eliminated`, `review-and-commit-post-reflect-cleanup-commit`, `review-and-commit-parallel-delegation`, `review-and-commit-non-deno-project`
 
-### FR-DO-WITH-PLAN: Full-Cycle Workflow — `do-with-plan` [REMOVED]
+### FR-DO-WITH-PLAN: Full-Cycle Workflow — `do-with-plan` [REMOVED] [ANC:fr:do-with-plan]
 
 - **Description:** Removed. Functionality fully superseded by `ship` (FR-SHIP), which adds an explicit Push phase + 4 gates. Composite wrapper, manifest entry, generated SKILL.md, and 6 acceptance scenarios deleted.
 - **Tasks:** [do-with-plan-command](tasks/2026/05/do-with-plan-command.md), [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Status:** [x] Removed
 
-### FR-SKILL-COMPOSE: Generated Composite Skill Assembly
+### FR-SKILL-COMPOSE: Generated Composite Skill Assembly [ANC:fr:skill-compose]
 
 - **Description:** Composite and atomic SKILL.md files are **gitignored build artefacts** materialized from a single source of truth (`framework/atoms/*.md` + `framework/composites/*.md` wrappers + `framework/composites.yaml` manifest) by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts). The generator parametrizes atoms with `{{NAME}}` placeholders + `<param-branch>` blocks so one atom serves multiple composites with phase-specific divergence. **Each downstream consumer regenerates first**: `scripts/task-check.ts` runs `--write` as a prerequisite before fmt/lint/tests; `scripts/task-acceptance-tests.ts` runs `--write` before sandbox setup; `scripts/build-plugins.ts` runs `--write` before reading SKILL.md into the marketplace tree; the CI `Build framework tarball` step runs `--write` before `tar`. This makes drift between source and rendered output structurally impossible — there is no tracked rendered copy to fall behind. `--check` mode is now a syntax + gitignore-parity self-test (no longer a drift gate, since fresh-clone disk is empty). `--list-targets` emits the manifest's target paths for `.gitignore` parity checks. `.gitignore` must list exactly the target set; parity is enforced by `checkGitignoreParity` inside both `--write` and `--check` and exercised by a unit test. Generator inputs (`framework/atoms/`, `framework/composites/`, `composites.yaml`, and legacy `_atom.md` / `_composite.md`) are excluded from `framework.tar.gz` by `tar --exclude` flags in [.github/workflows/ci.yml](../.github/workflows/ci.yml) and re-verified by [scripts/check-pack-refs.ts `--leakage`](../scripts/check-pack-refs.ts); the rendered SKILL.md files ARE included in the tarball (generated immediately before `tar`). Composite canon (no Skill-tool delegation, "Self-contained — execute the inlined steps directly" marker in description, no source-skill names in description, explicit verdict-gate success/failure branches, single `<step_by_step>` per atom slot, 700-line cap) is machine-enforced by a canon validator inside the generator. Replaces the legacy substring-matching `scripts/check-skill-sync.ts` + `scripts/composite-skills.ts` infrastructure (removed in an earlier commit of the implementing task).
 - **Use case scenario:** A maintainer edits `framework/atoms/commit.md`. They run `deno task check` — `--write` regenerates the atom's standalone SKILL.md AND every composite SKILL.md that consumes the atom (`review-and-commit`, `ship`), each with phase-specific params. Fresh-clone scenario: developer clones, runs `deno task check`; the generator's `--write` prerequisite materializes all 7 SKILL.md files before any downstream check runs. Adding a new composite: the maintainer edits `framework/composites.yaml`, runs `deno task check`, sees a parity error from `checkGitignoreParity` pointing at the missing `.gitignore` entry; adds it; re-runs.
@@ -679,74 +679,74 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Evidence:** `deno test -A scripts/generate-skill-composites_test.ts && deno test -A scripts/check-pack-refs_test.ts && deno run -A scripts/generate-skill-composites.ts --check && deno run -A scripts/check-pack-refs.ts --leakage`
 - **Status:** [x]
 
-### FR-ATOM-IMPLEMENT: TDD Implement Atom — `implement`
+### FR-ATOM-IMPLEMENT: TDD Implement Atom — `implement` [ANC:fr:atom-implement]
 
 - **Description:** Model-invocable skill that drives the canonical TDD cycle (RED → GREEN → REFACTOR → CHECK, per [AGENTS.md § TDD Flow](../framework/AGENTS.md)) against a written plan's Solution section. Triggers on "implement under TDD per task plan" prompts without overlapping `plan` (planning), `review` (post-implement review), or `fix-tests` (existing-test repair). Source: `framework/atoms/implement.md`. Generated SKILL.md materialized by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts) per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `implement-tdd-cycle-completes`, `implement-returns-to-red-on-check-failure`, `implement-trigger-pos-1`, `implement-trigger-adj-1`, `implement-trigger-false-1`. (Implementation deviates from the task's "consolidated mixed-1" plan to keep `check-trigger-coverage.ts` happy without an exemption.)
 - **Status:** [x]
 
-### FR-ATOM-PUSH: Git Push Atom — `push`
+### FR-ATOM-PUSH: Git Push Atom — `push` [ANC:fr:atom-push]
 
 - **Description:** User-invoked command (kind=command; CLI writer injects `disable-model-invocation: true` at sync time) that pushes the current branch to its remote with a strict safety contract: (a) `--force` is forbidden; (b) `--force-with-lease` is permitted ONLY with explicit per-push user authorization in chat (not via a session-long flag), **AND ONLY on non-protected branches**; (c) if upstream is unset → run `--set-upstream` automatically AFTER explicit user confirmation that the branch should track; (d) when the remote branch is `main`/`master` AND the remote has commits the local does not have, REFUSE both `--force` and `--force-with-lease` absolutely — explicit per-push authorization does NOT unlock force here (canonical regression: destroying a teammate's commits). The agent asks with exactly two options: pull-rebase or abort. If the user volunteers "force", "overwrite", or similar, the agent restates the refusal; (e) when the local branch is unprotected but the user typed a target other than the current branch, refuse. Post-push verification: `git rev-parse @{u}` matches `HEAD`. Source: `framework/atoms/push.md`.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `push-happy-path`, `push-sets-upstream-on-first-push`, `push-refuses-force-on-divergence`. No trigger scenario (commands carry no trigger scenarios anywhere in the codebase).
 - **Status:** [x]
 
-### FR-SHIP: Terminal Full-Cycle Workflow — `ship`
+### FR-SHIP: Terminal Full-Cycle Workflow — `ship` [ANC:fr:ship]
 
 - **Description:** User-invoked composite command: plan → implement → review → commit → push. Five phases, four explicit gates (variant-selection after Plan, green-check before Review, verdict gate before Commit, clean-tree + branch-protection check before Push). Generated from `framework/composites/ship.md` + the five atoms (`plan`, `implement`, `review`, `commit`, `push`) per FR-SKILL-COMPOSE. Composite canon (no delegation, "Self-contained — execute the inlined steps directly" marker, explicit verdict-gate branches, 700-line cap) is machine-enforced by the generator.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `ship-full-cycle-success`, `ship-pauses-for-variant-selection`, `ship-rejects-on-changes-requested`, `ship-refuses-push-on-dirty-tree`. No trigger scenario (command convention).
 - **Status:** [x]
 
-### FR-SHIP-TASK: SDLC Continuation from a Ready Task File — `ship-task`
+### FR-SHIP-TASK: SDLC Continuation from a Ready Task File — `ship-task` [ANC:fr:ship-task]
 
 - **Description:** User-invoked composite command that picks up the SDLC AFTER the planning phase. Takes a path (or identifier) to a task file with a filled `## Solution` section and drives implement → review → commit → push. Four phases, three explicit gates (green-check before Review, verdict gate before Commit, clean-tree + branch-protection check before Push). The Plan atom is intentionally absent; the composite STOPs if the task file is missing or its `## Solution` is empty. Generated from `framework/composites/ship-task.md` + the four atoms (`implement`, `review`, `commit`, `push`) per FR-SKILL-COMPOSE. Composite canon (no delegation, "Self-contained — execute the inlined steps directly" marker, explicit verdict-gate branches, 700-line cap) is machine-enforced by the generator.
 - **Acceptance verified by acceptance tests:** `ship-task-full-cycle-success`. No trigger scenario (command convention).
 - **Status:** [x]
 
-### FR-DEVCONTAINER: AI Devcontainer Setup — setup-ai-ide-devcontainer
+### FR-DEVCONTAINER: AI Devcontainer Setup — setup-ai-ide-devcontainer [ANC:fr:devcontainer]
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.
 - **Acceptance verified by acceptance tests:** `setup-ai-ide-devcontainer-node-basic`, `setup-ai-ide-devcontainer-deno-with-claude`, `setup-ai-ide-devcontainer-deno-flowai`, `setup-ai-ide-devcontainer-brownfield-existing`, `setup-ai-ide-devcontainer-feature-discovery`, `setup-ai-ide-devcontainer-opencode-multi-cli`
 
-### FR-UNIVERSAL: Universal Skill & Script Requirements
+### FR-UNIVERSAL: Universal Skill & Script Requirements [ANC:fr:universal]
 
 - **Description:** All framework skills MUST conform to the agentskills.io standard and work identically across supported IDEs (Cursor, Claude Code, OpenCode). Scripts bundled with skills MUST be cross-IDE compatible.
 - **Tasks:** [doc-schema-indirection](tasks/2026/05/doc-schema-indirection.md)
 - **Use case scenario:** A developer installs flowai skills via flowai. Skills with bundled scripts work in any of the three supported IDEs without modification.
 - **Priority:** High (foundational for multi-IDE support).
 
-#### FR-UNIVERSAL.STRUCT Directory Structure (agentskills.io)
+#### FR-UNIVERSAL.STRUCT Directory Structure (agentskills.io) [ANC:fr:universal.struct]
 
 - **Acceptance:**
   - [x] Every skill is a directory with `SKILL.md` (required) and optional `scripts/`, `references/`, `assets/`, `evals/` subdirectories. No other top-level conventions (README.md, CHANGELOG.md). Enforced by `scripts/check-skills.ts`.
 
-#### FR-UNIVERSAL.FRONTMATTER Frontmatter (agentskills.io)
+#### FR-UNIVERSAL.FRONTMATTER Frontmatter (agentskills.io) [ANC:fr:universal.frontmatter]
 
 - **Acceptance:**
   - [x] `name` (required, max 64 chars, `[a-z0-9-]`, must match parent directory name) and `description` (required, max 1024 chars). Optional: `license`, `compatibility`, `metadata`, `allowed-tools` (experimental), `disable-model-invocation`. Enforced by `scripts/check-skills.ts`.
 
-#### FR-UNIVERSAL.DISCLOSURE Progressive Disclosure (agentskills.io)
+#### FR-UNIVERSAL.DISCLOSURE Progressive Disclosure (agentskills.io) [ANC:fr:universal.disclosure]
 
 - **Acceptance:**
   - [x] Metadata (~100 tokens) loaded at startup; full SKILL.md (<5000 tokens, <500 lines) on activation; scripts/references/assets loaded only when required. Enforced by `scripts/check-skills.ts`.
   - [x] **Composite-skill exemption (FR-SKILL-COMPOSE):** the composite roster is derived live from `framework/composites.yaml` `composites:` keys via [scripts/lib/composite-list.ts](../scripts/lib/composite-list.ts); the SKILL.md files for those composites are exempt from the 5000-token cap. Their byte count is mechanically dictated by the atom `<step_by_step>` blocks the generator inlines; the no-delegation canon is machine-enforced by the generator's canon validator (see `framework/CLAUDE.md` § Composite Skill Authoring). Line cap (500) and frontmatter catalog cap (100 tokens) still apply. No separate list to keep in sync — adding a composite to `framework/composites.yaml` automatically exempts it.
 
-#### FR-UNIVERSAL.REFS File References (agentskills.io)
+#### FR-UNIVERSAL.REFS File References (agentskills.io) [ANC:fr:universal.refs]
 
 - **Acceptance:**
   - [x] One level deep from SKILL.md. No nested reference chains. Enforced by `scripts/check-skills.ts`.
 
-#### FR-UNIVERSAL.XIDE-PATHS Cross-IDE Script Path Resolution
+#### FR-UNIVERSAL.XIDE-PATHS Cross-IDE Script Path Resolution [ANC:fr:universal.xide-paths]
 
 - **Acceptance:**
   - [x] **Relative paths**: SKILL.md MUST reference scripts using relative paths from the skill root (e.g., `scripts/validate.ts`, `python3 scripts/process.py`). Per agentskills.io client implementation guide, the IDE resolves relative paths against the skill's directory and converts to absolute paths in tool calls. All framework SKILL.md files migrated to relative paths.
   - [x] **No custom path placeholders**: Do NOT use custom placeholders like `<this-skill-dir>` in framework skills. The agentskills.io standard defines relative paths as the canonical mechanism; IDEs are responsible for resolution. Existing skills using `<this-skill-dir>` MUST be migrated to plain relative paths. Enforced by `scripts/check-skills.ts`.
   - [x] **No IDE-specific path variables**: Do NOT use `${CLAUDE_SKILL_DIR}` or other IDE-specific variables in framework skills. These are IDE extensions, not part of the agentskills.io standard, and break portability. Enforced by `scripts/check-skills.ts`.
 
-#### FR-UNIVERSAL.IDE-NEUTRAL Framework IDE Neutrality
+#### FR-UNIVERSAL.IDE-NEUTRAL Framework IDE Neutrality [ANC:fr:universal.ide-neutral]
 
 - **Desc:** Framework SKILL.md bodies and command bodies MUST NOT name a specific IDE model ID or CLI binary. Model resolution happens at install time via `DEFAULT_MODEL_MAPS` and `resolveModelTier`; hard-coding `gpt-5.x`, `claude-opus-x`, or `claude-sonnet-x` breaks cross-IDE portability and drifts out of sync when IDE model catalogs change. Abstract tiers (`max`/`smart`/`fast`/`cheap`/`inherit`) are the only portable way to express intent.
 - **Acceptance:**
@@ -754,7 +754,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
   - [x] Acceptance tests directory (`framework/*/acceptance-tests/`) and `.claude/skills/` dev resources are exempt (not distributed).
 
-#### FR-UNIVERSAL.DOC-SCHEMA Documentation Schema Indirection
+#### FR-UNIVERSAL.DOC-SCHEMA Documentation Schema Indirection [ANC:fr:universal.doc-schema]
 
 - **Desc:** Distributed plugin primitives MUST resolve project documentation through semantic roles declared by the project-instructions artifact before reading/writing docs: `SRS` (requirements), `SDS` (design), `tasks` (persistent plans), `index` (navigation aggregate). Plugin resources MUST NOT encode concrete default paths or embedded SRS/SDS/task schemas, except `AGENTS*`/`CLAUDE*` templates, acceptance-test fixtures/assertions, and code-comment GFM traceability links to SRS/SDS headings. `pack.yaml` `scaffolds:` MAY keep concrete project-relative artifact paths because the external CLI contract consumes them as display/sync metadata; this exception is metadata-only and not an operational fallback.
 - **Acceptance:**
@@ -762,7 +762,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Concrete documentation paths/schema blocks are allowed in `framework/*/assets/AGENTS*.md`, `framework/*/assets/CLAUDE*.md`, and acceptance-test fixtures/assertions. Evidence: `scripts/check-skills_test.ts::doc schema indirection`.
   - [x] No implicit fallback to default flowai paths in operational primitives; missing role binding is a stop-and-ask condition. Evidence: acceptance scenarios `plan-doc-schema-discovery`, `review-doc-schema-discovery`, `commit-doc-schema-discovery`.
 
-#### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction
+#### FR-UNIVERSAL.QA-FORMAT Question Format for User Interaction [ANC:fr:universal.qa-format]
 
 - **Desc:** Every framework skill that prompts the user with **clarifying / Q&A-style questions** MUST use a unified format:
   1. **Numbered questions** — each question is a numbered list item (`1.`, `2.`, `3.`, …). Not a heading, not bold-only, not a bare paragraph.
@@ -797,34 +797,34 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **General-purpose utilities in Python**: Utility scripts outside the framework product directory MAY use Python. Scripts inside `framework/<pack>/{skills,commands}/*/scripts/` MUST be Deno/TS per FR-UNIVERSAL.LANG. Policy documented in SDS (section 3.1.2 "Script Language Policy"). Project uses Deno/TS exclusively — no Python.
   - [x] **User-facing skills are language-agnostic**: The agentskills.io standard allows any language. Framework documentation (e.g., `engineer-skill`) MUST NOT restrict users to a single language. Common options: Python, Bash, JavaScript/TypeScript. `engineer-skill` does not restrict script language; examples mention multiple options.
 
-#### FR-UNIVERSAL.EXEC Script Execution Model
+#### FR-UNIVERSAL.EXEC Script Execution Model [ANC:fr:universal.exec]
 
 - **Acceptance criteria:**
   - [x] **Agent-driven execution**: Scripts are NOT auto-executed. The agent reads SKILL.md instructions and decides when to run scripts using its standard code execution tool (Bash/terminal). This is consistent across all three IDEs. All SKILL.md files use imperative instructions ("Run…", "Execute…") directing the agent; no auto-execution hooks.
   - [x] **No dedicated script runner**: There is no special "script runner" tool in any supported IDE. All script execution goes through the generic Bash/terminal tool. Confirmed: all three IDEs (Cursor, Claude Code, OpenCode) use Bash/terminal for script execution.
   - [x] **allowed-tools hint**: Skills MAY use the `allowed-tools` frontmatter field (experimental) to pre-approve tools needed for script execution (e.g., `Bash(deno:*)`). This reduces permission prompts but is not guaranteed across all IDEs. Documented in SDS (section 3.1.3 "Skill Tool Hints"). Adoption is optional per agentskills.io spec.
 
-#### FR-UNIVERSAL.DISCOVERY Skill Discovery Paths
+#### FR-UNIVERSAL.DISCOVERY Skill Discovery Paths [ANC:fr:universal.discovery]
 
 - **Acceptance criteria:**
   - [x] **Framework distribution**: Framework primitives distributed from `framework/<pack>/skills/` and `framework/<pack>/commands/` to IDE directories via flowai. Both subtrees install into `.{ide}/skills/`; commands get `disable-model-invocation: true` injected by the writer at sync time. See FR-DIST, FR-PACKS.STRUCT.
   - [x] **Cross-IDE discovery**: Skills discoverable by IDEs via IDE-specific config dirs (e.g., `.claude/skills/`). flowai handles placement per IDE.
   - [x] **Name collision**: Project-level skills override user-level skills when names collide (per agentskills.io client implementation guide). flowai overwrites on sync. Documented in SDS (section 3.1.4).
 
-### FR-UPDATE: Project Integration Update — `update`
+### FR-UPDATE: Project Integration Update — `update` [ANC:fr:update]
 
 - **Description:** Project integration command that reconciles current-project artifacts with the installed flowai framework templates. It handles `AGENTS.md`/`CLAUDE.md`, scaffolded project artifacts, and legacy three-file AGENTS.md collapse. It never runs `flowai update`, `flowai sync`, or rewrites installed primitives/plugin caches/user-level dirs; local primitive adaptation is delegated to `adapt`.
 - **Tasks:** [simplify-update-boundaries](tasks/2026/05/simplify-update-boundaries.md)
 - **Acceptance verified by acceptance tests:** `update-basic`, `update-asset-drift-no-sync`, `update-template-vs-artifact`, `update-plugin-user-scope`
 
-### FR-ADAPT: Standalone Primitive Adaptation — `adapt`
+### FR-ADAPT: Standalone Primitive Adaptation — `adapt` [ANC:fr:adapt]
 
 - **Description:** On-demand adaptation of project-local flowai primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `update`. Plugin-installed and user-level primitives are read-only and skipped. Uses `skill-adapter` subagent for skills and `agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
 - **Tasks:** [simplify-update-boundaries](tasks/2026/05/simplify-update-boundaries.md), [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
 - **Use case scenario:** Developer installs flowai on a Python project. All skills contain generic Deno examples. Runs `/adapt` to adapt all primitives to Python/pytest/ruff. Can also run `/adapt --skills commit` to adapt a single skill.
 - **Acceptance verified by acceptance tests:** `adapt-skills-basic`, `adapt-agents-basic`
 
-#### FR-ADAPT.SKILLS Skill Adaptation
+#### FR-ADAPT.SKILLS Skill Adaptation [ANC:fr:adapt.skills]
 
 - **Desc:** Scans `{ide}/skills/` for `flowai-*` directories, launches `skill-adapter` subagent per skill in parallel, shows diff, asks confirmation.
 - **Acceptance:**
@@ -833,7 +833,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [ ] Shows diff per skill, asks user confirmation.
   - [ ] Reverts rejected adaptations.
 
-#### FR-ADAPT.AGENTS Agent Adaptation
+#### FR-ADAPT.AGENTS Agent Adaptation [ANC:fr:adapt.agents]
 
 - **Desc:** Scans `{ide}/agents/` for `flowai-*` files, launches `agent-adapter` subagent per agent in parallel, shows diff, asks confirmation. Frontmatter preserved as-is.
 - **Acceptance:**
@@ -842,7 +842,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [ ] Shows diff per agent, asks user confirmation.
   - [ ] Frontmatter unchanged after adaptation.
 
-#### FR-ADAPT.ASSETS AGENTS.md Artifact Verification
+#### FR-ADAPT.ASSETS AGENTS.md Artifact Verification [ANC:fr:adapt.assets]
 
 - **Desc:** Compares pack-level templates (`{ide}/assets/`) with project artifacts (AGENTS.md), proposes updates for outdated framework sections.
 - **Acceptance:**
@@ -850,7 +850,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [ ] Compares template vs artifact using `git diff --no-index`.
   - [ ] Proposes updates for outdated framework-originated sections.
 
-#### FR-ADAPT.HOOKS Hook Adaptation
+#### FR-ADAPT.HOOKS Hook Adaptation [ANC:fr:adapt.hooks]
 
 - **Desc:** Checks hook scripts in `{ide}/scripts/` for stack-specific commands, adapts if needed.
 - **Acceptance:**
@@ -858,7 +858,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [ ] Skips stack-agnostic hooks.
   - [ ] Adapts stack-specific hooks with project commands.
 
-### FR-PACKS: Pack System — Modular Resource Installation
+### FR-PACKS: Pack System — Modular Resource Installation [ANC:fr:packs]
 
 - **Description:** Reorganize framework resources into self-contained packs. Each pack is an autonomous directory containing commands, skills, agents, hooks, and scripts. Users select packs in `.flowai.yaml` instead of listing individual resource names. Replaces flat `framework/skills/` and `framework/agents/` structure.
 - **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
@@ -866,7 +866,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Priority:** High (enables scalable resource management, unblocks hooks/scripts).
 - **Terminology:** "Command" has two meanings — (a) a user-only framework primitive under `framework/<pack>/commands/`, distributed into `.{ide}/skills/` with `disable-model-invocation: true` injected by the writer; (b) an IDE-native slash-command file under `.{ide}/commands/` owned by the user and managed by `flowai user-sync`. The CLI's `PlanItemType = "command"` refers only to (b).
 
-#### FR-PACKS.STRUCT Pack Structure
+#### FR-PACKS.STRUCT Pack Structure [ANC:fr:packs.struct]
 
 - **Desc:** Each pack is a directory under `framework/<name>/` containing `pack.yaml` manifest and resource subdirectories (`commands/`, `skills/`, `agents/`, `hooks/`, `scripts/`). `commands/` holds user-only primitives; `skills/` holds agent-invocable primitives. Primitive names are short kebab-case without redundant `flowai-` or pack prefixes. Resources discovered by convention (directory scan), not listed in manifest.
 - **Acceptance:**
@@ -877,7 +877,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] No dependencies between packs — each pack is self-contained.
   - [x] `framework/skills/` and `framework/agents/` removed. All resources live in packs.
 
-#### FR-PACKS.CMD-INVARIANT Command source MUST NOT carry `disable-model-invocation`
+#### FR-PACKS.CMD-INVARIANT Command source MUST NOT carry `disable-model-invocation` [ANC:fr:packs.cmd-invariant]
 
 - **Desc:** SKILL.md files under `framework/<pack>/commands/` are the source of truth for user-only primitives. They MUST NOT declare `disable-model-invocation` in their frontmatter. The CLI writer (`injectDisableModelInvocation` in `cli/src/sync.ts`) injects `disable-model-invocation: true` at sync time based on directory placement. Directory is the single source of truth for the user-only classification.
 - **Acceptance:**
@@ -885,13 +885,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] CLI reader `readPackCommandFiles` injects the flag into the in-memory copy returned to the writer. Verified by `sync_test.ts::readPackCommandFiles - injects disable-model-invocation into SKILL.md`.
   - [x] End-to-end sync test `main_test.ts::sync - pack commands install into .{ide}/skills/ with injected flag` asserts the installed SKILL.md contains the flag.
 
-#### FR-PACKS.SKILL-INVARIANT Skill source MUST NOT carry `disable-model-invocation`
+#### FR-PACKS.SKILL-INVARIANT Skill source MUST NOT carry `disable-model-invocation` [ANC:fr:packs.skill-invariant]
 
 - **Desc:** SKILL.md files under `framework/<pack>/skills/` are agent-invocable by definition. They MUST NOT declare `disable-model-invocation` at all. A primitive that is user-only belongs under `commands/`, not `skills/`.
 - **Acceptance:**
   - [x] `scripts/check-skills.ts` rejects any `framework/<pack>/skills/*/SKILL.md` that carries `disable-model-invocation` in source. Verified by `check-skills_test.ts::validateKindInvariants: skill WITH flag fails`.
 
-#### FR-PACKS.CONFIG Config v1.1
+#### FR-PACKS.CONFIG Config v1.1 [ANC:fr:packs.config]
 
 - **Desc:** `.flowai.yaml` version `"1.1"` adds `packs:` field. `skills.include/exclude` applies after pack expansion.
 - **Acceptance:**
@@ -901,13 +901,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `skills.exclude`/`skills.include` applied AFTER pack expansion.
   - [x] v1 config auto-migrated to v1.1 on `flowai sync` (adds all packs).
 
-#### FR-PACKS.VERSION Pack Versioning
+#### FR-PACKS.VERSION Pack Versioning [ANC:fr:packs.version]
 
 - **Desc:** `flowai sync` displays version changes informionally. No pinning — always installs latest from bundle.
 - **Acceptance:**
   - [x] `flowai sync` output shows pack versions.
 
-#### FR-PACKS.BUNDLE Bundle Update
+#### FR-PACKS.BUNDLE Bundle Update [ANC:fr:packs.bundle]
 
 - **Desc:** `cli/scripts/bundle-framework.ts` scans the full `framework/*/` tree (pack-aware, path-agnostic walk). Bundles commands, skills, agents, hooks, scripts, and assets from every pack.
 - **Acceptance:**
@@ -915,19 +915,19 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Existing tests updated for new bundle structure.
   - [x] Bundle walks `framework/<pack>/commands/` and `framework/<pack>/skills/` without hardcoded subtree enumeration.
 
-#### FR-PACKS.DEFAULTS Default Packs
+#### FR-PACKS.DEFAULTS Default Packs [ANC:fr:packs.defaults]
 
 - **Desc:** `flowai init` (interactive config generation) defaults to all packs.
 - **Acceptance:**
   - [x] Generated `.flowai.yaml` includes all available packs.
 
-### FR-HOOK-RESOURCES: Hook Resources
+### FR-HOOK-RESOURCES: Hook Resources [ANC:fr:hook-resources]
 
 - **Description:** Packs contain hooks — Deno TS scripts triggered by IDE events (PostToolUse, PreToolUse). Hooks are IDE-agnostic: stored as `hook.yaml` + `run.ts`, installed by flowai with IDE-specific configuration generation. Claude Code naming as canonical; flowai transforms for other IDEs.
 - **Use case scenario:** Pack `core` contains `skill-structure-validate` hook. `flowai sync` for Claude Code adds entry to `settings.json` hooks section; for Cursor — generates `.cursor/hooks.json`; for OpenCode — generates plugin file.
 - **Priority:** Medium (new resource type, depends on FR-PACKS).
 
-#### FR-HOOK-RESOURCES.FORMAT Hook Format
+#### FR-HOOK-RESOURCES.FORMAT Hook Format [ANC:fr:hook-resources.format]
 
 - **Desc:** Hook = directory with `hook.yaml` (metadata) + `run.ts` (Deno script). Located at `framework/<pack>/hooks/<name>/`.
 - **Acceptance:**
@@ -936,7 +936,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. SessionStart hooks output `hookSpecificOutput.additionalContext`.
   - [x] 1 framework hook: `skill-structure-validate` (devtools).
 
-#### FR-HOOK-RESOURCES.INSTALL IDE-Specific Installation
+#### FR-HOOK-RESOURCES.INSTALL IDE-Specific Installation [ANC:fr:hook-resources.install]
 
 - **Desc:** flowai reads `hook.yaml` and generates IDE-specific configuration. Manifest tracks installed hooks for clean deinstallation.
 - **Acceptance:**
@@ -946,7 +946,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Manifest `.{ide}/flowai-hooks.json` tracks installed hooks. Removed hooks cleaned from IDE config.
   - [x] Merge preserves user hooks (not in manifest).
 
-#### FR-HOOK-RESOURCES.SYNC-INFRA Hook Sync Infrastructure
+#### FR-HOOK-RESOURCES.SYNC-INFRA Hook Sync Infrastructure [ANC:fr:hook-resources.sync-infra]
 
 - **Desc:** flowai discovers, reads, copies hook files, generates IDE config, and tracks actions in SyncResult.
 - **Acceptance:**
@@ -955,7 +955,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] `resolvePackResources()` includes `hookNames` in return.
   - [x] `SyncResult.hookActions` tracks per-hook actions.
 
-### FR-SCRIPTS: Script Resources
+### FR-SCRIPTS: Script Resources [ANC:fr:scripts]
 
 - **Description:** Packs can contain scripts — utility shell/Deno scripts callable by skills via bash. Not tied to IDE events. Copied to `.{ide}/scripts/` at install time.
 - **Priority:** Low (simple copy, depends on FR-PACKS).
@@ -963,12 +963,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-SCRIPTS.STORE** Scripts stored at `framework/<pack>/scripts/<name>`.
   - [x] **FR-SCRIPTS.COPY** Copied to `.{ide}/scripts/` during sync.
 
-### FR-REFLECT: Reflection with Session History Search and Self-Criticism
+### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 
 - **Description:** Reflection skills (`reflect`, `reflect-by-history`) must search session history for similar errors/mistakes, identify patterns, and include findings in output. Before presenting the final report, the agent must perform self-criticism — validate findings, check for false positives and blind spots, evaluate proportionality of proposed fixes, and revise the report accordingly.
 - **Acceptance verified by acceptance tests:** `reflect-session-history-pattern`, `reflect-context-inefficiency`, `reflect-process-loop`, `reflect-self-criticism`, `reflect-by-history-self-criticism`
 
-### FR-CICD: CI/CD Pipeline Security
+### FR-CICD: CI/CD Pipeline Security [ANC:fr:cicd]
 
 - **Description:** GitHub Actions workflow (`.github/workflows/ci.yml`) must follow supply chain security and least privilege practices.
 - **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
@@ -980,12 +980,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-CICD.JOBS Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
   - [x] **FR-CICD.SPLIT Two-repo topology (post-split)**: After CLI extraction (see FR-DIST.BUNDLE.PIN), CI splits across two repos. Framework repo (`korchasa/flowai`) keeps the `check` job and adds a `release-framework-tarball` step that uploads `framework.tar.gz` + `framework.tar.gz.sha256` as assets of a `framework-v<version>` GitHub release; framework repo no longer publishes to JSR. CLI repo (`korchasa/flowai-cli`) runs its own `check` job (fmt, lint, TS tests; no framework validators, no acceptance tests) on PR/`main` and publishes `@korchasa/flowai` to JSR via OIDC on tag `v*`. OIDC trust binding for `@korchasa/flowai` rebound from `korchasa/flowai` to `korchasa/flowai-cli` exactly once at the Phase 3 cutover.
 
-### FR-WB-CLEANUP: Task File Cleanup on Commit
+### FR-WB-CLEANUP: Task File Cleanup on Commit [ANC:fr:wb-cleanup]
 
 - **Description:** `commit` deletes referenced task file after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale task files from accumulating.
 - **Acceptance verified by acceptance tests:** `commit-task-cleanup`, `commit-task-cleanup-partial`
 
-### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit
+### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit [ANC:fr:review-split]
 
 - **Description:** Clear separation of concerns between `review` and `commit`:
   - Review owns: project checks (lint/test), hygiene scan, code quality verdict
@@ -993,7 +993,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks.
 - **Acceptance verified by acceptance tests:** `commit-no-checks`, `review-no-grouping`
 
-### FR-JIT-REVIEW: JIT Review Skill — `jit-review`
+### FR-JIT-REVIEW: JIT Review Skill — `jit-review` [ANC:fr:jit-review]
 
 - **Description:** JiT-subset of the `review` atom. Given a diff (staged, unstaged, or commit-range), the review skill synthesizes ephemeral **Catching JiTTests** — temporary tests that pass on the parent revision and fail on the diff revision — as part of the same review pass. Adapts Meta's Intent-Aware JiTTests pipeline (FSE 2026) to flowai's language-agnostic `test`-command interface declared in AGENTS.md. Activates automatically inside every `review` invocation and every composite that uses it (`review-and-commit`, `ship`); no separate user-facing skill or command.
 - **Tasks:** [merge-jit-review-into-review-atom](tasks/2026/05/merge-jit-review-into-review-atom.md)
@@ -1017,7 +1017,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - Ephemeral tests live under a session-id'd scratch directory (`.flowai/review-jit/<sid>/` with `.gitignore` ensure, or `$(mktemp -d)/review-jit-<sid>/`); session-id MUST be unique per invocation so parallel reviews do not clobber each other.
 - **Acceptance verified by acceptance tests:** `review-catches-regression-via-jittests`, `review-no-change-no-alarm`
 
-### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `diagnose-benchmark-failure`
+### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `diagnose-benchmark-failure` [ANC:fr:diagnose-bench]
 
 - **Description:** Agent-invocable skill that, given a failed benchmark scenario ID, reads the run artifacts (`acceptance-tests/runs/latest/<scenario-id>/run-1/judge-evidence.md`, the sandbox copy of the failing primitive's `SKILL.md`, and the scenario `mod.ts`), pattern-matches the symptoms against a documented failure-mode taxonomy (MD-PRIOR-BULLETS, HEADING-INSTEAD-OF-ITEM, STALE-SKILL-IN-SANDBOX, SKILL-NOT-MOUNTED, COMPOSITE-DELEGATION-BYPASS, PERSONA-MISMATCH, TEST-FITTING-PERSONA, CROSS-PACK-REFERENCE-MISSING), and produces an evidence-grounded diagnostic report.
 - **Scope:** Lives under `framework/engineering/skills/diagnose-benchmark-failure/`. Model-invocable. Triggered by user prompts about diagnosing/investigating a specific failed benchmark run, or by an agent's own follow-up after observing a benchmark failure during Acceptance Test TDD.
@@ -1029,7 +1029,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `diagnose-benchmark-failure-md-prior-bullets`
 - **Status:** [x]
 
-### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `ai-ide-runner`
+### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `ai-ide-runner` [ANC:fr:ai-ide-runner]
 
 - **Description:** Agent-invocable skill that spawns another AI IDE runtime (`claude`, `opencode`, `cursor-agent`, `codex`) from the current session in non-interactive mode, captures its stdout, and relays it back verbatim. Enables single-IDE "second opinion" runs, multi-IDE fan-out comparisons, and multi-model comparisons within one IDE.
 - **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
@@ -1043,7 +1043,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - MUST NOT install or authenticate CLIs, persist transcripts, or judge output quality automatically.
 - **Acceptance verified by acceptance tests:** `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model`
 
-### FR-IDE-BRIDGE-WORKER: Cross-IDE Delegation Subagent — `worker`
+### FR-IDE-BRIDGE-WORKER: Cross-IDE Delegation Subagent — `worker` [ANC:fr:ide-bridge-worker]
 
 - **Description:** Subagent that owns a single cross-IDE CLI invocation in an isolated context window. Receives `{target_ide}` (`codex` / `claude` / `opencode` / `cursor-agent`), optional `{model}`, and `{task_prompt}`; runs the target's non-interactive CLI exactly once; relays its stdout (or hook-block `reason` payload) byte-for-byte back to the parent. Single-shot — multi-turn / session-resume is explicitly out of scope. Lets a parent agent in IDE A delegate work to IDE B without the child's transcript flooding the parent's context.
 - **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
@@ -1057,7 +1057,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - MUST NOT install or authenticate CLIs, persist transcripts, judge output quality, or spawn nested subagents.
 - **Acceptance verified by acceptance tests:** `delegate-to-ide-via-subagent` (end-to-end: parent skill → worker subagent → mocked Codex CLI → relay back to parent; verifies binary choice, single-shot invocation, and verbatim relay through the subagent path). The worker has no standalone acceptance scenario by design — `AcceptanceTestAgentScenario` exposes the agent file to the main runtime but does not execute it as a subagent (the main runtime sees the userQuery directly), so isolated worker tests do not actually exercise the worker's body. The wrapping `via-subagent` scenario is the only path that drives the worker as the SDK does in production. Pattern mirrored from `deep-research-worker`, which is also tested via its orchestrator only.
 
-### FR-IDE-BRIDGE-DELEGATE: Cross-IDE Delegation Skill Wrapper — `delegate-to-ide`
+### FR-IDE-BRIDGE-DELEGATE: Cross-IDE Delegation Skill Wrapper — `delegate-to-ide` [ANC:fr:ide-bridge-delegate]
 
 - **Description:** Agent-invocable skill that routes "delegate this task to another IDE" requests to the `worker` subagent (FR-IDE-BRIDGE-WORKER) instead of running the target CLI inline from the parent context. Preserves context isolation: the child CLI's transcript stays in the subagent's window, only the worker's relayed reply reaches the parent.
 - **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
@@ -1069,7 +1069,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - MUST NOT fan out across multiple IDEs or run cross-model comparisons (use `ai-ide-runner` for those flows).
 - **Acceptance verified by acceptance tests:** `delegate-to-ide-via-subagent`, `delegate-to-ide-trigger-pos-1`, `delegate-to-ide-trigger-adj-1`, `delegate-to-ide-trigger-false-1`
 
-### FR-LOOP: Non-Interactive Runner — `flowai loop`
+### FR-LOOP: Non-Interactive Runner — `flowai loop` [ANC:fr:loop]
 
 - **Description:** Launch Claude Code non-interactively with a prompt. Base automation primitive. `flowai loop [OPTIONS] <prompt>`.
 - **Acceptance:**
@@ -1077,7 +1077,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] Stream-json output processing with ANSI formatting and agent nesting depth tracking.
   - [x] 28 unit tests for pure functions, formatter, processNDJSONStream.
 
-### FR-MEMEX: Memex Pack — `memex`
+### FR-MEMEX: Memex Pack — `memex` [ANC:fr:memex]
 
 - **Description:** Long-term knowledge bank for AI agents, packaged as a separate `memex` pack. Three agent-invocable skills operating on a memex directory (`raw/` + `pages/` + `AGENTS.md` schema + `log.md`):
   1. `save <path|url|text>` — atomic save: store source in `raw/` → extract entities → create / update memex pages → backlink audit → update index → append log. Scaffolds the memex on first call if no `AGENTS.md + pages/` ancestor is found.
@@ -1115,25 +1115,21 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by command:** three grep guards return zero hits across the target surface (post-Phase-4): `! git grep -nE '\[\[[a-z0-9-]+(\|[^]]+)?\]\]' -- framework/ documents/ README.md scripts/ AGENTS.md ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '// FR-[A-Z]' -- scripts/ framework/ ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '\[FR-[A-Z][A-Z-]*\]\(' -- documents/ README.md AGENTS.md framework/ ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`.
 - **Status:** [ ]
 
-### FR-DOC-LINKS: Interconnectedness Principle for Documentation
+### FR-DOC-LINKS: Interconnectedness Principle for Documentation (Superseded) [ANC:fr:doc-links]
 
-- **Superseded by:** [REF:fr:doc-anchors | FR-DOC-ANCHORS] (Phase 2 of the SALP adoption flips this to `superseded` and replaces the template rule).
-- **Description:** `framework/core/assets/AGENTS.template.md` declares that ALL cross-references between project knowledge — doc-to-doc AND code-to-doc — use **standard GFM markdown links** of the form `[descriptive text](relative/path.md#auto-slug)`. Custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), wikilinks (`[[X]]`), ID-only shortcuts (`[FR-XXX]`), and bare ID-string code comments (`// FR-XXX`) are explicitly rejected. The legacy `// FR-<ID>` shortcut is recognized as deprecated for the migration window only.
-- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
-- **Scenario:** A new flowai project initialized via `init` receives the principle as part of its AGENTS.md. Agents consuming that AGENTS.md write all cross-references — in code comments, in SDS, in README, in ADR — as `[text](path.md#anchor)` GFM links without consulting external sources.
-- **Out of scope:** Migration of the existing 106 `// FR-XXX` comments in this project's source tree (covered by FR-DOC-IDS) and periodic drift checks (FR-DOC-LINT).
-- **Acceptance verified by tests:** `scripts/check-agents-template_test.ts` (6 tests: principle section present, GFM-link example present, rule applies to both docs and code, ID-only syntax explicitly rejected, namespace table absent, `// <NS>-<ID>` not mandated as canonical marker).
-- **Status:** [x]
+- **Superseded by:** [REF:fr:doc-anchors | FR-DOC-ANCHORS]. The GFM-link mandate is replaced by the SALP `[ANC:ns:id]` / `[REF:ns:id | display]` grammar across every project surface.
+- **Description (historical):** `framework/core/assets/AGENTS.template.md` previously declared GFM markdown links of the form `[descriptive text](relative/path.md#auto-slug)` the only allowed cross-reference grammar. SALP supersedes that rule project-wide.
+- **Tasks:** [REF:task:2026-06-adopt-salp-anchors | adopt-salp-anchors]
+- **Status:** [~] Superseded
 
-### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map
+### FR-DOC-IDS: GFM Link Migration — Code Comments and Documentation Map (Superseded) [ANC:fr:doc-ids]
 
-- **Description:** Migrate ALL existing `// FR-<ID>` and `# FR-<ID>` comments in this project's source tree to GFM-link form (e.g., `// [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`). Rewrite `scripts/check-traceability.ts` and `scripts/check-fr-coverage.ts` to validate **GFM link resolution** (file exists, heading anchor exists) instead of FR-ID matching. Migrate the `Documentation Map` block in this project's `CLAUDE.md` (= root `AGENTS.md` symlink target) to GFM links into requirements.md / design.md / README.md.
-- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
-- **Scenario:** `git grep "// FR-"` returns zero hits in code outside `documents/` and acceptance test scenarios. `scripts/check-traceability.ts` reports `All N comment doc-link(s) resolve. 0 legacy "// FR-<ID>" shortcuts.` for the current commit.
-- **Acceptance verified by tests:** `scripts/check-traceability_test.ts` (18 tests covering `computeAutoSlug`, `extractHeadingSlugs`, `extractCommentLinks`, `detectLegacyFrComments`, task-frontmatter parsing, and `validateTaskRefs`).
-- **Status:** [x]
+- **Superseded by:** [REF:fr:doc-anchors | FR-DOC-ANCHORS]. The migration target (GFM-link in `//` comments) is itself superseded; all surviving comment references now use `// [REF:fr:<id>]`.
+- **Description (historical):** Migrated all `// FR-<ID>` and `# FR-<ID>` comments to GFM-link form (`// [FR-X](path.md#…)`). Replaced by the SALP cutover documented in FR-DOC-ANCHORS.
+- **Tasks:** [REF:task:2026-06-adopt-salp-anchors | adopt-salp-anchors]
+- **Status:** [~] Superseded
 
-### FR-DOC-INDEX: Agent-Maintained Documentation Index
+### FR-DOC-INDEX: Agent-Maintained Documentation Index [ANC:fr:doc-index]
 
 - **Description:** `plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write; never scaffolded by `init`.
 - **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
@@ -1141,7 +1137,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`.
 - **Status:** [x]
 
-### FR-DOC-TASKS: First-Class Committed Tasks
+### FR-DOC-TASKS: First-Class Committed Tasks [ANC:fr:doc-tasks]
 
 - **Description:** Tasks are persistent canonical records — committed (NOT gitignored), one file per task at `documents/tasks/<YYYY>/<MM>/<slug>.md`. Frontmatter carries: `date` (YYYY-MM-DD; required), `status` ∈ `to do | in progress | done | superseded` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags: [...]`, optional `related_tasks: [...]` (markdown links to other task files), optional `migrated_from: "<old-id> (status: <old>)"` for provenance, optional `superseded_by: "<task-path>"` (required when status is `superseded`). Body uses GODS shape (Goal / Overview / Definition of Done / Solution). Architectural decisions are recorded as regular tasks with weighed alternatives surfaced inline (no separate ADR primitive). Validated by `scripts/check-task-format.ts` — wired into `deno task check`. `plan` writes this layout.
 - **Scenario:** User invokes `/plan add cache layer to CLI` → skill writes `documents/tasks/2026/05/add-cache-layer.md` with new-shape frontmatter (`date: 2026-05-07`, `status: to do`, `implements: [FR-CACHE]`).
@@ -1152,7 +1148,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `plan-writes-task-new-frontmatter`.
 - **Status:** [x]
 
-### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills
+### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills [ANC:fr:doc-task-lifecycle]
 
 - **Description:** `commit` and `review-and-commit` derive `status` from `## Definition of Done` checkbox state on every commit that stages a non-superseded `documents/tasks/**/*.md` file with new-shape frontmatter (presence of `date:`). Algorithm: count top-level `- [ ]`/`- [x]` items K of N under `## Definition of Done`; map `K=0 → "to do"`, `0<K<N → "in progress"`, `K=N → "done"`. If the derived value differs from the current frontmatter `status`, rewrite the frontmatter line and `git add` the file as part of the same commit. Idempotent. Never downgrades `done` (manual re-open required). `superseded` is manually set, requires `superseded_by`, and is excluded from DoD derivation because stale original DoD no longer maps to current reality. Warn-only on parse errors / missing DoD section. Legacy flat-path tasks (no `date:`) are skipped — preserves coexistence with unmodified `plan`.
 - **Scenario:** Developer commits a fix that ticks the last DoD box of `documents/tasks/2026/05/add-cache-layer.md`. `commit` re-counts the DoD items (N/N), sees `status: in progress`, rewrites frontmatter to `status: done`, and stages the file alongside the developer's diff.
@@ -1163,14 +1159,14 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `commit-flips-task-status`, `commit-derives-in-progress-status`, `commit-preserves-superseded-task-status`, `review-and-commit-flips-task-status`.
 - **Status:** [x]
 
-### FR-DOC-TASK-CONTEXT: Plan Skill Loads Related Tasks into Step 2
+### FR-DOC-TASK-CONTEXT: Plan Skill Loads Related Tasks into Step 2 [ANC:fr:doc-task-context]
 
 - **Description:** `plan` Step 2 ("Deep Context & Uncertainty") globs `documents/tasks/**/*.md`, parses each task's frontmatter `implements:` array, and reads (Read tool) tasks whose `implements:` set intersects the new task's `implements:` set. Cap: 10 most recent (by `date:`) related tasks. Loaded content informs the variant analysis and DoD synthesis so prior decisions are not contradicted. Empty `implements:` → no related-task lookup.
 - **Scenario:** User runs `/plan` for a task that `implements: [FR-CACHE]`. Step 2 finds two prior tasks under `documents/tasks/` whose frontmatter also lists `FR-CACHE`, reads both, and references them in the variant analysis.
 - **Acceptance verified by acceptance tests:** `plan-loads-related-tasks`.
 - **Status:** [x]
 
-### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer
+### FR-DOC-TASK-LINK: SRS-Inline `**Tasks:**` Back-Pointer [ANC:fr:doc-task-link]
 
 - **Description:** `plan` (and `epic`) inserts/extends a `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)[, ...]` line directly after the `**Description:**` line in each SRS FR section listed in the new task's `implements:`. Surgical edit: only this single line is touched in the SRS — no other SRS content modified. Idempotent: re-running on the same task does not duplicate the link. Replaces the now-removed `## ADR` section in `documents/index.md` as the navigation surface from FR → its driving tasks.
 - **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
@@ -1178,13 +1174,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `plan-updates-srs-task-back-pointer`.
 - **Status:** [x]
 
-### FR-DOC-RESCUE: Reflect Surfaces Decisions for Task Capture
+### FR-DOC-RESCUE: Reflect Surfaces Decisions for Task Capture [ANC:fr:doc-rescue]
 
 - **Description:** `reflect` adds a "Durable Findings Rescue" pass that scans the current task file for **decision passages** — passages with ≥2 weighed alternatives and explicit reasoning ("we picked X over Y because …", "considered A and B; chose A because …"). For each detected decision, reflect emits a chat message naming the decision and recommends `/plan` (the canonical-record writer) on its `**Recommended action:**` line. Reflect itself remains read-only — it never writes a task file, never edits SRS/SDS, never creates an ADR (the `documents/adr/` directory has been phased out). Recording is owned exclusively by `/plan`.
 - **Acceptance verified by acceptance tests:** `reflect-rescues-decision-as-task`.
 - **Status:** [x]
 
-### FR-DOC-LINT: Documentation Health Category in Maintenance
+### FR-DOC-LINT: Documentation Health Category in Maintenance [ANC:fr:doc-lint]
 
 - **Description:** `maintenance` adds a "Documentation Health" category to its multi-category audit. Checks (LLM-judgement, not deterministic — that is the value of using a skill):
   - **Broken GFM cross-links** — any `[text](path.md#anchor)` reference where the target file or the anchor (GFM auto-slug) does not exist. Scope: project documentation files (`documents/*.md`, `README.md`, `AGENTS.md`) and code comments in source directories.

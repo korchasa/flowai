@@ -43,7 +43,7 @@ import {
   printSummaryTable,
 } from "./acceptance-tests/lib/acceptance_report.ts";
 
-// implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+// implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
 // Generated SKILL.md files are gitignored build artefacts. The runner copies
 // framework/ verbatim into the sandbox via copyFrameworkToIdeDir, so each
 // composite + atom SKILL.md must exist on disk before discovery. Idempotent:

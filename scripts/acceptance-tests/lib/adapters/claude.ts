@@ -67,7 +67,7 @@ export class ClaudeAdapter implements AgentAdapter {
    * refreshToken is typically stale (HTTP 400 from the OAuth token endpoint).
    * Letting Keychain win avoids that footgun.
    */
-  // implements [FR-ACCEPT-ISOLATION](../../../../documents/requirements.md#fr-accept-isolation-sandbox-isolation-from-user-level-skills)
+  // implements [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION]
   async prepareWorkspace(
     sandboxPath: string,
   ): Promise<Record<string, string>> {

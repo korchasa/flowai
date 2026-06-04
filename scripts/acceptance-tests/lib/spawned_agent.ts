@@ -186,7 +186,7 @@ export class SpawnedAgent {
       this.resolveExit = resolve;
     });
 
-    // implements [FR-ACCEPT-GUARDS](../../../documents/requirements.md#fr-accept-guards-resource-guards-for-spawned-agents)
+    // implements [REF:fr:accept-guards | FR-ACCEPT-GUARDS]
     // Bail out before spawning when host is already under memory/CPU pressure
     // that risks an OOM hang of the kind seen on 2026-05-09 07:50
     // (vm-compressor-space-shortage). Skipped on non-darwin only — there is

@@ -69,7 +69,11 @@ export class SalpSyntaxError extends Error {
 }
 
 const NS_RE = "[a-z][a-z0-9-]*";
-const ID_RE = "[a-z0-9][a-z0-9-]*";
+/** ID grammar allows lowercase alphanumerics, hyphen, and period. Period
+ *  preserves hierarchical FR IDs (`FR-ACCEPT.TRIGGER` → `accept.trigger`,
+ *  `FR-DIST.MARKETPLACE` → `dist.marketplace`). Period MUST appear between
+ *  alphanumerics — no leading or trailing dot, no consecutive dots. */
+const ID_RE = "[a-z0-9](?:[a-z0-9-]*(?:\\.[a-z0-9][a-z0-9-]*)*)?";
 
 const ANC_OK_RE = new RegExp(`^\\[ANC:(${NS_RE}):(${ID_RE})\\]$`);
 const REF_OK_RE = new RegExp(

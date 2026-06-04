@@ -28,7 +28,7 @@
 
 ## 3. Components
 
-### 3.0 Primitive Inventory
+### 3.0 Primitive Inventory [ANC:sds:3-0]
 
 Single-page catalog of every primitive shipped by `framework/`. The generator
 pipeline `framework/atoms/*.md` + `framework/composites/*.md` +
@@ -111,7 +111,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - Agents: 6 (all standalone — 4 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
-### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`)
+### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`) [ANC:sds:3-1]
 
 - **Purpose:** Dev-only skills and agents for flowai development. Not distributed to users.
 - **Structure:**
@@ -122,7 +122,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - **Auto-sync:** SessionStart hook bootstraps if missing.
 - **Command:** `deno task sync-local` reads from `framework/` directly via `LocalSource` (no bundle step).
 
-### 3.1.1 Product Packs (`framework/`)
+### 3.1.1 Product Packs (`framework/`) [ANC:sds:3-1-1]
 
 - **Purpose:** Modular groups of skills, agents, hooks, and scripts for end users. Each pack is a self-contained directory.
 - **Structure:**
@@ -152,7 +152,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
   - Avoid dependencies requiring import maps or `deno.json` resolution.
   - Each script header MUST include a `Run:` section with the exact `deno run` command.
 
-#### 3.1.1.1 Generated Composite & Atomic SKILL.md — FR-SKILL-COMPOSE (`scripts/generate-skill-composites.ts`, `framework/composites.yaml`)
+#### 3.1.1.1 Generated Composite & Atomic SKILL.md — FR-SKILL-COMPOSE (`scripts/generate-skill-composites.ts`, `framework/composites.yaml`) [ANC:sds:3-1-1-1]
 
 **Model:** SKILL.md files for atoms and composites are **gitignored build artefacts** materialized from three sources of truth in `framework/`:
 
@@ -183,11 +183,11 @@ Drift between source and rendered output is **structurally impossible** — ther
 
 **Predecessor (deleted):** This system replaces the legacy `scripts/check-skill-sync.ts` (substring drift check) + `scripts/composite-skills.ts` (hard-coded composite list with `COMPOSITE_SKILLS` array). Both files removed; `scripts/lib/composite-list.ts` is the manifest-driven replacement.
 
-#### 3.1.2 Script Language Policy
+#### 3.1.2 Script Language Policy [ANC:sds:3-1-2]
 
 All project scripts (`framework/<pack>/skills/*/scripts/`, `framework/<pack>/commands/*/scripts/`, and root `scripts/`) use Deno/TypeScript exclusively. Python appears only in acceptance test fixtures (test project stubs).
 
-#### 3.1.3 Skill Tool Hints (`allowed-tools`)
+#### 3.1.3 Skill Tool Hints (`allowed-tools`) [ANC:sds:3-1-3]
 
 Skills MAY use the `allowed-tools` frontmatter field (experimental, per agentskills.io spec) to pre-approve tools needed for script execution. Example:
 
@@ -201,7 +201,7 @@ allowed-tools: Bash(deno:*)
 
 Adoption is optional. IDEs that support `allowed-tools` will auto-approve matching tool calls; IDEs that don't will ignore the field.
 
-### 3.2 Product Agents (in packs)
+### 3.2 Product Agents (in packs) [ANC:sds:3-2]
 
 - **Purpose:** Define specialized AI subagent personas and roles for end users.
 - **Structure:** `.md` files inside `framework/<pack>/agents/`. One canonical file per agent.
@@ -232,7 +232,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - **OpenCode:** `description` (req), `mode: subagent`, `model` (resolved from .flowai.yaml or omitted), `tools` (map: write/edit/bash→bool), `color`. Filename = agent name.
   - **OpenAI Codex:** Not a markdown-frontmatter format. Each agent becomes two artifacts: (a) a sidecar `<cwd>/.codex/agents/<name>.toml` with top-level `name`, `description`, `developer_instructions` (the agent body as a TOML multi-line triple-quoted string); (b) a registration block `[agents.<name>] description="..." config_file="./agents/<name>.toml"` merged into `.codex/config.toml`. Agent body markdown is transferred verbatim into `developer_instructions`. Model tier is NOT written — Codex subagents inherit the session model. See 3.5 for the `toml_merge.ts` component.
 
-### 3.3 Project Documentation (`documents/`)
+### 3.3 Project Documentation (`documents/`) [ANC:sds:3-3]
 
 - **Purpose:** Persistent project memory across AI sessions. Single source of truth for requirements, architecture, and current plans.
 - **Hierarchy:**
@@ -248,7 +248,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - Agent reads docs at session start; outdated docs = wrong assumptions.
 - **Deps:** None (plain Markdown files).
 
-### 3.4 Acceptance Test System (`benchmarks/`, `scripts/acceptance-tests/`)
+### 3.4 Acceptance Test System (`benchmarks/`, `scripts/acceptance-tests/`) [ANC:sds:3-4]
 
 - **Purpose:** Evidence-based evaluation of AI agent skill execution quality.
 - **Architecture:**
@@ -271,7 +271,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - **Interactive Flows**: `UserEmulator` simulates user responses via LLM for multi-turn scenarios (persona-driven).
   - **Multi-Turn Benchmarking**: `SpawnedAgent` + `runner.ts` support automatic session resumption (`--resume`) when `UserEmulator` provides input.
 
-### 3.4.1 Acceptance Test Result Cache — FR-ACCEPT-CACHE (`scripts/acceptance-tests/lib/cache.ts`)
+### 3.4.1 Acceptance Test Result Cache — FR-ACCEPT-CACHE (`scripts/acceptance-tests/lib/cache.ts`) [ANC:sds:3-4-1]
 
 - **Purpose:** Content-addressed cache of per-scenario verdicts, committed under `acceptance-tests/cache/<pack>/<scenario-id>/<ide>.json`. Short-circuits the agent + judge CLIs when inputs have not changed, turning `deno task acceptance-tests` into an incremental operation.
 - **Interfaces:**
@@ -295,7 +295,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Drift guard:** `cache_test.ts` parses every `*.ts` under `scripts/acceptance-tests/lib/` for imports, resolves relative paths, and asserts any import that escapes `scripts/acceptance-tests/` appears in `whitelistedCrossPackageFiles`. Catches silent staleness introduced by new cross-package dependencies.
 - **Storage footprint:** One JSON file per (scenario, ide). Typical size ~1–3 KB. `logs` and `evidence` are dropped; full traces remain in the gitignored `acceptance-tests/runs/` directory.
 
-### 3.4.2 Resource Guards For Spawned Agents — FR-ACCEPT-GUARDS (`scripts/acceptance-tests/lib/process_watchdog.ts`, `system_health.ts`)
+### 3.4.2 Resource Guards For Spawned Agents — FR-ACCEPT-GUARDS (`scripts/acceptance-tests/lib/process_watchdog.ts`, `system_health.ts`) [ANC:sds:3-4-2]
 
 - **Purpose:** Prevent two host-hang failure modes observed on 2026-05-09: a fork-loop incident at 02:43 (~720 `deno test` descendants in 90 s, 4 forced reboots) and a bloat-OOM incident at 07:50 (`compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel reported "no eligible processes" to jetsam, host hung until reboot at 08:53). Container-based isolation is unavailable for subscription-auth reasons (see §3.4 "Container isolation — abandoned"); these guards are the userspace replacement.
 - **Why not `setrlimit`:** the natural-looking fix — `RLIMIT_AS`/`RLIMIT_DATA` per spawn — does not work against V8-based agents on macOS. Live data: `claude` runs at RSS=95 MB but VSZ=485 GB. V8 over-reserves virtual address space for heap spaces, code cache, and isolates; any `-v` cap small enough to constrain RSS will clip the V8 reservation and crash the binary at startup. `RLIMIT_RSS` is declared in `<sys/resource.h>` but the kernel does not enforce it on macOS or Linux. `RLIMIT_NPROC` is per-user, not per-tree, and is shared with all other user processes — not safe to lower from the bench. The only kernel-enforced macOS path is `launchd` jobs with `MemoryHighWatermark`, which would require a plist per spawn and a launchctl bootstrap/bootout cycle — significantly more complex than userspace polling and was out of scope for the immediate incident response.
@@ -320,7 +320,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Aggregate gap (open):** guards are per-`SpawnedAgent`. If `task-bench.ts` ever runs N scenarios in parallel, each gets its own 6 GiB cap; total can exceed the host. Sequential execution is the current default, so no aggregate accumulator exists. When concurrency is added, a runner-level `Map<rootPid, currentRssBytes>` should be threaded through and a global cap applied.
 - **Deps:** `Deno.Command` (for `pgrep`, `ps`, `vm_stat`, `sysctl`). No third-party deps.
 
-### 3.4.3 Skill Trigger Benchmarks — FR-ACCEPT.TRIGGER
+### 3.4.3 Skill Trigger Benchmarks — FR-ACCEPT.TRIGGER [ANC:sds:3-4-3]
 
 - **Purpose:** Verify the LLM picks the correct skill (or none) for a given user query, independent of whether the skill *executes* correctly when chosen. Detects description-matching regressions: a description rewrite that makes the skill invisible (false negative) or over-broad (false positive). Pairs with execution scenarios, which assume the skill is already loaded.
 - **Layout:** Co-located with each skill, parallel to existing execution scenarios:
@@ -353,11 +353,11 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Retry:** Judge-level retry-on-error (`scripts/acceptance-tests/lib/judge.ts:103`) absorbs transient judge failures. Agent-level retry-on-result is intentionally NOT applied — re-running a "skill not invoked" until it passes would mask real description regressions. Suspected agent variance is investigated by manual re-run (`deno task bench -f <scenario-id>`).
 - **History:** Original 3+3+3 layout (9 scenarios per skill) was reduced to 1+1+1 (3 per skill) on 2026-05-10; see `documents/tasks/2026/05/trigger-n1-retry.md` for rationale (no empirical justification for N=3 in the originating task; 70% of all framework acceptance tests were trigger scenarios; 24/39 skills had zero cached trigger verdicts at the time of audit, indicating the triple-redundancy was theoretical).
 
-### 3.4a Experiments Subsystem (RELOCATED) — FR-EXP
+### 3.4a Experiments Subsystem (RELOCATED) — FR-EXP [ANC:sds:3-4a]
 
 Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). That repo owns: the experiment runner/judge/noise/report/tokens libs, the `claude-md-length` variants and committed results, the `deno task experiment` CLI, and the `writeMemoryFile`/`getCleanroomEnv` adapter extensions that were experiment-only. The `AgentAdapter` contract in `flow` returns to regression acceptance-test responsibilities (no memory-file injection, no cleanroom env plumbing). `task-bench.ts` discovery was always scoped to `framework/<pack>/.../acceptance-tests/`, so no isolation logic changed.
 
-### 3.5 Global Framework Distribution — FR-DIST (`cli/`)
+### 3.5 Global Framework Distribution — FR-DIST (`cli/`) [ANC:sds:3-5]
 
 - **Purpose:** Install/update flowai framework skills/agents into project-local IDE config dirs.
 - **Location:** `cli/` monorepo directory. Published to JSR as `@korchasa/flowai`.
@@ -402,7 +402,7 @@ graph TD
 - **Distribution:** JSR via `deno publish`. `bundled.json` generated at publish time from `framework/*/`. No build step for TS.
 - **Scope + global mode (FR-DIST.GLOBAL):** `SyncScope = "project" | "global"` threaded via `cli/src/scope.ts`. CLI exposes three mutually exclusive flags on `flowai` / `flowai sync`: `--global` / `-g` (force global), `--local` / `-l` (force project), `--auto` (default). **Resolution in `--auto`** (via `resolveAutoScope(cwd, home, fs)` in `scope.ts`): (1) `<cwd>/.flowai.yaml` exists → `"project"`; (2) else `~/.flowai.yaml` exists → `"global"` (CLI logs `Using global config at ~/.flowai.yaml`); (3) both missing → `null` (caller prompts interactively, or defaults to global in `-y` mode). **Explicit flags** skip the ladder: `--global` loads/creates `~/.flowai.yaml`, `--local` loads/creates `<cwd>/.flowai.yaml`; conflicting flags (`--global` + `--local`) exit non-zero. **`migrate` subcommand** requires explicit `--global`/`--local`; no auto-resolution. **IDE guard** (`isInsideIDE()`) fires only when resolved scope is `"project"`; global scope bypasses the guard. Project mode: targets `<cwd>/.{ide}/`, scaffolds + artifact sync enabled, hooks merged into `<cwd>/.claude/settings.json`. Global mode: targets per IDE native user dir (see Components bullet for `scope.ts`), scaffolds + artifact sync SKIPPED (templates still install), hooks merged into `~/.claude/settings.json` (same manifest-based logic). `resolvePackResources()` filters by the `scope:` frontmatter field: `project-only` primitives skipped in global mode, `global-only` primitives skipped in project mode, absent = both (FR-PACKS.SCOPE).
 
-### 3.5.1 Claude Code + Codex Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-plugins.ts`)
+### 3.5.1 Claude Code + Codex Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-plugins.ts`) [ANC:sds:3-5-1]
 
 - **Purpose:** Additional, additive distribution channel that publishes flowai packs as native Claude Code + Codex plugins through one generated marketplace at `korchasa/flowai-plugins`. flowai CLI (3.5) remains primary for Cursor / OpenCode and stays supported for Claude Code / Codex; marketplace install is offered alongside, not as a replacement.
 - **Location:** `scripts/build-plugins.ts` (build), `scripts/validate-plugins.ts` (validator), `scripts/build-plugins_test.ts` + `scripts/validate-plugins_test.ts` (tests), `.github/workflows/ci.yml` step `Build and validate plugin marketplace` + downstream sync (publish). Compatibility wrappers `scripts/build-claude-plugins.ts` and `scripts/validate-claude-plugins.ts` call the new scripts for one transition release. Output tree at `dist/claude-plugins/` is gitignored.
@@ -452,7 +452,7 @@ graph TD
   - Downstream auth failure or push rejection → CI step fails; framework release tag is preserved (already published) and the workflow can be re-run after credentials are restored. Idempotent re-publish: `git diff --cached --quiet` short-circuits empty commits, `git tag -f` + `git push --force-with-lease` tolerates a re-shot tag.
 - **Drift surface (acknowledged):** agent transform logic is vendored in `build-plugins.ts` rather than shared with `flowai-cli`'s `crossTransformAgent`. Drift risk bounded by FR-DIST.MAPPING coverage in tests; follow-up tracked as extraction of `@korchasa/flowai-transforms` to JSR once a second consumer surfaces.
 
-### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`)
+### 3.6 Migrate Command — FR-DIST.MIGRATE (`cli/src/migrate.ts`) [ANC:sds:3-6]
 
 - **Purpose:** One-way migration of all IDE primitives (skills, agents, commands) from one IDE config dir to another. Unlike `user_sync` (bidirectional, mtime-based, user resources only), `migrate` is explicit, one-directional, includes all resources (`flowai-*` + user-created), and requires no `.flowai.yaml`.
 - **CLI:** `flowai migrate <from> <to>`. Flags: `--yes` (overwrite without prompt), `--dry-run` (print plan, no writes). Known IDEs: `claude`, `cursor`, `opencode`.
@@ -465,24 +465,24 @@ graph TD
 - **Reused from existing modules:** `crossTransformAgent` (`transform.ts`), `processPlan` (`sync.ts`), `DEFAULT_MODEL_MAPS` (`transform.ts`).
 - **Excluded from migration:** rules (`.cursor/rules/`, `.claude/rules/`) and hooks — fundamentally different formats across IDEs, no automated transform.
 
-### 3.7 Conventional Commits `agent:` Type — FR-AGENT-COMMIT
+### 3.7 Conventional Commits `agent:` Type — FR-AGENT-COMMIT [ANC:sds:3-7]
 
 - **Purpose:** Dedicated commit type for AI agent/skill config changes.
 - **Behavioral requirements:** See acceptance tests `commit-agent-type`.
 
-### 3.8 init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT
+### 3.8 init Multi-File Architecture + Diff-Based Updates — FR-INIT.IDEMPOTENT [ANC:sds:3-8]
 
 - **Purpose:** Preserve user edits during re-initialization. Single root AGENTS.md file generated from the pack-level asset template. Legacy three-file layouts (`documents/AGENTS.md`, `scripts/AGENTS.md`) are detected and collapsed into root. Template updates tracked independently via `pack.yaml` `assets:` field (not init scaffolds).
 - **Script:** `generate_agents.ts` (Deno/TS) — analyze-only. Command: `analyze`.
 - **Behavioral requirements:** See acceptance tests `init-*` (6 scenarios).
 
-### 3.9 AI Devcontainer Setup — FR-DEVCONTAINER
+### 3.9 AI Devcontainer Setup — FR-DEVCONTAINER [ANC:sds:3-9]
 
 - **Purpose:** Generate `.devcontainer/` config for AI IDE development.
 - **Behavioral requirements:** See acceptance tests `setup-ai-ide-devcontainer-*` (6 scenarios).
 - **Deps:** None (pure SKILL.md, agent-driven generation).
 
-### 3.10 Project Integration Update Skill — `update`
+### 3.10 Project Integration Update Skill — `update` [ANC:sds:3-10]
 
 - **Purpose:** Reconcile current-project artifacts with installed flowai framework templates without managing CLI lifecycle or installed primitives.
 - **Install channel:** Works from project-local, plugin, or user-level installs. Framework template sources are read-only.
@@ -491,7 +491,7 @@ graph TD
 - **Boundary:** Never runs `flowai update`, `flowai sync`, or rewrites plugin cache/user-level dirs/project-local primitives. Primitive adaptation is a `adapt` responsibility.
 - **Behavioral requirements:** See acceptance tests `update-*` (4 scenarios).
 
-### 3.11 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`)
+### 3.11 Loop Command — Non-Interactive Runner — FR-LOOP (`cli/src/loop.ts`) [ANC:sds:3-11]
 
 - **Purpose:** Launch Claude Code non-interactively with a prompt. Base automation primitive.
 - **CLI:** `flowai loop [OPTIONS] <prompt>`. Flags: `--agent`, `--model`, `--cwd`, `--yolo`, `--timeout`, `--interval`, `--max-iterations`. Skills invoked via prompt (e.g. `"/commit msg"`).
@@ -510,7 +510,7 @@ graph TD
 - **Exit code:** resultEvent.is_error → process exit code → 1 (fallback).
 - **Defaults:** interval=0 (no pause), max-iterations=infinite, timeout=none.
 
-### 3.12 Standalone Primitive Adaptation — `adapt`
+### 3.12 Standalone Primitive Adaptation — `adapt` [ANC:sds:3-12]
 
 - **Purpose:** On-demand adaptation of project-local framework primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `update`.
 - **Command:** `framework/core/commands/adapt/SKILL.md`. User-only primitive under `commands/` directory; `disable-model-invocation: true` is injected by the CLI writer at sync time.
@@ -529,7 +529,7 @@ graph TD
 - **Relation to update:** `update` handles project-owned artifact reconciliation. `adapt` handles project-local primitive adaptation — after first local install, stack change, or selectively. Plugin/user-level primitives stay read-only.
 - **Behavioral requirements:** See acceptance tests `adapt-skills-basic`, `adapt-agents-basic`.
 
-### 3.13 JiT Subset of Review Atom — FR-JIT-REVIEW
+### 3.13 JiT Subset of Review Atom — FR-JIT-REVIEW [ANC:sds:3-13]
 
 - **Purpose:** Diff-centric regression probe interleaved into the `review` atom. Generates ephemeral "Catching JiTTests" — tests that pass on parent and fail on diff — to catch behavioural regressions the author missed, without polluting the static test suite. Implements FR-JIT-REVIEW. No longer a standalone skill; activates automatically inside every `review` invocation and every composite that uses it.
 - **Location:** Interleaved into `framework/atoms/review.md` as steps 2b (parent baseline), 3d-e (intent hints + inference), 6-8 side-channel risk hypotheses, 8a (mutant + ephemeral test synthesis), 8b (dual-run + filter), extended step 10 (report sections), and step 11 (ephemeral dispose).
@@ -555,7 +555,7 @@ graph TD
 - **Verdict gate is shared with review:** catching tests that fail-on-diff are `[critical]` findings; no second JiT gate.
 - **Behavioral requirements:** See acceptance tests `review-catches-regression-via-jittests`, `review-no-change-no-alarm`.
 
-### 3.14 AI IDE Runner Skill — `ai-ide-runner`
+### 3.14 AI IDE Runner Skill — `ai-ide-runner` [ANC:sds:3-14]
 
 - **Purpose:** Spawn another AI IDE CLI runtime (`claude`, `opencode`, `cursor-agent`, `codex`) in one-shot non-interactive mode, capture stdout, and relay it verbatim. Enables second-opinion lookups, per-IDE fan-out, and cross-model comparisons from within the current agent session. Implements FR-AI-IDE-RUNNER. Companion to the delegation-style flow in §3.17.
 - **Location:** `framework/ide-bridge/skills/ai-ide-runner/SKILL.md` with catalogue references under `references/models.md` and `references/runtimes.md`. Model-invocable. (Relocated from `framework/engineering/` when the `ide-bridge` pack was introduced — see §3.17.)
@@ -573,7 +573,7 @@ graph TD
 - **Scope boundaries:** Skill does NOT install CLIs, persist session transcripts, or grade outputs. If the user wants a verdict, the skill runs an LLM-as-judge as an additional explicit invocation rather than embedding the opinion.
 - **Behavioral requirements:** See acceptance tests `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model`.
 
-### 3.15 Memex Pack — FR-MEMEX (`framework/memex/`)
+### 3.15 Memex Pack — FR-MEMEX (`framework/memex/`) [ANC:sds:3-15]
 
 - **Purpose:** Long-term knowledge bank for AI agents. The pack provides three agent-invocable skills plus a shared schema asset, a deterministic audit script, and a `SessionStart` hook. The memex itself lives wherever the user keeps it (typical: `<project>/` with `pages/` subdir, or a dedicated `~/memex/` root); this pack ships the operations, not the data.
 - **Inspiration:** Vannevar Bush's *Memex* (As We May Think, 1945) reframed for AI agents — a personal knowledge bank that an agent can read from, write into, and audit. Andrej Karpathy's `llmwiki` post (Memex-style persistent wiki maintained by an LLM) is the direct precursor. Two predecessor reference implementations were studied — `ekadetov/llm-wiki` (single-Obsidian-vault skill, ~600 lines) and `nvk/llm-wiki` (15-command multi-IDE plugin, ~4500 lines). This pack stays close to Karpathy's three-operation core while borrowing only the demonstrably useful primitives from each.
@@ -597,7 +597,7 @@ graph TD
 - **Scope boundaries (intentionally minimal vs nvk/llm-wiki):** No multi-memex hub, no `research` / `thesis` / `librarian` / `projects` / `output` / `assess` / `plan` skills, no volatility / freshness scoring, no `qmd` dependency, no derived-index protocol (the on-disk frontmatter is the only source of truth; index drift surfaces as an audit issue rather than auto-rebuilding silently).
 - **Behavioral requirements:** See acceptance tests `save-new`, `save-update`, `ask-citations`, `ask-honest-gap`, `audit-clean`, `audit-defects`.
 
-### 3.16 Documentation System — FR-DOC-* (`framework/core/`)
+### 3.16 Documentation System — FR-DOC-* (`framework/core/`) [ANC:sds:3-16]
 
 - **Purpose:** A coherent doc system across SRS, SDS, tasks, index, code references — one cross-reference mechanism, agent-maintainable, drift-detectable.
 - **Schema source (FR-UNIVERSAL.DOC-SCHEMA):** The root project-instructions artifact (`AGENTS.md`) defines concrete documentation paths and schemas. `CLAUDE.md` is the same artifact exposed for compatibility: symlink or byte-equivalent mirror; divergent regular content is stale compatibility content, not a second schema source. The framework template may use default paths; shipped operational primitives treat those paths as examples, not universal contract.
@@ -616,7 +616,7 @@ graph TD
 - **Ownership flow:** `plan` writes committed new-shape tasks, `documents/index.md` rows, and SRS-inline `**Tasks:**` back-pointers; commit/review-and-commit derive task `status` from DoD; reflect detects decisions (read-only); maintenance audits drift.
 - **Acceptance evidence:** Benchmarks `plan-writes-task-new-frontmatter`, `plan-loads-related-tasks`, `plan-updates-srs-task-back-pointer`, `commit-flips-task-status`, `commit-derives-in-progress-status`, `review-and-commit-flips-task-status`, `plan-updates-index-on-new-fr`, `reflect-rescues-decision-as-task`, `maintenance-detects-doc-health-issues`, plus 104 GFM-link comments resolved by check-traceability.
 
-### 3.17 IDE Bridge Pack — `ide-bridge` (`framework/ide-bridge/`)
+### 3.17 IDE Bridge Pack — `ide-bridge` (`framework/ide-bridge/`) [ANC:sds:3-17]
 
 - **Purpose:** Cross-IDE delegation. Lets an agent running in one AI IDE (e.g. Claude Code) hand a task to another IDE's CLI (e.g. Codex) — either as a one-shot relay/comparison (§3.14) or as a context-isolated delegation through a subagent.
 - **Pack contents:**
@@ -629,7 +629,7 @@ graph TD
 - **No inter-pack dependencies:** `ide-bridge` is self-contained. Enforced by `scripts/check-pack-refs.ts`.
 - **Behavioural requirements:** See acceptance tests `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model` (relocated with the skill); `delegate-to-ide-via-subagent` (end-to-end: covers both FR-IDE-BRIDGE-DELEGATE and FR-IDE-BRIDGE-WORKER, since `AcceptanceTestAgentScenario` does not actually execute a subagent's body in isolation — the wrapping scenario is the only honest test path); `delegate-to-ide-trigger-pos-1`, `delegate-to-ide-trigger-adj-1`, `delegate-to-ide-trigger-false-1`.
 
-### 3.18 SALP Anchor Infrastructure — FR-DOC-ANCHORS (`scripts/lib/salp.ts`, `scripts/check-salp.ts`, `scripts/migrate-to-salp.ts`)
+### 3.18 SALP Anchor Infrastructure — FR-DOC-ANCHORS (`scripts/lib/salp.ts`, `scripts/check-salp.ts`, `scripts/migrate-to-salp.ts`) [ANC:sds:3-18]
 
 - **Purpose:** Tooling that backs the SALP (Semantic Anchor / Link Protocol) adoption — parser + validator + migration script. Implements [REF:fr:doc-anchors | FR-DOC-ANCHORS].
 - **Components:**

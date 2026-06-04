@@ -72,7 +72,7 @@ Deno.test("FR-UNIVERSAL.STRUCT: non-standard file at root is error", () => {
 });
 
 Deno.test("FR-UNIVERSAL.STRUCT: generator inputs at root are errors", () => {
-  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
   const entries = [
     { name: "SKILL.md", isDirectory: false, isFile: true },
     { name: "_atom.md", isDirectory: false, isFile: true },
@@ -261,7 +261,7 @@ Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills still hit the catalog (fron
 });
 
 Deno.test("token_cap_exempts_composites_from_manifest: every composite in framework/composites.yaml is exempt", async () => {
-  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly) — the exemption list is now derived live from the
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE] — the exemption list is now derived live from the
   // manifest via scripts/lib/composite-list.ts, not a hardcoded TS array.
   const { compositeNames } = await import("./lib/composite-list.ts");
   const content = "x".repeat(40000); // 10000 tokens — would fail without exemption
@@ -460,11 +460,14 @@ Deno.test("doc schema indirection: allows scaffold defaults in pack metadata onl
   assertStringIncludes(errors[0].message, "documents/requirements.md");
 });
 
-Deno.test("doc schema indirection: allows GFM traceability links in source comments only", () => {
+Deno.test("doc schema indirection: allows SALP traceability links in source comments only", () => {
+  // Post-SALP migration: traceability comments use `// [REF:fr:init]`
+  // (no doc path encoded). The validator must continue to allow them and
+  // still reject string literals that hard-code the doc path.
   assertEquals(
     validateDocumentationSchemaIndirection(
       "framework/core/commands/init/scripts/generate_agents.ts",
-      "// [FR-INIT](../../../../../documents/requirements.md#fr-init-project-initialization) — init\n",
+      "// [REF:fr:init | FR-INIT] — init\n",
     ),
     [],
   );

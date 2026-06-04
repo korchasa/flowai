@@ -103,6 +103,20 @@ Deno.test("rejects-uppercase-id", () => {
   );
 });
 
+Deno.test("parses-id-with-period-for-hierarchical-fr", () => {
+  // Hierarchical FR IDs (`FR-ACCEPT.TRIGGER`, `FR-DIST.MARKETPLACE`) lower
+  // to `accept.trigger`, `dist.marketplace`. The period is structural and
+  // must round-trip through the SALP grammar.
+  const ancs = parseAnchors("[ANC:fr:accept.trigger]");
+  assertEquals(ancs.length, 1);
+  assertEquals(ancs[0].ns, "fr");
+  assertEquals(ancs[0].id, "accept.trigger");
+  const refs = parseRefs("[REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]");
+  assertEquals(refs.length, 1);
+  assertEquals(refs[0].id, "dist.marketplace");
+  assertEquals(refs[0].display, "FR-DIST.MARKETPLACE");
+});
+
 Deno.test("parses-mx-namespaces-with-hyphen", () => {
   const ancs = parseAnchors("[ANC:mx-concept:oauth-flow]");
   assertEquals(ancs[0].ns, "mx-concept");

@@ -1,4 +1,4 @@
-// implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+// implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
 // Verification of scripts/validate-plugins.ts.
 //
 // Hermetic fixtures + one happy-path against the real `framework/core/` build.

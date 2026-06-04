@@ -6,7 +6,7 @@ import {
   SystemUnhealthyError,
 } from "./system_health.ts";
 
-// implements [FR-ACCEPT-GUARDS](../../../documents/requirements.md#fr-accept-guards-resource-guards-for-spawned-agents)
+// implements [REF:fr:accept-guards | FR-ACCEPT-GUARDS]
 // pre-flight system-health gate. The gate intentionally has
 // NO env-var escape hatch (no BENCH_HEALTH_DISABLE) — thresholds can be
 // tuned via env, but the gate cannot be skipped. These tests pin that

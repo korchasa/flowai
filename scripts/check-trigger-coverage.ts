@@ -1,4 +1,4 @@
-// [FR-ACCEPT.TRIGGER](../documents/requirements.md#fr-accept.trigger-skill-description-matching-verification) — every skill MUST have 3 trigger scenarios (1 pos + 1 adj + 1 false).
+// [REF:fr:accept.trigger | FR-ACCEPT.TRIGGER] — every skill MUST have 3 trigger scenarios (1 pos + 1 adj + 1 false).
 /**
  * Validates that every skill in `framework/<pack>/skills/*` has
  * the full set of 3 trigger benchmark scenarios required by FR-ACCEPT.TRIGGER.

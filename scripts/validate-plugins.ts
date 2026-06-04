@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -A
-// implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+// implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
 // Validate a shared Claude Code + Codex plugin marketplace tree before publication.
 //
 // Runs over the OUTPUT of scripts/build-plugins.ts (or any conforming

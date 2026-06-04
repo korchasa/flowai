@@ -1,4 +1,4 @@
-// [FR-ACCEPT-CACHE](../../../documents/requirements.md#fr-accept-cache-acceptance-test-result-cache)
+// [REF:fr:accept-cache | FR-ACCEPT-CACHE]
 /**
  * Benchmark result cache — content-addressed, committed to the repo.
  *

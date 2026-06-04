@@ -1,6 +1,6 @@
 /**
  * Pre-run cache lookup + post-run cache writer for the bench command.
- * [FR-ACCEPT-CACHE](../../../documents/requirements.md#fr-bench-cache-benchmark-result-cache)
+ * [REF:fr:accept-cache | FR-ACCEPT-CACHE]
  */
 import { relative } from "@std/path";
 import { ansi } from "../../utils.ts";

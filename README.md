@@ -138,7 +138,7 @@ After `codex plugin marketplace add`, run `codex plugin add <plugin>@flowai-plug
 
 > **CLI and plugin install are mutually exclusive:** if you install via the plugin marketplace, do NOT also run `flowai sync` for the same IDE in the same project — the CLI detects an installed flowai plugin and aborts to avoid dual installs. Pick one channel.
 
-> **Security:** plugins execute arbitrary code at your user privilege. Only install marketplaces and plugins from sources you trust. The `korchasa/flowai-plugins` repository is a CI-generated mirror of this framework's packs and contains no human-authored content beyond `README.md` and `LICENSE`. See [FR-DIST.MARKETPLACE](documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace) for the build / distribution contract.
+> **Security:** plugins execute arbitrary code at your user privilege. Only install marketplaces and plugins from sources you trust. The `korchasa/flowai-plugins` repository is a CI-generated mirror of this framework's packs and contains no human-authored content beyond `README.md` and `LICENSE`. See [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE] for the build / distribution contract.
 
 ### Quick Start Prompt
 

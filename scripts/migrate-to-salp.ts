@@ -89,53 +89,91 @@ function frIdFromLinkText(text: string): string {
   return text.slice(3).toLowerCase();
 }
 
-function migrateGfmFrLinks(input: string, opts: MigrateOptions): string {
-  return input.replace(GFM_FR_LINK, (raw, linkText, target) => {
-    if (raw.startsWith("[REF:") || raw.startsWith("[ANC:")) return raw;
-    const candidates = resolveLinkCandidates(opts.file, target);
-    const salp = lookupSalp(opts.map, candidates);
-    if (!salp) {
-      throw new SalpMigrationError(
-        `cannot resolve "${target}" (tried: ${
-          candidates.join(", ")
-        }) — no anchor map entry`,
-      );
+/** Apply `transform` to `input` everywhere EXCEPT inside backtick-wrapped
+ *  inline code-spans. Markdown code-spans quote illustrative grammar (e.g.
+ *  the SRS lists banned forms like `[FR-X](path.md#…)`) and must be left
+ *  untouched. Operates line-by-line so a stray backtick on one line cannot
+ *  accidentally form a multi-line "code-span" that swallows real text on
+ *  later lines. */
+function applyOutsideBackticks(
+  input: string,
+  transform: (segment: string) => string,
+): string {
+  const outLines: string[] = [];
+  for (const line of input.split("\n")) {
+    const segments = line.split(/(`[^`\n]*`)/);
+    const rebuilt: string[] = [];
+    for (const seg of segments) {
+      if (seg.startsWith("`") && seg.endsWith("`") && seg.length >= 2) {
+        rebuilt.push(seg);
+      } else {
+        rebuilt.push(transform(seg));
+      }
     }
-    return `[REF:${salp.ns}:${salp.id} | ${linkText}]`;
-  });
+    outLines.push(rebuilt.join(""));
+  }
+  return outLines.join("\n");
+}
+
+function migrateGfmFrLinks(input: string, opts: MigrateOptions): string {
+  return applyOutsideBackticks(
+    input,
+    (segment) =>
+      segment.replace(GFM_FR_LINK, (raw, linkText, target) => {
+        if (raw.startsWith("[REF:") || raw.startsWith("[ANC:")) return raw;
+        const candidates = resolveLinkCandidates(opts.file, target);
+        const salp = lookupSalp(opts.map, candidates);
+        if (!salp) {
+          throw new SalpMigrationError(
+            `cannot resolve "${target}" (tried: ${
+              candidates.join(", ")
+            }) — no anchor map entry`,
+          );
+        }
+        return `[REF:${salp.ns}:${salp.id} | ${linkText}]`;
+      }),
+  );
 }
 
 function migrateGfmGenericLinks(input: string, opts: MigrateOptions): string {
-  return input.replace(GFM_GENERIC_LINK, (raw, linkText, target) => {
-    if (raw.includes("[REF:") || raw.includes("[ANC:")) return raw;
-    if (!target.includes("#")) return raw;
-    if (/^FR-[A-Z]/.test(linkText) || /^\{\{[A-Z_]+\}\}$/.test(linkText)) {
-      return raw;
-    }
-    const candidates = resolveLinkCandidates(opts.file, target);
-    const salp = lookupSalp(opts.map, candidates);
-    if (!salp) return raw;
-    return `[REF:${salp.ns}:${salp.id} | ${linkText}]`;
-  });
+  return applyOutsideBackticks(
+    input,
+    (segment) =>
+      segment.replace(GFM_GENERIC_LINK, (raw, linkText, target) => {
+        if (raw.includes("[REF:") || raw.includes("[ANC:")) return raw;
+        if (!target.includes("#")) return raw;
+        if (/^FR-[A-Z]/.test(linkText) || /^\{\{[A-Z_]+\}\}$/.test(linkText)) {
+          return raw;
+        }
+        const candidates = resolveLinkCandidates(opts.file, target);
+        const salp = lookupSalp(opts.map, candidates);
+        if (!salp) return raw;
+        return `[REF:${salp.ns}:${salp.id} | ${linkText}]`;
+      }),
+  );
 }
 
 function migrateWikilinks(input: string, opts: MigrateOptions): string {
-  // First, collapse dual-link forms: `[[slug|Name]] ([Name](slug.md))`
-  // — drop the trailing parenthetical (it duplicates the wikilink).
-  const DUAL =
-    /(\[\[[a-z0-9][a-z0-9-]*(?:\|[^\]]+)?\]\])\s*\(\[[^\]]+\]\([^)]+\)\)/g;
-  let work = input.replace(DUAL, (_dual, wiki) => wiki);
+  return applyOutsideBackticks(input, (segment) => {
+    // First, collapse dual-link forms: `[[slug|Name]] ([Name](slug.md))`
+    // — drop the trailing parenthetical (it duplicates the wikilink).
+    const DUAL =
+      /(\[\[[a-z0-9][a-z0-9-]*(?:\|[^\]]+)?\]\])\s*\(\[[^\]]+\]\([^)]+\)\)/g;
+    let work = segment.replace(DUAL, (_dual, wiki) => wiki);
 
-  work = work.replace(WIKILINK, (raw, slug, display) => {
-    if (!opts.pageType) {
-      throw new SalpMigrationError(
-        `wikilink "${raw}" found but no page type provided for ${opts.file}`,
-      );
-    }
-    const ns = `mx-${opts.pageType}`;
-    return display ? `[REF:${ns}:${slug} | ${display}]` : `[REF:${ns}:${slug}]`;
+    work = work.replace(WIKILINK, (raw, slug, display) => {
+      if (!opts.pageType) {
+        throw new SalpMigrationError(
+          `wikilink "${raw}" found but no page type provided for ${opts.file}`,
+        );
+      }
+      const ns = `mx-${opts.pageType}`;
+      return display
+        ? `[REF:${ns}:${slug} | ${display}]`
+        : `[REF:${ns}:${slug}]`;
+    });
+    return work;
   });
-  return work;
 }
 
 function migrateBareFrComments(input: string): string {
@@ -148,6 +186,16 @@ function migrateBareFrComments(input: string): string {
     }
     const m = line.match(BARE_FR_COMMENT);
     if (!m) {
+      out.push(line);
+      continue;
+    }
+    // Skip if the matched legacy form is inside a markdown code-span on
+    // this line (illustrative grammar inside backticks, not a real comment
+    // shortcut). A real `// FR-X` comment never has a backtick before it.
+    const matchStart = m.index ?? line.indexOf(m[0]);
+    const preceding = line.slice(0, matchStart);
+    const backtickRuns = (preceding.match(/`/g) ?? []).length;
+    if (backtickRuns % 2 === 1) {
       out.push(line);
       continue;
     }

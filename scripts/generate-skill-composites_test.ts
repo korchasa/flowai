@@ -51,7 +51,7 @@ Deno.test("manifest_loads: real framework manifest parses", async () => {
 });
 
 Deno.test("manifest_layout: generator inputs live outside primitive directories", async () => {
-  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
   const m = await loadManifest(MANIFEST_PATH);
   const primitiveInputRe =
     /^framework\/[^/]+\/(?:commands|skills)\/[^/]+\/_(?:atom|composite)\.md$/;

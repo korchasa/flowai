@@ -24,9 +24,20 @@ export type AnchorMap = Map<string, SalpId>;
 const FR_HEADING = /^#{2,4}\s+(FR-[A-Z][A-Z0-9-]*(?:\.[A-Z][A-Z0-9-]*)*)/;
 const SDS_HEADING = /^#{2,4}\s+(\d+(?:\.\d+)+(?:[a-z])?)\s+(.+?)\s*$/;
 
+/** Strip trailing `[ANC:ns:id]` markers (and surrounding whitespace) from
+ *  a heading line BEFORE computing its GFM auto-slug. The slug must match
+ *  what GFM produced BEFORE the SALP migration injected the anchor — that
+ *  is the slug the old `[X](path.md#…)` links were written against. */
+function stripAnchorTokens(headingText: string): string {
+  return headingText.replace(/\s*\[ANC:[^\]]+\]\s*/g, "").trimEnd();
+}
+
 /** Parse SRS headings and yield `{slug, salp}` pairs. The slug is the GFM
  *  auto-slug computed against the FULL heading text (matching how GitHub
- *  resolves `requirements.md#fr-cmd-exec-command-execution`). */
+ *  resolves `requirements.md#fr-cmd-exec-command-execution`). Any inline
+ *  `[ANC:ns:id]` markers are stripped from the heading before slug
+ *  computation so legacy GFM cross-references continue to resolve through
+ *  the SALP migration. */
 export function extractFrAnchors(
   srsContent: string,
 ): Array<{ slug: string; salp: SalpId }> {
@@ -35,7 +46,7 @@ export function extractFrAnchors(
   for (const line of srsContent.split("\n")) {
     const m = line.match(/^#{1,6}\s+(.+?)\s*$/);
     if (!m) continue;
-    const headingText = m[1];
+    const headingText = stripAnchorTokens(m[1]);
     const baseSlug = computeAutoSlug(headingText);
     const count = seen.get(baseSlug) ?? 0;
     seen.set(baseSlug, count + 1);
@@ -58,7 +69,7 @@ export function extractSdsAnchors(
   for (const line of sdsContent.split("\n")) {
     const m = line.match(/^#{1,6}\s+(.+?)\s*$/);
     if (!m) continue;
-    const headingText = m[1];
+    const headingText = stripAnchorTokens(m[1]);
     const baseSlug = computeAutoSlug(headingText);
     const count = seen.get(baseSlug) ?? 0;
     seen.set(baseSlug, count + 1);

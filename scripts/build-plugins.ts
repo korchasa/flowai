@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run -A
-// implements [FR-DIST.MARKETPLACE](../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+// implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
 // Build a shared Claude Code + Codex plugin tree from framework/<pack>/.
 //
 // Reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks,assets}` and
@@ -814,7 +814,7 @@ if (import.meta.main) {
     ? [...DEFAULT_PACKS]
     : flags.packs;
 
-  // implements [FR-SKILL-COMPOSE](../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
   // Generated SKILL.md files are gitignored build artefacts. The plugin
   // marketplace build reads SKILL.md from disk (per-pack copy), so regenerate
   // first to ensure every composite + atom SKILL.md is current. Idempotent.

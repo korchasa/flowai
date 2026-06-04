@@ -1,4 +1,4 @@
-# [FR-CICD](../../documents/requirements.md#fr-cicd-cicd-pipeline-security), FR-CICD.PIN, FR-CICD.PRIV, FR-CICD.INTEGRITY, FR-CICD.JOBS
+# [REF:fr:cicd | FR-CICD], FR-CICD.PIN, FR-CICD.PRIV, FR-CICD.INTEGRITY, FR-CICD.JOBS
 name: CI/CD
 
 on:
@@ -92,7 +92,7 @@ jobs:
       # Produce a reproducible framework.tar.gz so the external flowai-cli
       # repo can pin a specific framework revision by SHA-256 and bundle from
       # this asset.
-      # implements [FR-DIST.BUNDLE.PIN](../../documents/requirements.md#fr-dist.bundle.pin-pinned-tarball-bundle-source-post-split)
+      # implements [REF:fr:dist.bundle.pin | FR-DIST.BUNDLE.PIN]
       - name: Build framework tarball
         id: framework-tarball
         if: steps.releasable.outputs.should_release == 'true'
@@ -103,14 +103,14 @@ jobs:
           # Deterministic mtime tied to the release commit (UTC).
           SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
           export SOURCE_DATE_EPOCH
-          # implements [FR-SKILL-COMPOSE](../../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+          # implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
           # Regenerate composite + atom SKILL.md from sources. Targets are
           # gitignored build artefacts; running this guarantees the tarball
           # carries the latest rendered output regardless of CI cache state.
           deno run -A scripts/generate-skill-composites.ts --write
           # GNU tar (ubuntu-latest): sorted entries, numeric IDs, fixed mtime.
           # gzip -n omits filename + timestamp in the gzip header.
-          # implements [FR-SKILL-COMPOSE](../../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+          # implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
           # exclude generator inputs (atom/composite/manifest); see
           # scripts/check-pack-refs.ts --leakage and Variants section in
           # documents/tasks/2026/05/generate-skills-from-atoms.md.
@@ -130,7 +130,7 @@ jobs:
           echo "framework_version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "Framework tarball SHA-256: ${ACTUAL}"
 
-      # implements [FR-SKILL-COMPOSE](../../documents/requirements.md#fr-skill-compose-generated-composite-skill-assembly)
+      # implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
       # verify the bundle did not leak any generator inputs. Runs between the tarball build and the Framework
       # Release step so a missing --exclude aborts the release.
       - name: Verify framework tarball contains no generator-input leaks
@@ -151,8 +151,8 @@ jobs:
       # Parallel "framework-v*" release carries the bundle source for the
       # external flowai-cli repo. Uses the same tag SHA as the CLI release;
       # both releases coexist until Phase 4 decommissions the JSR publish.
-      # implements [FR-DIST.BUNDLE.PIN](../../documents/requirements.md#fr-dist.bundle.pin-pinned-tarball-bundle-source-post-split)
-      # implements [FR-CICD.SPLIT](../../documents/requirements.md#fr-cicd-cicd-pipeline-security)
+      # implements [REF:fr:dist.bundle.pin | FR-DIST.BUNDLE.PIN]
+      # implements [REF:fr:cicd | FR-CICD.SPLIT]
       - name: Create Framework Release
         if: steps.releasable.outputs.should_release == 'true'
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
@@ -175,7 +175,7 @@ jobs:
       # publish to downstream repo korchasa/flowai-plugins on the same release
       # event. Validation is a pre-publish gate: any schema / cross-link /
       # frontmatter issue aborts the run BEFORE the downstream is touched.
-      # implements [FR-DIST.MARKETPLACE](../../documents/requirements.md#fr-dist.marketplace-claude-code-codex-plugin-marketplace)
+      # implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
       - name: Build and validate plugin marketplace
         if: steps.releasable.outputs.should_release == 'true'
         run: deno task validate-plugins

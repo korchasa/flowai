@@ -1,5 +1,5 @@
-// [FR-INIT](../../../../../documents/requirements.md#fr-init-project-initialization) — project analysis for init
-// [FR-INIT.STACK](../../../../../documents/requirements.md#fr-init-project-initialization) — stack detection via marker files
+// [REF:fr:init | FR-INIT] — project analysis for init
+// [REF:fr:init | FR-INIT.STACK] — stack detection via marker files
 /**
  * generate_agents.ts — Project analysis tool for init.
  *

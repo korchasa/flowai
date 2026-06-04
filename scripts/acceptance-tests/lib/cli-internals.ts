@@ -8,7 +8,7 @@
 // edits here. Drift between the two will silently desynchronise the
 // acceptance harness from the real CLI output.
 //
-// implements [FR-DIST.MAPPING](../../../documents/requirements.md#fr-dist.mapping-cross-ide-resource-mapping-universal-representation)
+// implements [REF:fr:dist.mapping | FR-DIST.MAPPING]
 import { parse, stringify } from "@std/yaml";
 
 /** Abstract model tiers — IDE-agnostic quality/cost intent. */
