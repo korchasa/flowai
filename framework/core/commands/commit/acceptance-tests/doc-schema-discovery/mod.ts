@@ -31,14 +31,14 @@ export const CommitDocSchemaDiscoveryBench = new class
     agents += `
 ## Documentation Map
 
-- \`api.ts\` -> [FR-API](specs/requirements.md#fr-api-api-functions), [SDS API](architecture/system.md#api)
+- \`api.ts\` -> [REF:fr:api | FR-API], [REF:sds:api | SDS API]
 `;
     await Deno.writeTextFile(agentsPath, agents);
     await Deno.mkdir(join(sandboxPath, "specs"), { recursive: true });
     await Deno.mkdir(join(sandboxPath, "architecture"), { recursive: true });
     await Deno.writeTextFile(
       join(sandboxPath, "specs", "requirements.md"),
-      "# SRS\n\n## 3. Functional Requirements\n\n### FR-API: API Functions\n\n- **Description:** API helpers are documented here.\n- **Acceptance:** manual — reviewer\n",
+      "# SRS\n\n## 3. Functional Requirements\n\n### FR-API: API Functions [ANC:fr:api]\n\n- **Description:** API helpers are documented here.\n- **Acceptance:** manual — reviewer\n",
     );
     await Deno.writeTextFile(
       join(sandboxPath, "architecture", "system.md"),

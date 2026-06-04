@@ -1,6 +1,7 @@
-// FR-DEVCONTAINER.INTERVIEW (greenfield interview integration) is NOT tested here.
-// That path (init → devcontainer delegation) belongs to init benchmarks,
-// not to devcontainer skill benchmarks. The skill itself is tested standalone.
+// The "greenfield interview integration" path of [REF:fr:devcontainer | FR-DEVCONTAINER]
+// (init → devcontainer delegation) is NOT tested here. That path belongs to
+// init benchmarks, not to devcontainer skill benchmarks. The skill itself
+// is tested standalone.
 
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
