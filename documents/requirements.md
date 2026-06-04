@@ -992,6 +992,18 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-SCRIPTS.STORE** Scripts stored at `framework/<pack>/scripts/<name>`.
   - [x] **FR-SCRIPTS.COPY** Copied to `.{ide}/scripts/` during sync.
 
+### FR-PLAN-VARIANT-ARCHETYPES: Solution-Variant Archetypes for Non-Obvious Tasks [ANC:fr:plan-variant-archetypes]
+
+- **Description:** For a non-obvious task, the `plan` skill's Step 4 variant analysis MUST cover three distinct solution archetypes — quick fix (minimal scope, may incur tech debt), architecturally-correct (correct design within current constraints/scope), and best long-term (strategic, optimizes maintainability over the horizon, may exceed current scope) — each with Pros/Cons/Risks plus cross-variant trade-offs. The agent MAY add further options. The obvious-task single-variant exception is preserved. `ship` inherits the mandate via composite regeneration from the `plan` atom. The shipped `AGENTS.md` `Variant Analysis` canon stays an abstract, domain-agnostic comparison format (no plan- or archetype-specific content).
+- **Tasks:** [plan-variant-archetypes](tasks/2026/06/plan-variant-archetypes.md)
+- **Scope:**
+  - Non-obvious task → variant set covers quick-fix, architecturally-correct, best-long-term archetypes (judged by intent; labels may vary).
+  - Obvious task → exactly one variant (no regression).
+  - When two archetypes collapse into one option, the agent states so and still surfaces a distinct third.
+  - The `AGENTS.md` `Variant Analysis` bullet contains no plan/archetype-specific tokens; the rule name is retained.
+- **Acceptance verified by acceptance tests:** `plan-variants-complex`, `plan-variants-obvious`
+- **Status:** [x]
+
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 
 - **Description:** Reflection skills (`reflect`, `reflect-by-history`) must search session history for similar errors/mistakes, identify patterns, and include findings in output. Before presenting the final report, the agent must perform self-criticism — validate findings, check for false positives and blind spots, evaluate proportionality of proposed fixes, and revise the report accordingly.

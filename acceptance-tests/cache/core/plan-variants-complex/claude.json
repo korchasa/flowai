@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "8be110b92ed05206cffda9b1153905e7c2735ae413dcb1fcbeb451492414cc60",
+  "key": "b968c1c27b6e23ba0c8d900e23cf034febd8790300d5b1cfefc8ce4fb2e0beca",
   "scenarioId": "plan-variants-complex",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T22:26:09.243Z",
+  "recordedAt": "2026-06-04T22:57:56.838Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 192086.99849999975,
+    "durationMs": 140102.489792,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,23 @@
     "checklistResults": {
       "task_file_created": {
         "pass": true,
-        "reason": "The agent explicitly used the Write tool to create 'documents/tasks/2026/05/user-auth-system.md'. This is confirmed by the agent logs showing the Write tool call, the file diffs section showing the f…"
+        "reason": "The agent explicitly created the file at `documents/tasks/2026/06/user-auth-system.md` using the Write tool, and the GENERATED FILES section confirms its contents — a full GODS-format task file with …"
       },
-      "multiple_variants": {
+      "quick_fix_archetype": {
         "pass": true,
-        "reason": "The agent presented exactly 3 distinct implementation variants: Вариант 1 (Stateless JWT), Вариант 2 (Server-side Sessions with PostgreSQL + Redis), and Вариант 3 (Hybrid — Short JWT + Opaque Refresh…"
+        "reason": "Вариант 1 — 'Stateless JWT (быстрый старт / MVP)' clearly maps to the quick-fix archetype. It is explicitly labeled as fast-start/MVP, requires only PostgreSQL (no new infra), takes 1–2 weeks to impl…"
+      },
+      "architecturally_correct_archetype": {
+        "pass": true,
+        "reason": "Вариант 2 — 'Server-side Sessions + PostgreSQL' is explicitly labeled 'архитектурно корректный' (architecturally correct). It solves the problem correctly within the stated constraints (no Redis, onl…"
+      },
+      "long_term_archetype": {
+        "pass": true,
+        "reason": "Вариант 3 — 'JWT + Refresh Rotation + Redis Blacklist + OAuth2' is explicitly labeled 'стратегически лучший' (strategically best). It exceeds current constraints by introducing Redis as a new infrast…"
       },
       "tradeoffs_discussed": {
         "pass": true,
-        "reason": "For each of the 3 variants, the agent provided dedicated 'Плюсы' (Pros), 'Минусы' (Cons), 'Риски' (Risks), and 'Best for' sections. Additionally, the agent concluded with an explicit cross-variant co…"
+        "reason": "Each variant received explicit Плюсы (Pros), Минусы (Cons), and Риски (Risks) sections. Additionally, a cross-variant comparison was provided covering: SOC2 compliance (Вариант 1 — частичное, 2 — пол…"
       }
     }
   }

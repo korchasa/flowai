@@ -89,7 +89,11 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - **CRITICAL**: Do NOT fill `## Solution` section yet.
 4. **Strategic Analysis & Variant Selection**
    - Generate variants in chat following `Variant Analysis` from AGENTS.md.
-   - MUST propose **2+ distinct** implementation approaches for non-trivial tasks.
+   - For non-obvious tasks, the variant set MUST cover three distinct **archetypes** (the agent MAY add more, e.g. a defer/do-nothing option):
+     - **Quick fix** — minimal change within the current scope; solves the immediate problem fastest, may incur tech debt.
+     - **Architecturally-correct** — correct design within the task's current constraints/scope (not merely the fastest).
+     - **Best long-term** — strategic; optimizes maintainability over the horizon, may exceed current scope (refactor/investment).
+   - If two archetypes collapse into the same option for a given task, state that explicitly and still surface a distinct third — never silently drop below the three without noting the collapse.
    - For EACH variant, present: **Pros**, **Cons**, **Risks**, and **Best For** (use cases/constraints it handles).
    - Across all variants, analyze **Trade-offs**: security vs complexity, performance vs maintainability, cost vs features.
    - **Exception — single variant**: Only offer 1 variant when the task has an obvious path (e.g., "create a text file", "add a config line") with no meaningful trade-offs. Briefly explain why alternatives don't apply.

@@ -27,15 +27,27 @@ export const PlanVariantsComplexBench = new class
       critical: true,
     },
     {
-      id: "multiple_variants",
+      id: "quick_fix_archetype",
       description:
-        "Did the agent present MULTIPLE (2 or more) implementation variants in the chat?",
+        "Did the agent present a QUICK-FIX archetype — a minimal-scope variant that solves the immediate problem with the least change, explicitly acknowledging it may incur tech debt? Judge by intent, not exact wording (labels like 'quick fix', 'minimal', 'fast', 'tactical' all qualify).",
+      critical: true,
+    },
+    {
+      id: "architecturally_correct_archetype",
+      description:
+        "Did the agent present an ARCHITECTURALLY-CORRECT archetype — a variant that is a proper, correct design WITHIN the task's current constraints/scope (not just the fastest)? Judge by intent, not exact wording.",
+      critical: true,
+    },
+    {
+      id: "long_term_archetype",
+      description:
+        "Did the agent present a BEST-LONG-TERM / strategic archetype — a variant optimizing maintainability over the horizon that MAY exceed current scope (e.g. a refactor or larger investment)? Judge by intent, not exact wording (labels like 'long-term', 'strategic', 'ideal', 'future-proof' all qualify). If the agent explicitly states this archetype collapses into the architecturally-correct one for this task, it must still surface a distinct third option and say so.",
       critical: true,
     },
     {
       id: "tradeoffs_discussed",
       description:
-        "Did the agent discuss pros/cons/risks per variant and trade-offs across variants?",
+        "Did the agent give Pros/Cons/Risks per variant AND analyze trade-offs ACROSS the variants (e.g. speed vs correctness vs longevity)?",
       critical: true,
     },
   ];
