@@ -1,0 +1,5 @@
+{
+  "fmt": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
+  "lint": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
+  "test": { "exclude": [".claude/", "acceptance-tests/"] }
+}

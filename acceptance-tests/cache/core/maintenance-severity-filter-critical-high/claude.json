@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "7badf81b8e6fbbd9e422d4e846a1f940768d35694d6347cf8f184f7207a4a833",
+  "scenarioId": "maintenance-severity-filter-critical-high",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T21:44:46.970Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 277208.555666,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "accepts_compound_severity_token": {
+        "pass": true,
+        "reason": "After the user replied 'critical+high', the agent immediately responded 'Разбираем находки [1] и [2].' (Let's analyze findings [1] and [2]) and entered the per-finding resolution loop for exactly tho…"
+      },
+      "enters_resolution_loop_on_subset": {
+        "pass": true,
+        "reason": "The agent entered the Apply/Skip/Edit loop only for Finding [1] [Critical] (src/silent_catch.ts) and Finding [2] [High] (project-wide missing tests). Both are explicitly tagged Critical or High. No o…"
+      },
+      "ignores_medium_and_low": {
+        "pass": true,
+        "reason": "The agent never opened per-finding Apply/Skip/Edit prompts for findings [3] [Medium], [4] [Medium], [5] [Medium], or [6] [Low]. After resolving findings [1] and [2] (both skipped), the agent explicit…"
+      },
+      "severity_tags_present_in_summary": {
+        "pass": true,
+        "reason": "All six findings in the summary (presented before the user's 'critical+high' reply) carry explicit severity tags: [1] [Critical], [2] [High], [3] [Medium], [4] [Medium], [5] [Medium], [6] [Low]. Ever…"
+      }
+    }
+  }
+}

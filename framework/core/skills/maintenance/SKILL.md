@@ -47,15 +47,16 @@ Categories checked:
 5.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
 6.  **No premature fixes**: Do NOT apply any changes during the Scan Phase. Only collect findings.
 7.  **User decides**: Every fix requires explicit user approval. Never apply fixes silently.
-8.  **Findings are first-hand or verified**: every finding MUST be ground-truthed against the source before the summary. Subagent-supplied findings (`Explore`, `Task`, `Agent`) are leads, not conclusions. See Step 17.5 and [references/verification-gate.md](references/verification-gate.md).
+8.  **Findings are first-hand or verified**: every finding MUST be ground-truthed against the source before the summary. Subagent-supplied findings (`Explore`, `Task`, `Agent`) are leads, not conclusions. See Step 12 (Verify Findings + Severity gate) and [references/verification-gate.md](references/verification-gate.md).
+9.  **Severity calibration**: every finding gets one tier per [references/severity-rubric.md](references/severity-rubric.md). In doubt between two tiers, pick the lower (anti-inflation). Critical share ≤ 35 % of total findings.
 </rules>
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
 
-For the per-finding **Apply / Skip / Edit** verdict in Step 13:
+For the per-finding **Apply / Skip / Edit** verdict in Step 15 (Interactive Resolution Loop):
 
 - The question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
-- The post-summary "how to proceed" prompt in Step 12 is exempt: it follows a long rich-content findings list and falls under the "rich-content alternatives" exemption in `FR-UNIVERSAL.QA-FORMAT`.
+- The post-summary "how to proceed" prompt in Step 14 is exempt: it follows a long rich-content findings list and falls under the "rich-content alternatives" exemption in `FR-UNIVERSAL.QA-FORMAT`.
 
 ## Instructions
 
@@ -63,7 +64,7 @@ For the per-finding **Apply / Skip / Edit** verdict in Step 13:
 
 ### SCAN PHASE
 
-Collect all findings into an internal list. Each finding has: category, file/symbol, problem description, proposed fix, severity (critical/warning).
+Collect all findings into an internal list. Each finding has: category, file/symbol, problem description, proposed fix, severity (`Critical | High | Medium | Low` — pick per [references/severity-rubric.md](references/severity-rubric.md); when in doubt between two tiers, pick the lower one).
 
 1. **Initialize & Plan**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering all scan categories below.
@@ -159,78 +160,53 @@ Collect all findings into an internal list. Each finding has: category, file/sym
    - **Resolved `index` drift**: if the resolved `index` exists, compare its FR rows against the resolved `SRS` — flag rows whose status, summary, or anchor disagree with the SRS, and SRS FRs missing a row.
    - **Verdict**: each finding must reference the exact file (and line if applicable) and propose a concrete fix.
 
-**Categories 10–16 (architectural review)** — full sub-check details, patterns, thresholds, and verdict shape live in [references/architectural-categories.md](references/architectural-categories.md). READ THAT FILE BEFORE running these checks. Each finding follows the same `- [N] <site>: <problem>. (Fix: <fix>)` shape as Cats 1–9.
+11. **Categories 10–16: Architectural Review** — Architectural Integrity (cycles, layer leakage), Conceptual Duplication, API Contract Review, Cross-Implementation Symmetry, Defensive-Programming Smell, Invariant ↔ Test Pairing, Public-Surface Quality. Full sub-check details, patterns, thresholds, and verdict shape live in [references/architectural-categories.md](references/architectural-categories.md). READ THAT FILE before running these checks. Each finding follows the same line shape as Cats 1–9.
 
-11. **Category 10: Architectural Integrity** — cyclic imports through barrels (TDZ trap); layer leakage; reverse dependencies. Read declared layering in `AGENTS.md` / `CLAUDE.md` / SDS first.
-12. **Category 11: Conceptual Duplication** — parallel implementations of one decision; untyped path beside typed sibling; diverging schema clones.
-13. **Category 12: API Contract Review** — capability-vs-impl mismatch; sentinel-vs-missing conflation; default-toward-bug; dead enum values; type-vs-runtime invariant divergence.
-14. **Category 13: Cross-Implementation Symmetry** — capability / error-class / reserved-set / warning-latch parity across N implementations of one interface.
-15. **Category 14: Defensive-Programming Smell** — silent consumer-callback swallows; wholesale failure swallowing; fallback-on-zero (`||` vs `??`); error-as-decision coupling.
-16. **Category 15: Invariant ↔ Test Pairing** — deeper than Cat 2's spot-check. Architectural invariants without tests; stub-only contract tests; hand-curated lists without cross-reference tests.
-17. **Category 16: Public-Surface Quality** — synonym duplication; free-fn-and-method duplicates; barrel re-exports of internal-only symbols; reserved-flag lists mixing positionals and flags; overlapping public/private boundary.
-
-17.5 **Verify Findings (mandatory gate)**
+12. **Verify Findings + Severity (mandatory gate)**
     - Before presenting the summary, walk the collected findings list and confirm each ONE-BY-ONE against the source — whether the scan was inline or delegated.
     - For each finding, perform ONE targeted verification matched to its shape (numeric metric / symbol behavior / undocumented claim / cross-implementation claim / architectural claim). Full per-shape checklist + rationale: [references/verification-gate.md](references/verification-gate.md).
-    - Drop findings the verification falsifies. Refine findings the verification corrects. Note falsified ones inline as `[verified false] <site>: <original claim> — actually <observed>` so the user can see the gate ran and what it caught.
+    - Drop findings the verification falsifies. Refine findings the verification corrects. Note falsified ones inline as `[verified false] <site>: <original claim> — actually <observed>` so the user can see the gate ran and what it caught. `[verified false]` lines do NOT receive a severity tag — they are dropped findings, not graded ones.
+    - **Severity check**: for every surviving finding, name the rubric anchor in [references/severity-rubric.md](references/severity-rubric.md) that justifies the chosen tier (e.g. `severity-rubric.md#cat-14-silent-swallow`). If you cannot point at the anchor, drop one tier (anti-inflation tie-breaker) or refine the finding so it matches a row.
 
 ### RESOLUTION PHASE
 
-18. **Present Summary**
-    - Output the full findings list, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings.
-    - **Category labels** — use the 16 categories below. In non-English reports, each label MUST be a unique tag for that category; do not translate two distinct categories to the same word and do not omit the doc-system category. When in doubt, use the English label verbatim.
-      1. `Structural Integrity`
-      2. `Code Hygiene`
-      3. `Complexity & Hotspots`
-      4. `Technical Debt`
-      5. `Consistency (Docs vs Code)` — code/doc DRIFT (README claims X but code does Y).
-      6. `Documentation Coverage` — JSDoc/comments per code symbol.
-      7. `Instruction Coherence`
-      8. `Tooling Relevance`
-      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED dedicated header whenever step 10 produced any finding; covers DOC-TO-DOC integrity (broken GFM links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, `index` drift). Distinct from #5 and #6 — NEVER fold into them.
-      10. `Architectural Integrity`
-      11. `Conceptual Duplication`
-      12. `API Contract Review`
-      13. `Cross-Implementation Symmetry`
-      14. `Defensive-Programming Smell`
-      15. `Invariant ↔ Test Pairing`
-      16. `Public-Surface Quality`
-    - Each issue line follows the shape: `- [N] <file/symbol>: <problem>. (Fix: <proposed fix>)`
-    - Number every finding sequentially across all categories (e.g., [1], [2], ..., [N]).
-    - At the end of the summary, show the total count per category and overall.
+13. **Present Summary**
+    - Output the full findings list, grouped by category. Plain-text category labels (not `#` headings). Skip empty categories.
+    - **Category labels** — use the 16 English names from the Context block above (`Structural Integrity`, `Code Hygiene`, `Complexity & Hotspots`, `Technical Debt`, `Consistency (Docs vs Code)`, `Documentation Coverage`, `Instruction Coherence`, `Tooling Relevance`, `Documentation Health`, then Cats 10–16 per their Context names). In non-English reports every label MUST be a unique tag for that category — do not collapse two categories to one word and do not omit Documentation Health (FR-DOC-LINT: required dedicated header whenever step 10 produced any finding; DOC-to-DOC integrity, distinct from #5 and #6). When in doubt, keep the English label.
+    - Each issue line follows the shape: `- [N] [Severity] <file/symbol>: <problem>. (Fix: <proposed fix>)`. **Grammar**: severity is one of the four literal English strings `[Critical]`, `[High]`, `[Medium]`, `[Low]` (stays English regardless of report language), placed IMMEDIATELY after the bracketed number and BEFORE the site path; never in the category header. `[verified false]` drop lines from the gate are emitted WITHOUT a severity tag.
+    - **Sort within each category**: Critical → High → Medium → Low, ties stable by issue number. Numbering runs sequentially across all categories.
+    - Closing line carries BOTH severity totals and category totals: `Total: N findings — Critical: a, High: b, Medium: c, Low: d (per category: <Cat>: x, <Cat>: y, …)`.
     - Brief example (covers Categories 1, 2, 9):
       ```
       Structural Integrity
-      - [1] src/oldfile.ts: in root, should be in src/utils/. (Fix: move)
+      - [1] [Medium] src/oldfile.ts: in root, should be in src/utils/. (Fix: move)
 
       Code Hygiene
-      - [2] utils.ts: unused export `myFunc`. (Fix: delete)
+      - [2] [Medium] utils.ts: unused export `myFunc`. (Fix: delete)
 
       Documentation Health
-      - [3] FR-AUTH marked [x] in SRS, no source-code reference. (Fix: add `// [REF:fr:auth]` SALP comment or revert to [ ])
+      - [3] [High] FR-AUTH marked [x] in SRS, acceptance test path does not exist. (Fix: create the test file or revert to [ ])
 
-      Total: 3 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 1).
+      Total: 3 findings — Critical: 0, High: 1, Medium: 2, Low: 0 (per category: Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 1).
       ```
-    - One representative finding per category (all 16) lives in [references/example-findings.md](references/example-findings.md). Mirror that shape for new categories.
+    - One representative finding per category (all 16), in the same shape, lives in [references/example-findings.md](references/example-findings.md). The full per-category rubric for choosing the tier lives in [references/severity-rubric.md](references/severity-rubric.md).
 
-19. **Ask User How to Proceed**
-    - After the summary, ask the user which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accept these reply modes:
-      - **specific numbers** (e.g., `1, 3, 4`) — resolve only the selected findings
-      - **category name** (e.g., `Hygiene`) — resolve all findings in that category
-      - **`all`** — walk through every finding one by one
-      - **`agent's choice`** — pick the most impactful subset yourself, emit a one-line justification, and proceed without re-asking
-      - **`done`** — stop, no fixes needed
+14. **Ask User How to Proceed**
+    - Ask which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accepted reply modes:
+      - **numbers** (e.g. `1, 3, 4`) — only those findings
+      - **category name** (e.g. `Hygiene`) — that category
+      - **severity name** (`critical`, `high`, `medium`, `low` — case-insensitive) — that tier
+      - **compound severity** (plus-separated, e.g. `critical+high`) — union of listed tiers
+      - **`all`** — every finding one by one
+      - **`agent's choice`** — pick the most impactful subset yourself with a one-line justification, proceed without re-asking
+      - **`done`** — stop, no fixes
 
-20. **Interactive Resolution Loop**
-    - For each finding the user chose to resolve (in order):
-      1. Show the finding details: file, problem, and proposed fix.
-      2. Ask the user (as a numbered question per FR-UNIVERSAL.QA-FORMAT):
-         - **Apply** — execute the proposed fix (edit file, move file, delete code, etc.).
-         - **Skip** — move to the next finding.
-         - **Edit** — user provides an alternative fix; apply that instead.
-      3. After applying a fix, briefly confirm what was done.
-      4. Move to the next finding.
-    - After all selected findings are processed, show a brief summary of actions taken (N applied, M skipped, K edited).
+15. **Interactive Resolution Loop**
+    - For each selected finding (in order):
+      1. Show file, problem, proposed fix.
+      2. Ask (numbered question per FR-UNIVERSAL.QA-FORMAT): **Apply** | **Skip** | **Edit** (user supplies alternative fix).
+      3. After applying, briefly confirm.
+    - After all selected findings, show counts: N applied, M skipped, K edited.
 
 </step_by_step>
 
@@ -248,8 +224,10 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 [ ] Checked Documentation Health (FR-DOC-LINT) — findings grouped under the dedicated `Documentation Health` header.
 [ ] Checked Cats 10-16 (architectural review): integrity, conceptual duplication, API contract, cross-impl symmetry, defensive smell, invariant↔test, public surface.
 [ ] Verified Findings gate ran: each finding was ground-truthed against the source (subagent-supplied findings re-read by the executor) before the summary; falsified findings dropped with a `[verified false]` line.
-[ ] Presented numbered summary of all findings, grouped by category.
-[ ] Asked the user how to proceed with resolution.
+[ ] Every surviving finding carries one of `[Critical] | [High] | [Medium] | [Low]` per `references/severity-rubric.md`; the anti-inflation tie-breaker was honored (Critical share ≤ 35 %).
+[ ] Closing total line reports per-severity counters in addition to per-category counters.
+[ ] Presented numbered summary of all findings, grouped by category, sorted within each category Critical → High → Medium → Low.
+[ ] Asked the user how to proceed with resolution, accepting numbers, category, severity name, compound severity, `all`, `agent's choice`, or `done`.
 [ ] Resolved selected findings interactively (apply/skip/edit per finding).
 [ ] Showed final resolution summary (applied/skipped/edited counts).
 </verification>

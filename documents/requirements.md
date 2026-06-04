@@ -81,6 +81,19 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `AUTO_INSTALL_PLUGINS=true` (env or `.env`) gates an additional `sync-plugins-local` step inside `deno task check`; in this mode the build prerequisite also receives `--marketplace-name flowai-plugins-local` so the auto-installed catalog carries the dogfood name. Default check runs leave the catalog under the upstream name `flowai-plugins`.
     Evidence: `scripts/task-check_test.ts::buildCheckPlan: sync-plugins-local is gated by env flag`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins gets --marketplace-name flowai-plugins-local when syncPluginsLocal is on`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins runs without --marketplace-name in default plan` + `scripts/sync-plugins-local_test.ts` (`autoInstallEnabled`).
 
+### FR-MAINT-SEVERITY: Severity Scoring for Maintenance Findings [ANC:fr:maint-severity]
+
+- **Description:** The `maintenance` skill must grade every finding it surfaces with one of four severity tiers (`Critical | High | Medium | Low`) calibrated by a per-category rubric. The Resolution Phase summary carries the tag inline (`- [N] [Severity] <site>: <problem>. (Fix: <fix>)`), the closing counter reports per-severity totals alongside per-category totals, and the "how to proceed" prompt accepts severity tokens (`critical`, `high`, `medium`, `low`) including plus-separated compounds (`critical+high`) as a filter on the resolution loop. The rubric lives in `framework/core/skills/maintenance/references/severity-rubric.md` and enforces an anti-inflation tie-breaker rule ("when in doubt, pick the lower tier"); the Verify Findings gate (SKILL.md Step 17.5) quotes the rubric anchor that justifies the chosen tier.
+- **Tasks:** [maintenance-severity-scoring](tasks/2026/06/maintenance-severity-scoring.md)
+- **Scope:**
+  - Every finding line (except `[verified false]` drops from the gate) carries exactly one severity tag immediately after the bracketed number and before the site path.
+  - Per-severity counters appear in the closing total line.
+  - Reply tokens `critical`, `high`, `medium`, `low` and plus-separated compounds (`critical+high`, `high+medium`, …) are accepted case-insensitively in the "how to proceed" prompt and filter the per-finding loop to matching findings only.
+  - Severity tags stay literal English even when the surrounding report is in another language (same reasoning as the existing `Documentation Health` label rule).
+  - Critical share of any single sweep must stay within 35 % of total findings under the rubric.
+- **Acceptance verified by acceptance tests:** `maintenance-surfaces-severity-tags`, `maintenance-severity-filter-critical-high`, `maintenance-severity-calibration-no-inflation`.
+- **Status:** [ ]
+
 ### FR-ONBOARD: Developer Onboarding & Workflow Clarity [ANC:fr:onboard]
 
 - **Description:** The project's `README.md` must provide clear, actionable instructions for developers on when and how to use the available tools.

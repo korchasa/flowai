@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "111b77a355eb0150510132eef9327f70e276f3ae0b608f044c6b73821662b8d5",
+  "scenarioId": "maintenance-severity-calibration-no-inflation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-04T21:50:47.458Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 323323.51816599997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "critical_share_within_thirty_five_percent": {
+        "pass": true,
+        "reason": "There are 15 numbered findings total. Only finding [15] carries '[Critical]'. Critical share = 1/15 = 6.7%, which is well within the 35% ceiling. The agent also explicitly stated '1/15 = 6.7 %' in it…"
+      },
+      "at_least_one_each_tier_present": {
+        "pass": true,
+        "reason": "All four tiers are present: [Critical] — finding [15] (silent_swallow.ts dispatch); [High] — findings [11] (AGENTS.md instruction contradiction) and [14] (duplicate permission table); [Medium] — find…"
+      },
+      "severity_tag_present_on_every_finding": {
+        "pass": true,
+        "reason": "All 15 numbered findings carry an explicit severity tag: [1] [Medium], [2] [Medium], [3] [Medium], [4] [Medium], [5] [Low], [6] [Low], [7] [Low], [8] [Low], [9] [Low], [10] [Low], [11] [High], [12] […"
+      },
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented a numbered summary ([1] through [15]) grouped by category (Structural Integrity, Code Hygiene, Technical Debt, Documentation Coverage, Instruction Coherence, Tooling Relevance, Do…"
+      }
+    }
+  }
+}
