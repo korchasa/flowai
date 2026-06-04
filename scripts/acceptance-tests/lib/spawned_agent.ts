@@ -444,7 +444,11 @@ export class SpawnedAgent {
     this.isFinished = true;
     try {
       this.watchdog?.stop();
-    } catch { /* ignore */ }
+    } catch (e) {
+      console.warn(
+        `[spawned_agent] watchdog.stop() failed during cleanup: ${e}`,
+      );
+    }
 
     const trip = this.watchdog?.trip();
     const finalCode = trip ? 137 : code;

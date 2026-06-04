@@ -244,8 +244,11 @@ MOCK_EOF
   }
 
   async calculateUsage(_sessionId: string): Promise<SessionUsage | null> {
-    // Codex persists session rollouts under `~/.codex/sessions/` but does
-    // not expose a public usage API. Defer until a follow-up task.
+    // TODO(codex-usage): Codex persists session rollouts under
+    // `~/.codex/sessions/` but does not expose a public usage API. Until a
+    // parser lands, callers see `null` here while `ClaudeAdapter` and
+    // `CursorAdapter` return real numbers — a known capability gap that
+    // skews aggregate cost reports for Codex runs.
     await Promise.resolve();
     return null;
   }

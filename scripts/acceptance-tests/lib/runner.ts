@@ -139,6 +139,14 @@ async function prepareSandboxFiles(
       allowedPacks,
     );
   } catch (e) {
+    // Missing framework dir = fatal precondition; the agent would otherwise
+    // run against an empty install and produce a misleading "Unknown skill".
+    if (e instanceof Deno.errors.NotFound) {
+      throw new Error(
+        `Acceptance test framework copy failed: framework path not found at ${frameworkPath}. ` +
+          `Run scenarios from the repo root so framework/ is reachable.`,
+      );
+    }
     console.warn(`  Warning: Failed to copy framework: ${e}`);
   }
 

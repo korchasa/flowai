@@ -239,7 +239,10 @@ export function startWatchdog(
     stopped = true;
     try {
       opts.onTrip?.(trip);
-    } catch { /* notification must not crash watchdog */ }
+    } catch (e) {
+      // Notification must not crash watchdog, but the failure should be visible.
+      console.warn(`[process_watchdog] onTrip notification failed: ${e}`);
+    }
     const killed = agentPgid
       ? await killProcessGroup(agentPgid, cfg.graceMs, killAbort.signal)
       : [];
