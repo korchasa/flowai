@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.8](https://github.com/korchasa/flowai/compare/v0.13.7...v0.13.8) (2026-06-04)
+
+
+### Features
+
+* **plan:** mandate three solution-variant archetypes for non-obvious tasks ([996f02a](https://github.com/korchasa/flowai/commit/996f02a14e38d6b722ae6b1fb201471b9ead0c10))
+
+
+### Chores
+
+* **agents:** relax CI await — Poll 15s, Wall-clock budget 180s ([f82cb07](https://github.com/korchasa/flowai/commit/f82cb07175033cbe9e5a99daf1ebfe9b9571b930))
+
 ### [0.13.7](https://github.com/korchasa/flowai/compare/v0.13.6...v0.13.7) (2026-06-04)
 
 
