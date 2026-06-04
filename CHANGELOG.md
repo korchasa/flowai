@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.3](https://github.com/korchasa/flowai/compare/v0.13.2...v0.13.3) (2026-06-04)
+
+
+### Features
+
+* **framework:** adopt SALP framework-wide — finalize task DoD ([91b7275](https://github.com/korchasa/flowai/commit/91b7275eb3c3ae7f44d741b88b653373eafe6c7b))
+* **framework:** adopt SALP framework-wide — Phase 2 (internal docs + code) ([69385ab](https://github.com/korchasa/flowai/commit/69385ab01d12b8c87e55c60160acaa1aa8d18ca6))
+* **framework:** adopt SALP framework-wide — Phase 3 (downstream-facing surfaces) ([5751118](https://github.com/korchasa/flowai/commit/5751118c06c8bece8ae6d1c5625582a368d239aa))
+* **framework:** adopt SALP framework-wide — Phase 4 (memex pack) ([c66fd79](https://github.com/korchasa/flowai/commit/c66fd793a6893ca606e363c90427bda3bf7987a4))
+
 ### [0.13.2](https://github.com/korchasa/flowai/compare/v0.13.1...v0.13.2) (2026-06-03)
 
 
