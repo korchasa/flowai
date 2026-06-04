@@ -78,7 +78,7 @@ async function initTracer(
     scenario.name,
     traceId,
     options.agentModel,
-    scenario.targetAgentPath || "",
+    scenario.targetAgentPath ?? "",
     scenario.userQuery,
     options.tracer ? scenario.id : undefined,
   );

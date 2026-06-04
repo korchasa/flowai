@@ -53,7 +53,7 @@ function renderDashboard(
           </div>
           <div class="metric">
             <span class="metric-value">${
-    (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs || 0), 0) /
+    (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs ?? 0), 0) /
       1000).toFixed(1)
   }s</span>
             <span class="metric-label">Total Duration</span>
@@ -98,7 +98,7 @@ function renderDashboard(
     groups.reduce((a, g) => a + g.totalErrors, 0)
   }/${groups.reduce((a, g) => a + g.totalWarnings, 0)}</td>
               <td class="text-right">${
-    (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs || 0), 0) /
+    (scenarios.reduce((acc, s) => acc + (s.summary?.durationMs ?? 0), 0) /
       1000).toFixed(1)
   }s</td>
               <td class="text-right">${

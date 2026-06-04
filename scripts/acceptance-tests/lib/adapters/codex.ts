@@ -62,6 +62,13 @@ export class CodexAdapter implements AgentAdapter {
     return { CODEX_THREAD_ID: "" };
   }
 
+  // No user-level skill collision analogous to ClaudeAdapter's
+  // ~/.claude/skills/ precedence bug is known for Codex. Kept explicit (vs.
+  // omitting the optional method) for cross-adapter symmetry.
+  prepareWorkspace(_sandboxPath: string): Promise<Record<string, string>> {
+    return Promise.resolve({});
+  }
+
   buildArgs(opts: {
     model: string;
     workspace: string;

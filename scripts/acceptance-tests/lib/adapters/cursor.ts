@@ -20,6 +20,13 @@ export class CursorAdapter implements AgentAdapter {
     return {};
   }
 
+  // No user-level skill collision analogous to ClaudeAdapter's
+  // ~/.claude/skills/ precedence bug is known for cursor-agent. Kept explicit
+  // (vs. omitting the optional method) for cross-adapter symmetry.
+  prepareWorkspace(_sandboxPath: string): Promise<Record<string, string>> {
+    return Promise.resolve({});
+  }
+
   buildArgs(opts: {
     model: string;
     workspace: string;

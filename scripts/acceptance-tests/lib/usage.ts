@@ -98,7 +98,7 @@ export async function calculateSessionUsage(
     const section = sections[i];
 
     if (section === "user:") {
-      const userMessage = sections[++i] || "";
+      const userMessage = sections[++i] ?? "";
       currentTurnInputChars = userMessage.length;
 
       const inputTokens = Math.ceil(currentTurnInputChars / CHARS_PER_TOKEN);
@@ -115,7 +115,7 @@ export async function calculateSessionUsage(
     }
 
     if (section === "assistant:") {
-      const assistantMessage = sections[++i] || "";
+      const assistantMessage = sections[++i] ?? "";
       const outputTokens = Math.ceil(assistantMessage.length / CHARS_PER_TOKEN);
 
       totalOutputTokens += outputTokens;

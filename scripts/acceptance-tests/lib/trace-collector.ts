@@ -55,29 +55,29 @@ export class TraceCollector {
           runs,
           passRate: totalRuns > 0 ? (passedCount / totalRuns) * 100 : 0,
           avgScore: withSummary.length > 0
-            ? withSummary.reduce((a, r) => a + (r.summary?.score || 0), 0) /
+            ? withSummary.reduce((a, r) => a + (r.summary?.score ?? 0), 0) /
               withSummary.length
             : 0,
           avgDurationMs: withSummary.length > 0
             ? withSummary.reduce(
-              (a, r) => a + (r.summary?.durationMs || 0),
+              (a, r) => a + (r.summary?.durationMs ?? 0),
               0,
             ) / withSummary.length
             : 0,
           totalTokens: withSummary.reduce(
-            (a, r) => a + (r.summary?.tokensUsed || 0),
+            (a, r) => a + (r.summary?.tokensUsed ?? 0),
             0,
           ),
           totalCost: withSummary.reduce(
-            (a, r) => a + (r.summary?.totalCost || 0),
+            (a, r) => a + (r.summary?.totalCost ?? 0),
             0,
           ),
           totalErrors: withSummary.reduce(
-            (a, r) => a + (r.summary?.errors || 0),
+            (a, r) => a + (r.summary?.errors ?? 0),
             0,
           ),
           totalWarnings: withSummary.reduce(
-            (a, r) => a + (r.summary?.warnings || 0),
+            (a, r) => a + (r.summary?.warnings ?? 0),
             0,
           ),
           allPassed: withSummary.length > 0 &&

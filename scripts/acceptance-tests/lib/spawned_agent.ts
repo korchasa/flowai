@@ -97,7 +97,7 @@ export class SpawnedAgent {
     const maxSteps = this.options.maxSteps || 10;
     const stepTimeout = this.options.stepTimeout || 60000;
     let finalResult: AgentResult = { code: 0, logs: "" };
-    let nextPrompt = this.options.prompt || "";
+    let nextPrompt = this.options.prompt ?? "";
 
     for (let step = 0; step < maxSteps; step++) {
       await this.logAction(
