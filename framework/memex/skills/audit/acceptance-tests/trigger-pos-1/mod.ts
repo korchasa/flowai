@@ -6,7 +6,7 @@ export const MemexAuditTriggerPos1 = new class extends AcceptanceTestScenario {
   skill = "audit";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Run a full audit on our memex — I want to know about orphan pages, dead wikilinks, and any drift between the index and the actual files.";
+    "Run a full audit on our memex — I want to know about orphan pages, dead SALP references, and any drift between the index and the actual files.";
   checklist = [{
     id: "skill_invoked",
     description:

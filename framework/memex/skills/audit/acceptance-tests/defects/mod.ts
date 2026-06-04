@@ -3,18 +3,20 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 /**
  * Audit a memex with deliberate defects + apply --fix.
  *
- * Fixture issues (as reported by the deterministic script):
- *  - DEAD_LINK: [[never-created-page]] in markdown.md
- *  - DEAD_LINK + INDEX_DEAD: [[ghost-page]] in index.md (file missing)
+ * Fixture issues (post-SALP — all REFs use `[REF:mx-<type>:<slug>]` form;
+ * as reported by the deterministic script):
+ *  - DEAD_LINK: `[REF:mx-concept:never-created-page]` in markdown.md
+ *  - DEAD_LINK + INDEX_DEAD: `[REF:mx-concept:ghost-page]` in index.md (file missing)
  *  - INDEX_MISSING: lonely-page.md, orphan-island.md
  *  - MISSING_SECTION: markdown.md, orphan-island.md (concept lacks gaps)
  *  - ORPHAN: lonely-page.md, markdown.md (no inbound from content pages)
  *
  * Auto-fixes that should fire (per skill rules):
  *  - Stub pages for dead links (`never-created-page.md`, `ghost-page.md`)
+ *    each declaring its own `[ANC:mx-concept:<slug>]`
  *  - Missing section appended to markdown.md and orphan-island.md
- *  - INDEX_MISSING entries appended; INDEX_DEAD row removed.
- *  - ORPHAN reported, NOT auto-fixed.
+ *  - INDEX_MISSING entries appended (as SALP rows); INDEX_DEAD row removed
+ *  - ORPHAN reported, NOT auto-fixed
  */
 export const MemexAuditDefectsBench = new class extends AcceptanceTestScenario {
   id = "audit-defects";
@@ -44,13 +46,13 @@ export const MemexAuditDefectsBench = new class extends AcceptanceTestScenario {
     {
       id: "dead_link_detected",
       description:
-        "Did the agent report the dead `[[never-created-page]]` link in `markdown.md`?",
+        "Did the agent report the dead `[REF:mx-concept:never-created-page]` link in `markdown.md` (DEAD_LINK kind)?",
       critical: true,
     },
     {
       id: "stub_for_dead_link",
       description:
-        "Was a stub page created for the dead link target (e.g., `pages/never-created-page.md`) so the wikilink resolves?",
+        "Was a stub page created for the dead link target (e.g., `pages/never-created-page.md`) so the SALP REF resolves? The stub MUST declare its own `[ANC:mx-concept:never-created-page]` on the H1 line.",
       critical: true,
     },
     {
@@ -62,7 +64,7 @@ export const MemexAuditDefectsBench = new class extends AcceptanceTestScenario {
     {
       id: "index_drift_fixed",
       description:
-        "Was the dead `[[ghost-page]]` row removed from `pages/index.md` AND the missing entries (`[[lonely-page]]` and `[[orphan-island]]`) added?",
+        "Was the dead `[REF:mx-concept:ghost-page]` row removed from `pages/index.md` AND the missing entries (`[REF:mx-concept:lonely-page | …]` and `[REF:mx-concept:orphan-island | …]`) added in SALP form?",
       critical: true,
     },
     {

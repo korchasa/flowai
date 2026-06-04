@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Use when the user asks to audit a memex (long-term knowledge bank for AI agents) for orphans, dead wikilinks, missing sections, contradictions, or index drift. Runs a deterministic structural check, layers LLM-judgement findings, optionally auto-fixes trivial issues with `--fix`. Do NOT trigger on general code linting.
+description: Use when the user asks to audit a memex (long-term knowledge bank for AI agents) for orphans, dead SALP REFs, missing sections, contradictions, or index drift. Runs a deterministic structural check, layers LLM-judgement findings, optionally auto-fixes trivial issues with `--fix`. Do NOT trigger on general code linting.
 argument-hint: "[--fix]"
 ---
 
@@ -33,11 +33,12 @@ deno run --allow-read scripts/audit.ts <memex-root>/pages/
 
 (The path is relative to the installed skill directory. The exact location depends on the IDE — pass an absolute path if your IDE does not preserve relative working directory.)
 
-The script reports four issue kinds, one per line:
-- `DEAD_LINK: [[target]] in <file>` — wikilink points to a non-existent page.
-- `ORPHAN: <file> has no inbound [[links]]` — page is not linked from anywhere except itself.
+The script parses SALP REFs (`[REF:mx-<type>:<slug>]`). It reports five issue kinds, one per line:
+- `DEAD_LINK: [REF:mx-*:<target>] in <file>` — SALP REF points to a non-existent page.
+- `ORPHAN: <file> has no inbound [REF:mx-*:...]` — page is not linked from anywhere except itself.
 - `MISSING_SECTION: <file> (concept) lacks 'Counter-Arguments and Gaps'` — concept page missing the gaps section.
-- `INDEX_MISSING: <file> not listed in index.md` / `INDEX_DEAD: index.md references [[slug]] which has no file` — drift between filesystem and `pages/index.md`.
+- `INDEX_MISSING: <file> not listed in index.md` / `INDEX_DEAD: index.md references [REF:mx-*:<slug>] which has no file` — drift between filesystem and `pages/index.md`.
+- `MALFORMED_REF: <file>:<line>: <raw>` — `[REF:...]` token that violates the `mx-<type>:<slug>` grammar (wrong namespace, empty slug, etc.).
 
 ### 2. Layer LLM-judgement checks
 
@@ -45,7 +46,7 @@ The script handles structure. The following require reading content:
 
 - **Contradictions**: `grep -rln "\[!WARNING\]" <memex-root>/pages/` to find every callout marker. List them — these need human resolution.
 - **Stale claims**: read each page with `date` older than 6 months. Flag any whose claims are likely outdated (rapidly-changing fields).
-- **Unlinked concept mentions**: scan page bodies for proper nouns and technical terms that appear in prose without a `[[wikilink]]` even though a corresponding page exists. Add the wikilink at the first natural mention if `--fix`, else just suggest.
+- **Unlinked concept mentions**: scan page bodies for proper nouns and technical terms that appear in prose without a SALP REF even though a corresponding page exists. Add `[REF:mx-<type>:<slug>]` at the first natural mention if `--fix`, else just suggest.
 - **Coverage gaps**: read `index.md` and identify domains with only 1–2 pages. Suggest 3–5 questions the memex cannot yet answer well — candidates for `ask` or further `save`.
 
 ### 3. Apply auto-fixes (only if `--fix`)
@@ -54,14 +55,15 @@ For each issue with a trivial deterministic fix, apply it:
 
 | Issue | Auto-Fix |
 |---|---|
-| `DEAD_LINK` | Create stub page at the link target with the closest matching template (default: concept). Stub body: `# <Slug as Title>\n\n_Stub created by audit. Needs content from a source._\n\n## See Also\n- [[<page that linked to it>]]`. |
+| `DEAD_LINK` | Create stub page at the link target with the closest matching template (default: concept). Stub body: `# <Slug as Title> [ANC:mx-concept:<slug>]\n\n_Stub created by audit. Needs content from a source._\n\n## See Also\n- [REF:mx-concept:<page that linked to it>]`. |
 | `MISSING_SECTION` | Append empty `## Counter-Arguments and Gaps\n\n_None recorded yet._` to the concept page. |
 | `INDEX_MISSING` | Add the page to `index.md` under a domain derived from its `tags` frontmatter. |
 | `INDEX_DEAD` | Remove the dead row from `index.md`. |
 | `ORPHAN` | NOT auto-fixed — finding a sensible inbound page requires judgement. List it for the user. |
 | `[!WARNING]` contradiction | NOT auto-fixed — surface for human review. |
 | Stale-claim suspicion | NOT auto-fixed — surface for human review. |
-| Unlinked concept mention | Add `[[wikilink]]` at the first natural mention only when `--fix` is set AND the target page exists. Otherwise just suggest. |
+| Unlinked concept mention | Add `[REF:mx-<type>:<slug>]` at the first natural mention only when `--fix` is set AND the target page exists. Otherwise just suggest. |
+| `MALFORMED_REF` | NOT auto-fixed — surface for human review (typically requires choosing the right `mx-<type>` namespace). |
 
 ### 4. Write an audit report
 

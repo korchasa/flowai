@@ -26,7 +26,7 @@ async function makeFixture(): Promise<string> {
   await Deno.writeTextFile(`${dir}/pages/index.md`, "# Index\n");
   await Deno.writeTextFile(
     `${dir}/pages/concept-a.md`,
-    "---\ntype: concept\n---\n# A\nMentions [[2026-04-25-source-one]].\n",
+    "---\ntype: concept\n---\n# A\nMentions [REF:mx-source:2026-04-25-source-one].\n",
   );
   await Deno.writeTextFile(
     `${dir}/raw/articles/2026-04-25-source-one.md`,

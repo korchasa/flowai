@@ -59,9 +59,15 @@ export const MemexSaveNewBench = new class extends AcceptanceTestScenario {
       critical: true,
     },
     {
-      id: "wikilinks_used",
+      id: "salp_refs_used",
       description:
-        "Do the entity pages reference each other and/or the source-summary page using `[[wikilinks]]` (not plain markdown links)?",
+        "Do the entity pages reference each other and/or the source-summary page using SALP REFs `[REF:mx-<type>:<slug>]` (not plain markdown links, not `[[wikilinks]]`)?",
+      critical: true,
+    },
+    {
+      id: "salp_anchors_declared",
+      description:
+        "Does every entity page declare its own anchor `[ANC:mx-<type>:<slug>]` on the H1 title line (e.g., `# John Gruber [ANC:mx-person:john-gruber]`)?",
       critical: true,
     },
     {

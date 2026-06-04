@@ -4,7 +4,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * Save into an EXISTING memex must:
  *  - store the new source in raw/
  *  - create new entity pages (e.g., aaron-swartz)
- *  - update existing pages with new wikilinks (backlink audit)
+ *  - update existing pages with new SALP REFs (backlink audit)
  *  - update pages/index.md
  *  - append log.md
  */
@@ -21,7 +21,7 @@ export const MemexSaveUpdateBench = new class extends AcceptanceTestScenario {
   override sandboxState = {
     commits: [],
     expectedOutcome:
-      "Agent stores new source, creates aaron-swartz entity page, runs backlink audit so john-gruber and markdown pages reference [[aaron-swartz]], updates pages/index.md and log.md",
+      "Agent stores new source, creates aaron-swartz entity page, runs backlink audit so john-gruber and markdown pages reference [REF:mx-person:aaron-swartz], updates pages/index.md and log.md",
   };
 
   userQuery =
@@ -49,19 +49,19 @@ export const MemexSaveUpdateBench = new class extends AcceptanceTestScenario {
     {
       id: "backlink_audit_john_gruber",
       description:
-        "After adding aaron-swartz, was the existing `pages/john-gruber.md` updated to include a `[[aaron-swartz]]` wikilink?",
+        "After adding aaron-swartz, was the existing `pages/john-gruber.md` updated to include a `[REF:mx-person:aaron-swartz]` SALP REF (optionally with `| display`)?",
       critical: true,
     },
     {
       id: "backlink_audit_markdown",
       description:
-        "After adding aaron-swartz, was the existing `pages/markdown.md` updated to mention `[[aaron-swartz]]` (since the source describes Swartz's contribution to Markdown)?",
+        "After adding aaron-swartz, was the existing `pages/markdown.md` updated to mention `[REF:mx-person:aaron-swartz]` (since the source describes Swartz's contribution to Markdown)?",
       critical: true,
     },
     {
       id: "index_updated",
       description:
-        "Was `pages/index.md` updated with a new entry for `[[aaron-swartz]]` (and `Last updated` bumped to today)?",
+        "Was `pages/index.md` updated with a new SALP row for aaron-swartz (`[REF:mx-person:aaron-swartz | …]`) AND `Last updated` bumped to today?",
       critical: true,
     },
     {
@@ -78,7 +78,7 @@ export const MemexSaveUpdateBench = new class extends AcceptanceTestScenario {
     {
       id: "no_plain_md_links_for_internal",
       description:
-        "Did the agent use `[[wikilinks]]` (not `[text](path.md)`) for ALL internal references in newly created or modified memex pages?",
+        "Did the agent use SALP REFs `[REF:mx-<type>:<slug>]` (not `[text](path.md)`, not `[[wikilinks]]`) for ALL internal references in newly created or modified memex pages?",
       critical: false,
     },
   ];

@@ -2,13 +2,12 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 /**
  * Ask against a populated memex: agent should read index, open relevant
- * pages, synthesize an answer with [[wikilink]] citations, and file the
+ * pages, synthesize an answer with SALP REF citations, and file the
  * result to pages/answers/.
  */
 export const MemexAskCitationsBench = new class extends AcceptanceTestScenario {
   id = "ask-citations";
-  name =
-    "Ask returns memex answer with [[wikilink]] citations and files result";
+  name = "Ask returns memex answer with SALP REF citations and files result";
   skill = "ask";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -19,7 +18,7 @@ export const MemexAskCitationsBench = new class extends AcceptanceTestScenario {
   override sandboxState = {
     commits: [],
     expectedOutcome:
-      "Agent reads pages/index.md, opens relevant pages, answers with [[wikilinks]] as citations, files answer to pages/answers/<slug>.md, appends log.md",
+      "Agent reads pages/index.md, opens relevant pages, answers with SALP REFs as citations, files answer to pages/answers/<slug>.md, appends log.md",
   };
 
   // Decline the promotion offer so the file stays in answers/ for verification.
@@ -43,9 +42,9 @@ export const MemexAskCitationsBench = new class extends AcceptanceTestScenario {
       critical: true,
     },
     {
-      id: "answer_uses_wikilinks",
+      id: "answer_uses_salp_refs",
       description:
-        "Does the answer body include `[[wikilinks]]` as inline citations (e.g., `[[john-gruber]]`, `[[aaron-swartz]]`)?",
+        "Does the answer body include SALP references as inline citations (e.g., `[REF:mx-person:john-gruber | John Gruber]`, `[REF:mx-person:aaron-swartz | Aaron Swartz]`)? Bare wikilinks `[[…]]` or plain markdown links are NOT acceptable.",
       critical: true,
     },
     {

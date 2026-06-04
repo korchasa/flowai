@@ -87,7 +87,9 @@ async function readLastAuditDate(logPath: string): Promise<string | null> {
   }
 }
 
-/** A raw source is "uncompiled" if no memex page mentions its slug as a [[wikilink]]. */
+/** A raw source is "uncompiled" if no memex page mentions its slug as a SALP
+ *  `[REF:mx-source:<slug>]` (with or without `| display`). Substring scan is
+ *  sufficient for the session-start hook — a strict parse would be overkill. */
 async function countUncompiled(root: string): Promise<number> {
   const rawDir = `${root}/raw/articles`;
   const pagesDir = `${root}/pages`;
@@ -105,8 +107,10 @@ async function countUncompiled(root: string): Promise<number> {
     for await (const entry of Deno.readDir(rawDir)) {
       if (!entry.isFile || !entry.name.endsWith(".md")) continue;
       const slug = entry.name.replace(/\.md$/, "");
+      const refClose = `[REF:mx-source:${slug}]`;
+      const refWithDisplay = `[REF:mx-source:${slug} `;
       if (
-        !pagesText.includes(`[[${slug}]]`) && !pagesText.includes(`[[${slug}|`)
+        !pagesText.includes(refClose) && !pagesText.includes(refWithDisplay)
       ) {
         uncompiled++;
       }

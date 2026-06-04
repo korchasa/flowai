@@ -20,9 +20,9 @@ Resolve the active memex root in this order — first match wins:
 2. Walk up from the current working directory. The first ancestor that contains BOTH `AGENTS.md` and a `pages/` subdirectory is the active memex root.
 3. If nothing matches, fall back to `./` in the current working directory and scaffold a memex there (see "Scaffold a new memex" below).
 
-After resolution, read `<memex-root>/AGENTS.md` for the schema. All conventions (filenames, frontmatter, link format, log format) come from there. If the memex contains a `.obsidian/` directory, use dual-link format `[[slug|Name]] ([Name](slug.md))` everywhere; otherwise plain `[[slug]]` is enough.
+After resolution, read `<memex-root>/AGENTS.md` for the schema. All conventions (filenames, frontmatter, link format, log format) come from there. Cross-references use SALP only: `[REF:mx-<type>:<slug>]` (bare) or `[REF:mx-<type>:<slug> | <display>]` (with display text). `[[wikilinks]]` are no longer recognised by the audit script or the skills.
 
-> The pages directory is `pages/` — it holds the cross-linked page graph. The umbrella concept (sources + pages + log + schema) is the **memex**. The `[[wikilink]]` syntax inside pages is the industry-standard cross-link notation; do not confuse it with directory naming.
+> The pages directory is `pages/` — it holds the cross-linked page graph. The umbrella concept (sources + pages + log + schema) is the **memex**. SALP REFs (`[REF:mx-<type>:<slug>]`) are the canonical cross-link notation; do not confuse them with directory naming.
 
 ## Scaffold a new memex
 
@@ -38,7 +38,7 @@ If no memex was found and the user did not pass `--memex`, scaffold one in the c
 
    <!-- Add entries after each save. Format:
    ## <Domain>
-   - [[page-slug]] — one-line description (YYYY-MM-DD)
+   - [REF:mx-concept:page-slug | Page Slug] — one-line description (YYYY-MM-DD)
    -->
    ```
 4. Create `./log.md` with the header:
@@ -100,11 +100,11 @@ For each entity decide: CREATE (no page yet) or UPDATE (page exists in `<memex-r
 
 ### 5. Write or update entity pages
 
-For each new entity, write `<memex-root>/pages/<slug>.md` using the matching template from `AGENTS.md` (concept / person / source-summary). Fill the frontmatter, write a synthesized body (do NOT copy-paste raw content — explain in your own words), and add `[[wikilinks]]` to related entities.
+For each new entity, write `<memex-root>/pages/<slug>.md` using the matching template from `AGENTS.md` (concept / person / source-summary). Fill the frontmatter, write a synthesized body (do NOT copy-paste raw content — explain in your own words), and add SALP REFs (`[REF:mx-<type>:<slug>]`) to related entities.
 
 For each existing entity, read the page first, then integrate new information using Edit:
-- Preserve all existing wikilinks.
-- Add new wikilinks to other entities the new source mentions.
+- Preserve all existing SALP REFs.
+- Add new SALP REFs to other entities the new source mentions.
 - Add the new source to the page's "Sources" section.
 - Update `date` in frontmatter to today.
 
@@ -113,7 +113,7 @@ For each existing entity, read the page first, then integrate new information us
 Always write a `source-summary` page at `<memex-root>/pages/<source-slug>.md` covering the source itself:
 - One-paragraph summary.
 - "Key Points" — 3–7 bullet points.
-- "Entities Mentioned" — `[[wikilinks]]` to every entity page touched in step 5.
+- "Entities Mentioned" — SALP REFs (`[REF:mx-<type>:<slug>]`) to every entity page touched in step 5.
 
 This gives every raw source a discoverable memex entry point.
 
@@ -125,14 +125,14 @@ For each NEWLY CREATED page (from step 5–6), grep all existing memex pages for
 grep -rln "<new page title>" <memex-root>/pages/
 ```
 
-For every match that mentions the title in prose but does NOT contain `[[<new-slug>]]`, add a wikilink at the first natural mention. This is the most commonly skipped step — without it, the memex does not compound.
+For every match that mentions the title in prose but does NOT contain `[REF:mx-<type>:<new-slug>]`, add a SALP REF at the first natural mention. This is the most commonly skipped step — without it, the memex does not compound.
 
 ### 8. Update `pages/index.md`
 
 Open `<memex-root>/pages/index.md`. For each created or updated page, ensure it has a row under the appropriate domain heading:
 ```markdown
 ## <Domain>
-- [[page-slug]] — one-line description (YYYY-MM-DD)
+- [REF:mx-concept:page-slug | Page Slug] — one-line description (YYYY-MM-DD)
 ```
 Update "Last updated" to today. Keep entries under 80 characters. Group by domain — derive from `tags` frontmatter.
 
@@ -158,8 +158,8 @@ Print a concise summary:
 When a new source contradicts existing memex content, do NOT silently overwrite. Add an Obsidian-style callout near the contradicting claim:
 
 ```markdown
-> [!WARNING] Contradiction with [[other-page]]
-> Source A claims X, but [[other-page]] states Y. Needs human resolution.
+> [!WARNING] Contradiction with [REF:mx-concept:other-page]
+> Source A claims X, but [REF:mx-concept:other-page] states Y. Needs human resolution.
 ```
 
 Touch BOTH pages with the warning, and mention the contradiction in the log entry. The audit skill (`audit`) surfaces all `[!WARNING]` markers in its report.
@@ -175,6 +175,6 @@ Touch BOTH pages with the warning, and mention the contradiction in the log entr
 ## Constraints
 
 - Never edit files in `raw/` after the initial save in step 3.
-- Never use plain markdown links for internal references — `[[wikilinks]]` only.
+- Never use plain markdown links for internal references — SALP REFs (`[REF:mx-<type>:<slug>]`) only.
 - Never invent facts. Every claim in a memex page must trace back to a `raw/` source via the `Sources` section.
 - Use `Read`, `Write`, `Edit`, `Glob`, `Grep`, `Bash` (for `grep` only — no `git` operations unless the user asks). `WebFetch` only for URL sources.
