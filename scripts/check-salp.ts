@@ -2,14 +2,17 @@
  * SALP validator.
  *
  * Walks markdown + code surfaces, parses SALP anchors and references via
- * `scripts/lib/salp.ts`, and reports four classes of findings:
+ * `scripts/lib/salp.ts`, and reports three classes of findings:
  *
- *   1. `dead-ref`           — REF points at an ANC that does not exist.
- *   2. `duplicate-anchor`   — two ANCs share the same {ns,id}.
- *   3. `unlisted-namespace` — ns is outside the seed allowlist.
- *   4. `legacy-grammar`     — GFM-form FR link, wikilink, or bare `// FR-X`
- *                              comment survives in a target surface
- *                              (only reported with --enforce-no-legacy).
+ *   1. `dead-ref`         — REF points at an ANC that does not exist.
+ *   2. `duplicate-anchor` — two ANCs share the same {ns,id}.
+ *   3. `legacy-grammar`   — GFM-form FR link, wikilink, or bare `// FR-X`
+ *                            comment survives in a target surface
+ *                            (only reported with --enforce-no-legacy).
+ *
+ * Namespaces are NOT validated against a closed allowlist: any value matching
+ * the grammar `[a-z][a-z0-9-]*` is accepted. `EXAMPLE_NAMESPACES` in
+ * `scripts/lib/salp.ts` enumerates the ones currently in use as a hint only.
  *
  * Phase 1 of the SALP adoption ships this validator in permissive mode:
  * the legacy-grammar gate is OFF by default. Subsequent phases enable it
@@ -26,13 +29,11 @@ import {
   parseRefs,
   type SalpAnchor,
   SalpSyntaxError,
-  validateNamespace,
 } from "./lib/salp.ts";
 
 export type FindingKind =
   | "dead-ref"
   | "duplicate-anchor"
-  | "unlisted-namespace"
   | "legacy-grammar"
   | "syntax-error";
 
@@ -220,17 +221,6 @@ export async function collectFindings(
     }
 
     for (const anc of ancs) {
-      if (!validateNamespace(anc.ns)) {
-        findings.push({
-          kind: "unlisted-namespace",
-          file: rel,
-          line: anc.pos.line,
-          col: anc.pos.col,
-          message:
-            `namespace "${anc.ns}" is not in the seed allowlist (anchor "${anc.ns}:${anc.id}")`,
-        });
-        continue;
-      }
       const key = `${anc.ns}:${anc.id}`;
       const prev = anchorMap.get(key);
       if (prev) {
@@ -249,17 +239,6 @@ export async function collectFindings(
 
     try {
       for (const ref of parseRefs(content)) {
-        if (!validateNamespace(ref.ns)) {
-          findings.push({
-            kind: "unlisted-namespace",
-            file: rel,
-            line: ref.pos.line,
-            col: ref.pos.col,
-            message:
-              `namespace "${ref.ns}" is not in the seed allowlist (ref "${ref.ns}:${ref.id}")`,
-          });
-          continue;
-        }
         allRefs.push({ file: rel, ref });
       }
     } catch (err) {

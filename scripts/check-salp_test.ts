@@ -4,7 +4,7 @@
  * Covers:
  *   - Dead REF (points at non-existent ANC).
  *   - Duplicate ANC within a namespace.
- *   - Unlisted namespace.
+ *   - Open namespace set (any grammar-conformant value accepted).
  *   - Surviving legacy grammar (with --enforce-no-legacy).
  *
  * Each test builds a temp directory with markdown fixtures, invokes the
@@ -73,17 +73,21 @@ Deno.test("detects-duplicate-anchor", async () => {
   });
 });
 
-Deno.test("rejects-unlisted-namespace", async () => {
+Deno.test("accepts-any-grammar-conformant-namespace", async () => {
+  // No closed allowlist: a novel namespace passes as long as it conforms to
+  // the grammar and its REF resolves to an ANC.
   await withTempDir(async (dir) => {
-    await writeFile(dir, "a.md", "[ANC:bogus:foo]");
+    await writeFile(
+      dir,
+      "a.md",
+      "[ANC:custom-ns:foo]\nSee [REF:custom-ns:foo].",
+    );
     const findings = await collectFindings({
       rootDir: dir,
       patterns: ["a.md"],
       enforceNoLegacy: false,
     });
-    const bad = findingsOfKind(findings, "unlisted-namespace");
-    assertEquals(bad.length, 1);
-    assertEquals(bad[0].message.includes("bogus"), true);
+    assertEquals(findings.length, 0);
   });
 });
 

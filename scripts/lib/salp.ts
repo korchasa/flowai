@@ -7,8 +7,10 @@
  *   - Reference:  `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]`
  *
  * Where:
- *   - `<ns>` matches `[a-z][a-z0-9-]*` and MUST be in the seed allowlist
- *     (validateNamespace) when validated at the project layer.
+ *   - `<ns>` matches `[a-z][a-z0-9-]*`. The set is open — any value matching
+ *     the grammar is accepted. `EXAMPLE_NAMESPACES` enumerates the ones in
+ *     active use by this project as a documentation hint, NOT as a closed
+ *     allowlist.
  *   - `<id>` matches `[a-z0-9][a-z0-9-]*`.
  *   - `<display>` is free-form text up to the closing `]` (trimmed).
  *
@@ -20,18 +22,21 @@
  * migration script) can surface a single uniform error type.
  */
 
-/** Seed namespace allowlist. Additional namespaces (`nfr`, `code`) are deferred
- *  until their first consumer lands; adding them here without a consumer would
- *  invite unused-namespace drift. */
-export const SEED_NAMESPACE_ALLOWLIST: ReadonlySet<string> = new Set([
+/** Example namespaces currently in use across this project. Provided as a
+ *  documentation hint only — the validator does NOT restrict `<ns>` to this
+ *  set. Any value matching the grammar `[a-z][a-z0-9-]*` is accepted; new
+ *  consumers may introduce new namespaces without touching this list. */
+export const EXAMPLE_NAMESPACES: readonly string[] = [
   "fr",
   "sds",
   "task",
+  "nfr",
+  "code",
   "mx-concept",
   "mx-person",
   "mx-source",
   "mx-answer",
-]);
+];
 
 export type SalpPos = { line: number; col: number };
 
@@ -165,10 +170,6 @@ export function serializeRef(
   return r.display
     ? `[REF:${r.ns}:${r.id} | ${r.display}]`
     : `[REF:${r.ns}:${r.id}]`;
-}
-
-export function validateNamespace(ns: string): boolean {
-  return SEED_NAMESPACE_ALLOWLIST.has(ns);
 }
 
 /** Detect legacy cross-reference grammars surviving in source text. Used by

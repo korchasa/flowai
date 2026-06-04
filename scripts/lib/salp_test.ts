@@ -4,7 +4,7 @@
  * Pins the grammar:
  *   - ANC: `[ANC:<ns>:<id>]`
  *   - REF: `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]`
- *   - ns: `[a-z][a-z0-9-]*` (seed allowlist enforced separately)
+ *   - ns: `[a-z][a-z0-9-]*` (open set; no allowlist enforced)
  *   - id: `[a-z0-9][a-z0-9-]*`
  *
  * SALP-short (`[ANC:id]` / `[REF:id]`, no namespace) is REJECTED.
@@ -14,13 +14,12 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import {
   detectLegacyGrammars,
+  EXAMPLE_NAMESPACES,
   parseAnchors,
   parseRefs,
   SalpSyntaxError,
-  SEED_NAMESPACE_ALLOWLIST,
   serializeAnchor,
   serializeRef,
-  validateNamespace,
 } from "./salp.ts";
 
 Deno.test("parses-anc-with-namespace", () => {
@@ -123,17 +122,22 @@ Deno.test("parses-mx-namespaces-with-hyphen", () => {
   assertEquals(ancs[0].id, "oauth-flow");
 });
 
-Deno.test("validateNamespace-allows-seed-list", () => {
-  for (const ns of SEED_NAMESPACE_ALLOWLIST) {
-    if (!validateNamespace(ns)) throw new Error(`expected ${ns} allowed`);
+Deno.test("example-namespaces-cover-current-consumers", () => {
+  // Documentation hint only; the parser does not enforce membership.
+  for (const ns of ["fr", "sds", "task", "mx-concept"]) {
+    if (!EXAMPLE_NAMESPACES.includes(ns)) {
+      throw new Error(`expected ${ns} in EXAMPLE_NAMESPACES`);
+    }
   }
 });
 
-Deno.test("validateNamespace-rejects-deferred-namespaces", () => {
-  // `nfr` and `code` are intentionally deferred until first consumer lands.
-  assertEquals(validateNamespace("nfr"), false);
-  assertEquals(validateNamespace("code"), false);
-  assertEquals(validateNamespace("random"), false);
+Deno.test("parser-accepts-any-grammar-conformant-namespace", () => {
+  // No allowlist: a previously "deferred" or completely novel namespace
+  // parses cleanly as long as it matches the grammar.
+  const ancs = parseAnchors("[ANC:nfr:perf-budget] [ANC:custom-ns:foo]");
+  assertEquals(ancs.length, 2);
+  assertEquals(ancs[0].ns, "nfr");
+  assertEquals(ancs[1].ns, "custom-ns");
 });
 
 Deno.test("serializeAnchor-round-trips", () => {

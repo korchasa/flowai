@@ -48,7 +48,7 @@ Cross-references between any two pieces of project knowledge — doc-to-doc, **a
 
 - **Reference** — `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]` — points at a target. The optional `| display` text is what readers see. Example: `See [REF:fr:cmd-exec | FR-CMD-EXEC] for details.`
 
-- **Namespace allowlist** — `<ns>` MUST be one of: `fr`, `sds`, `task`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`. Additional namespaces (`nfr`, `code`) are reserved for future consumers; the validator rejects any other value.
+- **Namespace grammar (open set)** — `<ns>` matches `[a-z][a-z0-9-]*`. The set is open: any grammar-conformant value is accepted by the validator. Examples currently in use: `fr` (functional requirements), `sds` (design sections), `task` (committed tasks), `nfr` (non-functional requirements), `code` (source-code references), `mx-concept` / `mx-person` / `mx-source` / `mx-answer` (memex pages). New consumers may introduce new namespaces without changing the validator.
 
 - **ID grammar** — `<id>` is lower-kebab (`[a-z0-9][a-z0-9.-]*`). Hierarchical FR IDs preserve the period (`FR-DIST.MARKETPLACE` → `dist.marketplace`).
 
@@ -56,7 +56,7 @@ Cross-references between any two pieces of project knowledge — doc-to-doc, **a
 
 - **Rejected forms** — do NOT use ID-only shortcuts (`[FR-CMD-EXEC]`), wikilinks (`[[X]]`), bare ID strings (`// FR-CMD-EXEC`), custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), GFM-form cross-references (`[FR-X](path.md#…)`), or salp-short (`[ANC:id]` without namespace). Validators ship with the framework reject all of these.
 
-- **Drift discipline** — removing or renaming an anchor obliges updating every reference to it. Checked mechanically by `scripts/check-salp.ts` (dead-REF / duplicate-ANC / unlisted-namespace / surviving-legacy-grammar) where the project ships such a script.
+- **Drift discipline** — removing or renaming an anchor obliges updating every reference to it. Checked mechanically by `scripts/check-salp.ts` (dead-REF / duplicate-ANC / surviving-legacy-grammar) where the project ships such a script.
 
 ### Migrating from GFM
 

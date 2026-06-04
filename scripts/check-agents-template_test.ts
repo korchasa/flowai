@@ -37,15 +37,15 @@ Deno.test("AGENTS.template.md — mandates SALP anchor syntax with concrete exam
   );
 });
 
-Deno.test("AGENTS.template.md — declares SALP namespace allowlist", async () => {
+Deno.test("AGENTS.template.md — enumerates SALP example namespaces", async () => {
   const content = await readTemplate();
-  // The allowlist MUST enumerate the seed namespaces so downstream users
-  // know what `<ns>` values the validator accepts.
-  const allowlist =
-    /(allowlist|allowed|namespace)[^\n]{0,300}fr[^\n]{0,200}sds[^\n]{0,200}task/i;
+  // The template MUST surface the namespaces currently in use so downstream
+  // users see realistic `<ns>` values, even though the validator no longer
+  // restricts `<ns>` to a closed list.
+  const examples = /namespace[^\n]{0,300}fr[^\n]{0,200}sds[^\n]{0,200}task/i;
   assert(
-    allowlist.test(content),
-    "Template does not declare the SALP namespace allowlist (fr, sds, task, mx-*)",
+    examples.test(content),
+    "Template does not enumerate the SALP example namespaces (fr, sds, task, mx-*)",
   );
 });
 

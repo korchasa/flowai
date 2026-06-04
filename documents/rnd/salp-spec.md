@@ -14,16 +14,20 @@ display     ::= 1*( any-char-except-"]" ) ; trimmed
 
 Salp-short (`[ANC:id]` / `[REF:id]` without namespace) is REJECTED.
 
-## Namespace Allowlist (seed)
+## Namespace Grammar (open set)
+
+`<ns>` matches `[a-z][a-z0-9-]*`. The validator does NOT enforce membership in any closed list — any grammar-conformant value is accepted. `scripts/lib/salp.ts` ships `EXAMPLE_NAMESPACES` as a documentation hint only.
+
+Examples currently in use:
 
 - `fr` — Functional Requirement IDs (SRS sections under `documents/requirements.md`).
 - `sds` — System Design Specification sections (`documents/design.md`). Id form: `3-1-1` for §3.1.1.
 - `task` — Task files under `documents/tasks/<YYYY>/<MM>/<slug>.md`. Id = slug.
+- `nfr` — non-functional requirements.
+- `code` — `[ANC:code:…]` annotations in source files.
 - `mx-concept`, `mx-person`, `mx-source`, `mx-answer` — Memex page types (`framework/memex/pages/<type>/<slug>.md`).
 
-Deferred (added when first consumer lands):
-- `nfr` — non-functional requirements (SRS §4 has none today as a numbered FR list).
-- `code` — `[ANC:code:…]` annotations in source files.
+New consumers may introduce new namespaces without changing the validator.
 
 ## Rationale
 

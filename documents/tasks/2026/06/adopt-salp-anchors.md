@@ -60,14 +60,14 @@ This is a high-blast-radius change: it touches the AGENTS.md template every end-
 
 Every item carries `(FR-ID, Test/Benchmark, Evidence)`. The new FR `FR-DOC-ANCHORS` is introduced by this task — the first DoD item is the SRS section creation that gives it an `**Acceptance:**` field.
 
-- [x] **FR-DOC-ANCHORS — SRS section exists with `**Acceptance:**` field**: `### FR-DOC-ANCHORS: SALP as Canonical Anchor Mechanism` added to `documents/requirements.md` with grammar, namespace allowlist (`fr`, `sds`, `task`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`; `nfr`, `code` deferred per Constraints), rationale linking to `flowai-experiments/anchor-systems/`, and an `**Acceptance:**` reference pointing at this DoD's test items.
+- [x] **FR-DOC-ANCHORS — SRS section exists with `**Acceptance:**` field**: `### FR-DOC-ANCHORS: SALP as Canonical Anchor Mechanism` added to `documents/requirements.md` with grammar, open namespace set (examples: `fr`, `sds`, `task`, `nfr`, `code`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer` — catalogued as `EXAMPLE_NAMESPACES`, NOT a closed allowlist), rationale linking to `flowai-experiments/anchor-systems/`, and an `**Acceptance:**` reference pointing at this DoD's test items.
   - Test: `scripts/check-fr-coverage_test.ts::fr-doc-anchors-has-acceptance`
   - Evidence: `deno test -A scripts/check-fr-coverage_test.ts`
-- [x] **FR-DOC-ANCHORS — Parser**: `scripts/lib/salp.ts` exports `parseAnchors(text)`, `parseRefs(text)`, `serializeAnchor({ns,id})`, `serializeRef({ns,id,display})`, `validateNamespace(ns)`, plus `detectLegacyGrammars`. Rejects salp-short form (`[ANC:id]` without namespace). Pure (no I/O).
-  - Test: `scripts/lib/salp_test.ts` (22 tests covering parse, serialize, salp-short rejection, namespace allowlist, legacy detection)
+- [x] **FR-DOC-ANCHORS — Parser**: `scripts/lib/salp.ts` exports `parseAnchors(text)`, `parseRefs(text)`, `serializeAnchor({ns,id})`, `serializeRef({ns,id,display})`, `EXAMPLE_NAMESPACES` (documentation hint, NOT enforced), plus `detectLegacyGrammars`. Rejects salp-short form (`[ANC:id]` without namespace). Pure (no I/O).
+  - Test: `scripts/lib/salp_test.ts` (parse, serialize, salp-short rejection, open-namespace acceptance, legacy detection)
   - Evidence: `deno test -A scripts/lib/salp_test.ts`
-- [x] **FR-DOC-ANCHORS — Validator wired**: `scripts/check-salp.ts` walks the project, asserts (a) every `[REF:ns:id]` resolves to an existing `[ANC:ns:id]`, (b) every `[ANC:ns:id]` is unique within its namespace, (c) namespace is in the allowlist, (d) (Phase 4 gate, `--enforce-no-legacy`) no surviving legacy grammar in target surfaces; invoked from `scripts/task-check.ts` parallel block.
-  - Test: `scripts/check-salp_test.ts::detects-dead-ref`, `::detects-duplicate-anchor`, `::rejects-unlisted-namespace`, `::detects-surviving-legacy-grammar`
+- [x] **FR-DOC-ANCHORS — Validator wired**: `scripts/check-salp.ts` walks the project, asserts (a) every `[REF:ns:id]` resolves to an existing `[ANC:ns:id]`, (b) every `[ANC:ns:id]` is unique within its namespace, (c) (Phase 4 gate, `--enforce-no-legacy`) no surviving legacy grammar in target surfaces; invoked from `scripts/task-check.ts` parallel block. Namespaces are NOT checked against a closed list.
+  - Test: `scripts/check-salp_test.ts::detects-dead-ref`, `::detects-duplicate-anchor`, `::accepts-any-grammar-conformant-namespace`, `::detects-surviving-legacy-grammar`
   - Evidence: `deno test -A scripts/check-salp_test.ts && deno task check`
 - [x] **FR-DOC-ANCHORS — Migration script (golden fixtures)**: `scripts/migrate-to-salp.ts --write` converts GFM-links (`[X](path.md#anchor)`), wikilinks (`[[slug]]` and dual-link `[[slug|Name]] ([Name](slug.md))`), and `// FR-…` code comments into SALP form. Idempotent. Fails fast on un-resolvable targets (no silent skip).
   - Test: `scripts/migrate-to-salp_test.ts` (13 tests: GFM-FR, SDS, wikilink, dual-link, comment, idempotency, fail-fast, template-variable preservation)
@@ -117,13 +117,13 @@ Strategy — Variant 3 (Surface-by-Surface Phased Cutover). Four phases, each la
   - `parseAnchors(text: string): Array<{ns: string; id: string; pos: {line: number; col: number}}>`
   - `parseRefs(text: string): Array<{ns: string; id: string; display?: string; pos: {line: number; col: number}}>`
   - `serializeAnchor({ns, id})`, `serializeRef({ns, id, display?})`
-  - `validateNamespace(ns): boolean` (seed allowlist: `fr`, `sds`, `task`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`)
+  - `EXAMPLE_NAMESPACES: readonly string[]` (documentation hint: `fr`, `sds`, `task`, `nfr`, `code`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`; NOT a closed allowlist — any grammar-conformant `<ns>` is accepted)
   - `detectLegacyGrammars(text): Array<{kind: "gfm-fr-link" | "wikilink" | "bare-fr-comment"; pos}>`
   - Grammar regex: ANC `\[ANC:([a-z][a-z0-9-]*):([a-z0-9][a-z0-9-]*)\]`; REF `\[REF:([a-z][a-z0-9-]*):([a-z0-9][a-z0-9-]*)(?:\s*\|\s*([^\]]+?))?\]`. Pinned in `salp_test.ts`.
 - `scripts/lib/salp-anchor-map.ts` — builds the `Map<gfmAutoSlug, {ns, id}>` for the migration script. Reads current `documents/requirements.md` (`### FR-X:` → `{ns: "fr", id: lowercaseKebab(X)}`) and `documents/design.md` (`### N.M Y` → `{ns: "sds", id: derived}`). Pure (no mutation). Frozen-at-start: the migration script calls this once, holds the result, then mutates SRS/SDS — guaranteeing the anchor map reflects pre-migration state.
-- `scripts/lib/salp_test.ts` — 8–12 unit tests covering parse, serialize, namespace allowlist, salp-short rejection, legacy-grammar detection.
-- `scripts/check-salp.ts` — validator. Walks file globs (`documents/**/*.md`, `framework/**/*.md`, `framework/**/*.ts`, `scripts/**/*.ts`, `README.md`, `AGENTS.md`), excluding `flowai-experiments/`, `acceptance-tests/runs/`, `acceptance-tests/cache/`, and any path matching `**/fixture/**`. Builds anchor → file map; checks uniqueness per namespace; resolves each REF to an ANC; surfaces dead REFs and unlisted namespaces. Surfaces surviving legacy grammar with file+line. Exit non-zero on any finding.
-- `scripts/check-salp_test.ts` — 6+ tests: dead REF, duplicate ANC, unlisted namespace, surviving wikilink, surviving `// FR-…`, surviving GFM `[FR-X](...)`.
+- `scripts/lib/salp_test.ts` — unit tests covering parse, serialize, open-namespace acceptance, salp-short rejection, legacy-grammar detection.
+- `scripts/check-salp.ts` — validator. Walks file globs (`documents/**/*.md`, `framework/**/*.md`, `framework/**/*.ts`, `scripts/**/*.ts`, `README.md`, `AGENTS.md`), excluding `flowai-experiments/`, `acceptance-tests/runs/`, `acceptance-tests/cache/`, and any path matching `**/fixture/**`. Builds anchor → file map; checks uniqueness per namespace; resolves each REF to an ANC. Surfaces surviving legacy grammar with file+line. Exit non-zero on any finding. Namespaces are NOT checked against a closed list.
+- `scripts/check-salp_test.ts` — tests: dead REF, duplicate ANC, open-namespace acceptance, surviving wikilink, surviving `// FR-…`, surviving GFM `[FR-X](...)`.
 - `scripts/migrate-to-salp.ts` — deterministic converter. Sub-modes:
   - GFM-link mode: `[<text>](<path>.md#<anchor>)` → resolve via the anchor map from `salp-anchor-map.ts` → `[REF:<ns>:<id> | <text>]`.
   - Wikilink mode: `[[<slug>]]` and `[[<slug>|<display>]]` → `[REF:mx-<type>:<slug> | <display>]`. `mx-<type>` derived from page frontmatter `type:` field; fail-fast if frontmatter missing.
