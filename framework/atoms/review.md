@@ -81,11 +81,10 @@ Input sources:
 
 <step_by_step>
 
-1. **Empty Diff Guard**
-   - Run `git diff --stat`, `git diff --cached --stat`, and
-     `git status --short`.
-   - If there are NO changes (no diff, no staged files, no untracked files),
-     report "No changes to review" and STOP.
+1. **Empty Diff Guard** — `git diff --stat`, `git diff --cached --stat`,
+   `git status --short`. No changes → STOP. System gitStatus snapshot
+   can be stale (hooks / parallel processes); if live status shows
+   unauthored files clean per snapshot, ask user before staging.
 
 2. **Pre-flight Project Check**
    - **Pick the check/test command**: AGENTS.md/CLAUDE.md declares it →

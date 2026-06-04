@@ -167,6 +167,8 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 ````
 
+**Evidence keyword caveat (`scripts/check-srs-evidence.ts`)**: Any line in SRS containing the literal `Evidence:` plus a path to a `*_test.ts` file is checked unconditionally — the file MUST exist on disk, regardless of whether the parent FR is `[ ]` or `[x]`. For forward-declared `[ ]` FRs whose tests are not yet authored, formulate `**Acceptance:**` as prose (`deno test <path> (to be authored)` or `manual — <reviewer>`) and keep per-step DoD with `Evidence:` lines in the linked task file, NOT in SRS. The validator does NOT distinguish FR status; a stale `[ ]` FR pointing at a future test fails `deno task check` on every run.
+
 ### SDS Format (`documents/design.md`)
 ```markdown
 # SDS
