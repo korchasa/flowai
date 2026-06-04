@@ -1,6 +1,6 @@
 ---
 date: "2026-06-05"
-status: to do
+status: in progress
 implements:
   - FR-MAINT-SEVERITY
 tags:
