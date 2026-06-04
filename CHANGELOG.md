@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.4](https://github.com/korchasa/flowai/compare/v0.13.3...v0.13.4) (2026-06-04)
+
+
+### Features
+
+* **framework:** open SALP namespace set — drop seed allowlist ([b5ce0de](https://github.com/korchasa/flowai/commit/b5ce0dea4b5376f33157645fbabe749d7c8250c4))
+
 ### [0.13.3](https://github.com/korchasa/flowai/compare/v0.13.2...v0.13.3) (2026-06-04)
 
 
