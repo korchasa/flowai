@@ -19,6 +19,7 @@ import {
   renderAtomTarget,
   substituteParams,
   validateAtomCanon,
+  validateCompositeCanon,
 } from "./generate-skill-composites.ts";
 
 async function withTempManifest<T>(
@@ -352,6 +353,47 @@ Deno.test("checkGitignoreParity: real .gitignore lists every manifest target", a
         `extra: ${diff.extra.join(", ")}`
       : "",
   );
+});
+
+Deno.test("validateCompositeCanon: rejects body missing 'No delegation' rule", () => {
+  const fm = {
+    description:
+      "Self-contained — execute the inlined steps directly. Foo bar.",
+  };
+  const body = "<rules>1. Some other rule.</rules>";
+  const manifest: Manifest = {
+    schema_version: 1,
+    atoms: {},
+    composites: {},
+  };
+  try {
+    validateCompositeCanon("foo", fm, body, "framework/x/SKILL.md", manifest);
+    throw new Error("expected throw");
+  } catch (e) {
+    assertStringIncludes(
+      e instanceof Error ? e.message : String(e),
+      "**No delegation**",
+    );
+  }
+});
+
+Deno.test("validateCompositeCanon: rejects description missing 'Self-contained' phrase", () => {
+  const fm = { description: "Some composite that does X without the marker." };
+  const body = "<rules>**No delegation** rule.</rules>";
+  const manifest: Manifest = {
+    schema_version: 1,
+    atoms: {},
+    composites: {},
+  };
+  try {
+    validateCompositeCanon("foo", fm, body, "framework/x/SKILL.md", manifest);
+    throw new Error("expected throw");
+  } catch (e) {
+    assertStringIncludes(
+      e instanceof Error ? e.message : String(e),
+      "Self-contained — execute the inlined steps directly",
+    );
+  }
 });
 
 Deno.test("checkGitignoreParity: reports a missing target", async () => {
