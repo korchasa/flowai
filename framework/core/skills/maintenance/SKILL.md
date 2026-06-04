@@ -47,6 +47,7 @@ Categories checked:
 5.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
 6.  **No premature fixes**: Do NOT apply any changes during the Scan Phase. Only collect findings.
 7.  **User decides**: Every fix requires explicit user approval. Never apply fixes silently.
+8.  **Findings are first-hand or verified**: every finding MUST be ground-truthed against the source before the summary. Subagent-supplied findings (`Explore`, `Task`, `Agent`) are leads, not conclusions. See Step 17.5 and [references/verification-gate.md](references/verification-gate.md).
 </rules>
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
@@ -168,11 +169,16 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 16. **Category 15: Invariant ↔ Test Pairing** — deeper than Cat 2's spot-check. Architectural invariants without tests; stub-only contract tests; hand-curated lists without cross-reference tests.
 17. **Category 16: Public-Surface Quality** — synonym duplication; free-fn-and-method duplicates; barrel re-exports of internal-only symbols; reserved-flag lists mixing positionals and flags; overlapping public/private boundary.
 
+17.5 **Verify Findings (mandatory gate)**
+    - Before presenting the summary, walk the collected findings list and confirm each ONE-BY-ONE against the source — whether the scan was inline or delegated.
+    - For each finding, perform ONE targeted verification matched to its shape (numeric metric / symbol behavior / undocumented claim / cross-implementation claim / architectural claim). Full per-shape checklist + rationale: [references/verification-gate.md](references/verification-gate.md).
+    - Drop findings the verification falsifies. Refine findings the verification corrects. Note falsified ones inline as `[verified false] <site>: <original claim> — actually <observed>` so the user can see the gate ran and what it caught.
+
 ### RESOLUTION PHASE
 
 18. **Present Summary**
     - Output the full findings list, grouped by category. Use plain-text category labels (not markdown `#` headings). Skip any category with no findings.
-    - **Category labels** — use the 16 categories below. Even when the rest of the report is rendered in the user's language, the category label MUST be a clear DEDICATED tag for that category, not a translation that overlaps with another category's label. Acceptable: the English label verbatim, OR a translation that uniquely names the category. Forbidden: translating two distinct categories to the same word, OR omitting the new doc-system category entirely. If in doubt, fall back to the literal English label.
+    - **Category labels** — use the 16 categories below. In non-English reports, each label MUST be a unique tag for that category; do not translate two distinct categories to the same word and do not omit the doc-system category. When in doubt, use the English label verbatim.
       1. `Structural Integrity`
       2. `Code Hygiene`
       3. `Complexity & Hotspots`
@@ -181,7 +187,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       6. `Documentation Coverage` — JSDoc/comments per code symbol.
       7. `Instruction Coherence`
       8. `Tooling Relevance`
-      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED whenever step 10 produced any finding. Distinct from #5 and #6: this group covers DOC-TO-DOC integrity (broken GFM cross-links, stale `[x]` FRs whose acceptance reference is missing, orphan FRs with no source-code link, SRS↔SDS contradictions, resolved `index` drift). NEVER fold these findings into `Consistency (Docs vs Code)` or `Documentation Coverage` — they are different concerns and FR-DOC-LINT consumers look specifically for the dedicated `Documentation Health` group.
+      9. `Documentation Health` (FR-DOC-LINT) — REQUIRED dedicated header whenever step 10 produced any finding; covers DOC-TO-DOC integrity (broken GFM links, stale `[x]` FRs, orphan FRs, SRS↔SDS contradictions, `index` drift). Distinct from #5 and #6 — NEVER fold into them.
       10. `Architectural Integrity`
       11. `Conceptual Duplication`
       12. `API Contract Review`
@@ -205,7 +211,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 
       Total: 3 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 1).
       ```
-    - One representative finding per category (including Cats 10–16: architectural integrity, conceptual duplication, API contract review, cross-implementation symmetry, defensive-programming smell, invariant↔test pairing, public-surface quality) lives in [references/example-findings.md](references/example-findings.md). Mirror that shape for new categories.
+    - One representative finding per category (all 16) lives in [references/example-findings.md](references/example-findings.md). Mirror that shape for new categories.
 
 19. **Ask User How to Proceed**
     - After the summary, ask the user which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accept these reply modes:
@@ -239,14 +245,9 @@ Collect all findings into an internal list. Each finding has: category, file/sym
 [ ] Checked for missing code documentation (File/Class/Method).
 [ ] Checked instruction coherence across CLAUDE.md, AGENTS.md, and docs (contradictions, ambiguities, redundancy).
 [ ] Checked tooling relevance (skills, agents, hooks vs. project stack and domain).
-[ ] Checked Documentation Health (broken GFM links, stale [x] FRs, orphan FRs, SRS↔SDS contradictions, resolved `index` drift) — findings grouped under the dedicated `Documentation Health` header in the summary.
-[ ] Checked Architectural Integrity (cycles, layer leakage, reverse deps) against declared layering.
-[ ] Checked Conceptual Duplication (parallel decision tables, untyped/typed asymmetry, schema clones).
-[ ] Checked API Contract Review (capability-vs-impl, sentinel-vs-missing, default-toward-bug, dead enums, type-vs-runtime divergence).
-[ ] Checked Cross-Implementation Symmetry (capability / error-class / reserved-set / warning-latch parity).
-[ ] Checked Defensive-Programming Smell (callback swallows, wholesale swallows, fallback-on-zero, error-as-decision).
-[ ] Checked Invariant ↔ Test Pairing (SHOULD/MUST clauses → test descriptors; stub-only contract tests).
-[ ] Checked Public-Surface Quality (synonyms, free-fn-and-method dup, barrel re-exports of internals, reserved lists mixing positionals).
+[ ] Checked Documentation Health (FR-DOC-LINT) — findings grouped under the dedicated `Documentation Health` header.
+[ ] Checked Cats 10-16 (architectural review): integrity, conceptual duplication, API contract, cross-impl symmetry, defensive smell, invariant↔test, public surface.
+[ ] Verified Findings gate ran: each finding was ground-truthed against the source (subagent-supplied findings re-read by the executor) before the summary; falsified findings dropped with a `[verified false]` line.
 [ ] Presented numbered summary of all findings, grouped by category.
 [ ] Asked the user how to proceed with resolution.
 [ ] Resolved selected findings interactively (apply/skip/edit per finding).
