@@ -201,7 +201,7 @@ Collect all findings into an internal list. Each finding has: category, file/sym
       - [2] utils.ts: unused export `myFunc`. (Fix: delete)
 
       Documentation Health
-      - [3] FR-AUTH marked [x] in SRS, no source-code reference. (Fix: add `[FR-AUTH](...)` link or revert to [ ])
+      - [3] FR-AUTH marked [x] in SRS, no source-code reference. (Fix: add `// [REF:fr:auth]` SALP comment or revert to [ ])
 
       Total: 3 findings (Structural Integrity: 1, Code Hygiene: 1, Documentation Health: 1).
       ```

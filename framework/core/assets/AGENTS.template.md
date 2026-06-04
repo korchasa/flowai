@@ -40,19 +40,33 @@
 5. **Index** (`documents/index.md`): Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / NFR). Created on first write, never scaffolded. Task ↔ FR navigation lives inline in SRS as `**Tasks:**` back-pointers, not here.
 7. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
 
-## Interconnectedness Principle
+## Interconnectedness Principle — SALP
 
-Cross-references between any two pieces of project knowledge — doc-to-doc, **and code-to-doc** — use **standard GFM markdown links**. One mechanism, no special syntaxes, works in every tool that understands markdown (renderers, IDEs, link checkers, agents).
+Cross-references between any two pieces of project knowledge — doc-to-doc, **and code-to-doc** — use the **SALP grammar** (Semantic Anchor / Link Protocol). One mechanism, two tokens, namespace-disambiguated, machine-validated.
 
-- **Canonical form** — `[descriptive text](relative/path.md#auto-slug)`, where `auto-slug` is the GFM-normalized form of the target heading. Example: `[подробности](documents/design.md#модель-rag)` referencing the heading `## Модель RAG`.
+- **Anchor** — `[ANC:<ns>:<id>]` — declares a named target. Place it on the same line as the heading it labels, after the title text. Example: `### FR-CMD-EXEC: Command Execution [ANC:fr:cmd-exec]`.
 
-- **Applies in code too** — when source code needs to reference documentation (an FR in SRS, a component in SDS, a task), the comment carries a GFM link, not a slug-style identifier. Example: `// implements [Command Execution](../documents/requirements.md#fr-cmd-exec-command-execution)`. The legacy `// FR-<ID>` shortcut is deprecated; new code uses GFM links.
+- **Reference** — `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]` — points at a target. The optional `| display` text is what readers see. Example: `See [REF:fr:cmd-exec | FR-CMD-EXEC] for details.`
 
-- **Rejected forms** — do NOT invent ID-only link syntax like `[FR-CMD-EXEC]`, `[[wikilink]]`, custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), or bare ID strings as cross-reference markers (`// FR-CMD-EXEC`). Standard markdown renderers cannot resolve any of these consistently.
+- **Namespace allowlist** — `<ns>` MUST be one of: `fr`, `sds`, `task`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`. Additional namespaces (`nfr`, `code`) are reserved for future consumers; the validator rejects any other value.
 
-- **Heading IDs are conventions, not slugs** — section headings may carry mnemonic prefixes for readability (e.g., `### FR-CMD-EXEC: Command Execution`, `### FR-DOC-TASKS: First-Class Tasks`), but the link target is always the **GFM auto-slug** of the heading text, never a separate ID-derived identifier. If a heading is rewritten, links must be updated — this is the cost of standard tooling, not a bug.
+- **ID grammar** — `<id>` is lower-kebab (`[a-z0-9][a-z0-9.-]*`). Hierarchical FR IDs preserve the period (`FR-DIST.MARKETPLACE` → `dist.marketplace`).
 
-- **Drift discipline** — removing or renaming a heading obliges updating every link to it. Checked mechanically by `scripts/check-traceability.ts` (link-resolution: file exists, anchor exists) where the project ships such a script, and semantically by `maintenance` (Documentation health category).
+- **Applies in code too** — when source code needs to reference documentation, the comment carries a SALP REF, not a slug-style identifier or a GFM link. Example: `// [REF:fr:cmd-exec] — execution gate`. The legacy `// FR-<ID>` shortcut and the previous GFM-link form (`// [FR-X](path.md#…)`) are rejected by the validator.
+
+- **Rejected forms** — do NOT use ID-only shortcuts (`[FR-CMD-EXEC]`), wikilinks (`[[X]]`), bare ID strings (`// FR-CMD-EXEC`), custom anchor mechanisms (`{#my-anchor}`, `<a name=...>`), GFM-form cross-references (`[FR-X](path.md#…)`), or salp-short (`[ANC:id]` without namespace). Validators ship with the framework reject all of these.
+
+- **Drift discipline** — removing or renaming an anchor obliges updating every reference to it. Checked mechanically by `scripts/check-salp.ts` (dead-REF / duplicate-ANC / unlisted-namespace / surviving-legacy-grammar) where the project ships such a script.
+
+### Migrating from GFM
+
+If your project was initialised before flowai adopted SALP, run the shipped one-shot migration script ONCE after `flowai sync` pulls the new template:
+
+```sh
+deno run -A .claude/scripts/migrate-to-salp.ts --write
+```
+
+The script converts GFM-form FR links (`[FR-X](path.md#…)`), wikilinks (`[[X]]`), and bare `// FR-X` comments into SALP form in-place. It is idempotent (safe to re-run) and fails fast on any unresolvable target (no silent skips). A first-class `flowai migrate-anchors` CLI verb is planned for a future release; until then, invoke the script directly.
 
 ## Documentation Map
 
@@ -76,7 +90,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Workflow for changes: new or updated requirement → update SRS → update SDS → implement. Skipping steps leads to docs-code drift.
 - Status markers: `[x]` = implemented, `[ ]` = pending.
 - **Traceability**: Every `[x]` criterion requires evidence. Placement depends on evidence type:
-  1. **Code-evidenced**: Source files contain a GFM link (in a `//` or `#` comment) pointing to the relevant SRS/SDS heading near the implementing logic — e.g., `// implements [FR-CMD-EXEC](../documents/requirements.md#fr-cmd-exec-command-execution)`. The link IS the evidence; no paths are stored in SRS. The legacy `// FR-<ID>` shortcut is deprecated but still recognized during the migration period.
+  1. **Code-evidenced**: Source files contain a SALP REF (in a `//` or `#` comment) pointing at the relevant SRS / SDS anchor near the implementing logic — e.g., `// [REF:fr:cmd-exec] — execution gate`. The REF IS the evidence; no paths are stored in SRS. Bare `// FR-<ID>` and GFM-form `// [FR-X](path.md#…)` comments are rejected by the SALP validator.
   2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence): Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a test path + test name, a benchmark scenario ID, or a verification command. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Exception: when automation cost exceeds defect cost (pure visual design, external vendor dependency), mark `**Acceptance: manual — <reviewer> — <checklist path>**`. Manual is the exception, not the default.

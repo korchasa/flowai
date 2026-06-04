@@ -167,11 +167,11 @@ Input sources:
    - Check for regressions: do changed files break existing functionality?
 
 4a. **FR Coverage Audit** _(blocking gate — see Requirements Lifecycle in AGENTS.md)_
-   - **Identify FRs in scope**: (a) FR-* codes from the task file's `implements:` frontmatter; (b) any FR section added or modified in the diff to the resolved `SRS`; (c) any `// FR-<ID>` / `# FR-<ID>` markers introduced or touched in the diff.
+   - **Identify FRs in scope**: (a) FR-* codes from the task file's `implements:` frontmatter; (b) any FR section added or modified in the diff to the resolved `SRS`; (c) any `// [REF:fr:<id>]` / `# [REF:fr:<id>]` SALP markers introduced or touched in the diff.
    - **For each FR in scope**:
      1. SRS section MUST contain `**Acceptance:**` with a runnable reference (test `path::name`, benchmark id, verification command, or `manual — <reviewer>`). Missing or placeholder (`<TBD>`, `TODO`) → `[critical] FR-<ID> has no acceptance reference`.
      2. Run the evidence command (or `deno run -A scripts/check-fr-coverage.ts FR-<ID>` if the script exists). Non-zero exit, failing test, or `manual` without a reviewer name → `[critical] FR-<ID> acceptance fails`.
-     3. Grep the diff for `// FR-<ID>` / `# FR-<ID>` in implementing source files. FR claimed implemented in diff but no marker in changed source → `[critical] FR-<ID> missing code marker`.
+     3. Grep the diff for `// [REF:fr:<id>]` / `# [REF:fr:<id>]` in implementing source files. FR claimed implemented in diff but no SALP marker in changed source → `[critical] FR-<ID> missing code marker`.
      4. Task DoD has `[x]` paired with this FR but no evidence-command run in this session and no cached pass → `[critical] Phantom completion on FR-<ID>`.
    - **Gate**: findings here are blocking. Verdict cannot be `Approve` while any FR-gate issue remains, regardless of other findings.
 

@@ -15,6 +15,6 @@
 ### FR-CART-REMOVE: Remove Cart Item
 
 - **Description:** Users can remove items from the cart.
-- **Tasks:** [old-cart-remove-rework](tasks/2026/03/old-cart-remove-rework.md)
+- **Tasks:** [REF:task:2026-03-old-cart-remove-rework | old-cart-remove-rework]
 - **Acceptance:** manual — bench fixture
 - **Status:** [ ]

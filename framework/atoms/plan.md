@@ -30,7 +30,7 @@ You are autonomous and proactive. You exhaust all available resources (codebase,
    - **Allow-list**:
      - (a) A single task file under the resolved `tasks` role where date components and `<slug>` follow the project instructions; if the template default is in force, use `<YYYY>/<MM>/<slug>.md` below the role root.
      - (b) The resolved `index` role — agent-maintained navigation index (FR-DOC-INDEX). Plan registers each FR-ID from `implements:` as a row here; SRS section creation is NOT in scope (that happens in develop/commit). See step 5b.
-     - (c) The resolved `SRS` role — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [<slug>](tasks/<path>.md)[, ...]` directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
+     - (c) The resolved `SRS` role — **surgical-edit only**. The skill MAY insert/extend a single line `- **Tasks:** [REF:task:<slug>][, ...]` (SALP form) directly under the existing `**Description:**` bullet of each FR section listed in the new task's `implements:` (FR-DOC-TASK-LINK). All other SRS lines MUST remain byte-identical. See step 5c. The skill MUST NOT add, remove, or modify any other content in this file.
 2. **Planning**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
 3. **Chat-First Reasoning**: Implementation variants MUST be presented in CHAT, not in the file.
 4. **No SwitchMode**: Do not call SwitchMode tool. This is a mandatory rule!
@@ -111,16 +111,16 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - For each FR-ID in the task's `implements:` frontmatter, locate the heading `### <FR-ID>:` in the resolved `SRS`.
    - If the heading does not exist (new FR introduced by the same task), SKIP this FR for now and emit a chat note: "FR-XXX SRS section pending — task back-pointer deferred." The develop/commit phase will add the section AND the back-pointer atomically.
    - If the heading exists, find the section's existing `**Description:**` bullet (`- **Description:** ...`). Look at the line(s) immediately following it within the same section.
-     - If a `- **Tasks:** [...]` bullet already exists: append `, [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` to the comma-separated list. **Idempotency**: if the exact link `[<slug>](tasks/...)` is already in the list, do nothing for that FR.
-     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` immediately AFTER the `**Description:**` bullet (before any other bullets in the section).
+     - If a `- **Tasks:** [...]` bullet already exists: append `, [REF:task:<YYYY>-<MM>-<slug> | <slug>]` to the comma-separated list. **Idempotency**: if the exact SALP REF is already in the list, do nothing for that FR.
+     - If no `**Tasks:**` bullet exists yet: insert a new line `- **Tasks:** [REF:task:<YYYY>-<MM>-<slug> | <slug>]` immediately AFTER the `**Description:**` bullet (before any other bullets in the section). The `task:` namespace id is `<YYYY>-<MM>-<slug>` (e.g. `2026-06-adopt-salp-anchors`), derived from the task file's path.
    - **Surgical edit only**: the rest of the SRS file MUST remain byte-identical. Do not re-format, do not touch other sections, do not adjust whitespace anywhere except the inserted/extended line.
 
 5b. **Update Documentation Index (FR-DOC-INDEX)** — execute immediately, no permission needed. This is a write step, not a planning step.
    - Resolve `index` from AGENTS.md. For every FR-ID in the task's `implements:` frontmatter, register a row there.
    - If the resolved `index` file does not exist, create it with a `## FR` heading (additional sections like `## SDS`, `## NFR` may be added by other skills; do not pre-scaffold them here).
-   - Within `## FR`, ensure exactly one row per FR-ID. Row format:
-     `- [<FR-ID>](requirements.md#<anchor>) — <one-line summary> — <status>`
-     - `<anchor>` — GFM auto-slug of the SRS heading `### <FR-ID>: <title>` (lowercase, non-alphanumeric → `-`, collapse runs, strip leading/trailing `-`). If the SRS section does not yet exist, use the placeholder `<fr-id-lowercased>-tbd` (e.g. `fr-pause-tbd`); develop/commit will fix the anchor when the SRS section is added.
+   - Within `## FR`, ensure exactly one row per FR-ID. Row format (SALP):
+     `- [REF:fr:<id> | <FR-ID>] — <one-line summary> — <status>`
+     - `<id>` — lower-kebab of the FR mnemonic (strip `FR-` prefix, lowercase, preserve `.` for hierarchical IDs like `FR-DIST.MARKETPLACE` → `dist.marketplace`). The reference resolves against the `[ANC:fr:<id>]` token next to the SRS heading. If the SRS section does not yet exist, write the REF anyway — develop/commit will add the matching ANC when the SRS section is added, at which point `scripts/check-salp.ts` will resolve it.
      - `<one-line summary>` — pull from the SRS `**Description:**` first sentence if the section exists, otherwise reuse the task title (or a short paraphrase ≤80 chars).
      - `<status>` — mirror the SRS `**Status:**` value if present, else `[ ]`.
    - Sort rows alphabetically by FR-ID inside `## FR` before writing.

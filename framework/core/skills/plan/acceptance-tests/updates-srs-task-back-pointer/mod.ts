@@ -23,13 +23,13 @@ export const PlanUpdatesSrsBackPointerBench = new class
     {
       id: "inserts_tasks_bullet_for_fr_cart_add",
       description:
-        "After the SRS back-pointer step, does `documents/requirements.md`'s `### FR-CART-ADD` section contain a new bullet `- **Tasks:** [<slug>](tasks/<YYYY>/<MM>/<slug>.md)` placed directly after the existing `- **Description:**` bullet? The slug must match the just-created task file.",
+        "After the SRS back-pointer step, does `documents/requirements.md`'s `### FR-CART-ADD` section contain a new bullet using SALP form `- **Tasks:** [REF:task:<YYYY>-<MM>-<slug> | <slug>]` placed directly after the existing `- **Description:**` bullet? The task slug must match the just-created task file. (A GFM-link form `[<slug>](tasks/...)` IS NOT acceptable — SALP is the canonical grammar.)",
       critical: true,
     },
     {
       id: "extends_tasks_bullet_for_fr_cart_remove",
       description:
-        "Does `### FR-CART-REMOVE` section's existing `- **Tasks:** [old-cart-remove-rework](tasks/2026/03/old-cart-remove-rework.md)` bullet now have `, [<new-slug>](tasks/<YYYY>/<MM>/<new-slug>.md)` appended to the same line?",
+        "Does `### FR-CART-REMOVE` section's existing `- **Tasks:** [REF:task:2026-03-old-cart-remove-rework | old-cart-remove-rework]` bullet now have `, [REF:task:<YYYY>-<MM>-<new-slug> | <new-slug>]` appended to the same line in SALP form?",
       critical: true,
     },
     {

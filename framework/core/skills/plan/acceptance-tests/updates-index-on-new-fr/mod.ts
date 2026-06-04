@@ -48,13 +48,13 @@ Do NOT request changes to the plan structure or to file outputs.`;
     {
       id: "index_row_for_fr_pause",
       description:
-        "Read 'documents/index.md'. Does the FR section contain a row referencing FR-PAUSE in GFM-link form? Examples that PASS: '- [FR-PAUSE](requirements.md#fr-pause-...) — <summary> — [ ]', or any line that starts with '- ' and contains both the literal text 'FR-PAUSE' and a markdown link '(requirements.md#...)'. The summary text and exact anchor are not strict; presence of a row IS what matters.",
+        "Read 'documents/index.md'. Does the FR section contain a row referencing FR-PAUSE in SALP form? Examples that PASS: '- [REF:fr:pause | FR-PAUSE] — <summary> — [ ]', or any line that starts with '- ' and contains both the literal text 'FR-PAUSE' and a SALP REF '[REF:fr:pause...]'. The summary text and exact display are not strict; presence of a SALP-form row IS what matters.",
       critical: true,
     },
     {
-      id: "index_row_uses_gfm_link",
+      id: "index_row_uses_salp_ref",
       description:
-        "Read the FR-PAUSE row in 'documents/index.md'. Does it use a standard markdown link of the form '[<text>](<path>#<anchor>)' pointing into 'requirements.md' (i.e. follows the project's Interconnectedness Principle — GFM links, not bare IDs or wikilinks)?",
+        "Read the FR-PAUSE row in 'documents/index.md'. Does it use SALP grammar of the form '[REF:fr:<id>]' or '[REF:fr:<id> | <display>]' (i.e. follows the project's Interconnectedness Principle — SALP REFs, not GFM-form links, bare IDs, or wikilinks)?",
       critical: true,
     },
     {

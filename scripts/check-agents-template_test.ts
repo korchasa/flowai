@@ -1,9 +1,11 @@
 /**
  * Validates that framework/core/assets/AGENTS.template.md declares the
- * Interconnectedness Principle (FR-DOC-LINKS) — the abstract rule that
- * cross-references in BOTH docs and code use standard GFM markdown links
- * with relative paths and heading anchors. Slug-style identifiers in code
- * comments (`// FR-XXX`) and custom anchor mechanisms are explicitly rejected.
+ * Interconnectedness Principle under SALP ([REF:fr:doc-anchors | FR-DOC-ANCHORS])
+ * — the abstract rule that cross-references in BOTH docs and code use the
+ * SALP `[ANC:ns:id]` / `[REF:ns:id | display]` grammar with namespace
+ * disambiguation. GFM-form cross-references, wikilinks, salp-short, and bare
+ * ID-string code comments (`// FR-XXX`) are explicitly rejected. A downstream
+ * migration path is documented for projects initialised pre-SALP.
  */
 import { assert, assertStringIncludes } from "@std/assert";
 
@@ -18,39 +20,82 @@ Deno.test("AGENTS.template.md — declares Interconnectedness Principle section"
   assertStringIncludes(content, "## Interconnectedness Principle");
 });
 
-Deno.test("AGENTS.template.md — declares GFM-link convention with concrete example", async () => {
+Deno.test("AGENTS.template.md — mandates SALP anchor syntax with concrete example", async () => {
   const content = await readTemplate();
-  // The principle MUST show the canonical GFM-link form: `[text](path.md#anchor)`.
-  // Pattern matches: `[<anything>](<anything>.md#<anything>)`.
-  const gfmLinkRe = /\[[^\]]+\]\([^)]+\.md#[^)]+\)/;
+  // The principle MUST show the canonical SALP form `[ANC:<ns>:<id>]`
+  // and `[REF:<ns>:<id> | <display>]` as the only allowed cross-reference
+  // grammar. Pattern matches both tokens.
+  const ancRe = /\[ANC:[a-z][a-z0-9-]*:[a-z0-9][a-z0-9.-]*\]/;
+  const refRe = /\[REF:[a-z][a-z0-9-]*:[a-z0-9][a-z0-9.-]*/;
   assert(
-    gfmLinkRe.test(content),
-    "Template missing concrete GFM-link example `[text](path.md#anchor)`",
+    ancRe.test(content),
+    "Template missing concrete SALP ANC example `[ANC:ns:id]`",
+  );
+  assert(
+    refRe.test(content),
+    "Template missing concrete SALP REF example `[REF:ns:id | display]`",
   );
 });
 
-Deno.test("AGENTS.template.md — applies GFM-link rule to BOTH docs and code (not docs-only)", async () => {
+Deno.test("AGENTS.template.md — declares SALP namespace allowlist", async () => {
   const content = await readTemplate();
-  // The rule MUST cover code references explicitly. Either by saying "in code
-  // and in docs", or by explicitly inverting the legacy `// FR-<ID>` form.
-  // We accept either phrasing.
+  // The allowlist MUST enumerate the seed namespaces so downstream users
+  // know what `<ns>` values the validator accepts.
+  const allowlist =
+    /(allowlist|allowed|namespace)[^\n]{0,300}fr[^\n]{0,200}sds[^\n]{0,200}task/i;
+  assert(
+    allowlist.test(content),
+    "Template does not declare the SALP namespace allowlist (fr, sds, task, mx-*)",
+  );
+});
+
+Deno.test("AGENTS.template.md — applies SALP rule to BOTH docs and code (not docs-only)", async () => {
+  const content = await readTemplate();
+  // The rule MUST state SALP applies to code references too — either via
+  // an explicit "in code too" clause OR by giving a `// [REF:...]` example.
   const coversCode =
-    /code[^\n]{0,60}(GFM|markdown link|standard link)|in code and in docs|both code and docs|in code or in docs|even in code|even from code/i;
+    /(applies\s+in\s+code|in code and in docs|both code and docs|even in code|even from code|`\/\/\s*\[REF:)/i;
   assert(
     coversCode.test(content),
-    "Template's principle does not state that GFM-links apply to code as well as docs",
+    "Template's principle does not state that SALP applies to code as well as docs",
+  );
+});
+
+Deno.test("AGENTS.template.md — rejects GFM-form cross-references for FR/SDS targets", async () => {
+  const content = await readTemplate();
+  // The principle MUST explicitly mention that GFM-form cross-references
+  // (`[FR-X](path.md#…)`) are rejected by the validator.
+  const rejectsGfm =
+    /(reject|do\s+not|don't|no|forbidden|banned)[^\n]{0,200}(GFM-form|GFM-link|GFM\s+cross|`\[FR-)/i;
+  assert(
+    rejectsGfm.test(content),
+    "Template does not explicitly reject GFM-form cross-references",
   );
 });
 
 Deno.test("AGENTS.template.md — explicitly rejects ID-only / slug-style cross-reference syntax", async () => {
   const content = await readTemplate();
   // The principle MUST tell the agent NOT to invent shortcut syntaxes like
-  // `[FR-XXX]` or bare ID strings like `// FR-XXX` as cross-reference markers.
+  // `[FR-XXX]`, wikilinks `[[X]]`, salp-short `[ANC:id]`, or bare ID strings
+  // like `// FR-XXX` as cross-reference markers.
   const rejectsIdOnly =
-    /(do\s+not|don't|no)[^\n]{0,80}(ID-only|slug|bare ID|raw ID|`\/\/\s*FR|legacy|shortcut)/i;
+    /(do\s+not|don't|no|reject)[^\n]{0,200}(ID-only|slug|bare ID|raw ID|wikilink|salp-short|`\/\/\s*FR|legacy|shortcut)/i;
   assert(
     rejectsIdOnly.test(content),
-    "Template does not explicitly reject ID-only / slug-style cross-reference syntax",
+    "Template does not explicitly reject ID-only / wikilink / salp-short / bare-comment shortcuts",
+  );
+});
+
+Deno.test("AGENTS.template.md — declares downstream migration path from GFM to SALP", async () => {
+  const content = await readTemplate();
+  // Projects initialised pre-SALP need a documented one-shot conversion.
+  // The template MUST point at `scripts/migrate-to-salp.ts` and call out the
+  // `--write` invocation.
+  assertStringIncludes(content, "migrate-to-salp.ts");
+  const invokesWrite = /migrate-to-salp\.ts[^\n]{0,100}--write/;
+  assert(
+    invokesWrite.test(content),
+    "Template's migration section does not show the `--write` invocation",
   );
 });
 
