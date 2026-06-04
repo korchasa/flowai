@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.5](https://github.com/korchasa/flowai/compare/v0.13.4...v0.13.5) (2026-06-04)
+
+
+### Features
+
+* **framework:** add FR-ACCEPT.OPENCODE — OpenCode adapter requirement ([6f981d1](https://github.com/korchasa/flowai/commit/6f981d136f92daa7f5752bef9ea1a0d442bfa663))
+* **framework:** FR-ATOM-PUSH.CI-AWAIT — push atom awaits CI then invokes investigate on failure ([a7a81a1](https://github.com/korchasa/flowai/commit/a7a81a108c00e05bda8b3457656acd9945d5dadf))
+
+
+### Documentation
+
+* **index:** back-fill 62 FR rows from SRS; legitimize one-pass back-fill ([9c48d5e](https://github.com/korchasa/flowai/commit/9c48d5e9d6f19e8c60128ab3dcf6970057c53813))
+* **tasks:** drop legacy flowai- prefix from completed task files ([b25be83](https://github.com/korchasa/flowai/commit/b25be8382d63a5687a033bc2e15e77d0a26d9f70))
+
+
+### Code Refactoring
+
+* **acceptance-tests:** tighten optional-chaining and adapter symmetry ([8779557](https://github.com/korchasa/flowai/commit/87795573b3e8749cd1dda413d4f46864e51f1351))
+
+
+### Agent Changes
+
+* apply reflect-suggested improvements ([1029e53](https://github.com/korchasa/flowai/commit/1029e5376ba2fea3c17bd10554e72e90ca57cc67))
+
 ### [0.13.4](https://github.com/korchasa/flowai/compare/v0.13.3...v0.13.4) (2026-06-04)
 
 
