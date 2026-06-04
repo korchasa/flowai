@@ -425,8 +425,8 @@ the atom enforces the iteration cap by re-invoking.
 - **Status command:** `RID=$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId,status,conclusion); echo "$RID" | jq -e '.[0].status == "completed" and .[0].conclusion == "success"' >/dev/null && exit 0; echo "$RID" | jq -e '.[0].status == "completed"' >/dev/null && exit 1; exit 2`
 - **Logs command:** `gh run view --log-failed "$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
 - **Run URL command:** `gh run view --json url --jq .url "$(gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
-- **Poll interval:** 10 seconds — green builds here run `deno task check` and complete in ~20–30 s; a 60 s poll wastes a full cache window on a build that is already done.
-- **Wall-clock budget:** 60 seconds — anything longer is an anomaly (hanging job, queue starvation, runner outage). When the iteration cap (`ceil(budget / poll interval)` = 6) is exhausted without a terminal status, the push atom STOPs with a loud `CI ANOMALY` report (run URL + last-known status) instead of the silent timeout — treat a >60 s build as an incident worth manual investigation.
+- **Poll interval:** 15 seconds — green builds here run `deno task check` and complete in ~30–60 s; a 60 s poll wastes a full cache window on a build that may already be done.
+- **Wall-clock budget:** 180 seconds (3 minutes) — anything longer is an anomaly (hanging job, queue starvation, runner outage). When the iteration cap (`ceil(budget / poll interval)` = 12) is exhausted without a terminal status, the push atom STOPs with a loud `CI ANOMALY` report (run URL + last-known status) instead of the silent timeout — treat a >3 min build as an incident worth manual investigation.
 
 ## Code Documentation
 
