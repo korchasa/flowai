@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.7](https://github.com/korchasa/flowai/compare/v0.13.6...v0.13.7) (2026-06-04)
+
+
+### Features
+
+* **push-atom:** tunable CI await — Poll interval + Wall-clock budget ([f8a5edf](https://github.com/korchasa/flowai/commit/f8a5edf1f87fb61e7fcf9100290fb727cf7ca38e))
+
 ### [0.13.6](https://github.com/korchasa/flowai/compare/v0.13.5...v0.13.6) (2026-06-04)
 
 
