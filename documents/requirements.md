@@ -1131,7 +1131,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 ### FR-DOC-INDEX: Agent-Maintained Documentation Index [ANC:fr:doc-index]
 
-- **Description:** `plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write; never scaffolded by `init`.
+- **Description:** `plan` writes/updates a row in `documents/index.md` whenever it adds or modifies an FR section in SRS. Row format: `- [<NS>-<ID>](relative/path.md#anchor) — <one-line summary> — <status>`. File is grouped by namespace (FR / SDS / NFR), sorted by ID within each group. Created on first write by `plan`; never scaffolded by `init`. A `maintenance` back-fill MAY populate rows for pre-existing FR anchors in one pass (re-derives summary + status from SRS); subsequent edits remain `plan`'s responsibility.
 - **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Scenario:** Agent plans a task that introduces FR-XYZ → adds FR-XYZ section to SRS → appends `- [FR-XYZ](requirements.md#fr-xyz-...) — <summary> — [ ]` under `## FR` in `documents/index.md`. Subsequent status flip to `[x]` updates the same row.
 - **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`.
