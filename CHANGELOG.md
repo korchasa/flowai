@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.6](https://github.com/korchasa/flowai/compare/v0.13.5...v0.13.6) (2026-06-04)
+
+
+### Features
+
+* **maintenance:** FR-MAINT-SEVERITY — grade findings by Critical/High/Medium/Low ([f3b9c29](https://github.com/korchasa/flowai/commit/f3b9c29a26a9becc1516f22380469e8ef5fbacfd))
+
+
+### Bug Fixes
+
+* **task:** sync maintenance-severity-scoring status with DoD checkbox state ([08490ac](https://github.com/korchasa/flowai/commit/08490acf4faa1edfd5b84343cf182f9e88a0a7f7))
+
+
+### Code Refactoring
+
+* **acceptance-tests:** surface silent catches and fail-fast on missing framework ([8ea0148](https://github.com/korchasa/flowai/commit/8ea01483a5316b980b0d594409aed25975b8f34a))
+
+
+### Tests
+
+* **generate-composites:** cover validateCompositeCanon rejection paths ([50b9f14](https://github.com/korchasa/flowai/commit/50b9f145d9a8b13128b4616eeae0cf25b64e1dd1))
+
+
+### Agent Changes
+
+* **maintenance:** add Verify Findings gate to close subagent false-positive loop ([59bd938](https://github.com/korchasa/flowai/commit/59bd938840eeaa543a69154039a9f18f4e390397))
+
 ### [0.13.5](https://github.com/korchasa/flowai/compare/v0.13.4...v0.13.5) (2026-06-04)
 
 
