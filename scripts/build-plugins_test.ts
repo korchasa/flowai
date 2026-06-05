@@ -177,6 +177,8 @@ Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
     ) as Record<string, unknown>;
     assertEquals(manifest.name, "flowai");
     assertEquals(manifest.skills, "./skills/");
+    // core carries no hooks (the doc-anchors-validate Stop hook lives in the
+    // opt-in `beta` pack), so the manifest omits the hooks component.
     assertEquals(manifest.hooks, undefined);
     assertEquals(manifest.repository, "https://github.com/korchasa/flowai");
     assertEquals((manifest.author as Record<string, unknown>).name, "korchasa");
@@ -193,6 +195,78 @@ Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
         (manifest.interface as Record<string, unknown>).capabilities,
       ),
       "Codex manifest must declare user-visible capabilities",
+    );
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// Locks the pack move: the doc-anchors-validate Stop hook ships in the opt-in
+// `beta` pack (plugin `flowai-beta`), NOT in core.
+// [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]
+Deno.test("beta-pack ships-doc-anchors-stop-hook", async () => {
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["beta"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+
+    const hooks = await readJson(
+      join(out, "plugins", "flowai-beta", "hooks", "hooks.json"),
+    ) as {
+      hooks: Record<
+        string,
+        Array<{ hooks: Array<{ command: string; timeout?: number }> }>
+      >;
+    };
+    assert(
+      Array.isArray(hooks.hooks.Stop),
+      "beta must emit a Stop hook",
+    );
+    assertStringIncludes(
+      hooks.hooks.Stop[0].hooks[0].command,
+      "hooks/doc-anchors-validate/run.ts",
+    );
+
+    const runCopied = await Deno.stat(
+      join(
+        out,
+        "plugins",
+        "flowai-beta",
+        "hooks",
+        "doc-anchors-validate",
+        "run.ts",
+      ),
+    ).then(() => true).catch(() => false);
+    assert(runCopied, "beta plugin must copy the hook run.ts");
+
+    // Hook-only pack → Claude-only plugin: Claude manifest present, NO Codex
+    // manifest (Codex schema mandates a skills component the pack lacks).
+    const claudeManifest = await readJson(
+      join(
+        out,
+        "plugins",
+        "flowai-beta",
+        ".claude-plugin",
+        "plugin.json",
+      ),
+    ) as Record<string, unknown>;
+    assertEquals(claudeManifest.name, "flowai-beta");
+    const codexEmitted = await Deno.stat(
+      join(
+        out,
+        "plugins",
+        "flowai-beta",
+        ".codex-plugin",
+        "plugin.json",
+      ),
+    ).then(() => true).catch(() => false);
+    assertEquals(
+      codexEmitted,
+      false,
+      "hook-only pack must not emit a Codex manifest",
     );
   } finally {
     await Deno.remove(out, { recursive: true });
@@ -1054,6 +1128,64 @@ Deno.test("transforms-hook-yaml-into-hooks-json", async () => {
       join(out, "plugins", "flowai", "hooks", "my-hook", "run.ts"),
     );
     assert(runStat.isFile);
+  } finally {
+    await Deno.remove(fx, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// Contract lock for FR-HOOK-RESOURCES.FORMAT: `Stop` is a supported hook event.
+// emitHooks is event-agnostic (buckets by arbitrary `meta.event`), so a `Stop`
+// hook flows into hooks.json under a top-level `Stop` key with no special-casing.
+// This guards the plugin-bundle path against a future allowlist regression that
+// would silently drop Stop-triggered hooks (e.g. doc-anchors-validate).
+Deno.test("emits-stop-event-hooks-json", async () => {
+  const fx = await Deno.makeTempDir({ prefix: "flowai-hooks-stop-" });
+  const out = await tempOut();
+  try {
+    const pack = join(fx, "framework", "core");
+    await Deno.mkdir(join(pack, "hooks", "doc-anchors-validate"), {
+      recursive: true,
+    });
+    await Deno.writeTextFile(
+      join(fx, "deno.json"),
+      JSON.stringify({ version: "0.0.1" }),
+    );
+    await Deno.writeTextFile(
+      join(pack, "pack.yaml"),
+      'name: core\nversion: "1.0.0"\ndescription: t\n',
+    );
+    await Deno.writeTextFile(
+      join(pack, "hooks", "doc-anchors-validate", "hook.yaml"),
+      "event: Stop\ntimeout: 30\n",
+    );
+    await Deno.writeTextFile(
+      join(pack, "hooks", "doc-anchors-validate", "run.ts"),
+      'console.log("hi");\n',
+    );
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: join(fx, "framework"),
+      outDir: out,
+    });
+    const hooks = await readJson(
+      join(out, "plugins", "flowai", "hooks", "hooks.json"),
+    ) as {
+      hooks: Record<
+        string,
+        Array<{
+          matcher: string;
+          hooks: Array<{ type: string; command: string; timeout?: number }>;
+        }>
+      >;
+    };
+    assert(Array.isArray(hooks.hooks.Stop), "Stop bucket missing");
+    assertEquals(hooks.hooks.Stop[0].matcher, "");
+    assertStringIncludes(
+      hooks.hooks.Stop[0].hooks[0].command,
+      "${CLAUDE_PLUGIN_ROOT}/hooks/doc-anchors-validate/run.ts",
+    );
+    assertEquals(hooks.hooks.Stop[0].hooks[0].timeout, 30);
   } finally {
     await Deno.remove(fx, { recursive: true });
     await Deno.remove(out, { recursive: true });

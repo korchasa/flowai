@@ -37,6 +37,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
 export const DEFAULT_MARKETPLACE_NAME = "flowai-plugins";
 export const DEFAULT_PACKS = [
+  "beta",
   "core",
   "deno",
   "devtools",
@@ -136,6 +137,9 @@ export interface PluginPackArtifact {
   version: string;
   tags: string[];
   hasHooks: boolean;
+  /** False for hook-only packs (no commands/skills) → Claude-only plugin,
+   *  excluded from Codex outputs since the Codex schema mandates skills. */
+  hasSkills: boolean;
   license?: string;
 }
 
@@ -207,8 +211,11 @@ async function emitClaudeMarketplace(
 async function emitCodexMarketplace(
   outDir: string,
   marketplaceName: string,
-  artifacts: PluginPackArtifact[],
+  allArtifacts: PluginPackArtifact[],
 ): Promise<void> {
+  // Codex plugins require a skills component; hook-only (Claude-only) packs
+  // emit no Codex manifest, so they must not appear in the Codex marketplace.
+  const artifacts = allArtifacts.filter((a) => a.hasSkills);
   const plugins = artifacts.map((artifact) => ({
     name: artifact.pluginName,
     source: {
@@ -305,6 +312,11 @@ async function buildPack(
     sourceDir: join(ctx.packDir, "hooks"),
     outDir: join(pluginRoot, "hooks"),
   });
+  // emitPrimitives only creates the skills/ output dir when the pack actually
+  // has commands or skills; a hook-only pack (e.g. `beta`) has none, so
+  // the Codex manifest must omit the skills component (validate-plugins.ts
+  // rejects a declared-but-absent component path).
+  const hasSkills = await exists(join(pluginRoot, "skills"));
 
   const license = await readLicenseId(ctx.packDir).catch(() => undefined);
   await emitClaudePluginManifest(pluginRoot, {
@@ -313,14 +325,20 @@ async function buildPack(
     version: ctx.version,
     license,
   });
-  await emitCodexPluginManifest(pluginRoot, {
-    pluginName,
-    packName: ctx.packName,
-    description,
-    version: ctx.version,
-    license,
-    hasHooks,
-  });
+  // The Codex plugin schema mandates a `skills` component; a hook-only pack
+  // (e.g. `beta`) has none AND its hook is inert on Codex (no turn-end
+  // event), so it ships as a Claude-only plugin — no Codex manifest, and it is
+  // filtered out of the Codex marketplace below.
+  if (hasSkills) {
+    await emitCodexPluginManifest(pluginRoot, {
+      pluginName,
+      packName: ctx.packName,
+      description,
+      version: ctx.version,
+      license,
+      hasHooks,
+    });
+  }
 
   return {
     pluginName,
@@ -329,6 +347,7 @@ async function buildPack(
     version: ctx.version,
     tags: Array.from(collectedTags).sort().slice(0, MAX_TAGS_PER_PLUGIN),
     hasHooks,
+    hasSkills,
     license,
   };
 }

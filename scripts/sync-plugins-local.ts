@@ -659,10 +659,11 @@ async function syncCodex(absoluteOutDir: string): Promise<void> {
     absoluteOutDir,
   ]);
 
-  // Plugin names match across Claude/Codex catalogs; reading the Claude one
-  // avoids parsing the Codex source-shape twice.
+  // Read the CODEX marketplace specifically: Claude-only packs (hook-only, e.g.
+  // `beta`) appear in the Claude catalog but NOT the Codex one, so the
+  // two name sets diverge — installing a Codex-absent plugin would hard-fail.
   const marketplaceJson = await Deno.readTextFile(
-    join(absoluteOutDir, ".claude-plugin", "marketplace.json"),
+    join(absoluteOutDir, ".agents", "plugins", "marketplace.json"),
   );
   const emitted = readMarketplacePluginNames(marketplaceJson);
   for (const id of planCodexPluginAdds(emitted)) {

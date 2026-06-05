@@ -77,7 +77,7 @@ Framework primitives MAY declare `scope: project-only` or `scope: global-only` i
 
 ### Claude Code + Codex plugin marketplace
 
-In addition to the `flowai` CLI, Claude Code and Codex users can install any pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace. All six marketplace packs (`core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
+In addition to the `flowai` CLI, Claude Code and Codex users can install any pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace. All seven marketplace packs (`beta`, `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
 
 ```sh
 # Inside a Claude Code session:
@@ -89,6 +89,7 @@ In addition to the `flowai` CLI, Claude Code and Codex users can install any pac
 /plugin install flowai-engineering@flowai-plugins
 /plugin install flowai-devtools@flowai-plugins
 /plugin install flowai-memex@flowai-plugins
+/plugin install flowai-beta@flowai-plugins  # Claude Code only; opt-in doc-anchors hook
 /reload-plugins
 ```
 
@@ -102,12 +103,17 @@ codex plugin add flowai-typescript@flowai-plugins
 codex plugin add flowai-engineering@flowai-plugins
 codex plugin add flowai-devtools@flowai-plugins
 codex plugin add flowai-memex@flowai-plugins
+# flowai-beta ships the doc-anchors Stop hook, which is inert on Codex (no turn-end hook).
 # Start a new Codex thread to load newly installed plugins. Edit individual
 # `[plugins."<name>@flowai-plugins"]` tables in `~/.codex/config.toml` if you
 # want to disable specific packs.
 ```
 
-Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools` and `memex` are translated to Claude Code's `hooks.json` format automatically.
+Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
+
+> **`doc-anchors-validate` is Claude Code only, and ships in the opt-in `beta` pack** (`flowai-beta`) — install it deliberately; it is not bundled into core. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent to fix in-turn. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
+>
+> A consuming project that hits false positives on its own fixture/example layout (anything not matching flowai's built-in skip patterns) sets `FLOWAI_DOC_ANCHORS_SKIP` to a comma-separated list of path substrings to additionally skip, e.g. `FLOWAI_DOC_ANCHORS_SKIP=fixtures,examples/,vendor/`.
 
 Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`. Codex hook execution is feature-gated; enable `[features].plugin_hooks = true` in Codex before relying on plugin hooks.
 
@@ -284,6 +290,13 @@ TypeScript-specific setup skills.
 **Skills:**
 - `setup-agent-code-style-deno` — Deno/TS code style
 - `setup-agent-code-style-strict` — strict TypeScript
+
+### beta
+
+Opt-in beta capabilities not yet promoted to core. **Claude Code only.**
+
+**Hooks:**
+- `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent to fix in-turn. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Installation](#claude-code--codex-plugin-marketplace).
 
 ## CLI Commands
 
