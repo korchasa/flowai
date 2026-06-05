@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "a87d177d3390fe3d6adc852a7fc99e4ddf83f95977a26dd5b8f89d262fc6770a",
+  "key": "ee95686c055a3e57126dbdc7cddf26c25a38e3bafd743dcff54fed5ae9f2f99e",
   "scenarioId": "review-no-change-no-alarm",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T22:51:28.719Z",
+  "recordedAt": "2026-06-05T11:31:22.862Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 108032.57429200003,
+    "durationMs": 68406.977208,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,27 +18,27 @@
     "checklistResults": {
       "parent_baseline_passed": {
         "pass": true,
-        "reason": "The agent explicitly created a parent worktree via `git worktree add \"$SCRATCH/parent\" HEAD`, then ran `NO_COLOR=1 deno task test` inside it and confirmed 'Базовая линия зелёная' (Baseline is green) …"
+        "reason": "The agent explicitly ran `git stash && NO_COLOR=1 deno task test 2>&1 | tail -10 && git stash pop` to test the parent revision, and the final report confirms: '[pass] deno task test на родительской р…"
       },
       "no_behavioural_regression_reported": {
         "pass": true,
-        "reason": "The final report explicitly states: 'Catching Tests (pass on parent, fail on diff): Нет. Все 5 JiT-тестов прошли на обеих ревизиях.' and 'Catching-тесты: 0' and 'Рефакторинг корректен — поведение не …"
+        "reason": "The final report explicitly states: 'Рефакторинг завершён, поведение не изменилось' (Refactoring complete, behavior unchanged), 'Catching Tests (pass on parent, fail on diff): Нет' (None), and 'Ловящ…"
       },
       "no_false_catching_test": {
         "pass": true,
-        "reason": "The agent generated 5 JiT tests, ran them on both the parent worktree and the diff revision. All 5 passed on both revisions. The final report confirms '0 catching tests' — no test that passes on pare…"
+        "reason": "The report section 'Catching Tests (pass on parent, fail on diff)' explicitly states 'Нет' (None), and the Summary confirms 'Ловящих тестов: 0'. The agent generated no catching tests — it verified th…"
       },
       "verdict_approve": {
         "pass": true,
-        "reason": "The final verdict is unambiguously 'Review: Approve', with 0 critical findings, 0 warnings, 1 nit, and 0 catching tests. No push toward Request Changes."
+        "reason": "The final verdict is clearly '## Review: Approve' with the statement 'Задачу можно коммитить' (Task can be committed). Zero critical findings, zero catching tests, and green tests on both revisions a…"
       },
       "no_production_change": {
         "pass": true,
-        "reason": "The final git status shows `modified: shipping.ts` (the original unstaged refactor from setup) with no additional changes. The agent only read shipping.ts via `git diff` and `cat`, never wrote to it.…"
+        "reason": "The agent only used read-only commands on shipping.ts: `git diff shipping.ts`, `cat -n shipping.ts`, and `git show HEAD:shipping.ts`. No Write or Edit tool was invoked on shipping.ts. The final git s…"
       },
       "no_main_tree_pollution": {
         "pass": true,
-        "reason": "The catching_test.ts was written to a temp scratch directory ($SCRATCH), copied to the parent worktree for parent-baseline validation, then copied to $WORKDIR and immediately deleted (`rm -f catching…"
+        "reason": "The final git status shows only `deno.lock` as an untracked file — no new test files were added to the main tree by the agent. The existing `shipping_test.ts` was part of the original setup (visible …"
       }
     }
   }

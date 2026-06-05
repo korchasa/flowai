@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "930c894ccbae37a851f7b1f309b3582606d4e35196c84e2e88bb945ac682f9da",
+  "key": "feec2fba591e483d35466a4386dbac519fab4bb9e23543216e4e543487cc78c1",
   "scenarioId": "review-trigger-pos-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T22:52:06.625Z",
+  "recordedAt": "2026-06-05T11:02:10.556Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 22127.203207999934,
+    "durationMs": 22495.085083000013,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "The agent explicitly called the Skill tool with {\"skill\": \"review\"} as the first action in the trace. It then executed the review workflow by running git diff, git status, and git log commands — cons…"
+        "reason": "The agent explicitly called the Skill tool with {\"skill\": \"review\"} as its first action, then executed git diff/status commands and applied an Empty Diff Guard — behavior consistent with the review s…"
       }
     }
   }
