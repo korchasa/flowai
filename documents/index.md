@@ -70,6 +70,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:jit-review | FR-JIT-REVIEW] — JiT-subset of `review` atom: ephemeral Catching JiTTests (pass-on-parent / fail-on-diff) — [x]
 - [REF:fr:loop | FR-LOOP] — Launch Claude Code non-interactively with a prompt. Base automation primitive. flowai loop [OPTIONS] <prompt>. — [ ]
 - [REF:fr:maint | FR-MAINT] — Automated project maintenance via `deno task check` (composite gen, marketplace build/validate, lint, test) — [x]
+- [REF:fr:maint-scan | FR-MAINT-SCAN] — Parallel read-only scan delegation for maintenance (5 thematic category buckets → read-only workers; parent owns Verify + severity + HITL; inline fallback) — [ ]
 - [REF:fr:maint-severity | FR-MAINT-SEVERITY] — Severity scoring for maintenance findings (Critical/High/Medium/Low + rubric + summary tags + reply filters) — [ ]
 - [REF:fr:memex | FR-MEMEX] — Memex pack — [x]
 - [REF:fr:onboard | FR-ONBOARD] — The project's README.md must provide clear, actionable instructions for developers on when and how to use the availab... — [ ]

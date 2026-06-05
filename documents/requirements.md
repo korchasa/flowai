@@ -81,6 +81,21 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `AUTO_INSTALL_PLUGINS=true` (env or `.env`) gates an additional `sync-plugins-local` step inside `deno task check`; in this mode the build prerequisite also receives `--marketplace-name flowai-plugins-local` so the auto-installed catalog carries the dogfood name. Default check runs leave the catalog under the upstream name `flowai-plugins`.
     Evidence: `scripts/task-check_test.ts::buildCheckPlan: sync-plugins-local is gated by env flag`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins gets --marketplace-name flowai-plugins-local when syncPluginsLocal is on`, `scripts/task-check_test.ts::buildCheckPlan: build-plugins runs without --marketplace-name in default plan` + `scripts/sync-plugins-local_test.ts` (`autoInstallEnabled`).
 
+### FR-MAINT-SCAN: Parallel Read-Only Scan Delegation [ANC:fr:maint-scan]
+
+- **Description:** The `maintenance` Scan Phase MAY fan out its 16 audit categories — partitioned into 5 thematic, disjoint buckets ([references/scan-buckets.md](../framework/core/skills/maintenance/references/scan-buckets.md)) — to parallel read-only `maintenance-scan-worker` subagents, one per bucket, to cut main-thread context pollution and wall-clock. Workers return raw leads (no severity, no fixes, read-only at the tool layer). Delegation is OPTIONAL with an inline fallback: if subagents are unavailable or a worker fails / times out, the parent scans that bucket inline — no finding is lost. The Verify Findings gate, severity calibration, and the interactive Resolution loop stay PARENT-ONLY, run once over the consolidated union — never per worker. Phrasing is IDE-generic (`Task` / `Agent` / `Explore` / background task).
+- **Tasks:** [maintenance-parallel-scan-delegation](tasks/2026/06/maintenance-parallel-scan-delegation.md)
+- **Scope:**
+  - The 5 buckets partition categories 1–16 exactly once (disjoint, exhaustive): W1=1-4, W2=10/11/16, W3=12/13/14, W4=5/7/9, W5=6/8/15.
+  - The `maintenance-scan-worker` template is confined read-only at the tool layer (`disallowedTools` ⊇ {Write, Edit}, `readonly: true`, `mode: subagent`); it never assigns severity, applies fixes, or spawns sub-agents.
+  - Workers never read `severity-rubric.md` / `verification-gate.md` — those are parent-only post-consolidation.
+  - The per-category check detail (Cats 1–9) lives ONLY in `scan-buckets.md` (single source for both delegated workers and inline fallback); Cats 10–16 detail stays in `architectural-categories.md`. SKILL.md's Scan Phase carries only the orchestration step + a Cat→bucket index — no inline sub-check detail (no duplication).
+  - Existing maintenance behavior (findings, severity, summary, HITL Resolution) is unchanged — no regression.
+- **Acceptance (deterministic gate):** `deno test -A scripts/maintenance_scan_buckets_test.ts` — bucket partition (1–16 exactly once, disjoint) + worker read-only confinement. An LLM agent benchmark was rejected: the harness lets the model substitute a generic `Explore` subagent for the named agent, so a green verdict would not depend on the agent definition.
+  Evidence: `scripts/maintenance_scan_buckets_test.ts`.
+- **Acceptance verified by acceptance tests:** `maintenance-basic`, `maintenance-surfaces-severity-tags`, `maintenance-severity-calibration-no-inflation` (parity — no behavioral regression; deferred full sweep).
+- **Status:** [ ]
+
 ### FR-MAINT-SEVERITY: Severity Scoring for Maintenance Findings [ANC:fr:maint-severity]
 
 - **Description:** The `maintenance` skill must grade every finding it surfaces with one of four severity tiers (`Critical | High | Medium | Low`) calibrated by a per-category rubric. The Resolution Phase summary carries the tag inline (`- [N] [Severity] <site>: <problem>. (Fix: <fix>)`), the closing counter reports per-severity totals alongside per-category totals, and the "how to proceed" prompt accepts severity tokens (`critical`, `high`, `medium`, `low`) including plus-separated compounds (`critical+high`) as a filter on the resolution loop. The rubric lives in `framework/core/skills/maintenance/references/severity-rubric.md` and enforces an anti-inflation tie-breaker rule ("when in doubt, pick the lower tier"); the Verify Findings gate (SKILL.md Step 17.5) quotes the rubric anchor that justifies the chosen tier.
