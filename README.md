@@ -1,8 +1,8 @@
 # flowai
 
-An Assisted Engineering framework: the developer remains the architect and reviewer, while AI handles implementation under supervision.
+An Assisted Engineering framework: the human owns intent and decisions; AI implements the code **and reviews it**.
 
-The developer sets the task, approves the plan, and controls every diff.
+The developer initiates and reviews every decision above the level of individual classes/methods — business, architecture, key technical choices — without being required to read code. The agent reports upward in terms of requirements and the class/method structure it builds; diff-level review stays available but optional. The framework's purpose is to prevent **cognitive (mental) debt** — the silent erosion of the human's mental model when AI makes unsurfaced decisions.
 
 > **The flowai project spans four sibling GitHub repositories:**
 > - **this repo (`korchasa/flowai`)** — the framework: skills, commands, agents, packs.
@@ -12,32 +12,35 @@ The developer sets the task, approves the plan, and controls every diff.
 
 ## The Assisted Engineering Paradigm
 
-Assisted Engineering is a development model where the human retains full authority over architecture, design decisions, and final acceptance. AI acts as an executor — it writes code, runs checks, and proposes changes, but every meaningful action requires explicit developer approval.
+Assisted Engineering is a development model where the human retains full authority over **every decision above the level of individual classes/methods** — business, architecture, design, key technical choices, final acceptance — while delegating implementation *and code review* to AI. The human is not required to read code: the agent reports upward in terms of requirements and the class/method structure it produces. Decisions above the class/method line are always initiated by the human; below it, the human trusts AI execution plus AI code review.
+
+The model exists to prevent **cognitive (mental) debt** — the gap between what the system does and what the human understands it to do, which accrues silently whenever AI makes a decision the human never reviewed at any level.
 
 **Division of responsibility:**
 
-- **Developer (Architect + Reviewer)**
-  - Defines goals and constraints
-  - Reviews and approves plans before implementation
-  - Inspects every diff before commit
-  - Makes architectural decisions
-  - Accepts or rejects results
+- **Developer (Intent owner: Architect + Decision-maker)**
+  - Defines goals, constraints, and product decisions
+  - Initiates every decision above class/method level
+  - Reviews and approves plans and architecture
+  - Reviews the agent's class/method-level narration (not the code)
+  - Accepts or rejects results by behavior
 
-- **AI Agent (Executor)**
+- **AI Agent (Executor + Code reviewer)**
   - Analyzes the codebase and gathers context
   - Proposes implementation plans
-  - Writes code following approved plan
-  - Runs tests and verification
-  - Prepares atomic commits for review
+  - Writes code following approved decisions
+  - **Reviews its own code** and runs verification
+  - Surfaces every above-class/method decision upward for approval
+  - Narrates changes in class/method terms; keeps decision & architecture docs current
 
 **Control flow:**
 
 ```
-Developer: sets task
-    → AI: proposes plan
-        → Developer: reviews plan, approves or adjusts
-            → AI: implements step by step
-                → Developer: reviews each diff
+Developer: sets task, decides direction
+    → AI: proposes plan + surfaces decisions above class/method level
+        → Developer: reviews plan/architecture, approves or adjusts
+            → AI: implements + reviews its own code, narrating in class/method terms
+                → Developer: reviews the narration (diff optional)
                     → AI: commits approved changes
 ```
 
@@ -172,7 +175,7 @@ flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruc
 
 Both commands and skills install into `.{ide}/skills/`. The only IDE-visible difference is a `disable-model-invocation: true` flag on commands, added automatically by the CLI writer based on the source directory.
 
-AI models lose context between sessions. flowai compensates by storing all decisions, requirements, and architecture in structured docs that the agent reads at the start of every session.
+AI models lose context between sessions, and unsurfaced AI decisions erode the human's mental model (cognitive debt). flowai compensates by storing all decisions, requirements, and architecture in structured docs that the agent reads at the start of every session — and by surfacing every above-class/method decision to the human as work proceeds.
 
 ### Product vs. Development Tooling
 
@@ -357,9 +360,9 @@ Every task follows the same supervised loop:
 
 1. **Task** — describe what needs to be done
 2. **Plan** (`plan`) — AI proposes a plan in GODS format. You review, adjust, approve
-3. **Execute** — AI implements the approved plan. You watch the diffs
+3. **Execute** — AI implements the approved plan, narrating in class/method terms. You read the narration; diffs are optional
 4. **Verify** — `deno task check` (or your project's equivalent) must pass. No exceptions
-5. **Review & Commit** (`review-and-commit`) — AI reviews changes, then prepares atomic commits. You review before push
+5. **Review & Commit** (`review-and-commit`) — AI reviews its own code, then prepares atomic commits. You confirm the decision-level summary before push
 
 ### 3. Maintenance
 
@@ -368,7 +371,7 @@ Every task follows the same supervised loop:
 
 ## Key Principles
 
-1. **Developer controls, AI executes** — no autonomous commits, no unsupervised architectural changes
+1. **Human owns decisions, AI executes & reviews code** — no autonomous decisions above class/method level; AI reviews its own code, the human reviews decisions (not diffs). Prevents cognitive debt
 2. **Explicit workflows** — every task type has a defined skill with clear steps
 3. **Persistent memory** — documentation in `documents/` bridges the gap between sessions
 4. **Single verification gate** — `deno task check` is the source of truth for project health

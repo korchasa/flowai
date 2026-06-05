@@ -33,7 +33,7 @@
 ## Project Vision
 ### Vision Statement
 
-Assisted Engineering framework: the developer stays architect/reviewer; the AI executes under supervision. Delivered as AI skills and agents standardizing work across software development contexts and AI IDEs.
+Assisted Engineering framework: the human owns intent. The human initiates and reviews every decision **above the level of individual classes/methods** — business decisions, architecture, key technical choices. The AI executes AND reviews the code itself; the human is NOT required to read code. The agent communicates *upward* — in terms of requirements, product decisions, AND the class/method structure it produces — without forcing the human into implementation detail. Diff-level review stays available but optional: the human may inspect any diff, yet it is not a mandatory barrier. Delivered as AI skills and agents standardizing work across software development contexts and AI IDEs.
 
 ### Target Audience
 
@@ -41,15 +41,19 @@ Developers using AI-first IDEs (Cursor, Claude Code, OpenCode, OpenAI Codex)
 
 ### Problem Statement
 
-AI models have a limited context window and lose information between chat sessions, leading to inconsistent development practices.
+Two compounding problems. (1) AI models have a limited context window and lose information between chat sessions, leading to inconsistent development practices. (2) **Cognitive (mental) debt**: delegating implementation to AI erodes the human's mental model of the system — the agent makes unsurfaced sub-decisions until the human can no longer steer architecture or accept results with confidence. Debt accrues silently and, like tech debt, compounds.
 
 ### Solution & Differentiators
 
-Uses explicit workflows (skills), rigid verification (deno task check), and persistent memory through comprehensive documentation to maintain context and quality.
+Explicit workflows (skills), rigid verification (`deno task check`), and persistent memory via comprehensive documentation. Against cognitive debt specifically: the agent (a) surfaces every decision above class/method level to the human for initiation/approval, (b) narrates work in class/method terms rather than diffs, and (c) keeps decision & architecture docs current as a blocking gate — so the human retains the mental model without reading code.
 
 ### Risks & Assumptions
 
-Assumes users will follow the defined workflows and keep documentation up-to-date.
+Assumes users follow the workflows and keep documentation current. Assumes the agent's class/method-level narration is faithful — a dishonest or shallow upward summary silently re-accrues cognitive debt, defeating the model.
+
+### Definitions
+
+- **Cognitive (mental) debt:** the gap between what the system actually does and what the human understands it to do, accumulated when AI makes implementation decisions the human never reviewed at any level. The framework targets *zero debt above class/method granularity* — below that line the human trusts AI execution + AI code review.
 
 ## Project tooling Stack
 - TypeScript
