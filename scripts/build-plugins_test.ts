@@ -832,6 +832,18 @@ Deno.test("copies-pack-assets-into-consuming-skill-dirs", async () => {
     );
     const skillText = await Deno.readTextFile(join(skillDir, "SKILL.md"));
     assertStringIncludes(skillText, "assets/AGENTS.template.md");
+
+    // adapt resolves the template from the same skill-local plugin asset path,
+    // so it must likewise receive an inlined copy (plugin-install fix).
+    const adaptDir = join(out, "plugins", "flowai", "skills", "adapt");
+    const adaptAsset = join(adaptDir, "assets", "AGENTS.template.md");
+    const adaptStat = await Deno.stat(adaptAsset);
+    assert(
+      adaptStat.isFile,
+      "AGENTS.template.md not copied into adapt/assets/",
+    );
+    const adaptText = await Deno.readTextFile(join(adaptDir, "SKILL.md"));
+    assertStringIncludes(adaptText, "assets/AGENTS.template.md");
   } finally {
     await Deno.remove(out, { recursive: true });
   }

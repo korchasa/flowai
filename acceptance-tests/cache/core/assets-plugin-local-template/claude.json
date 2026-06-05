@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "d79fbb75b469dfaf617ab86dc9e53068e2f7b28c28040acb2f434eb8f8eb5b1d",
+  "scenarioId": "assets-plugin-local-template",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-05T20:27:55.519Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 44413.850249999996,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "located_skill_local_template": {
+        "pass": true,
+        "reason": "The agent explicitly searched for and read the template from the skill-local path. The logs show: (1) a `find` command targeting `.claude/skills/adapt/assets/AGENTS.template.md`, (2) a Read tool call…"
+      },
+      "detected_missing_framework_rule": {
+        "pass": true,
+        "reason": "The agent correctly identified the missing rule. The skill-local template contains '- Surface every decision above class/method level to the human for approval.' but AGENTS.md only has 'Follow your a…"
+      },
+      "ignored_placeholders": {
+        "pass": true,
+        "reason": "The agent explicitly acknowledged that placeholder replacements are expected and not differences to flag. It stated: 'Плейсхолдеры заменены корректно ({{PROJECT_NAME}} → AcmeApp, {{TOOLING_STACK}} → …"
+      },
+      "asked_confirmation": {
+        "pass": true,
+        "reason": "The agent used the AskUserQuestion tool with a structured question presenting two options: 'Принять' (accept, to add the missing framework rule) and 'Пропустить' (skip, leave AGENTS.md unchanged). Th…"
+      }
+    }
+  }
+}

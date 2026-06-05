@@ -17,6 +17,8 @@ flowai may install generic framework primitives into the project with default ex
 
 Plugin-installed and user-level primitives are read-only for this command. If flowai is installed through an IDE plugin or a global/user config directory, do not rewrite those files. Report that no project-local primitives are available unless the user asks to create a local copy.
 
+The AGENTS template (`AGENTS.template.md`) is a read-only framework source whose location depends on install mode: a skill-local plugin asset (`.{ide}/skills/adapt/assets/AGENTS.template.md`) for plugin/user installs, a project-local copy (`.{ide}/assets/AGENTS.template.md`) for CLI `flowai sync`, or a user-level copy. Read it wherever found; never edit it.
+
 Adaptation state is tracked through git history — no extra metadata fields needed. The working tree contains the current version; `git show HEAD:<path>` provides the previous adapted version for 3-way merge.
 
 Two subagents handle the actual adaptation work:
@@ -100,8 +102,27 @@ Two subagents handle the actual adaptation work:
    - If `pack.yaml` is unavailable, use default mapping:
      - `AGENTS.template.md` -> `AGENTS.md`
    - If the project still has `documents/AGENTS.md` or `scripts/AGENTS.md`, defer to `update` or `init` to run the legacy-collapse procedure — do NOT handle collapse here.
+   - **Locate the template source** (install modes differ — do not assume `{ide}/assets/`). Check these in order and use the first that exists:
+     - Skill-local plugin asset (most accurate for plugin/user-level installs — the template was copied next to this command):
+       - `.claude/skills/adapt/assets/AGENTS.template.md`
+       - `.cursor/skills/adapt/assets/AGENTS.template.md`
+       - `.opencode/skills/adapt/assets/AGENTS.template.md`
+       - `.codex/skills/adapt/assets/AGENTS.template.md`
+       - namespace-stripped plugin paths such as `*/skills/adapt/assets/AGENTS.template.md` when visible in the project.
+     - Project-local asset copy (CLI `flowai sync` layout):
+       - `.claude/assets/AGENTS.template.md`
+       - `.cursor/assets/AGENTS.template.md`
+       - `.opencode/assets/AGENTS.template.md`
+       - `.codex/assets/AGENTS.template.md`
+     - User-level asset:
+       - `~/.claude/assets/AGENTS.template.md`
+       - `~/.cursor/assets/AGENTS.template.md`
+       - `~/.config/opencode/assets/AGENTS.template.md`
+       - `~/.codex/assets/AGENTS.template.md`
+     - If a skill-local plugin asset exists, treat it as authoritative for this run; report any differing same-tier templates as secondary/stale rather than switching by modified time.
+     - If none exist, report that `AGENTS.template.md` was not found (install flowai via plugin manager or flowai CLI, then rerun) and skip artifact verification — do NOT fabricate template content.
    - For each template -> artifact pair:
-     a. Read the framework template from `{ide}/assets/`.
+     a. Read the framework template from the resolved source above.
      b. Read the project artifact.
      c. Compare using `git diff --no-index -- <template> <artifact>`.
      d. Ignore `{{PLACEHOLDER}}` sections in the diff.

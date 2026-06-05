@@ -879,7 +879,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Description:** On-demand adaptation of project-local flowai primitives (skills, agents, AGENTS.md artifact, hooks) to project specifics — independent of `update`. Plugin-installed and user-level primitives are read-only and skipped. Uses `skill-adapter` subagent for skills and `agent-adapter` subagent for agents. Supports filtering by type (`--skills`, `--agents`, `--assets`, `--hooks`) and by name.
 - **Tasks:** [simplify-update-boundaries](tasks/2026/05/simplify-update-boundaries.md), [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
 - **Use case scenario:** Developer installs flowai on a Python project. All skills contain generic Deno examples. Runs `/adapt` to adapt all primitives to Python/pytest/ruff. Can also run `/adapt --skills commit` to adapt a single skill.
-- **Acceptance verified by acceptance tests:** `adapt-skills-basic`, `adapt-agents-basic`
+- **Acceptance verified by acceptance tests:** `adapt-skills-basic`, `adapt-agents-basic`, `assets-plugin-local-template`
 
 #### FR-ADAPT.SKILLS Skill Adaptation [ANC:fr:adapt.skills]
 
@@ -901,9 +901,11 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 #### FR-ADAPT.ASSETS AGENTS.md Artifact Verification [ANC:fr:adapt.assets]
 
-- **Desc:** Compares pack-level templates (`{ide}/assets/`) with project artifacts (AGENTS.md), proposes updates for outdated framework sections.
+- **Desc:** Compares the AGENTS template with project artifacts (AGENTS.md) and proposes updates for outdated framework sections. The template location depends on install mode and MUST be resolved in priority order: skill-local plugin asset (`.{ide}/skills/adapt/assets/AGENTS.template.md`, for plugin/user installs) → project-local copy (`.{ide}/assets/AGENTS.template.md`, for CLI `flowai sync`) → user-level copy. The SKILL.md references the template as `assets/AGENTS.template.md` so `build-plugins` inlines it into the adapt skill dir; reading only `{ide}/assets/` fails in plugin installs.
 - **Acceptance:**
   - [ ] Reads asset mapping from `pack.yaml` or uses default mapping.
+  - [x] Resolves the template from the skill-local plugin asset path when `.{ide}/assets/` is absent (plugin-install layout). Verified by acceptance test `assets-plugin-local-template`.
+  - [x] `build-plugins` inlines `AGENTS.template.md` into `skills/adapt/assets/`. Evidence: `deno test -A scripts/build-plugins_test.ts --filter copies-pack-assets`.
   - [ ] Compares template vs artifact using `git diff --no-index`.
   - [ ] Proposes updates for outdated framework-originated sections.
 
