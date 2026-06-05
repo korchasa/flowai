@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.9](https://github.com/korchasa/flowai/compare/v0.13.8...v0.13.9) (2026-06-05)
+
+
+### Features
+
+* **core:** decision-level engagement — human reviews decisions, AI owns code ([188b503](https://github.com/korchasa/flowai/commit/188b503305731e71938a56f168078b72225a7feb))
+
+
+### Chores
+
+* **acceptance:** refresh verdict cache after review/implement atom reframe ([631d9f4](https://github.com/korchasa/flowai/commit/631d9f40369940c91a41b3abcdd86fd1ee1e389c))
+
+
+### Documentation
+
+* **vision:** decision-level engagement + cognitive-debt framing ([a9eb182](https://github.com/korchasa/flowai/commit/a9eb18211793bce47df7960021b258eb21c5327b))
+
 ### [0.13.8](https://github.com/korchasa/flowai/compare/v0.13.7...v0.13.8) (2026-06-04)
 
 
