@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.10](https://github.com/korchasa/flowai/compare/v0.13.9...v0.13.10) (2026-06-05)
+
+
+### Features
+
+* **beta:** doc-anchors-validate Stop hook as opt-in Claude-only pack ([5a84e46](https://github.com/korchasa/flowai/commit/5a84e4643894f9254c3c27316970102483bfe60c))
+* **maintenance:** parallel read-only scan delegation (FR-MAINT-SCAN) ([d28b590](https://github.com/korchasa/flowai/commit/d28b590f7345fae07cbdc527156f4dc3876400cc))
+
+
+### Bug Fixes
+
+* **adapt:** resolve AGENTS template across install modes ([b4020f6](https://github.com/korchasa/flowai/commit/b4020f652f331b5152d28ebe3b128e9debcbc13c))
+
 ### [0.13.9](https://github.com/korchasa/flowai/compare/v0.13.8...v0.13.9) (2026-06-05)
 
 

@@ -1,5 +1,5 @@
 {
-  "version": "0.13.9",
+  "version": "0.13.10",
   "license": "MIT",
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0",
