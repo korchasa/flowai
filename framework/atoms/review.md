@@ -54,14 +54,11 @@ Input sources:
    improvement.
 7. **Output**: Final verdict is **Approve**, **Request Changes**, or
    **Needs Discussion** with actionable items.
-8. **Session Scope**: Compare current `git status` with the git status snapshot
-   from session start (available in system context). By default, files already
-   modified/untracked at session start are outside the review scope — note them
-   in the report but do not review their content. **Exception**: if the user's
-   request explicitly refers to a specific file, function, or feature (e.g.
-   "review the login function", "look at processor.ts", "the new sum function"),
-   include it in the review even if it predates the session. Focus on session
-   changes plus any explicitly requested files.
+8. **Session Scope**: review session changes only — compare current `git status`
+   to the session-start snapshot; files modified/untracked before the session are
+   out of scope (note them, don't review their content). **Exception**: if the
+   user names a specific file/function/feature (e.g. "review the login function"),
+   review it even if it predates the session.
 9. **Catching tests = `[critical]` findings**, processed by the same verdict
    gate as every other critical. No second gate for the JiT subset.
 10. **JiT graceful degradation**: the JiT subset disables itself silently when
@@ -75,6 +72,11 @@ Input sources:
     `discard`; session-id MUST be unique so parallel reviews do not collide.
 12. **JiT subset never edits production code**: report risks; the author
     fixes. Catching tests stay in scratch until user `save`.
+13. **Decision-level verdict, optional diff (Model B)**: LEAD the report with a
+    plain-language verdict the human accepts WITHOUT reading the diff; offer the
+    diff for optional inspection; never block on the human reading code. Delegate
+    heavy diff reading to a diff-analysis subagent (e.g. `diff-specialist`) where
+    the IDE supports it; else read inline.
 </rules>
 
 ## Instructions
@@ -166,18 +168,13 @@ Input sources:
    - Check for regressions: do changed files break existing functionality?
 
 4a. **FR Coverage Audit** _(blocking gate — see Requirements Lifecycle in AGENTS.md)_
-   - **Identify FRs in scope**: (a) FR-* codes from the task file's `implements:` frontmatter; (b) any FR section added or modified in the diff to the resolved `SRS`; (c) any `// [REF:fr:<id>]` / `# [REF:fr:<id>]` SALP markers introduced or touched in the diff.
-   - **For each FR in scope**:
-     1. SRS section MUST contain `**Acceptance:**` with a runnable reference (test `path::name`, benchmark id, verification command, or `manual — <reviewer>`). Missing or placeholder (`<TBD>`, `TODO`) → `[critical] FR-<ID> has no acceptance reference`.
-     2. Run the evidence command (or `deno run -A scripts/check-fr-coverage.ts FR-<ID>` if the script exists). Non-zero exit, failing test, or `manual` without a reviewer name → `[critical] FR-<ID> acceptance fails`.
-     3. Grep the diff for `// [REF:fr:<id>]` / `# [REF:fr:<id>]` in implementing source files. FR claimed implemented in diff but no SALP marker in changed source → `[critical] FR-<ID> missing code marker`.
-     4. Task DoD has `[x]` paired with this FR but no evidence-command run in this session and no cached pass → `[critical] Phantom completion on FR-<ID>`.
-   - **Gate**: findings here are blocking. Verdict cannot be `Approve` while any FR-gate issue remains, regardless of other findings.
+   - **FRs in scope**: (a) FR-* in the task file's `implements:`; (b) FR sections added/modified in the diff to `SRS`; (c) `[REF:fr:<id>]` SALP markers touched in the diff.
+   - **Per FR**: (1) SRS has `**Acceptance:**` with a runnable ref (test `path::name`, benchmark id, command, or `manual — <reviewer>`); missing/placeholder → `[critical] no acceptance reference`. (2) Run the evidence command (or `deno run -A scripts/check-fr-coverage.ts FR-<ID>`); non-zero / failing / `manual` without reviewer → `[critical] acceptance fails`. (3) FR claimed implemented but no `[REF:fr:<id>]` marker in changed source → `[critical] missing code marker`. (4) DoD `[x]` with no evidence run/cached pass → `[critical] Phantom completion`.
+   - **Gate**: blocking — verdict cannot be `Approve` while any FR-gate issue remains.
 
-5. **QA: Hygiene** _(use SA2 result if available; otherwise run inline)_
-   - If SA2 completed: review its findings, deduplicate with own Code Review
-     findings, and merge into the report.
-   - If SA2 failed/timed out or skipped (small diff): perform inline:
+5. **QA: Hygiene** _(use SA2 result if available; else inline)_
+   - SA2 done → dedupe its findings with own Code Review findings and merge.
+   - SA2 failed/timed out or skipped (small diff) → perform inline:
    - **Temp artifacts**: New `temp_*`, `*.tmp`, `*.bak`, debug `console.log`/
      `print` statements, hardcoded secrets or localhost URLs.
    - **Unfinished markers**: New `TODO`, `FIXME`, `HACK`, `XXX` introduced in
@@ -264,11 +261,10 @@ Input sources:
         same input.
      3. **Zero-kill** — passed on parent, passed on diff, killed no mutant.
 
-9. **Run Automated Checks** _(collect results from step 2 and/or SA1)_
-   - If pre-flight check (step 2a) already ran: use its result. Do NOT re-run.
-   - If SA1 completed with a different/broader check: merge its results.
-   - If neither ran (no check command found): explicitly note "No automated
-     checks configured" in the report — do not silently skip.
+9. **Run Automated Checks** _(collect from step 2 and/or SA1)_
+   - Pre-flight 2a ran → use its result, do NOT re-run. SA1 broader check → merge.
+   - Neither ran (no check command) → note "No automated checks configured" in
+     the report; do not silently skip.
 
 10. **Final Report** — verdict on first line. Include JiT sections (`Intents`,
    `Catching Tests`, `Uncovered Risks`, `Degradation Notes`) only when the
@@ -277,6 +273,7 @@ Input sources:
 
    ```
    ## Review: [Approve | Request Changes | Needs Discussion]
+   ### Verdict (plain language) — 2–4 sentences a non-coder acts on: task complete? design sound? key risks? next step? Accept WITHOUT reading the diff. MUST come first.
    ### Intents (≤5)
    ### QA Findings — [severity] file:line — description
    ### Code Review Findings — [severity] file:line — description
@@ -285,14 +282,14 @@ Input sources:
    ### Automated Checks — [pass|fail|skipped] command — summary
    ### Degradation Notes — which JiT step was skipped and why
    ### Summary — requirements X/Y; catching tests N; critical/warning/nit counts
+   ### Diff (optional) — offer diff/details for optional inspection; verdict stands without it; never block (Model B). MUST close the report.
    ```
 
    ≥1 surviving catching test → verdict = `Request Changes` regardless of
-   other findings. Ranking: top-5 by `severity × uniqueness` (severity =
-   plausibility × impact; uniqueness = how many catching tests assert a
-   distinct symptom). No issues AND zero catching tests → "Changes look
-   good. All requirements covered, no issues found, no behavioural
-   regressions detected." (third clause only when JiT actually ran).
+   other findings. Rank findings top-5 by `severity × uniqueness`. No issues
+   AND zero catching tests → "Changes look good. All requirements covered, no
+   issues found, no behavioural regressions detected." (last clause only when
+   JiT actually ran).
 
 11. **Ephemeral Dispose (JiT)** _(skip when no catching tests exist)_ —
    prompt: `save <name>` / `save all` / `discard all`. On `save`: propose
@@ -322,6 +319,7 @@ Input sources:
 [ ] Automated checks executed (or explicitly noted as missing).
 [ ] Structured report produced with severity-tagged findings.
 [ ] Verdict on the first line of the report; catching tests pushed verdict to Request Changes when present.
+[ ] Report leads with a plain-language decision-level verdict and closes by offering diff inspection as optional/non-blocking (Model B) — acceptable without reading code.
 [ ] Save / discard prompt issued whenever catching tests existed; scratch dir deleted on `discard`.
 [ ] Degradation Notes section present whenever the JiT subset was disabled, partially skipped, or mutant-probe was bypassed.
 </verification>

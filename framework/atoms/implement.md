@@ -31,6 +31,7 @@ The user has already produced a plan. The plan file is resolved through the `tas
 6. **Stop on second-fix-failure**: per AGENTS.md "Diagnosing Failures", emit a STOP-ANALYSIS REPORT after a second failed fix attempt on the same root cause and STOP — do not keep iterating.
 7. **Planning**: use a task management tool (e.g. `todo_write`, `todowrite`, `Task`) to track the Solution's steps and each RED/GREEN/REFACTOR/CHECK iteration.
 8. **No-op handling**: if re-reading the plan and examining the codebase shows the requested feature is already satisfied, STOP without making any source-code changes and surface "Solution turns out to be a no-op — nothing to implement."
+9. **Decision gate (above class/method)**: if a Solution step surfaces a decision ABOVE the class/method line that the approved plan has NOT already settled — a business rule, an architectural choice, a public interface or data shape, a new dependency, a key technical trade-off — STOP, surface it to the human as options + trade-offs + a recommendation, and WAIT for their call before writing that code. Do NOT self-select a default and proceed. Choices at or below class/method granularity (local naming, private helpers, test layout) are yours to make without asking. The human's gate is the decision, never the diff.
 </rules>
 
 ## Instructions
@@ -78,16 +79,18 @@ The user has already produced a plan. The plan file is resolved through the `tas
 - [ ] `git status` is non-empty AND every changed file maps to a Solution bullet.
 - [ ] Out-of-scope findings surfaced separately and NOT folded into this work.
 - [ ] STOP-ANALYSIS REPORT emitted on second-fix-failure (if any).
+- [ ] Final summary narrates requirements + class/method structure (names, responsibilities, relationships) in prose; the human can accept WITHOUT reading code, and the diff is framed as optional.
+- [ ] Every above-class/method decision was surfaced to the human and approved before coding (or none arose); none was silently self-selected.
 </verification>
 
 <param-branch name="TERMINATION" value="TOTAL_STOP">
 6. **TOTAL STOP**
-   - Report: Solution steps completed, final check result, files changed (one bullet per file).
+   - Narrate the result UPWARD, not as a diff. Report: (a) which requirements / Solution steps are now satisfied; (b) the class/method structure you produced or changed — names, responsibilities, and how they relate — in prose the human can follow WITHOUT reading the code; (c) every above-class/method decision you made or surfaced (or "none — purely local"); (d) the final check result. The human must be able to accept the work from this summary alone; reading the diff is optional, never required.
 </param-branch>
 
 <param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
 6. **Hand off to the next phase**
-   - Report: Solution steps completed, final check result, files changed (one bullet per file).
+   - Narrate the result UPWARD, not as a diff: (a) requirements / Solution steps satisfied; (b) the class/method structure you produced or changed — names, responsibilities, relationships — in prose the human can follow WITHOUT reading the code; (c) every above-class/method decision you made or surfaced (or "none — purely local"); (d) final check result.
    - Announce: "Implementation complete; entering the next phase of the composite workflow."
    - Do NOT issue a TOTAL STOP. Continue immediately into the next phase.
 </param-branch>

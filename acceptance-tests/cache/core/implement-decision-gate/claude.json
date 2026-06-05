@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "key": "47f167fda557301776aecfd0afc7e71c2d3d39fc2b18003622a1c92150879dd3",
+  "scenarioId": "implement-decision-gate",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-05T09:48:45.451Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 120482.28708400001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "surfaced_unit_decision": {
+        "pass": true,
+        "reason": "Before writing any implementation code, the agent explicitly surfaced the open return-unit decision using AskUserQuestion, presenting both options (milliseconds and seconds) with trade-offs, previews…"
+      },
+      "waited_for_call": {
+        "pass": true,
+        "reason": "The agent fully paused after asking the question. The logs show [USER INPUT] Return milliseconds. appears as a distinct user turn after the AskUserQuestion tool call, and only after that response did…"
+      },
+      "implemented_chosen_unit": {
+        "pass": true,
+        "reason": "After the human chose milliseconds, the agent followed the full TDD cycle: (1) RED — wrote duration_test.ts with assertions parseDuration('1500ms')===1500, parseDuration('2s')===2000, parseDuration('…"
+      }
+    }
+  }
+}

@@ -13,6 +13,10 @@
 - Use standard tools (jq, yq, jc) to process and manage structured output — they are portable and well-understood.
 - Do not add fallbacks, default behaviors, or error recovery silently — if the user didn't ask for it, it's an assumption. If you believe a fallback is genuinely needed, ask the user first.
 - Do not use tables in chat output — use two-level lists instead. Tables render poorly in terminal and are harder to scan.
+- **Decision-level engagement — the human owns decisions, the AI owns code.** The boundary is the level of individual classes/methods: the human initiates and approves every decision *above* it (business rules, architecture, public interfaces / data shapes, new dependencies, key technical trade-offs); the AI decides freely at or below it (local naming, private helpers, test layout).
+- **Surface above-class/method decisions before implementing.** When a decision above the class/method line is NOT already settled by an approved plan, present it to the human as options + trade-offs + a recommendation and STOP — wait for the human's call; do NOT self-select a default and proceed.
+- **Narrate upward, not in diffs.** Report work in terms of requirements AND the class/method structure you produced (names, responsibilities, relationships), in prose the human can accept WITHOUT reading the code. Every above-class/method decision you made or surfaced MUST appear in that summary — an omitted one is a defect (this keeps mental/cognitive debt at zero above the class/method line). Never make reading the diff the only way to understand what changed.
+- **AI owns code review; diff review is optional (Model B).** The AI reviews the code itself and reports a decision-level verdict (task complete? design sound? key risks?); the human is NOT required to read the diff to accept it. Offer the diff for optional inspection — never block the workflow on the human reading code.
 
 ---
 {{PROJECT_RULES}}

@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "64d31aa205b6b1f57dfd5e45e634ba95da8e9f74d73a1c725b311933f84b5652",
+  "scenarioId": "review-decision-level-verdict",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-05T09:50:53.093Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 85400.953667,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "diff_explicitly_optional": {
+        "pass": true,
+        "reason": "The agent includes a section explicitly titled '### Diff (опционально)' (Diff - optional) and states 'Полный diff для проверки доступен по запросу' (Full diff available upon request). This explicitly…"
+      },
+      "verdict_for_non_coder": {
+        "pass": true,
+        "reason": "The report leads with a '### Verdict (plain language)' section that states in plain prose: the logic is correct, but the project is in a non-working state because deno task check fails due to a missi…"
+      },
+      "verdict_emitted": {
+        "pass": true,
+        "reason": "The report clearly opens with '## Review: Request Changes' — this is an unambiguous verdict label from the standard Approve / Request Changes / Needs Discussion set."
+      },
+      "no_commit": {
+        "pass": true,
+        "reason": "The final git status shows only 'money.ts' as an untracked file and 'nothing added to commit'. The git log shows no new commits beyond the initial setup commits. The agent only read files and ran den…"
+      },
+      "ai_did_the_review": {
+        "pass": true,
+        "reason": "The agent independently collected the diff (read money.ts, checked git history), ran automated checks (deno task check), analyzed code quality (type annotation weakness on line 5, JSDoc gaps for NaN/…"
+      }
+    }
+  }
+}

@@ -735,6 +735,34 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `ship-task-full-cycle-success`. No trigger scenario (command convention).
 - **Status:** [x]
 
+### FR-DECISION-GATE: Decision-Level Human Gate (above class/method) [ANC:fr:decision-gate]
+
+- **Description:** The human is the initiator and approver of every decision **above the level of individual classes/methods** — business decisions, architecture, key technical choices. Before implementing any such above-class/method decision that is NOT already settled in the approved plan, the agent MUST surface it to the human stated in decision terms (options + trade-offs + recommendation) and obtain approval BEFORE writing code. Decisions at or below class/method granularity are executed by the AI without a human gate (AI is trusted there). The gate is the *decision*, NOT the diff (diff inspection is optional — see FR-DIFF-OPTIONAL). Governs `implement`/`plan`/`ship`; reinforced in `framework/atoms/implement.md`; shipped to users via `framework/core/assets/AGENTS.template.md`.
+- **Tasks:** [vision-shift-decision-level](tasks/2026/06/vision-shift-decision-level-no-cognitive-debt.md)
+- **Acceptance verified by acceptance tests:** `implement-decision-gate`
+- **Status:** [x]
+
+### FR-UPWARD-NARRATION: Upward Narration in Class/Method Terms [ANC:fr:upward-narration]
+
+- **Description:** The agent communicates *upward*: it narrates work to the human in terms of requirements AND the class/method structure it produces (names, responsibilities, relationships) — never requiring the human to read implementation code. Every decision above class/method granularity MUST appear in the chat summary the human reads; an unsurfaced above-class/method decision is a defect. This absorbs the former cognitive-debt guard — the anti-cognitive-debt mechanism is **completeness of the chat summary**, NOT document currency and NOT a static check script (neither can inspect chat). Reinforced in `framework/atoms/implement.md`; shipped via `framework/core/assets/AGENTS.template.md`.
+- **Tasks:** [vision-shift-decision-level](tasks/2026/06/vision-shift-decision-level-no-cognitive-debt.md)
+- **Acceptance verified by acceptance tests:** `implement-upward-narration`
+- **Status:** [x]
+
+### FR-AI-CODE-REVIEW: AI-Owned Code Review, Decision-Level Verdict [ANC:fr:ai-code-review]
+
+- **Description:** Code review is owned by the AI. The `review` workflow performs the code review itself and reports a **decision-level verdict** to the human (task completion, architectural soundness, key risks) rather than a line-by-line diff walk-through; the human is not required to read the diff to accept the verdict. Heavy diff reading is delegated to a diff-analysis subagent (`diff-specialist`) where the IDE supports subagents, keeping line-level churn out of the human-visible context. Source: `framework/atoms/review.md`.
+- **Tasks:** [vision-shift-decision-level](tasks/2026/06/vision-shift-decision-level-no-cognitive-debt.md)
+- **Acceptance verified by acceptance tests:** `review-decision-level-verdict`
+- **Status:** [x]
+
+### FR-DIFF-OPTIONAL: Optional, Non-Blocking Diff Review (Model B) [ANC:fr:diff-optional]
+
+- **Description:** Diff-level review remains available but OPTIONAL (Model B): the `review` / `ship` / `review-and-commit` workflows MUST NOT block on human diff inspection. The agent offers the diff for optional inspection and proceeds on the decision-level verdict; the human MAY inspect any diff but is never forced to as a mandatory barrier. Source: `framework/atoms/review.md`.
+- **Tasks:** [vision-shift-decision-level](tasks/2026/06/vision-shift-decision-level-no-cognitive-debt.md)
+- **Acceptance verified by acceptance tests:** `review-decision-level-verdict` (shared scenario, distinct checklist item — same verdict-not-diff-walk execution path as FR-AI-CODE-REVIEW)
+- **Status:** [x]
+
 ### FR-DEVCONTAINER: AI Devcontainer Setup — setup-ai-ide-devcontainer [ANC:fr:devcontainer]
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.
