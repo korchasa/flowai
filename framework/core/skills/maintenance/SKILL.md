@@ -17,7 +17,7 @@ Execute a rigorous multi-category maintenance sweep, then walk the user through 
 <context>
 The "Garbage Collector" / "Building Inspector": keeps the codebase maintainable, documented, and architecturally sound.
 
-Categories checked (full sub-check detail in [references/scan-buckets.md](references/scan-buckets.md) — Cats 1–9 — and [references/architectural-categories.md](references/architectural-categories.md) — Cats 10–16):
+Categories checked (full sub-check detail is embedded in the 5 self-contained `maintenance-scan-*` subagents — see the Category index in Step 2):
 1.  **Structure**: Files in wrong places.
 2.  **Consistency**: Docs vs. Code truth.
 3.  **Hygiene**: Dead code, unused imports, weak tests.
@@ -47,7 +47,7 @@ Categories checked (full sub-check detail in [references/scan-buckets.md](refere
 5.  **Language Agnostic**: Adapt checks (imports, syntax, test patterns) to the primary language of the project (TS, JS, Py, Go, etc.).
 6.  **No premature fixes**: Do NOT apply any changes during the Scan Phase. Only collect findings.
 7.  **User decides**: Every fix requires explicit user approval. Never apply fixes silently.
-8.  **Findings are first-hand or verified**: every finding MUST be ground-truthed against the source before the summary. Subagent-supplied findings (`Explore`, `Task`, `Agent`, or a `maintenance-scan-worker` bucket) are leads, not conclusions, and carry no severity until the parent assigns it. See Step 3 (Verify Findings + Severity gate) and [references/verification-gate.md](references/verification-gate.md).
+8.  **Findings are first-hand or verified**: every finding MUST be ground-truthed against the source before the summary. Subagent-supplied findings (`Explore`, `Task`, `Agent`, or a `maintenance-scan-*` bucket worker) are leads, not conclusions, and carry no severity until the parent assigns it. See Step 3 (Verify Findings + Severity gate) and [references/verification-gate.md](references/verification-gate.md).
 9.  **Severity calibration**: every finding gets one tier per [references/severity-rubric.md](references/severity-rubric.md). In doubt between two tiers, pick the lower (anti-inflation). Critical share ≤ 35 % of total findings.
 </rules>
 
@@ -69,18 +69,18 @@ Collect findings into an internal list. Each: category, site, problem, proposed 
 1. **Initialize & Plan**
    - Use a task management tool (e.g., `todo_write`, `todowrite`) to create a plan covering all scan categories below.
    - Identify project's primary language and source directories.
-   - **Optional read-only fan-out (FR-MAINT-SCAN)**: you MAY scan the 16 categories via 5 parallel read-only `maintenance-scan-worker` subagents (one per bucket) — see [references/scan-buckets.md](references/scan-buckets.md). Inline fallback if a worker is unavailable/fails (no lead lost). Workers return raw leads, no severity; the Verify gate (Step 3), severity calibration, and Resolution (Steps 4–6) stay parent-only over the union.
+   - **Read-only fan-out (FR-MAINT-SCAN)**: scan the 16 categories via 5 parallel specialized read-only `maintenance-scan-*` subagents (one per bucket — names in the Category index below). Each agent is SELF-CONTAINED: its full check detail is embedded in its body — spawn it with just the project context, no payload. Workers return raw leads, no severity; the Verify gate (Step 3), severity calibration, and Resolution (Steps 4–6) stay parent-only over the union.
 
 2. **Run the 16 Category Checks** (partitioned into 5 thematic buckets W1–W5)
-   - The COMPLETE per-category sub-check detail lives in [references/scan-buckets.md](references/scan-buckets.md) — Cats 1–9 inline there; Cats 10–16 in [references/architectural-categories.md](references/architectural-categories.md), referenced from W2/W3/W5. **READ scan-buckets.md before scanning** — SKILL.md carries only the index below, not the executable detail.
-   - **Category index** (Cat → bucket):
-     - **W1** — 1 Structural Integrity · 2 Code Hygiene · 3 Complexity & Hotspots · 4 Technical Debt
-     - **W2** — 10 Architectural Integrity · 11 Conceptual Duplication · 16 Public-Surface Quality
-     - **W3** — 12 API Contract Review · 13 Cross-Implementation Symmetry · 14 Defensive-Programming Smell
-     - **W4** — 5 Consistency (Docs vs Code) · 7 Instruction Coherence · 9 Documentation Health
-     - **W5** — 6 Documentation Coverage · 8 Tooling Relevance · 15 Invariant ↔ Test Pairing
-   - **Delegate (optional)**: for each bucket you MAY spawn one read-only `maintenance-scan-worker`, passing that bucket's block from scan-buckets.md as `{categories}` plus — for W2/W3 and W5/Cat 15 — the matching §§ of architectural-categories.md as `{reference_excerpts}` (the worker cannot resolve skill-relative paths). Workers return raw leads, no severity.
-   - **Inline fallback**: if subagents are unavailable, or a worker fails / times out, scan that bucket yourself by reading the SAME bucket block in scan-buckets.md (no lead lost).
+   - The COMPLETE per-category sub-check detail is embedded in the 5 `maintenance-scan-*` agent bodies — the single source. SKILL.md carries only the index below, not the executable detail.
+   - **Category index** (Cat → bucket → agent):
+     - **W1** (`maintenance-scan-hygiene`) — 1 Structural Integrity · 2 Code Hygiene · 3 Complexity & Hotspots · 4 Technical Debt
+     - **W2** (`maintenance-scan-dependencies`) — 10 Architectural Integrity · 11 Conceptual Duplication · 16 Public-Surface Quality
+     - **W3** (`maintenance-scan-contracts`) — 12 API Contract Review · 13 Cross-Implementation Symmetry · 14 Defensive-Programming Smell
+     - **W4** (`maintenance-scan-docs`) — 5 Consistency (Docs vs Code) · 7 Instruction Coherence · 9 Documentation Health
+     - **W5** (`maintenance-scan-coverage`) — 6 Documentation Coverage · 8 Tooling Relevance · 15 Invariant ↔ Test Pairing
+   - **Delegate**: spawn each bucket's specialized read-only `maintenance-scan-*` agent (named in the index above) via the IDE's subagent tool (`Task` / `Agent` / background task). The agents are self-contained — pass only the project root and a one-line ask ("scan this project, return leads"); no category payload. Workers return raw leads, no severity.
+   - **No inline fallback (loud failure)**: if a bucket's agent is unavailable, fails, or times out — retry it ONCE. If it still fails, do NOT re-scan that bucket yourself; record it as NOT SCANNED and report it prominently: the summary (Step 4) MUST carry a line `Not scanned: W<n> (<category names>) — <reason>` after the closing total. Never silently shrink coverage.
    - Collect every lead into the internal findings list. Consolidate the union before the gate; do NOT assign severity yet — that happens once, parent-side, in Step 3.
 
 3. **Verify Findings + Severity (mandatory gate)**
@@ -96,7 +96,7 @@ Collect findings into an internal list. Each: category, site, problem, proposed 
     - **Category labels** — use the 16 English names from the Context block above (`Structural Integrity`, `Code Hygiene`, `Complexity & Hotspots`, `Technical Debt`, `Consistency (Docs vs Code)`, `Documentation Coverage`, `Instruction Coherence`, `Tooling Relevance`, `Documentation Health`, then Cats 10–16 per their Context names). In non-English reports every label MUST be a unique tag for that category — do not collapse two categories to one word and do not omit Documentation Health (FR-DOC-LINT: required dedicated header whenever the Documentation Health check (Cat 9) produced any finding; DOC-to-DOC integrity, distinct from #5 and #6). When in doubt, keep the English label.
     - Each issue line follows the shape: `- [N] [Severity] <file/symbol>: <problem>. (Fix: <proposed fix>)`. **Grammar**: severity is one of the four literal English strings `[Critical]`, `[High]`, `[Medium]`, `[Low]` (stays English regardless of report language), placed IMMEDIATELY after the bracketed number and BEFORE the site path; never in the category header. `[verified false]` drop lines from the gate are emitted WITHOUT a severity tag.
     - **Sort within each category**: Critical → High → Medium → Low, ties stable by issue number. Numbering runs sequentially across all categories.
-    - Closing line carries BOTH severity totals and category totals: `Total: N findings — Critical: a, High: b, Medium: c, Low: d (per category: <Cat>: x, <Cat>: y, …)`.
+    - Closing line carries BOTH severity totals and category totals: `Total: N findings — Critical: a, High: b, Medium: c, Low: d (per category: <Cat>: x, <Cat>: y, …)`. If any bucket ended NOT SCANNED (Step 2 loud failure), append on the next line: `Not scanned: W<n> (<category names>) — <reason>`.
     - Brief example (covers Categories 1, 2, 9):
       ```
       Structural Integrity

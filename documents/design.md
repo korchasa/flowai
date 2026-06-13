@@ -95,12 +95,16 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 **typescript (2):** `setup-agent-code-style-deno`,
 `setup-agent-code-style-strict` — standalone
 
-#### Agents by pack (7) — all standalone
+#### Agents by pack (11) — all standalone
 
 - `framework/core/agents/agent-adapter.md`
 - `framework/core/agents/console-expert.md`
 - `framework/core/agents/diff-specialist.md`
-- `framework/core/agents/maintenance-scan-worker.md`
+- `framework/core/agents/maintenance-scan-hygiene.md`
+- `framework/core/agents/maintenance-scan-dependencies.md`
+- `framework/core/agents/maintenance-scan-contracts.md`
+- `framework/core/agents/maintenance-scan-docs.md`
+- `framework/core/agents/maintenance-scan-coverage.md`
 - `framework/core/agents/skill-adapter.md`
 - `framework/engineering/agents/deep-research-worker.md`
 - `framework/ide-bridge/agents/worker.md`
@@ -109,7 +113,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 - Commands: 9 (3 atom-generated, 3 composite-generated, 3 standalone) — all in `core`.
 - Skills: 43 (2 atom-generated in `core`, 41 standalone across 7 packs).
-- Agents: 7 (all standalone — 5 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
+- Agents: 11 (all standalone — 9 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`) [ANC:sds:3-1]
@@ -219,12 +223,12 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
     `cursor: {max: slow, smart: slow, fast: fast, cheap: fast}`, `opencode: {}` (user configures).
   - User overrides via `.flowai.yaml` `models:` section.
   - `inherit` or absent → field omitted (IDE uses parent model).
-- **Key Agents (7 canonical files):**
+- **Key Agents (11 canonical files):**
   - `core/agents/console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `core/agents/diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
   - `core/agents/skill-adapter.md`: Adapts skills to project specifics after upstream updates.
   - `core/agents/agent-adapter.md`: Adapts agent definitions to project specifics after upstream updates. Mirrors `skill-adapter` but for agent `.md` files — preserves YAML frontmatter, adapts body (system prompt).
-  - `core/agents/maintenance-scan-worker.md`: Read-only scan worker for one category bucket; spawned in parallel by the `maintenance` Scan Phase (FR-MAINT-SCAN). Returns leads only — no severity, no fixes, no writes (`disallowedTools: Write, Edit`). Parent consolidates + calibrates.
+  - `core/agents/maintenance-scan-{hygiene,dependencies,contracts,docs,coverage}.md`: 5 specialized SELF-CONTAINED read-only scan workers, one per thematic bucket (W1–W5); spawned in parallel by the `maintenance` Scan Phase (FR-MAINT-SCAN). Each declares its bucket + category set in the description, embeds its full check detail in the body (no dependency on skill files or spawn payloads), and returns leads only — no severity, no fixes, no writes (`disallowedTools: Write, Edit`). Parent consolidates + calibrates.
   - `engineering/agents/deep-research-worker.md`: Research worker for a single direction within a deep research task; spawned by `deep-research` orchestrator.
 - **Distribution:** `flowai` transforms canonical agents into IDE-specific format at install time.
 - **IDE frontmatter formats** (transformation rules owned by flowai, see also 3.5 Agent transformation rules):
@@ -616,7 +620,7 @@ graph TD
 - **Decision rescue (FR-DOC-RESCUE):** `reflect` Step 2b "Surface Decisions for Task Capture" scans the source for decision passages (≥2 weighed alternatives + explicit reasoning) and recommends `/plan` on its `**Recommended action:**` line. Reflect remains read-only — never writes a task file, never edits SRS/SDS, never creates an ADR. The legacy `documents/adr/` directory is phased out.
 - **Health audit (FR-DOC-LINT):** `maintenance` adds Category 9 "Documentation Health" — broken GFM cross-links, stale `[x]` FRs (acceptance reference missing), orphan FRs (`[x]` in SRS, no source-code link), SRS↔SDS contradictions, `documents/index.md` drift. DISTINCT from Category 5 Consistency (doc-vs-code drift) and Category 6 Documentation Coverage (jsdoc per symbol) — this group covers doc-vs-doc integrity.
 - **Severity scoring (FR-MAINT-SEVERITY):** every finding the audit emits carries one of four literal English tiers `[Critical] | [High] | [Medium] | [Low]` placed immediately after the bracketed number (`- [N] [Severity] <site>: <problem>. (Fix: <fix>)`). Tier choice follows the per-category rubric in `framework/core/skills/maintenance/references/severity-rubric.md` and the anti-inflation tie-breaker "when in doubt, pick the lower one". The Verify Findings gate (Step 12) requires every surviving finding to quote a rubric anchor; `[verified false]` drop lines carry no tag. The Resolution Phase summary lists per-severity counters alongside per-category counters and the "how to proceed" prompt accepts severity tokens (`critical`, `high`, `medium`, `low`) and plus-separated compounds (`critical+high`) as a filter on the per-finding loop. Critical share ≤ 35 % of total findings under the rubric.
-- **Parallel scan delegation (FR-MAINT-SCAN):** the Scan Phase MAY fan its 16 categories out to read-only `maintenance-scan-worker` subagents — one per of 5 thematic buckets (`framework/core/skills/maintenance/references/scan-buckets.md`, partitioning categories 1–16 exactly once). Delegation is optional with an inline fallback; workers return raw leads (no severity, read-only at the tool layer via `disallowedTools: Write, Edit`). The Verify gate, severity calibration, and the Resolution loop run parent-only over the consolidated union — never per worker. The full per-category sub-check detail (Cats 1–9) lives ONLY in `scan-buckets.md` (single source for both delegated workers and the parent's inline fallback; Cats 10–16 stay in `architectural-categories.md`); the SKILL.md Scan Phase carries only an orchestration step + Cat→bucket index, with no inline check detail. Deterministic gate: `scripts/maintenance_scan_buckets_test.ts` (bucket partition + worker read-only confinement); an LLM agent benchmark was rejected because the harness lets the model substitute a generic `Explore` subagent for the named one.
+- **Parallel scan delegation (FR-MAINT-SCAN):** the Scan Phase fans its 16 categories out to 5 specialized SELF-CONTAINED read-only subagents — one per thematic bucket: W1 `maintenance-scan-hygiene`, W2 `maintenance-scan-dependencies`, W3 `maintenance-scan-contracts`, W4 `maintenance-scan-docs`, W5 `maintenance-scan-coverage` — whose `(Cats …)` description clauses partition categories 1–16 exactly once. Each agent embeds its full per-category check detail in its body (single source) and depends on no skill file and no spawn payload; the former `scan-buckets.md` / `architectural-categories.md` detail files are deleted. NO inline fallback: an unavailable/failing agent is retried once, then the bucket is reported loudly as `Not scanned: W<n> (<categories>) — <reason>` after the summary's closing total — coverage never shrinks silently. Workers return raw leads (no severity, read-only at the tool layer via `disallowedTools: Write, Edit`); the Verify gate, severity calibration, and the Resolution loop run parent-only over the consolidated union — never per worker. The SKILL.md Scan Phase carries only an orchestration step + Cat→bucket→agent index, with no inline check detail. Deterministic gate: `scripts/maintenance_scan_buckets_test.ts` (partition across agent descriptions + per-agent read-only confinement + self-containment + removal of legacy template and detail files + SKILL.md decoupling); an LLM agent benchmark was rejected because the harness lets the model substitute a generic `Explore` subagent for the named one.
 - **Ownership flow:** `plan` writes committed new-shape tasks, `documents/index.md` rows, and SRS-inline `**Tasks:**` back-pointers; commit/review-and-commit derive task `status` from DoD; reflect detects decisions (read-only); maintenance audits drift.
 - **Acceptance evidence:** Benchmarks `plan-writes-task-new-frontmatter`, `plan-loads-related-tasks`, `plan-updates-srs-task-back-pointer`, `commit-flips-task-status`, `commit-derives-in-progress-status`, `review-and-commit-flips-task-status`, `plan-updates-index-on-new-fr`, `reflect-rescues-decision-as-task`, `maintenance-detects-doc-health-issues`, plus 104 GFM-link comments resolved by check-traceability.
 

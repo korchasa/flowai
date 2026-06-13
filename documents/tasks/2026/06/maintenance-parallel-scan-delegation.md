@@ -60,29 +60,39 @@ Hard boundaries forced by the architecture:
 > maintenance scenarios still pass (parity) + a deterministic `*_test.ts` over the
 > agent frontmatter and bucket partition + structural greps on SKILL.md.
 
-- [x] FR-MAINT-SCAN: A read-only scan-worker agent template
-      (`framework/core/agents/maintenance-scan-worker.md`) exists and is confined
-      at the tool layer (`disallowedTools` ⊇ {Write, Edit}, `readonly: true`,
-      `mode: subagent`); its body forbids severity tags, fixes, and sub-agent
-      spawning.
-  - Test: `scripts/maintenance_scan_buckets_test.ts::maintenance-scan-worker: confined read-only at the tool layer`
-  - Evidence: `deno test -A scripts/maintenance_scan_buckets_test.ts` → `2 passed | 0 failed`
+- [x] FR-MAINT-SCAN: 5 specialized SELF-CONTAINED read-only scan-worker agents
+      exist —
+      `framework/core/agents/maintenance-scan-{hygiene,dependencies,contracts,docs,coverage}.md`
+      (W1–W5) — each confined at the tool layer (`disallowedTools` ⊇ {Write,
+      Edit}, `readonly: true`, `mode: subagent`), each declaring its bucket +
+      exact `(Cats …)` set in the description, each embedding its full
+      per-category check detail (`### Cat <n>` blocks) with ZERO references to
+      skill files or spawn payloads; the legacy single template
+      `maintenance-scan-worker.md` AND the skill-side detail files
+      `scan-buckets.md` / `architectural-categories.md` are removed. Bodies
+      forbid severity tags, fixes, and sub-agent spawning.
+  - Test: `scripts/maintenance_scan_buckets_test.ts` — `scan agents: declared categories partition 1..16 exactly once`,
+    `scan agents: confined read-only at the tool layer`,
+    `scan agents: self-contained — embedded check detail, zero skill-file dependencies`,
+    `scan delegation: superseded sources removed, SKILL.md decoupled`
+  - Evidence: `deno test -A scripts/maintenance_scan_buckets_test.ts` → `4 passed | 0 failed`
     (also runs inside `deno task check`).
-- [x] FR-MAINT-SCAN: SKILL.md Scan Phase documents OPTIONAL parallel delegation
-      of the 5 category buckets to read-only subagents (IDE-generic phrasing)
-      WITH an inline fallback, and keeps the Verify gate + severity calibration
-      parent-only (post-consolidation, never per-worker).
-  - Test: structural grep on `framework/core/skills/maintenance/SKILL.md`.
-  - Evidence: `grep -qi 'inline fallback' …/SKILL.md && grep -q 'scan-buckets.md' …/SKILL.md && grep -qi 'parent' …/SKILL.md`
-    (severity/verify parent-only) all exit 0.
-- [x] FR-MAINT-SCAN: The 5 thematic buckets are specified as distinct per-theme
-      instruction blocks in `references/scan-buckets.md`; together they cover
-      categories 1–16 exactly once (W1=1-4, W2=10/11/16, W3=12/13/14, W4=5/7/9,
-      W5=6/8/15); workers do NOT read `severity-rubric.md` or
-      `verification-gate.md` (parent-only).
-  - Test: `scripts/maintenance_scan_buckets_test.ts::scan-buckets: 5 buckets partition categories 1..16 exactly once`
-  - Evidence: `deno test -A scripts/maintenance_scan_buckets_test.ts` → `2 passed`
-    (parser asserts 5 buckets, disjoint, union = {1..16}).
+- [x] FR-MAINT-SCAN (rev. 2): SKILL.md Scan Phase delegates the 5 buckets to the
+      self-contained agents WITHOUT payload, has NO inline fallback (failed
+      agent → retry once → loud `Not scanned: W<n> …` line after the summary
+      total), references neither deleted detail file, and keeps the Verify
+      gate + severity calibration parent-only (post-consolidation, never
+      per-worker).
+  - Test: `scripts/maintenance_scan_buckets_test.ts::scan delegation: superseded sources removed, SKILL.md decoupled`
+    + structural grep on `framework/core/skills/maintenance/SKILL.md`.
+  - Evidence: `grep -qi 'Not scanned' …/SKILL.md && ! grep -q 'scan-buckets' …/SKILL.md && grep -qi 'parent' …/SKILL.md` all exit 0.
+- [x] FR-MAINT-SCAN (rev. 2): the partition source is the 5 agent descriptions —
+      their `(Cats …)` clauses cover categories 1–16 exactly once (W1=1-4,
+      W2=10/11/16, W3=12/13/14, W4=5/7/9, W5=6/8/15); workers do NOT read
+      `severity-rubric.md` or `verification-gate.md` (parent-only).
+  - Test: `scripts/maintenance_scan_buckets_test.ts::scan agents: declared categories partition 1..16 exactly once`
+  - Evidence: `deno test -A scripts/maintenance_scan_buckets_test.ts` → `4 passed`
+    (parser asserts 5 agents, disjoint, union = {1..16}).
 - [ ] FR-MAINT-SCAN: No regression — existing maintenance execution scenarios
       still pass after the SKILL.md restructure (finding / severity / summary
       parity + HITL Resolution UX byte-for-byte unchanged).
@@ -94,13 +104,13 @@ Hard boundaries forced by the architecture:
     Full sweep deferred to user per AGENTS.md "Who runs acceptance tests".
 - [x] FR-MAINT-SCAN: New FR section in SRS with `[ANC:fr:maint-scan]` + runnable
       `**Acceptance:**`, a matching `documents/index.md` `## FR` row, and SDS
-      §3.2 lists `maintenance-scan-worker.md` with bumped inventory counts
-      (Agents 6→7; core agents 4→5).
+      §3.2 lists the 5 `maintenance-scan-*` agents with bumped inventory counts
+      (Agents 7→11; core agents 5→9 after the 2026-06-10 fork).
   - Test: `deno task check` (check-fr-coverage, check-salp, check-srs-evidence).
   - Evidence: `deno task check` → `0 failed` AND
     `grep -q 'ANC:fr:maint-scan' documents/requirements.md` AND
     `grep -q 'REF:fr:maint-scan' documents/index.md` AND
-    `grep -q 'maintenance-scan-worker' documents/design.md`.
+    `grep -q 'maintenance-scan-hygiene' documents/design.md`.
 - [ ] FR-MAINT-SCAN: Before the deferred parity sweep, stale cache for the
       touched maintenance scenarios is invalidated so prior summary-format
       verdicts cannot mask a regression from the SKILL.md restructure.
@@ -115,16 +125,27 @@ Selected variant: **B′ — dedicated read-only scan-worker agent (single
 parameterized template) + IDE-generic optional delegation in SKILL.md + new
 `FR-MAINT-SCAN`**, with the scan partitioned into **5 thematic category buckets**.
 
-### Agent shape decision (1 template, spawned 5×)
+### Agent shape decision (REVISED 2026-06-10, rev. 2: 5 SELF-CONTAINED agents)
 
-ONE agent file `maintenance-scan-worker.md` is the shared template (the "common
-instructions"); the 5 per-theme bucket specs are passed per spawn. This mirrors
-the in-repo `deep-research-worker` precedent (one worker agent, orchestrator
-passes `{direction}` per spawn) and keeps agent-benchmark surface at 1 scenario
-instead of 5 near-duplicate agent files. The user's "subagent per theme" is
-satisfied **behaviorally** (5 parallel spawns), and "template for common agent
-instructions" is the single agent body. If 5 distinct agent files are wanted
-instead, this is the one reversible fork — flag before the GREEN agent edit.
+Originally shipped as ONE shared template `maintenance-scan-worker.md` spawned
+5× (mirroring `deep-research-worker`), with the fork "5 distinct agent files"
+explicitly flagged as reversible. **On 2026-06-10 the user took that fork twice**:
+
+1. The single template is REPLACED by 5 specialized agents, one per thematic
+   bucket — W1 `maintenance-scan-hygiene`, W2 `maintenance-scan-dependencies`,
+   W3 `maintenance-scan-contracts`, W4 `maintenance-scan-docs`,
+   W5 `maintenance-scan-coverage`.
+2. (rev. 2, same day) Agents became SELF-CONTAINED: the full per-category check
+   detail moved INTO the agent bodies (`### Cat <n>` blocks); the skill-side
+   detail files `references/scan-buckets.md` and
+   `references/architectural-categories.md` are DELETED; the parent spawns
+   agents with no payload. Consequence accepted by the user (explicit choice
+   "громкий отказ"): the inline fallback is REMOVED — if a bucket's agent
+   fails twice, the parent reports `Not scanned: W<n> (<categories>) —
+   <reason>` after the summary total instead of re-scanning inline. Single
+   source of detail = the agent bodies; the deterministic test pins the
+   partition to the agent descriptions and forbids any agent→skill-file
+   dependency.
 
 ### Bucket partition (themes, similar kept together, parent owns severity)
 
