@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "8c9f1114195f06062a3cf193868d12941c56f2d406aa35cc57b89c9e9b657b73",
+  "scenarioId": "select-llm-model-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-13T19:12:57.611Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 28745.880999999936,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "The agent logs show the agent answered the conceptual question directly with a well-structured explanation of LMArena's Elo system and its limitations. There is no evidence in the logs of any invocat…"
+      }
+    }
+  }
+}

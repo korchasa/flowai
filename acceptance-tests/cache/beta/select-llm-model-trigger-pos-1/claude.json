@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "381ec96629c8e0995b66701dd9c3111b728d3cd10c974006d18df5783d3f668d",
+  "scenarioId": "select-llm-model-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-13T19:21:25.462Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 61606.883417000005,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `Skill` tool with `\"skill\": \"select-llm-model\"` at the very beginning of its execution, passing the user's query as args. It then followed the skill's methodology: fe…"
+      }
+    }
+  }
+}

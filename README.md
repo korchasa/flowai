@@ -89,7 +89,7 @@ In addition to the `flowai` CLI, Claude Code and Codex users can install any pac
 /plugin install flowai-engineering@flowai-plugins
 /plugin install flowai-devtools@flowai-plugins
 /plugin install flowai-memex@flowai-plugins
-/plugin install flowai-beta@flowai-plugins  # Claude Code only; opt-in doc-anchors hook
+/plugin install flowai-beta@flowai-plugins  # opt-in: select-llm-model skill + doc-anchors Stop hook (hook is Claude-only)
 /reload-plugins
 ```
 
@@ -103,7 +103,7 @@ codex plugin add flowai-typescript@flowai-plugins
 codex plugin add flowai-engineering@flowai-plugins
 codex plugin add flowai-devtools@flowai-plugins
 codex plugin add flowai-memex@flowai-plugins
-# flowai-beta ships the doc-anchors Stop hook, which is inert on Codex (no turn-end hook).
+codex plugin add flowai-beta@flowai-plugins  # select-llm-model skill works on Codex; the doc-anchors Stop hook is inert there (no turn-end hook).
 # Start a new Codex thread to load newly installed plugins. Edit individual
 # `[plugins."<name>@flowai-plugins"]` tables in `~/.codex/config.toml` if you
 # want to disable specific packs.
@@ -293,7 +293,10 @@ TypeScript-specific setup skills.
 
 ### beta
 
-Opt-in beta capabilities not yet promoted to core. **Claude Code only.**
+Opt-in beta capabilities not yet promoted to core. The `select-llm-model` skill works on every IDE; the `doc-anchors-validate` hook is **Claude Code only**.
+
+**Skills:**
+- `select-llm-model` — task-driven LLM recommender. Give it a free-form task; it derives capability-axis weights, **live-fetches** current standings from a curated set of public leaderboards/benchmarks (Artificial Analysis, LMArena, SWE-bench Verified, Terminal-Bench, Aider, GPQA, HLE, ARC-AGI, τ²-bench, LLM-Stats) via a portable shell fetch, and returns a ranked shortlist with per-axis rationale, source citations, and the fetch timestamp. Fails fast (no fabrication) when it cannot fetch.
 
 **Hooks:**
 - `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Installation](#claude-code--codex-plugin-marketplace).

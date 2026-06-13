@@ -1292,6 +1292,16 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `maintenance-detects-doc-health-issues`.
 - **Status:** [x]
 
+### FR-MODEL-SELECT: Task-Driven LLM Model Recommender (beta) [ANC:fr:model-select]
+
+- **Description:** Beta-pack skill `select-llm-model` recommends which LLM to use for a concrete task. Input: free-form task description. The skill derives capability-axis weights (intelligence, coding, agentic-coding, diff-edit, reasoning, knowledge, fluid-reasoning, tool-use) from the task, **live-fetches** current standings from a curated subset of public leaderboards/benchmarks via a portable shell fetch (`curl`/`wget` — IDE-neutral, per FR-UNIVERSAL), normalizes each axis to a within-set percentile, weighted-sum ranks, and emits a ranked shortlist with per-axis rationale, source citations, and the fetch timestamp. Sources (10, each ↔ axis): Artificial Analysis (intelligence/price/speed), LMArena (human preference), LLM-Stats (cross-check), SWE-bench Verified + Terminal-Bench (agentic-coding), Aider Polyglot (diff-edit), GPQA Diamond (reasoning), HLE (knowledge), ARC-AGI (fluid-reasoning), τ²-bench (tool-use). Architecture: Variant A (live-fetch, no bundled snapshot). **Fail-fast:** no fetch path → STOP without fabricating; a source that fails or lacks a model is reported as a Gap, never an invented score. Price/speed are post-rank filters/tie-breakers, not capability weights. First skill in the opt-in `beta` pack → flips the pack from hook-only to skill-bearing (Codex manifest now emitted for `flowai-beta`).
+- **Tasks:** [select-llm-model-skill](tasks/2026/06/select-llm-model-skill.md)
+- **Scenario:** User asks "which model should I use for agentic refactoring of a Python repo?" → skill detects `curl`, derives coding/agentic-coding weights, fetches the mapped sources, ranks models with per-axis rationale + citations + fetch timestamp, lists any source gaps. With no fetch tool available → STOP + report, no ranking.
+- **Acceptance verified by acceptance tests:** `select-llm-model-recommends-for-coding-task`, `select-llm-model-cites-sources`, `select-llm-model-fails-fast-no-fetch`.
+- **Status:** [x]
+
+---
+
 ## 4. Non-functional requirements
 
 

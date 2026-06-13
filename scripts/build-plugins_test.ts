@@ -242,8 +242,9 @@ Deno.test("beta-pack ships-doc-anchors-stop-hook", async () => {
     ).then(() => true).catch(() => false);
     assert(runCopied, "beta plugin must copy the hook run.ts");
 
-    // Hook-only pack → Claude-only plugin: Claude manifest present, NO Codex
-    // manifest (Codex schema mandates a skills component the pack lacks).
+    // beta ships BOTH the hook AND the select-llm-model skill, so the Claude
+    // manifest is present. (Codex emission is asserted in the dedicated test
+    // below — once the pack carries a skill it is no longer hook-only.)
     const claudeManifest = await readJson(
       join(
         out,
@@ -254,19 +255,50 @@ Deno.test("beta-pack ships-doc-anchors-stop-hook", async () => {
       ),
     ) as Record<string, unknown>;
     assertEquals(claudeManifest.name, "flowai-beta");
-    const codexEmitted = await Deno.stat(
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// implements [REF:fr:model-select | FR-MODEL-SELECT] — the first skill in the
+// opt-in `beta` pack flips it from hook-only (Claude-only) to skill-bearing, so
+// it now ALSO emits a Codex manifest/marketplace entry alongside the Stop hook.
+Deno.test("beta-pack ships select-llm-model skill", async () => {
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["beta"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+
+    // Skill copied into the Claude plugin.
+    const skillCopied = await Deno.stat(
       join(
         out,
         "plugins",
         "flowai-beta",
-        ".codex-plugin",
-        "plugin.json",
+        "skills",
+        "select-llm-model",
+        "SKILL.md",
       ),
     ).then(() => true).catch(() => false);
-    assertEquals(
-      codexEmitted,
-      false,
-      "hook-only pack must not emit a Codex manifest",
+    assert(skillCopied, "beta plugin must copy the select-llm-model SKILL.md");
+
+    // hasSkills now true → Codex manifest emitted (was absent when hook-only).
+    const codexManifest = await readJson(
+      join(out, "plugins", "flowai-beta", ".codex-plugin", "plugin.json"),
+    ) as Record<string, unknown>;
+    assertEquals(codexManifest.name, "flowai-beta");
+    assertEquals(codexManifest.skills, "./skills/");
+
+    // Codex marketplace now lists flowai-beta (skill-less packs are filtered).
+    const codexMarket = await readJson(
+      join(out, ".agents", "plugins", "marketplace.json"),
+    ) as { plugins: Array<{ name: string }> };
+    assert(
+      codexMarket.plugins.some((p) => p.name === "flowai-beta"),
+      "Codex marketplace must list flowai-beta once it ships a skill",
     );
   } finally {
     await Deno.remove(out, { recursive: true });

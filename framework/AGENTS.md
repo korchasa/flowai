@@ -25,7 +25,7 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 - `deno` — Deno-specific skills.
 - `typescript` — TypeScript-specific setup skills.
 - `memex` — Memex: long-term knowledge bank for AI agents (three skills: save, ask, audit).
-- `beta` — Opt-in beta capabilities not yet promoted to core (hook-only → Claude-only plugin; currently `doc-anchors-validate`).
+- `beta` — Opt-in beta capabilities not yet promoted to core. Ships the `doc-anchors-validate` Stop hook (Claude-only) and the `select-llm-model` skill. With a skill present the pack is no longer hook-only — it now emits a Codex manifest/marketplace entry too (`hasSkills` true).
 
 ## Key Decisions
 

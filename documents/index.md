@@ -74,6 +74,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:maint-scan | FR-MAINT-SCAN] — Parallel read-only scan delegation for maintenance (5 thematic category buckets → 5 self-contained read-only `maintenance-scan-*` workers with embedded check detail; parent owns Verify + severity + HITL; no fallback — loud `Not scanned` report) — [ ]
 - [REF:fr:maint-severity | FR-MAINT-SEVERITY] — Severity scoring for maintenance findings (Critical/High/Medium/Low + rubric + summary tags + reply filters) — [ ]
 - [REF:fr:memex | FR-MEMEX] — Memex pack — [x]
+- [REF:fr:model-select | FR-MODEL-SELECT] — Beta skill `select-llm-model`: task-driven LLM recommender; free-form task → axis weights → live-fetched ranked shortlist with per-axis rationale + source citations — [x]
 - [REF:fr:onboard | FR-ONBOARD] — The project's README.md must provide clear, actionable instructions for developers on when and how to use the availab... — [ ]
 - [REF:fr:packs | FR-PACKS] — Modular resource installation through self-contained framework packs — [ ]
 - [REF:fr:packs.bundle | FR-PACKS.BUNDLE] — Bundle includes pack definitions and all pack resources. — [ ]

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "452ebd7ed1d5b74fbe539ae52dba9ac0b9d05cb27928dbb3ccb1a2245802a0de",
+  "scenarioId": "select-llm-model-fails-fast-no-fetch",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-13T19:06:41.806Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 30821.31699999998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `select-llm-model` skill via the Tool: Skill block with the exact skill name and args. It then followed the skill's instructions: defined evaluation axes (coding:3, a…"
+      },
+      "attempted_fetch": {
+        "pass": true,
+        "reason": "The agent ran two explicit shell fetch commands before drawing any conclusion: (1) `curl -fsSL https://aider.chat/docs/leaderboards 2>&1 | head -5 || echo \"CURL_FAILED\"` and (2) `wget -qO- https://ai…"
+      },
+      "reports_no_fetch": {
+        "pass": true,
+        "reason": "The agent explicitly reported it cannot retrieve live leaderboard data due to missing fetch tools. It stated: \"СТОП — ни `curl`, ни `wget` не найдены в этой среде\" and quoted the exact failure messag…"
+      },
+      "no_fabricated_ranking": {
+        "pass": true,
+        "reason": "The agent completely refused to produce any model ranking or recommendation. It did not name any specific models with scores or standings. It explicitly stated that providing a recommendation without…"
+      }
+    }
+  }
+}

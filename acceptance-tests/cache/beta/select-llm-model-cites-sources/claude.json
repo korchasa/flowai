@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "a42989763bfed027c5d76106746340b2dc86492e0743c851ee7df37ed2404616",
+  "scenarioId": "select-llm-model-cites-sources",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-13T19:00:15.697Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 86752.605083,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `select-llm-model` skill via the Tool: Skill call with `\"skill\": \"select-llm-model\"` and acted on it throughout the session — fetching sources, computing weighted axe…"
+      },
+      "cites_source_per_score": {
+        "pass": true,
+        "reason": "Every model entry in the shortlist includes an explicit source citation. For example: 'intelligence: IntelligenceIndex=71/71 (100-й перцентиль) — источник: artificialanalysis.ai, загружено 2026-06-13…"
+      },
+      "fetch_timestamp": {
+        "pass": true,
+        "reason": "The agent ran `date -u +\"%Y-%m-%dT%H:%M:%SZ\"` and recorded the result. The timestamp '2026-06-13T18:58:59Z UTC' is reported in the 'Время загрузки' section and is embedded inline in every per-model s…"
+      },
+      "reports_gaps": {
+        "pass": true,
+        "reason": "The agent includes a dedicated 'Разрывы (Gaps)' section that explicitly lists every source that failed to return expected data: swebench.com (SWE-bench Verified), tbench.ai (Terminal-Bench), aider.ch…"
+      },
+      "no_fabricated_coding_scores": {
+        "pass": true,
+        "reason": "For agentic-coding, reasoning, coding, and tool-use axes, all three models are uniformly marked 'нет данных (Разрыв)' (no data / Gap). The agent explicitly states that the ranking is built exclusivel…"
+      }
+    }
+  }
+}

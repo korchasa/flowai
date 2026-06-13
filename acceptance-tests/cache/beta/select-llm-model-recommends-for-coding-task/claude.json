@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "8e6fe4f4513fdbdea8bc360a92ae423491042614f2a40b20ed26e31fb965da6b",
+  "scenarioId": "select-llm-model-recommends-for-coding-task",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-13T18:57:53.104Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 76764.253791,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The logs show an explicit `## Tool: Skill` call with `\"skill\": \"select-llm-model\"` and the argument `\"autonomous, multi-file agentic refactoring of a large Python repository\"`, confirming the skill w…"
+      },
+      "fetched_via_shell": {
+        "pass": true,
+        "reason": "Five separate `## Tool: Bash` entries each run `curl -fsSL` against leaderboard URLs: swebench.com, aider.chat/docs/leaderboards, tbench.ai, artificialanalysis.ai/leaderboards/models, and sierra.ai/t…"
+      },
+      "ranked_shortlist": {
+        "pass": true,
+        "reason": "Phase 4 of the output presents an explicitly ordered list: 1. Aurora-7 (top recommendation), 2. Borealis-3 (price/quality trade-off), 3. Cypher-X (budget option) — a clear ranked shortlist."
+      },
+      "ranks_fetched_models": {
+        "pass": true,
+        "reason": "All three ranked models — Aurora-7, Borealis-3, Cypher-X — are fictional names that can only originate from the sandbox-intercepted fetch responses, not from any real-world model knowledge. Aurora-7 …"
+      },
+      "per_axis_rationale": {
+        "pass": true,
+        "reason": "For each ranked model the agent lists individual axis scores with source and date: SWE-bench Verified %, Terminal-Bench %, Intelligence Index from Artificial Analysis, and price per Mtok. It also dis…"
+      },
+      "derived_coding_axes": {
+        "pass": true,
+        "reason": "Phase 1 explicitly derives and weights the axes from the task description: agentic-coding (weight 3, justified by 'autonomous', 'multi-file', 'repo-level'), coding/Python (weight 3), diff-edit (weigh…"
+      }
+    }
+  }
+}
