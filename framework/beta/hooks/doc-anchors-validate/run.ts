@@ -7,7 +7,9 @@
  * On the agent's turn-end the repo is in a SETTLED state: in-turn forward-refs
  * and rename chicken-and-egg have resolved, so the only findings are genuinely
  * dangling refs / duplicate anchors / malformed tokens. Findings are fed back
- * to the AGENT (`decision: block` + `reason`) so it fixes them in-turn.
+ * to the AGENT (`decision: block` + `reason`); the reason prescribes the fix
+ * method itself — delegate the mechanical fix to a SUBAGENT, then resume the
+ * primary task (no forced stop) — so clean-up never derails the main thread.
  *
  * Anti-loop: Claude Code sets stdin `stop_hook_active: true` when the current
  * stop is itself the result of a prior Stop-hook block. We then exit 0 silently
@@ -328,10 +330,14 @@ export function decide(input: StopHookInput, findings: Finding[]): Decision {
   if (input.stop_hook_active === true) return { block: false };
   const lines = findings.map((f) => `  - ${f.file}:${f.line} ${f.message}`);
   const reason = [
-    "SALP anchor/reference issues found in the repository. Fix them, then stop:",
+    "SALP anchor/reference issues found in the repository (mechanical doc fix).",
+    "Do NOT fix these yourself — it would derail your primary task. Dispatch a",
+    "subagent (Task / Agent / subagent tool) to fix exactly the findings below;",
+    "once it reports done, resume your primary task:",
     ...lines,
-    "Add the missing [ANC:ns:id], remove the stale [REF:ns:id], or correct the",
-    "malformed token. (Examples inside fenced/inline code are already ignored.)",
+    "Fix recipe for the subagent: add the missing [ANC:ns:id], remove the stale",
+    "[REF:ns:id], or correct the malformed token. (Examples inside fenced/inline",
+    "code are already ignored.)",
   ].join("\n");
   return { block: true, reason };
 }

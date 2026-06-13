@@ -88,6 +88,16 @@ Deno.test("blocks-stop-with-findings-reason", () => {
   assertEquals(d.block, true);
   assert(typeof d.reason === "string" && d.reason.length > 0);
   assertStringIncludes(d.reason, "fr:missing");
+  // The hook prescribes the fix METHOD: delegate the fix to a subagent, then
+  // resume the primary task. It must NOT tell the agent to fix inline, nor to
+  // stop after the fix (the main agent continues its primary task).
+  const reason = d.reason ?? "";
+  assertStringIncludes(reason, "subagent");
+  assertStringIncludes(reason, "primary task");
+  assert(
+    !/then stop|stops cleanly|Fix them, then stop/i.test(reason),
+    "block reason must not carry a stop directive",
+  );
 });
 
 Deno.test("respects-stop-hook-active-guard", () => {
