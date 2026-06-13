@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.13](https://github.com/korchasa/flowai/compare/v0.13.12...v0.13.13) (2026-06-13)
+
+
+### Features
+
+* **beta:** select-llm-model skill — task-driven LLM recommender (FR-MODEL-SELECT) ([4312507](https://github.com/korchasa/flowai/commit/431250766e287c559e669f42b04a44074b09250a))
+
 ### [0.13.12](https://github.com/korchasa/flowai/compare/v0.13.11...v0.13.12) (2026-06-13)
 
 
