@@ -90,7 +90,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 1. **`AGENTS.md`**: Project vision, constraints, mandatory rules. READ-ONLY reference.
 2. **SRS** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements.
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
-4. **Tasks** (`documents/tasks/<YYYY-MM-DD>-<slug>.md`): Temporary plans/notes per task.
+4. **Tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md`): Temporary plans/notes per task.
 5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs FR-HOOK-DOCS–FR-IDE-SCOPE.
 6. **`README.md`**: Public-facing overview. Derived from AGENTS.md + SRS + SDS. Installation, usage, pack/skill catalog, project structure. Keep in sync with framework state.
 
@@ -203,11 +203,13 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 ### Tasks (`documents/tasks/`)
 
-- One file per task or session: `<YYYY-MM-DD>-<slug>.md` (kebab-case slug, max 40 chars).
-- Examples: `2026-03-24-add-dark-mode.md`, `2026-03-24-fix-auth-bug.md`.
+- One file per task or session, nested new-shape path: `documents/tasks/<YYYY>/<MM>/<slug>.md` (kebab-case slug, max 40 chars). Flat `<YYYY-MM-DD>-<slug>.md` is **legacy** — tolerated with a `check-task-format` warning but SKIPPED by the commit-phase status auto-flip (FR-DOC-TASK-LIFECYCLE).
+- Examples: `2026/03/add-dark-mode.md`, `2026/03/fix-auth-bug.md`.
+- `status:` frontmatter is auto-derived from `## Definition of Done` checkbox state by `commit` / `review-and-commit` (all `[x]` → `done`; some → `in progress`; none → `to do`). It MUST match the DoD or `check-task-format` errors — do not hand-maintain it except `superseded`.
 - Do not reuse another session's task file — create a new file. Old tasks provide context but may contain outdated decisions.
 - Use GODS format (see below) for issues and plans.
-- Directory is gitignored. Files accumulate — this is expected.
+- `documents/tasks/` is **committed and scanned** (NOT gitignored) — the doc-anchors Stop hook validates SALP tokens in task prose, so illustrative tokens must be escaped. Files accumulate — this is expected.
+- **SALP in prose:** when mentioning a SALP token illustratively (not as a real cross-reference) in any committed Markdown/doc/task prose, wrap it in inline code (`` `[REF:ns:id]` ``) or a fenced block — the doc-anchors hook and `check-salp` ignore code spans but treat bare tokens in prose as live refs (a dangling one blocks turn-end).
 
 ### Framework primitive placement
 
@@ -282,7 +284,7 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 - **Architectural Validation**: For complex logic changes, visualize the event sequence (sequence diagram or pseudocode) — it catches race conditions and missing edges that prose descriptions miss.
 - **Variant Analysis**: When the path is non-obvious, propose variants with Pros/Cons/Risks per variant and trade-offs across them. Quality over quantity — one well-reasoned variant is fine if the path is clear. When changing a workflow primitive (skill, command, agent) that has existing benchmark coverage, ALWAYS surface ≥2 variants before editing — the "obvious path" heuristic does not apply, since primitives have multiple valid attachment points (start, mid, end, separate phase) and each has different regression risk.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
-- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY-MM-DD>-<slug>.md` using GODS format — chat-only plans are lost between sessions.
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY>/<MM>/<slug>.md` using GODS format — chat-only plans are lost between sessions.
 - **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, web) to find the answer autonomously — unnecessary questions slow the workflow and signal lack of initiative.
 
 ## TDD Flow
