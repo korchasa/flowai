@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.12](https://github.com/korchasa/flowai/compare/v0.13.11...v0.13.12) (2026-06-13)
+
+
+### Features
+
+* **beta:** doc-anchors hook delegates fixes to a subagent ([774ae73](https://github.com/korchasa/flowai/commit/774ae73a708140b050b13cd5fbb77f7b0d1fd719))
+
+
+### Agent Changes
+
+* apply reflect-suggested doc fixes (task convention + SALP-in-prose) ([d175cd8](https://github.com/korchasa/flowai/commit/d175cd85afd0688635ee48cc00ed5b5c5e1799f5))
+
 ### [0.13.11](https://github.com/korchasa/flowai/compare/v0.13.10...v0.13.11) (2026-06-13)
 
 
