@@ -1,3 +1,3 @@
 event: Stop
-description: "Turn-end SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent to fix"
+description: "Turn-end SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task"
 timeout: 30

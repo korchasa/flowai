@@ -47,6 +47,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:dist.user-sync | FR-DIST.USER-SYNC] — Scans skills/agents in each IDE dir, skips flowai-* prefix. — [ ]
 - [REF:fr:do-with-plan | FR-DO-WITH-PLAN] — Removed; superseded by `ship` (FR-SHIP) — [x] Removed
 - [REF:fr:doc-anchors | FR-DOC-ANCHORS] — SALP as the canonical anchor mechanism framework-wide — [ ]
+- [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK] — Turn-end SALP validation hook; on findings delegates the fix to a subagent so the main agent resumes its primary task — [ ]
 - [REF:fr:doc-ids | FR-DOC-IDS] — GFM link migration: code comments and documentation map — [x]
 - [REF:fr:doc-index | FR-DOC-INDEX] — Agent-maintained documentation index — [x]
 - [REF:fr:doc-links | FR-DOC-LINKS] — Interconnectedness principle for documentation — [x]
