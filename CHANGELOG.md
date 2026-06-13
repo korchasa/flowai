@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.11](https://github.com/korchasa/flowai/compare/v0.13.10...v0.13.11) (2026-06-13)
+
+
+### Features
+
+* **maintenance:** 5 self-contained read-only scan agents (FR-MAINT-SCAN rev.2) ([2ad1af9](https://github.com/korchasa/flowai/commit/2ad1af964f2848605a3c62baa15d5b2bd3ed94df))
+
 ### [0.13.10](https://github.com/korchasa/flowai/compare/v0.13.9...v0.13.10) (2026-06-05)
 
 
