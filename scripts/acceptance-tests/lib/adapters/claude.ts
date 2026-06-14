@@ -210,28 +210,29 @@ export class ClaudeAdapter implements AgentAdapter {
 
     // Each hook script is registered under a broad `Bash` matcher (no
     // command prefix filter). The hook itself inspects
-    // `tool_input.command`, strips any leading env assignments and
-    // opening shell metacharacters (`(`, `&`, `|`, backticks, `$(`),
-    // and checks whether the first *bare* command word equals the
-    // mocked tool name. This is robust to:
+    // `tool_input.command` and blocks iff the mocked tool is invoked as a
+    // command *head* anywhere in the command — at string start or right
+    // after a statement / pipe / group separator, past any leading
+    // `VAR=val` env assignments. This is robust to:
     //   - `claude -p "…"`                      (plain)
     //   - `CLAUDECODE="" claude -p "…"`         (env assignment prefix)
     //   - `( CLAUDECODE="" claude -p "…" ) &`   (subshell + background)
     //   - `FOO=1 BAR=2 claude …`                (multiple env prefixes)
-    // Claude Code's built-in `Bash(<prefix>:*)` matcher does NOT do
-    // this stripping, which caused silent mock misses for the
-    // CLAUDECODE-override pattern that some skills mandate. Filtering
-    // inside the hook avoids depending on undocumented matcher
-    // semantics.
+    //   - `DIR=… <newline> curl … | deno run …` (later-statement / pipe head)
+    // The last shape matters for fetch skills that pipe `curl` into a
+    // parser: a first-token-only check missed the `curl` and let the real
+    // network through. Claude Code's built-in `Bash(<prefix>:*)` matcher
+    // does NOT do this, so filtering inside the hook avoids depending on
+    // undocumented matcher semantics.
     for (const [tool, mockOutput] of Object.entries(mocks)) {
       const hookScriptPath = join(hooksDir, `mock-${tool}.sh`);
       const hookScript = `#!/bin/bash
 # PreToolUse mock for \`${tool}\`.
 # Reads the hook JSON payload on stdin, extracts the Bash command, and
-# blocks it with a mock reason iff the first bare command word
-# (after stripping env assignments, subshell opens, and leading pipes)
-# is exactly \`${tool}\`. Otherwise exits 0 silently so the real
-# command proceeds.
+# blocks it with a mock reason iff \`${tool}\` is invoked as a command
+# head anywhere in the command (string start or after a statement /
+# pipe / group separator, past any env assignments). Otherwise exits 0
+# silently so the real command proceeds.
 set -u
 input=$(cat)
 
@@ -243,24 +244,15 @@ else
   cmd=$(printf '%s' "$input" | sed -n 's/.*"command":"\\([^"]*\\)".*/\\1/p')
 fi
 
-# Normalise: strip leading shell metachars that would hide the real
-# first token (subshell opens, pipes, logical ops, backticks, \$( ).
-# Loop because combinations stack (e.g. '( ( claude ...').
-while :; do
-  trimmed=$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]*(\\\$\\(|\\\`|\\(|\\{|&&|\\|\\|?|;|!)+//')
-  [ "$trimmed" = "$cmd" ] && break
-  cmd=$trimmed
-done
-
-# Strip leading VAR=val env assignments (one or more, whitespace-sep).
-while printf '%s' "$cmd" | grep -Eq '^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*='; do
-  cmd=$(printf '%s' "$cmd" | sed -E 's/^[[:space:]]*[A-Za-z_][A-Za-z0-9_]*=("[^"]*"|'\\''[^'\\'']*'\\''|[^[:space:]]*)[[:space:]]*//')
-done
-
-# First bare word = everything up to the first whitespace.
-first_word=\${cmd%%[[:space:]]*}
-
-if [ "$first_word" = "${tool}" ]; then
+# Block iff the mocked tool is invoked as a command HEAD anywhere in the
+# command: at string start, or right after a statement / pipeline / group
+# separator (\`|\`, \`;\`, \`&\`, \`(\`, \`{\`, backtick), allowing leading
+# \`VAR=val\` env assignments. grep is line-oriented, so \`^\` also catches
+# the tool as the first token of any newline-separated statement (e.g. a
+# skill that sets \`DIR=…\` on its own line, then \`curl … | deno run …\`).
+# A bare argument like \`echo curl\` is NOT a head, so it does not match —
+# nor is \`grep curl\` inside a pipe segment (the segment head is \`grep\`).
+if printf '%s' "$cmd" | grep -Eq '(^|[|;&(){}\`])[[:space:]]*([A-Za-z_][A-Za-z0-9_]*=("[^"]*"|[^[:space:]]*)[[:space:]]+)*${tool}([[:space:]|;&]|$)'; then
   cat <<'MOCK_EOF'
 {
   "decision": "block",

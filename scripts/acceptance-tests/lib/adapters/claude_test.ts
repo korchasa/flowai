@@ -192,9 +192,18 @@ Deno.test(
         "subshell+background",
       ],
       [`$( CLAUDECODE="" claude -p hi )`, true, "command-substitution"],
+      // Regression: a tool invoked as a command HEAD in a non-leading
+      // statement or pipe segment must still match. Previously the matcher
+      // only inspected the first token of the whole command, so a skill that
+      // set a path variable on its own line, then piped curl into a parser,
+      // silently bypassed the mock and hit the real network.
+      [`DIR="/x"\nclaude -p hi`, true, "assignment-then-newline-statement"],
+      ["curl -s u | claude -p hi", true, "tool as pipe-segment head"],
+      ["cat a && claude -p hi", true, "tool after &&"],
       ["opencode run hi", false, "different tool"],
       ["cat /tmp/out", false, "unrelated cmd"],
       ["echo claude", false, "claude as arg, not command"],
+      ["echo hi | grep claude", false, "claude as arg in pipe segment"],
     ];
 
     for (const [cmd, shouldBlock, label] of cases) {
