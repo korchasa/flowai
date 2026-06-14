@@ -1,38 +1,52 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Static `curl` mock: the PreToolUse hook returns this SAME payload for every
-// curl invocation (one mock = one response). The synthetic leaderboard uses
-// fictional model names so a pass proves the agent ranked FETCHED data, not
-// models recalled from memory.
-const LEADERBOARD = `ARTIFICIAL ANALYSIS — Intelligence Index (live leaderboard)
-Model        IntelligenceIndex   $/Mtok   tok/s
-Aurora-7     71                  8.0      180
-Borealis-3   64                  3.0      240
-Cypher-X     58                  1.5      320
-
-SWE-bench Verified — % resolved
-Aurora-7     72.1
-Borealis-3   65.4
-Cypher-X     48.0
-
-Terminal-Bench — % solved
-Aurora-7     69.0
-Borealis-3   55.2
-Cypher-X     40.1`;
+// The acceptance `curl` mock is a PreToolUse *block* hook: it substitutes the
+// whole Bash command's output, so for the canonical pipe
+// `curl … | deno run scripts/benchmarks.ts scores --category diff-edit --stdin`
+// it stands in for the PIPE's result — i.e. the tool's `BenchRow` JSON (tool
+// correctness itself is covered by the deno unit tests next to the scripts).
+// Fictional models (Aurora-7 / Borealis-3 / Cypher-X) prove the agent ranked the
+// FETCHED rows, not models recalled from memory.
+const BENCH_JSON = JSON.stringify([
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Aurora-7",
+    score: 88,
+    higherIsBetter: true,
+  },
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Borealis-3",
+    score: 64,
+    higherIsBetter: true,
+  },
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Cypher-X",
+    score: 48,
+    higherIsBetter: true,
+  },
+]);
 
 export const SelectLlmModelRecommendsForCodingTask = new class
   extends AcceptanceTestScenario {
   id = "select-llm-model-recommends-for-coding-task";
-  name = "Recommends models for an agentic-coding task";
+  name = "Recommends models for a code-editing task via benchmarks tool";
   skill = "select-llm-model";
   pack = "beta";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
 
-  mocks = { curl: LEADERBOARD };
+  mocks = { curl: BENCH_JSON };
 
   userQuery =
-    "Which LLM model should I use for autonomous, multi-file agentic refactoring of a large Python repository? Use select-llm-model.";
+    "Use select-llm-model: which model is best at editing existing code by applying diffs/patches across a repository? Rank a few options.";
 
   checklist = [
     {
@@ -42,9 +56,9 @@ export const SelectLlmModelRecommendsForCodingTask = new class
       critical: true,
     },
     {
-      id: "fetched_via_shell",
+      id: "fetched_via_parser_pipe",
       description:
-        "Did the agent attempt to fetch leaderboard data via a shell command (curl/wget), rather than answering from memory?",
+        "Did the agent fetch via the tool pipeline — a shell `curl` piped into `deno run scripts/benchmarks.ts scores --category …` — rather than answering from memory or hand-parsing HTML?",
       critical: true,
     },
     {
@@ -56,19 +70,19 @@ export const SelectLlmModelRecommendsForCodingTask = new class
     {
       id: "ranks_fetched_models",
       description:
-        "Are the ranked models the ones from the FETCHED data (Aurora-7, Borealis-3, Cypher-X), NOT real-world models recalled from memory? Aurora-7 should rank at or near the top given its leading SWE-bench / Terminal-Bench scores.",
+        "Are the ranked models the FETCHED fictional ones (Aurora-7, Borealis-3, Cypher-X), NOT real-world models from memory? Aurora-7 should rank top given its leading pass_rate_2.",
       critical: true,
     },
     {
       id: "per_axis_rationale",
       description:
-        "Did the agent give per-axis rationale (e.g., agentic-coding via SWE-bench / Terminal-Bench standings) explaining WHY each model ranks where it does?",
+        "Did the agent give per-axis rationale naming the source (diff-edit via the Aider Polyglot leaderboard) explaining WHY each model ranks where it does?",
       critical: true,
     },
     {
-      id: "derived_coding_axes",
+      id: "derived_axis",
       description:
-        "Did the agent derive coding / agentic-coding as the dominant capability axes from the task description (and disclose its assumed weighting)?",
+        "Did the agent derive diff-edit / code-editing as the dominant capability axis from the task description (and disclose its assumed weighting)?",
       critical: false,
     },
   ];

@@ -1,16 +1,37 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Same static `curl` payload as the recommends scenario, BUT the SWE-bench /
-// Terminal-Bench blocks are absent — so the agentic-coding axis has "no data"
-// for the fetched models. This forces the agent to (a) cite the sources it DID
-// use and (b) surface the missing sources as explicit Gaps rather than
-// fabricating coding scores.
-const PARTIAL_LEADERBOARD =
-  `ARTIFICIAL ANALYSIS — Intelligence Index (live leaderboard)
-Model        IntelligenceIndex   $/Mtok   tok/s
-Aurora-7     71                  8.0      180
-Borealis-3   64                  3.0      240
-Cypher-X     58                  1.5      320`;
+// Block-mock stands in for the `benchmarks.ts scores` output (BenchRow JSON; see
+// the recommends scenario for the mechanism). It carries only diff-edit rows
+// (category `diff-edit`, source Aider). The query also asks for tool-use, which
+// lives under the `agentic` category (Artificial Analysis) — and these rows have
+// none — so the agent must CITE Aider for diff-edit, report a fetch timestamp,
+// and surface tool-use as an explicit Gap rather than fabricating tool-use scores.
+const PARSER_JSON = JSON.stringify([
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Aurora-7",
+    score: 88,
+    higherIsBetter: true,
+  },
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Borealis-3",
+    score: 64,
+    higherIsBetter: true,
+  },
+  {
+    category: "diff-edit",
+    benchmark: "aider-polyglot",
+    source: "aider",
+    model: "Cypher-X",
+    score: 48,
+    higherIsBetter: true,
+  },
+]);
 
 export const SelectLlmModelCitesSources = new class
   extends AcceptanceTestScenario {
@@ -21,10 +42,10 @@ export const SelectLlmModelCitesSources = new class
   stepTimeoutMs = 300_000;
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
 
-  mocks = { curl: PARTIAL_LEADERBOARD };
+  mocks = { curl: PARSER_JSON };
 
   userQuery =
-    "Use select-llm-model: which model is best for agentic coding AND for hard reasoning? I want to see where each number comes from.";
+    "Use select-llm-model: which model is best for editing code via diffs AND for tool-use/function-calling dialogues? I want to see where each number comes from.";
 
   checklist = [
     {
@@ -36,7 +57,7 @@ export const SelectLlmModelCitesSources = new class
     {
       id: "cites_source_per_score",
       description:
-        "Does each model's per-axis standing name the SOURCE it came from (e.g., 'Artificial Analysis Intelligence Index'), rather than presenting uncited numbers?",
+        "Does each model's per-axis standing name the SOURCE it came from (e.g., 'Aider Polyglot leaderboard'), rather than presenting uncited numbers?",
       critical: true,
     },
     {
@@ -48,13 +69,13 @@ export const SelectLlmModelCitesSources = new class
     {
       id: "reports_gaps",
       description:
-        "Did the agent explicitly list GAPS — sources that failed or lacked data (here: agentic-coding sources like SWE-bench/Terminal-Bench and the reasoning sources were not available in the fetched payload) — instead of silently omitting them?",
+        "Did the agent explicitly list GAPS — sources that failed or lacked data (here the tool-use source, Artificial Analysis, returned no usable rows for this payload) — instead of silently omitting them?",
       critical: true,
     },
     {
-      id: "no_fabricated_coding_scores",
+      id: "no_fabricated_scores",
       description:
-        "Did the agent AVOID fabricating agentic-coding or reasoning scores for the models when those sources returned no data? Missing axes must be 'no data', not invented numbers.",
+        "Did the agent AVOID fabricating tool-use scores when that source returned no data? Missing axes must be 'no data', not invented numbers.",
       critical: true,
     },
   ];
