@@ -46,6 +46,15 @@ Developer: sets task, decides direction
 
 ## Installation
 
+flowai installs through two channels:
+
+- **Claude Code & Codex → the plugin marketplace is the recommended channel.** Native install, per-IDE update flow, no Deno toolchain required. Jump to [Claude Code + Codex plugin marketplace](#claude-code--codex-plugin-marketplace).
+- **Cursor & OpenCode → the `flowai` CLI** (these IDEs have no plugin marketplace).
+
+The CLI also works on Claude Code / Codex as an alternative, but the two channels are mutually exclusive per IDE — pick one.
+
+### flowai CLI (Cursor / OpenCode; alternative on any IDE)
+
 Requires [Deno](https://deno.land/) v2.x.
 
 ```sh
@@ -77,7 +86,7 @@ Framework primitives MAY declare `scope: project-only` or `scope: global-only` i
 
 ### Claude Code + Codex plugin marketplace
 
-In addition to the `flowai` CLI, Claude Code and Codex users can install any pack as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace. All seven marketplace packs (`beta`, `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
+On Claude Code and Codex, installing flowai as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace is the **recommended** channel — native install, per-IDE updates, no Deno toolchain required. (The `flowai` CLI remains a supported alternative on these IDEs; see above.) All seven marketplace packs (`beta`, `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
 
 ```sh
 # Inside a Claude Code session:
@@ -176,7 +185,7 @@ flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruc
 
 - **Commands** (`framework/<pack>/commands/<name>/SKILL.md`) — user-invoked workflows (e.g. `/commit`). The agent does not auto-discover them.
 - **Skills** (`framework/<pack>/skills/<name>/SKILL.md`) — agent-invocable capabilities. The agent picks them up automatically when relevant.
-- **Agents** (`framework/<pack>/agents/<name>/SUBAGENT.md`) — role definitions with specialized capabilities.
+- **Agents** (`framework/<pack>/agents/<name>.md`) — role definitions with specialized capabilities.
 - **Documentation** (`documents/`) — persistent project memory across sessions.
 
 Both commands and skills install into `.{ide}/skills/`. The only IDE-visible difference is a `disable-model-invocation: true` flag on commands, added automatically by the CLI writer based on the source directory.
@@ -225,6 +234,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `diff-specialist` — git diff analysis and atomic commit preparation
 - `skill-adapter` — adapts a single skill to project specifics after upstream update
 - `agent-adapter` — adapts a single agent to project specifics after upstream update
+- `maintenance-scan-hygiene` / `maintenance-scan-dependencies` / `maintenance-scan-contracts` / `maintenance-scan-docs` / `maintenance-scan-coverage` — self-contained read-only scan workers spawned in parallel by the `maintenance` skill, one per audit bucket
 
 ### engineering
 
@@ -234,6 +244,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `deep-research` — multi-source web research with sub-agents
 - `draw-mermaid-diagrams` — Mermaid diagrams
 - `fix-tests` — fix failing tests
+- `diagnose-benchmark-failure` — diagnose a failed flowai benchmark from its run artifacts
 - `write-prd` — Product Requirements Documents
 - `write-dep` — Development Enhancement Proposals
 - `write-gods-tasks` — GODS-format tasks
@@ -290,6 +301,18 @@ TypeScript-specific setup skills.
 **Skills:**
 - `setup-agent-code-style-deno` — Deno/TS code style
 - `setup-agent-code-style-strict` — strict TypeScript
+
+### memex
+
+Memex — a long-term knowledge bank for AI agents: ingest sources, answer questions with citations, audit the bank for orphans/dead links/contradictions.
+
+**Skills:**
+- `save` — ingest a source (URL, file path, or free text) into the memex
+- `ask` — answer a question from the memex with citations
+- `audit` — audit a memex for orphans, dead links, and contradictions
+
+**Hooks:**
+- `status` — detect when the cwd is inside a memex and inject its status (pages, sources, recent log) as context
 
 ### beta
 
@@ -399,9 +422,13 @@ Every task follows the same supervised loop:
 framework/              # THE PRODUCT — distributed to users via the flowai CLI
   core/                 #   Core workflow commands and agents
   engineering/          #   Procedural engineering knowledge
+  ide-bridge/           #   Cross-IDE task delegation
   devtools/             #   Skill/agent authoring tools
   deno/                 #   Deno-specific skills
   typescript/           #   TypeScript-specific setup skills
+  memex/                #   Long-term knowledge bank skills
+  beta/                 #   Opt-in beta capabilities (select-llm-model, doc-anchors hook)
+  atoms/ composites/    #   Composite-skill generator sources (not distributed)
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure
 acceptance-tests/       # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)

@@ -413,7 +413,7 @@ graph TD
 
 ### 3.5.1 Claude Code + Codex Plugin Marketplace — FR-DIST.MARKETPLACE (`scripts/build-plugins.ts`) [ANC:sds:3-5-1]
 
-- **Purpose:** Additional, additive distribution channel that publishes flowai packs as native Claude Code + Codex plugins through one generated marketplace at `korchasa/flowai-plugins`. flowai CLI (3.5) remains primary for Cursor / OpenCode and stays supported for Claude Code / Codex; marketplace install is offered alongside, not as a replacement.
+- **Purpose:** **Preferred** distribution channel for Claude Code + Codex: publishes flowai packs as native plugins through one generated marketplace at `korchasa/flowai-plugins`. On those IDEs the plugin install is the recommended path; the flowai CLI (3.5) stays supported there as an alternative. flowai CLI (3.5) remains the channel for Cursor / OpenCode, which have no plugin marketplace. The two channels are mutually exclusive per IDE.
 - **Location:** `scripts/build-plugins.ts` (build), `scripts/validate-plugins.ts` (validator), `scripts/build-plugins_test.ts` + `scripts/validate-plugins_test.ts` (tests), `.github/workflows/ci.yml` step `Build and validate plugin marketplace` + downstream sync (publish). Compatibility wrappers `scripts/build-claude-plugins.ts` and `scripts/validate-claude-plugins.ts` call the new scripts for one transition release. Output tree at `dist/claude-plugins/` is gitignored.
 - **Interfaces:**
   - CLI: `deno task build-plugins [--pack core] [--framework ./framework] [--out ./dist/claude-plugins] [--marketplace-name flowai-plugins]`. Defaults: packs from `DEFAULT_PACKS`, out=`dist/claude-plugins`, marketplace-name from `DEFAULT_MARKETPLACE_NAME` constant in the build script.
