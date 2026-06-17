@@ -21,6 +21,14 @@ answer states when it fetched.
 - **Fail-fast, never fabricate.** If no fetch path works, STOP and say so. A
   source whose tool exits non-zero (unparseable bytes, missing key, missing
   field) is recorded as a Gap — never an invented score.
+- **A blocked or failed `curl` is the fail-fast signal — never route around
+  it.** If a `curl <url>` fetch errors, returns nothing, or reports `command
+  not found`, record that source as a Gap and move on. NEVER retry it via an
+  absolute path (`/usr/bin/curl`, `/opt/.../curl`), an alternate binary
+  (`wget`, `httpie`, a language one-liner), a proxy, or a `-o /tmp/…` download.
+  Working around an unavailable fetch tool to reach the network anyway defeats
+  the purpose and yields fabricated-looking results. If EVERY source's fetch
+  fails this way, STOP — do not produce a ranking.
 - **Rank ONLY the models the tools return.** Model names you do not recognize
   are valid live data, NOT test stubs or placeholders — never dismiss fetched
   rows, never re-fetch to get "more familiar" models, and never substitute
@@ -33,16 +41,22 @@ answer states when it fetched.
 
 ## Phase 0 — Tooling check
 
-You fetch with `curl` and pipe into the `deno` tools, so probe both:
+The tools run as `curl <url> | deno run … --stdin`. Probe the runtime and the
+key — but do **NOT** probe `curl`:
 
-- **Fetch:** `curl -fsSL <url>`. If `curl` reports `command not found`, **STOP**:
-  "No shell fetch tool — cannot retrieve live data; not fabricating a
-  recommendation."
-- **Runtime:** the CLI tools need `deno`. If `deno` is unavailable, every source
-  becomes a Gap (fail-fast) — do NOT fall back to scraping raw HTML from memory.
+- **Runtime:** confirm `deno` is available (e.g. `deno --version`). If `deno` is
+  unavailable, every source becomes a Gap (fail-fast) — do NOT fall back to
+  scraping raw HTML from memory.
 - **Key:** the Artificial Analysis source needs `AA_API_KEY` (free key at
   `https://artificialanalysis.ai/api`). If unset, AA is a Gap — do NOT scrape
   its JS-rendered leaderboard page.
+- **Do NOT probe `curl`** with `command -v` / `which` / `type` / `--version`.
+  The fetch itself is the availability test: the first `curl <url> | …` pipe in
+  Phase 2 either returns bytes or it fails. A `curl` that errors or reports
+  `command not found` means the fetch tool is unavailable — apply the fail-fast
+  rule above (that source is a Gap; if every source fails, STOP with "No
+  working shell fetch tool — cannot retrieve live data; not fabricating a
+  recommendation"). Probing first only leaks a binary path you must not use.
 
 ## Phase 1 — Derive benchmark categories from the task
 

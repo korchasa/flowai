@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "fd7c2e69d08eaa1c2b07f94c8130144e966ff7608b83bb85a5c9ed902ca3ce47",
+  "scenarioId": "select-llm-model-source-parse-failure-becomes-gap",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-17T11:23:49.550Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 122435.406292,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent explicitly invoked the `select-llm-model` skill via the Skill tool at the start of execution: `\"skill\": \"select-llm-model\"` with the user's query as args. It then proceeded to execute the s…"
+      },
+      "ran_parser_pipe": {
+        "pass": true,
+        "reason": "The agent ran all three fetch+parse pipelines before concluding: (1) `curl .../polyglot_leaderboard.yml | deno run -A scripts/benchmarks.ts scores --category diff-edit --top 15 --stdin`, (2) `curl le…"
+      },
+      "reports_gaps": {
+        "pass": true,
+        "reason": "The agent explicitly named each source as a Gap with specific reasons: (1) Artificial Analysis — AA_API_KEY not set; (2) Aider polyglot leaderboard — curl returned body that parseAider couldn't parse…"
+      },
+      "no_fabricated_ranking": {
+        "pass": true,
+        "reason": "The agent explicitly refused to rank models, stating 'ранжирование без данных недопустимо' (ranking without data is not allowed per skill instructions). No model names, scores, or rankings appear any…"
+      }
+    }
+  }
+}
