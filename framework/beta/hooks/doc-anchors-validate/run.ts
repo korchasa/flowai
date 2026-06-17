@@ -18,11 +18,18 @@
  *
  * Scan set: in a git work tree the file list comes from `git ls-files`
  * (`.gitignore`d paths are never scanned); outside a repo it falls back to a
- * manual walk with a hard-coded denylist. A consuming project adds its own
- * skip folders via the `FLOWAI_DOC_ANCHORS_SKIP` env var (comma-separated path
- * substrings) — for fixture/example layouts that differ from flowai's own.
- * Distribution runs the hook via `deno run -A`, so the `git` subprocess and the
- * env read are permitted.
+ * manual walk with a hard-coded denylist. A consuming project narrows the scan
+ * two further ways, both additive to the built-ins:
+ *   1. `.salpignore` dot-files — committed, `.gitignore`-style glob lists. A
+ *      `.salpignore` applies to its own directory subtree (patterns are matched
+ *      relative to that directory); deeper files override shallower ones, `!`
+ *      re-includes, `#` comments and blank lines are skipped. This is the
+ *      preferred mechanism: it lives in the repo next to the fixtures it
+ *      silences, so the exclusion travels with the code.
+ *   2. `FLOWAI_DOC_ANCHORS_SKIP` env var — comma-separated path substrings, for
+ *      ad-hoc/non-committed skips of layouts that differ from flowai's own.
+ * Distribution runs the hook via `deno run -A`, so the `git` subprocess, the
+ * env read, and the `.salpignore` reads are permitted.
  *
  * Single-file by design: the SALP parser is inlined (no sibling imports) so the
  * hook runs from `.{ide}/scripts/` in a user repo even though distribution
@@ -30,7 +37,7 @@
  * the user's session). Parser mirrors the pure core from `scripts/lib/salp.ts`.
  */
 
-import { join } from "jsr:@std/path";
+import { dirname, join } from "jsr:@std/path";
 
 // ---------------------------------------------------------------------------
 // Inlined SALP parser (pure; no I/O). Grammar (examples in backticks so the
@@ -193,6 +200,130 @@ export function readSkipEnv(): string[] {
 export function isSkippedPath(path: string, extra: string[] = []): boolean {
   if (SKIP_PATH_PATTERNS.some((re) => re.test(path))) return true;
   return extra.some((sub) => path.includes(sub));
+}
+
+// ---------------------------------------------------------------------------
+// `.salpignore` — committed, per-directory, `.gitignore`-style exclusion lists.
+// A `.salpignore` lives in some directory and its patterns are matched against
+// each candidate file's path RELATIVE to that directory. This lets a repo park
+// the exclusion right next to the fixtures it silences (e.g. an experiment's
+// `fixtures/` tree of intentionally-malformed/duplicate tokens) instead of
+// threading an env var through every invocation.
+// ---------------------------------------------------------------------------
+
+/** Basename of the per-directory ignore file. */
+export const SALP_IGNORE_FILE = ".salpignore";
+
+/** One compiled `.salpignore` line. `negated` (`!pattern`) re-includes a path
+ *  excluded by an earlier line. */
+type IgnorePattern = { negated: boolean; re: RegExp };
+
+/** A parsed `.salpignore`: its directory (absolute) + ordered patterns. */
+export type SalpIgnore = { dir: string; patterns: IgnorePattern[] };
+
+/** Translate the literal/glob body of a `.salpignore` pattern into a regex
+ *  fragment. `*` matches within a segment, `**` across separators, `?` a single
+ *  non-separator char; every other regex metachar is escaped. */
+function globToRegExpBody(glob: string): string {
+  let re = "";
+  for (let i = 0; i < glob.length; i++) {
+    const c = glob[i];
+    if (c === "*") {
+      if (glob[i + 1] === "*") {
+        i++; // consume the second '*'
+        re += ".*";
+      } else {
+        re += "[^/]*";
+      }
+    } else if (c === "?") {
+      re += "[^/]";
+    } else if (c === "/") {
+      re += "/";
+    } else if ("\\^$.|+()[]{}".includes(c)) {
+      re += "\\" + c;
+    } else {
+      re += c;
+    }
+  }
+  return re;
+}
+
+/** Compile a single `.salpignore` line into a pattern, or null for blank /
+ *  comment lines. Mirrors `.gitignore` anchoring rules: a leading or interior
+ *  `/` anchors to the `.salpignore`'s own directory; otherwise the pattern
+ *  matches at any depth. A trailing `/` restricts the match to directory
+ *  contents. */
+function buildIgnorePattern(raw: string): IgnorePattern | null {
+  let s = raw.replace(/\s+$/, "");
+  if (s.length === 0 || s.startsWith("#")) return null;
+
+  let negated = false;
+  if (s.startsWith("!")) {
+    negated = true;
+    s = s.slice(1);
+  }
+  let anchored = false;
+  if (s.startsWith("/")) {
+    anchored = true;
+    s = s.slice(1);
+  }
+  let dirOnly = false;
+  if (s.endsWith("/")) {
+    dirOnly = true;
+    s = s.slice(0, -1);
+  }
+  if (s.length === 0) return null;
+  if (s.includes("/")) anchored = true; // interior slash also anchors
+
+  const prefix = anchored ? "^" : "^(?:.*/)?";
+  const suffix = dirOnly ? "/.*$" : "(?:/.*)?$";
+  return { negated, re: new RegExp(prefix + globToRegExpBody(s) + suffix) };
+}
+
+/** Parse a `.salpignore` body (rooted at `dir`) into ordered patterns. */
+export function parseSalpIgnore(dir: string, content: string): SalpIgnore {
+  const patterns: IgnorePattern[] = [];
+  for (const raw of content.split("\n")) {
+    const p = buildIgnorePattern(raw);
+    if (p) patterns.push(p);
+  }
+  return { dir, patterns };
+}
+
+/**
+ * True when `fullPath` is excluded by any of the discovered `.salpignore`
+ * files. `ignores` MUST be ordered shallowest-directory-first so a deeper
+ * `.salpignore` (and its `!` negations) overrides a shallower one. Within one
+ * file the last matching pattern wins (`.gitignore` semantics).
+ */
+export function isIgnoredBySalpIgnore(
+  fullPath: string,
+  ignores: ReadonlyArray<SalpIgnore>,
+): boolean {
+  let ignored = false;
+  for (const ig of ignores) {
+    if (!fullPath.startsWith(ig.dir + "/")) continue;
+    const rel = fullPath.slice(ig.dir.length + 1);
+    for (const p of ig.patterns) {
+      if (p.re.test(rel)) ignored = !p.negated;
+    }
+  }
+  return ignored;
+}
+
+/** Read + parse the discovered `.salpignore` files, ordered shallow→deep so
+ *  deeper files override. Unreadable files are skipped (fail-open). */
+async function loadSalpIgnores(paths: string[]): Promise<SalpIgnore[]> {
+  const out: SalpIgnore[] = [];
+  for (const p of paths) {
+    try {
+      out.push(parseSalpIgnore(dirname(p), await Deno.readTextFile(p)));
+    } catch {
+      // unreadable .salpignore — ignore, fail-open
+    }
+  }
+  out.sort((a, b) => a.dir.length - b.dir.length);
+  return out;
 }
 
 /** Strip contexts where SALP tokens are illustrative, not real references:
@@ -393,43 +524,54 @@ export async function collectFiles(
   root: string,
   extraSkips: string[] = readSkipEnv(),
 ): Promise<Array<{ path: string; content: string }>> {
-  const out: Array<{ path: string; content: string }> = [];
+  const candidates: string[] = []; // full paths of scannable text files
+  const ignoreFilePaths: string[] = []; // full paths of `.salpignore` files
 
   const listed = await gitListedFiles(root);
   if (listed) {
     for (const rel of listed) {
-      if (!isCandidatePath(rel, extraSkips)) continue;
       const full = join(root, rel);
-      try {
-        out.push({ path: full, content: await Deno.readTextFile(full) });
-      } catch {
-        // unreadable / deleted-but-listed — skip, fail-open
-      }
-    }
-    return out;
-  }
-
-  // Non-git repo: manual walk pruning the denylisted dirs/surfaces.
-  async function walk(dir: string): Promise<void> {
-    for await (const entry of Deno.readDir(dir)) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory) {
-        if (SKIP_DIRS.has(entry.name)) continue;
-        if (isSkippedPath(full, extraSkips)) continue;
-        await walk(full);
+      if ((rel.split("/").pop() ?? "") === SALP_IGNORE_FILE) {
+        ignoreFilePaths.push(full);
         continue;
       }
-      if (!entry.isFile) continue;
-      if (!hasTextExtension(entry.name)) continue;
-      if (isSkippedPath(full, extraSkips)) continue;
-      try {
-        out.push({ path: full, content: await Deno.readTextFile(full) });
-      } catch {
-        // unreadable file — skip, fail-open
+      if (!isCandidatePath(rel, extraSkips)) continue;
+      candidates.push(full);
+    }
+  } else {
+    // Non-git repo: manual walk pruning the denylisted dirs/surfaces.
+    const walk = async (dir: string): Promise<void> => {
+      for await (const entry of Deno.readDir(dir)) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory) {
+          if (SKIP_DIRS.has(entry.name)) continue;
+          if (isSkippedPath(full, extraSkips)) continue;
+          await walk(full);
+          continue;
+        }
+        if (!entry.isFile) continue;
+        if (entry.name === SALP_IGNORE_FILE) {
+          ignoreFilePaths.push(full);
+          continue;
+        }
+        if (!hasTextExtension(entry.name)) continue;
+        if (isSkippedPath(full, extraSkips)) continue;
+        candidates.push(full);
       }
+    };
+    await walk(root);
+  }
+
+  const ignores = await loadSalpIgnores(ignoreFilePaths);
+  const out: Array<{ path: string; content: string }> = [];
+  for (const full of candidates) {
+    if (isIgnoredBySalpIgnore(full, ignores)) continue;
+    try {
+      out.push({ path: full, content: await Deno.readTextFile(full) });
+    } catch {
+      // unreadable / deleted-but-listed — skip, fail-open
     }
   }
-  await walk(root);
   return out;
 }
 

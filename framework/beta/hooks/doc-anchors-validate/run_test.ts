@@ -5,7 +5,9 @@ import {
   collectFiles,
   decide,
   findIssues,
+  isIgnoredBySalpIgnore,
   isSkippedPath,
+  parseSalpIgnore,
   readSkipEnv,
 } from "./run.ts";
 import { join } from "@std/path";
@@ -139,6 +141,83 @@ Deno.test("collectFiles-respects-gitignore", async () => {
       "untracked non-ignored file must be scanned",
     );
     // The dead refs live only in ignored files → no findings.
+    assertEquals(findIssues(files), []);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("salpignore-matches-gitignore-style-patterns", () => {
+  // A `.salpignore` rooted at /repo. Patterns mirror .gitignore semantics:
+  // trailing-slash dir match at any depth, anchored path, basename glob, and
+  // `!` re-inclusion.
+  const ig = parseSalpIgnore(
+    "/repo",
+    [
+      "# comment + blank line below",
+      "",
+      "fixtures/", // any dir named fixtures, at any depth
+      "/build-out/", // anchored to repo root
+      "*.gen.md", // basename glob at any depth
+      "!keep/important.gen.md", // re-include one generated file
+    ].join("\n"),
+  );
+  // dir-name match at depth
+  assert(isIgnoredBySalpIgnore("/repo/anchor-systems/fixtures/auth.md", [ig]));
+  // anchored: only the root build-out, not a nested one
+  assert(isIgnoredBySalpIgnore("/repo/build-out/x.md", [ig]));
+  assertEquals(
+    isIgnoredBySalpIgnore("/repo/sub/build-out/x.md", [ig]),
+    false,
+  );
+  // basename glob at any depth
+  assert(isIgnoredBySalpIgnore("/repo/a/b/page.gen.md", [ig]));
+  // negation re-includes
+  assertEquals(
+    isIgnoredBySalpIgnore("/repo/keep/important.gen.md", [ig]),
+    false,
+  );
+  // unrelated file untouched
+  assertEquals(isIgnoredBySalpIgnore("/repo/docs/real.md", [ig]), false);
+  // file outside the .salpignore's directory is never matched
+  assertEquals(isIgnoredBySalpIgnore("/other/fixtures/x.md", [ig]), false);
+});
+
+Deno.test("salpignore-deeper-file-overrides-shallower", () => {
+  // Shallow file excludes the whole tree; a deeper `.salpignore` re-includes.
+  const shallow = parseSalpIgnore("/repo", "generated/\n");
+  const deep = parseSalpIgnore("/repo/generated", "!keep.md\n");
+  // Order shallow→deep is the contract isIgnoredBySalpIgnore relies on.
+  assert(isIgnoredBySalpIgnore("/repo/generated/x.md", [shallow, deep]));
+  assertEquals(
+    isIgnoredBySalpIgnore("/repo/generated/keep.md", [shallow, deep]),
+    false,
+  );
+});
+
+Deno.test("collectFiles-respects-salpignore", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "doc-anchors-salpign-" });
+  try {
+    await git(dir, "init", "-q");
+    // A committed fixture tree of intentionally-dangling SALP tokens, silenced
+    // by a `.salpignore` parked next to it (the plural `fixtures/` layout the
+    // built-in patterns do NOT cover).
+    await Deno.writeTextFile(join(dir, ".salpignore"), "fixtures/\n");
+    await Deno.mkdir(join(dir, "fixtures"));
+    await Deno.writeTextFile(join(dir, "fixtures", "x.md"), "[REF:fr:ghost]");
+    await Deno.writeTextFile(join(dir, "real.md"), "Clean prose, no anchors.");
+
+    const files = await collectFiles(dir, []); // no env skips — only .salpignore
+    const paths = files.map((f) => f.path);
+    assert(
+      !paths.some((p) => p.includes("/fixtures/")),
+      `.salpignore folder leaked into scan: ${paths.join(", ")}`,
+    );
+    assert(
+      paths.some((p) => p.endsWith("/real.md")),
+      "non-ignored file must still be scanned",
+    );
+    // The only dead ref lives in the ignored fixture → no findings.
     assertEquals(findIssues(files), []);
   } finally {
     await Deno.remove(dir, { recursive: true });
