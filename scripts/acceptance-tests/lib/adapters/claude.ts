@@ -252,7 +252,16 @@ fi
 # skill that sets \`DIR=…\` on its own line, then \`curl … | deno run …\`).
 # A bare argument like \`echo curl\` is NOT a head, so it does not match —
 # nor is \`grep curl\` inside a pipe segment (the segment head is \`grep\`).
-if printf '%s' "$cmd" | grep -Eq '(^|[|;&(){}\`])[[:space:]]*([A-Za-z_][A-Za-z0-9_]*=("[^"]*"|[^[:space:]]*)[[:space:]]+)*${tool}([[:space:]|;&]|$)'; then
+#
+# The head may carry an absolute/relative PATH prefix (\`([^space|;&]*/)?\`)
+# so \`/opt/homebrew/opt/curl/bin/curl …\` and \`./curl …\` are blocked too —
+# otherwise an agent that discovered the binary path could bypass a
+# bare-head matcher and hit the real network. A second pattern blocks the
+# discovery builtins (\`command -v\` / \`which\` / \`type\` / \`whereis\` / \`hash\`)
+# that leak that path, so the tool reads as genuinely unavailable.
+head='(^|[|;&(){}\`])[[:space:]]*([A-Za-z_][A-Za-z0-9_]*=("[^"]*"|[^[:space:]]*)[[:space:]]+)*([^[:space:]|;&]*/)?${tool}([[:space:]|;&]|$)'
+discover='(^|[|;&(){}\`])[[:space:]]*(command[[:space:]]+-v|which|type|whereis|hash)([[:space:]]+-[A-Za-z]+)*[[:space:]]+([^[:space:]|;&]*/)?${tool}([[:space:]|;&]|$)'
+if printf '%s' "$cmd" | grep -Eq "$head" || printf '%s' "$cmd" | grep -Eq "$discover"; then
   cat <<'MOCK_EOF'
 {
   "decision": "block",

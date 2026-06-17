@@ -200,10 +200,40 @@ Deno.test(
       [`DIR="/x"\nclaude -p hi`, true, "assignment-then-newline-statement"],
       ["curl -s u | claude -p hi", true, "tool as pipe-segment head"],
       ["cat a && claude -p hi", true, "tool after &&"],
+      // Evasion: invoking the tool by ABSOLUTE/relative PATH bypasses a
+      // bare-head matcher. A skill agent that found the binary path (e.g.
+      // via `command -v`) and called `/opt/homebrew/opt/curl/bin/curl …`
+      // would silently reach the real network. The matcher must block any
+      // head whose final path component is the mocked tool.
+      ["/usr/local/bin/claude -p hi", true, "absolute-path head"],
+      [
+        "cat a && /usr/local/bin/claude -p hi",
+        true,
+        "absolute-path head after &&",
+      ],
+      [
+        "curl -s u | /opt/x/bin/claude -p hi",
+        true,
+        "absolute-path head in pipe",
+      ],
+      ["./claude -p hi", true, "relative-path head"],
+      // Evasion: discovering the binary path leaks the abs path the agent
+      // then uses to bypass. Discovery builtins must also be blocked so the
+      // tool reads as genuinely unavailable.
+      ["command -v claude", true, "command -v discovery"],
+      ["which claude", true, "which discovery"],
+      ["which -a claude", true, "which -a discovery"],
+      ["type claude", true, "type discovery"],
       ["opencode run hi", false, "different tool"],
       ["cat /tmp/out", false, "unrelated cmd"],
       ["echo claude", false, "claude as arg, not command"],
       ["echo hi | grep claude", false, "claude as arg in pipe segment"],
+      ["echo /usr/bin/claude", false, "abs-path as echo arg, not head"],
+      [
+        "cd /opt/claude/bin && ls",
+        false,
+        "tool name as dir component, not head",
+      ],
     ];
 
     for (const [cmd, shouldBlock, label] of cases) {
