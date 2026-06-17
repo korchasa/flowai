@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.14](https://github.com/korchasa/flowai/compare/v0.13.13...v0.13.14) (2026-06-17)
+
+
+### Features
+
+* **beta:** doc-anchors hook honors committed .salpignore skip files ([751522c](https://github.com/korchasa/flowai/commit/751522c6e85ff70327f54b730287cc852a40673c))
+* **beta:** redesign select-llm-model data layer into two subcommand CLIs ([64ee7ec](https://github.com/korchasa/flowai/commit/64ee7ecf27091119763fad52a3e0b1dfec148c27))
+
+
+### Bug Fixes
+
+* **acceptance:** block mocked tool via absolute path and discovery builtins ([68f472f](https://github.com/korchasa/flowai/commit/68f472fc3a7a47f65a0a8d74d547b43f7e7552f8))
+* **acceptance:** detect mocked tool in pipe and post-assignment Bash forms ([6c07041](https://github.com/korchasa/flowai/commit/6c07041e6ec683bb422ceb423ef2dcfbcb8bb20c))
+* **beta:** select-llm-model fail-fast — stop probing curl, forbid bypass ([96fc935](https://github.com/korchasa/flowai/commit/96fc9355c16298c17b8bf77be98f3413309daff9))
+
+
+### Documentation
+
+* recommend plugin marketplace for Claude/Codex + fix README catalog drift ([24d9240](https://github.com/korchasa/flowai/commit/24d9240cfc6732886377a7830fa3e1be5374f74d))
+
 ### [0.13.13](https://github.com/korchasa/flowai/compare/v0.13.12...v0.13.13) (2026-06-13)
 
 
