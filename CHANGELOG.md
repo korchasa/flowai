@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.15](https://github.com/korchasa/flowai/compare/v0.13.14...v0.13.15) (2026-06-18)
+
+
+### Code Refactoring
+
+* **beta:** consolidate ide-bridge pack into beta ([fc737f4](https://github.com/korchasa/flowai/commit/fc737f4c9b51fef8bda6232714704b04c829969f))
+
+
+### Documentation
+
+* **readme:** harmonize install layout by IDE ([2f9f149](https://github.com/korchasa/flowai/commit/2f9f149f82f52f226e48d1344b3c0c768b7be021))
+
 ### [0.13.14](https://github.com/korchasa/flowai/compare/v0.13.13...v0.13.14) (2026-06-17)
 
 
