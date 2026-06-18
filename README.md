@@ -46,47 +46,23 @@ Developer: sets task, decides direction
 
 ## Installation
 
-flowai installs through two channels:
+flowai installs two ways, and the channels are **mutually exclusive per IDE** — pick one:
 
-- **Claude Code & Codex → the plugin marketplace is the recommended channel.** Native install, per-IDE update flow, no Deno toolchain required. Jump to [Claude Code + Codex plugin marketplace](#claude-code--codex-plugin-marketplace).
-- **Cursor & OpenCode → the `flowai` CLI** (these IDEs have no plugin marketplace).
+- **Plugin marketplace** — native install, per-IDE updates, no Deno toolchain required. **Recommended**, but available only on **Claude Code** and **Codex**.
+- **flowai CLI** — a Deno-based installer. **Required** for **Cursor** and **OpenCode** (these IDEs have no plugin marketplace); also works as an alternative on Claude Code / Codex.
 
-The CLI also works on Claude Code / Codex as an alternative, but the two channels are mutually exclusive per IDE — pick one.
+Jump to your IDE:
 
-### flowai CLI (Cursor / OpenCode; alternative on any IDE)
+- **Claude Code** → [plugin marketplace](#claude-code) (recommended) · or the [flowai CLI](#flowai-cli)
+- **Codex** → [plugin marketplace](#codex) (recommended) · or the [flowai CLI](#flowai-cli)
+- **Cursor** → [flowai CLI](#cursor)
+- **OpenCode** → [flowai CLI](#opencode)
 
-Requires [Deno](https://deno.land/) v2.x.
+All seven packs — `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`, and the opt-in `beta` — are available on every channel.
 
-```sh
-deno install -g -A jsr:@korchasa/flowai
+### Claude Code
 
-# Recommended: install primitives once for all projects (user-level)
-flowai sync --global
-
-# Or install per-project (legacy, useful for team-wide or repo-tracked skills)
-flowai
-```
-
-### Global vs per-project
-
-`flowai` / `flowai sync` select the install scope via three mutually exclusive flags:
-
-- `--global` / `-g` — force global install into IDE user-level dirs (`~/.claude/`, `~/.cursor/`, `~/.config/opencode/`, `~/.codex/`, `~/.agents/skills/`). Config at `~/.flowai.yaml`. One sync updates every project at once.
-- `--local` / `-l` — force project-local install into `<cwd>/.{ide}/`. Config at `<cwd>/.flowai.yaml`. Use when you want team-wide skills tracked in the repo, or per-project overrides.
-- `--auto` — default. Auto-resolves scope by probing config files:
-  1. `<cwd>/.flowai.yaml` exists → project scope.
-  2. Otherwise `~/.flowai.yaml` exists → global scope (CLI prints `Using global config at ~/.flowai.yaml`).
-  3. Neither exists → CLI asks which scope to set up (defaults to global in `-y`).
-
-**Opting a project into local install:** create a `<cwd>/.flowai.yaml` (or run `flowai --local` to generate one). The mere presence of that file is the opt-in marker — subsequent runs without flags will use it.
-
-Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically. `/update` has no scope field because it is plugin/user-level installable and writes only current-project artifacts.
-
-`flowai migrate <from> <to>` requires an explicit `--global` or `--local` flag — it never auto-resolves, since cross-IDE migrations have different semantics in each scope.
-
-### Claude Code + Codex plugin marketplace
-
-On Claude Code and Codex, installing flowai as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace is the **recommended** channel — native install, per-IDE updates, no Deno toolchain required. (The `flowai` CLI remains a supported alternative on these IDEs; see above.) All seven marketplace packs (`beta`, `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`) are published as separate plugins on every framework release:
+Install flowai as a native plugin from the [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins) marketplace. Each pack is published as a separate plugin on every framework release:
 
 ```sh
 # Inside a Claude Code session:
@@ -102,6 +78,18 @@ On Claude Code and Codex, installing flowai as a native plugin from the [korchas
 /reload-plugins
 ```
 
+Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
+
+> **`doc-anchors-validate` is Claude Code only, and ships in the opt-in `beta` pack** (`flowai-beta`) — install it deliberately; it is not bundled into core. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent; the reason prescribes delegating the mechanical fix to a subagent so the main agent resumes its primary task instead of fixing inline. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
+>
+> A consuming project that hits false positives on its own fixture/example layout (anything not matching flowai's built-in skip patterns) narrows the scan two further ways, both additive to the built-ins. Preferred: commit a `.salpignore` dot-file (`.gitignore`-style globs) next to the fixtures it silences — patterns are matched relative to that file's directory, deeper files override shallower, `!` re-includes, `#`/blank lines are skipped, so the exclusion travels with the code. Ad-hoc/non-committed: set `FLOWAI_DOC_ANCHORS_SKIP` to a comma-separated list of path substrings, e.g. `FLOWAI_DOC_ANCHORS_SKIP=fixtures,examples/,vendor/`.
+
+The flowai CLI is a supported alternative on Claude Code — see [flowai CLI](#flowai-cli) — but do not run both channels for the same IDE in the same project (see the mutual-exclusivity note below).
+
+### Codex
+
+Install flowai as a native plugin from the same marketplace, using the Codex CLI:
+
 ```sh
 # From a shell with Codex CLI installed:
 codex plugin marketplace add korchasa/flowai-plugins
@@ -113,46 +101,89 @@ codex plugin add flowai-engineering@flowai-plugins
 codex plugin add flowai-devtools@flowai-plugins
 codex plugin add flowai-memex@flowai-plugins
 codex plugin add flowai-beta@flowai-plugins  # select-llm-model skill works on Codex; the doc-anchors Stop hook is inert there (no turn-end hook).
-# Start a new Codex thread to load newly installed plugins. Edit individual
-# `[plugins."<name>@flowai-plugins"]` tables in `~/.codex/config.toml` if you
-# want to disable specific packs.
 ```
 
-Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box without a separate `flowai sync` step. Hooks declared by `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
+`plugin add` materializes the plugin payload under `~/.codex/plugins/cache/` and writes `[plugins."<name>@flowai-plugins"] enabled = true`; start a **fresh Codex thread** to load newly installed skills and hooks. Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`.
 
-> **`doc-anchors-validate` is Claude Code only, and ships in the opt-in `beta` pack** (`flowai-beta`) — install it deliberately; it is not bundled into core. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent; the reason prescribes delegating the mechanical fix to a subagent so the main agent resumes its primary task instead of fixing inline. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
->
-> A consuming project that hits false positives on its own fixture/example layout (anything not matching flowai's built-in skip patterns) narrows the scan two further ways, both additive to the built-ins. Preferred: commit a `.salpignore` dot-file (`.gitignore`-style globs) next to the fixtures it silences — patterns are matched relative to that file's directory, deeper files override shallower, `!` re-includes, `#`/blank lines are skipped, so the exclusion travels with the code. Ad-hoc/non-committed: set `FLOWAI_DOC_ANCHORS_SKIP` to a comma-separated list of path substrings, e.g. `FLOWAI_DOC_ANCHORS_SKIP=fixtures,examples/,vendor/`.
+Codex hook execution is feature-gated: enable `[features].plugin_hooks = true` in `~/.codex/config.toml` before relying on plugin hooks. Disable individual packs by setting `enabled = false` (or removing the `[plugins."<name>@flowai-plugins"]` table). Refresh by re-running `codex plugin marketplace upgrade flowai-plugins` and `codex plugin add <plugin>@flowai-plugins`.
 
-Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`. Codex hook execution is feature-gated; enable `[features].plugin_hooks = true` in Codex before relying on plugin hooks.
+The flowai CLI is a supported alternative on Codex — see [flowai CLI](#flowai-cli) — but do not run both channels for the same IDE in the same project (see the mutual-exclusivity note below).
 
-`deno task check` always rebuilds and validates the local plugin marketplace before running the rest of the project checks. By default it does NOT touch your installed plugins and emits the upstream marketplace name `flowai-plugins`. To dogfood your local framework edits in Claude Code / Codex run `deno task sync-plugins-local`: it rebuilds `./dist/claude-plugins` with the dogfood marketplace name `flowai-plugins-local`, re-points that namespace at the absolute dist path in each available CLI, and installs / refreshes every emitted pack at user scope as `<pack>@flowai-plugins-local` unless the user explicitly disabled that dogfood plugin. The upstream `flowai-plugins` marketplace registration is intentionally NOT touched, so any pre-existing `<pack>@flowai-plugins` install keeps working side-by-side. Revert to upstream-only by removing the local marketplace: `claude plugin marketplace remove flowai-plugins-local` (and the Codex equivalent). Missing `claude` or `codex` CLIs are reported as warnings and skipped, not fatal. Set `AUTO_INSTALL_PLUGINS=true` in env or `.env` to opt `deno task check` into rebuilding with the dogfood name and running the sync automatically after every successful build/validate prerequisite.
+### Cursor
 
-Local marketplace smoke:
+Cursor has no plugin marketplace, so install via the [flowai CLI](#flowai-cli):
 
 ```sh
-# One-shot dogfood install of the local build into Claude Code + Codex at
-# user scope under the `flowai-plugins-local` namespace (upstream
-# `flowai-plugins` registration is left untouched):
-deno task sync-plugins-local
-
-# Or run the steps individually for inspection:
-deno task build-plugins
-
-# Claude Code, one-session smoke without installation:
-claude --plugin-dir ./dist/claude-plugins/plugins/flowai
-
-# Claude Code, persistent local user install:
-claude plugin validate ./dist/claude-plugins
-claude plugin marketplace add ./dist/claude-plugins
-claude plugin install flowai@flowai-plugins --scope user
-
-# Codex, persistent local user install:
-codex plugin marketplace add ./dist/claude-plugins
-codex plugin add flowai@flowai-plugins
+deno install -g -A jsr:@korchasa/flowai   # requires Deno v2.x
+flowai sync --global                      # all projects at once; or `flowai` for per-project
 ```
 
-After `codex plugin marketplace add`, run `codex plugin add <plugin>@flowai-plugins` for each pack you want active. `plugin add` materializes the plugin payload under `~/.codex/plugins/cache/` and writes `[plugins."<name>@flowai-plugins"] enabled = true`; a fresh Codex thread then loads its skills and hooks. Refresh happens by re-running `codex plugin marketplace upgrade flowai-plugins` and `codex plugin add <plugin>@flowai-plugins`. Disable individual packs by setting `enabled = false` (or removing the table) in `~/.codex/config.toml`.
+Scope (`--global` vs `--local`) and source (branch / fork / local path) options are documented under [flowai CLI](#flowai-cli).
+
+### OpenCode
+
+OpenCode has no plugin marketplace either — install via the [flowai CLI](#flowai-cli), exactly as for Cursor:
+
+```sh
+deno install -g -A jsr:@korchasa/flowai   # requires Deno v2.x
+flowai sync --global                      # all projects at once; or `flowai` for per-project
+```
+
+Scope and source options are documented under [flowai CLI](#flowai-cli).
+
+### flowai CLI
+
+The CLI is the install channel for Cursor and OpenCode, and a supported alternative on Claude Code / Codex. Requires [Deno](https://deno.land/) v2.x.
+
+```sh
+deno install -g -A jsr:@korchasa/flowai
+
+# Recommended: install primitives once for all projects (user-level)
+flowai sync --global
+
+# Or install per-project (legacy, useful for team-wide or repo-tracked skills)
+flowai
+```
+
+`flowai` (no args) and `flowai sync` install framework skills/agents into the IDE config dirs. This is the primary command for installation and updates. It only *notifies* when a newer CLI is published (`Update available: X → Y. Run \`flowai update\` to install.`) — it never self-installs; the sole install entry point is `flowai update`. Suppress the check with `--skip-update-check`; preview a run without writes via `-n` / `--dry-run`.
+
+#### Global vs per-project
+
+`flowai` / `flowai sync` select the install scope via three mutually exclusive flags:
+
+- `--global` / `-g` — force global install into IDE user-level dirs (`~/.claude/`, `~/.cursor/`, `~/.config/opencode/`, `~/.codex/`, `~/.agents/skills/`). Config at `~/.flowai.yaml`. One sync updates every project at once.
+- `--local` / `-l` — force project-local install into `<cwd>/.{ide}/`. Config at `<cwd>/.flowai.yaml`. Use when you want team-wide skills tracked in the repo, or per-project overrides.
+- `--auto` — default. Auto-resolves scope by probing config files:
+  1. `<cwd>/.flowai.yaml` exists → project scope.
+  2. Otherwise `~/.flowai.yaml` exists → global scope (CLI prints `Using global config at ~/.flowai.yaml`).
+  3. Neither exists → CLI asks which scope to set up (defaults to global in `-y`).
+
+**Opting a project into local install:** create a `<cwd>/.flowai.yaml` (or run `flowai --local` to generate one). The mere presence of that file is the opt-in marker — subsequent runs without flags will use it.
+
+Framework primitives MAY declare `scope: project-only` or `scope: global-only` in their SKILL.md frontmatter; the filter runs automatically. `/update` has no scope field because it is plugin/user-level installable and writes only current-project artifacts.
+
+#### Install from a branch, fork, or local path
+
+`flowai sync` can install from a git branch or local path via `.flowai.yaml`:
+
+```yaml
+# Install from a branch (uses official repo by default)
+source:
+  ref: feat/new-skill
+
+# Install from a fork
+source:
+  git: https://github.com/someone/flowai-fork.git
+  ref: main
+
+# Install from local directory
+source:
+  path: /path/to/flowai/framework
+```
+
+#### Switching IDEs: `flowai migrate <from> <to>`
+
+One-way migration of installed primitives (skills, agents, commands) from one IDE config dir to another — e.g. `flowai migrate claude cursor`. Use when switching primary IDE. It requires an explicit `--global` or `--local` flag (it never auto-resolves, since cross-IDE migrations have different semantics in each scope). `--dry-run` previews without writing; `-y` overwrites conflicts non-interactively.
 
 > **CLI and plugin install are mutually exclusive:** if you install via the plugin marketplace, do NOT also run `flowai sync` for the same IDE in the same project — the CLI detects an installed flowai plugin and aborts to avoid dual installs. Pick one channel.
 
@@ -177,7 +208,14 @@ Run `/update` (or plugin namespaced `/flowai:update`) in your AI IDE. It reconci
 3. Proposes per-file migrations with diffs and confirmation
 4. Leaves installed skills, agents, plugin caches, and user-level dirs untouched
 
-To update the CLI binary or sync project-local primitives, use the standalone `flowai` CLI. To adapt project-local installed primitives, run `/adapt`.
+To adapt project-local installed primitives to project specifics, run `/adapt`.
+
+To self-update the **CLI binary**, run `flowai update`. It checks JSR for a newer version and installs via `deno install -g -A -f jsr:@korchasa/flowai@<version>`; in `-y` (non-interactive) mode it prints the update command instead of running it. Fail-open on network errors.
+
+```sh
+flowai update           # interactive prompt
+flowai update -y        # print command only
+```
 
 ## How It Works
 
@@ -316,51 +354,11 @@ Opt-in beta capabilities not yet promoted to core. The `select-llm-model` skill 
 - `worker` — single-shot cross-IDE CLI worker; spawned by `delegate-to-ide`
 
 **Hooks:**
-- `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Installation](#claude-code--codex-plugin-marketplace).
+- `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Claude Code](#claude-code).
 
-## CLI Commands
+## Automation (`flowai loop`)
 
-The `flowai` CLI provides commands beyond interactive skill sync:
-
-### `flowai sync`
-
-Sync framework skills/agents into project-local IDE config dirs. Primary command for installation and updates.
-
-Supports installing from a git branch or local path via `.flowai.yaml`:
-
-```yaml
-# Install from a branch (uses official repo by default)
-source:
-  ref: feat/new-skill
-
-# Install from a fork
-source:
-  git: https://github.com/someone/flowai-fork.git
-  ref: main
-
-# Install from local directory
-source:
-  path: /path/to/flowai/framework
-```
-
-`flowai sync` only notifies when a newer CLI is published (`Update available: X → Y. Run \`flowai update\` to install.`). It never installs — the sole install entry point is `flowai update`. Suppress the check with `--skip-update-check`; preview a run without writes via `-n` / `--dry-run`.
-
-### `flowai update`
-
-Self-update the CLI binary. Checks JSR for a newer version; installs via `deno install -g -A -f jsr:@korchasa/flowai@<version>`. In `-y` (non-interactive) mode prints the update command instead of running it. Fail-open on network errors.
-
-```sh
-flowai update           # interactive prompt
-flowai update -y        # print command only
-```
-
-### `flowai migrate <from> <to>`
-
-One-way migration of installed primitives (skills, agents, commands) from one IDE config dir to another — e.g. `flowai migrate claude cursor`. Use when switching primary IDE. `--dry-run` previews without writing; `-y` overwrites conflicts non-interactively.
-
-### `flowai loop <prompt>`
-
-Run Claude Code non-interactively with real-time stream-json output. Base primitive for automation (CI, cron, scripts).
+`flowai loop <prompt>` runs Claude Code non-interactively with real-time stream-json output. It is the base primitive for automation (CI, cron, scripts).
 
 ```sh
 # Simple prompt
@@ -492,6 +490,36 @@ deno task check
 Dev-only skills and agents live in `.claude/skills/` and `.claude/agents/` (tracked in git). Framework skills/agents are installed by flowai from bundled source.
 
 **Composite SKILL.md files are gitignored build artefacts.** Source of truth is `framework/composites.yaml` (manifest) + `framework/atoms/*.md` (parametrized step bodies) + `framework/composites/*.md` (wrappers). Every consumer (`deno task check`, `deno task acceptance-tests`, `deno task build-plugins`, CI tarball build) regenerates SKILL.md from source via `--write` before reading — so the rendered output is always current and there is no tracked rendered copy that can drift. The 8 generated paths are listed in `.gitignore`; the generator's `checkGitignoreParity` fails the build if that list goes out of sync with `--list-targets`. Generator inputs are excluded from `framework.tar.gz` via `tar --exclude` in `.github/workflows/ci.yml`, and re-verified by `scripts/check-pack-refs.ts --leakage`. See `framework/AGENTS.md § Composite Skill Authoring` for the canon rules.
+
+### Dogfooding the local plugin marketplace
+
+`deno task check` always rebuilds and validates the local plugin marketplace before running the rest of the project checks. By default it does NOT touch your installed plugins and emits the upstream marketplace name `flowai-plugins`. To dogfood your local framework edits in Claude Code / Codex run `deno task sync-plugins-local`: it rebuilds `./dist/claude-plugins` with the dogfood marketplace name `flowai-plugins-local`, re-points that namespace at the absolute dist path in each available CLI, and installs / refreshes every emitted pack at user scope as `<pack>@flowai-plugins-local` unless the user explicitly disabled that dogfood plugin. The upstream `flowai-plugins` marketplace registration is intentionally NOT touched, so any pre-existing `<pack>@flowai-plugins` install keeps working side-by-side. Revert to upstream-only by removing the local marketplace: `claude plugin marketplace remove flowai-plugins-local` (and the Codex equivalent). Missing `claude` or `codex` CLIs are reported as warnings and skipped, not fatal. Set `AUTO_INSTALL_PLUGINS=true` in env or `.env` to opt `deno task check` into rebuilding with the dogfood name and running the sync automatically after every successful build/validate prerequisite.
+
+Local marketplace smoke:
+
+```sh
+# One-shot dogfood install of the local build into Claude Code + Codex at
+# user scope under the `flowai-plugins-local` namespace (upstream
+# `flowai-plugins` registration is left untouched):
+deno task sync-plugins-local
+
+# Or run the steps individually for inspection:
+deno task build-plugins
+
+# Claude Code, one-session smoke without installation:
+claude --plugin-dir ./dist/claude-plugins/plugins/flowai
+
+# Claude Code, persistent local user install:
+claude plugin validate ./dist/claude-plugins
+claude plugin marketplace add ./dist/claude-plugins
+claude plugin install flowai@flowai-plugins --scope user
+
+# Codex, persistent local user install:
+codex plugin marketplace add ./dist/claude-plugins
+codex plugin add flowai@flowai-plugins
+```
+
+After `codex plugin marketplace add`, run `codex plugin add <plugin>@flowai-plugins` for each pack you want active. `plugin add` materializes the plugin payload under `~/.codex/plugins/cache/` and writes `[plugins."<name>@flowai-plugins"] enabled = true`; a fresh Codex thread then loads its skills and hooks. Refresh happens by re-running `codex plugin marketplace upgrade flowai-plugins` and `codex plugin add <plugin>@flowai-plugins`. Disable individual packs by setting `enabled = false` (or removing the table) in `~/.codex/config.toml`.
 
 For contributors working on **the CLI itself** (sync engine, IDE adapters, bundle pipeline) — go to [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli). That repo has its own `deno task check`, its own test suite, and publishes `@korchasa/flowai` to JSR on tag `v*`. It pins a framework revision via `framework.lock`; bump it with `deno task bump-framework <version>` after a new `framework-v*` release lands here.
 
