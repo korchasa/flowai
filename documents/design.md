@@ -61,7 +61,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 #### Skills by pack (44)
 
-**beta (1):** `select-llm-model` — standalone (first skill in the opt-in `beta` pack; see §3.21)
+**beta (3):** `ai-ide-runner`, `delegate-to-ide` (cross-IDE bridge, see §3.17), `select-llm-model` (see §3.21) — standalone
 
 **core (10):**
 
@@ -90,8 +90,6 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 `manage-github-tickets`, `write-dep`, `write-gods-tasks`,
 `write-in-informational-style`, `write-prd` — all standalone
 
-**ide-bridge (2):** `ai-ide-runner`, `delegate-to-ide` — standalone
-
 **memex (3):** `ask`, `audit`, `save` — standalone
 
 **typescript (2):** `setup-agent-code-style-deno`,
@@ -109,13 +107,13 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `framework/core/agents/maintenance-scan-coverage.md`
 - `framework/core/agents/skill-adapter.md`
 - `framework/engineering/agents/deep-research-worker.md`
-- `framework/ide-bridge/agents/worker.md`
+- `framework/beta/agents/worker.md`
 
 #### Summary
 
 - Commands: 9 (3 atom-generated, 3 composite-generated, 3 standalone) — all in `core`.
 - Skills: 43 (2 atom-generated in `core`, 41 standalone across 7 packs).
-- Agents: 11 (all standalone — 9 in `core`, 1 in `engineering`, 1 in `ide-bridge`).
+- Agents: 11 (all standalone — 9 in `core`, 1 in `engineering`, 1 in `beta`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`) [ANC:sds:3-1]
@@ -142,7 +140,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
     scripts/<name>         # utility scripts (optional)
     assets/                # shared templates (optional, e.g. AGENTS.md templates)
   ```
-- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific), `memex` (long-term knowledge bank for AI agents, see §3.15), `ide-bridge` (cross-IDE delegation: relay + isolated-context subagent, see §3.17).
+- **Packs:** `core` (base commands), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `deno` (Deno-specific), `typescript` (TS-specific), `memex` (long-term knowledge bank for AI agents, see §3.15), `beta` (opt-in capabilities not yet promoted to core: `select-llm-model` see §3.21, `doc-anchors-validate` hook, cross-IDE delegation relay + isolated-context subagent, see §3.17).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs are the full installed names (e.g., `commit/`, `write-dep/`). flowai copies them as-is — no name transformation at install time.
@@ -567,7 +565,7 @@ graph TD
 ### 3.14 AI IDE Runner Skill — `ai-ide-runner` [ANC:sds:3-14]
 
 - **Purpose:** Spawn another AI IDE CLI runtime (`claude`, `opencode`, `cursor-agent`, `codex`) in one-shot non-interactive mode, capture stdout, and relay it verbatim. Enables second-opinion lookups, per-IDE fan-out, and cross-model comparisons from within the current agent session. Implements FR-AI-IDE-RUNNER. Companion to the delegation-style flow in §3.17.
-- **Location:** `framework/ide-bridge/skills/ai-ide-runner/SKILL.md` with catalogue references under `references/models.md` and `references/runtimes.md`. Model-invocable. (Relocated from `framework/engineering/` when the `ide-bridge` pack was introduced — see §3.17.)
+- **Location:** `framework/beta/skills/ai-ide-runner/SKILL.md` with catalogue references under `references/models.md` and `references/runtimes.md`. Model-invocable. (Cross-IDE delegation skills live in the `beta` pack — see §3.17.)
 - **Dependencies:**
   - Child CLIs on `PATH` (`claude`, `opencode`, `cursor-agent`, `codex`) — skill assumes they are installed and authenticated; missing binaries surface the runtime's own error verbatim.
   - Shell for concurrent execution (`&` + `wait`) and stdout capture.
@@ -627,17 +625,16 @@ graph TD
 - **Ownership flow:** `plan` writes committed new-shape tasks, `documents/index.md` rows, and SRS-inline `**Tasks:**` back-pointers; commit/review-and-commit derive task `status` from DoD; reflect detects decisions (read-only); maintenance audits drift.
 - **Acceptance evidence:** Benchmarks `plan-writes-task-new-frontmatter`, `plan-loads-related-tasks`, `plan-updates-srs-task-back-pointer`, `commit-flips-task-status`, `commit-derives-in-progress-status`, `review-and-commit-flips-task-status`, `plan-updates-index-on-new-fr`, `reflect-rescues-decision-as-task`, `maintenance-detects-doc-health-issues`, plus 104 GFM-link comments resolved by check-traceability.
 
-### 3.17 IDE Bridge Pack — `ide-bridge` (`framework/ide-bridge/`) [ANC:sds:3-17]
+### 3.17 Cross-IDE Bridge — in the `beta` pack (`framework/beta/`) [ANC:sds:3-17]
 
-- **Purpose:** Cross-IDE delegation. Lets an agent running in one AI IDE (e.g. Claude Code) hand a task to another IDE's CLI (e.g. Codex) — either as a one-shot relay/comparison (§3.14) or as a context-isolated delegation through a subagent.
-- **Pack contents:**
-  - `pack.yaml` — manifest (`name: ide-bridge`, `version`, `description`). No `scaffolds:` block.
-  - `skills/ai-ide-runner/` — relocated from `framework/engineering/` (see §3.14). Behavioural contract unchanged: one-shot relay, fan-out comparison, multi-model comparison; verbatim courier rule. Implements FR-AI-IDE-RUNNER.
+- **Purpose:** Cross-IDE delegation. Lets an agent running in one AI IDE (e.g. Claude Code) hand a task to another IDE's CLI (e.g. Codex) — either as a one-shot relay/comparison (§3.14) or as a context-isolated delegation through a subagent. Shipped inside the opt-in `beta` pack (consolidated there from the former standalone `ide-bridge` pack), so it now distributes through the `flowai-beta` marketplace plugin as well as the CLI.
+- **Components (within `framework/beta/`):**
+  - `skills/ai-ide-runner/` — one-shot relay, fan-out comparison, multi-model comparison; verbatim courier rule (see §3.14). Implements FR-AI-IDE-RUNNER.
   - `skills/delegate-to-ide/` — agent-invocable skill that routes delegation requests ("delegate to <ide>", "have <ide> do <task>", "execute <task> in <ide>") to the worker subagent below. MUST NOT shell out inline from the parent context. Implements FR-IDE-BRIDGE-DELEGATE.
   - `agents/worker.md` — subagent that owns a single cross-IDE CLI invocation in an isolated context window. Inherits the FR-AI-IDE-RUNNER verbatim-relay contract; single-shot only. Implements FR-IDE-BRIDGE-WORKER.
 - **Relay vs delegation split:** `ai-ide-runner` is the right fit when the child's full output IS the deliverable (one-shot relay, side-by-side comparison) — context isolation buys nothing. `delegate-to-ide` + `worker` is the right fit when only the child's *final result* needs to surface in the parent; the child's intermediate work stays in the subagent's window. Description-level disambiguation is verified by mirrored adjacent-negative trigger benchmarks on both skills.
 - **Host-IDE compatibility:** Claude Code (native `Agent`/`Task` dispatch) and OpenCode (`@<agent>` mentions) support the worker; Cursor and Codex lack native subagent dispatch and the skill MUST surface that limitation and route the user to `ai-ide-runner`. No silent inline fallback.
-- **No inter-pack dependencies:** `ide-bridge` is self-contained. Enforced by `scripts/check-pack-refs.ts`.
+- **No inter-pack dependencies:** the bridge primitives reference only each other (and core), never another non-core pack — they coexist with `select-llm-model` inside `beta`. Enforced by `scripts/check-pack-refs.ts`.
 - **Behavioural requirements:** See acceptance tests `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model` (relocated with the skill); `delegate-to-ide-via-subagent` (end-to-end: covers both FR-IDE-BRIDGE-DELEGATE and FR-IDE-BRIDGE-WORKER, since `AcceptanceTestAgentScenario` does not actually execute a subagent's body in isolation — the wrapping scenario is the only honest test path); `delegate-to-ide-trigger-pos-1`, `delegate-to-ide-trigger-adj-1`, `delegate-to-ide-trigger-false-1`.
 
 ### 3.18 SALP Anchor Infrastructure — FR-DOC-ANCHORS (`scripts/lib/salp.ts`, `scripts/check-salp.ts`, `scripts/migrate-to-salp.ts`) [ANC:sds:3-18]

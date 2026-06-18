@@ -263,17 +263,6 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 **Agents:**
 - `deep-research-worker` — research worker for deep research sub-tasks
 
-### ide-bridge
-
-Cross-IDE delegation: run a task in another AI IDE's CLI from the current session.
-
-**Skills:**
-- `ai-ide-runner` — one-shot relay / fan-out comparison across Claude Code / OpenCode / Cursor / Codex CLIs; child's stdout relayed verbatim
-- `delegate-to-ide` — delegate a task to another IDE via an isolated-context subagent so the child's transcript stays out of the parent's context
-
-**Agents:**
-- `worker` — single-shot cross-IDE CLI worker; spawned by `delegate-to-ide`
-
 ### devtools
 
 Skill and agent authoring tools.
@@ -316,10 +305,15 @@ Memex — a long-term knowledge bank for AI agents: ingest sources, answer quest
 
 ### beta
 
-Opt-in beta capabilities not yet promoted to core. The `select-llm-model` skill works on every IDE; the `doc-anchors-validate` hook is **Claude Code only**.
+Opt-in beta capabilities not yet promoted to core. The `select-llm-model` skill and the cross-IDE delegation skills work on every IDE; the `doc-anchors-validate` hook is **Claude Code only**.
 
 **Skills:**
 - `select-llm-model` — task-driven LLM recommender. Give it a free-form task; it derives benchmark-category weights, then **live-fetches** current standings through two CLI tools with subcommands — `benchmarks.ts` (Artificial Analysis, which absorbs ~15 benchmarks incl. GPQA/HLE/LiveCodeBench/Terminal-Bench-hard/τ²; Aider Polyglot; Steel.dev WebArena/OSWorld/SWE-bench Verified) and `openrouter.ts` (real deployment input/output price, per-provider breakdown with reliability, model speed). Returns a ranked shortlist with per-axis rationale, source citations, and the fetch timestamp; fails fast (no fabrication) when it cannot fetch. (LMArena, ARC-AGI, LLM-Stats and other no-stable-endpoint sources are reported as explicit Gaps.)
+- `ai-ide-runner` — one-shot relay / fan-out comparison across Claude Code / OpenCode / Cursor / Codex CLIs; child's stdout relayed verbatim
+- `delegate-to-ide` — delegate a task to another IDE via an isolated-context subagent so the child's transcript stays out of the parent's context
+
+**Agents:**
+- `worker` — single-shot cross-IDE CLI worker; spawned by `delegate-to-ide`
 
 **Hooks:**
 - `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Installation](#claude-code--codex-plugin-marketplace).
@@ -422,12 +416,11 @@ Every task follows the same supervised loop:
 framework/              # THE PRODUCT — distributed to users via the flowai CLI
   core/                 #   Core workflow commands and agents
   engineering/          #   Procedural engineering knowledge
-  ide-bridge/           #   Cross-IDE task delegation
   devtools/             #   Skill/agent authoring tools
   deno/                 #   Deno-specific skills
   typescript/           #   TypeScript-specific setup skills
   memex/                #   Long-term knowledge bank skills
-  beta/                 #   Opt-in beta capabilities (select-llm-model, doc-anchors hook)
+  beta/                 #   Opt-in: select-llm-model, doc-anchors hook, cross-IDE delegation
   atoms/ composites/    #   Composite-skill generator sources (not distributed)
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure

@@ -1,3 +1,3 @@
 name: beta
 version: "0.1.0"
-description: Opt-in beta capabilities not yet promoted to core. Ships the doc-anchors-validate Stop hook (SALP anchor/reference integrity check; Claude Code only) and the select-llm-model skill (task-driven LLM recommender; live-fetched leaderboard data).
+description: Opt-in beta capabilities not yet promoted to core. Ships the doc-anchors-validate Stop hook (SALP anchor/reference integrity check; Claude Code only), the select-llm-model skill (task-driven LLM recommender; live-fetched leaderboard data), and cross-IDE delegation (ai-ide-runner one-shot relay / fan-out, delegate-to-ide + worker isolated-context subagent).
