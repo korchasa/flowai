@@ -1,11 +1,20 @@
 ---
 date: 2026-06-04
-status: to do
+status: superseded
+superseded_by: 2026/06/migrate-acceptance-to-acp.md
 implements:
   - FR-ACCEPT.OPENCODE
 tags: [acceptance-tests, adapters, opencode]
-related_tasks: []
+related_tasks:
+  - 2026/06/migrate-acceptance-to-acp.md
 ---
+
+> **SUPERSEDED (2026-06-20)** by [migrate-acceptance-to-acp](migrate-acceptance-to-acp.md).
+> A bespoke `OpencodeAdapter` is no longer needed: the ACP-transport migration
+> reaches OpenCode through the Agent Client Protocol like every other IDE, so the
+> direct-adapter layer this task targeted is being removed wholesale. FR-ACCEPT.OPENCODE
+> is absorbed into FR-ACCEPT.ACP (the SRS-side status change lands when the
+> `### FR-ACCEPT.ACP` section is created in develop/commit).
 
 # OpenCode Adapter for Acceptance Test Runner
 
