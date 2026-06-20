@@ -1077,7 +1077,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-CICD: CI/CD Pipeline Security [ANC:fr:cicd]
 
 - **Description:** GitHub Actions workflow (`.github/workflows/ci.yml`) must follow supply chain security and least privilege practices.
-- **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md)
+- **Tasks:** [extract-cli-to-separate-repo](tasks/2026/05/extract-cli-to-separate-repo.md), [ci-bump-actions-to-node24](tasks/2026/06/ci-bump-actions-to-node24.md)
 - **Scenario:** Contributor pushes to main or opens PR. CI runs checks with minimal permissions; release steps get elevated permissions only when needed. Third-party actions cannot modify repository files.
 - **Acceptance:**
   - [x] **FR-CICD.PIN SHA pinning**: All third-party GitHub Actions pinned to full commit SHA with version comment.

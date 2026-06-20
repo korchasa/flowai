@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Deno
-        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
           deno-version: v2.7.11
 
@@ -58,7 +58,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Deno
-        uses: denoland/setup-deno@e95548e56dfa95d4e1a28d6f422fafe75c4c26fb # v2.0.3
+        uses: denoland/setup-deno@667a34cdef165d8d2b2e98dde39547c9daac7282 # v2.0.4
         with:
           deno-version: v2.7.11
 
@@ -141,7 +141,7 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.releasable.outputs.should_release == 'true'
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@2bb465e97f322d3cb2a965294d483e0d26a67aa9 # v3.0.1
         with:
           tag_name: v${{ steps.create-release.outputs.version }}
           body_path: ${{ steps.create-release.outputs.notes_file }}
@@ -155,7 +155,7 @@ jobs:
       # implements [REF:fr:cicd | FR-CICD.SPLIT]
       - name: Create Framework Release
         if: steps.releasable.outputs.should_release == 'true'
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        uses: softprops/action-gh-release@2bb465e97f322d3cb2a965294d483e0d26a67aa9 # v3.0.1
         with:
           tag_name: framework-v${{ steps.framework-tarball.outputs.framework_version }}
           name: framework-v${{ steps.framework-tarball.outputs.framework_version }}
