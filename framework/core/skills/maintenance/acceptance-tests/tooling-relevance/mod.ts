@@ -5,7 +5,8 @@ export const MaintenanceToolingRelevanceBench = new class
   id = "maintenance-tooling-relevance";
   name = "Tooling Relevance Check (Interactive)";
   skill = "maintenance";
-  stepTimeoutMs = 420_000;
+  stepTimeoutMs = 900_000;
+  totalTimeoutMs = 1_800_000;
   interactive = true;
   userPersona =
     'You are a developer who wants to review tooling issues. When asked how to proceed, say "Tooling Relevance". When asked about individual fixes, say "Apply fix" for each one.';

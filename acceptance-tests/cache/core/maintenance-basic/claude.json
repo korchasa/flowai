@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "key": "5009f16cb8890f84b50912da3af2a05c39f3c1bea4b0080b551d8b07d686b6f8",
+  "scenarioId": "maintenance-basic",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-20T19:51:10.923Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 594854.8852919999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented findings numbered [1] through [21], grouped by category (Structural Integrity, Code Hygiene, Complexity & Hotspots, Technical Debt, Documentation Coverage, Instruction Coherence, …"
+      },
+      "asks_how_to_proceed": {
+        "pass": true,
+        "reason": "After the summary the agent explicitly asked 'Как продолжить?' and offered options: specific numbers (e.g. '1, 3, 8'), category name, severity level ('high', 'medium', etc.), 'all', 'agent's choice',…"
+      },
+      "todo_found": {
+        "pass": true,
+        "reason": "Finding [9] explicitly identifies 'src/main.ts:1: // TODO: implement actual database connection — без привязки к задаче, FR или acceptance-тесту'. The TODO was also found earlier by the W1 hygiene sc…"
+      },
+      "god_object_found": {
+        "pass": true,
+        "reason": "Finding [8] explicitly identifies 'src/main.ts:7-13: SystemManager — God Object: в одном классе смешаны 5 несвязанных областей (доменная логика processUser, персистентность saveToDb, транспорт sendEm…"
+      },
+      "unused_export_found": {
+        "pass": true,
+        "reason": "Finding [7] explicitly identifies 'src/main.ts:15: export const unusedExport = 42 — экспортируемый символ без потребителей и без JSDoc'. It was also found by multiple scan agents (W1 Cat 2, W2 Cat 16…"
+      },
+      "interactive_resolution": {
+        "pass": true,
+        "reason": "After the user responded 'all', the agent entered an interactive loop. For each finding it presented the file, problem, and proposed fix, then asked 'Apply | Skip | Edit'. The user replied 'Apply fix…"
+      },
+      "constructive_fixes": {
+        "pass": true,
+        "reason": "All 21 findings in the numbered summary include an explicit '(Fix: ...)' proposal. Examples: [1] Fix: создать tsconfig.json; [7] Fix: удалить export или символ целиком; [8] Fix: разбить на отдельные …"
+      },
+      "file_length_check": {
+        "pass": true,
+        "reason": "The W1 hygiene scan agent explicitly referenced the 500-line LOC threshold ('Применённый LOC-бакет: service / framework / tool (500 строк)') and ran `wc -l` on src/main.ts, concluding 'Файл из 15 стр…"
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "8134c9a8dfa1173602a6f2a4b8595ec660c7b86e02448643bc5f91ae2c9e9d56",
+  "scenarioId": "maintenance-surfaces-severity-tags",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-20T20:08:59.664Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 501981.26999999996,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "severity_tag_present_on_every_finding": {
+        "pass": true,
+        "reason": "All 17 numbered findings carry exactly one severity tag placed immediately after the bracketed number and before the file/symbol site. Examples: '- [1] [Medium] src/misplaced_helper.ts:', '- [8] [Hig…"
+      },
+      "per_severity_counters_in_summary": {
+        "pass": true,
+        "reason": "The closing total line explicitly states: 'Total: 17 findings — Critical: 1, High: 2, Medium: 9, Low: 5 (per category: ...)'. All four severity tiers are listed with counts."
+      },
+      "findings_sorted_within_category": {
+        "pass": true,
+        "reason": "No category in this scan contains both a Critical-tagged and a non-Critical-tagged finding. The single Critical finding ([16]) is the sole entry in 'Defensive-Programming Smell'. Within mixed-severit…"
+      },
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented a numbered summary with findings [1] through [17], grouped under named category headers: Structural Integrity, Code Hygiene, Technical Debt, Documentation Coverage, Instruction Co…"
+      },
+      "asks_how_to_proceed": {
+        "pass": true,
+        "reason": "After presenting the numbered summary, the agent explicitly asked 'Как продолжить?' and offered options: numbered findings (e.g., '1, 3, 16'), category name, severity level ('critical', 'high', 'medi…"
+      },
+      "no_premature_fixes": {
+        "pass": true,
+        "reason": "The final git status shows 'nothing to commit, working tree clean', and the GIT DIFF section is empty. The agent performed only read operations (cat, find, grep, Read tool) during the scan phase and …"
+      }
+    }
+  }
+}

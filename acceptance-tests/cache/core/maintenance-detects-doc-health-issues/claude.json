@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "key": "8574d36bbb7482517c23cdced7747e453bdcaf7db4823d24f07e02e6c3979b6e",
+  "scenarioId": "maintenance-detects-doc-health-issues",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-20T19:59:56.394Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 446380.296834,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "documentation_health_category_present": {
+        "pass": true,
+        "reason": "The agent's final findings summary includes a dedicated '**Documentation Health**' section containing findings [15]–[19]. This is a separate, clearly labeled category distinct from the existing 8 cat…"
+      },
+      "broken_link_detected": {
+        "pass": true,
+        "reason": "Finding [19] under 'Documentation Health' explicitly flags: '`src/cache.ts:5`: мёртвая ссылка `[FR-MISSING](../documents/requirements.md#fr-missing-no-such-anchor)` — якорь `#fr-missing-no-such-ancho…"
+      },
+      "second_doc_issue_detected": {
+        "pass": true,
+        "reason": "In addition to the broken link ([19]), the agent reported multiple additional Documentation Health entries: [15] FR-CACHE marked [x] but tests/cache_test.ts does not exist (stale acceptance); [16] FR…"
+      },
+      "constructive_fix_for_doc_issue": {
+        "pass": true,
+        "reason": "Every Documentation Health finding carries a concrete (Fix: …) proposal: [15] suggests creating tests/cache_test.ts or reverting status to [ ]; [16] suggests creating both test file and implementatio…"
+      },
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented a numbered summary with findings [1] through [23], grouped by category labels (Structural Integrity, Code Hygiene, Technical Debt, Consistency (Docs vs Code), Documentation Covera…"
+      },
+      "asks_how_to_proceed": {
+        "pass": true,
+        "reason": "After presenting the numbered summary, the agent explicitly asked 'Как вы хотите продолжить?' with a menu of options: specific finding numbers, category name, severity level (high/medium/low), combin…"
+      },
+      "no_premature_fixes": {
+        "pass": true,
+        "reason": "The final git status shows 'nothing to commit, working tree clean' with only the initial 'init' commit in the git log. No file modifications were made during the scan phase. After the user answered '…"
+      }
+    }
+  }
+}

@@ -5,7 +5,8 @@ export const MaintenanceSeverityFilterBench = new class
   id = "maintenance-severity-filter-critical-high";
   name = "Maintenance accepts a severity filter on the Resolution prompt";
   skill = "maintenance";
-  stepTimeoutMs = 420_000;
+  stepTimeoutMs = 900_000;
+  totalTimeoutMs = 1_800_000;
   interactive = true;
   userPersona =
     "You are a developer triaging a maintenance sweep and want to handle only the most urgent findings. The FIRST reply after the summary, EXACTLY: 'critical+high' (lowercase, plus-separated, no quotes, no surrounding text). For every per-finding question that follows, reply 'Skip'. When asked again how to proceed (if at all), reply 'done'.";

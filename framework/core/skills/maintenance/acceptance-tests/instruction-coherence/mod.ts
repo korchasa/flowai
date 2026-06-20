@@ -5,7 +5,8 @@ export const MaintenanceInstructionCoherenceBench = new class
   id = "maintenance-instruction-coherence";
   name = "Instruction Coherence Check (Interactive)";
   skill = "maintenance";
-  stepTimeoutMs = 420_000;
+  stepTimeoutMs = 900_000;
+  totalTimeoutMs = 1_800_000;
   interactive = true;
   userPersona =
     'You are a developer who wants to fix coherence issues. When asked how to proceed, say "Instruction Coherence". When asked about individual fixes, say "Apply fix" for each one.';

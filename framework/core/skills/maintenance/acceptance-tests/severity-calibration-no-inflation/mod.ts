@@ -5,7 +5,8 @@ export const MaintenanceSeverityCalibrationBench = new class
   id = "maintenance-severity-calibration-no-inflation";
   name = "Maintenance calibrates severity tiers without Critical inflation";
   skill = "maintenance";
-  stepTimeoutMs = 420_000;
+  stepTimeoutMs = 900_000;
+  totalTimeoutMs = 1_800_000;
   interactive = true;
   userPersona =
     'You are a developer who wants the audit but will skip every fix. When asked how to proceed, say "done". Be brief.';

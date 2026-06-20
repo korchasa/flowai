@@ -4,7 +4,8 @@ export const MaintenanceBasicBench = new class extends AcceptanceTestScenario {
   id = "maintenance-basic";
   name = "Basic Project Audit (Interactive)";
   skill = "maintenance";
-  stepTimeoutMs = 420_000;
+  stepTimeoutMs = 900_000;
+  totalTimeoutMs = 1_800_000;
   interactive = true;
   userPersona =
     'You are a developer who wants to fix all issues. When asked how to proceed, say "all". When asked about individual fixes, say "Apply fix" for each one.';

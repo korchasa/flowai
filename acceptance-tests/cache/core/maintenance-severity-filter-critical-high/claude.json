@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "08ae700b5d8a900e821bec95ec7b3a793b43fc5446c561d7027f0e41cd504b93",
+  "scenarioId": "maintenance-severity-filter-critical-high",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-20T20:18:16.315Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 525121.283375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "accepts_compound_severity_token": {
+        "pass": true,
+        "reason": "After the summary was presented, the user typed 'critical+high'. The agent immediately responded 'Разбираем 3 находки: 1 Critical + 2 High.' and began the per-finding resolution loop covering exactly…"
+      },
+      "enters_resolution_loop_on_subset": {
+        "pass": true,
+        "reason": "The agent entered the Apply/Skip/Edit loop for exactly three findings: [17] [Critical] (silent_catch.ts), [5] [High] (oversized_module.ts), and [16] [High] (documents/ missing). No Medium or Low find…"
+      },
+      "ignores_medium_and_low": {
+        "pass": true,
+        "reason": "Zero Medium or Low findings received an Apply/Skip/Edit prompt. The entire resolution loop transcript contains only findings tagged [Critical] and [High]. After closing the loop the agent stated the …"
+      },
+      "severity_tags_present_in_summary": {
+        "pass": true,
+        "reason": "Every one of the 18 finding lines in the summary carries a literal English severity tag in square brackets: [Low] on findings 1,2,6,10,11,12,15; [Medium] on findings 3,4,7,8,9,13,14,18; [High] on fin…"
+      }
+    }
+  }
+}
