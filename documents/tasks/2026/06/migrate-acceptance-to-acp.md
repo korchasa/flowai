@@ -1,6 +1,6 @@
 ---
 date: "2026-06-20"
-status: to do
+status: in progress
 implements:
   - FR-ACCEPT.ACP
   - FR-ACCEPT-ISOLATION
@@ -121,29 +121,32 @@ overlap before deleting/duplicating adapter code (see Constraints + Follow-ups).
 
 ## Definition of Done
 
-Phased. An IDE's direct path is deleted (item 8) ONLY after that IDE is green
-over ACP. `<scn>` = an existing pack-level scenario, e.g. `agents-rules-tdd-cycle`.
+Single flow; items are ordered by dependency, not phasing. An IDE's direct path
+is deleted (the per-IDE cutover item) ONLY after that IDE is green over ACP —
+this is a sequencing rule, not a separate phase. `<scn>` = an existing pack-level
+scenario, e.g. `agents-rules-tdd-cycle`.
 
-- [ ] FR-ACCEPT.ACP: SRS gains a `### FR-ACCEPT.ACP` section with `**Desc:**`,
+- [x] FR-ACCEPT.ACP: SRS gains a `### FR-ACCEPT.ACP` section with `**Desc:**`,
       `**Acceptance:**`, `**Status:**`, and a matching `[ANC:fr:accept.acp]` anchor;
       `index.md` + SRS back-pointers resolve.
   - Test: `scripts/check-salp_test.ts` (anchor/ref resolution)
   - Evidence: `grep -q '### FR-ACCEPT.ACP' documents/requirements.md && deno run -A scripts/check-salp.ts`
-- [ ] FR-ACCEPT.ACP (spike): Phase-0 resolves whether `claude-code-acp` reuses the
+- [x] FR-ACCEPT.ACP (spike): Phase-0 resolves whether `claude-code-acp` reuses the
       code-signed `claude` binary + Keychain, or must fall back to `ANTHROPIC_API_KEY`;
       decision + evidence recorded in this task's Follow-ups before any delete.
+      **RESOLVED 2026-06-21: subscription auth SURVIVES — kill-criterion NOT triggered.**
   - Test: manual — korchasa (investigative spike)
-  - Evidence: one Claude scenario green over ACP — `deno task acceptance-tests -f <scn> --transport acp` — OR a recorded API-key-fallback decision with rationale in `## Follow-ups`
-- [ ] FR-ACCEPT.ACP: `AcpClient` drives one prompt turn end-to-end (init →
+  - Evidence: spike `scripts/acceptance-tests/lib/acp/spike.ts` drove `initialize → session/new → session/prompt` over the official ACP client against `claude-code-acp@0.16.2` under the FR-ACCEPT-ISOLATION bench-home with NO `ANTHROPIC_API_KEY`, and got `assistantText:"PONG"`, `stopReason:end_turn`. Verdict in `## Follow-ups`.
+- [x] FR-ACCEPT.ACP: `AcpClient` drives one prompt turn end-to-end (init →
       `session/new` → `session/prompt` → `session/update` assistant text + tool calls).
   - Test: `scripts/acceptance-tests/lib/acp/client_test.ts::prompt turn yields assistant text and tool-call updates`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/client_test.ts`
-- [ ] FR-ACCEPT.ACP: tool mocking over ACP — a mocked tool is intercepted at
+- [x] FR-ACCEPT.ACP: tool mocking over ACP — a mocked tool is intercepted at
       `session/request_permission` / tool-result, returns the canned reason, real tool
       never executes (replaces Claude `PreToolUse` hooks).
   - Test: `scripts/acceptance-tests/lib/acp/client_test.ts::mocked tool intercepted, real command not run`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/client_test.ts`
-- [ ] FR-ACCEPT.ACP: async error mapping — connection drop / malformed frame /
+- [x] FR-ACCEPT.ACP: async error mapping — connection drop / malformed frame /
       agent error response / watchdog kill each map to a deterministic
       `exit_code_zero` failure verdict to the judge (no unhandled rejection).
   - Test: `scripts/acceptance-tests/lib/acp/client_test.ts::connection drop maps to exit_code_zero failure verdict`
@@ -157,7 +160,7 @@ over ACP. `<scn>` = an existing pack-level scenario, e.g. `agents-rules-tdd-cycl
       agent loads under ACP; `~/.claude/skills/` snapshot byte-identical before/after.
   - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts::sandbox skills win and user-level skills dir untouched`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts`
-- [ ] FR-ACCEPT.ACP: cache-key covers the ACP transport inputs (agent-spec table,
+- [x] FR-ACCEPT.ACP: cache-key covers the ACP transport inputs (agent-spec table,
       ACP lib version, transport flag) so a transport change — INCLUDING the final
       removal of the `--transport` flag / default flip — invalidates stale verdicts.
   - Test: `scripts/acceptance-tests/lib/cache_test.ts::acp transport participates in cache key`
@@ -179,7 +182,13 @@ over ACP. `<scn>` = an existing pack-level scenario, e.g. `agents-rules-tdd-cycl
 via Deno `npm:`) + a thin migration seam; `SpawnedAgent` keeps spawn + guards;
 per-IDE incremental cutover behind green gates; legacy parse/mock code removed last.
 
-### Phase 0 — Spike (auth + transport proof) [blocking gate]
+Single continuous flow. The step order below is a hard dependency chain — spike
+de-risks before any build; the parallel transport is built before any IDE cutover;
+an IDE's green gate precedes its irreversible delete. These are sequencing rules
+and inline gates, NOT separate phases; nothing here may be reordered to delete a
+direct path before its ACP green gate passes.
+
+**Spike (blocking gate — proves auth + transport before any build):**
 
 1. Stand up a throwaway `scripts/acceptance-tests/lib/acp/spike.ts`: launch one ACP
    agent as a child (start with an **API-key** agent — Codex via `codex acp`, or
@@ -197,7 +206,7 @@ per-IDE incremental cutover behind green gates; legacy parse/mock code removed l
    any Node-builtin shims). If it does not, fall back to evaluating the community
    AI-SDK ACP provider or Variant A — record which, and STOP for re-confirmation.
 
-### Phase 1 — ACP client + agent registry (parallel transport)
+**Build the ACP client + agent registry (parallel transport, kept beside `direct`):**
 
 Files to CREATE:
 
@@ -232,7 +241,8 @@ Files to MODIFY:
   (no `--resume` reparse). Mock setup routes to the client interceptor, not
   `adapter.setupMocks`.
 - `scripts/task-acceptance-tests.ts` + `acceptance_cli.ts` — add `--transport
-  acp|direct` (default `direct` during migration; flips to `acp` in Phase 2).
+  acp|direct` (default `direct` during migration; flips to `acp` at the final
+  cutover step below).
 - `scripts/acceptance-tests/lib/cache.ts` — add agent-spec table + ACP lib version
   + transport flag to the cache-key inputs; document in the module docstring.
 - `acceptance-tests/config.json` — per-IDE `launch`/`authMode` (or keep models;
@@ -258,22 +268,24 @@ failure verdict handed to the judge — identical to today's watchdog-trip path.
 A test injects a mid-turn connection drop and asserts the failure verdict, not an
 unhandled rejection.
 
-### Phase 2 — Per-IDE cutover + delete (irreversible, gated)
+**Per-IDE cutover + delete (irreversible, gated — runs only after the build above):**
 
 For each IDE in order **Codex/Gemini (API-key, low-risk) → Cursor → OpenCode →
 Claude (last, auth-sensitive)**:
 
-1. Run `<scn>` over `--transport acp`; require green (incl. mocks + multi-turn).
+1. Run `<scn>` over `--transport acp`; require green (incl. mocks + multi-turn) and
+   a dual-transport verdict diff (run both transports on a sample set, compare judge
+   verdicts) showing no drift — this is the irreversible-delete gate for that IDE.
 2. Delete that IDE's direct adapter (`adapters/<ide>.ts`) + its `*_test.ts`; drop
    its `stream-json`/hook-mock code paths.
 3. Resolve FR-ACCEPT.OPENCODE: mark its task `superseded` by this one (OpenCode now
    reached via ACP) or absorb its DoD here — decide with the user before deleting.
 
-After all IDEs green: flip `--transport` default to `acp`, remove the `direct`
-branch + the `AgentAdapter.parseOutput`/`setupMocks` surface (keep only the data
-seam in `registry.ts`), delete `setupMocks` hook writers, and update SRS/SDS
-(§3.4, §3.4.x) + README + `documents/ides-difference.md` to describe the ACP
-transport. This is the convergence to the Variant-C end-state, reached safely.
+Final cutover (after all IDEs green): flip `--transport` default to `acp`, remove
+the `direct` branch + the `AgentAdapter.parseOutput`/`setupMocks` surface (keep
+only the data seam in `registry.ts`), delete `setupMocks` hook writers, and update
+SRS/SDS (§3.4, §3.4.x) + README + `documents/ides-difference.md` to describe the
+ACP transport. This is the convergence to the Variant-C end-state, reached safely.
 
 ### Verification
 
@@ -286,8 +298,23 @@ transport. This is the convergence to the Variant-C end-state, reached safely.
 
 ## Follow-ups
 
-- Spike verdict (Phase 0): Claude subscription-auth-over-ACP outcome + evidence —
-  to be recorded here before any adapter deletion.
+- **Spike verdict (Phase 0) — RESOLVED 2026-06-21:**
+  - **Transport under Deno (spike #3):** official `npm:@zed-industries/agent-client-protocol@0.4.5`
+    imports + runs under Deno 2.8 with NO Node-only build step. Exports `ClientSideConnection`,
+    `ndJsonStream`, `PROTOCOL_VERSION`, `RequestError`, schemas. ✓
+  - **Claude subscription auth (spike #2, the OPEN RISK / kill-criterion):** SURVIVES.
+    `claude-code-acp@0.16.2` launched under bench-home (`HOME=<wd>/bench-home`, empty
+    `.claude/skills/` + symlinks to `~/Library/Keychains`, `~/.local/share/claude`), env
+    WITHOUT `ANTHROPIC_API_KEY`. One trivial prompt turn returned `PONG` /
+    `stopReason:end_turn`. `initialize.authMethods = ["claude-login"]`,
+    `agentCapabilities.loadSession = true`, `sessionCapabilities = {fork, list, resume}`.
+    → The code-signed-binary + Keychain chain reaches through the wrapper. Kill-criterion
+    (crit #2) does NOT trigger; no API-key-vs-subscription decision needed from the user.
+  - **Package-rename note:** `@zed-industries/claude-code-acp` is deprecated/renamed to
+    `@agentclientprotocol/claude-agent-acp`. Old name still resolves at 0.16.2; the agent
+    registry SHOULD pin the new name to keep receiving updates (follow-up at cutover).
+  - **Multi-turn:** `loadSession` + `session/*` resume capability advertised → ACP session
+    reuse replaces `--resume <sessionId>` reparse (DoD multi-turn item) natively.
 - FR-ACCEPT.OPENCODE coordination: RESOLVED — `opencode-acceptance-adapter` task
   superseded; OpenCode reached via ACP. SRS FR-ACCEPT.OPENCODE → absorbed into
   FR-ACCEPT.ACP at develop/commit (mark the FR `superseded`/absorbed there).

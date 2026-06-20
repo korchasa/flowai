@@ -43,6 +43,7 @@
     "jsr:@std/yaml@*": "1.0.12",
     "jsr:@std/yaml@1": "1.0.12",
     "jsr:@std/yaml@^1.0.12": "1.0.12",
+    "npm:@zed-industries/agent-client-protocol@0.4.5": "0.4.5",
     "npm:standard-version@*": "9.5.0",
     "npm:zod@^3.25.76": "3.25.76"
   },
@@ -221,13 +222,21 @@
       "integrity": "sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q=="
     },
     "@hutson/parse-repository-url@3.0.2": {
-      "integrity": "sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q=="
+      "integrity": "sha512-H9XAx3hc0BQHY6l+IFSWHDySypcXsvsuLhgYLUGywmJ5pswRVQJUHpOsobnLYp2ZUaUlKiKDrgWWhosOwAEM8Q==",
+      "bin": true
     },
     "@types/minimist@1.2.5": {
       "integrity": "sha512-hov8bUuiLiyFPGyFPE1lwWhmzYbirOXQNNo40+y3zow8aFVTeyn3VWL0VFFfdNddA8S4Vf0Tc062rzyNr7Paag=="
     },
     "@types/normalize-package-data@2.4.4": {
       "integrity": "sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA=="
+    },
+    "@zed-industries/agent-client-protocol@0.4.5": {
+      "integrity": "sha512-OwHKfu5AiKul/GSJilHg36+kOSV9eOl2eYnjR6tenAQDdraSnt22WFk0SDFTeuAANz1Gxkv+DTf7Hq32rvX7FQ==",
+      "dependencies": [
+        "zod"
+      ],
+      "deprecated": true
     },
     "JSONStream@1.3.5": {
       "integrity": "sha512-E+iruNOY8VV9s4JEbe1aNEm6MiszPRr/UfcHMz0TQh1BXSxHK+ASV1R6W4HpjBhSeS+54PIsAMCBmwD06LLsqQ==",
@@ -1247,6 +1256,7 @@
       "jsr:@std/semver@1",
       "jsr:@std/toml@^1.0.2",
       "jsr:@std/yaml@^1.0.12",
+      "npm:@zed-industries/agent-client-protocol@0.4.5",
       "npm:zod@^3.25.76"
     ]
   }

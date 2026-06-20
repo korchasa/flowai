@@ -606,3 +606,29 @@ Deno.test("whitelist covers all cross-package imports from lib/", async () => {
     );
   }
 });
+
+Deno.test("computeCacheKey: acp transport participates in cache key", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const base = {
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    } as const;
+
+    const direct = await computeCacheKey({ ...base, transport: "direct" });
+    const acp = await computeCacheKey({ ...base, transport: "acp" });
+    const dflt = await computeCacheKey(base); // default is "direct"
+
+    // Default == explicit direct; acp differs (transport flag + ACP lib/registry
+    // enter the key). The final default-flip from direct→acp therefore
+    // invalidates every stale verdict.
+    assertEquals(direct, dflt);
+    assertNotEquals(direct, acp);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
