@@ -1,19 +1,20 @@
 /**
- * ACP agent executor (FR-ACCEPT.ACP) — the transport-side replacement for
- * `SpawnedAgent`. Spawns an IDE's ACP server from the data-only registry,
- * preserving FR-ACCEPT-GUARDS (setpgrp process group + watchdog + health gate),
- * and drives the conversation over the official ACP client:
+ * ACP agent executor (FR-ACCEPT.ACP) — the sole transport-side agent runner.
+ * Spawns an IDE's ACP server from the data-only registry, preserving
+ * FR-ACCEPT-GUARDS (setpgrp process group + watchdog + health gate), and drives
+ * the conversation over the official ACP client:
  *
  *   spawn(registry.launch) under setpgrp_exec.py
  *     → AcpClient over the child's stdio
  *     → initialize → session/new → session/prompt (turn 1)
- *     → [UserEmulator] session/prompt on the SAME session (multi-turn, no
- *        `--resume` reparse — ACP keeps the session)
+ *     → [UserEmulator] session/prompt on the SAME session (multi-turn — ACP
+ *        keeps the session across turns)
  *     → accumulate a readable transcript for the judge.
  *
- * Mocks are intercepted in the client (one implementation for all IDEs),
- * replacing the per-IDE hook writers. Errors map to a non-zero exit code via the
- * client's deterministic failure verdict (FR-ACCEPT.ACP error mapping).
+ * Tool mocking is IDE-agnostic via PATH-shadowing (`writeMockBin`): the client
+ * auto-allows every permission request, and mocked commands resolve to stub
+ * executables that print the canned result. Errors map to a non-zero exit code
+ * via the client's deterministic failure verdict (FR-ACCEPT.ACP error mapping).
  */
 import { dirname, fromFileUrl, join } from "@std/path";
 import { ndJsonStream } from "@zed-industries/agent-client-protocol";

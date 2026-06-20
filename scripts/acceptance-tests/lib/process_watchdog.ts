@@ -35,7 +35,7 @@
 // trip near 10 descendants, before measurable swap pressure. Thresholds are
 // tunable (NOT disable-able) via env: BENCH_MAX_DESCENDANTS, BENCH_MAX_RSS_GB,
 // BENCH_WATCHDOG_INTERVAL_MS, BENCH_WATCHDOG_CONFIRM. There is no env-var
-// escape hatch to skip the watchdog. Tests that exercise SpawnedAgent's
+// escape hatch to skip the watchdog. Tests that exercise AcpAgent's
 // lifecycle pass `disabled: true` programmatically via WatchdogOptions —
 // production callers cannot bypass via environment.
 
@@ -46,7 +46,7 @@ export interface WatchdogOptions {
   confirmSamples?: number; // default 2 (consecutive overshoots before killing)
   graceMs?: number; // default 1500 (between SIGTERM and SIGKILL)
   onTrip?: (reason: WatchdogTrip) => void;
-  /** Programmatic-only no-op. Tests use this to exercise SpawnedAgent
+  /** Programmatic-only no-op. Tests use this to exercise AcpAgent
    *  lifecycle without wrapping the spawn in setpgrp_exec.py. Production
    *  callers MUST NOT set this — see header comment. */
   disabled?: boolean;

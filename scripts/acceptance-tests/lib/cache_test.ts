@@ -25,6 +25,7 @@ import {
   trimResultForCache,
   writeCache,
 } from "./cache.ts";
+import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
 const REPO_ROOT = Deno.cwd();
 
@@ -607,7 +608,7 @@ Deno.test("whitelist covers all cross-package imports from lib/", async () => {
   }
 });
 
-Deno.test("computeCacheKey: acp transport participates in cache key", async () => {
+Deno.test("computeCacheKey: ACP lib version + registry fingerprint enter the key", async () => {
   const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
   try {
     const scenario = await makeFakeScenario(tmp);
@@ -619,14 +620,15 @@ Deno.test("computeCacheKey: acp transport participates in cache key", async () =
       ideCliVersion: "",
     } as const;
 
-    const direct = await computeCacheKey({ ...base, transport: "direct" });
-    const acp = await computeCacheKey({ ...base, transport: "acp" });
-    const dflt = await computeCacheKey(base); // default is now "acp"
-
-    // ACP is the only transport: default == explicit acp, and it differs from a
-    // (legacy) direct key because the ACP lib version + registry enter the key.
-    assertEquals(acp, dflt);
-    assertNotEquals(direct, acp);
+    // ACP is the only transport, so its lib version + agent-spec table are folded
+    // into every key unconditionally — an ACP lib bump or a registry launch-spec
+    // edit invalidates stale verdicts. Both must be non-empty (else they would
+    // contribute nothing) and the key must be deterministic for fixed inputs.
+    assertNotEquals(ACP_LIB_VERSION, "");
+    assertNotEquals(acpRegistryFingerprint(), "");
+    const a = await computeCacheKey(base);
+    const b = await computeCacheKey(base);
+    assertEquals(a, b);
   } finally {
     await Deno.remove(tmp, { recursive: true });
   }

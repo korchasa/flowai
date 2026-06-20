@@ -57,8 +57,6 @@ import { walk } from "@std/fs/walk";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
-/** Transport driving the IDE agent. */
-export type AcpTransport = "direct" | "acp";
 
 /** Cache file payload schema. Bump when the on-disk shape changes. */
 export const CACHE_SCHEMA_VERSION = 1;
@@ -110,13 +108,6 @@ export interface CacheKeyInputs {
   runs: number;
   /** Best-effort output of `<cli> --version`, or `""` on probe failure. */
   ideCliVersion: string;
-  /**
-   * Transport driving the agent. Participates in the key so a `direct`→`acp`
-   * swap — INCLUDING the final removal of the `--transport` flag / default flip
-   * — invalidates stale verdicts. Defaults to `"direct"` during migration.
-   * When `"acp"`, the ACP lib version + agent-spec table also enter the key.
-   */
-  transport?: AcpTransport;
 }
 
 /**
@@ -129,9 +120,6 @@ export async function computeCacheKey(
   inputs: CacheKeyInputs,
 ): Promise<string> {
   const { scenario, ide, agentModel, runs, ideCliVersion } = inputs;
-  // ACP is now the only transport; default reflects that so the ACP lib version
-  // + registry participate in every key (the direct path was retired).
-  const transport: AcpTransport = inputs.transport ?? "acp";
   const hashInputs: Record<string, string> = {};
 
   // 1. Scenario directory (mod.ts + fixture/)
@@ -197,16 +185,10 @@ export async function computeCacheKey(
     ideCliVersion,
     agentModel,
     runs,
-    transport,
-    // ACP lib version + agent-spec table enter the key only on the ACP
-    // transport, so an ACP lib upgrade or a registry edit invalidates ACP
-    // verdicts without disturbing direct-transport keys.
-    ...(transport === "acp"
-      ? {
-        acpLibVersion: ACP_LIB_VERSION,
-        acpRegistry: acpRegistryFingerprint(),
-      }
-      : {}),
+    // ACP is the only transport. Its lib version + agent-spec table enter every
+    // key, so an ACP lib upgrade or a registry edit invalidates stale verdicts.
+    acpLibVersion: ACP_LIB_VERSION,
+    acpRegistry: acpRegistryFingerprint(),
     inputs: hashInputs,
   });
 

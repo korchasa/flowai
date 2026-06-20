@@ -7,7 +7,7 @@
  * / setupMocks) with a connection + a launch spec — onboarding a new IDE becomes
  * adding a row, not writing a class.
  *
- * `command`/`args` are spawned by `SpawnedAgent` under the same
+ * `command`/`args` are spawned by `AcpAgent` under the same
  * `setpgrp_exec.py` process-group wrapping + watchdog (FR-ACCEPT-GUARDS), so a
  * wrapper child (`npx claude-code-acp`) and its descendants stay inside the
  * killed group.
