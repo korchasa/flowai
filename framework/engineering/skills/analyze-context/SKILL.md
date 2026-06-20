@@ -1,6 +1,6 @@
 ---
 name: analyze-context
-description: Analyze total token usage including conversation history, system prompts, and active rules to estimate cost.
+description: Estimate total token usage and cost across conversation history, system prompts, and active rules. Use when the user asks how much context or how many tokens are in use, to audit context size, or to estimate session cost.
 model: cheap
 effort: low
 ---

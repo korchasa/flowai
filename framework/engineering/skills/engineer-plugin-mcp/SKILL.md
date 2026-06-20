@@ -1,8 +1,6 @@
 ---
 name: engineer-plugin-mcp
-description: >-
-  Build AI IDE plugin MCP elements: stdio JSON-RPC servers, tool schemas,
-  host wiring for Claude Code/Codex, event-name mapping, and validation.
+description: Build AI-IDE plugin MCP elements - stdio JSON-RPC servers, tool schemas, host wiring for Claude Code/Codex, event-name mapping, and validation. Use when adding an MCP server to a plugin.
 ---
 
 # Plugin MCP Engineer

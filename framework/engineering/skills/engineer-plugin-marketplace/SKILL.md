@@ -1,8 +1,6 @@
 ---
 name: engineer-plugin-marketplace
-description: >-
-  Designs AI IDE plugin marketplaces: requirements, constraints, host-specific
-  payloads, local dogfood, release sync, validation, and related skill routing.
+description: Design AI-IDE plugin marketplaces - requirements, host-specific payloads, local dogfood, release sync, and validation. Use when the user wants to create or publish a plugin marketplace.
 ---
 
 # Plugin Marketplace Engineer

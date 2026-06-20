@@ -2,7 +2,10 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
   ALLOWED_SUBDIRS,
   collectDocumentationSchemaIndirectionErrors,
+  descriptionHasWhenTrigger,
   inferKind,
+  isFrameworkSkillsDir,
+  validateDescriptionWhenTrigger,
   validateDocumentationSchemaIndirection,
   validateIdeNeutrality,
   validateKindInvariants,
@@ -586,6 +589,82 @@ Deno.test("validateKindInvariants: skill WITH flag fails", () => {
   assertEquals(errors[0].criterion, "FR-PACKS.SKILL-INVARIANT");
 });
 
+// --- isFrameworkSkillsDir (framework-only check guard) ---
+
+Deno.test("isFrameworkSkillsDir: relative framework path matches", () => {
+  assertEquals(isFrameworkSkillsDir("framework/engineering/skills"), true);
+  assertEquals(isFrameworkSkillsDir("framework/core/commands"), true);
+});
+
+Deno.test("isFrameworkSkillsDir: absolute framework path matches", () => {
+  assertEquals(
+    isFrameworkSkillsDir("/Users/x/repo/framework/core/skills"),
+    true,
+  );
+  assertEquals(isFrameworkSkillsDir("C:\\repo\\framework\\core\\skills"), true);
+});
+
+Deno.test("isFrameworkSkillsDir: non-framework path does not match", () => {
+  assertEquals(isFrameworkSkillsDir(".claude/skills"), false);
+  assertEquals(isFrameworkSkillsDir("/abs/.claude/skills"), false);
+});
+
+// --- validateDescriptionWhenTrigger (FR-DESC-QUALITY) ---
+
+Deno.test("FR-DESC-QUALITY: skill description without WHEN phrase errors", () => {
+  const errors = validateDescriptionWhenTrigger("my-skill", "skill", {
+    name: "my-skill",
+    description: "Rewrites text in a dense factual style with no fluff.",
+  });
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-DESC-QUALITY");
+  assertStringIncludes(errors[0].message, "WHEN-trigger");
+});
+
+Deno.test("FR-DESC-QUALITY: skill description with WHEN phrase passes", () => {
+  const errors = validateDescriptionWhenTrigger("my-skill", "skill", {
+    name: "my-skill",
+    description:
+      "Rewrites text in a dense factual style. Use when the user asks to " +
+      "tighten docs.",
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("FR-DESC-QUALITY: command description without WHEN phrase is exempt", () => {
+  const errors = validateDescriptionWhenTrigger("commit", "command", {
+    name: "commit",
+    description: "Commit current changes as atomic conventional commits.",
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("FR-DESC-QUALITY: descriptionHasWhenTrigger recognizes allowlist phrases", () => {
+  for (
+    const phrase of [
+      "Foo. Use when bar.",
+      "Foo. Use this to bar.",
+      "Use for bar.",
+      "Use to bar.",
+      "Use after bar.",
+      "Use proactively when bar.",
+      "Use on bar.",
+      "Triggers on bar.",
+      "Used when bar.",
+      "Should be used when bar.",
+      "Fires when the user asks.",
+      "Apply when you need bar.",
+    ]
+  ) {
+    assertEquals(
+      descriptionHasWhenTrigger(phrase),
+      true,
+      `expected WHEN trigger in: ${phrase}`,
+    );
+  }
+  assertEquals(descriptionHasWhenTrigger("Does things efficiently."), false);
+});
+
 // --- validateIdeNeutrality (FR-UNIVERSAL.IDE-NEUTRAL) ---
 
 Deno.test("validateIdeNeutrality: generic body passes", () => {
@@ -624,6 +703,17 @@ Configure claude-opus-4-6 as the default.
 `;
   const errors = validateIdeNeutrality("foo", body);
   assertEquals(errors.length, 1);
+});
+
+Deno.test("validateIdeNeutrality: ai-ide-runner is exempt (intentional provider model IDs)", () => {
+  const body = `---
+name: ai-ide-runner
+description: bar
+---
+
+Prefer the native provider: openai/gpt-5.4, anthropic/claude-sonnet-4.6.
+`;
+  assertEquals(validateIdeNeutrality("ai-ide-runner", body), []);
 });
 
 Deno.test("validateIdeNeutrality: frontmatter-only model tier is allowed", () => {

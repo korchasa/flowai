@@ -1,6 +1,6 @@
 ---
 name: ship
-description: "Terminal full-cycle workflow: plan → implement → review → commit → push. Five phases, four explicit gates (variant selection, green project check, verdict gate, clean-tree + branch-protection). Self-contained — execute the inlined steps directly, do NOT invoke other skills via the Skill tool."
+description: "Terminal full-cycle workflow: plan → implement → review → commit → push. Self-contained — execute the inlined steps directly, do NOT invoke other skills via the Skill tool."
 argument-hint: task description or issue URL
 effort: high
 ---

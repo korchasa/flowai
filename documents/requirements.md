@@ -223,7 +223,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 ### FR-ACCEPT.TRIGGER: Skill Description-Matching Verification [ANC:fr:accept.trigger]
 
 - **Desc:** Every skill in `framework/<pack>/skills/` MUST have 3 trigger scenarios verifying description-matching correctness: 1 positive (skill should activate), 1 adjacent-negative (a different skill is the right match), 1 false-use-negative (query is in the skill's domain but the wrong intent for it). Catches regressions where a description rewrite makes the skill invisible to the model (false negative) or over-triggered (false positive).
-- **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md)
+- **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md), [rewrite-skill-descriptions](tasks/2026/06/rewrite-skill-descriptions.md)
 - **Scope:** Only `framework/<pack>/skills/`. Commands (`framework/<pack>/commands/`) carry `disable-model-invocation: true` (injected at sync) and are triggered by explicit `/name` — out of scope.
 - **Shape:** Regular `AcceptanceTestScenario` with one `userQuery` and one critical checklist item evaluated by the LLM judge against the trace. No new infra.
 - **Layout:** Sibling folders inside the skill's existing `acceptance-tests/`:
@@ -240,6 +240,16 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Acceptance verified by acceptance tests:** every `framework/*/skills/*/acceptance-tests/trigger-{pos,adj,false}-1/mod.ts` (verified by `scripts/check-trigger-coverage.ts`).
 - **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/acceptance-tests/trigger-*' | wc -l` equals (skill count) × 3.
 - **Status:** [x]
+
+### FR-DESC-QUALITY: Skill Description WHEN-Trigger Gate [ANC:fr:desc-quality]
+
+- **Desc:** Every agent-invocable `framework/<pack>/skills/<name>/SKILL.md` `description` MUST carry a WHAT (what the skill does) AND a WHEN-trigger phrase (when to invoke it) — the description is the only signal the model classifier uses to discover the skill. A deterministic gate (`scripts/check-skills.ts`) fails `deno task check` when a `skills/` description lacks a recognized WHEN-trigger phrase. Commands (`framework/<pack>/commands/`) are user-invoked via explicit `/name` (no model auto-discovery) and are EXEMPT.
+- **Tasks:** [rewrite-skill-descriptions](tasks/2026/06/rewrite-skill-descriptions.md)
+- **Scope:** `framework/*/skills/*` only. Composites/atoms reach `skills/` as rendered build artefacts — they are gated on the rendered output; fixes go to the atom/composite source, never the gitignored SKILL.md.
+- **Allowlist:** case-insensitive substrings — `use when`, `use this`, `use for`, `use to`, `use after`, `use proactively`, `use on`, `triggers on`, `used when`, `should be used when`, `when the user`, `when you need` (single source of truth: `WHEN_TRIGGER_PHRASES` in `scripts/check-skills.ts`).
+- **Quality-proxy caveat:** the gate checks WHEN-phrase *presence*, NOT description *quality*. Description quality (specificity, third person, no "How to X"/"Helps with X" lazy forms) stays reviewer-judged and is additionally enforced product-side by engineer-skill (its bundled `validate_skill.ts` deterministic floor + the SKILL.md Phase 4 self-review rubric).
+- **Acceptance:** `deno test scripts/check-skills_test.ts` passes (incl. the WHEN-trigger cases) AND `deno test framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts` passes (engineer-skill validator floor) AND `deno task acceptance-tests -f engineer-skill` green (Phase 4 behavioral gate — manual — korchasa).
+- **Status:** [ ]
 
 ### FR-ACCEPT.OPENCODE: OpenCode Adapter for Acceptance Test Runner [ANC:fr:accept.opencode]
 

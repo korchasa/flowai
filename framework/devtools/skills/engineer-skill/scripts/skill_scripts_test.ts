@@ -16,7 +16,8 @@ async function makeSkillDir(skillMdContent: string): Promise<string> {
 
 function validSkillMd(overrides?: { name?: string; description?: string }) {
   const name = overrides?.name ?? "my-skill";
-  const desc = overrides?.description ?? "A valid test skill description";
+  const desc = overrides?.description ??
+    "A valid test skill description. Use when validating a skill.";
   return `---\nname: ${name}\ndescription: ${desc}\n---\n\n# My Skill\n`;
 }
 
@@ -193,7 +194,8 @@ Deno.test("validate: description too long (>1024 chars)", async () => {
 });
 
 Deno.test("validate: SKILL.md too long (>500 lines)", async () => {
-  const header = "---\nname: my-skill\ndescription: ok\n---\n";
+  const header =
+    "---\nname: my-skill\ndescription: ok. Use when testing.\n---\n";
   const filler = "line\n".repeat(500); // header ~4 lines + 500 = 504
   const dir = await makeSkillDir(header + filler);
   try {
@@ -201,6 +203,33 @@ Deno.test("validate: SKILL.md too long (>500 lines)", async () => {
     assertEquals(ok, false);
     assertEquals(msg.includes("too long"), true);
     assertEquals(msg.includes("Maximum recommended is 500"), true);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("validate: description without WHEN-trigger phrase fails", async () => {
+  const dir = await makeSkillDir(
+    `---\nname: my-skill\ndescription: Rewrites text in a dense, factual style.\n---\n`,
+  );
+  try {
+    const [ok, msg] = validateSkill(dir);
+    assertEquals(ok, false);
+    assertEquals(msg.includes("WHEN"), true);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("validate: description with WHEN-trigger phrase passes", async () => {
+  const dir = await makeSkillDir(
+    validSkillMd({
+      description: "Rewrites text. Use when the user asks to tighten docs.",
+    }),
+  );
+  try {
+    const [ok, _msg] = validateSkill(dir);
+    assertEquals(ok, true);
   } finally {
     await Deno.remove(dir, { recursive: true });
   }

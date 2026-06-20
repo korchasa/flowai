@@ -39,6 +39,18 @@ export const EngineerSkillBasicBench = new class
       critical: true,
     },
     {
+      id: "description_has_explicit_when_trigger",
+      description:
+        "Does the produced SKILL.md `description` contain an EXPLICIT WHEN-trigger phrase stating when to invoke the skill — e.g. 'Use when …', 'when the user …', 'used when …' — in addition to WHAT it does, and AVOID lazy forms ('How to X', 'Helps with X', or a bare domain label with no trigger)? This is the WHAT+WHEN rule that Phase 4 enforces as a blocking gate.",
+      critical: true,
+    },
+    {
+      id: "ran_validation_gate",
+      description:
+        "Did the agent run `validate_skill.ts` (or otherwise explicitly verify the SKILL.md against the validator) as part of finishing, rather than declaring the skill done without any validation step?",
+      critical: false,
+    },
+    {
       id: "actionable_content",
       description:
         "Does the SKILL.md body contain actionable workflow steps or templates for generating migrations (not just abstract advice)?",

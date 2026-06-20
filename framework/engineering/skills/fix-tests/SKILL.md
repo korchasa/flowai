@@ -1,6 +1,6 @@
 ---
 name: fix-tests
-description: How to fix tests
+description: Fix failing or broken tests by finding the root cause and correcting the source code (not the test). Use when tests fail, a suite is red, or the user asks to fix or repair tests or a CI test failure.
 effort: high
 ---
 

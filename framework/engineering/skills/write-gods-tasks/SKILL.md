@@ -1,6 +1,6 @@
 ---
 name: write-gods-tasks
-description: How to write tasks using GODS framework
+description: Author task files in the GODS framework (Goal, Overview, Definition of Done, Solution). Use when the user asks to write, structure, or break down a task or plan in GODS format.
 ---
 
 ## HOW TO WRITE TASKS USING GODS FRAMEWORK

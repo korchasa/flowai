@@ -1,6 +1,6 @@
 ---
 name: write-in-informational-style
-description: How to write in informational style
+description: Rewrite text in a dense, factual informational style with no fluff or marketing. Use when the user asks to write or rewrite docs or notes concisely or to apply a neutral informational tone.
 ---
 
 ## HOW TO WRITE IN INFORMATIONAL STYLE

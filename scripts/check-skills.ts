@@ -69,6 +69,23 @@ export function inferKind(skillsDir: string): SkillKind {
 }
 
 /**
+ * True if `skillsDir` points inside the framework source tree (the product),
+ * as opposed to dev-only installs like `.claude/skills`. Framework-only checks
+ * (kind invariants, IDE-neutrality, the FR-DESC-QUALITY WHEN-trigger gate)
+ * gate on this.
+ *
+ * Matches a `framework` path segment whether the path is relative
+ * (`framework/core/skills`, as `discoverSkillsDirs` emits) or absolute
+ * (`/repo/framework/core/skills`). A plain `.includes("/framework/")` check
+ * silently failed on the relative form, leaving every framework-only check
+ * dormant in `deno task check`.
+ */
+export function isFrameworkSkillsDir(skillsDir: string): boolean {
+  const normalized = skillsDir.replace(/\\/g, "/");
+  return /(^|\/)framework\//.test(normalized);
+}
+
+/**
  * Enforces per-kind invariants that the framework split relies on:
  *
  * - Under `commands/`: the source SKILL.md must NOT carry
@@ -115,6 +132,62 @@ export function validateKindInvariants(
 // SKILL_MAX_LINES, SKILL_MAX_TOKENS, FRONTMATTER_MAX_TOKENS imported from
 // ./lib/skill-limits.ts — single source of truth for skill size limits.
 // Token budget approximation: chars/4. Documented as adequate guardrail.
+
+/**
+ * FR-DESC-QUALITY: phrases (case-insensitive substrings) that signal a
+ * description states WHEN to invoke the skill, not just WHAT it does. This is
+ * the single source of truth shared with engineer-skill's bundled
+ * `validate_skill.ts` (kept in sync by hand; both reference the
+ * engineer-skill WHAT+WHEN authoring rule).
+ */
+export const WHEN_TRIGGER_PHRASES: readonly string[] = [
+  "use when",
+  "use this",
+  "use for",
+  "use to",
+  "use after",
+  "use proactively",
+  "use on",
+  "triggers on",
+  "used when",
+  "should be used when",
+  "when the user",
+  "when you need",
+];
+
+/** True if the description contains any recognized WHEN-trigger phrase. */
+export function descriptionHasWhenTrigger(description: string): boolean {
+  const lower = description.toLowerCase();
+  return WHEN_TRIGGER_PHRASES.some((phrase) => lower.includes(phrase));
+}
+
+/**
+ * FR-DESC-QUALITY: agent-invocable `skills/` must state WHEN to invoke them —
+ * the description is the only signal the model classifier uses to discover the
+ * skill. `commands/` are user-invoked (no auto-discovery) and exempt.
+ *
+ * Note: presence of a WHEN phrase is a deterministic floor, NOT a quality
+ * guarantee — description quality stays reviewer-judged (see SDS §5).
+ */
+export function validateDescriptionWhenTrigger(
+  dirName: string,
+  kind: SkillKind,
+  frontmatter: Record<string, unknown>,
+): SkillError[] {
+  if (kind !== "skill") return [];
+  const desc = typeof frontmatter.description === "string"
+    ? frontmatter.description
+    : "";
+  if (descriptionHasWhenTrigger(desc)) return [];
+  return [{
+    skill: dirName,
+    criterion: "FR-DESC-QUALITY",
+    message:
+      'description missing a WHEN-trigger phrase (e.g. "Use when …"); a ' +
+      "skills/ description must state when to invoke the skill, not just what " +
+      "it does (see engineer-skill WHAT+WHEN rule).",
+  }];
+}
 
 /**
  * FR-UNIVERSAL.STRUCT: Validates directory structure.
@@ -500,11 +573,21 @@ export async function validateSkill(
   // Only applies to framework source tree; installed copies under .{ide}/skills/
   // legitimately carry `disable-model-invocation: true` on commands because
   // the writer injects it at sync time.
-  if (skillsDir.replace(/\\/g, "/").includes("/framework/")) {
+  if (isFrameworkSkillsDir(skillsDir)) {
+    const kind = inferKind(skillsDir);
     errors.push(
       ...validateKindInvariants(
         dirName,
-        inferKind(skillsDir),
+        kind,
+        fm.data as Record<string, unknown>,
+      ),
+    );
+    // [REF:fr:desc-quality | FR-DESC-QUALITY]: skills/ descriptions must carry
+    // a WHEN-trigger phrase so the model classifier can discover them.
+    errors.push(
+      ...validateDescriptionWhenTrigger(
+        dirName,
+        kind,
         fm.data as Record<string, unknown>,
       ),
     );
@@ -520,7 +603,7 @@ export async function validateSkill(
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
   // Model IDs belong in the CLI's `DEFAULT_MODEL_MAPS` (in flowai-cli), not
   // in user-facing skill bodies.
-  if (skillsDir.replace(/\\/g, "/").includes("/framework/")) {
+  if (isFrameworkSkillsDir(skillsDir)) {
     errors.push(...validateIdeNeutrality(dirName, content));
   }
 
@@ -543,10 +626,20 @@ export async function validateSkill(
  * historical mentions of `codex` inside benchmark fixture paths (those live
  * outside framework/, which is excluded above).
  */
+/**
+ * Skills exempt from FR-UNIVERSAL.IDE-NEUTRAL. `ai-ide-runner` is a cross-IDE
+ * relay/comparison skill whose body deliberately documents the mapping from
+ * vendor labels to native provider model IDs (e.g. `anthropic/claude-sonnet-4.6`,
+ * `openai/gpt-5.4`) — naming concrete models IS the skill's subject matter, so
+ * abstracting them to tiers would destroy the example. See SDS §3.17.
+ */
+export const IDE_NEUTRAL_EXEMPT = new Set(["ai-ide-runner"]);
+
 export function validateIdeNeutrality(
   dirName: string,
   content: string,
 ): SkillError[] {
+  if (IDE_NEUTRAL_EXEMPT.has(dirName)) return [];
   const errors: SkillError[] = [];
   // Strip frontmatter to avoid flagging `model: smart` tiers or descriptions.
   const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");

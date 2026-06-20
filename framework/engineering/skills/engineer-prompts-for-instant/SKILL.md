@@ -1,8 +1,6 @@
 ---
 name: engineer-prompts-for-instant
-description: >-
-  Guide for writing stable, effective prompts for instant/fast models (Gemini
-  Flash, GPT-4o Mini, Haiku), suitable for beginners.
+description: Guide to writing stable prompts for instant/fast models (Gemini Flash, GPT-4o Mini, Haiku). Use when the user is writing or tuning prompts for a fast or cheap model.
 ---
 
 # HOW TO WRITE PROMPTS FOR INSTANT MODELS

@@ -1,8 +1,6 @@
 ---
 name: write-dep
-description: >-
-  Writing a Development Enhancement Proposal (DEP) - a document for proposing
-  technical improvements
+description: Write a Development Enhancement Proposal (DEP) for a technical improvement. Use when the user wants to propose, document, or formalize a technical change for review.
 ---
 
 # SYSTEM ROLE

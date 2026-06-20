@@ -149,9 +149,10 @@ Description is critical for skill discovery. The agent uses it to decide when to
    - Good: "Extract text/tables from PDF files, fill forms, merge documents. Use when working with PDF files or when the user mentions PDFs, forms, or document extraction."
    - Bad: "Helps with documents"
 
-3. **Include WHAT and WHEN**:
+3. **Include WHAT and WHEN** (the WHEN phrase is MANDATORY, not optional):
    - WHAT: specific capabilities
-   - WHEN: trigger scenarios
+   - WHEN: trigger scenarios — an explicit phrase such as "Use when …" or "when the user …"
+   - Enforced: `validate_skill.ts` (and flowai's `check-skills.ts` for every `skills/` primitive) reject a description that has no recognized WHEN-trigger phrase. Lazy forms ("How to X", "Helps with X", a bare domain label) fail.
 
 ### Constraints
 
@@ -291,18 +292,28 @@ If context from prior conversation exists, infer the skill from discussed workfl
 4. Create utility scripts if needed
 5. Run `deno run -A scripts/init_skill.ts` for scaffolding if starting from scratch
 
-### Phase 4: Verification
+### Phase 4: Verification (BLOCKING gate)
 
-Run validation:
+Run validation and do NOT finish until it exits 0:
 
 ```bash
 deno run -A scripts/validate_skill.ts <path/to/skill-directory>
 ```
 
+`validate_skill.ts` is the portable per-skill FLOOR. It rejects a missing, oversized, or angle-bracketed description AND a description with no WHEN-trigger phrase (e.g. "Use when …"). If it fails, FIX the description and re-run — never proceed while it is red.
+
+> **Two validators, two roles.** `validate_skill.ts` (bundled here) is the portable floor that runs on ONE skill anywhere. Inside the flowai repo, `scripts/check-skills.ts` is the repo-wide gate wired into `deno task check`: it adds the catalog budget (name+description <100 tokens, ~400 chars — stricter than the floor's 1024-char description limit) and applies the same WHEN-trigger requirement to every `skills/` primitive. A description can pass the floor yet fail the repo gate on the token budget, so when authoring inside flowai satisfy BOTH.
+
+Description self-review rubric (BLOCKING — a "no" on any line means rewrite before finishing):
+- [ ] WHAT — names the concrete capability (not the lazy "Helps with X" / "How to X")?
+- [ ] WHEN — carries an explicit trigger phrase ("Use when …", "when the user …")?
+- [ ] Specific — trigger terms a user would actually say, not a vague domain label?
+- [ ] Third person — "Processes …", not "I can help you …"?
+- [ ] Within budget — name+description ≲ 75 tokens (~300 chars) for headroom?
+
 Checklist:
-- [ ] SKILL.md under 500 lines
-- [ ] Description is specific, includes trigger terms, WHAT + WHEN
-- [ ] Written in third person
+- [ ] `validate_skill.ts` exits 0 (line count, description present + WHAT + WHEN, no angle brackets)
+- [ ] Description passes the self-review rubric above
 - [ ] Consistent terminology
 - [ ] File references one level deep
 - [ ] No time-sensitive information

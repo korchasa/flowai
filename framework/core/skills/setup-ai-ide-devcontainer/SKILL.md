@@ -1,6 +1,6 @@
 ---
 name: setup-ai-ide-devcontainer
-description: Set up .devcontainer for AI IDE development. Generates devcontainer.json and optional Dockerfile for project tech stack, AI CLI integration (Claude Code, OpenCode, flowai), skill mounting, and security hardening.
+description: Generate a .devcontainer (devcontainer.json plus optional Dockerfile) for AI-IDE development with AI CLI integration, skill mounting, and security hardening. Use when the user wants to set up or containerize a dev environment for Claude Code, OpenCode, or flowai.
 ---
 
 # AI Devcontainer Setup

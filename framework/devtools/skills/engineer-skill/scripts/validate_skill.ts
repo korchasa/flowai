@@ -6,6 +6,32 @@
 import { join, resolve } from "jsr:@std/path";
 import { parse } from "jsr:@std/yaml";
 
+/**
+ * WHEN-trigger phrases (case-insensitive substrings) signalling a description
+ * states when to invoke the skill. Mirror of `WHEN_TRIGGER_PHRASES` in flowai's
+ * `scripts/check-skills.ts` — keep the two lists in sync by hand.
+ */
+const WHEN_TRIGGER_PHRASES: readonly string[] = [
+  "use when",
+  "use this",
+  "use for",
+  "use to",
+  "use after",
+  "use proactively",
+  "use on",
+  "triggers on",
+  "used when",
+  "should be used when",
+  "when the user",
+  "when you need",
+];
+
+/** True if the description contains any recognized WHEN-trigger phrase. */
+function descriptionHasWhenTrigger(description: string): boolean {
+  const lower = description.toLowerCase();
+  return WHEN_TRIGGER_PHRASES.some((phrase) => lower.includes(phrase));
+}
+
 export function validateSkill(
   skillPath: string,
 ): [boolean, string] {
@@ -140,6 +166,18 @@ export function validateSkill(
       return [
         false,
         `Description is too long (${description.length} characters). Maximum is 1024 characters.`,
+      ];
+    }
+    // A description must state WHEN to invoke the skill, not just WHAT it does —
+    // the description is the only signal the model classifier uses to discover
+    // the skill. This allowlist mirrors `WHEN_TRIGGER_PHRASES` in flowai's
+    // `scripts/check-skills.ts` (kept in sync by hand). This file is the
+    // portable per-skill floor; `check-skills.ts` is flowai's repo-wide gate.
+    if (!descriptionHasWhenTrigger(description)) {
+      return [
+        false,
+        'Description is missing a WHEN-trigger phrase (e.g. "Use when …"). ' +
+        "State when to invoke the skill, not just what it does (WHAT + WHEN).",
       ];
     }
   }

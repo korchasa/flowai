@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Streamlined commit workflow — fewer tool calls, targeted doc sync
+description: Commit current changes as atomic, conventional commits with targeted documentation sync — groups the diff into logical commits and updates the docs each change affects.
 _params:
   DIFF_SOURCE:
     choices: [FRESH_READ, REUSE_PRIOR_PHASE]
