@@ -1,13 +1,13 @@
 ---
 date: "2026-06-05"
-status: in progress
+status: done
 implements:
   - FR-DOC-ANCHORS.HOOK
   - FR-HOOK-RESOURCES.FORMAT
 tags: []
 related_tasks: []
 ---
-# Stop-triggered SALP doc-anchors validation hook (core, all users)
+# Stop-triggered SALP doc-anchors validation hook (beta pack, Claude Code only)
 
 ## Goal
 
@@ -89,36 +89,43 @@ debt). Variant B: repo-wide, advisory, fires on turn-end (`Stop`), never blocks.
 
 ## Definition of Done
 
-- [ ] FR-HOOK-RESOURCES.FORMAT: `Stop` is a supported hook event with documented
+> **Reconciliation note (2026-06-20):** the hook shipped in the **`beta`** pack
+> (opt-in), not `core`, and is **Claude Code only** (Phase 3 dropped — see Solution).
+> The SALP parser was **inlined into a single `run.ts`** (resolved choice #2), so no
+> separate `salp.ts` exists. DoD paths below updated `core`→`beta` and `salp.ts`
+> removed to keep the evidence commands runnable. All items verified passing on
+> commit reconciling this task.
+
+- [x] FR-HOOK-RESOURCES.FORMAT: `Stop` is a supported hook event with documented
       per-IDE mapping (Claude `Stop` / Cursor `stop` / Codex `Stop` /
       OpenCode `session.idle`).
   - Test: `scripts/build-plugins_test.ts::emits-stop-event-hooks-json`
-  - Evidence: `deno test -A scripts/build-plugins_test.ts`
-- [ ] FR-DOC-ANCHORS.HOOK: core hook `doc-anchors-validate` exists
-      (`framework/core/hooks/doc-anchors-validate/{hook.yaml,run.ts,salp.ts,run_test.ts}`),
-      `hook.yaml` event=`Stop`, self-contained.
+  - Evidence: `deno test -A scripts/build-plugins_test.ts` (29 passed)
+- [x] FR-DOC-ANCHORS.HOOK: beta hook `doc-anchors-validate` exists
+      (`framework/beta/hooks/doc-anchors-validate/{hook.yaml,run.ts,run_test.ts}`),
+      `hook.yaml` event=`Stop`, self-contained (parser inlined into `run.ts`).
   - Test: file existence + `scripts/validate-plugins.ts` clean
-  - Evidence: `deno run -A scripts/build-plugins.ts && deno run -A scripts/validate-plugins.ts <out>`
-- [ ] FR-DOC-ANCHORS.HOOK: dead-ref across files reported as advisory.
-  - Test: `framework/core/hooks/doc-anchors-validate/run_test.ts::reports-cross-file-dead-ref`
-  - Evidence: `deno test -A framework/core/hooks/doc-anchors-validate/run_test.ts`
-- [ ] FR-DOC-ANCHORS.HOOK: duplicate-anchor across files reported.
+  - Evidence: `deno run -A scripts/build-plugins.ts && deno run -A scripts/validate-plugins.ts` → "OK: … passes validation"
+- [x] FR-DOC-ANCHORS.HOOK: dead-ref across files reported as advisory.
+  - Test: `framework/beta/hooks/doc-anchors-validate/run_test.ts::reports-cross-file-dead-ref`
+  - Evidence: `deno test -A framework/beta/hooks/doc-anchors-validate/run_test.ts`
+- [x] FR-DOC-ANCHORS.HOOK: duplicate-anchor across files reported.
   - Test: `…/run_test.ts::reports-duplicate-anchor`
   - Evidence: same file
-- [ ] FR-DOC-ANCHORS.HOOK: settled forward-ref (ref + anchor both present) → NO
+- [x] FR-DOC-ANCHORS.HOOK: settled forward-ref (ref + anchor both present) → NO
       finding (livelock-avoidance proof).
   - Test: `…/run_test.ts::settled-forward-ref-clean`
   - Evidence: same file
-- [ ] FR-DOC-ANCHORS.HOOK: grammar example in fenced/inline code ignored.
+- [x] FR-DOC-ANCHORS.HOOK: grammar example in fenced/inline code ignored.
   - Test: `…/run_test.ts::ignores-code-span-examples`
   - Evidence: same file
-- [ ] FR-DOC-ANCHORS.HOOK: repo with no SALP tokens → empty output (early-exit).
+- [x] FR-DOC-ANCHORS.HOOK: repo with no SALP tokens → empty output (early-exit).
   - Test: `…/run_test.ts::no-salp-tokens-silent`
   - Evidence: same file
-- [ ] FR-DOC-ANCHORS.HOOK: findings → `decision: block` + reason (agent fix nudge).
+- [x] FR-DOC-ANCHORS.HOOK: findings → `decision: block` + reason (agent fix nudge).
   - Test: `…/run_test.ts::blocks-stop-with-findings-reason`
-  - Evidence: `deno test -A framework/core/hooks/doc-anchors-validate/run_test.ts`
-- [ ] FR-DOC-ANCHORS.HOOK: `stop_hook_active=true` → exit 0 silent (anti-loop).
+  - Evidence: `deno test -A framework/beta/hooks/doc-anchors-validate/run_test.ts`
+- [x] FR-DOC-ANCHORS.HOOK: `stop_hook_active=true` → exit 0 silent (anti-loop).
   - Test: `…/run_test.ts::respects-stop-hook-active-guard`
   - Evidence: same file
 - [x] FR-DOC-ANCHORS.HOOK: scan set respects `.gitignore` — in a git work tree
@@ -127,9 +134,9 @@ debt). Variant B: repo-wide, advisory, fires on turn-end (`Stop`), never blocks.
       distribution already runs `deno run -A`.)
   - Test: `…/run_test.ts::collectFiles-respects-gitignore`,
     `…/run_test.ts::collectFiles-non-git-repo-still-scans`
-  - Evidence: `deno test -A framework/core/hooks/doc-anchors-validate/run_test.ts` (12 passed)
+  - Evidence: `deno test -A framework/beta/hooks/doc-anchors-validate/run_test.ts` (18 passed)
 - [x] Baseline green.
-  - Evidence: `deno task check` → exit 0 (478 + 119 passed | 0 failed; 3 fixture FAILs only)
+  - Evidence: `deno task check` → exit 0 (494 + 173 passed | 0 failed; 3 fixture FAILs only)
 
 ## Solution
 
