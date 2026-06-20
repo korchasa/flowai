@@ -261,6 +261,14 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Acceptance:** `deno test scripts/acceptance-tests/lib/adapters/opencode_test.ts` (to be authored together with the implementation) passes AND at least one existing benchmark scenario runs green against `--ide opencode`. Per-step DoD (file existence, registration in `mod.ts`, unit-test coverage) is tracked in the linked task file.
 - **Status:** [ ]
 
+### FR-ACCEPT.ACP: ACP Transport for Acceptance Test Runner [ANC:fr:accept.acp]
+
+- **Desc:** The acceptance-test runner SHOULD replace its per-IDE direct-CLI control layer (`SpawnedAgent` + four hand-written `AgentAdapter` classes, each re-parsing an IDE-specific `stream-json` dialect and mocking via IDE-specific hooks) with a single Agent Client Protocol (ACP — JSON-RPC 2.0 over stdio) client plus a data-only agent registry. Drivers: shrink the runner codebase, standardize on ACP, cut per-IDE adapter cost, onboard new IDEs faster. Agents reach ACP natively (Cursor, OpenCode) or via a wrapper (`claude-code-acp`; Codex via an ACP server).
+- **Tasks:** [migrate-acceptance-to-acp](tasks/2026/06/migrate-acceptance-to-acp.md)
+- **Scope:** Runner-side only. Supersedes the bespoke-adapter approach of FR-ACCEPT.OPENCODE — OpenCode is reached through ACP rather than a hand-written adapter; resolve the adapter-code overlap before deletion. Does NOT change plugin distribution (FR-DIST.*) or the parity-gate semantics — only the transport by which the bench drives an IDE agent.
+- **Acceptance:** `deno test scripts/acceptance-tests/lib/acp_client_test.ts` (to be authored with the implementation) passes AND ≥1 existing benchmark scenario runs green through the ACP transport against ≥2 distinct agents. Per-step DoD (client module, agent registry, adapter retirement) tracked in the linked task file.
+- **Status:** [ ]
+
 ### FR-EXP: Experiments Subsystem (RELOCATED) [ANC:fr:exp]
 
 - **Status:** Relocated to [`flowai-experiments`](https://github.com/korchasa/flowai-experiments) on 2026-04-11 (provenance SHA `f311142`). Requirement retained here as a stub so historical traceability links keep resolving.
