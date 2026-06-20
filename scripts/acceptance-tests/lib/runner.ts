@@ -4,8 +4,8 @@ import type { cliChatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
-import { formatAgentLogs } from "./format_logs.ts";
-import { SpawnedAgent } from "./spawned_agent.ts";
+import { AcpAgent } from "./acp/acp_agent.ts";
+import type { AcpIde } from "./acp/registry.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { renderAgentsMd } from "./template.ts";
@@ -202,10 +202,11 @@ async function initSandboxGit(
   scenario: BenchmarkScenario,
   adapter: AgentAdapter,
 ): Promise<string> {
+  // Mocks are intercepted in the ACP client (FR-ACCEPT.ACP), not via per-IDE
+  // sandbox hooks — nothing to write here.
   if (scenario.mocks && Object.keys(scenario.mocks).length > 0) {
-    await adapter.setupMocks(sandboxPath, scenario.mocks);
     console.log(
-      `  Created ${adapter.ide} hooks for: ${
+      `  ACP mock interceptor armed for: ${
         Object.keys(scenario.mocks).join(", ")
       }`,
     );
@@ -248,7 +249,7 @@ interface AgentRunOutcome {
   code: number;
   logs: string;
   durationMs: number;
-  agent: SpawnedAgent;
+  agent: AcpAgent;
 }
 
 /**
@@ -281,14 +282,14 @@ async function runAgentWithTimeout(
     ? await options.adapter.prepareWorkspace(sandboxPath)
     : {};
 
-  const agent = new SpawnedAgent({
+  const agent = new AcpAgent({
+    ide: options.adapter.ide as AcpIde,
     workspace: sandboxPath,
     model: options.agentModel,
     prompt: fullPrompt,
     maxSteps: scenario.maxSteps || 10,
-    stepTimeout: scenario.stepTimeoutMs || 300000,
-    adapter: options.adapter,
     env: adapterEnv,
+    mocks: scenario.mocks,
     name: scenario.skill ? `${scenario.skill}/${scenario.id}` : scenario.id,
   });
 
@@ -335,7 +336,7 @@ async function runAgentWithTimeout(
 
 /** Pull session usage (tokens) from the adapter for the given agent. */
 async function collectUsage(
-  agent: SpawnedAgent,
+  agent: AcpAgent,
   adapter: AgentAdapter,
 ): Promise<
   { tokensUsed: number; tokensDetails?: BenchmarkResult["tokensDetails"] }
@@ -390,7 +391,6 @@ async function gatherJudgeEvidence(
   sandboxPath: string,
   initHash: string,
   rawLogs: string,
-  outputFormat: AgentAdapter["outputFormat"],
 ): Promise<
   { evidence: string; truncatedLogs: string; statusStr: string; logStr: string }
 > {
@@ -411,7 +411,8 @@ async function gatherJudgeEvidence(
   const taskFilesContent = await readTaskFiles(sandboxPath);
   const generatedFiles = await collectGeneratedFiles(sandboxPath);
 
-  const formattedLogs = formatAgentLogs(rawLogs, outputFormat);
+  // ACP transcripts are already human-readable — no NDJSON formatting needed.
+  const formattedLogs = rawLogs;
 
   // Truncate large sections to stay within judge model context limits.
   // Keep start + end of logs (results are usually at the end).
@@ -588,7 +589,6 @@ export async function runScenario(
         sandboxPath,
         initHash,
         logs,
-        adapter.outputFormat,
       );
     await tracer.logEvidence(traceId, statusStr, logStr);
 
