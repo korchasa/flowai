@@ -129,7 +129,9 @@ export async function computeCacheKey(
   inputs: CacheKeyInputs,
 ): Promise<string> {
   const { scenario, ide, agentModel, runs, ideCliVersion } = inputs;
-  const transport: AcpTransport = inputs.transport ?? "direct";
+  // ACP is now the only transport; default reflects that so the ACP lib version
+  // + registry participate in every key (the direct path was retired).
+  const transport: AcpTransport = inputs.transport ?? "acp";
   const hashInputs: Record<string, string> = {};
 
   // 1. Scenario directory (mod.ts + fixture/)

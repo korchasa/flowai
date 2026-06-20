@@ -15,9 +15,8 @@
  * deliberately excludes it, so the user-level snapshot is byte-identical
  * before/after a bench run.
  *
- * NOTE: intentionally duplicates the bench-home construction from
- * `adapters/claude.ts`. The direct adapter is deleted at the per-IDE cutover
- * (DoD 7); this becomes the single owner. Until then the two MUST stay in sync.
+ * This is the single owner of the bench-home construction (the direct
+ * `ClaudeAdapter` that previously held a copy was retired with the ACP cutover).
  */
 import { dirname, join } from "@std/path";
 

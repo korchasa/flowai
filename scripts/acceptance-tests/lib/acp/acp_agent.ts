@@ -84,7 +84,7 @@ export class AcpAgent {
       getResponse: (messages: Message[]) => Promise<string | null>;
     },
   ): Promise<AcpAgentResult> {
-    // FR-ACCEPT-GUARDS: pre-flight health gate (no env-var bypass).
+    // Pre-flight health gate (FR-ACCEPT-GUARDS), no env-var bypass.
     try {
       const h = await assertHealthy(
         undefined,

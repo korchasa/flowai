@@ -621,12 +621,11 @@ Deno.test("computeCacheKey: acp transport participates in cache key", async () =
 
     const direct = await computeCacheKey({ ...base, transport: "direct" });
     const acp = await computeCacheKey({ ...base, transport: "acp" });
-    const dflt = await computeCacheKey(base); // default is "direct"
+    const dflt = await computeCacheKey(base); // default is now "acp"
 
-    // Default == explicit direct; acp differs (transport flag + ACP lib/registry
-    // enter the key). The final default-flip from direct→acp therefore
-    // invalidates every stale verdict.
-    assertEquals(direct, dflt);
+    // ACP is the only transport: default == explicit acp, and it differs from a
+    // (legacy) direct key because the ACP lib version + registry enter the key.
+    assertEquals(acp, dflt);
     assertNotEquals(direct, acp);
   } finally {
     await Deno.remove(tmp, { recursive: true });
