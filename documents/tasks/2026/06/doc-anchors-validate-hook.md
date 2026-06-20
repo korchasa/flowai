@@ -1,7 +1,11 @@
 ---
+date: "2026-06-05"
+status: in progress
 implements:
   - FR-DOC-ANCHORS.HOOK
   - FR-HOOK-RESOURCES.FORMAT
+tags: []
+related_tasks: []
 ---
 # Stop-triggered SALP doc-anchors validation hook (core, all users)
 
