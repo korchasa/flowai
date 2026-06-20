@@ -3,8 +3,10 @@ import {
   ALLOWED_SUBDIRS,
   collectDocumentationSchemaIndirectionErrors,
   descriptionHasWhenTrigger,
+  discoverSkillsDirs,
   inferKind,
   isFrameworkSkillsDir,
+  validateAllSkills,
   validateDescriptionWhenTrigger,
   validateDocumentationSchemaIndirection,
   validateIdeNeutrality,
@@ -607,6 +609,88 @@ Deno.test("isFrameworkSkillsDir: absolute framework path matches", () => {
 Deno.test("isFrameworkSkillsDir: non-framework path does not match", () => {
   assertEquals(isFrameworkSkillsDir(".claude/skills"), false);
   assertEquals(isFrameworkSkillsDir("/abs/.claude/skills"), false);
+});
+
+// --- Regression: framework-only checks must fire on the production entry path ---
+//
+// Bug class: a framework-only check (kind invariants, IDE-neutrality, the
+// description WHEN-trigger gate) is gated behind `isFrameworkSkillsDir()`, but the production
+// caller (`validateAllSkills` over `discoverSkillsDirs("framework")` output)
+// never satisfies the guard, so the check is silently dormant in
+// `deno task check`. Unit tests that call the inner `validate*` functions
+// directly bypass the guard and stay green — they cannot catch this. The two
+// tests below close that gap: one couples discovery output to the guard, the
+// other proves the guard, once satisfied, actually invokes every check.
+
+Deno.test("regression: discoverSkillsDirs output is accepted by isFrameworkSkillsDir (guard coupling)", async () => {
+  // discoverSkillsDirs("framework") emits RELATIVE paths ("framework/<pack>/skills").
+  // The original guard used `.includes("/framework/")`, which is false for the
+  // relative shape → every framework-only check was skipped. This test fails the
+  // instant the discovery output and the guard predicate diverge again.
+  const dirs = await discoverSkillsDirs("framework");
+  assertEquals(
+    dirs.length > 0,
+    true,
+    "expected the real framework tree to yield at least one skill/command dir",
+  );
+  for (const dir of dirs) {
+    assertEquals(
+      isFrameworkSkillsDir(dir),
+      true,
+      `discoverSkillsDirs emitted "${dir}" but isFrameworkSkillsDir rejected it — ` +
+        "framework-only checks would be dormant in deno task check",
+    );
+  }
+});
+
+Deno.test("regression: validateAllSkills fires every framework-only check end-to-end", async () => {
+  // Companion to the coupling test: once isFrameworkSkillsDir accepts a path,
+  // validateSkill MUST invoke all three framework-only checks. Build a minimal
+  // framework-shaped tree with one deliberate violation per check and assert each
+  // criterion surfaces through the production aggregation path (validateAllSkills).
+  const root = await Deno.makeTempDir();
+  try {
+    // Violation 1 — FR-PACKS.CMD-INVARIANT: a command carrying the injected-only flag.
+    const cmd = `${root}/framework/testpack/commands/bad-cmd`;
+    await Deno.mkdir(cmd, { recursive: true });
+    await Deno.writeTextFile(
+      `${cmd}/SKILL.md`,
+      `---\nname: bad-cmd\ndescription: Does a thing.\ndisable-model-invocation: true\n---\n\n# Body\n`,
+    );
+
+    // Violations 2 & 3 — FR-DESC-QUALITY (no WHEN phrase) + FR-UNIVERSAL.IDE-NEUTRAL
+    // (hardcoded model id in body), both on one skill.
+    const skill = `${root}/framework/testpack/skills/bad-skill`;
+    await Deno.mkdir(skill, { recursive: true });
+    await Deno.writeTextFile(
+      `${skill}/SKILL.md`,
+      `---\nname: bad-skill\ndescription: Rewrites text densely with no fluff.\n---\n\nRun with gpt-5.4 model.\n`,
+    );
+
+    const errors = await validateAllSkills([
+      `${root}/framework/testpack/commands`,
+      `${root}/framework/testpack/skills`,
+    ]);
+    const criteria = new Set(errors.map((e) => e.criterion));
+
+    assertEquals(
+      criteria.has("FR-PACKS.CMD-INVARIANT"),
+      true,
+      "kind-invariant check must fire on a framework command",
+    );
+    assertEquals(
+      criteria.has("FR-DESC-QUALITY"),
+      true,
+      "WHEN-trigger gate must fire on a framework skill",
+    );
+    assertEquals(
+      criteria.has("FR-UNIVERSAL.IDE-NEUTRAL"),
+      true,
+      "IDE-neutrality check must fire on a framework skill body",
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
 });
 
 // --- validateDescriptionWhenTrigger (FR-DESC-QUALITY) ---

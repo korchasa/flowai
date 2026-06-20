@@ -696,8 +696,14 @@ export async function validateAllSkills(
 
 /** Discover all skill-bearing directories from pack structure.
  * Both `<pack>/skills/` (agent-invocable) and `<pack>/commands/` (user-only)
- * contain `SKILL.md` primitives and must be validated identically. */
-async function discoverSkillsDirs(
+ * contain `SKILL.md` primitives and must be validated identically.
+ *
+ * Emits paths RELATIVE to `frameworkDir` (e.g. `framework/core/skills`). The
+ * framework-only checks gate on `isFrameworkSkillsDir()`, so this function's
+ * output shape and that predicate MUST stay coupled — see the coupling
+ * regression test in `check-skills_test.ts`. A predicate that rejected this
+ * relative shape once left every framework-only check silently dormant. */
+export async function discoverSkillsDirs(
   frameworkDir: string,
 ): Promise<string[]> {
   const dirs: string[] = [];
