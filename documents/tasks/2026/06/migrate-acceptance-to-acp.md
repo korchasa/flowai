@@ -151,7 +151,7 @@ scenario, e.g. `agents-rules-tdd-cycle`.
       `exit_code_zero` failure verdict to the judge (no unhandled rejection).
   - Test: `scripts/acceptance-tests/lib/acp/client_test.ts::connection drop maps to exit_code_zero failure verdict`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/client_test.ts`
-- [ ] FR-ACCEPT.ACP: FR-ACCEPT-GUARDS preserved — the ACP wrapper child tree
+- [x] FR-ACCEPT.ACP: FR-ACCEPT-GUARDS preserved — the ACP wrapper child tree
       (e.g. `npx claude-code-acp` + its children) stays inside the setpgrp group and
       is killed on fork-loop / RSS-bloat trip.
   - Test: `scripts/acceptance-tests/lib/process_watchdog_test.ts::kills ACP wrapper child tree`
