@@ -15,7 +15,7 @@
  * replacing the per-IDE hook writers. Errors map to a non-zero exit code via the
  * client's deterministic failure verdict (FR-ACCEPT.ACP error mapping).
  */
-import { fromFileUrl } from "@std/path";
+import { dirname, fromFileUrl, join } from "@std/path";
 import { ndJsonStream } from "@zed-industries/agent-client-protocol";
 import { startWatchdog, type WatchdogHandle } from "../process_watchdog.ts";
 import {
@@ -24,6 +24,7 @@ import {
   SystemUnhealthyError,
 } from "../system_health.ts";
 import { AcpClient } from "./client.ts";
+import { writeMockBin } from "./mock_bin.ts";
 import { ACP_AGENTS, type AcpAgentSpec, type AcpIde } from "./registry.ts";
 
 const SETPGRP_WRAPPER = fromFileUrl(
@@ -113,6 +114,20 @@ export class AcpAgent {
       ...this.opts.env,
     };
 
+    // Tool mocking (FR-ACCEPT.ACP): shadow mocked commands on PATH with stubs
+    // that emit the canned output, so the model sees a real (canned) tool
+    // result — ACP permission-deny cannot deliver that. Sibling of the sandbox.
+    if (this.opts.mocks && Object.keys(this.opts.mocks).length > 0) {
+      const mockBin = await writeMockBin(
+        join(dirname(this.opts.workspace), "mockbin"),
+        this.opts.mocks,
+      );
+      if (mockBin) {
+        const parentPath = this.opts.env?.PATH ?? Deno.env.get("PATH") ?? "";
+        env.PATH = `${mockBin}:${parentPath}`;
+      }
+    }
+
     let child: Deno.ChildProcess;
     try {
       child = new Deno.Command(command, {
@@ -145,7 +160,6 @@ export class AcpAgent {
 
     const client = new AcpClient({
       stream: ndJsonStream(child.stdin, child.stdout),
-      mocks: this.opts.mocks,
       closed: child.status,
     });
 
@@ -180,9 +194,6 @@ export class AcpAgent {
       this.#log.push(`\n[acp-fatal] ${e}\n`);
       code = 1;
     } finally {
-      for (const m of client.intercepted) {
-        this.#log.push(`[mock] ${m.tool} -> ${m.reason}\n`);
-      }
       this.#kill();
       await stderrDone.catch(() => {});
       await child.status.catch(() => {});

@@ -2,22 +2,21 @@
  * ACP transport client (FR-ACCEPT.ACP).
  *
  * Wraps the official `@zed-industries/agent-client-protocol` client over a
- * child's stdio (the child is spawned + guarded by `SpawnedAgent`, preserving
+ * child's stdio (the child is spawned + guarded by `AcpAgent`, preserving
  * FR-ACCEPT-GUARDS). Drives one prompt turn end-to-end —
- * `initialize → session/new → session/prompt` — accumulating assistant text and
- * tool-call reports into the existing `ParsedAgentOutput` shape so the judge,
- * tracer and `UserEmulator` consume an unchanged structure.
+ * `initialize → session/new → session/prompt` — accumulating assistant text into
+ * the existing `ParsedAgentOutput` shape so the judge, tracer and `UserEmulator`
+ * consume an unchanged structure.
  *
- * Mocking (replaces the per-IDE `setupMocks` hooks): the client interceptor
- * implements BOTH gating paths the agents differ on — (a) `session/request_permission`
- * (deny a matched tool so the real command never runs) and (b) the auto-run
- * tool-result boundary (substitute the canned reason). One implementation for
- * all IDEs via `mock_matcher.ts`.
+ * Permissions: the client auto-allows every tool (the `bypassPermissions`
+ * equivalent of the direct path). Tool MOCKING is handled out-of-band by
+ * PATH-shadowing (`mock_bin.ts`) — a stub binary emits the canned output so the
+ * model sees the mock result, which ACP's permission-deny cannot deliver.
  *
  * Error mapping (callback→Promise): connection drop / malformed frame / agent
  * error response / watchdog kill each resolve to a deterministic
  * `exit_code_zero`-style failure verdict (`subtype:"error"`) handed to the judge
- * — never an unhandled rejection. See `runTurn`.
+ * — never an unhandled rejection. See `prompt`.
  */
 import {
   type Client,
@@ -32,13 +31,10 @@ import {
   type Stream,
 } from "@zed-industries/agent-client-protocol";
 import type { ParsedAgentOutput } from "../adapters/types.ts";
-import { resolveMock } from "./mock_matcher.ts";
 
 export interface AcpClientOptions {
   /** Bidirectional ACP stream (typically `ndJsonStream(child.stdin, child.stdout)`). */
   stream: Stream;
-  /** Static one-response-per-tool mocks: `{ toolName: cannedReason }`. */
-  mocks?: Record<string, string>;
   /**
    * Resolves when the underlying child process exits. Used to map a mid-turn
    * connection drop to a failure verdict instead of hanging on a request that
@@ -47,33 +43,13 @@ export interface AcpClientOptions {
   closed?: Promise<unknown>;
 }
 
-/** A mock the interceptor substituted during a turn (for trace/diagnostics). */
-export interface InterceptedMock {
-  tool: string;
-  reason: string;
-  command: string;
-}
-
-/** Command text carried by a tool call's raw input, across IDE field names. */
-function extractCommand(rawInput: Record<string, unknown> | undefined): string {
-  if (!rawInput) return "";
-  for (const key of ["command", "cmd", "script"]) {
-    const v = rawInput[key];
-    if (typeof v === "string") return v;
-  }
-  return "";
-}
-
 export class AcpClient {
   readonly #conn: ClientSideConnection;
-  readonly #mocks: Record<string, string>;
   readonly #closed?: Promise<unknown>;
   /** Per-session accumulated assistant text. */
   readonly #buffers = new Map<string, string[]>();
-  readonly intercepted: InterceptedMock[] = [];
 
   constructor(opts: AcpClientOptions) {
-    this.#mocks = opts.mocks ?? {};
     this.#closed = opts.closed;
 
     const client: Client = {
@@ -94,11 +70,9 @@ export class AcpClient {
       stdout: ReadableStream<Uint8Array>;
       status: Promise<unknown>;
     },
-    mocks?: Record<string, string>,
   ): AcpClient {
     return new AcpClient({
       stream: ndJsonStream(child.stdin, child.stdout),
-      mocks,
       closed: child.status,
     });
   }
@@ -175,32 +149,13 @@ export class AcpClient {
   }
 
   /**
-   * Path (a): an agent asks before running a tool. If the tool matches a mock,
-   * reject the permission (real tool never runs) and record the canned reason
-   * for substitution. Otherwise allow.
+   * Auto-allow every tool — the `bypassPermissions` equivalent. Mocking is done
+   * by PATH-shadowing (`mock_bin.ts`), not by denying here, so the model always
+   * sees a real tool result (canned for mocked tools).
    */
   #onRequestPermission(
     params: RequestPermissionRequest,
   ): Promise<RequestPermissionResponse> {
-    const command = extractCommand(params.toolCall.rawInput);
-    const hit = command ? resolveMock(command, this.#mocks) : null;
-
-    if (hit) {
-      this.intercepted.push({ ...hit, command });
-      // Inject the canned reason as the tool's "output" the model will read.
-      const buf = this.#buffers.get(params.sessionId);
-      if (buf) buf.push(hit.reason);
-      const reject = params.options.find(
-        (o) => o.kind === "reject_once" || o.kind === "reject_always",
-      );
-      if (reject) {
-        return Promise.resolve({
-          outcome: { outcome: "selected", optionId: reject.optionId },
-        });
-      }
-      return Promise.resolve({ outcome: { outcome: "cancelled" } });
-    }
-
     const allow = params.options.find(
       (o) => o.kind === "allow_once" || o.kind === "allow_always",
     ) ?? params.options[0];

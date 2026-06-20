@@ -52,37 +52,27 @@ Deno.test({
 });
 
 Deno.test({
-  name: "mocked tool intercepted, real command not run",
+  name: "tool permission auto-allowed, real command runs",
   sanitizeResources: false,
   sanitizeOps: false,
   async fn() {
     const cwd = await Deno.makeTempDir({ prefix: "acp-test-" });
     const child = spawnStub();
-    const client = AcpClient.fromChild(child, {
-      curl: "MOCK: network disabled in sandbox",
-    });
+    const client = AcpClient.fromChild(child);
     try {
       await client.initialize();
       const sessionId = await client.newSession(cwd);
       const out = await client.prompt(
         sessionId,
-        "fetch it [[TOOL:curl https://example.com]]",
+        "run it [[TOOL:echo hello]]",
       );
 
-      // Real tool must NOT have executed: the stub writes this sentinel only
-      // when permission is granted.
+      // Client auto-allows permission (bypassPermissions equivalent), so the
+      // stub's tool runs and writes the sentinel. Mocking is done out-of-band
+      // by PATH-shadowing (mock_bin.ts), not by denying here.
       const sentinel = join(cwd, "tool-ran.txt");
-      let ran = false;
-      try {
-        await Deno.lstat(sentinel);
-        ran = true;
-      } catch { /* absent → good */ }
-      assertEquals(ran, false, "real curl must not run when mocked");
-
-      // The interceptor recorded the canned reason and surfaced it.
-      assertEquals(client.intercepted.length, 1);
-      assertEquals(client.intercepted[0].tool, "curl");
-      assertStringIncludes(out.assistantText ?? "", "network disabled");
+      await Deno.lstat(sentinel); // throws if the tool was NOT allowed to run
+      assertStringIncludes(out.assistantText ?? "", "ran:");
     } finally {
       await shutdown(child);
     }
