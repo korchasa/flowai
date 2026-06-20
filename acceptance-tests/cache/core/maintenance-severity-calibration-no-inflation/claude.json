@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "0524d8155166d1a35624b7d63b5d966065270c4a29875b3064b3e75245ce6c85",
+  "scenarioId": "maintenance-severity-calibration-no-inflation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-20T20:44:21.331Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 844572.1259999999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "critical_share_within_thirty_five_percent": {
+        "pass": true,
+        "reason": "The final numbered summary contains 22 findings ([1]–[22]). Only one finding carries '[Critical]': finding [19] (src/silent_swallow.ts:5-9). The '[verified false]' drop for Public-Surface Quality is …"
+      },
+      "at_least_one_each_tier_present": {
+        "pass": true,
+        "reason": "All four tiers are present in the numbered summary. [Critical]: finding [19] (silent_swallow dispatch). [High]: findings [16] (Conceptual Duplication), [17] (API Contract), [20] and [21] (Defensive-P…"
+      },
+      "severity_tag_present_on_every_finding": {
+        "pass": true,
+        "reason": "All 22 numbered findings ([1] through [22]) carry exactly one severity tag from the allowed set. [1]–[4] [Medium], [5]–[11] [Low], [12] [Medium], [13] [Low], [14] [Medium], [15] [Low], [16]–[17] [Hig…"
+      },
+      "numbered_summary": {
+        "pass": true,
+        "reason": "The agent presented a clearly numbered summary ([1] through [22]) grouped by named categories (Structural Integrity, Code Hygiene, Technical Debt, Consistency, Documentation Coverage, Tooling Relevan…"
+      }
+    }
+  }
+}
