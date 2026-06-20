@@ -2,7 +2,7 @@
 implements:
   - FR-CICD.PIN
 date: 2026-06-21
-status: in progress
+status: done
 ---
 # CI: Bump Node 20 Actions to Node 24 Runtime
 
@@ -39,9 +39,9 @@ Target node24 versions (verified via `action.yml` `runs.using: node24`):
 - [x] FR-CICD.PIN: project verification stays green after the edit.
   - Test: manual — korchasa
   - Evidence: `deno task check` exits 0 — verified: EXIT=0
-- [ ] FR-CICD.PIN: live CI run on the pushed commit is green (release job exercises the bumped action-gh-release).
+- [x] FR-CICD.PIN: live CI run on the pushed commit is green (release job exercises the bumped action-gh-release).
   - Test: manual — korchasa
-  - Evidence: CI await in Push Phase reports green for the pushed SHA
+  - Evidence: CI await reported green for SHA 11baadd8 — run 27885186279 (setup-deno v2.0.4 ran node24 in check + release jobs). action-gh-release v3.0.1 not exercised this run (release steps gated on feat/fix; commit is `ci:`); pin verified node24 upstream.
 
 ## Solution
 
