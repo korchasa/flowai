@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.16](https://github.com/korchasa/flowai/compare/v0.13.15...v0.13.16) (2026-06-20)
+
+
+### Features
+
+* **skills:** enforce WHEN-trigger in skill descriptions + rewrite weak ones ([96a7c97](https://github.com/korchasa/flowai/commit/96a7c97683d0ed8597a8921fe29c9d0e1dd296d5))
+
 ### [0.13.15](https://github.com/korchasa/flowai/compare/v0.13.14...v0.13.15) (2026-06-18)
 
 
