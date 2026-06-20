@@ -156,7 +156,7 @@ scenario, e.g. `agents-rules-tdd-cycle`.
       is killed on fork-loop / RSS-bloat trip.
   - Test: `scripts/acceptance-tests/lib/process_watchdog_test.ts::kills ACP wrapper child tree`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts`
-- [ ] FR-ACCEPT-ISOLATION: sandbox `SKILL.md` (not `~/.claude/skills/`) is what the
+- [x] FR-ACCEPT-ISOLATION: sandbox `SKILL.md` (not `~/.claude/skills/`) is what the
       agent loads under ACP; `~/.claude/skills/` snapshot byte-identical before/after.
   - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts::sandbox skills win and user-level skills dir untouched`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts`
@@ -322,3 +322,48 @@ ACP transport. This is the convergence to the Variant-C end-state, reached safel
 - SDS update (crit #8, deferred to Phase 2): rewrite §3.4 / §3.4.x to describe the
   ACP transport replacing the per-IDE adapter layer; update README +
   `documents/ides-difference.md`. Tracked as a Phase-2 deliverable.
+
+## Status / Hand-off (2026-06-21)
+
+**Done & committed on branch `migrate-acceptance-to-acp`** (`8ddca8c6`, `ad8f85b7`,
++ this commit). `deno task check` green. DoD 8/10 `[x]`:
+
+- Spike (kill-criterion cleared) · SRS section · `AcpClient` prompt turn · mock
+  interception · async error mapping · FR-ACCEPT-GUARDS (wrapper-tree watchdog) ·
+  cache-key transport input · FR-ACCEPT-ISOLATION bench-home invariant.
+- New code (all offline-tested, no LLM): `scripts/acceptance-tests/lib/acp/`
+  `client.ts` · `registry.ts` · `mock_matcher.ts` · `stub_agent.ts` · `auth.ts`
+  + `*_test.ts`; `cache.ts` transport key; `process_watchdog_test.ts` wrapper
+  case; `deno.json` ACP lib mapping. The parallel transport sits BESIDE the
+  direct path — zero behavioural change to existing adapters.
+
+**Remaining (user-gated — NOT auto-shippable):**
+
+1. **Live wiring (build, then verifiable only via the manual gate below):**
+   - `spawned_agent.ts`: add a `--transport acp` branch that launches the
+     registry's `launch.{command,args,env}` via the SAME `setpgrp_exec.py`
+     wrapper (guards already proven for the wrapper tree) and hands the child's
+     stdio to `AcpClient` instead of reading `stream-json`. For Claude, merge
+     `prepareAcpClaudeHome(sandbox)` env.
+   - `runner.ts`: select transport; on `acp`, drive turns via `AcpClient.prompt()`;
+     multi-turn reuses the ACP session (`loadSession`/resume — no `--resume`
+     reparse); route mocks to the client interceptor instead of
+     `adapter.setupMocks`.
+   - `task-acceptance-tests.ts` + `acceptance_cli.ts`: add `--transport acp|direct`
+     (default `direct`).
+   These touch the LIVE spawn path and are end-to-end verifiable ONLY by a real
+   ACP run, i.e. step 2 — so they were intentionally not landed blind.
+
+2. **DoD 7 — per-IDE cutover + irreversible delete** (`manual — korchasa`,
+   irreversible-delete gate). Per IDE in order Codex/Gemini → Cursor → OpenCode →
+   Claude: run the green-gate scenario (BOTH a mocked tool + a `UserEmulator`
+   multi-turn, crit #1) over `--transport acp`; require a dual-transport verdict
+   diff with no drift; THEN delete that IDE's `adapters/<ide>.ts` + `*_test.ts`.
+   Hours of LLM time — deferred to you per CLAUDE.md (CHECK-sweep rule).
+   Command: `deno task acceptance-tests -f <gate-scn> --transport acp`.
+
+3. **DoD 9 — final convergence:** after all IDEs green, flip `--transport` default
+   to `acp`, remove the `direct` branch + `AgentAdapter.parseOutput`/`setupMocks`
+   surface (keep only `registry.ts`), delete the hook writers, pin the renamed
+   `@agentclientprotocol/claude-agent-acp`, update SRS/SDS §3.4/README/
+   `ides-difference.md`, then `deno task check`.

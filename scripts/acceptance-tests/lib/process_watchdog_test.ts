@@ -174,8 +174,9 @@ Deno.test({
   },
 });
 
-// FR-ACCEPT.ACP / FR-ACCEPT-GUARDS: under the ACP transport the spawned child is
-// a WRAPPER (`npx claude-code-acp` → node → agent workers), one level deeper than
+// ACP transport guards (FR-ACCEPT.ACP, FR-ACCEPT-GUARDS): under the ACP
+// transport the spawned child is a WRAPPER
+// (`npx claude-code-acp` → node → agent workers), one level deeper than
 // a direct CLI. This asserts the watchdog's process-group kill still reaches the
 // wrapper's grandchildren: an intermediate process that itself forks workers and
 // does NOT call setsid keeps everything in the original PGID, so a fork-loop trip
