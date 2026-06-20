@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.13.17](https://github.com/korchasa/flowai/compare/v0.13.16...v0.13.17) (2026-06-20)
+
+
+### Features
+
+* **acceptance-tests:** add claude.json for maintenance severity calibration scenario ([85924bf](https://github.com/korchasa/flowai/commit/85924bfe3788d16abd4df663eaca63d36e38ba95))
+
+
+### Tests
+
+* **check-skills:** regression-guard the framework-only-check dormancy bug ([34af295](https://github.com/korchasa/flowai/commit/34af295b19659f8c86cbfc99c45ac34be6d52dcc))
+* **maintenance:** raise interactive step timeout for delegated scan parity ([b22eccd](https://github.com/korchasa/flowai/commit/b22eccd60773c0b910454bb08a52f33a9f861577))
+
+
+### Documentation
+
+* **srs:** forward-declare FR-ACCEPT.ACP for the ACP-migration plan ([8d66bb5](https://github.com/korchasa/flowai/commit/8d66bb580daec4967a1be883f89acbfc6206e1a4))
+* **tasks:** migrate doc-anchors-validate-hook task to new-shape path ([1704108](https://github.com/korchasa/flowai/commit/17041087361d33114b70ba9c96ff6d25dfbfd4cf))
+* **tasks:** plan ACP migration; supersede opencode adapter task ([2f08b0b](https://github.com/korchasa/flowai/commit/2f08b0b559947ff6168c2ef74cd849d3cc7bad72))
+* **tasks:** reconcile doc-anchors-validate-hook DoD to shipped reality ([913c13a](https://github.com/korchasa/flowai/commit/913c13af840afa4985ed11cd8156f55c1be8f027))
+
+
+### Continuous Integration
+
+* bump setup-deno and action-gh-release to Node 24 runtimes ([11baadd](https://github.com/korchasa/flowai/commit/11baadd8f39f58b78b7f26305f23c97535103fc3))
+
 ### [0.13.16](https://github.com/korchasa/flowai/compare/v0.13.15...v0.13.16) (2026-06-20)
 
 
