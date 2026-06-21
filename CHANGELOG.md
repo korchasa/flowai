@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.14.0](https://github.com/korchasa/flowai/compare/v0.13.17...v0.14.0) (2026-06-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* **acceptance-tests:** the acceptance-test runner no longer supports the direct-CLI
+transport; ACP is the only transport.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+### Features
+
+* **acceptance-tests:** migrate IDE control to ACP transport (FR-ACCEPT.ACP) ([0a9c986](https://github.com/korchasa/flowai/commit/0a9c986bab8c40e2571d6930673ceb0cee4f143b))
+
+
+### Documentation
+
+* **tasks:** mark ci-bump-actions-to-node24 done after green CI ([904f20c](https://github.com/korchasa/flowai/commit/904f20c577cf3cb7d9bf78bb3cfaee289eaa4754))
+
 ### [0.13.17](https://github.com/korchasa/flowai/compare/v0.13.16...v0.13.17) (2026-06-20)
 
 
