@@ -3,8 +3,7 @@
  *
  * The ACP transport reaches Claude through the `claude-code-acp` wrapper, which
  * runs the Claude Agent SDK → the same code-signed `claude` binary. To preserve
- * isolation, the wrapper is launched under an isolated `$HOME` identical in
- * intent to `ClaudeAdapter.prepareWorkspace`:
+ * isolation, the wrapper is launched under an isolated `$HOME`:
  *   - empty `.claude/skills/` so the user-level `~/.claude/skills/` snapshot
  *     cannot shadow sandbox-level skills via the Skill tool resolution path;
  *   - symlinks back to `~/Library/Keychains` and `~/.local/share/claude` so

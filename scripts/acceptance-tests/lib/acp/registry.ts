@@ -56,7 +56,8 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     launch: {
       command: "npx",
       args: ["-y", "@zed-industries/claude-code-acp@0.16.2"],
-      // Allow spawning claude inside a claude session (mirrors ClaudeAdapter.getEnv).
+      // Allow spawning claude inside a claude session (unset the marker the
+      // outer Claude Code session exports).
       env: { CLAUDECODE: "" },
     },
     authMode: "subscription",
