@@ -75,3 +75,75 @@ Deno.test("sandbox skills win and user-level skills dir untouched", async () => 
     await Deno.remove(workDir, { recursive: true });
   }
 });
+
+Deno.test("auth-related symlinks track host: present iff source exists", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-auth-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-auth-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
+  // Seed ONLY Library/Keychains on the fake host; leave .local/share/claude
+  // absent so we can assert the present-iff-source-exists contract.
+  await Deno.mkdir(join(fakeHome, "Library", "Keychains"), { recursive: true });
+
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const env = await prepareAcpClaudeHome(sandboxPath);
+    const benchHome = env.HOME;
+
+    // Source present → symlink created in bench-home.
+    const keychains = await Deno.lstat(join(benchHome, "Library", "Keychains"));
+    assert(keychains.isSymlink, "Library/Keychains must be a symlink");
+
+    // Source absent → no symlink (skipped, not a dangling link).
+    let claudeLinkExists = true;
+    try {
+      await Deno.lstat(join(benchHome, ".local", "share", "claude"));
+    } catch {
+      claudeLinkExists = false;
+    }
+    assert(
+      !claudeLinkExists,
+      ".local/share/claude must be skipped when host source is absent",
+    );
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});
+
+Deno.test("never mirrors .credentials.json into bench-home", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-auth-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-auth-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
+  // Seed a host credentials file — letting Keychain win avoids stale-refresh
+  // 400s, so this file must NEVER be copied or symlinked into the bench-home.
+  await Deno.mkdir(join(fakeHome, ".claude"), { recursive: true });
+  await Deno.writeTextFile(
+    join(fakeHome, ".claude", ".credentials.json"),
+    `{"token":"secret"}`,
+  );
+
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const env = await prepareAcpClaudeHome(sandboxPath);
+    let mirrored = true;
+    try {
+      await Deno.lstat(join(env.HOME, ".claude", ".credentials.json"));
+    } catch {
+      mirrored = false;
+    }
+    assert(!mirrored, ".credentials.json must not be mirrored into bench-home");
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});

@@ -17,10 +17,12 @@
  *   cacheKey = sha256(canonicalJSON({
  *     version:        CACHE_ALGORITHM_VERSION,   // 1 — bump on algo change
  *     scenarioId:     scenario.id,
- *     ide:            "claude" | "cursor" | "codex",
+ *     ide:            "claude" | "cursor" | "codex" | "opencode",
  *     ideCliVersion:  "" | stdout of `<cli> --version` (2s probe, empty on failure),
  *     agentModel:     "claude-sonnet-4-6" | ...,
  *     runs:           int,                       // bucketing for -n > 1
+ *     acpLibVersion:  ACP_LIB_VERSION,           // ACP transport lib (sole transport)
+ *     acpRegistry:    acpRegistryFingerprint(),  // hash of the ACP_AGENTS table
  *     inputs: sortedMap({
  *       "scenario:<relpath>":   fileHash(f) for f in scenario-dir (mod.ts + fixture/),
  *       "primitive:<relpath>":  fileHash(f) for f in primitive-dir, skipping acceptance-tests/,
@@ -56,7 +58,6 @@ import { dirname, join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
-
 
 /** Cache file payload schema. Bump when the on-disk shape changes. */
 export const CACHE_SCHEMA_VERSION = 1;

@@ -49,18 +49,22 @@ acceptance-tests/
 
 ## 2.1 Multi-IDE Architecture
 
-Benchmarks support multiple IDEs (Cursor, Claude Code) via an adapter pattern.
+Benchmarks support multiple IDEs (Cursor, Claude Code, OpenCode, Codex) over a single ACP (Agent Client Protocol) transport plus a data-only registry — the per-IDE direct-CLI adapter classes were retired in the ACP migration (FR-ACCEPT.ACP).
 
 - **Config** (`acceptance-tests/config.json`): IDE-keyed structure with per-IDE agent models and judge settings
   - `default_ides`: array of IDE ids to run by default
   - `ides.<ide>.agent_models`: available models for the IDE
   - `ides.<ide>.default_agent_model`: default model
   - `ides.<ide>.judge`: LLM judge config (model, temperature)
-- **Adapters** (`scripts/acceptance-tests/lib/adapters/`):
-  - `types.ts`: `AgentAdapter` interface (CLI args, output parsing, mock setup, env, usage)
-  - `cursor.ts`: `CursorAdapter` — wraps `cursor-agent` CLI
-  - `claude.ts`: `ClaudeAdapter` — wraps `claude` CLI with streaming JSON
-  - `mod.ts`: factory `createAdapter(ide)` and `SUPPORTED_IDES` constant
+- **ACP transport** (`scripts/acceptance-tests/lib/acp/`):
+  - `registry.ts`: `ACP_AGENTS` data table — one row per IDE `{ ide, launch:{command,args,env}, authMode, configDir }` (`claude-code-acp`, `cursor-agent --acp`, `codex acp`, `opencode acp`). Onboarding a new IDE = adding a row.
+  - `client.ts`: `AcpClient` over the official `@zed-industries/agent-client-protocol` lib — `initialize` → `session/new` → `session/prompt`, auto-allows permissions.
+  - `acp_agent.ts`: `AcpAgent` — spawns the registry's launch under `setpgrp_exec.py` (guards), drives the multi-turn session.
+  - `mock_bin.ts`: PATH-shadow tool mocking (IDE-agnostic stub executables).
+  - `auth.ts`: `prepareAcpClaudeHome` — bench-home isolation (FR-ACCEPT-ISOLATION).
+- **Adapter profiles** (`scripts/acceptance-tests/lib/adapters/`):
+  - `types.ts`: data-only `AgentAdapter` (ide, configDir, optional `prepareWorkspace`, `calculateUsage`, `cliVersion`).
+  - `mod.ts`: factory `createAdapter(ide)` (built from `ACP_AGENTS`) and `SUPPORTED_IDES` constant.
 
 ## 2.2 Sandbox Context Priors
 
