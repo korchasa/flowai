@@ -13,14 +13,16 @@ out to be off in specific, recurring ways:
 - **Numeric metrics estimated, not counted.** "~90 lines" reported for a
   function that is actually 42; "largest function ~40 lines" reported
   without a measurement.
-- **Cross-implementation conflation.** With 3+ sibling files (e.g. IDE
-  adapters) in context, subagents apply one sibling's behavior to another.
-  "CursorAdapter.calculateUsage returns null silently" — actually
-  `CodexAdapter` does, Cursor delegates to a real helper.
-- **Missed inline documentation.** "Undocumented asymmetry" — when the
-  stubs carry an explicit `// Kept explicit for cross-adapter symmetry`
-  comment right above them. "Empty-string sentinel is a smell" — when the
-  sentinel is spelled out in JSDoc on the interface.
+- **Cross-implementation conflation.** With 3+ sibling rows (e.g. the
+  `ACP_AGENTS` IDE registry) in context, subagents apply one sibling's
+  attributes to another. "The cursor row authenticates via API key" —
+  actually `cursor` is `authMode: "native"`; only the `codex` row is
+  `"api-key"`. "Every row spawns via an `npx` wrapper" — only `claude` does;
+  cursor/codex/opencode launch their native binary directly.
+- **Missed inline documentation.** "Undocumented env override" — when the
+  `claude` row carries an explicit `// Allow spawning claude inside a claude
+  session` comment right above its `CLAUDECODE: ""` env. "authMode is an
+  unexplained string" — when it is spelled out in JSDoc on the interface.
 - **Round-number debt and complexity estimates** never measured against
   the actual file.
 

@@ -1,5 +1,7 @@
 .DS_Store
 .vscode
+# foxcode browser-automation plugin local state (per-machine, not shared)
+.foxcode/
 skeleton.md
 tmp/
 acceptance-tests/runs/

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Detach from parent process group via setsid(), then exec target.
 
-Used by `SpawnedAgent` so the resource watchdog can SIGKILL the entire
+Used by `AcpAgent` so the resource watchdog can SIGKILL the entire
 process group rooted at the agent — including grandchildren that reparent
 to PID 1 after their immediate parent dies. Without `setsid()`, killing the
 agent's tree-by-PPID misses orphaned descendants and lets them keep

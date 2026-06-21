@@ -97,7 +97,7 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=scripts/acceptance-tests/lib/integration_test.ts",
+          "--ignore=scripts/acceptance-tests/lib/runner_test.ts",
           "scripts",
         ],
       },

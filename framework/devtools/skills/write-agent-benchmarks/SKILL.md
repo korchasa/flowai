@@ -165,42 +165,37 @@ If a benchmark fails, check the **Trace**:
 ### Before editing the skill under test — verify the infrastructure
 
 When a scenario fails, especially a `verbatim_relay` / `mock-reached-agent`
-check, do NOT jump straight to rewriting SKILL.md. The test infrastructure
-itself is the most common culprit and the silent-failure mode is real
-(see the flowai bench history: `PreToolUse` key camelCase typo silenced
-all Claude-adapter mocks for months, and "passing" scenarios were passing
-on pattern-matching, not hook interception).
+check, do NOT jump straight to rewriting SKILL.md — the test infrastructure
+is the most common culprit (e.g. a mocked tool invoked by absolute path
+bypasses the PATH shadow, so the real binary runs and the scenario "passes"
+on synthesis, not relay).
+
+Mock mechanism (ACP): `scenario.mocks` is a static one-response-per-tool
+map. The runner writes a stub per tool into a `mockbin/` dir prepended to
+the agent's `PATH` (`writeMockBin`, `acp/mock_bin.ts`); each stub prints the
+canned text to stdout+stderr and exits 0. So when the agent runs the tool
+**by name**, it gets exactly the mock text — IDE-agnostic, no hooks.
 
 Run this checklist first:
 
-1. **Hook script installed?** `ls <sandbox>/.claude/hooks/` should show
-   `mock-<tool>.sh`. Absence → adapter didn't call `setupMocks`, or
-   sandbox was overwritten.
-2. **Settings file correct?** `cat <sandbox>/.claude/settings.local.json`
-   — the top-level event key MUST be PascalCase (`PreToolUse`,
-   `PostToolUse`). Claude Code silently ignores camelCase; no warning.
-3. **Matcher matches your command shape?** If the skill under test uses
-   env-prefixed commands (e.g. `CLAUDECODE="" claude -p …`), a naive
-   `Bash(<tool>:*)` matcher will NOT fire — first token is the env
-   assignment. The flowai adapter uses a broad `Bash` matcher plus
-   in-script filtering; replicate that pattern if you add a new adapter.
-4. **Sentinel in mock text?** Mock strings MUST contain a unique token
-   (e.g. `[benchmock-<6-hex>]`) that is **guaranteed absent** from the
-   skill's own SKILL.md and examples. Then grep the judge output for
-   the sentinel: present → hook fired and agent quoted it;
-   absent → synthesis or pattern-match, NOT relay. This is the only
-   robust signal that a mock actually reached the agent.
-5. **No test-fitting.** Never write a skill rule that demands preserving
-   a bench-only artifact (e.g. "keep the `MOCK:` prefix"). Mock-prefix
-   scaffolding is not something real CLIs emit; teaching the agent to
-   preserve it corrupts real-world behaviour. Design the mock so its
-   **distinctive content** is what proves the relay — not the framing.
+1. **Stub installed?** `ls <workDir>/mockbin/` should show an executable
+   `<tool>` (mode 755). Absence → the scenario declared no `mocks`, or
+   `mockbin` was not prepended to `PATH`.
+2. **Tool invoked by name?** The shadow only fires when the command resolves
+   through `PATH`. An absolute/relative path (`/usr/bin/<tool>`, `./<tool>`)
+   or a shell builtin bypasses the stub. Confirm the body calls the bare
+   name (`curl …`, not `/usr/bin/curl …`).
+3. **Sentinel in mock text?** The canned output MUST carry a unique token
+   (e.g. `[benchmock-<6-hex>]`) **absent** from the skill's SKILL.md and
+   examples. Grep the judge output for it: present → the stub ran and the
+   agent quoted it; absent → synthesis, NOT relay. Only robust relay signal.
+4. **No test-fitting.** Never add a skill rule that preserves a bench-only
+   artifact (e.g. "keep the `MOCK:` prefix") — real CLIs don't emit it, and
+   teaching the agent to preserve it corrupts real behaviour. Let the mock's
+   **distinctive content** prove the relay, not the framing.
 
-Only after steps 1–5 pass is it safe to conclude the skill itself is at
-fault and edit SKILL.md. Skipping this checklist and iterating on the
-skill text wastes bench cycles and frequently introduces regressions
-(e.g. "mandatory capture-to-file" rules that don't help because hooks
-block before the shell redirect executes).
+Only after steps 1–4 pass is it safe to edit SKILL.md. Skipping this
+wastes bench cycles and frequently introduces regressions.
 
 ## 6.1 Trigger Scenarios for Skills (FR-ACCEPT.TRIGGER)
 
@@ -286,23 +281,23 @@ Precedent: existing worker-style subagents in the framework have no `acceptance-
 
 ### Flat-trace caveat for subagent scenarios
 
-The trace produced by `formatAgentLogs` does NOT preserve parent-vs-subagent nesting. When a parent invokes `Agent(subagent_type=...)`, the subagent's internal `Bash` calls appear at the same top-level as the parent's tool calls. Avoid checklist items like "no `Bash("codex …")` in the parent" — the judge cannot distinguish parent-side from worker-side Bash from the flat trace alone. Instead gate on the presence of the `Agent`/`Task` dispatch and on the relay-content signal; together they imply the worker did the work.
+The transcript `AcpAgent` accumulates over the ACP session does NOT preserve parent-vs-subagent nesting. When a parent invokes `Agent(subagent_type=...)`, the subagent's internal `Bash` calls appear at the same top-level as the parent's tool calls. Avoid checklist items like "no `Bash("codex …")` in the parent" — the judge cannot distinguish parent-side from worker-side Bash from the flat trace alone. Instead gate on the presence of the `Agent`/`Task` dispatch and on the relay-content signal; together they imply the worker did the work.
 
 ## 6.3 Mock Pitfalls
 
-### Mocks fire on the first bare command word
+### Mocks fire on PATH resolution, not command shape
 
-The framework's `PreToolUse(Bash)` hook strips env assignments (`FOO=bar`, `CLAUDECODE=""`) and subshell wrappers (`( … ) &`, backticks, `$(…)`) before checking whether the first bare command word matches a mocked tool. It does NOT inspect piped commands — `echo "..." | codex exec -` matches `echo`, not `codex`, and the mock never fires.
+The PATH-shadow stub fires whenever the mocked tool name resolves through `PATH` — regardless of env prefixes, pipes, or subshells. `CLAUDECODE="" codex exec "$P"`, `echo "$P" | codex exec -`, and `( codex … )` all hit the stub. (An improvement over the retired `PreToolUse(Bash)` hook, which parsed only the first bare word and missed those forms.)
 
-Consequences when authoring scenarios that mock a target CLI:
+What DOES bypass the stub:
 
-- If the agent body or skill instructs the model to use the stdin/pipe form, the mock will be invisible and the real binary will run. In the sandbox this typically surfaces as an auth error (e.g. Codex 401 Unauthorized) — a misleading symptom that looks like a sandbox setup bug rather than a mock-miss.
-- Write agent/skill bodies that **prefer argv form by default** for any mock-able target (`codex exec "$P"`, not `echo "$P" | codex exec -`).
-- If your scenario genuinely needs to test the pipe form, the mock won't help — either drop the mock for that scenario or extend the hook.
+- **Absolute/relative paths.** `/usr/bin/codex` or `./codex` skip `PATH` → the real binary runs. In the sandbox this usually surfaces as an auth error (e.g. Codex 401) that looks like a setup bug, not a mock-miss. Invoke the **bare tool name** (`codex exec "$P"`).
+- **Shell builtins** (`echo`, `cd`) aren't `PATH`-resolved, so they can't be shadowed — but they're not real targets either, so this rarely matters.
+- **Non-zero exit can't be mocked.** The stub always exits 0. To simulate failure, encode it in the canned text (e.g. `bash: curl: command not found`).
 
-### Relay-verification checklists must gate on substantive content, not on harness markers
+### Relay-verification checklists must gate on substantive content, not on framing
 
-The framework injects mock strings like `[benchmock-xxx] CODEX-MOCK: <body>`. Agents under a courier rule (verbatim relay of a child runtime's stdout, common in cross-IDE or LLM-as-judge skills) will reasonably strip `[benchmock-xxx]` and `<TOOL>-MOCK:` prefixes as harness artefacts — that is correct behaviour per such a contract, not a relay failure.
+The stub prints **exactly** the canned text you put in `scenario.mocks` — there is no auto-injected harness prefix. So whatever framing you add (e.g. `[benchmock-xxx] CODEX-MOCK: <body>`) you control yourself. Agents under a courier rule (verbatim relay of a child runtime's stdout, common in cross-IDE or LLM-as-judge skills) will reasonably strip such prefix-looking tokens as harness artefacts — that is correct behaviour per such a contract, not a relay failure.
 
 To verify relay actually happened, embed a **deliberately-absurd phrase** inside the mock body and check for that phrase in the final answer. The phrase must be:
 
@@ -311,7 +306,7 @@ To verify relay actually happened, embed a **deliberately-absurd phrase** inside
 
 Examples drawn from passing scenarios: `alphabetise your tuples on Wednesdays`, `octopus-shaped type definitions`, `tag mutable state with marigold-coloured comments`, `alphabetise trailing semicolons before lowercase Friday refactors`.
 
-Bench-prefix tokens (`[benchmock-xxx]`) fail both conditions: they ARE in the harness artefact category, and the courier rule permits stripping them. Don't gate on them.
+Prefix-style framing tokens (`[benchmock-xxx]`, `<TOOL>-MOCK:`) fail as relay signals: they read as harness artefacts, and the courier rule permits stripping them. Don't gate on them — gate on the absurd phrase inside the body.
 
 ## 7. Universal Result Schema
 

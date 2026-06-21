@@ -1,28 +1,36 @@
 export type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
-export { CursorAdapter } from "./cursor.ts";
-export { ClaudeAdapter } from "./claude.ts";
-export { CodexAdapter } from "./codex.ts";
 
 import type { AgentAdapter } from "./types.ts";
-import { CursorAdapter } from "./cursor.ts";
-import { ClaudeAdapter } from "./claude.ts";
-import { CodexAdapter } from "./codex.ts";
+import { prepareAcpClaudeHome } from "../acp/auth.ts";
+import { ACP_AGENTS, ACP_LIB_VERSION, type AcpIde } from "../acp/registry.ts";
 
-export const SUPPORTED_IDES = ["cursor", "claude", "codex"] as const;
-export type SupportedIde = typeof SUPPORTED_IDES[number];
+export const SUPPORTED_IDES = Object.keys(ACP_AGENTS) as AcpIde[];
+export type SupportedIde = AcpIde;
 
-/** Creates an IDE-specific adapter by name. Throws if IDE is unsupported. */
+/**
+ * Builds the data-only IDE profile from the ACP registry (FR-ACCEPT.ACP). The
+ * per-IDE behavioural classes were retired with the direct transport — the
+ * profile carries only the facts the runner needs; the agent is driven through
+ * `AcpClient`. Throws if the IDE is unsupported.
+ */
 export function createAdapter(ide: string): AgentAdapter {
-  switch (ide) {
-    case "cursor":
-      return new CursorAdapter();
-    case "claude":
-      return new ClaudeAdapter();
-    case "codex":
-      return new CodexAdapter();
-    default:
-      throw new Error(
-        `Unknown IDE: "${ide}". Supported: ${SUPPORTED_IDES.join(", ")}`,
-      );
+  const spec = ACP_AGENTS[ide as AcpIde];
+  if (!spec) {
+    throw new Error(
+      `Unknown IDE: "${ide}". Supported: ${SUPPORTED_IDES.join(", ")}`,
+    );
   }
+  return {
+    ide: spec.ide,
+    configDir: spec.configDir,
+    // Claude needs the isolated bench-home so sandbox skills win over
+    // ~/.claude/skills/ and Keychain subscription auth survives the wrapper.
+    prepareWorkspace: spec.ide === "claude"
+      ? (sandboxPath: string) => prepareAcpClaudeHome(sandboxPath)
+      : undefined,
+    // ACP token usage is not yet surfaced by the wrapper — best-effort null.
+    calculateUsage: () => Promise.resolve(null),
+    // The pinned ACP lib version stands in for the per-IDE CLI version.
+    cliVersion: () => Promise.resolve(ACP_LIB_VERSION),
+  };
 }

@@ -25,6 +25,7 @@ import {
   trimResultForCache,
   writeCache,
 } from "./cache.ts";
+import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
 const REPO_ROOT = Deno.cwd();
 
@@ -604,5 +605,31 @@ Deno.test("whitelist covers all cross-package imports from lib/", async () => {
         relative(REPO_ROOT, f)
       }. Add it to whitelistedCrossPackageFiles in cache.ts.`,
     );
+  }
+});
+
+Deno.test("computeCacheKey: ACP lib version + registry fingerprint enter the key", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const base = {
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    } as const;
+
+    // ACP is the only transport, so its lib version + agent-spec table are folded
+    // into every key unconditionally — an ACP lib bump or a registry launch-spec
+    // edit invalidates stale verdicts. Both must be non-empty (else they would
+    // contribute nothing) and the key must be deterministic for fixed inputs.
+    assertNotEquals(ACP_LIB_VERSION, "");
+    assertNotEquals(acpRegistryFingerprint(), "");
+    const a = await computeCacheKey(base);
+    const b = await computeCacheKey(base);
+    assertEquals(a, b);
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
   }
 });

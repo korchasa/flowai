@@ -1,60 +1,42 @@
 import type { SessionUsage } from "../usage.ts";
 
+/**
+ * Data-only IDE profile consumed by the runner under the ACP transport
+ * (FR-ACCEPT.ACP). The per-IDE behavioural surface (buildArgs / parseOutput /
+ * setupMocks / stream-json) was retired with the direct-CLI adapters — agents
+ * are now driven through the single `AcpClient` + the data-only `ACP_AGENTS`
+ * registry. What remains is the small set of facts the runner still needs:
+ * which IDE, its config dir, optional sandbox `$HOME` isolation, token usage,
+ * and a version string for the cache key.
+ */
 export interface AgentAdapter {
-  /** IDE identifier */
+  /** IDE identifier. */
   readonly ide: "cursor" | "claude" | "opencode" | "codex";
 
-  /** Config directory name relative to sandbox (e.g. ".cursor", ".claude") */
+  /** Config directory name relative to sandbox (e.g. ".cursor", ".claude"). */
   readonly configDir: string;
 
-  /** Binary name or path */
-  readonly command: string;
-
-  /** Output format used by the CLI (for log formatting) */
-  readonly outputFormat: "stream-json" | "json";
-
-  /** Build CLI arguments for a single agent step */
-  buildArgs(opts: {
-    model: string;
-    workspace: string;
-    prompt: string;
-    sessionId?: string;
-    name?: string;
-  }): string[];
-
-  /** Parse raw stdout into structured output */
-  parseOutput(stdout: string): ParsedAgentOutput;
-
-  /** Extra environment variables needed for this IDE's CLI */
-  getEnv(): Record<string, string>;
-
   /**
-   * Optional sandbox preparation step run after fixture/framework copy and
-   * before agent spawn. Adapters may set up auxiliary directories (e.g. an
-   * isolated $HOME) and return env vars to merge into the spawned process.
-   * Default implementation returns {} and writes nothing.
-   *
-   * Used by `ClaudeAdapter` to isolate from `~/.claude/skills/` — see
-   * FR-ACCEPT-ISOLATION.
+   * Optional sandbox preparation run before agent spawn. Returns env vars to
+   * merge into the spawned process. Used for Claude's isolated `$HOME`
+   * (FR-ACCEPT-ISOLATION) so the sandbox skills win over `~/.claude/skills/`.
    */
   prepareWorkspace?(sandboxPath: string): Promise<Record<string, string>>;
 
-  /** Setup tool mocks in the sandbox (hooks mechanism is IDE-specific) */
-  setupMocks(sandboxPath: string, mocks: Record<string, string>): Promise<void>;
-
-  /** Calculate token usage for a session (best-effort, may return null) */
+  /** Token usage for a session (best-effort; may return null). */
   calculateUsage(sessionId: string): Promise<SessionUsage | null>;
 
   /**
-   * Best-effort probe of the installed CLI's `--version` output. Returns the
-   * trimmed stdout on success, or `""` when the binary is missing, times out,
-   * or exits non-zero. Consumed by the benchmark cache-key so an upgraded CLI
-   * invalidates stale results. Implementations should cap spawn time at a few
-   * seconds so a missing binary doesn't stall `deno task bench`.
+   * Version string folded into the benchmark cache-key so a transport/agent
+   * upgrade invalidates stale results (FR-ACCEPT-CACHE).
    */
   cliVersion(): Promise<string>;
 }
 
+/**
+ * Structured agent turn output accumulated by `AcpClient` and consumed by the
+ * runner / judge / `UserEmulator`.
+ */
 export interface ParsedAgentOutput {
   sessionId: string | null;
   result: string | null;

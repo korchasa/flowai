@@ -15,6 +15,7 @@
     "@std/toml": "jsr:@std/toml@^1.0.2",
     "@std/yaml": "jsr:@std/yaml@^1.0.12",
     "zod": "npm:zod@^3.25.76",
+    "@zed-industries/agent-client-protocol": "npm:@zed-industries/agent-client-protocol@0.4.5",
     "@acceptance-tests/": "./scripts/acceptance-tests/lib/"
   },
   "tasks": {

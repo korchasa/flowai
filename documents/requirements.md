@@ -122,28 +122,26 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 ### FR-ACCEPT: Benchmarking [ANC:fr:accept]
 
 - **Description:** Evidence-based acceptance testing system to evaluate agent skill execution quality. `deno task acceptance-tests`.
-- **Key capabilities:** Isolated sandbox execution (`SpawnedAgent`), LLM-based Judge, evidence collection, interactive flows (`UserEmulator`), cost/token tracking, HTML tracing, parallel execution protection.
+- **Key capabilities:** Isolated sandbox execution over the ACP transport (`AcpAgent`), LLM-based Judge, evidence collection, interactive flows (`UserEmulator`), cost/token tracking, HTML tracing, parallel execution protection.
 - **Architecture:** Co-located scenarios (`framework/<pack>/skills/<skill>/acceptance-tests/` and `framework/<pack>/commands/<command>/acceptance-tests/`), pack-level scenarios (`framework/<pack>/acceptance-tests/`), pack-scoped sandbox, Claude CLI judge (`cliChatCompletion`), mandatory `agentsTemplateVars` (compile-time enforced).
-- **Implementation:** `scripts/acceptance-tests/lib/` (runner, judge, spawned_agent, user_emulator, trace, types, utils).
+- **Implementation:** `scripts/acceptance-tests/lib/` (runner, judge, `acp/` transport, user_emulator, trace, types, utils).
 
 ### FR-ACCEPT-ISOLATION: Sandbox Isolation From User-Level Skills [ANC:fr:accept-isolation]
 
 - **Desc:** `deno task acceptance-tests` MUST judge the sandbox `SKILL.md` (the one written into `<sandbox>/.claude/skills/<name>/`), not the developer's user-level installation at `~/.claude/skills/<name>/`. Without this, framework-source `SKILL.md` edits never reach the model: Claude Code's Skill tool resolves user-level over project-level on collision, so any DIFF skill silently delivers stale text and the Acceptance Test TDD RED→GREEN cycle produces no observable change.
 - **Tasks:** [migrate-acceptance-to-acp](tasks/2026/06/migrate-acceptance-to-acp.md)
 - **Scenario:** A contributor edits `framework/<pack>/skills/<name>/SKILL.md` and runs `deno task acceptance-tests -f <name>`. The model must load the edited body, not whatever the user happened to install via `flowai sync` weeks ago. Constraint: the acceptance-tests runner MUST NOT modify, move, symlink, or delete `~/.claude/skills/`.
-- **Mechanism (Claude adapter only):** `ClaudeAdapter.prepareWorkspace(<sandbox>)` builds an isolated `$HOME = <workDir>/bench-home/` (sibling of the sandbox; deliberately outside the sandbox cwd so `git status` does not see it as untracked) containing an empty `.claude/skills/` (so user-level resolution finds nothing) plus targeted symlinks back to the real `$HOME` for OAuth/Keychain auth (`Library/Keychains`) and the versioned launcher binary (`.local/share/claude`). `.credentials.json` is intentionally NOT mirrored — letting Keychain win avoids stale-refresh-token 400s. Cursor and Codex adapters do not implement `prepareWorkspace` (no analogous Skill tool resolution path exists).
+- **Mechanism (Claude only, ACP transport):** `prepareAcpClaudeHome(<sandbox>)` (`scripts/acceptance-tests/lib/acp/auth.ts`, the single owner since the direct `ClaudeAdapter` was retired) builds an isolated `$HOME = <workDir>/bench-home/` (sibling of the sandbox; deliberately outside the sandbox cwd so `git status` does not see it as untracked) containing an empty `.claude/skills/` (so user-level resolution finds nothing) plus targeted symlinks back to the real `$HOME` for OAuth/Keychain auth (`Library/Keychains`) and the versioned launcher binary (`.local/share/claude`). `.credentials.json` is intentionally NOT mirrored — letting Keychain win avoids stale-refresh-token 400s. The Claude profile wires this via `prepareWorkspace`; Cursor, Codex, and OpenCode profiles leave it unset (no analogous Skill tool resolution path exists).
 - **Acceptance:**
-  - [x] Programmatic isolation test: `<workDir>/bench-home/.claude/skills/` is created empty by `prepareWorkspace`.
-    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "prepareWorkspace isolation: empty user-level skills dir"`.
+  - [x] Bench-home `.claude/skills/` is created empty AND `~/.claude/skills/` snapshot is byte-identical before/after (sandbox skills win, user-level untouched).
+    Evidence: `scripts/acceptance-tests/lib/acp/auth_test.ts::sandbox skills win and user-level skills dir untouched`.
   - [x] Auth-related symlinks track host: present iff source path exists on host (`Library/Keychains`, `.local/share/claude`).
-    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "auth-related symlinks track host"`.
+    Evidence: `scripts/acceptance-tests/lib/acp/auth_test.ts::auth-related symlinks track host: present iff source exists`.
   - [x] `.credentials.json` is never mirrored into `<workDir>/bench-home/.claude/`.
-    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "never mirrors .credentials.json"`.
-  - [x] `~/.claude/skills/` snapshot (entry names + mtimes) is byte-identical before and after `prepareWorkspace`.
-    Evidence: `deno test -A scripts/acceptance-tests/lib/adapters/claude_test.ts --filter "does not touch ~/.claude/skills/"`.
-  - [x] Cache key invalidates on any change inside `scripts/acceptance-tests/lib/adapters/` (so old cached verdicts cannot mask the fix on first post-merge run).
-    Evidence: `deno test -A scripts/acceptance-tests/lib/cache_test.ts --filter "isolation-key-change"`.
-  - [x] `AgentAdapter.prepareWorkspace` is optional in the contract; runner only invokes it when adapter implements it (Cursor/Codex pass through unchanged).
+    Evidence: `scripts/acceptance-tests/lib/acp/auth_test.ts::never mirrors .credentials.json into bench-home`.
+  - [x] Cache key invalidates on any change inside `scripts/acceptance-tests/lib/` (incl. `acp/` + `adapters/`), so old cached verdicts cannot mask the fix on first post-merge run.
+    Evidence: `scripts/acceptance-tests/lib/cache_test.ts::isolation-key-change: cache key tracks adapter directory contents`.
+  - [x] `AgentAdapter.prepareWorkspace` is optional in the data-only profile; runner only invokes it when the profile sets it (Cursor/Codex/OpenCode pass through unchanged).
     Evidence: `scripts/acceptance-tests/lib/runner.ts` (`adapter.prepareWorkspace ? ... : {}`); `scripts/acceptance-tests/lib/adapters/types.ts` (declared optional).
 - **Non-acceptance (explicit trade-offs):**
   - macOS-first: the symlink set targets macOS auth (Keychain). On Linux/CI without `~/Library/Keychains`, those symlinks are skipped — auth then relies on whatever Linux mechanism the developer has set up. CI workflows that already export `ANTHROPIC_API_KEY` are unaffected.
@@ -154,7 +152,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 ### FR-ACCEPT-GUARDS: Resource Guards For Spawned Agents [ANC:fr:accept-guards]
 
-- **Desc:** `SpawnedAgent` MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a `configure-deno-commands` scenario produced a `deno test -A` chain that grew to ~720 descendants in 90 s); (2) **bloat-OOM** — a single agent process leaks/holds memory until the kernel VM compressor saturates (incident at 07:50: `compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel found "no eligible processes" to jetsam, `SystemUIServer` froze in TCC checks, host hung until forced reboot at 08:53). Container-based isolation is unavailable (see FR-ACCEPT-ISOLATION trade-offs), so guards run in userspace on the host.
+- **Desc:** `AcpAgent` MUST defend the host against two failure modes observed on 2026-05-09 that escalated to multi-reboot system hangs: (1) **fork-loop** — a benchmarked skill recursively spawns subprocesses (incident at 02:43: a `configure-deno-commands` scenario produced a `deno test -A` chain that grew to ~720 descendants in 90 s); (2) **bloat-OOM** — a single agent process leaks/holds memory until the kernel VM compressor saturates (incident at 07:50: `compressor_size = 7.18 GiB`, `compression_ratio = 14`, kernel found "no eligible processes" to jetsam, `SystemUIServer` froze in TCC checks, host hung until forced reboot at 08:53). Container-based isolation is unavailable (see FR-ACCEPT-ISOLATION trade-offs), so guards run in userspace on the host.
 - **Scenario:** A bench scenario triggers either (a) a runaway shell command that forks recursively or (b) a long-context turn that pushes the agent's V8 heap past available RAM. The guard MUST kill the agent's entire process tree (root PID + all descendants) and proceed to the judge with an `exit_code_zero` failure verdict, instead of letting the kernel hang the host. A pre-flight check MUST refuse to spawn the next agent when the host is already under enough pressure that the next spawn risks the same compressor-shortage state.
 - **Mechanism (`scripts/acceptance-tests/lib/process_watchdog.ts` + `system_health.ts` + `setpgrp_exec.py`):**
   - **Process-group isolation**: every spawn is wrapped in `python3 setpgrp_exec.py <agent> <args>`. The wrapper calls `os.setsid()` then `os.execvp()`, making the agent the leader of a new process group whose PGID equals the agent's PID. All descendants inherit the PGID — even after re-parenting to PID 1 when an intermediate parent dies. Required because the prior PPID-walk approach killed only direct descendants; orphaned grandchildren kept forking and ultimately required a host reboot on 2026-05-09 12:12.
@@ -168,7 +166,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
     Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts --filter "rss-bloat"`.
   - [ ] Pre-flight health snapshot is logged in every run's `judge-evidence.md` (`[health] available … MB (…%), compressor … MB, swap …/… MB (…%), load1 … on … CPU (…/CPU)`).
     Evidence: `grep -h '\[health\]' acceptance-tests/runs/latest/*/run-*/judge-evidence.md`.
-  - [x] When `assertHealthy` throws, `SpawnedAgent.start` catches `SystemUnhealthyError`, logs `[health] aborting spawn: ...`, and surfaces exit code 75 without spawning.
+  - [x] When `assertHealthy` throws, `AcpAgent.run` catches `SystemUnhealthyError`, logs `[health] aborting spawn: ...`, and surfaces exit code 75 without spawning.
     Evidence: `deno test -A scripts/acceptance-tests/lib/system_health_test.ts` (covers threshold-trip path).
   - [ ] Watchdog publishes the `trip` object BEFORE killing (so consumers reading `watchdog.trip()` after `child.status` resolves on SIGTERM see the verdict, not `null`).
     Evidence: `process_watchdog.ts:tripNow` sets `trip` before awaiting `killTree`.
@@ -178,7 +176,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - `assertHealthy` is macOS-only (Linux returns neutral). Linux/CI runs rely on the kernel's own OOM-killer.
   - Setting `BENCH_MAX_RSS_GB` too low (< ~1.5 GiB for `claude`) will trip during normal long-context turns. Default 6 GiB is calibrated against observed peaks; lower with care.
 - **Deferred (not blocking — root cause fixed in `configure-deno-commands` SKILL.md rules 13–14, which prevents the agent from generating the fork-bomb pattern at source; userspace guards remain as defense-in-depth):**
-  - Aggregate RSS accumulator across all live `SpawnedAgent` instances. Activate only when `task-bench.ts` adds concurrent scenario execution; current runner is sequential.
+  - Aggregate RSS accumulator across all live `AcpAgent` instances. Activate only when `task-bench.ts` adds concurrent scenario execution; current runner is sequential.
   - End-to-end re-validation on a low-memory host with the original fork-loop scenario re-introduced. Verified indirectly on 2026-05-09: re-ran `configure-deno-commands-trigger-pos-{1,2,3}` (the `-2`/`-3` scenarios were later consolidated into `-1` on 2026-05-10), `-basic`, `setup-ai-ide-devcontainer-{deno-claude,feature-discovery}` after the SKILL.md fix — six previously-dangerous scenarios passed without tripping the watchdog and without measurable swap pressure.
 
 ### FR-ACCEPT-CACHE: Acceptance Test Result Cache [ANC:fr:accept-cache]
@@ -254,20 +252,20 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 
 ### FR-ACCEPT.OPENCODE: OpenCode Adapter for Acceptance Test Runner [ANC:fr:accept.opencode]
 
-- **Desc:** The acceptance-test runner MUST ship a working `OpencodeAdapter` (`scripts/acceptance-tests/lib/adapters/opencode.ts`) implementing the full `AgentAdapter` interface for the `opencode` CLI. Project docs (README, SDS §2, `documents/ides-difference.md`) list four supported IDEs — Cursor, Claude Code, OpenCode, OpenAI Codex — but the runner currently exposes adapters for only three; `"opencode"` sits in the `AgentAdapter.ide` union as a dead enum value. Closing this gap restores capability parity across the four declared IDEs and lets pack-level scenarios (FR-ACCEPT.RULES, FR-ACCEPT.TRIGGER) execute against OpenCode without per-call special-casing.
+- **Desc (original requirement — SUPERSEDED, retained for history):** The runner was to ship a hand-written `OpencodeAdapter` implementing the full per-IDE `AgentAdapter` interface (buildArgs/parseOutput/setupMocks/…) for the `opencode` CLI, restoring 4-IDE parity (Cursor, Claude Code, OpenCode, Codex). This bespoke-adapter approach was abandoned: FR-ACCEPT.ACP replaces all four per-IDE adapter classes with a single ACP client + data-only registry, so OpenCode parity is now achieved by the `ACP_AGENTS.opencode` registry row (`opencode acp`), not a class.
 - **Tasks:** [opencode-acceptance-adapter](tasks/2026/06/opencode-acceptance-adapter.md)
-- **Scope:** Runner-side only. Plugin distribution to OpenCode (skill / agent emit, frontmatter transform) is already covered by FR-DIST.* + `cli-internals.ts`; this FR does NOT duplicate that contract — it consumes the existing transform and exposes its output to the benchmark sandbox.
-- **Cross-Implementation Symmetry contract:** Parity with `ClaudeAdapter`, `CodexAdapter`, `CursorAdapter` for: `ide`, `configDir`, `command`, `outputFormat`, `buildArgs`, `parseOutput`, `getEnv`, `setupMocks`, `calculateUsage`, `cliVersion`. `prepareWorkspace` remains optional — implement only if a user-level skill collision analogous to `~/.claude/skills/` shadowing exists for OpenCode.
-- **Acceptance:** `deno test scripts/acceptance-tests/lib/adapters/opencode_test.ts` (to be authored together with the implementation) passes AND at least one existing benchmark scenario runs green against `--ide opencode`. Per-step DoD (file existence, registration in `mod.ts`, unit-test coverage) is tracked in the linked task file.
-- **Status:** [ ]
+- **Scope:** Runner-side only. Plugin distribution to OpenCode (skill / agent emit, frontmatter transform) is covered by FR-DIST.* + `cli-internals.ts`.
+- **Acceptance:** SUPERSEDED — see Status.
+- **Status:** [x] SUPERSEDED by FR-ACCEPT.ACP (2026-06-21). OpenCode is reached through the ACP transport via a data-only registry row (`ACP_AGENTS.opencode`), not a hand-written `OpencodeAdapter`. The bespoke-adapter approach was abandoned with the direct-CLI deletion; no `opencode.ts` is shipped. Per-IDE green-gate for OpenCode tracked under FR-ACCEPT.ACP.
 
 ### FR-ACCEPT.ACP: ACP Transport for Acceptance Test Runner [ANC:fr:accept.acp]
 
-- **Desc:** The acceptance-test runner SHOULD replace its per-IDE direct-CLI control layer (`SpawnedAgent` + four hand-written `AgentAdapter` classes, each re-parsing an IDE-specific `stream-json` dialect and mocking via IDE-specific hooks) with a single Agent Client Protocol (ACP — JSON-RPC 2.0 over stdio) client plus a data-only agent registry. Drivers: shrink the runner codebase, standardize on ACP, cut per-IDE adapter cost, onboard new IDEs faster. Agents reach ACP natively (Cursor, OpenCode) or via a wrapper (`claude-code-acp`; Codex via an ACP server).
+- **Desc:** The acceptance-test runner replaces its per-IDE direct-CLI control layer (`SpawnedAgent` + four hand-written `AgentAdapter` classes, each re-parsing an IDE-specific `stream-json` dialect and mocking via IDE-specific hooks) with a single Agent Client Protocol (ACP — JSON-RPC 2.0 over stdio) client (`AcpClient`/`AcpAgent`) plus a data-only agent registry (`ACP_AGENTS`). Drivers: shrink the runner codebase, standardize on ACP, cut per-IDE adapter cost, onboard new IDEs faster. Agents reach ACP natively (Cursor, OpenCode), via a wrapper (`claude-code-acp` over the Claude Agent SDK), or an ACP server (Codex). Tool mocking is IDE-agnostic via PATH-shadowing (`mock_bin.ts`); FR-ACCEPT-GUARDS (setpgrp + watchdog) and FR-ACCEPT-ISOLATION (bench-home) are preserved. The direct-CLI adapters, `SpawnedAgent`, and the `stream-json` parse/format path are deleted — ACP is the only transport.
 - **Tasks:** [migrate-acceptance-to-acp](tasks/2026/06/migrate-acceptance-to-acp.md)
-- **Scope:** Runner-side only. Supersedes the bespoke-adapter approach of FR-ACCEPT.OPENCODE — OpenCode is reached through ACP rather than a hand-written adapter; resolve the adapter-code overlap before deletion. Does NOT change plugin distribution (FR-DIST.*) or the parity-gate semantics — only the transport by which the bench drives an IDE agent.
-- **Acceptance:** `deno test scripts/acceptance-tests/lib/acp_client_test.ts` (to be authored with the implementation) passes AND ≥1 existing benchmark scenario runs green through the ACP transport against ≥2 distinct agents. Per-step DoD (client module, agent registry, adapter retirement) tracked in the linked task file.
-- **Status:** [ ]
+- **Scope:** Runner-side only. Absorbs FR-ACCEPT.OPENCODE (OpenCode via ACP). Does NOT change plugin distribution (FR-DIST.*) or the parity-gate semantics — only the transport by which the bench drives an IDE agent.
+- **Acceptance verified by acceptance tests:** `draw-mermaid-diagrams-sequence` (no-mock skill-load, green over ACP), `select-llm-model-fails-fast-no-fetch` (curl/wget mocked via PATH-shadow, green over ACP).
+- **Acceptance (code):** `deno test -A scripts/acceptance-tests/lib/acp/` (client prompt-turn, auto-allow, error-mapping, mock_bin, auth-isolation), `scripts/acceptance-tests/lib/process_watchdog_test.ts::kills ACP wrapper child tree`, `scripts/acceptance-tests/lib/cache_test.ts::acp transport participates in cache key`; full `deno task check` green with no `stream-json` path remaining.
+- **Status:** [x] Claude proven green over ACP (transport + mocks + skill-load, subscription auth). Cursor/Codex/OpenCode carry registry launch specs (`cursor-agent --acp`, `codex acp`, `opencode acp`) exercised when those CLIs are installed/authed.
 
 ### FR-EXP: Experiments Subsystem (RELOCATED) [ANC:fr:exp]
 

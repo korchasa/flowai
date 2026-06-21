@@ -174,6 +174,64 @@ Deno.test({
   },
 });
 
+// ACP transport guards (FR-ACCEPT.ACP, FR-ACCEPT-GUARDS): under the ACP
+// transport the spawned child is a WRAPPER
+// (`npx claude-code-acp` → node → agent workers), one level deeper than
+// a direct CLI. This asserts the watchdog's process-group kill still reaches the
+// wrapper's grandchildren: an intermediate process that itself forks workers and
+// does NOT call setsid keeps everything in the original PGID, so a fork-loop trip
+// cleans the whole tree. (If an intermediate created its own group, group-kill of
+// the original PGID would miss it — this test pins that it does not happen for the
+// inherit-PGID wrapper shape.)
+Deno.test({
+  name: "watchdog: kills ACP wrapper child tree",
+  ignore: Deno.build.os !== "darwin" && Deno.build.os !== "linux",
+  async fn() {
+    // Leader (≈ npx) execs an intermediate wrapper (≈ node) which forks 8
+    // workers (≈ agent tool processes), then both leader and intermediate exit
+    // so the workers reparent to PID 1 while staying in the setpgrp group.
+    const WRAPPER_TREE = `
+      sh -c 'for i in $(seq 1 8); do sleep 60 & done; exit 0' &
+      exit 0
+    `;
+    const handle = spawnWrapped(WRAPPER_TREE);
+    try {
+      const pgid = await waitForGroupSize(handle.pid, 8, 3000);
+
+      let trippedCause: string | null = null;
+      const wd = startWatchdog(handle.pid, {
+        maxDescendants: 4,
+        confirmSamples: 1,
+        intervalMs: 100,
+        graceMs: 200,
+        maxRssBytes: 0, // isolate the fork-loop guard
+        onTrip: (t) => {
+          trippedCause = t.cause;
+        },
+      });
+
+      await handle.child.status; // drain leader exit
+
+      const cleaned = await waitFor(async () => {
+        if (!trippedCause) return false;
+        return (await listProcessGroup(pgid)).length === 0;
+      }, 5000);
+      wd.stop();
+
+      assertEquals(trippedCause, "fork-loop");
+      assertEquals(
+        cleaned,
+        true,
+        `wrapper child tree not cleaned; remaining=${
+          (await listProcessGroup(pgid)).length
+        }`,
+      );
+    } finally {
+      await killGroupSafely(handle.pid);
+    }
+  },
+});
+
 // Regression: BENCH_WATCHDOG_DISABLE was intentionally removed so the agent
 // cannot bypass the watchdog through environment. The watchdog is now
 // disable-able only via the programmatic `WatchdogOptions.disabled` flag.
