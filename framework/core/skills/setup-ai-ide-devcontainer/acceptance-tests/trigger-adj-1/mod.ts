@@ -7,6 +7,9 @@ export const SetupAiIdeDevcontainerTriggerAdj1 = new class
   id = "setup-ai-ide-devcontainer-trigger-adj-1";
   name = "deno deploy production (adjacent)";
   skill = "setup-ai-ide-devcontainer";
+  // Mount the `deno` pack so the correct adjacent skill (`deploy`) is installed
+  // and the agent has a neighbour to defer to instead of over-triggering.
+  extraPacks = ["deno"];
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
     "Help me deploy this app to Deno Deploy with separate Build, Dev, and Prod contexts.";

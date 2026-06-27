@@ -1,5 +1,6 @@
 # Core Project Rules
 - Follow your assigned role strictly — it defines scope and boundaries for your actions.
+- **Prefer the right skill — match precisely, don't over-reach.** Before answering, check the installed skills (descriptions are available; you may list `.{ide}/skills/`). When a skill's stated purpose squarely fits the task, invoke it (via the Skill tool or by reading its `SKILL.md`) instead of improvising — skills encode the project's vetted workflow. Match on the skill's actual scope, not a shared keyword: if another installed skill fits better, or the request explicitly falls outside a skill's stated scope, defer to that skill or answer directly. When no skill clearly matches, proceed directly.
 - After finishing a session, review all project documents(readme.md, requirements.md, design.md, etc) to ensure they reflect the current state. Stale docs mislead future sessions.
 - Verify every change by running appropriate tests or scripts — never assume correctness without evidence.
 - Keep the project in a clean state: no errors, warnings, or issues in formatter and linter output. A broken baseline blocks all future work.

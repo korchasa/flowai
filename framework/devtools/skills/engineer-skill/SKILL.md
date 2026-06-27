@@ -1,6 +1,6 @@
 ---
 name: engineer-skill
-description: Guide for creating effective Agent Skills (SKILL.md packages). Use when users want to create a new skill, write a skill, author a SKILL.md, or ask about skill structure, best practices, or skill file format. Works across IDEs (Cursor, Claude Code, OpenCode).
+description: Guide for creating agent-invocable Agent Skills (SKILL.md packages auto-discovered by description). Use when users want to create or author a skill (SKILL.md), or ask about skill structure or format. Not for user-invoked slash commands (a separate command-authoring concern). Works across IDEs.
 license: Based on https://github.com/anthropics/skills
 ---
 

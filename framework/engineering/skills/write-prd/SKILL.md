@@ -1,6 +1,6 @@
 ---
 name: write-prd
-description: Produce a comprehensive Product Requirements Document (PRD). Use when the user asks to write a PRD or formalize a feature's scope, goals, and success metrics.
+description: Produce a comprehensive Product Requirements Document (PRD) for a product feature. Use when the user asks to write a PRD or formalize a product feature's scope, goals, user value, and success metrics. Not for internal technical/engineering change proposals (those argue for a code/architecture change, not a product feature).
 ---
 
 # How to Write a Product Requirements Document (PRD)
