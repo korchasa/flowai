@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "9e83f6213a4d45c9b03c2d74e5b4030162c321f69e1eb35dc5dabca69ec3b6bb",
+  "scenarioId": "engineer-prompts-for-instant-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:44:15.929Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 13377.54466700001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-prompts-for-instant\" not invoked (0 tool call(s) observed)."
+      }
+    }
+  }
+}

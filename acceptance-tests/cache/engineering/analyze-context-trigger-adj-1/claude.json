@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "b8db4697a69ca2011e4681c2bbf1210d82f307623fae7e2ba9b9eafda17028f0",
+  "key": "0f4f783b83fab45b83265e312fc1be04188372ce1bc034716ed33dbfb31e9cd3",
   "scenarioId": "analyze-context-trigger-adj-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-08T01:55:39.075Z",
+  "recordedAt": "2026-06-27T12:20:41.071Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 262329.36320799997,
+    "durationMs": 153738.5845,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent correctly routed the reflection request to `reflect` (first tool call: `Skill` with `{\"skill\": \"reflect\"}`), never calling the `Skill` tool with `flowai-anal…"
+        "reason": "Deterministic: skill \"analyze-context\" not invoked (6 tool call(s) observed)."
       }
     }
   }

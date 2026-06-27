@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "a189613a84b5e9a4ce147d65e2028702825de9d9352a43b4769ec93e30bedf38",
+  "scenarioId": "write-prd-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:03:51.069Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 12593.358333000011,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"write-prd\" not invoked (0 tool call(s) observed)."
+      }
+    }
+  }
+}

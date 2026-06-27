@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "08f7ec95d92ef0b7d2795dd469d05e6f58b5bfe35ddfeb401f7e2967eb9fbf12",
+  "scenarioId": "engineer-plugin-mcp-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:04:19.667Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 28045.100375,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-plugin-mcp\" not invoked (3 tool call(s) observed)."
+      }
+    }
+  }
+}

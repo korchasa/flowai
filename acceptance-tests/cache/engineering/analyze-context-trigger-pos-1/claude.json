@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "a22a48d2f62947570a8024daf67d5a196a41240cf27feaaedb15704e70047374",
+  "scenarioId": "analyze-context-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:21:00.649Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 19417.032083,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"analyze-context\" invoked (Skill tool call or SKILL.md read found in trace)."
+      }
+    }
+  }
+}

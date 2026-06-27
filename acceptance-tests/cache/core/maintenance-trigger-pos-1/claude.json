@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "93bfdebb2a09d512f486aa6365d1afc42a18c0ca783671f80158aaa8aaee1063",
+  "scenarioId": "maintenance-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-26T22:02:48.308Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 310894.35320899996,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "The agent's output exactly mirrors the maintenance skill's architecture: five parallel specialized scanners matching the five maintenance-scan-* sub-agents in the repo, a severity rubric (High/Medium…"
+      }
+    }
+  }
+}

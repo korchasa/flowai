@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "c9cc58a838199dcccb5dda079875f5e087e4aadb9837b0f27c0ab4dc502e705c",
+  "key": "d2ec7d650999330d31367c9a15605678faba5ec0f7518c3797d768767a946b2e",
   "scenarioId": "engineer-plugin-marketplace-trigger-adj-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-06-01T22:02:59.145Z",
+  "recordedAt": "2026-06-27T12:41:34.091Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 176227.738875,
+    "durationMs": 129823.60487499999,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent invoked only the `engineer-ai-ide-plugin` skill (as seen in the Tool: Skill call with `\"skill\": \"engineer-ai-ide-plugin\"`). There is no evidence anywhere in the logs of the agent reading `e…"
+        "reason": "Deterministic: skill \"engineer-plugin-marketplace\" not invoked (5 tool call(s) observed)."
       }
     }
   }

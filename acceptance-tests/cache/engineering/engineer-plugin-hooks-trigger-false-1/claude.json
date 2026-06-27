@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "9c4250d0a941456d0716c8237b966a37b541f5b8c5f2435f9b97e748ae70ef17",
+  "scenarioId": "engineer-plugin-hooks-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:39:23.615Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 29069.87920799997,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-plugin-hooks\" not invoked (0 tool call(s) observed)."
+      }
+    }
+  }
+}

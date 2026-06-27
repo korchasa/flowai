@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "38626c68242ce26b256318bba46be48ef184ef09221cd9944129473574613343",
+  "key": "e0abb9b91939754372543c6c9b567215cc6cd4b96d7634f557fc5c836d7731a2",
   "scenarioId": "setup-ai-ide-devcontainer-trigger-pos-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T01:04:55.118Z",
+  "recordedAt": "2026-06-27T11:54:17.725Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 142101.83783400012,
+    "durationMs": 242392.28737499999,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "The agent's first action was a `Skill` tool call with `\"skill\": \"setup-ai-ide-devcontainer\"`. It then proceeded to read reference files from `.claude/skills/flowai-setup-ai-ide-dev…"
+        "reason": "Deterministic: skill \"setup-ai-ide-devcontainer\" invoked (Skill tool call or SKILL.md read found in trace)."
       }
     }
   }

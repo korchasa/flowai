@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "8abed781bdd0ef25746dc50853c3f3c3ad409a335c7d5c04ffd5effdc0442ef0",
+  "scenarioId": "engineer-skill-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:12:18.269Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 48030.80624999998,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-skill\" invoked (Skill tool call or SKILL.md read found in trace)."
+      }
+    }
+  }
+}

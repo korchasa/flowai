@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "84131cd1d8f14baf263ba4a59a16217a4c474093dc8c4b6143135215e3b712a3",
+  "scenarioId": "write-dep-trigger-adj-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:26:22.574Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 100555.974167,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"write-dep\" not invoked (9 tool call(s) observed)."
+      }
+    }
+  }
+}

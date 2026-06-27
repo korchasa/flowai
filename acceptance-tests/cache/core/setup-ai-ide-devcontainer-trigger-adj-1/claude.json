@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "3de0412ee93b667995953226c0de7c32b4788eda2cdd6225e5a2548ebdb948f1",
+  "key": "0f9f6e20a71eb573e9f1cc01f39cb2092b6fd03ecc0e4a4094f3a48463602a0d",
   "scenarioId": "setup-ai-ide-devcontainer-trigger-adj-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T00:36:21.240Z",
+  "recordedAt": "2026-06-27T11:50:15.183Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 218209.83245799993,
+    "durationMs": 84776.158666,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent never invoked `setup-ai-ide-devcontainer`. The only Skill tool call in the logs used `configure-deno-commands`, which is appropriate for a Deno Deploy configuratio…"
+        "reason": "Deterministic: skill \"setup-ai-ide-devcontainer\" not invoked (9 tool call(s) observed)."
       }
     }
   }

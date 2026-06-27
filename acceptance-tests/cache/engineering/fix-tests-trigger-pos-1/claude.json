@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "728d5e23fafe25823534d25eec39bd571297ca465427b807e59a2aca938a33d6",
+  "key": "9c485a3d84c24c0d321347b1aec91c9cb7c9ad0a08d75431f1021e0f945ff23f",
   "scenarioId": "fix-tests-trigger-pos-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-02T16:05:15.093Z",
+  "recordedAt": "2026-06-27T11:45:08.343Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 97275.617917,
+    "durationMs": 78330.136875,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "The agent explicitly read the SKILL.md file at `.claude/skills/fix-tests/SKILL.md` and then made a `Skill` tool call with `{\"skill\": \"fix-tests\"}`. Both forms of evidence (r…"
+        "reason": "Deterministic: skill \"fix-tests\" invoked (Skill tool call or SKILL.md read found in trace)."
       }
     }
   }

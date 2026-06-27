@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "a51c886a6541e123e38a1890df13ad948a77b16e35825d073db1ab8118e19416",
+  "key": "6b14af449fd00bd1945092f8ce115b08a3e715b16e31f75005bdfe4685ef4876",
   "scenarioId": "engineer-plugin-marketplace-trigger-pos-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-06-01T22:13:15.666Z",
+  "recordedAt": "2026-06-27T12:42:06.041Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 34185.886875000004,
+    "durationMs": 31786.265,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "The agent explicitly called the `Skill` tool with `{\"skill\": \"engineer-plugin-marketplace\"}` and subsequently read `engineer-plugin-marketplace/references/related-skills.md`. The final response was g…"
+        "reason": "Deterministic: skill \"engineer-plugin-marketplace\" invoked (Skill tool call or SKILL.md read found in trace)."
       }
     }
   }

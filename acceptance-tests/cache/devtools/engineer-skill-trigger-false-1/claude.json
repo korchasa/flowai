@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "a8bbd364618d7a6c6b7f693f38bf8e40a2cbfb4121405dfea3842e1d4af3410b",
+  "scenarioId": "engineer-skill-trigger-false-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:12:49.809Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 31371.363458000007,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_not_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-skill\" not invoked (0 tool call(s) observed)."
+      }
+    }
+  }
+}

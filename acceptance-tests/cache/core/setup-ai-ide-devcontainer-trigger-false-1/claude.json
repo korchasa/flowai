@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "ffa4bbce0f10881324f6437882b8d4c01b2ac27eae8f1f8d66aaa80cbaab0fd9",
+  "key": "ae1eaea60880a79d85ab8c3634f197b455d84dafa2a3d9999b6720091686494b",
   "scenarioId": "setup-ai-ide-devcontainer-trigger-false-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-09T01:05:33.082Z",
+  "recordedAt": "2026-06-27T11:54:43.761Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 26604.127291999757,
+    "durationMs": 25893.870750000002,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent logs show the agent listed the sandbox directory and then directly wrote a Dockerfile without invoking the Skill tool or reading `setup-ai-ide-devcontainer/SKILL.md`. The agent…"
+        "reason": "Deterministic: skill \"setup-ai-ide-devcontainer\" not invoked (2 tool call(s) observed)."
       }
     }
   }

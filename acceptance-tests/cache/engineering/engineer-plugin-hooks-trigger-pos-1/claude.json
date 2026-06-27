@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "78b123756b37363b0495b01785d933bc996bc8e8b09a123e625dc38c1dacbbb6",
+  "scenarioId": "engineer-plugin-hooks-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:38:54.383Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 307965.92125,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"engineer-plugin-hooks\" invoked (Skill tool call or SKILL.md read found in trace)."
+      }
+    }
+  }
+}

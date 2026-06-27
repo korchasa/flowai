@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "key": "21b74adb45cf815101bb21331349511b9fc12ff0778dfd984f249020f3c201d9",
+  "scenarioId": "maintenance-no-spurious-invocation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-26T21:11:41.755Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 19814.39304200001,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "no_eight_category_scan": {
+        "pass": true,
+        "reason": "The agent simply attempted to locate source code and run the linter/tests as requested. Upon finding only AGENTS.md and CLAUDE.md in the sandbox, it reported that there was nothing to lint or test. I…"
+      },
+      "no_interactive_resolution": {
+        "pass": true,
+        "reason": "The agent did not enter any interactive issue-by-issue resolution phase. It made a single observation (no source code or config files present) and reported the result immediately, without presenting …"
+      }
+    }
+  }
+}

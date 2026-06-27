@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "key": "d61967c5b23e39ee26de27a4928d9645622d1ccee954dabad9d8fe53aea2aab9",
+  "scenarioId": "write-gods-tasks-trigger-pos-1",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-06-27T12:24:29.152Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 18823.709250000014,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "skill_invoked": {
+        "pass": true,
+        "reason": "Deterministic: skill \"write-gods-tasks\" invoked (Skill tool call or SKILL.md read found in trace)."
+      }
+    }
+  }
+}
