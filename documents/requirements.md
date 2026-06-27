@@ -107,7 +107,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - Severity tags stay literal English even when the surrounding report is in another language (same reasoning as the existing `Documentation Health` label rule).
   - Critical share of any single sweep must stay within 35 % of total findings under the rubric.
 - **Acceptance verified by acceptance tests:** `maintenance-surfaces-severity-tags`, `maintenance-severity-filter-critical-high`, `maintenance-severity-calibration-no-inflation`.
-- **Status:** [ ]
+- **Status:** [x]
 
 ### FR-ONBOARD: Developer Onboarding & Workflow Clarity [ANC:fr:onboard]
 
@@ -224,18 +224,20 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Desc:** Every skill in `framework/<pack>/skills/` MUST have 3 trigger scenarios verifying description-matching correctness: 1 positive (skill should activate), 1 adjacent-negative (a different skill is the right match), 1 false-use-negative (query is in the skill's domain but the wrong intent for it). Catches regressions where a description rewrite makes the skill invisible to the model (false negative) or over-triggered (false positive).
 - **Tasks:** [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md), [rewrite-skill-descriptions](tasks/2026/06/rewrite-skill-descriptions.md)
 - **Scope:** Only `framework/<pack>/skills/`. Commands (`framework/<pack>/commands/`) carry `disable-model-invocation: true` (injected at sync) and are triggered by explicit `/name` — out of scope.
-- **Shape:** Regular `AcceptanceTestScenario` with one `userQuery` and one critical checklist item evaluated by the LLM judge against the trace. No new infra.
+- **Shape:** Regular `AcceptanceTestScenario` with one `userQuery` and one critical checklist item (`skill_invoked` / `skill_not_invoked`) scored DETERMINISTICALLY from the captured tool-call trace — NOT by the LLM judge. The judge is skipped entirely for a trigger scenario (its only item is deterministic).
 - **Layout:** Sibling folders inside the skill's existing `acceptance-tests/`:
   - `trigger-pos-1/mod.ts` — query the skill SHOULD activate on
   - `trigger-adj-1/mod.ts` — query an ADJACENT skill is correct for; this skill should stand down
   - `trigger-false-1/mod.ts` — query in this skill's domain but wrong intent (e.g., asking *about* the skill, not asking *to do* the skill's job)
 - **Naming:** Scenario `id` follows `<skill-id>-trigger-<pos|adj|false>-1`; directory name matches the scenario id's tail (`trigger-<type>-1`). The trailing `-1` is preserved for backward compatibility with existing scenario ids and trace tooling, but only `n=1` is permitted.
-- **Checklist contract:**
-  - Positives: id `skill_invoked`, critical: true — judge confirms the trace contains a `Skill` tool call or `SKILL.md` read for the target skill, AND the agent acted on it.
-  - Negatives (adjacent + false): id `skill_not_invoked`, critical: true — judge confirms the trace does NOT contain a `Skill` tool call or `SKILL.md` read for the target skill (the agent invoked a different skill or responded directly).
+- **Checklist contract (deterministic):**
+  - Positives: id `skill_invoked`, critical: true — `detectSkillInvocation` (`scripts/acceptance-tests/lib/skill_invocation.ts`) confirms the captured trace contains an explicit Skill-tool call naming the target skill. A bare `SKILL.md` read does NOT count (Explore subagents read skill files while mapping a project — a false positive on `skill_not_invoked`).
+  - Negatives (adjacent + false): id `skill_not_invoked`, critical: true — `detectSkillInvocation` confirms NO such tool call / `SKILL.md` read for the target skill.
+  - Tool calls are captured by `AcpClient` (`tool_call` / `tool_call_update` notifications) and exposed via `AcpAgent.getToolCalls()`; `runner.ts::judgeAndScore` injects the verdict and removes these ids from the judge checklist (`DETERMINISTIC_SKILL_CHECK_IDS`).
+- **Cross-pack adjacency:** the runner mounts `core` + the scenario's pack; an adjacent-negative scenario whose correct neighbour lives in a third pack sets `extraPacks: [<pack>]` so that skill is installed and the agent can defer to it (else it is forced to over-trigger). Used by `setup-ai-ide-devcontainer-trigger-adj-1` and `engineer-ai-ide-plugin-trigger-adj-1`.
 - **Enforcement:** `scripts/check-trigger-coverage.ts` fails `deno task check` on missing/misnamed scenarios. Stray `trigger-{pos,adj,false}-{2,3,...}` directories are reported as misnamed (the previous 3+3+3 layout was reduced to 1+1+1 on 2026-05-10; see `documents/tasks/2026/05/trigger-n1-retry.md`).
 - **Cost note:** Full sweep adds N×3 scenarios to `deno task bench` (was N×9). The result cache (FR-ACCEPT-CACHE) absorbs unchanged scenarios; refreshes are scoped to skill-description edits.
-- **Retry:** Judge-level retry-on-error (`scripts/acceptance-tests/lib/judge.ts:103`) absorbs transient judge failures. Agent-level retry on result is intentionally NOT performed — re-running a "skill not invoked" scenario until it passes would mask real description regressions. Suspected agent variance is investigated by manual re-run (`deno task bench -f <scenario-id>`); if empirical flake rate at N=1 proves > 5% per scenario, add a scenario-level `retryOnFail` field as a separate FR.
+- **Retry:** Agent-level retry on result is intentionally NOT performed — re-running a "skill not invoked" scenario until it passes would mask real description regressions. With deterministic scoring the only residual variance is the agent's own invocation choice (no judge noise). Suspected agent variance is investigated by manual re-run (`deno task acceptance-tests -f <scenario-id>`); if empirical flake rate at N=1 proves > 5% per scenario, add a scenario-level `retryOnFail` field as a separate FR.
 - **Acceptance verified by acceptance tests:** every `framework/*/skills/*/acceptance-tests/trigger-{pos,adj,false}-1/mod.ts` (verified by `scripts/check-trigger-coverage.ts`).
 - **Acceptance:** `deno test scripts/check-trigger-coverage_test.ts` passes; `find framework -type d -path '*/skills/*/acceptance-tests/trigger-*' | wc -l` equals (skill count) × 3.
 - **Status:** [x]
@@ -247,8 +249,8 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Scope:** `framework/*/skills/*` only. Composites/atoms reach `skills/` as rendered build artefacts — they are gated on the rendered output; fixes go to the atom/composite source, never the gitignored SKILL.md.
 - **Allowlist:** case-insensitive substrings — `use when`, `use this`, `use for`, `use to`, `use after`, `use proactively`, `use on`, `triggers on`, `used when`, `should be used when`, `when the user`, `when you need` (single source of truth: `WHEN_TRIGGER_PHRASES` in `scripts/check-skills.ts`).
 - **Quality-proxy caveat:** the gate checks WHEN-phrase *presence*, NOT description *quality*. Description quality (specificity, third person, no "How to X"/"Helps with X" lazy forms) stays reviewer-judged and is additionally enforced product-side by engineer-skill (its bundled `validate_skill.ts` deterministic floor + the SKILL.md Phase 4 self-review rubric).
-- **Acceptance:** `deno test scripts/check-skills_test.ts` passes (incl. the WHEN-trigger cases) AND `deno test framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts` passes (engineer-skill validator floor) AND `deno task acceptance-tests -f engineer-skill` green (Phase 4 behavioral gate — manual — korchasa).
-- **Status:** [ ]
+- **Acceptance:** `deno test scripts/check-skills_test.ts` passes (incl. the WHEN-trigger cases) AND `deno test framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts` passes (engineer-skill validator floor) AND `deno task acceptance-tests -f engineer-skill-basic` green (Phase 4 behavioral gate — manual — korchasa; PASSED 2026-06-27).
+- **Status:** [x]
 
 ### FR-ACCEPT.OPENCODE: OpenCode Adapter for Acceptance Test Runner [ANC:fr:accept.opencode]
 
@@ -751,8 +753,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 - **Description:** When the project's `AGENTS.md` declares a `## CI/CD` section (Provider, Status command, optional Logs command, optional Run URL command), the `push` atom MUST, after a successful local push, poll the declared Status command until terminal state, with the cap of 30 iterations × 60s sleep ≈ 30 minutes. Exit codes: 0=green, 1=red (terminal failure), 2=in-progress (continue polling), other=malformed status command (STOP fail-fast). On red the atom hands off to the `investigate` skill with the failed-run URL and a 12 KB log buffer; on timeout the atom STOPs with a timeout report and does NOT invoke investigate; on absence of the `## CI/CD` section the atom skips silently with a one-line note. The wait is unconditional when CI is declared — there is no per-push opt-out param. Status command MUST be a single-shot status query (NOT a blocking wait like `gh run watch --exit-status`); the iteration cap is what bounds wall-clock. Commands receive the pushed SHA via `$SHA` env. The `## CI/CD` section is user-populated (not scaffolded by `init`) — projects without CI omit it entirely and the atom skips. Source: `framework/atoms/push.md` step 6.
 - **Tasks:** [REF:task:2026-06-push-await-ci | push-await-ci]
-- **Acceptance verified by acceptance tests:** `push-skips-ci-await-when-not-declared`, `push-awaits-ci-success`, `push-investigates-ci-failure`, `push-stops-on-malformed-ci-block`. The timeout-branch (30-iteration cap) test (`push-stops-on-ci-timeout`) is intentionally deferred — strict assertion needs runner-level `sleep` shimming, which is out of scope here.
-- **Status:** [ ]
+- **Acceptance verified by acceptance tests:** `push-skips-ci-await-when-not-declared`, `push-awaits-ci-success`, `push-investigates-ci-failure`, `push-stops-on-malformed-ci-block`, `push-stops-on-ci-timeout`. The timeout-branch test drives the cap cheaply through the `## CI/CD` tunables (`Poll interval: 5`, `Wall-clock budget: 10` → `ITER_CAP = 2`); no runner-level `sleep` shimming required.
+- **Status:** [x]
 
 ### FR-SHIP: Terminal Full-Cycle Workflow — `ship` [ANC:fr:ship]
 

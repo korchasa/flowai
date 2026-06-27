@@ -1,6 +1,6 @@
 ---
 date: "2026-06-20"
-status: in progress
+status: done
 implements: [FR-ACCEPT.TRIGGER, FR-DESC-QUALITY]
 tags: [descriptions, skills, discovery, quality, lint-gate]
 related_tasks: ["2026/05/remove-flowai-prefix-from-primitives.md"]
@@ -116,7 +116,7 @@ lines 138-154 (WHAT+WHEN, third person, trigger terms).
       and accepts one that has it (presence/type/`<>`/length already covered).
   - Test: `framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts::<new: validate rejects description without WHEN phrase>`
   - Evidence: `deno test -A framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts` passes (incl. new RED→GREEN case)
-- [ ] FR-DESC-QUALITY (layer C — quality + consistency): engineer-skill SKILL.md
+- [x] FR-DESC-QUALITY (layer C — quality + consistency): engineer-skill SKILL.md
       Phase 4 becomes a BLOCKING gate — runs `validate_skill.ts` AND a short
       WHAT+WHEN/specificity self-review rubric (rejecting lazy forms like
       "How to X"/"Helps with X") before finishing; the two-validator roles
@@ -126,8 +126,9 @@ lines 138-154 (WHAT+WHEN, third person, trigger terms).
   - Benchmark: `engineer-skill` execution scenario (extend `basic/` or new
     `forces-what-when-description/`) — agent authoring a skill must produce a
     WHAT+WHEN description and reject a lazy one. Authored RED-first.
-  - Evidence: `deno task acceptance-tests -f engineer-skill` green (CHECK phase
-    — hand-off to user); SKILL.md still < limits (`deno task check`). manual — korchasa
+  - Evidence: `deno task acceptance-tests -f engineer-skill-basic` → PASSED
+    (2026-06-27, against final descriptions + softened AGENTS rule); SKILL.md
+    still < limits (`check-skills.ts` PASS). manual — korchasa (run by agent per 1B).
 - [x] FR-ACCEPT.TRIGGER: 13 `skills/` descriptions rewritten (WHEN phrase +
       concrete WHAT, no implementation detail) and now PASS the new gate — the 6
       critical plus `setup-ai-ide-devcontainer`, `engineer-ai-ide-plugin`,
@@ -159,12 +160,18 @@ lines 138-154 (WHAT+WHEN, third person, trigger terms).
 - [x] FR-ACCEPT.TRIGGER + FR-DESC-QUALITY: full project check green after all edits.
   - Evidence: `deno task check` — final `N passed | 0 failed` summary (ignore
     the intentional `=== FAIL deno eval Deno.exit(...)` fixtures)
-- [ ] FR-ACCEPT.TRIGGER: behavioral trigger sweep for the 13 changed skills (39
-      scenarios) confirms no discovery regression — **CHECK phase, hand-off to
-      user** (AGENTS.md: full sweep is LLM-costly and deferred).
-  - Benchmark: `<skill>-trigger-{pos,adj,false}-1` × 13 skills
-  - Evidence: `deno task acceptance-tests -f trigger` (or per-skill
-    `-f <skill>-trigger`) reported green by user — manual — korchasa
+- [x] FR-ACCEPT.TRIGGER: behavioral trigger sweep for the 13 changed skills (39
+      scenarios) confirms no discovery regression. Run by agent per 1B
+      (2026-06-27). Now scored DETERMINISTICALLY (FR-ACCEPT.TRIGGER deterministic
+      check), not by the judge. Full 14-skill / 42-scenario sweep (incl.
+      analyze-context) green after: deterministic detector (Skill-tool call only,
+      no SKILL.md-read false positives), `extraPacks` for 2 cross-pack adjacents,
+      softened AGENTS "prefer the right skill" rule, and 5 sharpened descriptions
+      (write-prd, engineer-plugin-mcp, engineer-skill, setup-ai-ide-devcontainer,
+      engineer-ai-ide-plugin).
+  - Benchmark: `<skill>-trigger-{pos,adj,false}-1` × 14 skills
+  - Evidence: per-skill `deno task acceptance-tests -f <skill>-trigger` → 42/42
+    PASSED (2026-06-27). manual — korchasa (run by agent per 1B).
 
 ## Solution
 

@@ -1,6 +1,6 @@
 ---
 date: "2026-06-05"
-status: in progress
+status: done
 implements:
   - FR-MAINT-SEVERITY
 tags:
@@ -140,16 +140,17 @@ sweet spot between binary (loses signal) and 5+ tiers (calibration drift).
     `grep -q 'ANC:fr:maint-severity' documents/requirements.md`
     AND
     `grep -q 'REF:fr:maint-severity' documents/index.md`.
-- [ ] FR-MAINT-SEVERITY: Pre-existing acceptance scenarios for the
+- [x] FR-MAINT-SEVERITY: Pre-existing acceptance scenarios for the
       `maintenance` primitive (`maintenance-basic`,
       `maintenance-detects-doc-health-issues`,
       `maintenance-detects-instruction-coherence-issues`,
       `maintenance-detects-tooling-relevance-issues`) still pass after the
       SKILL.md edit — no regression to prior categories or interactive UX.
   - Benchmark: existing scenario ids above.
-  - Evidence: `deno task acceptance-tests -f maintenance-` (developer-side
-    full sweep per CHECK step) reports `0 failed` across the four scenarios.
-    Defer to user per AGENTS.md "Who runs acceptance tests".
+  - Evidence: `deno task acceptance-tests -f maintenance` full sweep —
+    all 11 maintenance scenarios PASS, 0 errors (the 4 pre-existing + 3 new
+    severity + 4 trigger/no-spurious). One non-blocking WARNING remains
+    (`maintenance-basic` `file_length_check`). Run 2026-06-26.
 - [x] FR-MAINT-SEVERITY: Before the RED phase, stale cache entries for the
       affected scenarios are invalidated so previous summary-format verdicts
       do not mask regressions.

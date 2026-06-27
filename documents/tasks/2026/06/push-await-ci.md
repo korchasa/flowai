@@ -1,6 +1,6 @@
 ---
 date: "2026-06-04"
-status: in progress
+status: done
 implements:
   - FR-ATOM-PUSH.CI-AWAIT
 tags: [framework, push, ci, atom, investigate]
@@ -103,14 +103,17 @@ edge of the SDLC without inventing a parallel diagnostic mechanism inside
   - Evidence: `deno task acceptance-tests -f push-investigates-ci-failure`
     exits 0; trace shows an investigate invocation after the failed-run
     detection.
-- [ ] FR-ATOM-PUSH.CI-AWAIT: at 30 iterations the atom STOPs with a
+- [x] FR-ATOM-PUSH.CI-AWAIT: at the iteration cap the atom STOPs with a
       timeout report (does NOT invoke investigate, does NOT silently
-      terminate as success). _DEFERRED to follow-up — strict acceptance
-      test for this branch requires runner support for per-scenario
-      `PATH` injection (sleep shim) or 30 min wall-clock per run; both
-      are out of scope for this task. Behaviour is covered by SDS §3.19
-      step 4 and atom step 6 text; absence of a regression test is
-      acknowledged risk._
+      terminate as success). The previously-deferred `sleep`-shim approach
+      proved unnecessary: shrinking the tunables (`Poll interval: 5`,
+      `Wall-clock budget: 10` → `ITER_CAP = 2`) trips the cap in ~15 s with a
+      static in-progress (exit 2) mock.
+  - Test: `Benchmark: push-stops-on-ci-timeout`
+  - Evidence: `deno task acceptance-tests -f stops-on-ci-timeout` exits 0;
+    all 6 checklist items pass (agent polled to the cap, emitted
+    `CI ANOMALY: 2 iterations × 5s = 10s …`, did NOT invoke investigate,
+    did NOT reach normal TERMINATION, surfaced the run URL).
 - [x] FR-ATOM-PUSH.CI-AWAIT: when AGENTS.md does NOT declare CI, the atom
       skips the wait silently (no spurious polling, no extra output beyond
       a short "no CI declared in AGENTS.md — skipping" note).
