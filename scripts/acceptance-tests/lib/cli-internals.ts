@@ -152,6 +152,53 @@ export function transformAgent(
   return `---\n${yamlOut}\n---\n${body}`;
 }
 
+/** Abstract model tiers recognised in skill/command frontmatter. */
+const ABSTRACT_MODEL_TIERS = new Set(["max", "smart", "fast", "cheap"]);
+
+/**
+ * Resolve an abstract model tier in a SKILL.md `model:` frontmatter line into
+ * the IDE-specific concrete model, mirroring `transformAgent`'s tier handling
+ * for the skill/command path. Skills are copied verbatim by the acceptance
+ * harness (no full frontmatter rewrite), so this does a surgical single-line
+ * edit on the leading frontmatter block:
+ *   - `model: inherit`                      → line removed
+ *   - `model: <tier>` (resolved)            → `model: <concrete>`
+ *   - `model: <tier>` (no IDE mapping, e.g. opencode) → line removed
+ *   - `model: <concrete>` (not a tier)      → left untouched
+ *   - no `model:` line / no frontmatter     → content returned unchanged
+ *
+ * Without this, an abstract tier like `model: cheap` reaches the IDE CLI raw
+ * and the agent crashes with `model 'cheap' not found` the moment the skill is
+ * invoked. Mirror of the published flowai-cli skill-sync tier resolution.
+ *
+ * implements [REF:fr:dist.mapping | FR-DIST.MAPPING]
+ */
+export function resolveSkillModel(content: string, ideName: string): string {
+  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!fmMatch) return content;
+  const fm = fmMatch[1];
+  const eol = /\r\n/.test(content.slice(0, fmMatch[0].length)) ? "\r\n" : "\n";
+  const lines = fm.split(/\r?\n/);
+  const idx = lines.findIndex((l) => /^[ \t]*model:[ \t]*\S/.test(l));
+  if (idx === -1) return content;
+  const valMatch = lines[idx].match(
+    /^[ \t]*model:[ \t]*(["']?)([A-Za-z0-9._-]+)\1[ \t]*$/,
+  );
+  if (!valMatch) return content; // non-scalar / unexpected — leave untouched
+  const tier = valMatch[2];
+  if (!ABSTRACT_MODEL_TIERS.has(tier) && tier !== "inherit") {
+    return content; // already a concrete model id — leave untouched
+  }
+  const resolved = resolveModelTier(tier, ideName); // undefined for inherit / no-map
+  if (resolved) {
+    lines[idx] = `model: ${resolved}`;
+  } else {
+    lines.splice(idx, 1); // drop the line entirely
+  }
+  const newFm = lines.join(eol);
+  return content.replace(fm, () => newFm);
+}
+
 /** Inject `disable-model-invocation: true` into the leading frontmatter. */
 export function injectDisableModelInvocation(content: string): string {
   const head = content.slice(0, 200);

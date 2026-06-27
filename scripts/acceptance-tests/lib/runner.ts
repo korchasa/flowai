@@ -5,7 +5,12 @@ import { evaluateChecklist } from "./judge.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
+import type { CapturedToolCall } from "./acp/client.ts";
 import type { AcpIde } from "./acp/registry.ts";
+import {
+  detectSkillInvocation,
+  DETERMINISTIC_SKILL_CHECK_IDS,
+} from "./skill_invocation.ts";
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { renderAgentsMd } from "./template.ts";
@@ -19,6 +24,22 @@ export interface RunnerOptions {
   runIndex?: number;
   llmClient?: typeof cliChatCompletion;
   judgeClient?: typeof evaluateChecklist;
+}
+
+/**
+ * Resolve which packs to mount in the sandbox: always `core` + the scenario's
+ * own pack, plus any `extraPacks` it declares (deduped). Returns `undefined`
+ * when the scenario has no pack (discovery did not populate it) → caller copies
+ * all packs. Trigger scenarios use `extraPacks` to install a cross-pack adjacent
+ * skill so the agent has a correct neighbour to defer to.
+ */
+export function resolveAllowedPacks(
+  scenarioPack: string | undefined,
+  extraPacks?: string[],
+): string[] | undefined {
+  if (!scenarioPack) return undefined;
+  const base = scenarioPack === "core" ? ["core"] : ["core", scenarioPack];
+  return [...new Set([...base, ...(extraPacks ?? [])])];
 }
 
 /** Build the always-pass result for a scenario marked `skip`. */
@@ -120,12 +141,8 @@ async function prepareSandboxFiles(
   const frameworkPath = join(Deno.cwd(), "framework");
   const dotCursorPath = join(sandboxPath, adapter.configDir);
 
-  // Determine which packs to include in sandbox
-  const scenarioPack = scenario.pack;
-  let allowedPacks: string[] | undefined;
-  if (scenarioPack) {
-    allowedPacks = scenarioPack === "core" ? ["core"] : ["core", scenarioPack];
-  }
+  // Determine which packs to include in sandbox (see resolveAllowedPacks).
+  const allowedPacks = resolveAllowedPacks(scenario.pack, scenario.extraPacks);
 
   try {
     await Deno.mkdir(dotCursorPath, { recursive: true });
@@ -505,17 +522,61 @@ async function judgeAndScore(
   code: number,
   tracer: TraceLogger,
   traceId: string,
+  toolCalls: CapturedToolCall[],
 ): Promise<JudgeOutcome> {
-  console.log("  Judging results...");
-  const judgeOutput = await judge(
-    scenario.userQuery,
-    truncatedLogs,
-    evidence,
-    scenario.checklist,
-    options.judgeConfig,
-    options.workDir,
+  // Skill-invocation items (`skill_invoked` / `skill_not_invoked`) are decided
+  // deterministically from the captured tool calls — the LLM judge could only
+  // infer invocation from prose and was the main source of trigger-scenario
+  // flakiness. Everything else still goes to the judge.
+  const judgeChecklist = scenario.checklist.filter(
+    (i) => !DETERMINISTIC_SKILL_CHECK_IDS.has(i.id),
   );
-  const checklistResults = judgeOutput.results;
+  console.log(
+    `  Judging results...${
+      judgeChecklist.length < scenario.checklist.length
+        ? ` (${
+          scenario.checklist.length - judgeChecklist.length
+        } skill-invocation item(s) scored deterministically)`
+        : ""
+    }`,
+  );
+  const judgeOutput = judgeChecklist.length > 0
+    ? await judge(
+      scenario.userQuery,
+      truncatedLogs,
+      evidence,
+      judgeChecklist,
+      options.judgeConfig,
+      options.workDir,
+    )
+    : { results: {}, messages: [], response: "(no judge-graded items)" };
+  const checklistResults = { ...judgeOutput.results };
+
+  // Deterministic skill-invocation verdicts from the trace.
+  const detItems = scenario.checklist.filter((i) =>
+    DETERMINISTIC_SKILL_CHECK_IDS.has(i.id)
+  );
+  if (detItems.length > 0) {
+    const invoked = detectSkillInvocation(toolCalls, scenario.skill ?? "");
+    const n = toolCalls.length;
+    for (const item of detItems) {
+      if (item.id === "skill_invoked") {
+        checklistResults[item.id] = {
+          pass: invoked,
+          reason: invoked
+            ? `Deterministic: skill "${scenario.skill}" invoked (Skill tool call or SKILL.md read found in trace).`
+            : `Deterministic: no tool call invoking skill "${scenario.skill}" found in trace (${n} tool call(s) observed).`,
+        };
+      } else { // skill_not_invoked
+        checklistResults[item.id] = {
+          pass: !invoked,
+          reason: !invoked
+            ? `Deterministic: skill "${scenario.skill}" not invoked (${n} tool call(s) observed).`
+            : `Deterministic: skill "${scenario.skill}" was invoked but should not have been.`,
+        };
+      }
+    }
+  }
 
   // Build full checklist including dynamic exit_code_zero if agent crashed
   const checklistToJudge = [...scenario.checklist];
@@ -602,6 +663,7 @@ export async function runScenario(
         code,
         tracer,
         traceId,
+        agent.getToolCalls(),
       );
 
     const result: BenchmarkResult & { evidence: string } = {

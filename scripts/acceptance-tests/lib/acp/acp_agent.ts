@@ -24,7 +24,7 @@ import {
   describeHealth,
   SystemUnhealthyError,
 } from "../system_health.ts";
-import { AcpClient } from "./client.ts";
+import { AcpClient, type CapturedToolCall } from "./client.ts";
 import { writeMockBin } from "./mock_bin.ts";
 import { ACP_AGENTS, type AcpAgentSpec, type AcpIde } from "./registry.ts";
 
@@ -65,6 +65,7 @@ export class AcpAgent {
   #sessionId: string | null = null;
   #messages: Message[] = [];
   #log: string[] = [];
+  #toolCalls: CapturedToolCall[] = [];
   readonly #spec: AcpAgentSpec;
 
   constructor(private opts: AcpAgentOptions) {
@@ -77,6 +78,11 @@ export class AcpAgent {
 
   getMessages(): Message[] {
     return this.#messages;
+  }
+
+  /** Tool calls observed this run — used for deterministic checklist items. */
+  getToolCalls(): CapturedToolCall[] {
+    return this.#toolCalls;
   }
 
   /** Drives the agent to completion; never throws — failures become a code. */
@@ -195,6 +201,22 @@ export class AcpAgent {
       this.#log.push(`\n[acp-fatal] ${e}\n`);
       code = 1;
     } finally {
+      // Snapshot tool calls before teardown so the runner can score
+      // skill-invocation checklist items deterministically.
+      this.#toolCalls = client.getToolCalls();
+      if (this.#toolCalls.length > 0) {
+        this.#log.push(
+          `\n[tool-calls] ${
+            this.#toolCalls
+              .map((t) =>
+                `${t.title}${t.kind ? `(${t.kind})` : ""}: ${
+                  JSON.stringify(t.rawInput ?? {})
+                }`
+              )
+              .join("\n             ")
+          }\n`,
+        );
+      }
       this.#kill();
       await stderrDone.catch(() => {});
       await child.status.catch(() => {});

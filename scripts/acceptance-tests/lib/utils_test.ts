@@ -94,6 +94,35 @@ Deno.test("copyFrameworkToIdeDir copies commands into dest/skills/", async () =>
   }
 });
 
+Deno.test("copyFrameworkToIdeDir resolves abstract model tier in skills", async () => {
+  const root = await Deno.makeTempDir({ prefix: "copyfw-model-" });
+  try {
+    const frameworkPath = join(root, "framework");
+    const packDir = join(frameworkPath, "testpack");
+    const skillDir = join(packDir, "skills", "cheap-skill");
+    await Deno.mkdir(skillDir, { recursive: true });
+    await Deno.writeTextFile(join(packDir, "pack.yaml"), "name: testpack\n");
+    await Deno.writeTextFile(
+      join(skillDir, "SKILL.md"),
+      "---\nname: cheap-skill\ndescription: d\nmodel: cheap\n---\n\n# Body\n",
+    );
+
+    const ideConfigDir = join(root, ".claude");
+    await copyFrameworkToIdeDir(frameworkPath, ideConfigDir, "claude", [
+      "testpack",
+    ]);
+
+    const content = await Deno.readTextFile(
+      join(ideConfigDir, "skills", "cheap-skill", "SKILL.md"),
+    );
+    // The raw tier must NOT survive — it would crash the IDE CLI on invoke.
+    assertEquals(content.includes("model: cheap"), false);
+    assertStringIncludes(content, "model: haiku");
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
 Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands", async () => {
   const root = await Deno.makeTempDir({ prefix: "copyfw-inject-" });
   try {

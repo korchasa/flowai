@@ -14,6 +14,15 @@ export interface BenchmarkScenario {
   pack?: string;
 
   /**
+   * Extra packs to mount in the sandbox beyond `core` + the scenario's own
+   * pack. Use for trigger scenarios whose correct adjacent skill lives in a
+   * different pack — without it that skill is absent and the agent is forced to
+   * over-trigger the skill under test. Example: a `core` devcontainer scenario
+   * whose adjacent is the `deno` pack's `deploy` skill sets `["deno"]`.
+   */
+  extraPacks?: string[];
+
+  /**
    * Sandbox state when the agent starts.
    *
    * Runner lifecycle:

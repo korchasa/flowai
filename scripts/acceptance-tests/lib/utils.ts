@@ -1,6 +1,7 @@
 import { join } from "@std/path";
 import {
   injectDisableModelInvocation,
+  resolveSkillModel,
   transformAgent,
 } from "./cli-internals.ts";
 
@@ -96,6 +97,26 @@ export async function copyRecursive(
  * - Agents: framework/<pack>/agents/<name>.md → dest/agents/<name>.md (frontmatter transformed per IDE)
  * - Hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/ (when present)
  */
+/**
+ * Read a copied SKILL.md, resolve its abstract model tier in place, and write
+ * it back. No-op if the file is absent (some command dirs ship no SKILL.md —
+ * the source-level validator flags that separately).
+ */
+async function resolveSkillModelInPlace(
+  skillMdPath: string,
+  ideName: string,
+): Promise<void> {
+  let raw: string;
+  try {
+    raw = await Deno.readTextFile(skillMdPath);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) return;
+    throw e;
+  }
+  const resolved = resolveSkillModel(raw, ideName);
+  if (resolved !== raw) await Deno.writeTextFile(skillMdPath, resolved);
+}
+
 export async function copyFrameworkToIdeDir(
   frameworkPath: string,
   ideConfigDir: string,
@@ -128,11 +149,12 @@ export async function copyFrameworkToIdeDir(
     try {
       for await (const skill of Deno.readDir(skillsDir)) {
         if (!skill.isDirectory) continue;
-        await copyRecursive(
-          join(skillsDir, skill.name),
-          join(ideConfigDir, "skills", skill.name),
-          skipDirs,
-        );
+        const dstDir = join(ideConfigDir, "skills", skill.name);
+        await copyRecursive(join(skillsDir, skill.name), dstDir, skipDirs);
+        // Resolve abstract model tiers (e.g. `model: cheap`) the same way the
+        // agent path does — otherwise the tier reaches the IDE CLI raw and the
+        // agent crashes with `model 'cheap' not found` when the skill loads.
+        await resolveSkillModelInPlace(join(dstDir, "SKILL.md"), ideName);
       }
     } catch { /* no skills/ in pack */ }
 
@@ -166,7 +188,7 @@ export async function copyFrameworkToIdeDir(
         // installing a broken command.
         await Deno.writeTextFile(
           skillMdPath,
-          injectDisableModelInvocation(raw),
+          injectDisableModelInvocation(resolveSkillModel(raw, ideName)),
         );
       }
     } catch { /* no commands/ in pack */ }

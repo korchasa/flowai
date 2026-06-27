@@ -32,6 +32,20 @@ import {
 } from "@zed-industries/agent-client-protocol";
 import type { ParsedAgentOutput } from "../adapters/types.ts";
 
+/**
+ * A tool invocation observed during the run, captured deterministically from
+ * ACP `tool_call` / `tool_call_update` notifications (and synthesised for
+ * client-side `fs/read_text_file` requests). Consumed by the runner to decide
+ * skill-invocation checklist items WITHOUT asking the LLM judge.
+ */
+export interface CapturedToolCall {
+  toolCallId: string;
+  title: string;
+  kind?: string;
+  rawInput?: Record<string, unknown>;
+  locations?: { path: string }[];
+}
+
 export interface AcpClientOptions {
   /** Bidirectional ACP stream (typically `ndJsonStream(child.stdin, child.stdout)`). */
   stream: Stream;
@@ -48,6 +62,8 @@ export class AcpClient {
   readonly #closed?: Promise<unknown>;
   /** Per-session accumulated assistant text. */
   readonly #buffers = new Map<string, string[]>();
+  /** Tool calls observed this run, keyed by toolCallId (ordered by Map). */
+  readonly #toolCalls = new Map<string, CapturedToolCall>();
 
   constructor(opts: AcpClientOptions) {
     this.#closed = opts.closed;
@@ -55,12 +71,23 @@ export class AcpClient {
     const client: Client = {
       sessionUpdate: (p) => this.#onSessionUpdate(p),
       requestPermission: (p) => this.#onRequestPermission(p),
+      // NOTE: client-side fs reads are deliberately NOT captured as tool calls.
+      // They include reads delegated by EXPLORE subagents during project
+      // mapping (e.g. listing `.claude/skills/*/SKILL.md`), which are not the
+      // main agent's skill-invocation decision and caused false positives on
+      // `skill_not_invoked` scenarios. Invocation is detected from main-session
+      // `tool_call` notifications only (the `Skill` tool call).
       readTextFile: (p) =>
         Deno.readTextFile(p.path).then((content) => ({ content })),
       writeTextFile: (p) =>
         Deno.writeTextFile(p.path, p.content).then(() => ({})),
     };
     this.#conn = new ClientSideConnection(() => client, opts.stream);
+  }
+
+  /** All tool calls observed so far across every prompt turn this run. */
+  getToolCalls(): CapturedToolCall[] {
+    return [...this.#toolCalls.values()];
   }
 
   /** Convenience: build a client over a spawned child's stdio. */
@@ -144,6 +171,27 @@ export class AcpClient {
     ) {
       const buf = this.#buffers.get(params.sessionId);
       if (buf) buf.push(u.content.text);
+    } else if (u.sessionUpdate === "tool_call") {
+      this.#toolCalls.set(u.toolCallId, {
+        toolCallId: u.toolCallId,
+        title: u.title,
+        kind: u.kind ?? undefined,
+        rawInput: u.rawInput,
+        locations: u.locations?.map((l) => ({ path: l.path })),
+      });
+    } else if (u.sessionUpdate === "tool_call_update") {
+      // Merge later detail (rawInput/locations often arrive on the update) into
+      // the existing entry so the deterministic detector sees the full input.
+      const prev = this.#toolCalls.get(u.toolCallId) ??
+        { toolCallId: u.toolCallId, title: "" };
+      this.#toolCalls.set(u.toolCallId, {
+        ...prev,
+        title: u.title ?? prev.title,
+        kind: u.kind ?? prev.kind,
+        rawInput: u.rawInput ?? prev.rawInput,
+        locations: u.locations?.map((l) => ({ path: l.path })) ??
+          prev.locations,
+      });
     }
     return Promise.resolve();
   }
