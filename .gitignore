@@ -54,3 +54,6 @@ scripts/benchmark/runs/
 *.bench-*.json
 gold.*.json
 benchmark-*.log
+
+# FoxCode local profile/state (dev-only, not tracked)
+.foxcode/
