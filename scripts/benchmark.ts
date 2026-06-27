@@ -10,7 +10,6 @@
  * Subcommands:
  *   setup       — create venv, install swebench, warm dataset cache.
  *   select      — regenerate candidates.json (cheapest sonnet-unsolved).
- *   select-pool — regenerate pool.json (CC-fail ∩ tools-Sonnet-unsolved, buildable).
  *   verify      — grade predictions (or `--gold`) via the Python swebench harness.
  *   run         — drive one arm (baseline|flowai) over the pool, emit predictions.
  *   report      — grade both arms and render the A/B markdown report.
@@ -31,7 +30,7 @@ import {
   SONNET_RESOLVED,
 } from "./benchmark/instances.ts";
 import { dumpAllMeta } from "./benchmark/dataset.ts";
-import { selectCandidates, selectPool } from "./benchmark/select.ts";
+import { selectCandidates } from "./benchmark/select.ts";
 import { type Arm, runBenchmark } from "./benchmark/run.ts";
 import { aggregateAB, renderMarkdownAB } from "./benchmark/report.ts";
 
@@ -40,7 +39,6 @@ function today(): string {
 }
 
 const CANDIDATES_PATH = "scripts/benchmark/candidates.json";
-const POOL_PATH = "scripts/benchmark/pool.json";
 
 /** Read instance ids out of a predictions JSONL file (empty if absent). */
 async function readPredIds(path: string): Promise<string[]> {
@@ -77,25 +75,6 @@ await new Command()
       JSON.stringify(out, null, 2) + "\n",
     );
     console.log(`[select] wrote ${out.length} candidates → ${CANDIDATES_PATH}`);
-  })
-  // ---- select-pool ----
-  .command(
-    "select-pool",
-    "Regenerate pool.json (CC-fail ∩ tools-Sonnet-unsolved, buildable)",
-  )
-  .action(async () => {
-    const meta = await dumpAllMeta(Deno.cwd());
-    const out = selectPool(
-      meta,
-      new Set(CC_OPUS_FAILURES.failed),
-      SONNET_RESOLVED,
-      new Set(ARM64_DENY),
-    );
-    await Deno.writeTextFile(POOL_PATH, JSON.stringify(out, null, 2) + "\n");
-    console.log(
-      `[select-pool] wrote ${out.length} pool instances → ${POOL_PATH}`,
-    );
-    console.log(`[select-pool] ${out.map((c) => c.instanceId).join(", ")}`);
   })
   // ---- verify ----
   .command("verify", "Grade predictions (or --gold) via the swebench harness")

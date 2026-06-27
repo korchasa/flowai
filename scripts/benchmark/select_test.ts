@@ -4,7 +4,6 @@ import {
   difficultyRank,
   type InstanceMeta,
   selectCandidates,
-  selectPool,
 } from "./select.ts";
 
 const META: InstanceMeta[] = [
@@ -79,24 +78,4 @@ Deno.test("selectCandidates: maps snake_case meta to camelCase Candidate", () =>
   assertEquals(first.patchBytes, 300);
   assertEquals(first.repo, "d/d");
   assertEquals(first.f2p, 1);
-});
-
-Deno.test("selectPool: keeps only CC-failed AND sonnet-unsolved, non-denied", () => {
-  // CC(Opus+vexp) failed these; sonnet RESOLVED a__a-1 so it must drop out.
-  const ccFailed = new Set(["a__a-1", "c__c-3", "d__d-4", "mpl__mpl-1"]);
-  const out = selectPool(META, ccFailed, RESOLVED, DENY);
-  const ids = out.map((c) => c.instanceId);
-  assert(!ids.includes("a__a-1"), "sonnet-resolved must drop");
-  assert(!ids.includes("mpl__mpl-1"), "denied repo must drop");
-  assert(!ids.includes("b__b-2"), "not CC-failed must drop");
-  // c__c-3 and d__d-4 remain, cheapest-first (both easy: d=300 < c=900)
-  assertEquals(ids, ["d__d-4", "c__c-3"]);
-});
-
-Deno.test("selectPool: empty when no instance is in all three sets", () => {
-  const out = selectPool(META, new Set(["b__b-2"]), RESOLVED, DENY);
-  // b__b-2 is CC-failed and not sonnet-resolved and not denied -> kept
-  assertEquals(out.map((c) => c.instanceId), ["b__b-2"]);
-  // nothing CC-failed -> empty
-  assertEquals(selectPool(META, new Set<string>(), RESOLVED, DENY), []);
 });

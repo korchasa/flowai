@@ -89,12 +89,5 @@
     "difficulty": "1-4 hours",
     "patchBytes": 10210,
     "f2p": 3
-  },
-  {
-    "instanceId": "pydata__xarray-6992",
-    "repo": "pydata/xarray",
-    "difficulty": ">4 hours",
-    "patchBytes": 8857,
-    "f2p": 12
   }
 ]

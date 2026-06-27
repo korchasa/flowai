@@ -78,25 +78,3 @@ export function selectCandidates(
     .map(toCandidate)
     .sort(cheapFirst);
 }
-
-/**
- * High-confidence "pure Claude Code + Sonnet likely fails" pool, cheapest-first.
- * Intersects two published failure sets — a STRONGER Claude Code config
- * (Opus 4.5 + vexp) AND the tools-Sonnet submission (same model, simpler
- * scaffold) — so an instance both failed is near-certain to defeat plain
- * Claude Code + Sonnet too. arm64-buildable only. The pool merely makes the
- * self-run baseline efficient; we still MEASURE pure-CC+Sonnet ourselves.
- */
-export function selectPool(
-  meta: InstanceMeta[],
-  ccFailed: ReadonlySet<string>,
-  sonnetResolved: ReadonlySet<string>,
-  deny: ReadonlySet<string>,
-): Candidate[] {
-  return meta
-    .filter((m) => ccFailed.has(m.instance_id))
-    .filter((m) => !sonnetResolved.has(m.instance_id))
-    .filter((m) => !deny.has(m.repo))
-    .map(toCandidate)
-    .sort(cheapFirst);
-}
