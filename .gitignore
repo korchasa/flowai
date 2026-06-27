@@ -1,7 +1,5 @@
 .DS_Store
 .vscode
-# foxcode browser-automation plugin local state (per-machine, not shared)
-.foxcode/
 skeleton.md
 tmp/
 acceptance-tests/runs/
@@ -47,3 +45,12 @@ framework/core/skills/review/SKILL.md
 
 .flowai/runs/
 .claude/scheduled_tasks.lock
+
+# SWE-bench Verified benchmark (FR-BENCH-SWE): Python venv + swebench run artifacts
+.venv-swebench/
+logs/
+scripts/benchmark/runs/
+*.smoke.json
+*.bench-*.json
+gold.*.json
+benchmark-*.log

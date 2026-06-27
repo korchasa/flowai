@@ -91,13 +91,16 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
           "framework",
         ],
       },
-      // Tests: root scripts
+      // Tests: root scripts. Exclude the SWE-bench run artifacts
+      // (scripts/benchmark/runs/) — they are gitignored per-instance repo
+      // checkouts whose own *.test.js / *_test.* files must not be discovered
+      // as project tests (FR-BENCH-SWE).
       {
         cmd: "deno",
         args: [
           "test",
           "-A",
-          "--ignore=scripts/acceptance-tests/lib/runner_test.ts",
+          "--ignore=scripts/acceptance-tests/lib/runner_test.ts,scripts/benchmark/runs",
           "scripts",
         ],
       },

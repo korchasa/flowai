@@ -23,6 +23,7 @@
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
     "acceptance-tests": "deno run -A scripts/task-acceptance-tests.ts",
+    "benchmark": "deno run -A scripts/benchmark.ts",
     "build-plugins-only": "deno run -A scripts/build-plugins.ts",
     "build-plugins": "deno run -A scripts/build-plugins.ts && deno run -A scripts/validate-plugins.ts",
     "validate-plugins": "deno run -A scripts/build-plugins.ts && deno run -A scripts/validate-plugins.ts",
@@ -34,7 +35,8 @@
       "framework/*/skills/*/acceptance-tests/",
       "framework/*/commands/*/acceptance-tests/",
       "framework/*/agents/*/acceptance-tests/",
-      "framework/*/acceptance-tests/*/fixture/"
+      "framework/*/acceptance-tests/*/fixture/",
+      "scripts/benchmark/runs/"
     ]
   },
   "fmt": {
@@ -47,7 +49,8 @@
       "framework/*/skills/*/acceptance-tests/*/fixture/",
       "framework/*/commands/*/acceptance-tests/*/fixture/",
       "framework/*/agents/*/acceptance-tests/*/fixture/",
-      "framework/*/acceptance-tests/*/fixture/"
+      "framework/*/acceptance-tests/*/fixture/",
+      "scripts/benchmark/runs/"
     ]
   }
 }

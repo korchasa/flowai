@@ -1,0 +1,100 @@
+[
+  {
+    "instanceId": "django__django-14792",
+    "repo": "django/django",
+    "difficulty": "<15 min fix",
+    "patchBytes": 486,
+    "f2p": 2
+  },
+  {
+    "instanceId": "django__django-11820",
+    "repo": "django/django",
+    "difficulty": "<15 min fix",
+    "patchBytes": 919,
+    "f2p": 2
+  },
+  {
+    "instanceId": "sphinx-doc__sphinx-7462",
+    "repo": "sphinx-doc/sphinx",
+    "difficulty": "<15 min fix",
+    "patchBytes": 1684,
+    "f2p": 2
+  },
+  {
+    "instanceId": "sympy__sympy-20428",
+    "repo": "sympy/sympy",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 418,
+    "f2p": 1
+  },
+  {
+    "instanceId": "django__django-16667",
+    "repo": "django/django",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 529,
+    "f2p": 2
+  },
+  {
+    "instanceId": "django__django-13195",
+    "repo": "django/django",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 2611,
+    "f2p": 5
+  },
+  {
+    "instanceId": "django__django-13513",
+    "repo": "django/django",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 3686,
+    "f2p": 1
+  },
+  {
+    "instanceId": "django__django-16256",
+    "repo": "django/django",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 5054,
+    "f2p": 9
+  },
+  {
+    "instanceId": "sphinx-doc__sphinx-7748",
+    "repo": "sphinx-doc/sphinx",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 5740,
+    "f2p": 2
+  },
+  {
+    "instanceId": "django__django-12325",
+    "repo": "django/django",
+    "difficulty": "1-4 hours",
+    "patchBytes": 1614,
+    "f2p": 2
+  },
+  {
+    "instanceId": "pylint-dev__pylint-4551",
+    "repo": "pylint-dev/pylint",
+    "difficulty": "1-4 hours",
+    "patchBytes": 6862,
+    "f2p": 10
+  },
+  {
+    "instanceId": "django__django-16263",
+    "repo": "django/django",
+    "difficulty": "1-4 hours",
+    "patchBytes": 9785,
+    "f2p": 3
+  },
+  {
+    "instanceId": "sympy__sympy-16597",
+    "repo": "sympy/sympy",
+    "difficulty": "1-4 hours",
+    "patchBytes": 10210,
+    "f2p": 3
+  },
+  {
+    "instanceId": "pydata__xarray-6992",
+    "repo": "pydata/xarray",
+    "difficulty": ">4 hours",
+    "patchBytes": 8857,
+    "f2p": 12
+  }
+]
