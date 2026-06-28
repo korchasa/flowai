@@ -36,16 +36,70 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-/** Ensure a full clone of `repo` exists under `cacheRoot`; return its path. */
+/**
+ * Acquire a coarse cross-process lock by atomically creating `lockDir` (mkdir is
+ * atomic). Retries until free, steals a stale lock (older than `staleMs` — a
+ * crashed holder), or throws after `timeoutMs`. Used to serialize same-repo
+ * cache clones so parallel instances don't race into a half-built cache.
+ */
+async function acquireLock(
+  lockDir: string,
+  { staleMs = 600_000, pollMs = 200, timeoutMs = 600_000 } = {},
+): Promise<void> {
+  const start = Date.now();
+  while (true) {
+    try {
+      await Deno.mkdir(lockDir);
+      return;
+    } catch (e) {
+      if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+      // Lock held — steal if its holder looks dead, else wait.
+      try {
+        const st = await Deno.stat(lockDir);
+        const age = Date.now() - (st.mtime?.getTime() ?? 0);
+        if (age > staleMs) {
+          await Deno.remove(lockDir, { recursive: true }).catch(() => {});
+          continue;
+        }
+      } catch { /* lock vanished between mkdir and stat — retry immediately */ }
+      if (Date.now() - start > timeoutMs) {
+        throw new Error(`timeout acquiring lock ${lockDir}`);
+      }
+      await new Promise((r) => setTimeout(r, pollMs));
+    }
+  }
+}
+
+/**
+ * Ensure a full clone of `repo` exists under `cacheRoot`; return its path.
+ *
+ * Parallel-safe: a fast path returns an already-built cache; otherwise a
+ * per-repo lock serializes the clone and it is published atomically (clone into
+ * `<dir>.tmp`, then `rename` to `<dir>`) so a concurrent caller never observes a
+ * partially cloned cache (the old race left `git fetch` failing "not our ref").
+ * `cloneUrl` overrides the GitHub URL (used by tests with a local source repo).
+ */
 export async function ensureRepoCache(
   repo: string,
   cacheRoot: string,
+  { cloneUrl }: { cloneUrl?: string } = {},
 ): Promise<string> {
   await ensureDir(cacheRoot);
   const dir = join(cacheRoot, repo.replace("/", "__"));
-  if (!(await pathExists(join(dir, ".git")))) {
+  if (await pathExists(join(dir, ".git"))) return dir; // fast path, complete cache
+  const url = cloneUrl ?? `https://github.com/${repo}.git`;
+  const lockDir = `${dir}.lock`;
+  await acquireLock(lockDir);
+  try {
+    // Another holder may have finished while we waited for the lock.
+    if (await pathExists(join(dir, ".git"))) return dir;
+    const tmp = `${dir}.tmp`;
+    if (await pathExists(tmp)) await Deno.remove(tmp, { recursive: true });
     console.log(`[sandbox] cloning ${repo} into cache`);
-    await git(["clone", `https://github.com/${repo}.git`, dir]);
+    await git(["clone", url, tmp]);
+    await Deno.rename(tmp, dir); // atomic publish (siblings → same filesystem)
+  } finally {
+    await Deno.remove(lockDir, { recursive: true }).catch(() => {});
   }
   return dir;
 }
