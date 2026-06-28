@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
 import {
+  baselineTask,
   baseTask,
   implementTurn,
   planTurn,
@@ -22,7 +23,7 @@ Deno.test("ScriptedOperator: empty script returns null immediately", async () =>
   assertEquals(await op.getResponse([]), null);
 });
 
-Deno.test("planTurn: first turn is a /plan invocation carrying the issue, WITHOUT the implement/review sequence", () => {
+Deno.test("planTurn: planner-only gate — carries the issue, forbids source edits, stops for a human decision", () => {
   const issue = "Fixed offset timezones lose their offset name.";
   const t = planTurn("django/django", issue);
   assert(
@@ -33,6 +34,18 @@ Deno.test("planTurn: first turn is a /plan invocation carrying the issue, WITHOU
   // The full workflow sequence must NOT be pre-loaded into turn 1.
   assert(!/\/implement/.test(t), "turn 1 must not mention /implement");
   assert(!/\/review/.test(t), "turn 1 must not mention /review");
+  // Variant A: the gate. Plan must NOT code, and must stop for the human.
+  assert(/do not modify/i.test(t), "must forbid source/test edits in planning");
+  assert(/variant/i.test(t), "must ask for variants");
+  assert(
+    /stop|wait/i.test(t),
+    "must stop and wait for the human's decision",
+  );
+  // The plan turn must NOT carry the autonomy line that nullifies the gate.
+  assert(
+    !/never stop to ask/i.test(t),
+    "plan turn must not tell the agent to never stop (collapses the gate)",
+  );
 });
 
 Deno.test("implementTurn / reviewTurn: separate follow-up commands", () => {
@@ -40,12 +53,23 @@ Deno.test("implementTurn / reviewTurn: separate follow-up commands", () => {
   assert(reviewTurn().startsWith("/review"));
 });
 
-Deno.test("baseTask: shared issue framing carries repo + autonomy + no-commit", () => {
+Deno.test("baseTask: neutral shared framing — repo + issue + no-commit, NO autonomy line", () => {
   const b = baseTask("psf/requests", "Some bug");
   assert(b.includes("psf/requests"));
   assert(b.includes("Some bug"));
-  assert(/autonomous/i.test(b), "must instruct autonomy");
   assert(/commit/i.test(b), "must forbid commit/push");
+  // Autonomy wording is arm-specific now; it must not live in the shared base.
+  assert(
+    !/never stop to ask/i.test(b),
+    "base framing must stay neutral (no autonomy line)",
+  );
+});
+
+Deno.test("baselineTask: single-shot arm keeps the full-autonomy wording", () => {
+  const b = baselineTask("psf/requests", "Some bug");
+  assert(b.includes("psf/requests"));
+  assert(b.includes("Some bug"));
+  assert(/never stop to ask/i.test(b), "baseline must instruct full autonomy");
 });
 
 /**
