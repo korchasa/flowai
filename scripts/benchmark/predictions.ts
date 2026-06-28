@@ -95,3 +95,19 @@ export async function writePredictions(
   await Deno.writeTextFile(path, toJsonl(preds));
   return path;
 }
+
+/**
+ * Durably append ONE prediction to `<dir>/<modelName>.jsonl`, creating the file
+ * if absent. Called after each instance so an interrupted run (e.g. the harness
+ * killing a long background task) keeps every completed instance on disk instead
+ * of losing the whole batch flushed only at the end.
+ */
+export async function appendPrediction(
+  dir: string,
+  modelName: string,
+  pred: Prediction,
+): Promise<string> {
+  const path = join(dir, `${modelName}.jsonl`);
+  await Deno.writeTextFile(path, JSON.stringify(pred) + "\n", { append: true });
+  return path;
+}
