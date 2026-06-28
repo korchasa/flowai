@@ -2,6 +2,7 @@ import { assertEquals, assertThrows } from "@std/assert";
 import { join } from "@std/path";
 import {
   appendPrediction,
+  initPredictionsFile,
   type Prediction,
   toJsonl,
   toPrediction,
@@ -50,6 +51,35 @@ Deno.test("appendPrediction: persists one record per call, creating the file, ro
     assertEquals(lines.length, 2);
     assertEquals(JSON.parse(lines[0]), p1);
     assertEquals(JSON.parse(lines[1]), p2);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("initPredictionsFile + append: truncates to EMPTY (no leading blank line) then appends cleanly", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    // Seed stale content to prove init truncates it.
+    await Deno.writeTextFile(join(dir, "flowai.jsonl"), "stale\nstale2\n");
+    const path = await initPredictionsFile(dir, "flowai");
+    assertEquals(path, join(dir, "flowai.jsonl"));
+    // Truncated to a genuinely empty file — NOT a single blank "\n" line.
+    assertEquals(await Deno.readTextFile(path), "");
+
+    await appendPrediction(
+      dir,
+      "flowai",
+      toPrediction("a__a-1", "flowai", DIFF),
+    );
+    await appendPrediction(dir, "flowai", toPrediction("b__b-2", "flowai", ""));
+    const raw = await Deno.readTextFile(path);
+    // No blank lines anywhere (swebench's json.loads(line) would choke on one).
+    const all = raw.split("\n");
+    assertEquals(all[0] !== "", true);
+    const records = raw.trimEnd().split("\n");
+    assertEquals(records.length, 2);
+    assertEquals(JSON.parse(records[0]).instance_id, "a__a-1");
+    assertEquals(JSON.parse(records[1]).instance_id, "b__b-2");
   } finally {
     await Deno.remove(dir, { recursive: true });
   }

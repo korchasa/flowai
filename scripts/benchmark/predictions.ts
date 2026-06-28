@@ -85,14 +85,18 @@ export async function captureDiff(
   ]);
 }
 
-/** Write predictions to `<dir>/<modelName>.jsonl` and return the path. */
-export async function writePredictions(
+/**
+ * Truncate `<dir>/<modelName>.jsonl` to a genuinely EMPTY file (0 bytes) and
+ * return its path. Used at the start of a run before per-instance appends.
+ * NOT `writePredictions(dir, m, [])` — that writes a single "\n", leaving a
+ * blank first line that swebench's `json.loads(line)` loader rejects.
+ */
+export async function initPredictionsFile(
   dir: string,
   modelName: string,
-  preds: Prediction[],
 ): Promise<string> {
   const path = join(dir, `${modelName}.jsonl`);
-  await Deno.writeTextFile(path, toJsonl(preds));
+  await Deno.writeTextFile(path, "");
   return path;
 }
 

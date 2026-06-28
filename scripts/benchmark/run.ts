@@ -34,9 +34,9 @@ import { prepareSandbox } from "./prepare_sandbox.ts";
 import {
   appendPrediction,
   captureDiff,
+  initPredictionsFile,
   type Prediction,
   toPrediction,
-  writePredictions,
 } from "./predictions.ts";
 
 export type Arm = "baseline" | "flowai";
@@ -187,7 +187,7 @@ export async function runBenchmark(opts: RunOptions): Promise<string> {
   // so an interruption (e.g. the harness killing this long background task)
   // keeps every completed instance on disk instead of losing the whole batch.
   const preds: Prediction[] = [];
-  const path = await writePredictions(opts.outDir, opts.arm, []);
+  const path = await initPredictionsFile(opts.outDir, opts.arm);
   for (const id of opts.instanceIds) {
     const cand = candidateById(id);
     const tag = cand ? `${cand.difficulty}, ${cand.patchBytes}b` : "unlisted";
