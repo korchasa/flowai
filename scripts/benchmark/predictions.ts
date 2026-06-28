@@ -51,6 +51,23 @@ export const DIFF_EXCLUDES: readonly string[] = [
   ".flowai.yaml",
   ".venv-swebench",
   "bench-home",
+  // Agent-created Python environments / build artifacts. A faithful run may
+  // build a venv inside the sandbox to install deps and run the repo's own
+  // tests (observed on pylint-4551: a 10 MB / 1047-file patch that was 99.9%
+  // `venv/` binaries). None of it is the fix, and no SWE-bench gold patch
+  // touches these paths, so excluding them wholesale is safe.
+  "venv",
+  ".venv",
+  "env",
+  "build",
+  ".eggs",
+  ".tox",
+  ".pytest_cache",
+  "__pycache__",
+  "node_modules",
+  // Stray pip-redirect artifacts: a botched `pip install "astroid>=2.6.0,..."`
+  // leaves a file literally named `=2.6.0,` in the repo root.
+  "=*",
 ];
 
 async function git(repoDir: string, args: string[]): Promise<string> {
@@ -78,8 +95,27 @@ export async function captureDiff(
   repoDir: string,
   excludes: readonly string[] = DIFF_EXCLUDES,
 ): Promise<string> {
-  const pathspec = [".", ...excludes.map((p) => `:(exclude)${p}`)];
-  await git(repoDir, ["add", "-A", "--", ...pathspec]);
+  // Each exclude is dropped at the repo root AND at any nesting depth. Three
+  // forms are needed because a glob matching a directory entry does NOT recurse
+  // into its contents:
+  //   `:(exclude)p`             — top-level file or dir (+ its contents)
+  //   `:(exclude,glob)**/p`     — nested file, or nested dir entry
+  //   `:(exclude,glob)**/p/**`  — contents of a nested dir (e.g. pkg/__pycache__/x.pyc)
+  const pathspec = [
+    ".",
+    ...excludes.flatMap((p) => [
+      `:(exclude)${p}`,
+      `:(exclude,glob)**/${p}`,
+      `:(exclude,glob)**/${p}/**`,
+    ]),
+  ];
+  // Stage with a BROAD pathspec only (no excludes): `git add -A` silently skips
+  // .gitignore'd paths, but naming an exclude pathspec that matches an ignored-
+  // only path (e.g. `.pytest_cache`) makes `git add` ERROR ("paths are ignored,
+  // use -f"). The excludes belong on the diff side, which never errors on
+  // ignored paths — any non-ignored junk (e.g. an agent-built `venv/` absent
+  // from .gitignore) is staged but then omitted from the emitted diff.
+  await git(repoDir, ["add", "-A", "--", "."]);
   return await git(repoDir, [
     "diff",
     "--cached",

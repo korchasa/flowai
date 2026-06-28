@@ -1,12 +1,27 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertStringIncludes, assertThrows } from "@std/assert";
 import { join } from "@std/path";
+import { ensureDir } from "@std/fs";
 import {
   appendPrediction,
+  captureDiff,
   initPredictionsFile,
   type Prediction,
   toJsonl,
   toPrediction,
 } from "./predictions.ts";
+
+async function git(dir: string, args: string[]): Promise<void> {
+  const { code, stderr } = await new Deno.Command("git", {
+    args: ["-C", dir, ...args],
+    stdout: "null",
+    stderr: "piped",
+  }).output();
+  if (code !== 0) {
+    throw new Error(
+      `git ${args.join(" ")}: ${new TextDecoder().decode(stderr)}`,
+    );
+  }
+}
 
 const DIFF = `diff --git a/requests/models.py b/requests/models.py
 --- a/requests/models.py
@@ -80,6 +95,44 @@ Deno.test("initPredictionsFile + append: truncates to EMPTY (no leading blank li
     assertEquals(records.length, 2);
     assertEquals(JSON.parse(records[0]).instance_id, "a__a-1");
     assertEquals(JSON.parse(records[1]).instance_id, "b__b-2");
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("captureDiff: excludes agent-created env artifacts (venv, build, __pycache__) but keeps source", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    await git(dir, ["init", "-q"]);
+    await git(dir, ["config", "user.email", "t@t"]);
+    await git(dir, ["config", "user.name", "t"]);
+    // Seed a tracked source file and commit a baseline.
+    await ensureDir(join(dir, "pkg"));
+    await Deno.writeTextFile(join(dir, "pkg", "mod.py"), "x = 1\n");
+    await git(dir, ["add", "-A"]);
+    await git(dir, ["commit", "-qm", "base"]);
+
+    // Agent edits real source AND leaves a venv + build + __pycache__ behind.
+    await Deno.writeTextFile(join(dir, "pkg", "mod.py"), "x = 2\n");
+    await ensureDir(join(dir, "venv", "lib"));
+    await Deno.writeTextFile(join(dir, "venv", "lib", "junk.py"), "junk\n");
+    await ensureDir(join(dir, "build"));
+    await Deno.writeTextFile(join(dir, "build", "out.o"), "binary\n");
+    await ensureDir(join(dir, "pkg", "__pycache__"));
+    await Deno.writeTextFile(
+      join(dir, "pkg", "__pycache__", "mod.pyc"),
+      "bc\n",
+    );
+    // A stray pip-redirect artifact (observed: `=2.6.0,`).
+    await Deno.writeTextFile(join(dir, "=2.6.0,"), "junk\n");
+
+    const diff = await captureDiff(dir);
+    assertStringIncludes(diff, "pkg/mod.py");
+    assertStringIncludes(diff, "+x = 2");
+    assertEquals(diff.includes("venv/"), false);
+    assertEquals(diff.includes("build/"), false);
+    assertEquals(diff.includes("__pycache__"), false);
+    assertEquals(diff.includes("=2.6.0,"), false);
   } finally {
     await Deno.remove(dir, { recursive: true });
   }
