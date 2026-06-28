@@ -43,7 +43,11 @@ export function toJsonl(preds: Prediction[]): string {
 export const DIFF_EXCLUDES: readonly string[] = [
   ".claude",
   "AGENTS.md",
-  "documents/tasks",
+  // Whole flowai doc-system, not just tasks/: a faithful plan run may also write
+  // documents/index.md or SRS back-pointers. None of it is the code fix, and no
+  // SWE-bench repo keeps source under top-level documents/ (django/sphinx use
+  // docs/), so excluding the dir wholesale is safe.
+  "documents",
   ".flowai.yaml",
   ".venv-swebench",
   "bench-home",

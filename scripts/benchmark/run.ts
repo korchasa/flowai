@@ -31,6 +31,7 @@ import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
 import { candidateById } from "./instances.ts";
 import { type InstanceData, loadInstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
+import { installAgentsMd } from "./agents_md.ts";
 import {
   appendPrediction,
   captureDiff,
@@ -39,7 +40,7 @@ import {
   toPrediction,
 } from "./predictions.ts";
 import {
-  baseTask,
+  baselineTask,
   implementTurn,
   planTurn,
   reviewTurn,
@@ -70,7 +71,7 @@ export interface RunOptions {
  *   instead of front-loading the workflow as prose.
  */
 export function buildPrompt(arm: Arm, data: InstanceData): string {
-  if (arm === "baseline") return baseTask(data.repo, data.problemStatement);
+  if (arm === "baseline") return baselineTask(data.repo, data.problemStatement);
   return planTurn(data.repo, data.problemStatement);
 }
 
@@ -102,23 +103,6 @@ async function runWithTimeout(
   }
 }
 
-/** Render a generic process-rules AGENTS.md from the framework template. */
-async function installAgentsMd(
-  repoRoot: string,
-  sandboxDir: string,
-  repo: string,
-): Promise<void> {
-  const tplPath = join(repoRoot, "framework/core/assets/AGENTS.template.md");
-  let tpl = await Deno.readTextFile(tplPath);
-  // Keep the static process rules; blank out flowai-project-specific sections.
-  tpl = tpl.replaceAll("{{PROJECT_NAME}}", repo);
-  tpl = tpl.replace(
-    /\{\{[A-Z_]+\}\}/g,
-    "(not specified for this benchmark repository)",
-  );
-  await Deno.writeTextFile(join(sandboxDir, "AGENTS.md"), tpl);
-}
-
 /** Run one (instance, arm) pair; return its prediction. */
 async function runArm(
   data: InstanceData,
@@ -145,6 +129,12 @@ async function runArm(
       CORE_PACKS,
     );
     await installAgentsMd(opts.repoRoot, sandboxDir, data.repo);
+    // Initialize the flowai doc-system on disk. Without an existing `documents/`
+    // tree the agent reasons "this repo has no flowai task structure" and skips
+    // the plan task file (observed on django-14792); seeding the Tasks role dir
+    // removes that excuse. The whole `documents/` tree is excluded from the
+    // captured diff (DIFF_EXCLUDES), so it never reaches the prediction.
+    await ensureDir(join(sandboxDir, "documents", "tasks"));
   }
 
   // ACP transport (FR-ACCEPT.ACP): build the isolated Claude $HOME so sandbox
