@@ -38,6 +38,13 @@ import {
   type Prediction,
   toPrediction,
 } from "./predictions.ts";
+import {
+  baseTask,
+  implementTurn,
+  planTurn,
+  reviewTurn,
+  ScriptedOperator,
+} from "./operator.ts";
 
 export type Arm = "baseline" | "flowai";
 
@@ -54,26 +61,17 @@ export interface RunOptions {
   repoRoot: string;
 }
 
-/** Build the task prompt. flowai arm additionally steers through the workflow. */
+/**
+ * Build the FIRST turn for an arm.
+ * - baseline: the whole task in one neutral prompt.
+ * - flowai: a `/plan` invocation carrying only the issue; the `/implement` and
+ *   `/review` steps are delivered later by the ScriptedOperator (see runArm), so
+ *   the agent actually runs the skills as separate operator-issued commands
+ *   instead of front-loading the workflow as prose.
+ */
 export function buildPrompt(arm: Arm, data: InstanceData): string {
-  const base = [
-    `You are in a checkout of the ${data.repo} repository at a specific commit.`,
-    `Resolve the following GitHub issue by editing the source so the project's tests pass.`,
-    `Work fully autonomously: there is no user to consult — make every decision yourself and never stop to ask.`,
-    `Do not commit or push; leave your fix in the working tree.`,
-    ``,
-    `--- ISSUE ---`,
-    data.problemStatement,
-    `--- END ISSUE ---`,
-  ].join("\n");
-  if (arm === "baseline") return base;
-  return base + "\n\n" + [
-    `Follow the flowai engineering workflow end-to-end using your installed skills:`,
-    `1. the "plan" skill to plan the fix,`,
-    `2. the "implement" skill under TDD (red → green → refactor → check),`,
-    `3. the "review" skill to self-review the diff.`,
-    `When the plan skill asks you to select an implementation variant, pick the best one yourself and continue — do NOT wait for user input. Do NOT run commit or push.`,
-  ].join("\n");
+  if (arm === "baseline") return baseTask(data.repo, data.problemStatement);
+  return planTurn(data.repo, data.problemStatement);
 }
 
 /**
@@ -85,6 +83,7 @@ export function buildPrompt(arm: Arm, data: InstanceData): string {
 async function runWithTimeout(
   agent: AcpAgent,
   timeoutMs: number,
+  operator?: ScriptedOperator,
 ): Promise<{ code: number; logs: string }> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -94,7 +93,7 @@ async function runWithTimeout(
     );
   });
   try {
-    return await Promise.race([agent.run(), timeout]);
+    return await Promise.race([agent.run(operator), timeout]);
   } catch (e) {
     agent.kill();
     return { code: 124, logs: `[TIMEOUT] ${(e as Error).message}` };
@@ -155,17 +154,26 @@ async function runArm(
     ? await adapter.prepareWorkspace(sandboxDir)
     : {};
 
+  // flowai is operator-driven: turn 1 is `/plan` (buildPrompt), then the operator
+  // issues `/implement` and `/review` as separate turns. baseline is single-turn.
+  const followups = opts.arm === "flowai"
+    ? [implementTurn(), reviewTurn()]
+    : [];
+  const operator = followups.length > 0
+    ? new ScriptedOperator(followups)
+    : undefined;
+
   const agent = new AcpAgent({
     ide: "claude",
     workspace: sandboxDir,
     model: opts.model,
     prompt: buildPrompt(opts.arm, data),
-    maxSteps: 1,
+    maxSteps: followups.length + 1,
     env,
     name: `bench/${opts.arm}/${data.instanceId}`,
   });
 
-  const result = await runWithTimeout(agent, opts.stepTimeoutMs);
+  const result = await runWithTimeout(agent, opts.stepTimeoutMs, operator);
   const logPath = join(instDir, `${data.instanceId}.log`);
   await Deno.writeTextFile(logPath, result.logs);
 
