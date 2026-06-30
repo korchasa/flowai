@@ -95,6 +95,26 @@ flagged as the default recommendation unless the diagnosis is disproven.
   - Test: `Benchmark: plan-recommends-root-over-symptom` (to be authored, RED first)
   - Evidence: `deno task acceptance-tests -f plan-recommends-root-over-symptom`
 
-## Solution
+## Solution (Variant A — recommendation-ranking rubric)
 
-TBD — fill after the user selects a variant.
+1. **RED** — author benchmark scenario
+   `framework/core/skills/plan/acceptance-tests/recommends-root-over-symptom/mod.ts`:
+   an issue with a clearly named root cause AND a tempting smaller symptom fix
+   elsewhere. Checklist (observable behaviour): the plan recommendation (a) names
+   the root cause, (b) picks the variant that fixes it, OR (c) if it rejects the
+   root-cause variant, cites inspected callers/usages as evidence (not a
+   speculative risk). Run the scenario — it MUST fail on current `plan.md`.
+2. **GREEN** — edit `framework/atoms/plan.md` step 4: add a ranking rule —
+   "when variants differ in root-cause fidelity, rank 'fixes the named root
+   cause / matches the issue's causal description' above 'smallest diff' and
+   'lowest speculative risk'. The recommendation MUST name the root cause, state
+   why the chosen variant fixes it, and justify any rejection of a root-cause
+   variant with EVIDENCE (callers actually inspected)." Then regenerate the
+   composite outputs: `deno run -A scripts/generate-skill-composites.ts --write`
+   (plan is an atom consumed by `ship`/`ship-task`).
+3. **REFACTOR** — tighten wording; keep the QA-FORMAT variant-analysis exemption.
+4. **CHECK** — run the new scenario; hand off the full plan-primitive sweep
+   (`deno task acceptance-tests -f plan`) to the user (many scenarios, hours).
+
+Note: `plan.md` is a generator atom — edit the atom, never the generated
+`framework/core/skills/plan/SKILL.md` directly (gitignored build artefact).

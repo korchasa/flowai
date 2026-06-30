@@ -85,6 +85,27 @@ existing-suite execution as an approval gate.
   - Test: `Benchmark: review-runs-existing-suite-blocks-false-green` (to be authored, RED first)
   - Evidence: `deno task acceptance-tests -f review-runs-existing-suite`
 
-## Solution
+## Solution (Variant A — review-side gate)
 
-TBD — fill after the user selects a variant.
+1. **RED** — author benchmark scenario
+   `framework/core/skills/review/acceptance-tests/runs-existing-suite/mod.ts`:
+   a diff whose self-authored tests pass but whose changed symbols are covered by
+   an EXISTING repo test module that was not run (and would not all pass).
+   Checklist (observable behaviour): review locates the existing test module(s)
+   for the changed symbols, runs them, and does NOT emit "Approve" when only
+   self-authored tests were executed (or explicitly records why the existing
+   suite could not run). Run — it MUST fail on current `review.md`.
+2. **GREEN** — edit `framework/atoms/review.md`: add a mandatory step before the
+   verdict — "identify the repository's existing test module(s) covering the
+   changed symbols and RUN them. An 'Approve' verdict is forbidden when only
+   self-authored tests were run; if the existing suite cannot run locally (e.g.
+   needs a live service), record that explicitly — never fabricate a pass." Then
+   regenerate composites: `deno run -A scripts/generate-skill-composites.ts
+   --write` (review is an atom consumed by `review-and-commit`/`ship`/`ship-task`).
+3. **REFACTOR** — keep scope to the CHANGED area (not a full-suite CI run).
+4. **CHECK** — run the new scenario; hand off the full review-primitive sweep
+   (`deno task acceptance-tests -f review`) to the user.
+
+Note: `review.md` is a generator atom — edit the atom, never the generated
+SKILL.md. Defer the implement-side CHECK extension (Variant B) to a follow-up if
+the review gate alone proves insufficient.
