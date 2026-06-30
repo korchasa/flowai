@@ -31,7 +31,7 @@ import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
 import { candidateById } from "./instances.ts";
 import { type InstanceData, loadInstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
-import { installAgentsMd } from "./agents_md.ts";
+import { installAgentsMd, installDocStubs } from "./agents_md.ts";
 import {
   appendPrediction,
   captureDiff,
@@ -129,12 +129,14 @@ async function runArm(
       CORE_PACKS,
     );
     await installAgentsMd(opts.repoRoot, sandboxDir, data.repo);
-    // Initialize the flowai doc-system on disk. Without an existing `documents/`
-    // tree the agent reasons "this repo has no flowai task structure" and skips
-    // the plan task file (observed on django-14792); seeding the Tasks role dir
-    // removes that excuse. The whole `documents/` tree is excluded from the
-    // captured diff (DIFF_EXCLUDES), so it never reaches the prediction.
-    await ensureDir(join(sandboxDir, "documents", "tasks"));
+    // Initialize the flowai doc-system on disk. Seeding ONLY an empty Tasks dir
+    // was not enough: on django-14792 the agent saw the SRS/index files absent,
+    // conflated that with "roles unbound", declared the repo "not flowai", and
+    // skipped the plan task file. installDocStubs writes tiny static SRS + index
+    // stubs (and ensures Tasks/) that state plainly this is a flowai task with no
+    // formal FRs — removing the misread for zero LLM cost. The whole `documents/`
+    // tree is excluded from the captured diff (DIFF_EXCLUDES).
+    await installDocStubs(sandboxDir, data.repo);
   }
 
   // ACP transport (FR-ACCEPT.ACP): build the isolated Claude $HOME so sandbox

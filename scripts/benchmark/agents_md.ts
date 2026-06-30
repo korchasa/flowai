@@ -16,6 +16,7 @@
  */
 
 import { join } from "@std/path";
+import { ensureDir } from "@std/fs";
 import { analyzeProject } from "../../framework/core/commands/init/scripts/generate_agents.ts";
 
 /**
@@ -60,6 +61,67 @@ export function renderAgentsMd(
   // Safety net: no unfilled placeholder may reach the agent.
   out = out.replace(/\{\{[A-Z_]+\}\}/g, "");
   return out;
+}
+
+/**
+ * Minimal STATIC doc-system stubs for the flowai arm (FR-BENCH-SWE).
+ *
+ * The `plan` skill resolves the `SRS`, `tasks`, and `index` roles from AGENTS.md
+ * and bails ("role missing — STOP") when it cannot. Although the skill is
+ * designed to self-create the index and treats an FR-less bug fix as a no-op SRS
+ * edit, observed runs (django-14792) show the agent CONFLATES "the SRS/index
+ * files are absent on disk" with "the roles are unbound" — then declares the
+ * repo "not a flowai project" and skips the plan task file entirely.
+ *
+ * Seeding tiny static stubs removes that misread for zero LLM cost: the files
+ * exist, and their prose states plainly that this is a flowai task with no
+ * formal FRs. The whole `documents/` tree is excluded from the captured diff
+ * (DIFF_EXCLUDES), so none of it reaches the prediction.
+ */
+export function renderDocStubs(
+  repo: string,
+): { requirements: string; index: string } {
+  const requirements = [
+    `# SRS — \`${repo}\` (flowai sandbox task)`,
+    ``,
+    `## 1. Intro`,
+    `- **Desc:** flowai-managed sandbox checkout of \`${repo}\`. Goal: resolve ONE upstream GitHub issue in the working tree under plan → implement → review.`,
+    `- **Def/Abbr:** SRS — Software Requirements Specification.`,
+    ``,
+    `## 2. General`,
+    `- **Context:** Upstream repository at a fixed base commit. This is NOT a flowai feature project, so it carries no formal FR catalog.`,
+    `- **Assumptions/Constraints:** Fix the ROOT CAUSE, not a downstream symptom; verify against the repository's OWN existing test suite, not only newly written tests.`,
+    ``,
+    `## 3. Functional Reqs`,
+    `No formal FR-* requirements: this is an upstream bug fix, not a flowai feature. The implementation is tracked by the plan task file under \`documents/tasks/\` with \`implements: []\`. The doc-system roles (SRS, Tasks, Index) are ACTIVE — treat absent FR sections as expected, not as "roles unbound".`,
+    ``,
+  ].join("\n");
+
+  const index = [
+    `# Documentation Index`,
+    ``,
+    `## FR`,
+    `No FRs — upstream bug-fix task. The active plan lives under \`documents/tasks/\`.`,
+    ``,
+  ].join("\n");
+
+  return { requirements, index };
+}
+
+/**
+ * Write the doc-system stubs (`documents/requirements.md`, `documents/index.md`)
+ * and ensure the Tasks role dir exists. Static — no generation, no I/O beyond
+ * the writes.
+ */
+export async function installDocStubs(
+  sandboxDir: string,
+  repo: string,
+): Promise<void> {
+  const docs = join(sandboxDir, "documents");
+  await ensureDir(join(docs, "tasks"));
+  const { requirements, index } = renderDocStubs(repo);
+  await Deno.writeTextFile(join(docs, "requirements.md"), requirements);
+  await Deno.writeTextFile(join(docs, "index.md"), index);
 }
 
 /**

@@ -1,5 +1,38 @@
 import { assert } from "@std/assert";
-import { renderAgentsMd } from "./agents_md.ts";
+import { renderAgentsMd, renderDocStubs } from "./agents_md.ts";
+
+/**
+ * The doc-system stubs must remove the "roles unbound → not flowai" misread that
+ * skipped the plan task file on django-14792: both files must be present, name
+ * the repo, frame this as a flowai task with no formal FRs, and carry valid
+ * SRS/index headings the plan skill can resolve.
+ */
+Deno.test("renderDocStubs: SRS + index stubs are coherent and FR-less", () => {
+  const { requirements, index } = renderDocStubs("django/django");
+
+  // SRS stub.
+  assert(requirements.includes("django/django"), "SRS names the repo");
+  assert(/^# SRS/m.test(requirements), "SRS has an SRS title");
+  assert(
+    /## 3\. Functional Reqs/.test(requirements),
+    "SRS has the Functional Reqs section the plan skill resolves",
+  );
+  assert(
+    /implements: \[\]/.test(requirements),
+    "SRS states the bug fix carries no FRs (implements: [])",
+  );
+  assert(
+    /ACTIVE/.test(requirements),
+    "SRS asserts the doc-system roles are active (defeats the 'not flowai' misread)",
+  );
+
+  // Index stub.
+  assert(/^# Documentation Index/m.test(index), "index has its title");
+  assert(
+    /## FR/.test(index),
+    "index has the FR section the plan skill writes to",
+  );
+});
 
 const TEMPLATE_URL = new URL(
   "../../framework/core/assets/AGENTS.template.md",
