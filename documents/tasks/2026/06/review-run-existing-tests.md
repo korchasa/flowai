@@ -1,7 +1,7 @@
 ---
 date: "2026-06-30"
-status: to do
-implements: [FR-ATOM-IMPLEMENT, FR-AI-CODE-REVIEW]
+status: done
+implements: [FR-AI-CODE-REVIEW.EXISTING-SUITE]
 tags: [review-skill, implement-skill, existing-tests, false-green, swe-bench, finding]
 related_tasks: [2026/06/plan-reco-root-cause-ranking.md]
 ---
@@ -77,12 +77,12 @@ existing-suite execution as an approval gate.
 
 ## Definition of Done
 
-(Filled after variant selection. Each item will pair FR + acceptance tuple.)
-
-- [ ] FR-AI-CODE-REVIEW (and/or FR-ATOM-IMPLEMENT): the chosen skill runs the
-      repository's existing tests for the changed area and refuses a green/approve
-      verdict when only self-authored tests were run.
-  - Test: `Benchmark: review-runs-existing-suite-blocks-false-green` (to be authored, RED first)
+- [x] FR-AI-CODE-REVIEW.EXISTING-SUITE: `review` locates the repository's
+      pre-existing test module(s) covering the changed symbols (incl. caller
+      tests — transitive coverage), runs them scoped to the changed area, and
+      refuses an Approve verdict when only self-authored tests were run.
+  - Test: `Benchmark: review-runs-existing-suite` (RED confirmed 2026-07-01 on
+    pre-change atom: 3 critical failures; GREEN passed post-change: 7/7)
   - Evidence: `deno task acceptance-tests -f review-runs-existing-suite`
 
 ## Solution (Variant A — review-side gate)
@@ -105,6 +105,14 @@ existing-suite execution as an approval gate.
 3. **REFACTOR** — keep scope to the CHANGED area (not a full-suite CI run).
 4. **CHECK** — run the new scenario; hand off the full review-primitive sweep
    (`deno task acceptance-tests -f review`) to the user.
+
+Execution note: the first RED draft used DIRECT coverage (existing test module
+importing the changed symbol) — it passed on the unchanged atom (agent found the
+module by simple file enumeration in the tiny fixture). Revised to TRANSITIVE
+coverage (`tests/tz_render_test.ts` tests caller `renderTzOffset`, never mentions
+`prepareTznameDelta`) — that reproduced the django-14792 false-green (RED: 3
+critical failures) and drove the gate wording ("including tests of their
+CALLERS").
 
 Note: `review.md` is a generator atom — edit the atom, never the generated
 SKILL.md. Defer the implement-side CHECK extension (Variant B) to a follow-up if

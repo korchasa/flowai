@@ -790,6 +790,13 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `review-decision-level-verdict`
 - **Status:** [x]
 
+#### FR-AI-CODE-REVIEW.EXISTING-SUITE: Existing-Suite Gate — No Approve on Self-Authored Tests Alone [ANC:fr:ai-code-review.existing-suite]
+
+- **Description:** `review` MUST locate the repository's PRE-EXISTING test module(s) covering the changed symbols — including tests of their callers (transitive coverage) — and RUN them, scoped to the changed area (never a full-suite CI run). An `Approve` verdict is forbidden when the only tests executed for the changed area were authored in the same diff. A located module that cannot run locally (live service, missing env) is recorded with its reason in Degradation Notes — never a fabricated pass. Kills the SWE-bench false-green pattern (django-14792: agent's self-authored tests passed while the canonical suite failed unrun). Source: `framework/atoms/review.md` Rule 13 + step 4b.
+- **Tasks:** [review-run-existing-tests](tasks/2026/06/review-run-existing-tests.md)
+- **Acceptance verified by acceptance tests:** `review-runs-existing-suite`
+- **Status:** [x]
+
 ### FR-DIFF-OPTIONAL: Optional, Non-Blocking Diff Review (Model B) [ANC:fr:diff-optional]
 
 - **Description:** Diff-level review remains available but OPTIONAL (Model B): the `review` / `ship` / `review-and-commit` workflows MUST NOT block on human diff inspection. The agent offers the diff for optional inspection and proceeds on the decision-level verdict; the human MAY inspect any diff but is never forced to as a mandatory barrier. Source: `framework/atoms/review.md`.
