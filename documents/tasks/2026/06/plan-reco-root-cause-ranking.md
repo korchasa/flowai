@@ -1,6 +1,6 @@
 ---
 date: "2026-06-30"
-status: to do
+status: done
 implements: [FR-PLAN-VARIANT-ARCHETYPES]
 tags: [plan-skill, recommendation, root-cause, swe-bench, finding]
 related_tasks: [2026/06/review-run-existing-tests.md]
@@ -89,11 +89,24 @@ flagged as the default recommendation unless the diagnosis is disproven.
 
 (Filled after variant selection. Each item will pair FR + acceptance tuple.)
 
-- [ ] FR-PLAN-VARIANT-ARCHETYPES (or a new FR-PLAN-RECO-RANK clause): the plan
-      recommendation ranks root-cause fidelity above diff size and justifies any
-      rejection of a root-cause variant with inspected-caller evidence.
-  - Test: `Benchmark: plan-recommends-root-over-symptom` (to be authored, RED first)
+- [x] FR-PLAN-VARIANT-ARCHETYPES: the plan recommendation ranks root-cause
+      fidelity above diff size and justifies any rejection of a root-cause
+      variant with inspected-caller evidence. Implemented as a ranking rule in
+      `framework/atoms/plan.md` step 4 (regenerated into `plan` + `ship`).
+  - Test: `Benchmark: plan-recommends-root-over-symptom` (regression-guard)
   - Evidence: `deno task acceptance-tests -f plan-recommends-root-over-symptom`
+
+### RED-first waiver (why the guard, not strict RED)
+
+The scenario passes on both `claude-sonnet-4-6` and `claude-haiku-4-5` before
+AND after the rule (3 runs). The SWE-bench django-14792 mis-ranking stems from
+large-codebase caller-uncertainty: a small self-contained acceptance fixture
+makes the root cause obvious and caller-impact a single cheap read, so any
+capable model already recommends the root fix. An honest RED is unreachable in
+this harness. User granted an explicit RED-first waiver (chose "apply as guard")
+— the rule ships as defensive guidance; the scenario guards against future
+regression of the ranking discipline. Documented in the SRS `[x]` note and the
+scenario `mod.ts` header.
 
 ## Solution (Variant A — recommendation-ranking rubric)
 

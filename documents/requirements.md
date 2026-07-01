@@ -1060,14 +1060,16 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 ### FR-PLAN-VARIANT-ARCHETYPES: Solution-Variant Archetypes for Non-Obvious Tasks [ANC:fr:plan-variant-archetypes]
 
 - **Description:** For a non-obvious task, the `plan` skill's Step 4 variant analysis MUST cover three distinct solution archetypes — quick fix (minimal scope, may incur tech debt), architecturally-correct (correct design within current constraints/scope), and best long-term (strategic, optimizes maintainability over the horizon, may exceed current scope) — each with Pros/Cons/Risks plus cross-variant trade-offs. The agent MAY add further options. The obvious-task single-variant exception is preserved. `ship` inherits the mandate via composite regeneration from the `plan` atom. The shipped `AGENTS.md` `Variant Analysis` canon stays an abstract, domain-agnostic comparison format (no plan- or archetype-specific content).
-- **Tasks:** [plan-variant-archetypes](tasks/2026/06/plan-variant-archetypes.md)
+- **Tasks:** [plan-variant-archetypes](tasks/2026/06/plan-variant-archetypes.md), [plan-reco-root-cause-ranking](tasks/2026/06/plan-reco-root-cause-ranking.md)
 - **Scope:**
   - Non-obvious task → variant set covers quick-fix, architecturally-correct, best-long-term archetypes (judged by intent; labels may vary).
   - Obvious task → exactly one variant (no regression).
   - When two archetypes collapse into one option, the agent states so and still surfaces a distinct third.
   - The `AGENTS.md` `Variant Analysis` bullet contains no plan/archetype-specific tokens; the rule name is retained.
-- **Acceptance verified by acceptance tests:** `plan-variants-complex`, `plan-variants-obvious`
+  - Recommendation ranking: when variants differ in root-cause fidelity, the recommendation ranks root-cause fidelity above smallest-diff / lowest-speculative-risk, names the root cause it addresses, and justifies any rejection of a root-cause variant with inspected-caller evidence — not an un-verified speculative risk.
+- **Acceptance verified by acceptance tests:** `plan-variants-complex`, `plan-variants-obvious`, `plan-recommends-root-over-symptom`
 - **Status:** [x]
+  - Note (`plan-recommends-root-over-symptom`): regression-guard, not RED-first. The mis-ranking failure (SWE-bench django-14792) stems from large-codebase caller-uncertainty, which a small self-contained acceptance fixture cannot reproduce — the scenario passes on both `claude-sonnet-4-6` and `claude-haiku-4-5` before and after the rule. It guards against future regression of the ranking discipline; the rule was added as defensive guidance per an explicit RED-first waiver.
 
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 

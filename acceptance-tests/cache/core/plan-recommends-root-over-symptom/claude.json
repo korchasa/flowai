@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "103f68872eaecab0d6958e491398e2ca47f07aa692ba472df8ab6c8052a89127",
+  "scenarioId": "plan-recommends-root-over-symptom",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-07-01T17:33:14.324Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 150330.1085,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created documents/tasks/2026/07/fix-tz-offset-sql.md, confirmed by both the agent logs (mkdir + Write tool calls) and the GENERATED FILES section showing full file content."
+      },
+      "names_root_cause": {
+        "pass": true,
+        "reason": "The agent explicitly states: 'Корневая причина бага находится в функции getTimezoneName() (src/utils/timezone.ts:19-21). Она возвращает z.ianaName as string без какой-либо проверки. У зон с фиксирова…"
+      },
+      "surfaces_root_variant": {
+        "pass": true,
+        "reason": "Variant 2 is explicitly described as 'Architecturally correct: исправить getTimezoneName() в корне' — fixing the root helper itself by adding a fallback branch that returns formatOffset(z) when ianaN…"
+      },
+      "recommends_root_or_evidence": {
+        "pass": true,
+        "reason": "The final recommendation explicitly picks Variant 2 (fixing the root helper): 'Variant 2 — исправление корневой причины. Баг буквально состоит в том, что getTimezoneName() не обрабатывает допустимый …"
+      },
+      "no_unverified_speculative_downrank": {
+        "pass": true,
+        "reason": "The agent actually read src/templates/render.ts (confirmed by the Read tool call in logs, and the file content is shown in evidence). When assessing Variant 2's impact, the agent states: 'Я проверил …"
+      }
+    }
+  }
+}
