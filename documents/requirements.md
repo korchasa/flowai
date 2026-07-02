@@ -1090,6 +1090,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `plan-dod-covers-stated-outcomes`, `plan-records-dropped-outcomes`
 - **Status:** [ ]
   - Note (both scenarios): regression-guards, not RED-first. The 2026-07-02 RED attempts PASSED on the unchanged atom — in a small self-contained fixture `claude-sonnet-4-6` already seeds the DoD, discovers the duplicated site, and defers the user-cut scope to Follow-ups. The real failure mode (SWE-bench INCOMPLETE_FIX family, 9-10/11 of the 2026-07-02 failures) stems from large-codebase attention pressure that a small fixture cannot reproduce; the discipline was added as defensive guidance per an explicit RED-first waiver (precedent: `plan-recommends-root-over-symptom`). The empirical evidence for the change is the benchmark re-run.
+  - Coverage gap (point c, heading scope marker): the variant-title marker requirement (`— full scope` / `— partial: …`, added 2026-07-02 per explicit user TDD waiver) is NOT verified by any scenario — `plan-records-dropped-outcomes` checks Cons + `## Follow-ups` only. Closing the gap = extend that scenario's checklist with a title-marker item (no new scenario: same execution path).
 
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 
