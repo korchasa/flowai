@@ -1078,6 +1078,19 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Status:** [x]
   - Note (`plan-recommends-root-over-symptom`): regression-guard, not RED-first. The mis-ranking failure (SWE-bench django-14792) stems from large-codebase caller-uncertainty, which a small self-contained acceptance fixture cannot reproduce — the scenario passes on both `claude-sonnet-4-6` and `claude-haiku-4-5` before and after the rule. It guards against future regression of the ranking discipline; the rule was added as defensive guidance per an explicit RED-first waiver.
 
+### FR-PLAN-OUTCOME-COMPLETENESS: Plan Covers Stated Outcomes, Affected Surface, and Explicit Scope Cuts [ANC:fr:plan-outcome-completeness]
+
+- **Description:** When the request has a definite outcome set (stated behaviors, named acceptance conditions, a deliverable list), the `plan` skill MUST (a) seed the task file's `## Definition of Done` with one bullet per stated outcome, preserving concrete expected results verbatim; (b) enumerate the affected surface proportionally to the blast radius (code: callers and duplicated/parallel logic; infrastructure: environments, regions, dependent services, scheduled jobs; process/non-IT: affected people, downstream steps), covering or explicitly excluding each item with inspected evidence; (c) name dropped outcomes in a narrower variant's Cons — a stated outcome must appear in ≥1 variant or be explicitly named as deferred at selection time; and (d) after triage, verify every stated outcome maps to a DoD item, a Solution step, or a `## Follow-ups` entry naming the deferral reason. The scope choice itself stays with the human, made at variant selection on visible information. Open-ended/exploratory requests route ambiguity to the clarifying-question gate instead. `ship` inherits via composite regeneration from the `plan` atom.
+- **Tasks:** [plan-outcome-completeness](tasks/2026/07/plan-outcome-completeness.md)
+- **Scope:**
+  - DoD seeded from the request's own wording at Step 3 (verbatim expected values; related outcomes may collapse into one bullet with a single acceptance check; placeholder fallback when no discrete outcomes stated).
+  - Affected-surface enumeration at Step 2, conditional and proportional; undisclosed duplicated sites must be discovered proactively.
+  - Scope-cut transparency at Step 4; user-selected cuts recorded under `## Follow-ups`; silent drops are planning defects.
+  - Completeness check at Step 7 complements the Rule-8 acceptance-tuple walk (items↔tuples vs request↔items).
+- **Acceptance verified by acceptance tests:** `plan-dod-covers-stated-outcomes`, `plan-records-dropped-outcomes`
+- **Status:** [ ]
+  - Note (both scenarios): regression-guards, not RED-first. The 2026-07-02 RED attempts PASSED on the unchanged atom — in a small self-contained fixture `claude-sonnet-4-6` already seeds the DoD, discovers the duplicated site, and defers the user-cut scope to Follow-ups. The real failure mode (SWE-bench INCOMPLETE_FIX family, 9-10/11 of the 2026-07-02 failures) stems from large-codebase attention pressure that a small fixture cannot reproduce; the discipline was added as defensive guidance per an explicit RED-first waiver (precedent: `plan-recommends-root-over-symptom`). The empirical evidence for the change is the benchmark re-run.
+
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 
 - **Description:** Reflection skills (`reflect`, `reflect-by-history`) must search session history for similar errors/mistakes, identify patterns, and include findings in output. Before presenting the final report, the agent must perform self-criticism — validate findings, check for false positives and blind spots, evaluate proportionality of proposed fixes, and revise the report accordingly.

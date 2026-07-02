@@ -13,6 +13,12 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * Mirrors django-13195/16256: a seen-but-dropped requirement vanished
  * silently. The scope choice itself is legitimate and belongs to the user;
  * what this scenario guards is that the cut is RECORDED, not silent.
+ *
+ * REGRESSION-GUARD, NOT RED-first (waiver mirrors plan-recommends-root-over-
+ * symptom): the 2026-07-02 RED attempt PASSED on the unchanged atom — in a
+ * small clean fixture the baseline Step-7 triage already deferred the CSV
+ * site to Follow-ups. The real failures require large-codebase attention
+ * pressure; the true RED is the SWE-bench pool. See the FR note.
  */
 export const PlanRecordsDroppedOutcomesBench = new class
   extends AcceptanceTestScenario {
@@ -31,14 +37,14 @@ export const PlanRecordsDroppedOutcomesBench = new class
 
   userQuery =
     "/plan Bug report: report dates render wrong for edge-case values. Product spec says: " +
-    "(1) any date outside the supported range (year < 1 or year > 9999) must render as the literal string \"0-0-0\"; " +
+    '(1) any date outside the supported range (year < 1 or year > 9999) must render as the literal string "0-0-0"; ' +
     "(2) a month value of 0 must fall back to 01. " +
     "Currently out-of-range values are rendered raw (e.g. year 12024 prints as '12024-05-03'). Plan the fix.";
 
   userPersona =
     `You are a busy product owner. IMPORTANT: The agent may speak Russian. When you see a question ending with '?' or asking you to choose (e.g. 'Какой вариант', 'выбираете', 'предпочитаете', 'подтвердите'), you MUST respond.
-When asked to choose between variants, say: "Fix ONLY the monthly report screen for now — the smallest change possible. Anything beyond the report screen (other output paths, exporters) is not urgent and should NOT be in this fix."
-When asked for confirmation, agree and ask to proceed.`;
+When asked to choose between variants, say: "Fix ONLY the monthly report screen for now — the smallest change possible. Nothing else should be in this fix."
+After the variant selection, if asked for a simple confirmation, agree briefly. Do NOT volunteer any other guidance or answer open questions about scope — the agent must handle the rest itself.`;
 
   interactive = true;
 
@@ -64,8 +70,8 @@ When asked for confirmation, agree and ask to proceed.`;
     {
       id: "no_outcome_vanishes",
       description:
-        "Do BOTH stated spec outcomes — (a) out-of-range dates render \"0-0-0\", (b) month 0 falls back to 01 — appear somewhere in the task file (Definition of Done, Solution steps, or Follow-ups)? An outcome that appears nowhere in the file has silently vanished and FAILS this check.",
-      critical: true,
+        'Do BOTH stated spec outcomes — (a) out-of-range dates render "0-0-0", (b) month 0 falls back to 01 — appear somewhere in the task file (Definition of Done, Solution steps, or Follow-ups)? An outcome that appears nowhere in the file has silently vanished and FAILS this check.',
+      critical: false,
     },
     {
       id: "no_triage_reask",

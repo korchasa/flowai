@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "key": "d75c18ba52bbdda9e0ea3e782cd81a91e64be38ac1b6de715d8f31e395964405",
+  "scenarioId": "plan-dod-covers-stated-outcomes",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-07-02T01:55:40.810Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 121547.96704199999,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created documents/tasks/2026/07/fix-date-range-validation.md, confirmed both in the agent logs (Write tool call) and in the GENERATED FILES section of the evidence."
+      },
+      "dod_covers_each_stated_outcome": {
+        "pass": true,
+        "reason": "The Definition of Done contains two separate, traceable bullets: (a) 'FR-DATE-RANGE: formatReportDate returns \"0-0-0\" when year < 1 or year > 9999' and (b) 'FR-DATE-RANGE: formatReportDate treats mon…"
+      },
+      "verbatim_literal_preserved": {
+        "pass": true,
+        "reason": "The exact string \"0-0-0\" appears verbatim multiple times: in the Goal section ('render `12024-05-03`' vs '`0-0-0`'), in the Context ('Year < 1 or year > 9999 → literal \"0-0-0\"'), and in DoD items ('r…"
+      },
+      "second_site_addressed": {
+        "pass": true,
+        "reason": "The agent independently discovered the duplicate date-formatting logic in src/export/csv_export.ts. It is explicitly described in the Current State section ('csvRow... duplicates date formatting inli…"
+      },
+      "scope_cut_named_if_dropped": {
+        "pass": true,
+        "reason": "Variant 1 in the chat explicitly states what it drops: 'дублирование кода остаётся — если правила валидации изменятся, обновлять придётся в двух местах' (code duplication remains, both copies need up…"
+      }
+    }
+  }
+}

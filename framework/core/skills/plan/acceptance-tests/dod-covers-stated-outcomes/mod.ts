@@ -23,11 +23,13 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * - a variant silently narrower than the stated outcome set
  *   (django-13195/16256 dropped seen requirements as "out of ticket scope").
  *
- * RED mechanism: the pre-change atom writes DoD as "placeholder bullets —
- * fill in step 5a", and step 5a only runs after variant selection — which
- * this scenario never gives (no simulated user; plan stops at the variant
- * gate). So on the unchanged atom the task file plausibly carries no seeded
- * outcome coverage at the moment the session ends.
+ * REGRESSION-GUARD, NOT RED-first (waiver mirrors plan-recommends-root-over-
+ * symptom): the 2026-07-02 RED attempt PASSED on the unchanged atom —
+ * claude-sonnet-4-6 in a small clean fixture already seeds the DoD and finds
+ * the duplicated site. The real failures require large-codebase attention
+ * pressure a self-contained fixture cannot reproduce; the true RED is the
+ * SWE-bench pool itself (11/13 failures). This scenario guards the discipline
+ * against future regression. See FR-PLAN-OUTCOME-COMPLETENESS note.
  */
 export const PlanDodCoversStatedOutcomesBench = new class
   extends AcceptanceTestScenario {
@@ -46,7 +48,7 @@ export const PlanDodCoversStatedOutcomesBench = new class
 
   userQuery =
     "/plan Bug report: report dates render wrong for edge-case values. Product spec says: " +
-    "(1) any date outside the supported range (year < 1 or year > 9999) must render as the literal string \"0-0-0\"; " +
+    '(1) any date outside the supported range (year < 1 or year > 9999) must render as the literal string "0-0-0"; ' +
     "(2) a month value of 0 must fall back to 01. " +
     "Currently out-of-range values are rendered raw (e.g. year 12024 prints as '12024-05-03'). Plan the fix.";
 

@@ -87,6 +87,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — scripts/check-skills.ts rejects any framework/<pack>/skills/*/SKILL.md that carries disable-model-invocation in source. — [ ]
 - [REF:fr:packs.struct | FR-PACKS.STRUCT] — pack.yaml format: name (string), version (semver), description (string). — [ ]
 - [REF:fr:packs.version | FR-PACKS.VERSION] — flowai sync output shows pack versions. — [ ]
+- [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS] — plan seeds DoD from stated outcomes (verbatim values), enumerates affected surface, records explicit scope cuts in Follow-ups; silent drops are defects — [ ]
 - [REF:fr:plan-variant-archetypes | FR-PLAN-VARIANT-ARCHETYPES] — plan mandates three solution archetypes (quick fix / architecturally-correct / best long-term) for non-obvious tasks; AGENTS.md canon stays abstract — [x]
 - [REF:fr:reflect | FR-REFLECT] — Reflection skills (reflect, reflect-by-history) must search session history for similar errors/mistakes, identify patterns, and include findings in output. — [ ]
 - [REF:fr:review-commit | FR-REVIEW-COMMIT] — Composite command: review → gate (Approve only) → commit — [x]

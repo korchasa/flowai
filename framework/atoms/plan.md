@@ -79,12 +79,13 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - **Load related committed tasks**: glob recursively under the resolved `tasks` role. For each found file, parse its YAML frontmatter `implements:` field. Keep only tasks whose `implements:` set has a non-empty intersection with the FR-IDs you are about to put in the new task's `implements:`. Cap at 10 by recency (newest first by frontmatter `date`); if more match, list IDs in chat without bodies and ask the user which to expand. Read the full body of each kept task before drafting GODS. List the loaded tasks in chat (one bullet per task: file path + matched FR-IDs + one-line summary). If no related tasks exist, say "No prior tasks share FRs with this one — drafting from scratch."
    - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
    - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
+   - **Affected-surface enumeration** (only when the request has a definite outcome set — stated behaviors, named acceptance conditions, a deliverable list): enumerate what the change touches — code: callers and duplicated/parallel logic; infrastructure: environments, regions, dependent services and scheduled jobs; process/non-IT: affected people and downstream steps. Depth proportional to blast radius: for wide surfaces, group into classes. Each item (or class) is either covered by the plan or explicitly excluded with inspected (not assumed) evidence. For open-ended/exploratory requests, skip and route ambiguity to the clarifying questions below.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 3. **Draft Framework (G-O-D)**
    - Create the resolved task file's parent directories (use `mkdir -p` or your environment's equivalent).
    - Write the resolved task file with:
      - Frontmatter containing ALL required keys per Rule 9. Set `status: to do` initially.
-     - Body sections per `### GODS Format` from AGENTS.md: `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` (placeholder bullets — fill in step 5a).
+     - Body sections per `### GODS Format` from AGENTS.md: `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` — seed one bullet per outcome the request states (behaviors, examples, acceptance conditions, deliverables), in the request's own terms; preserve stated expected results exactly (no paraphrase). Related outcomes may collapse into one bullet when a single acceptance check proves them all. No discrete outcomes stated → leave placeholder bullets. Acceptance tuples are added in step 5a.
      - For async/callback conversions, include an explicit error-handling DoD item or constraint before variant selection: how callback errors map to Promise rejection / `try`-`catch`, and which tests prove error propagation is preserved.
    - **CRITICAL**: Do NOT fill `## Solution` section yet.
 4. **Strategic Analysis & Variant Selection**
@@ -97,6 +98,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - For EACH variant, present: **Pros**, **Cons**, **Risks**, and **Best For** (use cases/constraints it handles).
    - Across all variants, analyze **Trade-offs**: security vs complexity, performance vs maintainability, cost vs features.
    - **Recommendation ranking (root-cause fidelity first)**: When you recommend a variant AND the variants differ in root-cause fidelity, rank "fixes the named root cause / matches the issue's own causal description" ABOVE "smallest diff" and "lowest speculative risk". The recommendation MUST (a) name the root cause it addresses, (b) state why the recommended variant fixes THAT cause, and (c) if a root-cause variant exists but is NOT recommended, justify the rejection with EVIDENCE — callers/usages you actually inspected — NOT a speculative "might break X". A cited risk used to down-rank the root-cause variant MUST be verified against the real callers before it counts; an un-inspected fear is not a valid reason to prefer a symptom patch.
+   - **Scope-cut transparency**: if a variant covers less than the stated outcome set, name the dropped outcomes in its Cons. A stated outcome must appear in ≥1 variant or be explicitly named as deferred at selection time — a silent drop is a planning defect. The scope choice is made at variant selection on this visible information; after selection, record the chosen variant's dropped outcomes under `## Follow-ups` in the task file.
    - **Exception — single variant**: Only offer 1 variant when the task has an obvious path (e.g., "create a text file", "add a config line") with no meaningful trade-offs. Briefly explain why alternatives don't apply.
    - Ask user which variant they prefer. Wait for response.
    - When user selects a variant, immediately proceed to fill the Solution section (Step 5). Do NOT stop after receiving the selection.
@@ -140,6 +142,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
      - **defer** — out of scope for this plan; record under a "Follow-ups" section.
    - Edit the task file to incorporate every **apply** item (update Solution, DoD, Overview, or Follow-ups as appropriate). The edit MUST happen AFTER the critique was emitted.
    - Do NOT ask the user which items to address — the triage IS the answer. Do NOT prompt with phrases like "which would you like addressed", "should I apply", "do you want me to incorporate".
+   - **Completeness check (after triage)**: every outcome seeded in Step 3 and every affected-surface item/class from Step 2 maps to a DoD item, a Solution step, or a `## Follow-ups` entry naming the deferral reason. Complements Rule 8 (items↔tuples); this check ensures nothing stated in the request is missing. The task file, not the chat, is the record.
    - Report the applied/discarded/deferred counts in chat so the user can override any classification on their next turn.
 {{TERMINATION}}
 
@@ -157,6 +160,7 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 - [ ] Files modified are limited to the task file, the resolved `index` file (when the task introduces or touches FRs), and surgical `**Tasks:**` line inserts/extends in the resolved `SRS`. No other files touched.
 - [ ] For every FR-ID in `implements:`, the resolved `index` contains a corresponding row under `## FR` with a GFM-link to the SRS heading.
 - [ ] For every FR-ID in `implements:` whose SRS section already exists, the resolved `SRS` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
+- [ ] Every stated outcome maps to a DoD item, Solution step, or `## Follow-ups` entry; narrower variants name dropped outcomes in Cons.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>
 
