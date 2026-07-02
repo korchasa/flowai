@@ -38,3 +38,13 @@
 - Single-rep, hard pool (all instances are baseline failures except the one empty-patch case) — 0–1 resolved differences carry heavy noise; conclusions above are about *stability*, not about the edit being harmful.
 - Same-harness comparison is clean: only the atom edit differs from the 1/13 run.
 - The full decision audit (3 critic gates, 6 subagent rounds, 19 objections: 18 applied / 1 partially rebutted; both RED attempts passing pre-change; auth incident) is in `scripts/benchmark/runs/2026-07-02-loop1/_decision-log.md`.
+
+## Iteration 2 postscript — loop TERMINATED (condition a), no edits shipped
+
+Iteration 2 root-caused all 12 loop1 failures (4 parallel analysts, full aggregate + critic triage in `scripts/benchmark/runs/2026-07-02-loop2/_decision-log.md`). Key facts:
+
+- The dabe5744 discipline largely did NOT execute under bench pressure: task file 4/12, DoD seeded from the request's stated outcomes 0/12, full affected-surface enumeration 0/12, Follow-ups 1/12. The dominant defect is plan-artifact **persistence/enforcement**, not rule content.
+- Review approved 11/11 with 0 interceptions, decomposing as: 6 structurally blind (FAIL_TO_PASS oracle absent from the sandbox — review could not have won), 3 genuine dismissals (16256, 7462, 4551 — gap discovered, rationalized as out-of-scope/nit), 2 oracle corruption (7748, 16597 — agent-edited tests used as the gate).
+- CRITIC GATE 1 rejected the candidate lever (review-atom edit) on 5 BLOCKING objections: review is detection-only and terminal in this harness (no causal path to the graded patch); flip potential ≤2/12; 14792 was misclassified (VARIANT_MISRANK, not WRONG_DIAGNOSIS — plan named the root correctly); lever choice was streetlight reasoning (plan frozen); and any atom edit is unjustified while the signal sits inside single-rep noise.
+- Termination: plan atom frozen (rule c), review lever rejected, implement-side alternatives pre-empted by the noise objection → condition (a) "no critic-surviving fix candidate". Condition (b) was also one non-improvement from firing.
+- Next step handed to the human: establish the noise floor via a multi-rep re-measure of the current pipeline (no atom edits) before any further text-level iteration.
