@@ -62,3 +62,33 @@ Human decision for the next phase (scope/budget):
   all reps.
 - Pool is Python-only and deliberately hard (all baseline failures); the floor is specific to this
   pool's difficulty mix.
+
+## Iteration 3 postscript (same day) — mechanism-regime attempt, loop TERMINATED again (condition a), no edits shipped
+
+The user re-invoked the improvement loop with "use last-run data, no benchmark runs" — read as
+selecting option (c) above (judge by mechanism on the stable-fail anchors). Phases 1–3 were reused
+(loop2 + rep3 root-cause aggregates, both already critic-gated). One lever was eligible: the
+implement atom (never edited; plan frozen at 2 edits, review rejected structurally in loop2),
+targeting the twice-replicated test-artifact cluster (sympy-16597, sphinx-7748, django-16667 —
+expectations invented or re-baselined from the agent's own output).
+
+The candidate went through three adversarial critic rounds (V1 → V1b → V1c, full triage in
+`scripts/benchmark/runs/2026-07-02-loop3/_decision-log.md`):
+- Round 1 killed the resolve-flip claim (the rule cannot fix its own anchors: 16667's gold literal
+  is unreachable from any source; 7748 is primarily a requirement-capture miss; 16597's value was
+  source-derived under narrow scope) and the benchmark-shaped "own tests are self-confirmation"
+  framing.
+- Round 2 killed rule-number references that mis-resolve inside composites, the undefined
+  "source-determined" hinge, and the mis-routing through the decision gate's taxonomy.
+- Round 3 killed the residual coherence of the mechanism claim: the authored-new-test path leaves
+  no checkable artifact (audit collapses to a boilerplate line), and the snapshot/golden carve-out
+  is an agent-controlled relabel. The self-attestation objection recurred across rounds 2–3 —
+  a twice-repeated BLOCKING objection is a hard blocker per the loop's own rules.
+
+Termination: condition (a) — no critic-surviving fix candidate; rework cap 2/2 exhausted. No atom
+edits, no scenarios, no benchmark runs this iteration. What the iteration produced: a
+near-complete V1c wording with two concrete recorded fixes (checkable per-value source citations
+on authored RED tests; human-approval-only baseline carve-out), and a confirmed map of where the
+failure mass actually sits — 7/11 stable instances are plan-phase requirement/surface capture, on
+the atom the loop itself froze. The open human decisions are unchanged: unfreeze plan, authorize
+one more critic round on V1c, and/or scale measurement per options (a)/(b) above.
