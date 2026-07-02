@@ -829,8 +829,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 #### FR-UNIVERSAL.DISCLOSURE Progressive Disclosure (agentskills.io) [ANC:fr:universal.disclosure]
 
 - **Acceptance:**
-  - [x] Metadata (~100 tokens) loaded at startup; full SKILL.md (<5000 tokens, <500 lines) on activation; scripts/references/assets loaded only when required. Enforced by `scripts/check-skills.ts`.
-  - [x] **Composite-skill exemption (FR-SKILL-COMPOSE):** the composite roster is derived live from `framework/composites.yaml` `composites:` keys via [scripts/lib/composite-list.ts](../scripts/lib/composite-list.ts); the SKILL.md files for those composites are exempt from the 5000-token cap. Their byte count is mechanically dictated by the atom `<step_by_step>` blocks the generator inlines; the no-delegation canon is machine-enforced by the generator's canon validator (see `framework/CLAUDE.md` § Composite Skill Authoring). Line cap (500) and frontmatter catalog cap (100 tokens) still apply. No separate list to keep in sync — adding a composite to `framework/composites.yaml` automatically exempts it.
+  - [x] Metadata (~100 tokens) loaded at startup; full SKILL.md (<10000 tokens, <700 lines per `scripts/lib/skill-limits.ts`) on activation; scripts/references/assets loaded only when required. Enforced by `scripts/check-skills.ts`.
+  - [x] **Composite-skill exemption (FR-SKILL-COMPOSE):** the composite roster is derived live from `framework/composites.yaml` `composites:` keys via [scripts/lib/composite-list.ts](../scripts/lib/composite-list.ts); the SKILL.md files for those composites are exempt from the 10000-token cap. Their byte count is mechanically dictated by the atom `<step_by_step>` blocks the generator inlines; the no-delegation canon is machine-enforced by the generator's canon validator (see `framework/CLAUDE.md` § Composite Skill Authoring). Line cap (700) and frontmatter catalog cap (100 tokens) still apply. No separate list to keep in sync — adding a composite to `framework/composites.yaml` automatically exempts it.
 
 #### FR-UNIVERSAL.REFS File References (agentskills.io) [ANC:fr:universal.refs]
 

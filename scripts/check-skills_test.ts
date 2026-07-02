@@ -17,7 +17,7 @@ import {
   validateStructure,
 } from "./check-skills.ts";
 import { parseFrontmatter } from "./resource-types.ts";
-import { SKILL_MAX_LINES } from "./lib/skill-limits.ts";
+import { SKILL_MAX_LINES, SKILL_MAX_TOKENS } from "./lib/skill-limits.ts";
 
 // --- parseFrontmatter ---
 
@@ -210,15 +210,15 @@ Deno.test("FR-UNIVERSAL.DISCLOSURE: file at SKILL_MAX_LINES is error", () => {
   assertEquals(errors.some((e) => e.message.includes("lines")), true);
 });
 
-Deno.test("FR-UNIVERSAL.DISCLOSURE: file exceeding 5000 tokens is error", () => {
-  const content = "x".repeat(20001); // 20001 chars / 4 = 5001 tokens
+Deno.test("FR-UNIVERSAL.DISCLOSURE: file exceeding SKILL_MAX_TOKENS is error", () => {
+  const content = "x".repeat(SKILL_MAX_TOKENS * 4 + 1); // one token over the cap
   const fm = { name: "x", description: "y" };
   const errors = validateProgressiveDisclosure("s", content, fm);
   assertEquals(errors.some((e) => e.message.includes("tokens")), true);
 });
 
-Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills are exempt from 5000-token cap", () => {
-  const content = "x".repeat(40000); // 10000 tokens — would fail for non-composite
+Deno.test("FR-UNIVERSAL.DISCLOSURE: composite skills are exempt from the token cap", () => {
+  const content = "x".repeat(SKILL_MAX_TOKENS * 8); // 2× the cap — would fail for non-composite
   const fm = { name: "ship", description: "y" };
   const errors = validateProgressiveDisclosure(
     "ship",
@@ -269,7 +269,7 @@ Deno.test("token_cap_exempts_composites_from_manifest: every composite in framew
   // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE] — the exemption list is now derived live from the
   // manifest via scripts/lib/composite-list.ts, not a hardcoded TS array.
   const { compositeNames } = await import("./lib/composite-list.ts");
-  const content = "x".repeat(40000); // 10000 tokens — would fail without exemption
+  const content = "x".repeat(SKILL_MAX_TOKENS * 8); // 2× the cap — would fail without exemption
   for (const name of compositeNames()) {
     const errors = validateProgressiveDisclosure(name, content, {
       name,
@@ -278,13 +278,13 @@ Deno.test("token_cap_exempts_composites_from_manifest: every composite in framew
     assertEquals(
       errors.some((e) => e.message.includes("tokens")),
       false,
-      `${name} (from manifest) must be exempt from the 5000-token cap`,
+      `${name} (from manifest) must be exempt from the token cap`,
     );
   }
 });
 
 Deno.test("FR-UNIVERSAL.DISCLOSURE: regular skill (not in composites manifest) still hits the token cap", () => {
-  const content = "x".repeat(20001);
+  const content = "x".repeat(SKILL_MAX_TOKENS * 4 + 1);
   const fm = { name: "regular-skill", description: "y" };
   const errors = validateProgressiveDisclosure(
     "regular-skill",

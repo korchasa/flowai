@@ -6,9 +6,9 @@
  *
  * Consumers:
  *   - scripts/check-skills.ts `validateProgressiveDisclosure`: exempts
- *     composite SKILL.md files from the 5000-token cap (their byte count
- *     is mechanically dictated by the inlined atom sources; the 500-line
- *     cap and frontmatter catalog cap still apply).
+ *     composite SKILL.md files from the token cap (SKILL_MAX_TOKENS; their
+ *     byte count is mechanically dictated by the inlined atom sources; the
+ *     line cap and frontmatter catalog cap still apply).
  *
  * Parses the manifest synchronously on import. If composites are added /
  * renamed, the next `deno task check` picks them up without further code
