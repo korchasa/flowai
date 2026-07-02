@@ -77,13 +77,6 @@
     "f2p": 10
   },
   {
-    "instanceId": "django__django-16263",
-    "repo": "django/django",
-    "difficulty": "1-4 hours",
-    "patchBytes": 9785,
-    "f2p": 3
-  },
-  {
     "instanceId": "sympy__sympy-16597",
     "repo": "sympy/sympy",
     "difficulty": "1-4 hours",
