@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "key": "00e569c571667975eb23188d3d344a86994b2a019dfb5da45435160316b21183",
+  "scenarioId": "plan-surface-degradation",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-07-04T22:44:41.995Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 127843.34925,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created 'documents/tasks/2026/07/fix-emoji-truncation.md' — confirmed both in the agent logs (Write tool call) and in the GENERATED FILES section of the evidence."
+      },
+      "inline_enumeration_still_present": {
+        "pass": true,
+        "reason": "The task file contains an explicit '### Affected Surface' section listing all four code sites: src/notify/email_notifier.ts (emailSubject), src/notify/slack_notifier.ts (slackHeadline), src/digest/da…"
+      },
+      "degradation_line_written": {
+        "pass": true,
+        "reason": "The degradation note appears twice in the task file: once under '### Affected Surface' — 'Surface cross-check (surface-scout) did not run — no subagent support in this environment.' — and again verba…"
+      },
+      "no_failed_dispatch_loop": {
+        "pass": true,
+        "reason": "The agent logs show no repeated dispatch attempts for a missing subagent. The agent mentioned 'surface-scout' by name but immediately fell back to manual enumeration without retrying the subagent inv…"
+      }
+    }
+  }
+}

@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "e405a20845ec592d4f2c092cc9d23bfe3552852d695be5dfd7abc458f9606ce8",
+  "key": "4addd9218d97a1ec6f0cb9894db64c1db642aa304dea870092107948f19ca4a0",
   "scenarioId": "plan-trigger-pos-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T22:27:16.163Z",
+  "recordedAt": "2026-07-04T21:59:54.476Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 49262.21145799989,
+    "durationMs": 59406.456083000005,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_invoked": {
         "pass": true,
-        "reason": "The agent explicitly invoked the `plan` skill via `Tool: Skill` with `{\"skill\": \"plan\", \"args\": \"new rate limiter\"}` at the very start of execution. It then followed the skill's workflow by reading A…"
+        "reason": "Deterministic: skill \"plan\" invoked (Skill tool call or SKILL.md read found in trace)."
       }
     }
   }

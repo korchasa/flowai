@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "key": "41585a6fd69ad3cb3c02be43cd3683dbd7e5d272f5c2e400f5b7cfd9d9e098c9",
+  "scenarioId": "plan-affected-surface-scout",
+  "ide": "claude",
+  "agentModel": "claude-sonnet-4-6",
+  "recordedAt": "2026-07-04T22:34:08.178Z",
+  "result": {
+    "success": true,
+    "score": 100,
+    "errorsCount": 0,
+    "warningsCount": 0,
+    "durationMs": 226827.878875,
+    "tokensUsed": 0,
+    "totalCost": 0,
+    "toolCallsCount": 0,
+    "model": "claude-sonnet-4-6",
+    "checklistResults": {
+      "task_file_created": {
+        "pass": true,
+        "reason": "The agent created documents/tasks/2026/07/fix-emoji-subject-truncation.md, confirmed both in the agent logs (Write tool call) and in the GENERATED FILES section of the evidence."
+      },
+      "scout_subagent_dispatched": {
+        "pass": true,
+        "reason": "The tool-call trace shows an explicit subagent dispatch: 'Surface scout for emoji truncation(think): {\"subagent_type\":\"surface-scout\", \"prompt\":\"Bug report: email notification subjects cut multi-byte…"
+      },
+      "verbatim_scout_block_persisted": {
+        "pass": true,
+        "reason": "The task file contains a '### Affected Surface' subsection under '## Overview' with a clearly labeled '**Scout output (verbatim):**' header followed by a fenced code block containing the scout's retu…"
+      },
+      "disposition_rows_plain_bullets": {
+        "pass": true,
+        "reason": "The '### Affected Surface' subsection contains a '**Disposition (union of own and scout findings):**' list where every entry uses plain bullet format ('- `file` `function()` — covered-by DoD item N +…"
+      },
+      "parallel_site_in_table": {
+        "pass": true,
+        "reason": "The scout verbatim block explicitly includes 'src/notify/slack_notifier.ts function slackHeadline() (lines 1-4) — parallel truncation logic with identical grapheme-splitting bug.' The disposition lis…"
+      },
+      "no_fix_site_leak_to_scout": {
+        "pass": true,
+        "reason": "The scout dispatch prompt is verbatim the user's bug report: 'Bug report: email notification subjects cut multi-byte emoji in half. Product spec: (1) subject truncation must respect grapheme boundari…"
+      }
+    }
+  }
+}

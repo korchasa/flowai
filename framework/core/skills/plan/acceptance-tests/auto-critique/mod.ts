@@ -32,6 +32,12 @@ After variant selection, say NOTHING further. Do NOT answer any follow-up questi
       critical: true,
     },
     {
+      id: "plan_critic_dispatched",
+      description:
+        "If the plan presented 2 or more variants (or produced a surface-scout block), the critique MUST come from the 'plan-critic' subagent: the tool-call trace must show a subagent dispatch (Task/Agent tool call) explicitly targeting plan-critic. Author-only self-critique counts ONLY when the trace contains an ATTEMPTED plan-critic dispatch that the environment visibly rejected/errored — absence of any dispatch attempt is a FAIL. If the plan genuinely presented a single variant and no scout block exists, pass this item.",
+      critical: true,
+    },
+    {
       id: "critique_classification_emitted",
       description:
         "For each critique item, did the agent classify it explicitly in chat as one of {apply, discard, defer}? The classification labels (or equivalent words like 'applied', 'discarded as over-engineering', 'deferred as out of scope') must be visible per item, not just an overall summary.",
