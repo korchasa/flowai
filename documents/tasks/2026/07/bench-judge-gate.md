@@ -97,3 +97,7 @@ conversation content. `AcpAgent.run(userEmulator)` passes the full transcript to
   the repo → under the developer's home → every prior run may have inherited
   the developer's personal `~/AGENTS.md` and `~/www/CLAUDE.md` rules. Assess
   impact and consider moving run sandboxes to a temp location outside `$HOME`.
+  **Resolved** (2026-07-04): confirmed live in the judgegate run (agent narrated
+  in Russian in-sandbox); fixed by
+  [bench-sandbox-isolation](bench-sandbox-isolation.md) —
+  `scripts/benchmark/sandbox_root.ts`.
