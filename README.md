@@ -270,6 +270,8 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 **Agents:**
 - `console-expert` — complex console tasks and command execution
 - `diff-specialist` — git diff analysis and atomic commit preparation
+- `surface-scout` — read-only enumeration of a change's full affected surface from the verbatim request (dispatched by `plan`)
+- `plan-critic` — fresh-context adversarial review of a plan task file (dispatched by `plan`)
 - `skill-adapter` — adapts a single skill to project specifics after upstream update
 - `agent-adapter` — adapts a single agent to project specifics after upstream update
 - `maintenance-scan-hygiene` / `maintenance-scan-dependencies` / `maintenance-scan-contracts` / `maintenance-scan-docs` / `maintenance-scan-coverage` — self-contained read-only scan workers spawned in parallel by the `maintenance` skill, one per audit bucket

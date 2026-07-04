@@ -80,6 +80,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - Follow `Proactive Resolution` from AGENTS.md: analyze prompt, codebase, search for gaps.
    - Use search tools (e.g., `glob`, `grep`, `ripgrep`, `search`, `webfetch`) for unknowns.
    - **Affected-surface enumeration** (only when the request has a definite outcome set — stated behaviors, named acceptance conditions, a deliverable list): enumerate what the change touches — code: callers and duplicated/parallel logic; infrastructure: environments, regions, dependent services and scheduled jobs; process/non-IT: affected people and downstream steps. Depth proportional to blast radius: for wide surfaces, group into classes. Each item (or class) is either covered by the plan or explicitly excluded with inspected (not assumed) evidence. For open-ended/exploratory requests, skip and route ambiguity to the clarifying questions below.
+   - **Independent surface pass (`surface-scout`)**: when the enumeration above ran AND your environment provides the pre-declared `surface-scout` agent, dispatch it now via your subagent tool (e.g. Task, Agent, task). Input: the user's request text VERBATIM (plus quoted user clarification turns, if any) — NOTHING else. Do NOT include your own enumeration, your restatement of the request, a suspected fix location, or a preferred approach: the scout's value is independence, and seeding it with your framing destroys the cross-check. Hold its returned output for step 3. No subagent support or agent not installed → skip the dispatch; step 3 records the degradation visibly.
    - If uncertainties remain: ask user clarifying questions. STOP and wait.
 3. **Draft Framework (G-O-D)**
    - Create the resolved task file's parent directories (use `mkdir -p` or your environment's equivalent).
@@ -87,6 +88,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
      - Frontmatter containing ALL required keys per Rule 9. Set `status: to do` initially.
      - Body sections per `### GODS Format` from AGENTS.md: `## Goal`, `## Overview` (with `### Context`, `### Current State`, `### Constraints`), `## Definition of Done` — seed one bullet per outcome the request states (behaviors, examples, acceptance conditions, deliverables), in the request's own terms; preserve stated expected results exactly (no paraphrase). Related outcomes may collapse into one bullet when a single acceptance check proves them all. No discrete outcomes stated → leave placeholder bullets. Acceptance tuples are added in step 5a.
      - For async/callback conversions, include an explicit error-handling DoD item or constraint before variant selection: how callback errors map to Promise rejection / `try`-`catch`, and which tests prove error propagation is preserved.
+     - `### Affected Surface` under `## Overview` (only when the affected-surface enumeration ran): FIRST the scout's returned output as a clearly delimited VERBATIM block (fenced, unedited — this is the raw record `plan-critic`, `review`, and the human recompute the divergence from); THEN one PLAIN bullet per surface item/class from the UNION of your list and the scout's — `- <item> — <disposition>`, where the disposition is one of: `covered-by <DoD item / planned step>`; `not affected — <inspected evidence>` (evidence forms by domain: code = path/lines; infrastructure = environment/service + config key; process = document/step/owner); `deferred — human choice`. Checkbox bullets (`- [ ]`/`- [x]`) are FORBIDDEN in this subsection — they would corrupt automatic task-status derivation. Items you are unsure about default to `deferred — human choice` and are surfaced at variant selection. If the scout did not run (no subagent support), write one line under `## Follow-ups` instead: `Surface cross-check (surface-scout) did not run — no subagent support in this environment.`
    - **CRITICAL**: Do NOT fill `## Solution` section yet.
 4. **Strategic Analysis & Variant Selection**
    - Generate variants in chat following `Variant Analysis` from AGENTS.md.
@@ -109,6 +111,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - Overwrite the `## Solution` section placeholder with concrete implementation steps for the selected variant (follow `### GODS Format` from AGENTS.md).
    - The Solution section MUST contain: files to create/modify, implementation approach, code structure, dependencies, error handling strategy (especially for async/callback conversions), and verification commands.
    - **CRITICAL**: You MUST write the updated content to the task file. Never leave Solution as a placeholder or comment.
+   - When `### Affected Surface` exists: update its dispositions to the SELECTED variant — every `covered-by` must point at a step or DoD item of the chosen variant's Solution; items the chosen variant drops become `deferred — human choice` with a matching `## Follow-ups` entry.
 5a. **Acceptance Tuple Check** — execute immediately, no permission needed
    - Walk every entry in `## Definition of Done`. For each, confirm the tuple `(FR-ID, Test path or Benchmark id, Evidence command)` is present and concrete (no placeholders like `<TBD>` or `TODO`). `manual — <reviewer>` is acceptable only with an explicit reviewer name.
    - If any DoD item lacks the tuple, edit the task file to add it. Prefer reusing an existing FR (for bug fixes and small refactors) over coining a new one. Only introduce a new FR for user-visible or contract-level changes.
@@ -134,7 +137,8 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
    - Idempotent: if a row already exists for the FR-ID, only update its summary or status if the existing one is now stale; do NOT duplicate.
    - This step is REQUIRED — it is part of execution, not the plan's Solution section. Skipping it leaves the index out of date and breaks the project's Interconnectedness Principle.
 6. **Critique** — execute immediately, no permission needed
-   - Critically analyze the plan for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat as a numbered list.
+   - **Independent critique (`plan-critic`)**: when the task file contains a `### Affected Surface` scout block OR step 4 presented 2+ variants, AND your environment provides the pre-declared `plan-critic` agent — dispatch it via your subagent tool with the task file path as input. Present its returned objection list in chat VERBATIM as the critique for step 7. A fresh context is the point: do not summarize, soften, or pre-filter its objections. If the dispatch fails or the agent is not installed, fall back to self-critique below AND write one line under `## Follow-ups`: `Independent critique (plan-critic) did not run — no subagent support in this environment.`
+   - Otherwise (trivial single-variant plan with no scout block, or the fallback above): critically analyze the plan yourself for risks, gaps, missing edge cases, over-engineering, and unclear steps. Present critique in chat as a numbered list.
 7. **Triage & Auto-Apply Refinements** — execute immediately, no permission needed
    - For EACH critique item from step 6, classify in chat with an explicit label (one of):
      - **apply** — fold into the task file now.
@@ -142,7 +146,7 @@ For **clarifying questions** in Step 2 (uncertainties → ask user before drafti
      - **defer** — out of scope for this plan; record under a "Follow-ups" section.
    - Edit the task file to incorporate every **apply** item (update Solution, DoD, Overview, or Follow-ups as appropriate). The edit MUST happen AFTER the critique was emitted.
    - Do NOT ask the user which items to address — the triage IS the answer. Do NOT prompt with phrases like "which would you like addressed", "should I apply", "do you want me to incorporate".
-   - **Completeness check (after triage)**: every outcome seeded in Step 3 and every affected-surface item/class from Step 2 maps to a DoD item, a Solution step, or a `## Follow-ups` entry naming the deferral reason. Complements Rule 8 (items↔tuples); this check ensures nothing stated in the request is missing. The task file, not the chat, is the record.
+   - **Completeness check (after triage)**: every outcome seeded in Step 3 and every affected-surface item/class from Step 2 maps to a DoD item, a Solution step, or a `## Follow-ups` entry naming the deferral reason; additionally, every `covered-by` pointer in `### Affected Surface` resolves to an existing Solution step or DoD item (no dangling pointers). Complements Rule 8 (items↔tuples); this check ensures nothing stated in the request is missing. The task file, not the chat, is the record.
    - Report the applied/discarded/deferred counts in chat so the user can override any classification on their next turn.
 {{TERMINATION}}
 
@@ -161,6 +165,8 @@ Follow GODS framework template from `### GODS Format` section in AGENTS.md. Fron
 - [ ] For every FR-ID in `implements:`, the resolved `index` contains a corresponding row under `## FR` with a GFM-link to the SRS heading.
 - [ ] For every FR-ID in `implements:` whose SRS section already exists, the resolved `SRS` carries a `- **Tasks:**` bullet under that section's `**Description:**` linking to the new task. Other SRS lines remain byte-identical.
 - [ ] Every stated outcome maps to a DoD item, Solution step, or `## Follow-ups` entry; narrower variants name dropped outcomes in Cons.
+- [ ] When the surface enumeration ran and subagents are available: `surface-scout` was dispatched with the verbatim request; `### Affected Surface` under `## Overview` holds its verbatim block + plain-bullet dispositions (no checkboxes). When subagents are unavailable: the degradation line is present under `## Follow-ups`.
+- [ ] The critique came from `plan-critic` (verbatim) when the dispatch condition held; otherwise self-critique ran and, if subagents were missing, the critique degradation line is recorded.
 - [ ] Follow all rules from AGENTS.md: Planning Rules, Proactive Resolution, Stop-Analysis.
 </verification>
 

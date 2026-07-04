@@ -95,11 +95,13 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 **typescript (2):** `setup-agent-code-style-deno`,
 `setup-agent-code-style-strict` — standalone
 
-#### Agents by pack (11) — all standalone
+#### Agents by pack (13) — all standalone
 
 - `framework/core/agents/agent-adapter.md`
 - `framework/core/agents/console-expert.md`
 - `framework/core/agents/diff-specialist.md`
+- `framework/core/agents/surface-scout.md`
+- `framework/core/agents/plan-critic.md`
 - `framework/core/agents/maintenance-scan-hygiene.md`
 - `framework/core/agents/maintenance-scan-dependencies.md`
 - `framework/core/agents/maintenance-scan-contracts.md`
@@ -113,7 +115,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 - Commands: 9 (3 atom-generated, 3 composite-generated, 3 standalone) — all in `core`.
 - Skills: 43 (2 atom-generated in `core`, 41 standalone across 7 packs).
-- Agents: 11 (all standalone — 9 in `core`, 1 in `engineering`, 1 in `beta`).
+- Agents: 13 (all standalone — 11 in `core`, 1 in `engineering`, 1 in `beta`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`) [ANC:sds:3-1]
@@ -227,6 +229,8 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 - **Key Agents (11 canonical files):**
   - `core/agents/console-expert.md`: Specialist in executing complex console tasks without modifying code.
   - `core/agents/diff-specialist.md`: Specialist in analyzing git diffs and planning atomic commits.
+  - `core/agents/surface-scout.md`: Read-only scout enumerating the full affected surface of a change from the verbatim request (parallel implementations + consumers/producers per hit); dispatched by `plan` Step 2; output persisted verbatim in the task file's `### Affected Surface`.
+  - `core/agents/plan-critic.md`: Fresh-context adversarial reviewer of a plan task file; recomputes the scout-vs-table diff itself; dispatched by `plan` Step 6 (scout block present or 2+ variants); objections surface verbatim into Step 7 triage.
   - `core/agents/skill-adapter.md`: Adapts skills to project specifics after upstream updates.
   - `core/agents/agent-adapter.md`: Adapts agent definitions to project specifics after upstream updates. Mirrors `skill-adapter` but for agent `.md` files — preserves YAML frontmatter, adapts body (system prompt).
   - `core/agents/maintenance-scan-{hygiene,dependencies,contracts,docs,coverage}.md`: 5 specialized SELF-CONTAINED read-only scan workers, one per thematic bucket (W1–W5); spawned in parallel by the `maintenance` Scan Phase (FR-MAINT-SCAN). Each declares its bucket + category set in the description, embeds its full check detail in the body (no dependency on skill files or spawn payloads), and returns leads only — no severity, no fixes, no writes (`disallowedTools: Write, Edit`). Parent consolidates + calibrates.
