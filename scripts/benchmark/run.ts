@@ -18,9 +18,13 @@
  * Produces `<out>/<arm>.jsonl` for `verify`/`report`. No commit/push — swebench
  * grades the patch directly.
  *
- * Limitation (recorded in the report): with no human in the loop the agent
- * self-selects plan variants, so this measures flowai's *autonomous* workflow
- * scaffolding, not its human-in-the-loop decision-gate value.
+ * Gate emulation (recorded in every report): the human decision gate after
+ * `/plan` is played by an LLM judge (`gate.ts`) that reads ONLY the issue and
+ * the plan output — it authorizes a variant and names missed outcomes, like a
+ * knowledgeable reviewer. This makes plan quality measurable (the former
+ * scripted "Go ahead with your recommended variant" rubber-stamped any plan)
+ * at the cost of a stochastic gate turn. It still under-approximates a real
+ * human, who carries context the issue text lacks.
  */
 
 import { join, resolve } from "@std/path";
@@ -39,13 +43,8 @@ import {
   type Prediction,
   toPrediction,
 } from "./predictions.ts";
-import {
-  baselineTask,
-  implementTurn,
-  planTurn,
-  reviewTurn,
-  ScriptedOperator,
-} from "./operator.ts";
+import { baselineTask, planTurn } from "./operator.ts";
+import { JudgeGateOperator, makeCliGateJudge } from "./gate.ts";
 
 export type Arm = "baseline" | "flowai";
 
@@ -84,7 +83,7 @@ export function buildPrompt(arm: Arm, data: InstanceData): string {
 async function runWithTimeout(
   agent: AcpAgent,
   timeoutMs: number,
-  operator?: ScriptedOperator,
+  operator?: JudgeGateOperator,
 ): Promise<{ code: number; logs: string }> {
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -146,13 +145,19 @@ async function runArm(
     ? await adapter.prepareWorkspace(sandboxDir)
     : {};
 
-  // flowai is operator-driven: turn 1 is `/plan` (buildPrompt), then the operator
-  // issues `/implement` and `/review` as separate turns. baseline is single-turn.
-  const followups = opts.arm === "flowai"
-    ? [implementTurn(), reviewTurn()]
-    : [];
-  const operator = followups.length > 0
-    ? new ScriptedOperator(followups)
+  // flowai is operator-driven: turn 1 is `/plan` (buildPrompt); turn 2 is the
+  // LLM-JUDGED human gate (FR-BENCH-SWE) — the judge reads the issue + the plan
+  // output and authorizes a variant (or names missed outcomes) instead of the
+  // former unconditional rubber stamp; turn 3 is `/review`. The gate is
+  // therefore stochastic — a harness property every report must state. Judge
+  // failure fails the instance loudly (no fallback). baseline is single-turn.
+  const operator = opts.arm === "flowai"
+    ? new JudgeGateOperator(
+      data.problemStatement,
+      // The judge shares the bench's isolated HOME (env) so the developer's
+      // personal ~/.claude memory cannot leak into the verdict.
+      makeCliGateJudge(opts.model, env),
+    )
     : undefined;
 
   const agent = new AcpAgent({
@@ -160,7 +165,7 @@ async function runArm(
     workspace: sandboxDir,
     model: opts.model,
     prompt: buildPrompt(opts.arm, data),
-    maxSteps: followups.length + 1,
+    maxSteps: operator ? 3 : 1,
     env,
     name: `bench/${opts.arm}/${data.instanceId}`,
   });

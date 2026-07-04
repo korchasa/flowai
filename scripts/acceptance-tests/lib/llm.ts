@@ -4,6 +4,13 @@ export interface ModelConfig {
   model: string;
   temperature: number;
   jsonSchema?: Record<string, unknown>;
+  /** Extra environment for the spawned CLI (e.g. an isolated `HOME` so a
+   * programmatic judge does not inherit the developer's personal memory). */
+  env?: Record<string, string>;
+  /** Working directory for the spawned CLI. Ancestor-directory memory files
+   * (`CLAUDE.md`/`AGENTS.md` up the cwd path) load regardless of `HOME`; a cwd
+   * outside the developer's home is the only way to exclude them. */
+  cwd?: string;
   provider?: {
     order?: string[];
     allow_fallbacks?: boolean;
@@ -126,7 +133,8 @@ export async function cliChatCompletion(
     stdin: "piped",
     stdout: "piped",
     stderr: "piped",
-    env: { ...Deno.env.toObject(), CLAUDECODE: "" },
+    env: { ...Deno.env.toObject(), CLAUDECODE: "", ...(config.env ?? {}) },
+    ...(config.cwd ? { cwd: config.cwd } : {}),
     signal,
   });
 

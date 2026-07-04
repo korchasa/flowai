@@ -81,17 +81,6 @@ export function planTurn(repo: string, problemStatement: string): string {
   );
 }
 
-/** Follow-up turn: the human authorizes the recommended variant; run implement. */
-export function implementTurn(): string {
-  return slashTurn(
-    "implement",
-    [
-      `Go ahead with your recommended variant. Implement it under TDD (red → green → refactor → check).`,
-      `Stay in the working tree; do not commit or push. Proceed without further questions.`,
-    ].join("\n"),
-  );
-}
-
 /** Follow-up turn: run the review skill over the working-tree diff. */
 export function reviewTurn(): string {
   return slashTurn(

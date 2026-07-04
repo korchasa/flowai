@@ -2,11 +2,11 @@ import { assert, assertEquals } from "@std/assert";
 import {
   baselineTask,
   baseTask,
-  implementTurn,
   planTurn,
   reviewTurn,
   ScriptedOperator,
 } from "./operator.ts";
+import { implementTurnWithVerdict } from "./gate.ts";
 
 Deno.test("ScriptedOperator: yields the fixed turn sequence then null, ignoring messages", async () => {
   const op = new ScriptedOperator(["/implement", "/review"]);
@@ -48,8 +48,8 @@ Deno.test("planTurn: planner-only gate — carries the issue, forbids source edi
   );
 });
 
-Deno.test("implementTurn / reviewTurn: separate follow-up commands", () => {
-  assert(implementTurn().startsWith("/implement"));
+Deno.test("gate implement turn / reviewTurn: separate follow-up commands", () => {
+  assert(implementTurnWithVerdict("Go ahead.").startsWith("/implement"));
   assert(reviewTurn().startsWith("/review"));
 });
 
@@ -89,7 +89,9 @@ const isCleanCommandName = (name: string) => /^[A-Za-z0-9:_-]+$/.test(name);
 Deno.test("operator turns resolve as slash commands: clean name token + space separator", () => {
   const turns = [
     planTurn("django/django", "Some multi\nline\nissue body"),
-    implementTurn(),
+    implementTurnWithVerdict(
+      "Go ahead with Variant 1.\nAlso cover the edge case.",
+    ),
     reviewTurn(),
   ];
   const expected = ["plan", "implement", "review"];
