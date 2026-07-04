@@ -7,7 +7,7 @@ description: Fully autonomous improvement loop for flowai primitives — run the
 
 ## Overview
 
-Dev-only loop for this repo. The SWE-bench A/B is a *measuring device* for flowai's real capability — assisted engineering on ANY complex task (code, infrastructure, non-IT). The loop: run the flowai arm → grade → root-cause every failure → **generalize** the fix so it is not benchmark overfitting → implement via Acceptance-Test TDD → re-measure and report honestly.
+Dev-only loop for this repo. The SWE-bench A/B is an *error-finding method* for flowai's real capability — assisted engineering on ANY complex task (code, infrastructure, non-IT). It surfaces real failures to root-cause; it is NOT the success metric. A fix is judged by **mechanism**: the root cause is demonstrably removed (acceptance test passes; transcripts on affected instances show the new behavior) — never by the aggregate resolved count, which on small pools is dominated by sampling noise (measured spread 0–2 on an unchanged pipeline). Do not require a fix to "move the score"; do not optimize wording toward the benchmark shape. The loop: run the flowai arm → grade → root-cause every failure → **generalize** the fix so it is not benchmark overfitting → implement via Acceptance-Test TDD → re-run to verify the mechanism and harvest new failures → report honestly.
 
 **Autonomy contract**: invoking this skill IS the user's standing authorization for the ENTIRE loop — primitive (atom) edits, acceptance-test runs including the full sweep for affected primitives, benchmark re-runs, and the report. Do NOT pause for user selection of variants, approval of fixes, or permission to run tests. The user audits through the printed Decision Log and the final report. This skill-level authorization supersedes the per-task "User Decision Gate" and "defer full sweep to the user" defaults from project instructions. The baseline arm is NOT re-run — reuse the most recent same-harness baseline from `documents/benchmarks/`; re-run baseline only when the harness itself changed (adapter, model, gate emulation).
 
@@ -29,7 +29,7 @@ Dev-only loop for this repo. The SWE-bench A/B is a *measuring device* for flowa
 - **Checkpoint commits**: commit at each green phase boundary (root-cause aggregate, RED scenario, atom edit, final report). Prefixes `chore(bench):` / `docs(benchmark):` / `test(accept):` only. NEVER `feat:`/`fix:` and NEVER push to `main` autonomously — CI cuts a framework release on `feat:`/`fix:`; releasing stays a human decision. Work on a non-`main` branch; plain `git push` to that branch is fine.
 - **Stage explicitly, never sweep**: the working tree is shared with parallel human/agent sessions. Stage ONLY the exact paths this loop authored (`git add <path> <path>`); `git add -A` / `-u` / `.` are forbidden. Before each commit, check `git status --short` — modified files the loop did not touch belong to someone else: leave them unstaged and note them in the Decision Log. (Incident: commit 6376c85a absorbed another session's uncommitted plan.md/requirements.md edits.)
 - **Environment-failure detection**: ≥3 consecutive empty patches, auth errors, or quota/timeout failures across instances = ENVIRONMENT blocker, not a primitive failure — STOP-ANALYSIS instead of feeding them into Phase 3 classification.
-- **Loop termination** (when this skill is invoked iteratively): STOP the loop and hand back to the user when (a) Phase 4 yields no fix candidate that survives the critic, or (b) the resolved count fails to improve for 2 consecutive iterations, or (c) the same atom would be edited a 3rd time across iterations — that is single-rep noise, needs human review. Announce which condition fired.
+- **Loop termination** (when this skill is invoked iteratively): STOP the loop and hand back to the user when (a) Phase 4 yields no fix candidate that survives the critic, or (b) Phase 3 surfaces no NEW failure mode — every remaining failure was already root-caused in a prior iteration and its fix either shipped or was critic-rejected (the error stream at this pool is exhausted; growing the pool is a human decision), or (c) the same atom would be edited a 3rd time across iterations — repeated re-editing means the diagnosis is unstable and needs human review. The aggregate resolved count is NEVER a termination or continuation criterion — it is noise-dominated at this pool size. Announce which condition fired.
 
 ## Critic Protocol (subagent)
 
@@ -93,10 +93,12 @@ Then generate ≥2 variants for the scope of each primitive change, self-select 
 4. Run the FULL acceptance sweep for the affected primitive (`deno task acceptance-tests -f <primitive-id>`) — authorized by the autonomy contract; the result cache keeps unchanged scenarios cheap. Fix regressions by re-entering RED→GREEN on the failing scenario.
 5. `deno task check` green before commit.
 
-## Phase 6 — Re-measure and report
+## Phase 6 — Verify the mechanism and report
+
+The re-run has two purposes: (1) verify the MECHANISM on the instances the fix targets — read their transcripts and confirm the agent now exhibits the new behavior (e.g. "now enumerates the affected surface before choosing a variant"); (2) harvest NEW failures as input for the next iteration. It does NOT grade the fix by the aggregate count — a fix whose mechanism is confirmed is a success even if the count is flat, and a count bump without a confirmed mechanism is noise, not evidence.
 
 - Re-run the flowai arm on the full pool (resumable orchestrator; at minimum the instances the fix targets if the environment constrains).
-- Grade; write `documents/benchmarks/swe-verified-<date>.md` superseding the prior report: pipeline delta, per-instance table, run-by-run trajectory, explicit caveats (single-rep, same-harness A/B, emulated gate, Python-only pool, trained-on-test risk from Phase 4.8).
+- Grade; write `documents/benchmarks/swe-verified-<date>.md` superseding the prior report: per-instance mechanism findings (transcript evidence of changed behavior), per-instance verdict table, run-by-run trajectory, explicit caveats (single-rep, same-harness A/B, emulated gate, Python-only pool, trained-on-test risk from Phase 4.8). Report the aggregate count as context only, never as the verdict on the fix.
 - Close with the full Decision Log summary: every critic round, objections applied/rebutted, fixes dropped by the anti-overfit gate.
 
 ## Verification
