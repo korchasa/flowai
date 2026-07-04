@@ -22,6 +22,7 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { ensureSetup } from "./benchmark/setup.ts";
 import { DATASET, runEvaluation } from "./benchmark/verify.ts";
+import { stripTestHunks } from "./benchmark/patch.ts";
 import {
   ARM64_DENY,
   CC_OPUS_FAILURES,
@@ -50,6 +51,45 @@ async function readPredIds(path: string): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Normalize a predictions file for grading: strip every test-file hunk from each
+ * record's `model_patch` (see `stripTestHunks`) and write the result to a sibling
+ * `<path>.graded.jsonl`, returning that path. The agent's self-authored tests are
+ * never the oracle; leaving them in collides with the injected gold `test_patch`
+ * and atomically fails an otherwise-correct production fix (FR-BENCH-SWE). The
+ * original predictions file is preserved untouched; stripped paths are logged.
+ */
+async function writeGradablePredictions(
+  predictionsPath: string,
+): Promise<string> {
+  const text = await Deno.readTextFile(predictionsPath);
+  const out: string[] = [];
+  let strippedTotal = 0;
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") continue;
+    const rec = JSON.parse(line) as {
+      instance_id: string;
+      model_patch: string;
+    };
+    const { patch, stripped } = stripTestHunks(rec.model_patch ?? "");
+    if (stripped.length > 0) {
+      strippedTotal += stripped.length;
+      console.log(
+        `[strip-tests] ${rec.instance_id}: dropped ${stripped.length} test hunk(s): ${
+          stripped.join(", ")
+        }`,
+      );
+    }
+    out.push(JSON.stringify({ ...rec, model_patch: patch }));
+  }
+  const gradedPath = `${predictionsPath}.graded.jsonl`;
+  await Deno.writeTextFile(gradedPath, out.join("\n") + "\n");
+  console.log(
+    `[strip-tests] ${strippedTotal} test hunk(s) stripped; grading ${gradedPath}`,
+  );
+  return gradedPath;
 }
 
 await new Command()
@@ -102,7 +142,7 @@ await new Command()
         );
         Deno.exit(1);
       }
-      predictionsPath = opts.predictions;
+      predictionsPath = await writeGradablePredictions(opts.predictions);
       modelName = opts.model;
     }
     const report = await runEvaluation({
@@ -184,7 +224,7 @@ await new Command()
     }
     console.log(`[report] grading baseline (${baselinePreds})`);
     const bRes = await runEvaluation({
-      predictionsPath: baselinePreds,
+      predictionsPath: await writeGradablePredictions(baselinePreds),
       modelName: "baseline",
       runId: "bench-baseline",
     });
@@ -195,7 +235,7 @@ await new Command()
     if (await Deno.stat(flowaiPreds).then(() => true).catch(() => false)) {
       console.log(`[report] grading flowai (${flowaiPreds})`);
       const fRes = await runEvaluation({
-        predictionsPath: flowaiPreds,
+        predictionsPath: await writeGradablePredictions(flowaiPreds),
         modelName: "flowai",
         runId: "bench-flowai",
       });
