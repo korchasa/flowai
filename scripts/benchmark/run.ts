@@ -35,6 +35,7 @@ import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
 import { candidateById } from "./instances.ts";
 import { type InstanceData, loadInstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
+import { externalSandboxRoot, linkIntoRunDir } from "./sandbox_root.ts";
 import { installAgentsMd, installDocStubs } from "./agents_md.ts";
 import {
   appendPrediction,
@@ -113,9 +114,21 @@ async function runArm(
   // each ACP session's transcript (`.claude/projects/<slug>`) would overwrite
   // the previous one. Giving every instance its own parent makes the bench-home
   // — and thus the saved Claude Code transcript — unique and persistent.
+  //
+  // The sandbox (and hence bench-home) lives OUTSIDE $HOME: ancestor-directory
+  // memory files load regardless of the isolated HOME (sandbox_root.ts), so a
+  // sandbox under the repo would inherit the developer's personal agent rules.
+  // The run dir keeps `sandbox`/`bench-home` symlinks for post-run analysis;
+  // artifacts (transcript log, predictions) stay in the run dir as before.
   const instDir = join(opts.outDir, opts.arm, data.instanceId);
-  const sandboxDir = join(instDir, "sandbox");
+  const extInstDir = join(
+    await externalSandboxRoot(opts.outDir),
+    opts.arm,
+    data.instanceId,
+  );
+  const sandboxDir = join(extInstDir, "sandbox");
   await ensureDir(instDir);
+  await ensureDir(extInstDir);
   const cacheDir = join(opts.outDir, "..", "_repo-cache");
 
   await prepareSandbox(data, sandboxDir, cacheDir);
@@ -173,6 +186,7 @@ async function runArm(
   const result = await runWithTimeout(agent, opts.stepTimeoutMs, operator);
   const logPath = join(instDir, `${data.instanceId}.log`);
   await Deno.writeTextFile(logPath, result.logs);
+  await linkIntoRunDir(instDir, extInstDir);
 
   const diff = await captureDiff(sandboxDir);
   const prediction = toPrediction(data.instanceId, opts.arm, diff);
