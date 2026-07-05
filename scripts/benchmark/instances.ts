@@ -16,6 +16,7 @@
 import type { Candidate } from "./select.ts";
 import candidatesData from "./candidates.json" with { type: "json" };
 import baselineData from "./sonnet_baseline.json" with { type: "json" };
+import opusData from "./opus_baseline.json" with { type: "json" };
 import poolData from "./pool.json" with { type: "json" };
 import ccFailData from "./claude_code_opus_failures.json" with { type: "json" };
 
@@ -51,19 +52,50 @@ export const SONNET_RESOLVED: ReadonlySet<string> = new Set(
   baselineData.resolved,
 );
 
+/**
+ * Published parity Claude-Opus baseline: SAME `tools` harness and date as the
+ * sonnet baseline (`20250522`), only the model differs. `OPUS_RESOLVED −
+ * SONNET_RESOLVED` is therefore the model-capability delta with the scaffold
+ * held constant — the headroom set the POOL draws from.
+ */
+export const OPUS_BASELINE: {
+  source: string;
+  runId: string;
+  dataset: string;
+  resolvedCount: number;
+} = {
+  source: opusData.source,
+  runId: opusData.run_id,
+  dataset: opusData.dataset,
+  resolvedCount: opusData.resolved_count,
+};
+
+/** Instance ids the published parity opus baseline resolved. */
+export const OPUS_RESOLVED: ReadonlySet<string> = new Set(
+  opusData.resolved,
+);
+
 /** Cheapest-first queue of sonnet-unsolved, arm64-buildable candidates. */
 export const CANDIDATES: readonly Candidate[] = candidatesData as Candidate[];
 
 /**
- * High-confidence "pure Claude Code + Sonnet likely fails" pool (cheapest-first):
- * instances failed by BOTH a stronger Claude Code config (Opus 4.5 + vexp) AND
- * the tools-Sonnet submission, arm64-buildable. This is the same-harness A/B
- * target — we run our OWN pure-CC+Sonnet baseline over it, then flowai over the
- * instances the baseline actually fails.
+ * Headroom A/B pool (cheapest-first): instances the tools-Sonnet baseline FAILED
+ * but the parity tools-Opus submission RESOLVED (`sonnet-fails ∩ opus-solves`),
+ * arm64-buildable, short patches. Both bench arms run on Sonnet, so Opus is used
+ * only as a tractability filter: these tasks are within reach of strong
+ * reasoning but beyond a single Sonnet turn — the flowai process has measurable
+ * headroom to close part of that Sonnet→Opus gap. Contrast the retired pool
+ * (`sonnet-fails ∩ opus-fails`), which had zero headroom and floored the A/B at
+ * the noise level.
  */
 export const POOL: readonly Candidate[] = poolData as Candidate[];
 
-/** Published Claude Code (Opus 4.5 + vexp) per-instance failures used to derive POOL. */
+/**
+ * Retired pool-derivation input, kept as provenance only: published Claude Code
+ * (Opus 4.5 + vexp) per-instance failures over a 100-instance subset. No longer
+ * gates POOL membership — superseded by the full-dataset OPUS_RESOLVED parity
+ * baseline above.
+ */
 export const CC_OPUS_FAILURES: {
   source: string;
   agent: string;

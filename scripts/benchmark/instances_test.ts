@@ -4,8 +4,9 @@ import {
   ARM64_DENY,
   candidateById,
   CANDIDATES,
-  CC_OPUS_FAILURES,
   cheapestIds,
+  OPUS_BASELINE,
+  OPUS_RESOLVED,
   POOL,
   poolIds,
   SONNET_BASELINE,
@@ -16,6 +17,11 @@ import { difficultyRank } from "./select.ts";
 Deno.test("baseline: published sonnet resolved set matches its count", () => {
   assertEquals(SONNET_RESOLVED.size, SONNET_BASELINE.resolvedCount);
   assert(SONNET_RESOLVED.size > 0);
+});
+
+Deno.test("baseline: published opus resolved set matches its count", () => {
+  assertEquals(OPUS_RESOLVED.size, OPUS_BASELINE.resolvedCount);
+  assert(OPUS_RESOLVED.size > 0);
 });
 
 Deno.test("candidates: none were resolved by the sonnet baseline", () => {
@@ -69,21 +75,23 @@ Deno.test("candidateById: resolves a known candidate, undefined otherwise", () =
   assertEquals(candidateById("nonexistent__nope-0"), undefined);
 });
 
-Deno.test("pool: non-empty and every member was a published Claude Code failure", () => {
+Deno.test("pool: headroom set — every member is sonnet-fails ∩ opus-solves", () => {
   assert(POOL.length > 0);
-  const ccFailed = new Set(CC_OPUS_FAILURES.failed);
-  for (const c of POOL) {
-    assert(ccFailed.has(c.instanceId), `${c.instanceId} not in CC failures`);
-  }
-});
-
-Deno.test("pool: no member was resolved by tools-Sonnet, no denied repos", () => {
-  const deny = new Set(ARM64_DENY);
   for (const c of POOL) {
     assert(
       !SONNET_RESOLVED.has(c.instanceId),
-      `${c.instanceId} sonnet-resolved`,
+      `${c.instanceId} sonnet-resolved — no headroom to demonstrate`,
     );
+    assert(
+      OPUS_RESOLVED.has(c.instanceId),
+      `${c.instanceId} not opus-resolved — outside model reach, no headroom`,
+    );
+  }
+});
+
+Deno.test("pool: no denied repos", () => {
+  const deny = new Set(ARM64_DENY);
+  for (const c of POOL) {
     assert(!deny.has(c.repo), `${c.repo} deny-listed`);
   }
 });
