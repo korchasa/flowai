@@ -83,3 +83,29 @@ and gold-arbitrary hidden requirements (unrecoverable by design).
   its acceptance scenarios are green by construction — the bench evidence above
   is the first unseen-ish sample and shows mechanism, not resolution, movement.
 - Python-only hard pool; emulated (LLM-judged) human gate; same-harness A/B.
+
+## Correction (2026-07-05, supersedes the "stale issue" classification)
+
+Prior reports (07-04 and above) classified `django-13513` as "stale issue —
+required outcome unrecoverable from the issue text; no-work is correct". A
+re-check against the dataset shows this is only half true:
+
+- TRUE: the quoted symptom is already fixed at the base commit —
+  `explicit_or_implicit_cause` handles `__suppress_context__`, and all three
+  behaviors the issue names pass (its `test_suppressed_context` is not in
+  FAIL_TO_PASS).
+- FALSE: "nothing to do". The hidden F2P
+  (`test_innermost_exception_without_traceback`) fails at base, as SWE-bench
+  guarantees: the SAME function family carries an adjacent residual defect —
+  frame collection loses/misattributes frames when an exception in the chain
+  has no own traceback. The gold patch restructures the chain walk
+  (`get_exception_traceback_frames` generator) to fix it.
+
+Reclassification: NOT "unrecoverable by design" but a **fix-completeness
+audit miss**: when the named defect turns out to be already fixed at HEAD, that
+is a signal the report was written against an older version — the correct
+discipline is to audit the landed fix's completeness on adjacent variants of
+the issue's scenario (the gate judge pushed in this direction; the agent
+verified only the three stated behaviors and stopped). Candidate failure-class
+for a future loop; recorded here so the "gold-arbitrary" boundary class is not
+over-claimed.
