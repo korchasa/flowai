@@ -40,8 +40,18 @@ Per-instance (base → flowai):
    behavior a single turn got right — a genuine "process can hurt" case, not noise
    to bury. Candidate for a future improve-primitive loop (over-engineering guard
    / minimal-diff discipline in implement or review).
-3. **Two more wins** (`django-15695`, `xarray-4687`) are baseline-nonempty-but-wrong
-   → flowai-correct: the extra passes fixed an incomplete first attempt.
+3. **Two more wins** (`django-15695`, `xarray-4687`): baseline produced a non-empty
+   but WRONG patch; flowai — in its OWN isolated sandbox, cloned fresh at
+   `base_commit` (arms never share a sandbox; verified: distinct external roots per
+   arm) — independently produced a correct one. Whether flowai's correctness is
+   CAUSED by its multi-pass structure vs plain sampling variance is NOT separable
+   on a single rep — recorded as an independent divergent outcome, not a proven
+   process win.
+
+**Arm isolation (methodology):** each `(arm, instance)` runs in a separate sandbox
+under a distinct hashed temp root (`sandbox_root.ts` keys the root on the `--out`
+path, which differs per arm), each a fresh `base_commit` clone. The flowai arm
+never sees the baseline arm's patch. No cross-arm contamination.
 
 ## Key caveat — the baseline is stronger than the pool label implies
 
