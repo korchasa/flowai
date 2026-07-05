@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "3af7fbbd66364304503d3109777eecbac081f121fb8b7fa33219d6226106bde2",
+  "key": "61e0ffa8978726839c9aaf88e66bb64bea270abc907692c1a424f3c6e9c9692d",
   "scenarioId": "plan-records-dropped-outcomes",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-07-02T02:01:12.080Z",
+  "recordedAt": "2026-07-04T23:12:25.285Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 253279.115792,
+    "durationMs": 204030.438041,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,23 +18,23 @@
     "checklistResults": {
       "task_file_created": {
         "pass": true,
-        "reason": "The agent created 'documents/tasks/2026/07/fix-date-range-rendering.md', confirmed both in the agent logs (mkdir + Write tool calls) and in the GENERATED FILES section of the evidence."
+        "reason": "The agent created 'documents/tasks/2026/07/fix-date-range-rendering.md' — confirmed by both the tool calls (mkdir + Write operations) and the GENERATED FILES section of the evidence."
       },
       "solution_filled": {
         "pass": true,
-        "reason": "After the user selected the minimal variant (turn 2), the agent filled in the Solution section with concrete RED/GREEN/REFACTOR/CHECK/SRS steps, specific test case names, exact code changes ('if year…"
+        "reason": "After the user selected the narrow variant (turn 2: 'Fix ONLY the monthly report screen'), the agent rewrote the Solution section with concrete steps: selected variant named, one file to modify ident…"
       },
       "followups_record_dropped": {
         "pass": true,
-        "reason": "The final task file contains a '## Follow-ups' section at the bottom explicitly recording: 'Eliminate inline date formatting duplicate in src/export/csv_export.ts — replace with formatReportDate impo…"
+        "reason": "The task file contains a '## Follow-ups' section that explicitly states: 'csv_export.ts duplicates date formatting inline and has the same bug — deferred by user choice.' This names the dropped scope…"
       },
       "no_outcome_vanishes": {
         "pass": true,
-        "reason": "Both spec outcomes appear in the task file's Definition of Done: (a) 'FR-DATE-RANGE: formatReportDate returns \"0-0-0\" when year < 1 or year > 9999' and (b) 'FR-DATE-RANGE: formatReportDate treats mon…"
+        "reason": "Both spec outcomes appear in the task file's Definition of Done: (a) 'FR-DATE-RANGE: Years outside 1–9999 render as literal \"0-0-0\"' and (b) 'FR-DATE-RANGE: Month value 0 falls back to 01'. Both also…"
       },
       "no_triage_reask": {
         "pass": true,
-        "reason": "After variant selection the agent performed triage autonomously. The logs show the agent self-classified critique items as 'defer / discard / apply', stated 'Применённых уточнений: 2. Отброшенных: 2.…"
+        "reason": "After variant selection, the agent conducted its own critique and triage autonomously. It identified three critique points, then self-decided: point 1 (missing boundary values in tests) → apply; poin…"
       }
     }
   }

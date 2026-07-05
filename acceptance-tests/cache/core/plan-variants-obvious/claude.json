@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "48ea900a30d8e13ba2585936291999485e61bda091610df4cd18d6c73b035b7e",
+  "key": "24bdd0bbc6c32b826e94fa229ce1e43725eee027fdf1be1dcf41b2866e0f47d1",
   "scenarioId": "plan-variants-obvious",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-06-04T23:00:22.818Z",
+  "recordedAt": "2026-07-04T23:55:14.791Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 112584.488667,
+    "durationMs": 95514.87225000001,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,11 +18,11 @@
     "checklistResults": {
       "task_file_created": {
         "pass": true,
-        "reason": "The agent created 'documents/tasks/2026/06/create-hello-txt.md' using the Write tool. This is confirmed both in the agent logs (Write call with that path) and in the file diffs section which shows th…"
+        "reason": "The agent created the file 'documents/tasks/2026/07/create-hello-txt.md' — it ran 'mkdir -p .../sandbox/documents/tasks/2026/07' and then wrote the task file there. The file content is confirmed in t…"
       },
       "single_variant": {
         "pass": true,
-        "reason": "The agent explicitly applied the 'single obvious variant exception' and presented exactly ONE variant — 'Вариант 1 — Прямое создание файла' (direct file creation). The agent correctly reasoned that a…"
+        "reason": "The agent presented exactly one variant ('Вариант 1: Прямое создание файла — full scope') and explicitly stated 'Других вариантов нет, потому что задача не предполагает выбора между подходами — путь …"
       }
     }
   }

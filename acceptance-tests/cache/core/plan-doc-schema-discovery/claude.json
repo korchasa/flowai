@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "1fb647dbd49ddf16d8a5a4d338d78197eb33d06b818c7211e2ce98b5bda5be1a",
+  "key": "c53f3fa1a946a2205b3f3f29075047b0b15ad95c60dc099d42bfc42a34e0c1be",
   "scenarioId": "plan-doc-schema-discovery",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-31T10:42:37.153Z",
+  "recordedAt": "2026-07-05T00:04:26.497Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 220071.928,
+    "durationMs": 528084.4099999999,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "read_role_srs": {
         "pass": true,
-        "reason": "The agent explicitly performed a Read tool call on `/sandbox/specs/requirements.md` (the role-configured SRS path) early in execution, before starting any planning work. The log shows: `Read { file_p…"
+        "reason": "The agent explicitly read `specs/requirements.md` via a Read tool call early in the session (visible in tool-calls: 'Read /Users/korchasa/.../sandbox/specs/requirements.md'). It also ran `cat ./specs…"
       },
       "read_role_sds": {
         "pass": true,
-        "reason": "The agent explicitly performed a Read tool call on `/sandbox/architecture/system.md` (the role-configured SDS path) in the same parallel batch as the SRS read. The log shows: `Read { file_path: \".../…"
+        "reason": "The agent explicitly read `architecture/system.md` via a Read tool call (visible in tool-calls: 'Read /Users/korchasa/.../sandbox/architecture/system.md'). It also ran `cat ./architecture/system.md` …"
       },
       "wrote_role_task": {
         "pass": true,
-        "reason": "The agent created the task file at `records/tasks/2026/05/cache-invalidation-api-writes.md`, which matches the role-configured `records/tasks/<YYYY>/<MM>/` path. It did NOT use the default `documents…"
+        "reason": "The agent created the task file at `records/tasks/2026/07/cache-invalidation-api-writes.md`, which exactly matches the `records/tasks/<YYYY>/<MM>/<slug>.md` path pattern defined in AGENTS.md. The gen…"
       },
       "updated_role_index": {
         "pass": true,
-        "reason": "The agent edited `records/index.md` (the role-configured index path) by appending a line for FR-CACHE-WRITE. This is confirmed both in the agent log (`Edit` on `records/index.md`) and in the final fi…"
+        "reason": "The agent updated the existing `records/index.md` (which initially contained only `## FR`) by adding two new entries: one for FR-CACHE and one for FR-CACHE-INVALIDATION. The Edit tool was used on the…"
       }
     }
   }

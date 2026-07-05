@@ -1,6 +1,6 @@
 ---
 date: "2026-07-05"
-status: to do
+status: done
 implements: [FR-PLAN-OUTCOME-COMPLETENESS]
 tags: [plan, agents, surface, critique, benchmark-loop]
 related_tasks: [2026/07/bench-judge-gate.md, 2026/07/bench-sandbox-isolation.md]
@@ -57,7 +57,7 @@ with per-item labels. No agents involved; no durable surface artifact.
 
 ## Definition of Done
 
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS: plan skill dispatches the scout on a
+- [x] FR-PLAN-OUTCOME-COMPLETENESS: plan skill dispatches the scout on a
       definite-outcome request (parent-side dispatch visible in trace), persists
       the verbatim block + disposition table in `### Affected Surface` under
       `## Overview`. Subagents are testable ONLY through the wrapping skill
@@ -65,19 +65,19 @@ with per-item labels. No agents involved; no durable surface artifact.
       scenarios.
   - Benchmark: `plan-affected-surface-scout`
   - Evidence: `deno task acceptance-tests -f plan-affected-surface-scout`
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS: same discipline on a non-code (process/docs)
+- [x] FR-PLAN-OUTCOME-COMPLETENESS: same discipline on a non-code (process/docs)
       request — scout dispatched, table uses non-code evidence forms.
   - Benchmark: `plan-surface-non-code`
   - Evidence: `deno task acceptance-tests -f plan-surface-non-code`
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS: plan skill without subagent support degrades
+- [x] FR-PLAN-OUTCOME-COMPLETENESS: plan skill without subagent support degrades
       to inline enumeration + a visible degradation line under `## Follow-ups`.
   - Benchmark: `plan-surface-degradation`
   - Evidence: `deno task acceptance-tests -f plan-surface-degradation`
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS: plan skill dispatches `plan-critic` on
+- [x] FR-PLAN-OUTCOME-COMPLETENESS: plan skill dispatches `plan-critic` on
       multi-variant plans; objections surface verbatim; triage labels unchanged.
   - Benchmark: `plan-auto-critique` (extended with `plan_critic_dispatched`)
   - Evidence: `deno task acceptance-tests -f plan-auto-critique`
-- [ ] Composites regenerated; full plan sweep green; `deno task check` green.
+- [x] Composites regenerated; full plan sweep green; `deno task check` green.
   - Test: full primitive sweep
   - Evidence: `deno task acceptance-tests -f plan- && deno task check`
 

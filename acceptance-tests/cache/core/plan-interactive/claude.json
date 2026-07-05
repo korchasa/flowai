@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "00d0207b56e3c52ca8b3400f895fc8b7249a788ee40bb58ba29cff3ca30c5361",
+  "key": "ec52bc992f688ad1ac4da3f84ebfd044d7c3e1fcef33d8a6681a847a5e9e9844",
   "scenarioId": "plan-interactive",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T21:52:19.114Z",
+  "recordedAt": "2026-07-04T23:31:35.037Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 206334.23404200003,
+    "durationMs": 219288.837542,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,19 +18,19 @@
     "checklistResults": {
       "variants_presented": {
         "pass": true,
-        "reason": "The agent explicitly presented 'Вариант 1 (единственный): Структурированная точка входа Deno' with detailed pros, risks, and implementation description (three files: src/main.ts, src/main_test.ts, de…"
+        "reason": "In turn 1, the agent explicitly presented 'Вариант 1: Один файл `main.ts` с `console.log` — полный охват' with Pros, Cons, Risks, and Best For sections. Even though only one variant was presented (th…"
       },
       "question_asked": {
         "pass": true,
-        "reason": "The agent explicitly ended its first response with 'Жду выбора варианта (или \"go\" для продолжения с единственным вариантом).' — directly asking the user to select a variant before proceeding."
+        "reason": "At the end of turn 1, the agent explicitly asked 'Какой вариант вы выбираете?' (Which variant do you choose?), clearly asking the user to select an implementation variant before proceeding."
       },
       "solution_filled": {
         "pass": true,
-        "reason": "The Solution section in documents/tasks/2026/05/hello-world-cli.md is fully populated after the user said 'Go'. It contains: selected variant name, Step 1 (deno.json with full JSON content), Step 2 (…"
+        "reason": "The Solution section in documents/tasks/2026/07/hello-world-cli.md contains concrete technical implementation details across 6 steps: creating deno.json with task configuration, writing a failing tes…"
       },
       "no_switch_mode": {
         "pass": true,
-        "reason": "Scanning the entire agent logs, there is no occurrence of 'SwitchMode' in any tool call or response."
+        "reason": "The agent logs do not contain any mention of 'SwitchMode' anywhere in the execution trace."
       }
     }
   }

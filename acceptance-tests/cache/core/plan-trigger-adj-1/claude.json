@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "b4707f663637dcf33c44eeba2bd1dc6142a2d695bda279f756bd01957e77a551",
+  "key": "20fa7afdbae58a18dff15eb55f1e53fad4e08fa15ffc4c4ef92ae393c232722f",
   "scenarioId": "plan-trigger-adj-1",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T21:31:04.203Z",
+  "recordedAt": "2026-07-04T23:01:26.231Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 98613.233625,
+    "durationMs": 114814.689166,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,7 +18,7 @@
     "checklistResults": {
       "skill_not_invoked": {
         "pass": true,
-        "reason": "The agent invoked the `epic` skill (via `Tool: Skill` with `\"skill\": \"epic\"`), not the `plan` skill. There is no evidence in the logs of the agent reading `plan/SKILL.md` or calling the Skill tool wi…"
+        "reason": "Deterministic: skill \"plan\" not invoked (8 tool call(s) observed)."
       }
     }
   }

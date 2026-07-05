@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "key": "42e0bdac0908c73a412a571e61f5d8fc09e830bd63c63c8f90d312ad43454e0f",
+  "key": "a630670afcafeab1f6b669db787f1ae4ebe7a59e958cd72eb28b73085556744e",
   "scenarioId": "plan-context",
   "ide": "claude",
   "agentModel": "claude-sonnet-4-6",
-  "recordedAt": "2026-05-30T21:25:08.592Z",
+  "recordedAt": "2026-07-04T22:54:46.574Z",
   "result": {
     "success": true,
     "score": 100,
     "errorsCount": 0,
     "warningsCount": 0,
-    "durationMs": 204193.119625,
+    "durationMs": 144136.543541,
     "tokensUsed": 0,
     "totalCost": 0,
     "toolCallsCount": 0,
@@ -18,15 +18,15 @@
     "checklistResults": {
       "context_read": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on '/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-05-30T21-21-23/plan-context/run-1/sandbox/documents/requirements.md' as its very first tool …"
+        "reason": "The agent explicitly read 'documents/requirements.md' via both the Read tool and a cat shell command, as confirmed in the tool-calls log. The extracted requirement ('The system must support dark mode…"
       },
       "context_read_sds": {
         "pass": true,
-        "reason": "The agent explicitly called the Read tool on the path ending in 'documents/design.md' during the project structure exploration phase, as evidenced by the tool call log entry showing the full sandbox …"
+        "reason": "The agent explicitly read 'documents/design.md' via both the Read tool and a cat shell command, as confirmed in the tool-calls log. The SDS content (stack: TypeScript, Deno, Prisma; components: src/s…"
       },
       "task_file_context": {
         "pass": true,
-        "reason": "The created task file 'documents/tasks/2026/05/dark-mode-preference.md' has the title '# Dark Mode Preference Support' and contains extensive references to dark mode throughout, including: 'Enable us…"
+        "reason": "The created file 'documents/tasks/2026/07/dark-mode-preference.md' prominently mentions dark mode throughout: the title is 'Dark Mode Preference Support', the Goal states 'Enable users to choose dark…"
       }
     }
   }
