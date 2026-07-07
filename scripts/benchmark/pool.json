@@ -1,31 +1,31 @@
 [
   {
-    "instanceId": "psf__requests-1921",
-    "repo": "psf/requests",
+    "instanceId": "django__django-14792",
+    "repo": "django/django",
     "difficulty": "<15 min fix",
-    "patchBytes": 388,
-    "f2p": 6
+    "patchBytes": 486,
+    "f2p": 2
   },
   {
-    "instanceId": "sympy__sympy-17139",
+    "instanceId": "pylint-dev__pylint-4970",
+    "repo": "pylint-dev/pylint",
+    "difficulty": "<15 min fix",
+    "patchBytes": 520,
+    "f2p": 1
+  },
+  {
+    "instanceId": "sympy__sympy-15017",
     "repo": "sympy/sympy",
     "difficulty": "<15 min fix",
-    "patchBytes": 410,
-    "f2p": 2
-  },
-  {
-    "instanceId": "django__django-12308",
-    "repo": "django/django",
-    "difficulty": "<15 min fix",
-    "patchBytes": 684,
-    "f2p": 2
-  },
-  {
-    "instanceId": "django__django-15987",
-    "repo": "django/django",
-    "difficulty": "<15 min fix",
-    "patchBytes": 697,
+    "patchBytes": 566,
     "f2p": 1
+  },
+  {
+    "instanceId": "pytest-dev__pytest-7205",
+    "repo": "pytest-dev/pytest",
+    "difficulty": "<15 min fix",
+    "patchBytes": 572,
+    "f2p": 10
   },
   {
     "instanceId": "psf__requests-2317",
@@ -35,11 +35,11 @@
     "f2p": 8
   },
   {
-    "instanceId": "django__django-14404",
-    "repo": "django/django",
+    "instanceId": "sphinx-doc__sphinx-10435",
+    "repo": "sphinx-doc/sphinx",
     "difficulty": "<15 min fix",
-    "patchBytes": 917,
-    "f2p": 2
+    "patchBytes": 886,
+    "f2p": 1
   },
   {
     "instanceId": "django__django-14376",
@@ -49,17 +49,31 @@
     "f2p": 3
   },
   {
-    "instanceId": "sympy__sympy-23950",
-    "repo": "sympy/sympy",
+    "instanceId": "django__django-15098",
+    "repo": "django/django",
     "difficulty": "15 min - 1 hour",
-    "patchBytes": 293,
-    "f2p": 1
+    "patchBytes": 403,
+    "f2p": 2
   },
   {
     "instanceId": "sympy__sympy-21612",
     "repo": "sympy/sympy",
     "difficulty": "15 min - 1 hour",
     "patchBytes": 541,
+    "f2p": 1
+  },
+  {
+    "instanceId": "django__django-11477",
+    "repo": "django/django",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 610,
+    "f2p": 3
+  },
+  {
+    "instanceId": "sphinx-doc__sphinx-8638",
+    "repo": "sphinx-doc/sphinx",
+    "difficulty": "15 min - 1 hour",
+    "patchBytes": 653,
     "f2p": 1
   },
   {
@@ -70,73 +84,10 @@
     "f2p": 1
   },
   {
-    "instanceId": "django__django-11790",
+    "instanceId": "django__django-16454",
     "repo": "django/django",
     "difficulty": "15 min - 1 hour",
-    "patchBytes": 806,
-    "f2p": 2
-  },
-  {
-    "instanceId": "django__django-11206",
-    "repo": "django/django",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 831,
-    "f2p": 2
-  },
-  {
-    "instanceId": "django__django-11141",
-    "repo": "django/django",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 1519,
+    "patchBytes": 857,
     "f2p": 1
-  },
-  {
-    "instanceId": "pydata__xarray-4687",
-    "repo": "pydata/xarray",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 1539,
-    "f2p": 1
-  },
-  {
-    "instanceId": "sphinx-doc__sphinx-8265",
-    "repo": "sphinx-doc/sphinx",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 1560,
-    "f2p": 1
-  },
-  {
-    "instanceId": "sphinx-doc__sphinx-8056",
-    "repo": "sphinx-doc/sphinx",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 1878,
-    "f2p": 1
-  },
-  {
-    "instanceId": "django__django-14725",
-    "repo": "django/django",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 2530,
-    "f2p": 3
-  },
-  {
-    "instanceId": "django__django-11728",
-    "repo": "django/django",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 3304,
-    "f2p": 2
-  },
-  {
-    "instanceId": "django__django-11532",
-    "repo": "django/django",
-    "difficulty": "15 min - 1 hour",
-    "patchBytes": 4525,
-    "f2p": 1
-  },
-  {
-    "instanceId": "django__django-15957",
-    "repo": "django/django",
-    "difficulty": "1-4 hours",
-    "patchBytes": 3039,
-    "f2p": 4
   }
 ]

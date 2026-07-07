@@ -59,7 +59,32 @@ headroom) — flowai's job is to lift flaky/never-solved Sonnet toward reliable
 success. The 7 always-solved and 4 no-ceiling instances measure nothing.
 Pool re-selection is a separate decision (recorded as pending).
 
+## Expand campaign → final pool (2026-07-07)
+
+To grow the pool past the 4-of-20 headroom the newpool measurement left, ran a
+cheap-first **expand campaign** over un-measured `candidates.json` instances with
+a tiered driver (`expand-driver.sh`): 3× Sonnet per instance, Opus only when
+Sonnet scored 0/3 (saves ~75% of Opus runs), plus a contamination guard that
+marks a pass INVALID on any `Authentication required` / `health] aborting` (so a
+dead OAuth token cannot masquerade as "nobody solved it").
+
+- **Measured:** 33 additional instances across 3 batches (53 total incl. newpool).
+  Frozen in `measured_headroom.json`.
+- **Keep-rate:** ~30% steady (Sonnet 0–1/3 & someone-passed).
+- **Contamination handled honestly:** batch 4 hit a token expiry mid-run — 7
+  instances went INVALID (all auth, load was healthy) rather than being
+  misclassified; the campaign was stopped there by decision.
+- **Final pool = 13 keepers** (`pool.json`): 4 from newpool + 9 from the campaign.
+  Cheapest-first, all `<15 min`–`1 hour`, patches 403–1845 B. 12 flaky
+  (Sonnet 1/3), 1 clean (`pylint-4970`, Sonnet 0/3 & Opus solves).
+
+This 13-instance measured-headroom pool replaces the 20-instance interim pool as
+the flowai A/B target. The keep-rule and per-instance measurements are the
+committed integrity check (`instances_test.ts`).
+
 ## Caveats
 
 - Baseline 3 reps, ceiling 1 rep — the ceiling itself is single-rep and stochastic.
 - Same-harness, same-scaffold; Python-only hard pool; arm64-buildable subset.
+- "Flaky 1/3" keepers carry per-run variance by construction; the A/B on them
+  measures whether flowai lifts flaky→reliable, read as direction not magnitude.

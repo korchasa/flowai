@@ -5,6 +5,8 @@ import {
   candidateById,
   CANDIDATES,
   cheapestIds,
+  isHeadroomKeeper,
+  MEASURED_HEADROOM,
   OPUS_BASELINE,
   OPUS_RESOLVED,
   POOL,
@@ -75,16 +77,14 @@ Deno.test("candidateById: resolves a known candidate, undefined otherwise", () =
   assertEquals(candidateById("nonexistent__nope-0"), undefined);
 });
 
-Deno.test("pool: headroom set — every member is sonnet-fails ∩ opus-solves", () => {
+Deno.test("pool: measured-headroom set — every member is a keeper on our scaffold", () => {
   assert(POOL.length > 0);
   for (const c of POOL) {
+    const m = MEASURED_HEADROOM[c.instanceId];
+    assert(m, `${c.instanceId} has no measured-headroom record`);
     assert(
-      !SONNET_RESOLVED.has(c.instanceId),
-      `${c.instanceId} sonnet-resolved — no headroom to demonstrate`,
-    );
-    assert(
-      OPUS_RESOLVED.has(c.instanceId),
-      `${c.instanceId} not opus-resolved — outside model reach, no headroom`,
+      isHeadroomKeeper(m),
+      `${c.instanceId} fails keep-rule: sonnet_reps=${m.sonnet_reps} opus=${m.opus_resolved}`,
     );
   }
 });

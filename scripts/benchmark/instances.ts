@@ -18,9 +18,42 @@ import candidatesData from "./candidates.json" with { type: "json" };
 import baselineData from "./sonnet_baseline.json" with { type: "json" };
 import opusData from "./opus_baseline.json" with { type: "json" };
 import poolData from "./pool.json" with { type: "json" };
+import headroomData from "./measured_headroom.json" with { type: "json" };
 import ccFailData from "./claude_code_opus_failures.json" with { type: "json" };
 
 export type { Candidate } from "./select.ts";
+
+/**
+ * Per-instance headroom measured on OUR scaffold (pure Claude Code): Sonnet
+ * resolved-rep count (0..3) and the Opus verdict (true/false, or null when Opus
+ * was skipped because Sonnet already solved it at least once). This is the data
+ * of record the POOL is derived from — see `measured_headroom.json`. Supersedes
+ * the third-party `sonnet_baseline`/`opus_baseline` published submissions, whose
+ * different scaffold mispredicted our arm's actual capability frontier.
+ */
+export const MEASURED_HEADROOM: Record<
+  string,
+  { sonnet_reps: number; opus_resolved: boolean | null }
+> = headroomData.instances as Record<
+  string,
+  { sonnet_reps: number; opus_resolved: boolean | null }
+>;
+
+/**
+ * POOL keep-rule (matches `measured_headroom.json` provenance): an instance
+ * belongs in the pool iff our Sonnet is NOT already reliable (resolved in 0 or 1
+ * of 3 reps) AND it is solvable by someone on our scaffold (Sonnet resolved ≥1
+ * rep, OR Opus resolved it). Excludes always-solved (no headroom) and
+ * nobody-solved (no ceiling) instances.
+ */
+export function isHeadroomKeeper(
+  m: { sonnet_reps: number; opus_resolved: boolean | null } | undefined,
+): boolean {
+  if (!m) return false;
+  if (m.sonnet_reps === 1) return true;
+  if (m.sonnet_reps === 0 && m.opus_resolved === true) return true;
+  return false;
+}
 
 /**
  * Repos excluded from candidate selection: heavy pinned C-extension builds that
