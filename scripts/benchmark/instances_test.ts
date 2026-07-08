@@ -7,8 +7,6 @@ import {
   cheapestIds,
   isHeadroomKeeper,
   MEASURED_HEADROOM,
-  OPUS_BASELINE,
-  OPUS_RESOLVED,
   POOL,
   poolIds,
   SONNET_BASELINE,
@@ -19,11 +17,6 @@ import { difficultyRank } from "./select.ts";
 Deno.test("baseline: published sonnet resolved set matches its count", () => {
   assertEquals(SONNET_RESOLVED.size, SONNET_BASELINE.resolvedCount);
   assert(SONNET_RESOLVED.size > 0);
-});
-
-Deno.test("baseline: published opus resolved set matches its count", () => {
-  assertEquals(OPUS_RESOLVED.size, OPUS_BASELINE.resolvedCount);
-  assert(OPUS_RESOLVED.size > 0);
 });
 
 Deno.test("candidates: none were resolved by the sonnet baseline", () => {

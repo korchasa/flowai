@@ -37,7 +37,6 @@ const META: ReportMeta = {
   date: "2026-06-21",
   model: "sonnet",
   dataset: "princeton-nlp/SWE-bench_Verified",
-  ccModel: "claude-opus-4-5-20251101",
 };
 
 Deno.test("aggregateAB: baseline counts and flowai wins over baseline-failures", () => {

@@ -76,8 +76,6 @@ export interface ReportMeta {
   date: string;
   model: string;
   dataset: string;
-  /** Pool provenance: stronger Claude Code config whose failures seeded the pool. */
-  ccModel: string;
 }
 
 function mark(b: boolean): string {
@@ -93,9 +91,9 @@ export function renderMarkdownAB(rep: ABReport, meta: ReportMeta): string {
   L.push(`- Harness: Claude Code + \`${meta.model}\` over ACP — both arms.`);
   L.push(`- Dataset: ${meta.dataset}`);
   L.push(
-    `- Pool: ${rep.poolTotal} instances both a stronger Claude Code config` +
-      ` (\`${meta.ccModel}\` + vexp) AND the tools-Sonnet submission failed` +
-      ` (arm64-buildable). High-confidence "pure Claude Code + Sonnet fails".`,
+    `- Pool: ${rep.poolTotal} measured-headroom instances (our Sonnet resolves` +
+      ` 0–1 of 3 reps AND someone solves it on our scaffold; arm64-buildable,` +
+      ` cheapest-first). See measured_headroom.json.`,
   );
   L.push(
     `- Method: run our OWN baseline (Claude Code + Sonnet, no flowai) over the` +

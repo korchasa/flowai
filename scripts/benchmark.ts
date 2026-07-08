@@ -25,7 +25,6 @@ import { DATASET, runEvaluation } from "./benchmark/verify.ts";
 import { stripTestHunks } from "./benchmark/patch.ts";
 import {
   ARM64_DENY,
-  CC_OPUS_FAILURES,
   POOL,
   poolIds,
   SONNET_RESOLVED,
@@ -250,7 +249,6 @@ await new Command()
       date: today(),
       model: opts.model,
       dataset: DATASET,
-      ccModel: CC_OPUS_FAILURES.model,
     });
     const reportPath = opts.report ??
       join("documents/benchmarks", `swe-verified-${today()}.md`);
