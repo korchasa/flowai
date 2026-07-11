@@ -28,13 +28,6 @@
     "f2p": 10
   },
   {
-    "instanceId": "psf__requests-2317",
-    "repo": "psf/requests",
-    "difficulty": "<15 min fix",
-    "patchBytes": 763,
-    "f2p": 8
-  },
-  {
     "instanceId": "sphinx-doc__sphinx-10435",
     "repo": "sphinx-doc/sphinx",
     "difficulty": "<15 min fix",

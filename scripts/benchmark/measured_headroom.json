@@ -26,7 +26,8 @@
     },
     "psf__requests-2317": {
       "sonnet_reps": 1,
-      "opus_resolved": true
+      "opus_resolved": true,
+      "excluded_from_pool": "infra noise: F2P suite hits a local httpbin that returns intermittent 503s; flowai's code fix equals gold yet grades non-deterministically (baseline also 1/3). Not a primitive signal. Also surfaced a harness defect — the flowai sandbox ran tests under host Python 3.14, where `from collections import Mapping` raises ImportError (gone in the 3.9 eval env), inducing phantom scope creep. See documents/benchmarks/flowai3-review-2026-07-11.md."
     },
     "django__django-14404": {
       "sonnet_reps": 2,
