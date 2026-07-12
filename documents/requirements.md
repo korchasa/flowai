@@ -267,59 +267,87 @@ reverse. Grouped A–G by the boundary they defend.
   steps are the human's to choose; the agent lays out the variants and waits.
   Heals: [REF:fm:decide.arch | FM-DECIDE.ARCH],
   [REF:fm:decide.depth | FM-DECIDE.DEPTH].
+  Realized by: [REF:fr:decision-gate | FR-DECISION-GATE],
+  [REF:fr:plan-variant-archetypes | FR-PLAN-VARIANT-ARCHETYPES].
 - **PR-AI-OWNS-CODE** [ANC:pr:ai-owns-code] — Below the class/method line the AI
   writes AND reviews its own code; the human need not read it, and diff review
   stays optional. Heals: [REF:fm:code.handback | FM-CODE.HANDBACK].
+  Realized by: [REF:fr:ai-code-review | FR-AI-CODE-REVIEW],
+  [REF:fr:diff-optional | FR-DIFF-OPTIONAL].
 - **PR-ASK** [ANC:pr:ask] — Ask on what matters — a high-level decision, a
   reasoned doubt, a dead end — and decide the trivia yourself. Heals:
   [REF:fm:decide.guess | FM-DECIDE.GUESS],
   [REF:fm:decide.overask | FM-DECIDE.OVERASK].
+  Realized by: [REF:fr:decision-gate | FR-DECISION-GATE],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-PROACTIVE** [ANC:pr:proactive] — Before asking, look for the answer
   yourself — in the code, the docs, the web. Heals:
   [REF:fm:decide.overask | FM-DECIDE.OVERASK].
+  Realized by: [REF:fr:decision-gate.proactive | FR-DECISION-GATE.PROACTIVE].
 - **PR-FORWARD** [ANC:pr:forward] — Once the human has approved the plan, move;
   don't re-confirm each step. Heals:
   [REF:fm:decide.overask | FM-DECIDE.OVERASK].
+  Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-CARE** [ANC:pr:care] — Irreversible and outward actions — push, deploy,
   delete, send — get the human's confirmation first. Heals:
   [REF:fm:care.irreversible | FM-CARE.IRREVERSIBLE].
+  Realized by: [REF:fr:atom-push | FR-ATOM-PUSH].
 
 #### B. Change boundaries
 
 - **PR-SCOPE** [ANC:pr:scope] — Agree what the task covers; if you do less or
   more, say so plainly and explain why. Heals:
   [REF:fm:scope.under | FM-SCOPE.UNDER], [REF:fm:scope.over | FM-SCOPE.OVER].
+  Realized by: [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS].
 - **PR-SURFACE** [ANC:pr:surface] — Before acting, list the whole blast radius —
   callers, duplicates, environments, services, downstream steps, people — and
   mark each one covered or explicitly out; naming each is what makes it count — a
   constraint left implicit in the context is not actually applied. Heals:
   [REF:fm:scope.env | FM-SCOPE.ENV], [REF:fm:shape.dup | FM-SHAPE.DUP].
+  Realized by: [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS].
 - **PR-REUSE** [ANC:pr:reuse] — Before writing something new, find what exists and
   use it instead of copying. Heals: [REF:fm:shape.dup | FM-SHAPE.DUP].
+  Realized by: [REF:fr:plan-outcome-completeness.reuse | FR-PLAN-OUTCOME-COMPLETENESS.REUSE].
 - **PR-MINIMAL** [ANC:pr:minimal] — Touch only the places the task needs — but
   that is about breadth, not depth: how deep the fix goes (patch vs root cause)
   is the human's call, not an excuse to under-fix. Heals:
   [REF:fm:shape.wide | FM-SHAPE.WIDE].
+  Realized by: [REF:fr:ai-code-review.minimal | FR-AI-CODE-REVIEW.MINIMAL].
 - **PR-CONTRACT** [ANC:pr:contract] — Don't break what already works; change an
   existing contract only when the task requires it, and say so. Heals:
   [REF:fm:regress.contract | FM-REGRESS.CONTRACT].
+  Realized by: [REF:fr:jit-review | FR-JIT-REVIEW],
+  [REF:fr:ai-code-review.existing-suite | FR-AI-CODE-REVIEW.EXISTING-SUITE],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 
 #### C. Planning and grounding
 
 - **PR-PLAN** [ANC:pr:plan] — Break a complex task down first — variants, scope,
   risks, verification steps — then build. Heals:
   [REF:fm:plan.none | FM-PLAN.NONE].
+  Realized by: [REF:fr:plan-variant-archetypes | FR-PLAN-VARIANT-ARCHETYPES],
+  [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS].
 - **PR-SPEC-FIRST** [ANC:pr:spec-first] — Record the requirement in the docs first
   (SRS, then SDS), then write code that points back to it. Heals:
   [REF:fm:spec.drift | FM-SPEC.DRIFT].
+  Realized by: [REF:fr:docs | FR-DOCS],
+  [REF:fr:doc-anchors | FR-DOC-ANCHORS],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-GROUND** [ANC:pr:ground] — Lean on real data and examples, not guesses
   about the format or the environment; fix what you're looking for before you read
   the material — the question you hold going in decides what registers. Heals:
   [REF:fm:process.misdiagnose | FM-PROCESS.MISDIAGNOSE],
   [REF:fm:scope.env | FM-SCOPE.ENV].
+  Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
+  [REF:fr:model-select | FR-MODEL-SELECT],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-NO-FABRICATION** [ANC:pr:no-fabrication] — Missing data or a missing
   dependency is a blocker: stop and say so, don't invent a fake to keep going.
   Heals: [REF:fm:process.fabricate | FM-PROCESS.FABRICATE].
+  Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
+  [REF:fr:model-select | FR-MODEL-SELECT],
+  [REF:fr:memex | FR-MEMEX],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-EXTERNALIZE** [ANC:pr:externalize] — Do the thinking on the page: write the
   plan, the diagnosis, the trade-off out as you work — not only to inform the
   human, but because reasoning kept in your head rides a small, crowded working
@@ -327,6 +355,9 @@ reverse. Grouped A–G by the boundary they defend.
   [REF:fm:process.unverbalized | FM-PROCESS.UNVERBALIZED],
   [REF:fm:plan.none | FM-PLAN.NONE],
   [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
+  Realized by: [REF:fr:doc-tasks | FR-DOC-TASKS],
+  [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS],
+  [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH].
 
 #### D. Verification
 
@@ -334,19 +365,34 @@ reverse. Grouped A–G by the boundary they defend.
   machine can check, let it, not the eye. Heals:
   [REF:fm:verify.skip | FM-VERIFY.SKIP],
   [REF:fm:verify.judgment | FM-VERIFY.JUDGMENT].
+  Realized by: [REF:fr:maint | FR-MAINT],
+  [REF:fr:atom-implement | FR-ATOM-IMPLEMENT],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-ACCEPTANCE-GATE** [ANC:pr:acceptance-gate] — A requirement counts as real
   only when a machine can verify it; no runnable check, no "done". Heals:
   [REF:fm:verify.unfalsifiable | FM-VERIFY.UNFALSIFIABLE].
+  Realized by: [REF:fr:accept | FR-ACCEPT],
+  [REF:fr:component | FR-COMPONENT],
+  [REF:fr:accept.trigger | FR-ACCEPT.TRIGGER].
 - **PR-CLEAN-BASELINE** [ANC:pr:clean-baseline] — Keep the project green — before
   a change and after; if it starts red, fix that first. Heals:
   [REF:fm:verify.nobaseline | FM-VERIFY.NOBASELINE].
+  Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES],
+  [REF:fr:jit-review | FR-JIT-REVIEW],
+  [REF:fr:maint | FR-MAINT].
 - **PR-FAIL-FAST** [ANC:pr:fail-fast] — Surface an error at once and clearly;
   don't muffle it behind a silent fallback. Heals:
   [REF:fm:verify.swallow | FM-VERIFY.SWALLOW].
+  Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES],
+  [REF:fr:model-select | FR-MODEL-SELECT],
+  [REF:fr:universal.doc-schema | FR-UNIVERSAL.DOC-SCHEMA].
 - **PR-QA-TEST** [ANC:pr:qa-test] — Write the tests from the task, with a QA
   mindset, before the code. Heals:
   [REF:fm:verify.falsegreen | FM-VERIFY.FALSEGREEN],
   [REF:fm:report.unfaithful | FM-REPORT.UNFAITHFUL].
+  Realized by: [REF:fr:atom-implement | FR-ATOM-IMPLEMENT],
+  [REF:fr:jit-review | FR-JIT-REVIEW],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 
 #### E. Independence and reliability
 
@@ -354,28 +400,42 @@ reverse. Grouped A–G by the boundary they defend.
   who did the work; tests and review don't just repeat the author's reading.
   Heals: [REF:fm:verify.falsegreen | FM-VERIFY.FALSEGREEN],
   [REF:fm:process.correlated | FM-PROCESS.CORRELATED].
+  Realized by: [REF:fr:ai-code-review.existing-suite | FR-AI-CODE-REVIEW.EXISTING-SUITE],
+  [REF:fr:jit-review | FR-JIT-REVIEW],
+  [REF:fr:review-split | FR-REVIEW-SPLIT].
 - **PR-SELF-CRITIQUE** [ANC:pr:self-critique] — Before handing over a result,
   attack it yourself: false positives, blind spots, whether the edit is
   proportional. Heals:
   [REF:fm:process.misdiagnose | FM-PROCESS.MISDIAGNOSE],
   [REF:fm:verify.falsegreen | FM-VERIFY.FALSEGREEN].
+  Realized by: [REF:fr:reflect | FR-REFLECT],
+  [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS].
 - **PR-DIAGNOSIS** [ANC:pr:diagnosis] — Before fixing, prove by experiment that
   the cause really sits where you think. Heals:
   [REF:fm:process.misdiagnose | FM-PROCESS.MISDIAGNOSE],
   [REF:fm:process.variance | FM-PROCESS.VARIANCE].
+  Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-ROLES** [ANC:pr:roles] — Give distinct roles to distinct agents with clean
   context, and keep a role in its lane — the one who diagnoses doesn't fix, the
   one who reviews doesn't commit. Heals:
   [REF:fm:process.correlated | FM-PROCESS.CORRELATED],
   [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
+  Realized by: [REF:fr:maint-scan | FR-MAINT-SCAN],
+  [REF:fr:review-split | FR-REVIEW-SPLIT],
+  [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH].
 - **PR-ONE-LENS** [ANC:pr:one-lens] — Take one analytical lens per pass: finish
   and write out one before starting the next, or split lenses across subagents;
   don't hold several unrelated checks in a single reasoning pass. Heals:
   [REF:fm:process.concurrent | FM-PROCESS.CONCURRENT],
   [REF:fm:verify.falsegreen | FM-VERIFY.FALSEGREEN].
+  Realized by: [REF:fr:maint-scan | FR-MAINT-SCAN].
 - **PR-STOP** [ANC:pr:stop] — A dead end, a blocker outside your control, or two
   failed attempts — stop and call the human. Heals:
   [REF:fm:process.stuck | FM-PROCESS.STUCK].
+  Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES],
+  [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
+  [REF:fr:model-select | FR-MODEL-SELECT].
 
 #### F. Memory and communication
 
@@ -385,6 +445,11 @@ reverse. Grouped A–G by the boundary they defend.
   evicted. Heals: [REF:fm:memory.cross | FM-MEMORY.CROSS],
   [REF:fm:memory.stale | FM-MEMORY.STALE],
   [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
+  Realized by: [REF:fr:docs | FR-DOCS],
+  [REF:fr:doc-tasks | FR-DOC-TASKS],
+  [REF:fr:doc-task-lifecycle | FR-DOC-TASK-LIFECYCLE],
+  [REF:fr:doc-index | FR-DOC-INDEX],
+  [REF:fr:memex | FR-MEMEX].
 - **PR-REPORT** [ANC:pr:report] — Report upward the truth and all of what matters,
   pitched at the requirement and class/method level — the structure produced, not
   raw diffs and not only the top-line "done" — in plain words the human reads
@@ -392,9 +457,14 @@ reverse. Grouped A–G by the boundary they defend.
   [REF:fm:report.unfaithful | FM-REPORT.UNFAITHFUL],
   [REF:fm:report.incomplete | FM-REPORT.INCOMPLETE],
   [REF:fm:report.illegible | FM-REPORT.ILLEGIBLE].
+  Realized by: [REF:fr:upward-narration | FR-UPWARD-NARRATION],
+  [REF:fr:ai-code-review | FR-AI-CODE-REVIEW].
 - **PR-EVIDENCE** [ANC:pr:evidence] — Not on your word: back every claim with
   evidence — code, a test, command output. Heals:
   [REF:fm:report.unsupported | FM-REPORT.UNSUPPORTED].
+  Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
+  [REF:fr:accept.rules | FR-ACCEPT.RULES],
+  [REF:fr:model-select | FR-MODEL-SELECT].
 
 #### G. Tool and guard discipline
 
@@ -402,9 +472,13 @@ reverse. Grouped A–G by the boundary they defend.
   invoke it instead of improvising; match it by the task's substance, not a
   keyword. Heals: [REF:fm:tool.improvise | FM-TOOL.IMPROVISE],
   [REF:fm:tool.mistrigger | FM-TOOL.MISTRIGGER].
+  Realized by: [REF:fr:accept.trigger | FR-ACCEPT.TRIGGER],
+  [REF:fr:desc-quality | FR-DESC-QUALITY].
 - **PR-GUARDS** [ANC:pr:guards] — When a guard fires, remove the cause or call the
   human; don't route around it, and don't read an override flag in the error as
   permission. Heals: [REF:fm:process.override | FM-PROCESS.OVERRIDE].
+  Realized by: [REF:fr:accept-guards | FR-ACCEPT-GUARDS],
+  [REF:fr:model-select | FR-MODEL-SELECT].
 
 ## 2. General description
 
@@ -1170,6 +1244,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Acceptance verified by acceptance tests:** `implement-decision-gate`
 - **Status:** [x]
 
+#### FR-DECISION-GATE.PROACTIVE: Exhaust Autonomous Search Before Escalating [ANC:fr:decision-gate.proactive]
+
+- **Description:** Before surfacing a question to the human, the agent MUST exhaust autonomous resolution — search the codebase, the docs, and the web. Escalation is reserved for genuine above-class/method decisions and irreducible ambiguity; a question the agent could answer itself is a defect. Realizes `[REF:pr:proactive | PR-PROACTIVE]`; balances the decision gate against over-asking (`[REF:fm:decide.overask | FM-DECIDE.OVERASK]`).
+- **Acceptance:** `agents-rules-proactive-resolution` (benchmark to be authored)
+- **Status:** [ ]
+
 ### FR-UPWARD-NARRATION: Upward Narration in Class/Method Terms [ANC:fr:upward-narration]
 
 - **Description:** The agent communicates *upward*: it narrates work to the human in terms of requirements AND the class/method structure it produces (names, responsibilities, relationships) — never requiring the human to read implementation code. Every decision above class/method granularity MUST appear in the chat summary the human reads; an unsurfaced above-class/method decision is a defect. This absorbs the former cognitive-debt guard — the anti-cognitive-debt mechanism is **completeness of the chat summary**, NOT document currency and NOT a static check script (neither can inspect chat). Reinforced in `framework/atoms/implement.md`; shipped via `framework/core/assets/AGENTS.template.md`.
@@ -1190,6 +1270,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Tasks:** [review-run-existing-tests](tasks/2026/06/review-run-existing-tests.md)
 - **Acceptance verified by acceptance tests:** `review-runs-existing-suite`
 - **Status:** [x]
+
+#### FR-AI-CODE-REVIEW.MINIMAL: Verdict Flags Disproportionate Edit Breadth [ANC:fr:ai-code-review.minimal]
+
+- **Description:** The review verdict MUST flag edits broader than the requirement demands — unrequested refactors, scope widening, drive-by changes. Breadth beyond the task is a finding; the DEPTH of the fix (patch vs root cause) stays the human's choice and is NOT flagged. Realizes `[REF:pr:minimal | PR-MINIMAL]`; catches over-build (`[REF:fm:shape.wide | FM-SHAPE.WIDE]`, `[REF:fm:scope.over | FM-SCOPE.OVER]`).
+- **Acceptance:** `review-flags-overbuild` (benchmark to be authored)
+- **Status:** [ ]
 
 ### FR-DIFF-OPTIONAL: Optional, Non-Blocking Diff Review (Model B) [ANC:fr:diff-optional]
 
@@ -1487,6 +1573,12 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 - **Status:** [ ]
   - Note (both scenarios): regression-guards, not RED-first. The 2026-07-02 RED attempts PASSED on the unchanged atom — in a small self-contained fixture `claude-sonnet-4-6` already seeds the DoD, discovers the duplicated site, and defers the user-cut scope to Follow-ups. The real failure mode (SWE-bench INCOMPLETE_FIX family, 9-10/11 of the 2026-07-02 failures) stems from large-codebase attention pressure that a small fixture cannot reproduce; the discipline was added as defensive guidance per an explicit RED-first waiver (precedent: `plan-recommends-root-over-symptom`). The empirical evidence for the change is the benchmark re-run.
   - Coverage gap (point c, heading scope marker): the variant-title marker requirement (`— full scope` / `— partial: …`, added 2026-07-02 per explicit user TDD waiver) is NOT verified by any scenario — `plan-records-dropped-outcomes` checks Cons + `## Follow-ups` only. Closing the gap = extend that scenario's checklist with a title-marker item (no new scenario: same execution path).
+
+#### FR-PLAN-OUTCOME-COMPLETENESS.REUSE: Reuse Before New Code [ANC:fr:plan-outcome-completeness.reuse]
+
+- **Description:** During affected-surface enumeration (point b), the `plan` skill MUST search for an existing implementation to reuse before proposing new code; proposing a new implementation where an existing one fits is a planning defect and must be justified in the variant. Realizes `[REF:pr:reuse | PR-REUSE]`; prevents duplication (`[REF:fm:shape.dup | FM-SHAPE.DUP]`).
+- **Acceptance:** `plan-reuse-before-new` (benchmark to be authored)
+- **Status:** [ ]
 
 ### FR-REFLECT: Reflection with Session History Search and Self-Criticism [ANC:fr:reflect]
 
