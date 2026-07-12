@@ -64,7 +64,8 @@ are rules elsewhere, not constitution.
 
 Origin convention — "observed in runs (`<instance>`)" = measured in SWE-bench
 sessions; "follows from mission/AGENTS.md" = derived from the project's stated
-purpose or rules.
+purpose or rules; "follows from research (`<cite>`)" = derived from published
+findings.
 
 ### I. Ownership-boundary violations — `FM-DECIDE.*`, `FM-CARE.*`, `FM-CODE.*`
 
@@ -216,6 +217,16 @@ and legibility (the three chain-of-thought monitoring axes), plus evidence.
   because the guard's error text names an override flag — reading diagnostic text
   as authorization. Origin: follows from AGENTS.md ("Safety guards are not
   friction"; an override mention is not authorization).
+- **FM-PROCESS.UNVERBALIZED** [ANC:fm:process.unverbalized] — carries multi-step
+  reasoning (diagnosis, calculation, why-this-path) in-head instead of writing it
+  out; the small, crowded working memory drops or corrupts a step. Origin:
+  follows from research (`Transformer Circuits 2026, verbalizable global
+  workspace`); consistent with `[REF:fm:memory.longctx | FM-MEMORY.LONGCTX]`.
+- **FM-PROCESS.CONCURRENT** [ANC:fm:process.concurrent] — runs several unrelated
+  analyses in a single reasoning pass (e.g. multiple review lenses at once); the
+  limited workspace blurs or drops some. Origin: follows from research
+  (`Transformer Circuits 2026, verbalizable global workspace`: multi-step
+  computation fails under concurrent unrelated load).
 
 ### VIII. Planning and tool discipline — `FM-PLAN.*`, `FM-TOOL.*`
 
@@ -280,7 +291,8 @@ reverse. Grouped A–G by the boundary they defend.
   [REF:fm:scope.under | FM-SCOPE.UNDER], [REF:fm:scope.over | FM-SCOPE.OVER].
 - **PR-SURFACE** [ANC:pr:surface] — Before acting, list the whole blast radius —
   callers, duplicates, environments, services, downstream steps, people — and
-  mark each one covered or explicitly out. Heals:
+  mark each one covered or explicitly out; naming each is what makes it count — a
+  constraint left implicit in the context is not actually applied. Heals:
   [REF:fm:scope.env | FM-SCOPE.ENV], [REF:fm:shape.dup | FM-SHAPE.DUP].
 - **PR-REUSE** [ANC:pr:reuse] — Before writing something new, find what exists and
   use it instead of copying. Heals: [REF:fm:shape.dup | FM-SHAPE.DUP].
@@ -301,12 +313,20 @@ reverse. Grouped A–G by the boundary they defend.
   (SRS, then SDS), then write code that points back to it. Heals:
   [REF:fm:spec.drift | FM-SPEC.DRIFT].
 - **PR-GROUND** [ANC:pr:ground] — Lean on real data and examples, not guesses
-  about the format or the environment. Heals:
+  about the format or the environment; fix what you're looking for before you read
+  the material — the question you hold going in decides what registers. Heals:
   [REF:fm:process.misdiagnose | FM-PROCESS.MISDIAGNOSE],
   [REF:fm:scope.env | FM-SCOPE.ENV].
 - **PR-NO-FABRICATION** [ANC:pr:no-fabrication] — Missing data or a missing
   dependency is a blocker: stop and say so, don't invent a fake to keep going.
   Heals: [REF:fm:process.fabricate | FM-PROCESS.FABRICATE].
+- **PR-EXTERNALIZE** [ANC:pr:externalize] — Do the thinking on the page: write the
+  plan, the diagnosis, the trade-off out as you work — not only to inform the
+  human, but because reasoning kept in your head rides a small, crowded working
+  memory and loses steps; writing offloads it. Heals:
+  [REF:fm:process.unverbalized | FM-PROCESS.UNVERBALIZED],
+  [REF:fm:plan.none | FM-PLAN.NONE],
+  [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
 
 #### D. Verification
 
@@ -348,6 +368,11 @@ reverse. Grouped A–G by the boundary they defend.
   one who reviews doesn't commit. Heals:
   [REF:fm:process.correlated | FM-PROCESS.CORRELATED],
   [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
+- **PR-ONE-LENS** [ANC:pr:one-lens] — Take one analytical lens per pass: finish
+  and write out one before starting the next, or split lenses across subagents;
+  don't hold several unrelated checks in a single reasoning pass. Heals:
+  [REF:fm:process.concurrent | FM-PROCESS.CONCURRENT],
+  [REF:fm:verify.falsegreen | FM-VERIFY.FALSEGREEN].
 - **PR-STOP** [ANC:pr:stop] — A dead end, a blocker outside your control, or two
   failed attempts — stop and call the human. Heals:
   [REF:fm:process.stuck | FM-PROCESS.STUCK].
@@ -355,8 +380,9 @@ reverse. Grouped A–G by the boundary they defend.
 #### F. Memory and communication
 
 - **PR-MEMORY** [ANC:pr:memory] — Write decisions to the docs as you make them,
-  keep them current, and in a long session offload detail to docs and subagents.
-  Heals: [REF:fm:memory.cross | FM-MEMORY.CROSS],
+  keep them current, and in a long session offload detail to docs and subagents —
+  working memory is small and competitive, so what you don't write down gets
+  evicted. Heals: [REF:fm:memory.cross | FM-MEMORY.CROSS],
   [REF:fm:memory.stale | FM-MEMORY.STALE],
   [REF:fm:memory.longctx | FM-MEMORY.LONGCTX].
 - **PR-REPORT** [ANC:pr:report] — Report upward the truth and all of what matters,
