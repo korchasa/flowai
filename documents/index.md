@@ -110,4 +110,3 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:universal.struct | FR-UNIVERSAL.STRUCT] — Every skill is a directory with SKILL.md (required) and optional scripts/, references/, assets/, evals/ subdirectories. — [ ]
 - [REF:fr:universal.xide-paths | FR-UNIVERSAL.XIDE-PATHS] — **Relative paths**: SKILL.md MUST reference scripts using relative paths from the skill root (e.g., scripts/validate.ts, python3 scripts/process.py). — [ ]
 - [REF:fr:update | FR-UPDATE] — Framework update command — [ ]
-- [REF:fr:wb-cleanup | FR-WB-CLEANUP] — commit deletes referenced task file after commit when all Definition of Done items are satisfied. — [ ]

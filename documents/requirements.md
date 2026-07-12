@@ -1597,11 +1597,6 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - [x] **FR-CICD.JOBS Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
   - [x] **FR-CICD.SPLIT Two-repo topology (post-split)**: After CLI extraction (see FR-DIST.BUNDLE.PIN), CI splits across two repos. Framework repo (`korchasa/flowai`) keeps the `check` job and adds a `release-framework-tarball` step that uploads `framework.tar.gz` + `framework.tar.gz.sha256` as assets of a `framework-v<version>` GitHub release; framework repo no longer publishes to JSR. CLI repo (`korchasa/flowai-cli`) runs its own `check` job (fmt, lint, TS tests; no framework validators, no acceptance tests) on PR/`main` and publishes `@korchasa/flowai` to JSR via OIDC on tag `v*`. OIDC trust binding for `@korchasa/flowai` rebound from `korchasa/flowai` to `korchasa/flowai-cli` exactly once at the Phase 3 cutover.
 
-### FR-WB-CLEANUP: Task File Cleanup on Commit [ANC:fr:wb-cleanup]
-
-- **Description:** `commit` deletes referenced task file after commit when all Definition of Done items are satisfied. If DoD is partially complete, asks user. Prevents stale task files from accumulating.
-- **Acceptance verified by acceptance tests:** `commit-task-cleanup`, `commit-task-cleanup-partial`
-
 ### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit [ANC:fr:review-split]
 
 - **Description:** Clear separation of concerns between `review` and `commit`:
@@ -1781,7 +1776,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 ### FR-DOC-TASK-LIFECYCLE: Task Status Derived from DoD by Commit Skills [ANC:fr:doc-task-lifecycle]
 
-- **Description:** `commit` and `review-and-commit` derive `status` from `## Definition of Done` checkbox state on every commit that stages a non-superseded `documents/tasks/**/*.md` file with new-shape frontmatter (presence of `date:`). Algorithm: count top-level `- [ ]`/`- [x]` items K of N under `## Definition of Done`; map `K=0 → "to do"`, `0<K<N → "in progress"`, `K=N → "done"`. If the derived value differs from the current frontmatter `status`, rewrite the frontmatter line and `git add` the file as part of the same commit. Idempotent. Never downgrades `done` (manual re-open required). `superseded` is manually set, requires `superseded_by`, and is excluded from DoD derivation because stale original DoD no longer maps to current reality. Warn-only on parse errors / missing DoD section. Legacy flat-path tasks (no `date:`) are skipped — preserves coexistence with unmodified `plan`.
+- **Description:** `commit` and `review-and-commit` derive `status` from `## Definition of Done` checkbox state on every commit that stages a non-superseded `documents/tasks/**/*.md` file with new-shape frontmatter (presence of `date:`). Algorithm: count top-level `- [ ]`/`- [x]` items K of N under `## Definition of Done`; map `K=0 → "to do"`, `0<K<N → "in progress"`, `K=N → "done"`. If the derived value differs from the current frontmatter `status`, rewrite the frontmatter line and `git add` the file as part of the same commit. Idempotent. Never downgrades `done` (manual re-open required). `superseded` is manually set, requires `superseded_by`, and is excluded from DoD derivation because stale original DoD no longer maps to current reality. Warn-only on parse errors / missing DoD section. Legacy flat-path tasks (no `date:`) are skipped for status derivation — preserves coexistence with unmodified `plan`. Task files of ANY shape (new-shape or legacy) are NEVER deleted by `commit` — persistence is the invariant; status derivation is the only lifecycle action.
 - **Scenario:** Developer commits a fix that ticks the last DoD box of `documents/tasks/2026/05/add-cache-layer.md`. `commit` re-counts the DoD items (N/N), sees `status: in progress`, rewrites frontmatter to `status: done`, and stages the file alongside the developer's diff.
 - **Constraints:**
   - MUST run only on commits — no out-of-band flips.

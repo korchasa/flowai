@@ -65,7 +65,7 @@ Output a combined summary:
 [ ] Changes grouped by logical purpose.
 [ ] Commits executed with Conventional Commits format.
 [ ] Task lifecycle: every staged non-superseded new-shape task had `status:` auto-derived from DoD checkboxes (`to do | in progress | done`) and rewritten if it differed. `status: superseded` records were preserved and checked for `superseded_by:`. Never downgrades `done`. Warn-only on parse errors.
-[ ] Task file cleanup: legacy flat-path tasks — completed deleted, partial confirmed with user. New-shape tasks NEVER deleted.
+[ ] Task files preserved: no task file deleted (any shape); status derivation from DoD is the only lifecycle action.
 [ ] Session complexity check performed; `/reflect` auto-invoked if signals detected.
 [ ] Post-reflect cleanup commit created when reflect left uncommitted edits to project instructions; otherwise skipped.
 [ ] Both review and commit results reported to user.
