@@ -404,11 +404,17 @@ Every task follows the same supervised loop:
 
 ## Key Principles
 
-1. **Human owns decisions, AI executes & reviews code** — no autonomous decisions above class/method level; AI reviews its own code, the human reviews decisions (not diffs). Prevents cognitive debt
-2. **Explicit workflows** — every task type has a defined skill with clear steps
-3. **Persistent memory** — documentation in `documents/` bridges the gap between sessions
-4. **Single verification gate** — `deno task check` is the source of truth for project health
-5. **IDE-agnostic** — skills work across Cursor, Claude Code, OpenCode, OpenAI Codex, and other AI-assisted editors
+Every principle below is the standing response to an observed failure mode — a way the agent breaks the class/method line, above which the human owns the call and below which the agent executes and reviews its own work. Grouped by the boundary each defends:
+
+1. **Human owns decisions, AI owns code** — nothing above the class/method line (architecture, contracts, irreversible steps) is decided silently; the AI writes AND reviews its own code, so reading the diff stays optional.
+2. **Right-sized change** — touch exactly the surface the task needs, enumerate the whole blast radius (callers, duplicates, environments, downstream steps), reuse instead of copy, and leave working contracts intact; state any scope cut plainly.
+3. **Plan and ground before building** — decompose a complex task first, record the requirement in the docs before writing code, lean on real data over guesses, and think on the page rather than in your head.
+4. **Nothing is done until it's verified** — prefer a machine check to the eye, treat no requirement as real without a runnable check, keep the baseline green, and surface errors instead of swallowing them.
+5. **Independent checking** — the one who checks is not the one who did the work; prove a diagnosis by experiment, take one analytical lens per pass, and stop for the human at a dead end or a second failed attempt.
+6. **Persistent memory & honest reporting** — write decisions to the docs and keep them current across sessions; report upward the whole truth at the requirement and class/method level, in plain words, backed by evidence.
+7. **Vetted workflows, respected guards** — invoke the fitting skill rather than improvising a one-off process; when a guard fires, remove the cause or call the human — never route around it.
+
+The full model — each observed failure mode, the principle that answers it, and the requirement that realizes it — lives in the SRS constitution (`documents/requirements.md`).
 
 ## Project Structure
 
@@ -426,7 +432,7 @@ documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure
 acceptance-tests/       # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
 deno.json               # Imports, tasks, lint/fmt config
-AGENTS.md               # Project vision, rules, agent instructions
+AGENTS.md               # Project rules & agent instructions (vision → SRS constitution)
 
 .claude/                # INTERNAL — dev tooling + framework resources
   skills/               #   Dev-only skills (tracked) + framework skills (via flowai)
@@ -470,8 +476,8 @@ release job:                                         │
 
 Documentation is not optional — it is the only mechanism that preserves context between AI sessions.
 
-- **`AGENTS.md`** — project vision, constraints, mandatory rules
-- **`requirements.md` (SRS)** — functional and non-functional requirements
+- **`AGENTS.md`** — project constraints and mandatory rules (vision/mission → SRS constitution)
+- **`requirements.md` (SRS)** — the constitution (mission, failure modes, principles) + functional and non-functional requirements
 - **`design.md` (SDS)** — architecture, components, data models
 - **`tasks/`** — task plans per session (GODS: Goal, Overview, Done, Solution)
 

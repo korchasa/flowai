@@ -247,8 +247,8 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
 
 - **Purpose:** Persistent project memory across AI sessions. Single source of truth for requirements, architecture, and current plans.
 - **Hierarchy:**
-  1. `AGENTS.md` — project vision, constraints, mandatory rules (root-level, read-only reference).
-  2. `documents/requirements.md` (SRS) — functional and non-functional requirements. Source of truth for "what" and "why".
+  1. `AGENTS.md` — project constraints and mandatory rules (root-level, read-only reference; vision/mission moved to the SRS constitution).
+  2. `documents/requirements.md` (SRS) — the constitution (mission, failure modes, principles) + functional and non-functional requirements. Source of truth for "what" and "why".
   3. `documents/design.md` (SDS) — architecture and implementation details. Depends on SRS.
   4. `documents/tasks/<YYYY>/<MM>/<slug>.md` — persistent committed plans and notes in GODS format. One file per task/session.
   5. `documents/ides-difference.md` — cross-IDE capability comparison (primitives, hooks, agents, MCP). Reference for FR-HOOK-DOCS–FR-IDE-SCOPE.
