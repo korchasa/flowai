@@ -123,6 +123,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 - **Requirement numbering**: Exactly 2 levels — `FR-x` and `FR-x.y`. No `FR-x.y.z`.
   Acceptance criteria under `FR-x.y` are plain bullet items (no FR prefix).
+- **Sub-FR heading & coverage caveat**: sub-FRs use `#### FR-PARENT.SUFFIX` (4 hashes — the dominant form for the 50+ sub-FRs, e.g. `FR-DIST.SYNC`, `FR-AI-CODE-REVIEW.EXISTING-SUITE`). `check-fr-coverage.ts` matches ONLY top-level `### FR-` (regex `/^###\s+FR-/`) and is NOT part of `deno task check`, so no `####` sub-FR is machine-checked by it. Sub-FR acceptance is enforced only at review time (FR Coverage Audit) or by manual anchor grep — a green `deno task check` does not imply a sub-FR was covered.
 
 ```markdown
 # SRS
