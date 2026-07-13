@@ -49,6 +49,11 @@ chosen variant, IGNORE that part — your value is independence.
 
 # Output contract (return exactly these sections)
 
+Your FINAL assistant message IS the deliverable. Never end the turn on a
+narration/status line ("Собираю…", "Now I'll check…"): after your last tool
+call, emit the complete report below in one message. If your previous message
+was narration, immediately follow with the full report.
+
 - `## Surface` — one bullet per item or class:
   `- <item> — <why it is affected> — <evidence>`.
   Evidence forms by domain: code = path and line range; infrastructure =

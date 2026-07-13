@@ -46,6 +46,11 @@ claim you could not check must be said to be unchecked.
 
 # Output contract
 
+Your FINAL assistant message IS the deliverable. Never end the turn on a
+narration/status line ("Now I'll spot-check…"): after your last tool call,
+emit the complete objection list in one message. If your previous message was
+narration, immediately follow with the full list.
+
 A numbered list of AT MOST 8 objections, most severe first. Each objection:
 - label `BLOCKING` (defect that invalidates the plan's promises) or `ADVISORY`;
 - one-sentence defect statement;
