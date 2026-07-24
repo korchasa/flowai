@@ -59,3 +59,55 @@ export async function prepareAcpClaudeHome(
 
   return { HOME: benchHome };
 }
+
+/**
+ * Builds the isolated environment for an ACP **Codex** launch
+ * (FR-BENCH-SWE.IDE). Codex needs the same class of isolation Claude does, for
+ * two reasons observed on the maintainer's host:
+ *
+ * - `~/.codex/skills/` holds user-level skills that Codex discovers and that
+ *   would shadow the sandbox-installed pack — the codex twin of the collision
+ *   FR-ACCEPT-ISOLATION fixes for Claude;
+ * - `~/.codex/config.toml` sets `model` and `model_reasoning_effort` globally,
+ *   so an un-isolated run would take its reasoning effort from whoever's
+ *   machine launched the benchmark — exactly the leak the effort invariant
+ *   (FR-BENCH-SWE.SYMMETRY) forbids, since two arms run at different times.
+ *
+ * Isolation is by CONSTRUCTION, not by copying: the bench `CODEX_HOME` starts
+ * empty and only `auth.json` is symlinked back, so no user config can reach the
+ * session. Codex also writes its session rollouts under `CODEX_HOME/sessions/`,
+ * which keeps them next to the run for a future cost harvest.
+ *
+ * Returns `HOME` as well: the benchmark's gate/answer judge shells out to
+ * `claude -p` even when the agent under test is Codex, so it still needs the
+ * isolated Claude bench-home or the developer's personal `~/.claude` memory
+ * leaks into judge replies.
+ */
+// implements [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION]
+export async function prepareAcpCodexHome(
+  sandboxPath: string,
+): Promise<{ HOME: string; CODEX_HOME: string }> {
+  // The judge half — also creates the bench-home dir this CODEX_HOME sits in.
+  const { HOME } = await prepareAcpClaudeHome(sandboxPath);
+
+  const codexHome = join(HOME, ".codex");
+  await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
+
+  const realHome = Deno.env.get("HOME");
+  if (realHome) {
+    // ONLY the credentials — never config.toml, never skills/.
+    const src = join(realHome, ".codex", "auth.json");
+    try {
+      await Deno.lstat(src);
+      await Deno.symlink(src, join(codexHome, "auth.json"));
+    } catch (e) {
+      // Source absent (never logged in) → no link, so the bridge surfaces a
+      // real auth error instead of a dangling one. Already-linked is fine.
+      if (e instanceof Deno.errors.AlreadyExists) {
+        /* idempotent re-prepare */
+      }
+    }
+  }
+
+  return { HOME, CODEX_HOME: codexHome };
+}

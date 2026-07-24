@@ -1,7 +1,7 @@
 export type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 
 import type { AgentAdapter } from "./types.ts";
-import { prepareAcpClaudeHome } from "../acp/auth.ts";
+import { prepareAcpClaudeHome, prepareAcpCodexHome } from "../acp/auth.ts";
 import { ACP_AGENTS, ACP_LIB_VERSION, type AcpIde } from "../acp/registry.ts";
 
 export const SUPPORTED_IDES = Object.keys(ACP_AGENTS) as AcpIde[];
@@ -23,10 +23,14 @@ export function createAdapter(ide: string): AgentAdapter {
   return {
     ide: spec.ide,
     configDir: spec.configDir,
-    // Claude needs the isolated bench-home so sandbox skills win over
-    // ~/.claude/skills/ and Keychain subscription auth survives the wrapper.
+    // Claude and Codex both need an isolated home so sandbox skills win over
+    // the user-level snapshot and subscription auth still resolves. Codex adds
+    // CODEX_HOME (its own config root) on top of the Claude bench-home, which
+    // the judge still uses. Cursor/OpenCode have no analogous collision.
     prepareWorkspace: spec.ide === "claude"
       ? (sandboxPath: string) => prepareAcpClaudeHome(sandboxPath)
+      : spec.ide === "codex"
+      ? (sandboxPath: string) => prepareAcpCodexHome(sandboxPath)
       : undefined,
     // ACP token usage is not yet surfaced by the wrapper — best-effort null.
     calculateUsage: () => Promise.resolve(null),

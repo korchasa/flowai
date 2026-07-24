@@ -1,0 +1,374 @@
+{
+  "provenance": {
+    "dataset": "nebius/SWE-rebench-leaderboard",
+    "forkCommit": "e4907b7a90eafaa1f0a6428fd04fe31cdd8b4284",
+    "split": "2026_03",
+    "modelSnapshot": "claude-sonnet-5",
+    "opusCeiling": "claude-opus — 1 probe over the Sonnet-0/3 queue",
+    "effort": "high",
+    "trainingCutoff": "2026-01",
+    "vintageCut": "2026-01-31",
+    "vintageRule": "admit only created_at strictly after trainingCutoff; enforced at selection + freeze integrity test",
+    "sonnetReps": 3,
+    "perRepResolved": {
+      "rep1": 31,
+      "rep2": 30,
+      "rep3": 31
+    },
+    "opusProbe": {
+      "queueSize": 26,
+      "resolved": 0
+    },
+    "excluded": [
+      "youssofal__mtplx-21"
+    ],
+    "summary": {
+      "keeper": 8,
+      "reject_no_headroom": 32,
+      "reject_no_ceiling": 26,
+      "excluded": 1
+    },
+    "eligible": 66,
+    "generatedFrom": [
+      "scripts/benchmark/runs/pool2-baseline/rep{1,2,3}/solves.json",
+      "scripts/benchmark/runs/pool2-opus-probe/rep1/solves.json"
+    ]
+  },
+  "instances": {
+    "aallan__vera-662_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "agentscope-ai__qwenpaw-3278": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "agronholm__anyio-1121": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "agronholm__anyio-1134": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "alibaba__opensandbox-816": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "apache__iceberg-python-3295": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "astronomy-commons__lsdb-1349": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "azure-samples__azure-search-openai-demo-3025": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "beever-ai__beever-atlas-102": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "celestoai__smolvm-172": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "copier-org__copier-2646": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "cpp-linter__cpp-linter-hooks-206_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "cs-si__eodag-2176": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "databricks__dbt-databricks-1428": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "deltares__hydrolib-core-1049_interface": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "geopython__pygeoapi-2338": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "graphistry__pygraphistry-1107_interface": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "graphistry__pygraphistry-1277": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "hkuds__openharness-217": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "huggingface__huggingface_hub-4056": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "itsdnns__docsight-437": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "koxudaxi__datamodel-code-generator-3070": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "koxudaxi__datamodel-code-generator-3071": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "line__line-bot-sdk-python-981_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "macbre__sql-metadata-625_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "marshmallow-code__marshmallow-2925_interface": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "meltano__meltano-9929": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "meltano__meltano-9950": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "mempalace__mempalace-1004": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "microsoft__qcodes-8039": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "nesquena__hermes-webui-1818": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "nesquena__hermes-webui-2056": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "nesquena__hermes-webui-330_interface": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "oemof__tespy-921": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "olofk__fusesoc-776_interface": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "pallets-eco__wtforms-892_interface": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "pdm-project__pdm-3759": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "pennylaneai__pennylane-9298": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "pipecat-ai__pipecat-4283": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "pyinfra-dev__pyinfra-1665": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "pyinfra-dev__pyinfra-1679_interface": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "pypa__build-1027": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "pypa__twine-1309": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "python-scim__scim2-models-139_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "python-wheel-build__fromager-1106": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "python-wheel-build__fromager-1124": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "raullenchai__rapid-mlx-227": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "raullenchai__rapid-mlx-228": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "raullenchai__rapid-mlx-289": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "raullenchai__rapid-mlx-341_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "reframe-hpc__reframe-3660_interface": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "schemathesis__schemathesis-3778": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "schemathesis__schemathesis-3933": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "schemathesis__schemathesis-4087": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "sigma67__ytmusicapi-909_interface": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "spack__spack-52244": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    "tobymao__sqlglot-7457": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "tobymao__sqlglot-7479": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "tox-dev__tox-3904": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "tox-dev__tox-3931": {
+      "sonnet_reps": 1,
+      "opus_resolved": null,
+      "verdict": "keeper"
+    },
+    "ucfopen__canvasapi-716": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "ultraplot__ultraplot-696": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "unit8co__darts-3065": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "vprusso__toqito-1538": {
+      "sonnet_reps": 2,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "youssofal__mtplx-21": {
+      "sonnet_reps": 0,
+      "opus_resolved": null,
+      "verdict": "excluded"
+    },
+    "zarr-developers__virtualizarr-979": {
+      "sonnet_reps": 3,
+      "opus_resolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    "zauberzeug__nicegui-5914": {
+      "sonnet_reps": 0,
+      "opus_resolved": false,
+      "verdict": "reject_no_ceiling"
+    }
+  }
+}

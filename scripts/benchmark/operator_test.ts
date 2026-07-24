@@ -2,6 +2,7 @@ import { assert, assertEquals } from "@std/assert";
 import {
   baselineTask,
   baseTask,
+  commandPrefixFor,
   planTurn,
   reviewTurn,
   ScriptedOperator,
@@ -48,6 +49,37 @@ Deno.test("planTurn: planner-only gate — carries the issue, forbids source edi
   );
 });
 
+/**
+ * The command prefix is IDE-dependent, and getting it wrong silently disables
+ * the whole flowai arm. Measured on the codex ACP bridge (2026-07-24): a
+ * `/plan <args>` turn is REJECTED outright with `Command "/plan" requires no
+ * arguments.` — the skill never runs. The documented codex form `$plan <args>`
+ * does fire it (transcript: "I'm using the `plan` skill because you explicitly
+ * requested `$plan`", followed by reading `.codex/skills/plan/SKILL.md`).
+ * Claude keeps `/` — its Agent SDK parses the name up to the first space.
+ */
+Deno.test("commandPrefixFor: codex invokes skills with $, claude with /", () => {
+  assertEquals(commandPrefixFor("codex"), "$");
+  assertEquals(commandPrefixFor("claude"), "/");
+  // Unknown IDEs keep the historical slash rather than guessing a new syntax.
+  assertEquals(commandPrefixFor("cursor"), "/");
+});
+
+Deno.test("planTurn/reviewTurn: carry the IDE's prefix, args unchanged", () => {
+  const issue = "Boom on empty input";
+  const claudePlan = planTurn("django/django", issue);
+  const codexPlan = planTurn("django/django", issue, "$");
+  assert(claudePlan.startsWith("/plan "), "claude keeps the slash form");
+  assert(codexPlan.startsWith("$plan "), "codex needs the dollar form");
+  // Only the prefix differs — the arm's instructions must stay identical, or
+  // the two IDEs would be measured on different prompts.
+  assertEquals(codexPlan.slice(1), claudePlan.slice(1));
+
+  assert(reviewTurn().startsWith("/review "));
+  assert(reviewTurn("$").startsWith("$review "));
+  assertEquals(reviewTurn("$").slice(1), reviewTurn().slice(1));
+});
+
 Deno.test("gate implement turn / reviewTurn: separate follow-up commands", () => {
   assert(implementTurnWithVerdict("Go ahead.").startsWith("/implement"));
   assert(reviewTurn().startsWith("/review"));
@@ -65,11 +97,22 @@ Deno.test("baseTask: neutral shared framing — repo + issue + no-commit, NO aut
   );
 });
 
-Deno.test("baselineTask: single-shot arm keeps the full-autonomy wording", () => {
+Deno.test("baselineTask: symmetric human availability — reviewer reachable, no autonomy line", () => {
   const b = baselineTask("psf/requests", "Some bug");
   assert(b.includes("psf/requests"));
   assert(b.includes("Some bug"));
-  assert(/never stop to ask/i.test(b), "baseline must instruct full autonomy");
+  // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-judge-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+  // the arms must share one human-availability policy; the old "make every
+  // decision yourself and never stop to ask" line made baseline's conditions
+  // differ beyond flowai itself.
+  assert(
+    !/never stop to ask/i.test(b),
+    "autonomy line removed — equal human availability in both arms",
+  );
+  assert(
+    /ask/i.test(b),
+    "must tell the agent a reviewer is available for questions",
+  );
 });
 
 /**

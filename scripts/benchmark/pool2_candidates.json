@@ -1,0 +1,4632 @@
+[
+  {
+    "instanceId": "schemathesis__schemathesis-4087",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2026-05-12 11:45:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-4087:latest",
+    "f2p": 2,
+    "p2p": 105,
+    "patchBytes": 2171
+  },
+  {
+    "instanceId": "aallan__vera-662_interface",
+    "repo": "aallan/vera",
+    "createdAt": "2026-05-12 08:07:53",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.aallan_1776_vera-662_interface:latest",
+    "f2p": 2,
+    "p2p": 1099,
+    "patchBytes": 18348
+  },
+  {
+    "instanceId": "cs-si__eodag-2176",
+    "repo": "CS-SI/eodag",
+    "createdAt": "2026-05-11 10:01:25",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.cs-si_1776_eodag-2176:latest",
+    "f2p": 1,
+    "p2p": 123,
+    "patchBytes": 2182
+  },
+  {
+    "instanceId": "nesquena__hermes-webui-2056",
+    "repo": "nesquena/hermes-webui",
+    "createdAt": "2026-05-11 05:49:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.nesquena_1776_hermes-webui-2056:latest",
+    "f2p": 3,
+    "p2p": 54,
+    "patchBytes": 6056
+  },
+  {
+    "instanceId": "geopython__pygeoapi-2338",
+    "repo": "geopython/pygeoapi",
+    "createdAt": "2026-05-11 03:12:03",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.geopython_1776_pygeoapi-2338:latest",
+    "f2p": 5,
+    "p2p": 40,
+    "patchBytes": 2947
+  },
+  {
+    "instanceId": "raullenchai__rapid-mlx-341_interface",
+    "repo": "raullenchai/Rapid-MLX",
+    "createdAt": "2026-05-09 17:33:42",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.raullenchai_1776_rapid-mlx-341_interface:latest",
+    "f2p": 2,
+    "p2p": 120,
+    "patchBytes": 3471
+  },
+  {
+    "instanceId": "macbre__sql-metadata-625_interface",
+    "repo": "macbre/sql-metadata",
+    "createdAt": "2026-05-07 20:17:44",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.macbre_1776_sql-metadata-625_interface:latest",
+    "f2p": 1,
+    "p2p": 7,
+    "patchBytes": 1078
+  },
+  {
+    "instanceId": "youssofal__mtplx-21",
+    "repo": "youssofal/MTPLX",
+    "createdAt": "2026-05-07 19:59:26",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.youssofal_1776_mtplx-21:latest",
+    "f2p": 4,
+    "p2p": 5,
+    "patchBytes": 5898
+  },
+  {
+    "instanceId": "raullenchai__rapid-mlx-289",
+    "repo": "raullenchai/Rapid-MLX",
+    "createdAt": "2026-05-07 19:33:12",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.raullenchai_1776_rapid-mlx-289:latest",
+    "f2p": 2,
+    "p2p": 122,
+    "patchBytes": 2419
+  },
+  {
+    "instanceId": "nesquena__hermes-webui-1818",
+    "repo": "nesquena/hermes-webui",
+    "createdAt": "2026-05-07 13:43:28",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.nesquena_1776_hermes-webui-1818:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 10459
+  },
+  {
+    "instanceId": "olofk__fusesoc-776_interface",
+    "repo": "olofk/fusesoc",
+    "createdAt": "2026-05-07 12:05:49",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.olofk_1776_fusesoc-776_interface:latest",
+    "f2p": 1,
+    "p2p": 14,
+    "patchBytes": 3154
+  },
+  {
+    "instanceId": "python-wheel-build__fromager-1124",
+    "repo": "python-wheel-build/fromager",
+    "createdAt": "2026-05-07 03:47:42",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.python-wheel-build_1776_fromager-1124:latest",
+    "f2p": 7,
+    "p2p": 28,
+    "patchBytes": 5364
+  },
+  {
+    "instanceId": "itsdnns__docsight-437",
+    "repo": "itsDNNS/docsight",
+    "createdAt": "2026-05-06 09:32:16",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.itsdnns_1776_docsight-437:latest",
+    "f2p": 5,
+    "p2p": 40,
+    "patchBytes": 10037
+  },
+  {
+    "instanceId": "agronholm__anyio-1134",
+    "repo": "agronholm/anyio",
+    "createdAt": "2026-05-05 21:20:58",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.agronholm_1776_anyio-1134:latest",
+    "f2p": 4,
+    "p2p": 36,
+    "patchBytes": 2838
+  },
+  {
+    "instanceId": "raullenchai__rapid-mlx-228",
+    "repo": "raullenchai/Rapid-MLX",
+    "createdAt": "2026-05-05 17:40:54",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.raullenchai_1776_rapid-mlx-228:latest",
+    "f2p": 2,
+    "p2p": 30,
+    "patchBytes": 1975
+  },
+  {
+    "instanceId": "raullenchai__rapid-mlx-227",
+    "repo": "raullenchai/Rapid-MLX",
+    "createdAt": "2026-05-05 17:39:40",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.raullenchai_1776_rapid-mlx-227:latest",
+    "f2p": 5,
+    "p2p": 21,
+    "patchBytes": 2642
+  },
+  {
+    "instanceId": "python-wheel-build__fromager-1106",
+    "repo": "python-wheel-build/fromager",
+    "createdAt": "2026-05-04 11:13:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.python-wheel-build_1776_fromager-1106:latest",
+    "f2p": 5,
+    "p2p": 16,
+    "patchBytes": 4075
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3933",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2026-05-04 09:43:10",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3933:latest",
+    "f2p": 1,
+    "p2p": 96,
+    "patchBytes": 4673
+  },
+  {
+    "instanceId": "graphistry__pygraphistry-1277",
+    "repo": "graphistry/pygraphistry",
+    "createdAt": "2026-05-04 02:58:43",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.graphistry_1776_pygraphistry-1277:latest",
+    "f2p": 2,
+    "p2p": 628,
+    "patchBytes": 5566
+  },
+  {
+    "instanceId": "pallets-eco__wtforms-892_interface",
+    "repo": "pallets-eco/wtforms",
+    "createdAt": "2026-05-03 13:17:49",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pallets-eco_1776_wtforms-892_interface:latest",
+    "f2p": 10,
+    "p2p": 0,
+    "patchBytes": 8283
+  },
+  {
+    "instanceId": "tox-dev__tox-3931",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-05-01 15:37:40",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3931:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 1848
+  },
+  {
+    "instanceId": "copier-org__copier-2646",
+    "repo": "copier-org/copier",
+    "createdAt": "2026-04-30 11:21:38",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.copier-org_1776_copier-2646:latest",
+    "f2p": 1,
+    "p2p": 6,
+    "patchBytes": 4456
+  },
+  {
+    "instanceId": "hkuds__openharness-217",
+    "repo": "HKUDS/OpenHarness",
+    "createdAt": "2026-04-30 00:28:27",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.hkuds_1776_openharness-217:latest",
+    "f2p": 6,
+    "p2p": 2,
+    "patchBytes": 2433
+  },
+  {
+    "instanceId": "astronomy-commons__lsdb-1349",
+    "repo": "astronomy-commons/lsdb",
+    "createdAt": "2026-04-29 20:36:11",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.astronomy-commons_1776_lsdb-1349:latest",
+    "f2p": 1,
+    "p2p": 21,
+    "patchBytes": 4920
+  },
+  {
+    "instanceId": "beever-ai__beever-atlas-102",
+    "repo": "Beever-AI/beever-atlas",
+    "createdAt": "2026-04-29 16:56:35",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.beever-ai_1776_beever-atlas-102:latest",
+    "f2p": 1,
+    "p2p": 3,
+    "patchBytes": 2252
+  },
+  {
+    "instanceId": "alibaba__opensandbox-816",
+    "repo": "alibaba/OpenSandbox",
+    "createdAt": "2026-04-29 07:35:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.alibaba_1776_opensandbox-816:latest",
+    "f2p": 1,
+    "p2p": 108,
+    "patchBytes": 2092
+  },
+  {
+    "instanceId": "apache__iceberg-python-3295",
+    "repo": "apache/iceberg-python",
+    "createdAt": "2026-04-28 22:03:47",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.apache_1776_iceberg-python-3295:latest",
+    "f2p": 7,
+    "p2p": 164,
+    "patchBytes": 1916
+  },
+  {
+    "instanceId": "reframe-hpc__reframe-3660_interface",
+    "repo": "reframe-hpc/reframe",
+    "createdAt": "2026-04-27 23:53:48",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.reframe-hpc_1776_reframe-3660_interface:latest",
+    "f2p": 1,
+    "p2p": 149,
+    "patchBytes": 3137
+  },
+  {
+    "instanceId": "databricks__dbt-databricks-1428",
+    "repo": "databricks/dbt-databricks",
+    "createdAt": "2026-04-27 19:20:43",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.databricks_1776_dbt-databricks-1428:latest",
+    "f2p": 2,
+    "p2p": 60,
+    "patchBytes": 3264
+  },
+  {
+    "instanceId": "zarr-developers__virtualizarr-979",
+    "repo": "zarr-developers/VirtualiZarr",
+    "createdAt": "2026-04-24 16:09:18",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.zarr-developers_1776_virtualizarr-979:latest",
+    "f2p": 3,
+    "p2p": 10,
+    "patchBytes": 2757
+  },
+  {
+    "instanceId": "sigma67__ytmusicapi-909_interface",
+    "repo": "sigma67/ytmusicapi",
+    "createdAt": "2026-04-23 19:52:13",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.sigma67_1776_ytmusicapi-909_interface:latest",
+    "f2p": 25,
+    "p2p": 0,
+    "patchBytes": 4062
+  },
+  {
+    "instanceId": "vprusso__toqito-1538",
+    "repo": "vprusso/toqito",
+    "createdAt": "2026-04-22 15:23:30",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.vprusso_1776_toqito-1538:latest",
+    "f2p": 15,
+    "p2p": 16,
+    "patchBytes": 8982
+  },
+  {
+    "instanceId": "agronholm__anyio-1121",
+    "repo": "agronholm/anyio",
+    "createdAt": "2026-04-21 14:00:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.agronholm_1776_anyio-1121:latest",
+    "f2p": 1,
+    "p2p": 32,
+    "patchBytes": 1768
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3778",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2026-04-21 11:18:39",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3778:latest",
+    "f2p": 1,
+    "p2p": 142,
+    "patchBytes": 4789
+  },
+  {
+    "instanceId": "pyinfra-dev__pyinfra-1679_interface",
+    "repo": "pyinfra-dev/pyinfra",
+    "createdAt": "2026-04-20 07:41:05",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pyinfra-dev_1776_pyinfra-1679_interface:latest",
+    "f2p": 3,
+    "p2p": 10,
+    "patchBytes": 4704
+  },
+  {
+    "instanceId": "mempalace__mempalace-1004",
+    "repo": "MemPalace/mempalace",
+    "createdAt": "2026-04-18 17:52:28",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.mempalace_1776_mempalace-1004:latest",
+    "f2p": 2,
+    "p2p": 36,
+    "patchBytes": 6883
+  },
+  {
+    "instanceId": "celestoai__smolvm-172",
+    "repo": "CelestoAI/SmolVM",
+    "createdAt": "2026-04-18 11:06:08",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.celestoai_1776_smolvm-172:latest",
+    "f2p": 8,
+    "p2p": 94,
+    "patchBytes": 21776
+  },
+  {
+    "instanceId": "pypa__twine-1309",
+    "repo": "pypa/twine",
+    "createdAt": "2026-04-17 17:23:13",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pypa_1776_twine-1309:latest",
+    "f2p": 1,
+    "p2p": 3,
+    "patchBytes": 1131
+  },
+  {
+    "instanceId": "ultraplot__ultraplot-696",
+    "repo": "Ultraplot/UltraPlot",
+    "createdAt": "2026-04-16 22:58:14",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.ultraplot_1776_ultraplot-696:latest",
+    "f2p": 2,
+    "p2p": 49,
+    "patchBytes": 1179
+  },
+  {
+    "instanceId": "pyinfra-dev__pyinfra-1665",
+    "repo": "pyinfra-dev/pyinfra",
+    "createdAt": "2026-04-14 07:06:21",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pyinfra-dev_1776_pyinfra-1665:latest",
+    "f2p": 1,
+    "p2p": 33,
+    "patchBytes": 2382
+  },
+  {
+    "instanceId": "pipecat-ai__pipecat-4283",
+    "repo": "pipecat-ai/pipecat",
+    "createdAt": "2026-04-13 22:11:49",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pipecat-ai_1776_pipecat-4283:latest",
+    "f2p": 1,
+    "p2p": 20,
+    "patchBytes": 5500
+  },
+  {
+    "instanceId": "pennylaneai__pennylane-9298",
+    "repo": "PennyLaneAI/pennylane",
+    "createdAt": "2026-04-13 19:33:03",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pennylaneai_1776_pennylane-9298:latest",
+    "f2p": 1,
+    "p2p": 31,
+    "patchBytes": 4950
+  },
+  {
+    "instanceId": "microsoft__qcodes-8039",
+    "repo": "microsoft/Qcodes",
+    "createdAt": "2026-04-13 10:36:33",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.microsoft_1776_qcodes-8039:latest",
+    "f2p": 2,
+    "p2p": 6,
+    "patchBytes": 1738
+  },
+  {
+    "instanceId": "deltares__hydrolib-core-1049_interface",
+    "repo": "Deltares/HYDROLIB-core",
+    "createdAt": "2026-04-13 09:42:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.deltares_1776_hydrolib-core-1049_interface:latest",
+    "f2p": 2,
+    "p2p": 104,
+    "patchBytes": 1625
+  },
+  {
+    "instanceId": "pypsa__pypsa-1653",
+    "repo": "PyPSA/PyPSA",
+    "createdAt": "2026-04-13 08:33:16",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pypsa_1776_pypsa-1653:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 2393
+  },
+  {
+    "instanceId": "spack__spack-52244",
+    "repo": "spack/spack",
+    "createdAt": "2026-04-13 07:36:02",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.spack_1776_spack-52244:latest",
+    "f2p": 2,
+    "p2p": 9,
+    "patchBytes": 7212
+  },
+  {
+    "instanceId": "nesquena__hermes-webui-330_interface",
+    "repo": "nesquena/hermes-webui",
+    "createdAt": "2026-04-12 21:10:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.nesquena_1776_hermes-webui-330_interface:latest",
+    "f2p": 4,
+    "p2p": 4,
+    "patchBytes": 4655
+  },
+  {
+    "instanceId": "agentscope-ai__qwenpaw-3278",
+    "repo": "agentscope-ai/QwenPaw",
+    "createdAt": "2026-04-12 04:51:22",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.agentscope-ai_1776_qwenpaw-3278:latest",
+    "f2p": 13,
+    "p2p": 3,
+    "patchBytes": 2728
+  },
+  {
+    "instanceId": "unit8co__darts-3065",
+    "repo": "unit8co/darts",
+    "createdAt": "2026-04-10 23:06:13",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.unit8co_1776_darts-3065:latest",
+    "f2p": 4,
+    "p2p": 8,
+    "patchBytes": 2604
+  },
+  {
+    "instanceId": "meltano__meltano-9950",
+    "repo": "meltano/meltano",
+    "createdAt": "2026-04-10 20:30:39",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.meltano_1776_meltano-9950:latest",
+    "f2p": 3,
+    "p2p": 2,
+    "patchBytes": 2312
+  },
+  {
+    "instanceId": "pypa__build-1027",
+    "repo": "pypa/build",
+    "createdAt": "2026-04-10 18:48:38",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pypa_1776_build-1027:latest",
+    "f2p": 4,
+    "p2p": 60,
+    "patchBytes": 2343
+  },
+  {
+    "instanceId": "tobymao__sqlglot-7479",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2026-04-09 12:51:48",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-7479:latest",
+    "f2p": 1,
+    "p2p": 57,
+    "patchBytes": 1895
+  },
+  {
+    "instanceId": "graphistry__pygraphistry-1107_interface",
+    "repo": "graphistry/pygraphistry",
+    "createdAt": "2026-04-08 23:33:51",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.graphistry_1776_pygraphistry-1107_interface:latest",
+    "f2p": 7,
+    "p2p": 0,
+    "patchBytes": 3041
+  },
+  {
+    "instanceId": "azure-samples__azure-search-openai-demo-3025",
+    "repo": "Azure-Samples/azure-search-openai-demo",
+    "createdAt": "2026-04-06 23:17:47",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.azure-samples_1776_azure-search-openai-demo-3025:latest",
+    "f2p": 2,
+    "p2p": 5,
+    "patchBytes": 3616
+  },
+  {
+    "instanceId": "keras-team__keras-22642",
+    "repo": "keras-team/keras",
+    "createdAt": "2026-04-06 21:57:28",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.keras-team_1776_keras-22642:latest",
+    "f2p": 1,
+    "p2p": 16,
+    "patchBytes": 1661
+  },
+  {
+    "instanceId": "huggingface__huggingface_hub-4056",
+    "repo": "huggingface/huggingface_hub",
+    "createdAt": "2026-04-06 15:39:13",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.huggingface_1776_huggingface_hub-4056:latest",
+    "f2p": 2,
+    "p2p": 19,
+    "patchBytes": 3806
+  },
+  {
+    "instanceId": "cpp-linter__cpp-linter-hooks-206_interface",
+    "repo": "cpp-linter/cpp-linter-hooks",
+    "createdAt": "2026-04-05 20:19:31",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.cpp-linter_1776_cpp-linter-hooks-206_interface:latest",
+    "f2p": 3,
+    "p2p": 28,
+    "patchBytes": 6598
+  },
+  {
+    "instanceId": "tobymao__sqlglot-7457",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2026-04-05 13:50:52",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-7457:latest",
+    "f2p": 1,
+    "p2p": 57,
+    "patchBytes": 4060
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-3071",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-04-04 07:33:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-3071:latest",
+    "f2p": 8,
+    "p2p": 524,
+    "patchBytes": 4663
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-3070",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-04-04 06:59:19",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-3070:latest",
+    "f2p": 4,
+    "p2p": 309,
+    "patchBytes": 9698
+  },
+  {
+    "instanceId": "meltano__meltano-9929",
+    "repo": "meltano/meltano",
+    "createdAt": "2026-04-04 02:15:27",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.meltano_1776_meltano-9929:latest",
+    "f2p": 6,
+    "p2p": 33,
+    "patchBytes": 9228
+  },
+  {
+    "instanceId": "python-scim__scim2-models-139_interface",
+    "repo": "python-scim/scim2-models",
+    "createdAt": "2026-04-03 08:06:17",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.python-scim_1776_scim2-models-139_interface:latest",
+    "f2p": 9,
+    "p2p": 0,
+    "patchBytes": 16184
+  },
+  {
+    "instanceId": "pdm-project__pdm-3759",
+    "repo": "pdm-project/pdm",
+    "createdAt": "2026-04-01 14:37:40",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pdm-project_1776_pdm-3759:latest",
+    "f2p": 1,
+    "p2p": 63,
+    "patchBytes": 2580
+  },
+  {
+    "instanceId": "line__line-bot-sdk-python-981_interface",
+    "repo": "line/line-bot-sdk-python",
+    "createdAt": "2026-04-01 07:44:57",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.line_1776_line-bot-sdk-python-981_interface:latest",
+    "f2p": 4,
+    "p2p": 0,
+    "patchBytes": 17318
+  },
+  {
+    "instanceId": "ucfopen__canvasapi-716",
+    "repo": "ucfopen/canvasapi",
+    "createdAt": "2026-03-31 19:11:13",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.ucfopen_1776_canvasapi-716:latest",
+    "f2p": 2,
+    "p2p": 60,
+    "patchBytes": 2501
+  },
+  {
+    "instanceId": "zauberzeug__nicegui-5914",
+    "repo": "zauberzeug/nicegui",
+    "createdAt": "2026-03-26 14:10:41",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.zauberzeug_1776_nicegui-5914:latest",
+    "f2p": 1,
+    "p2p": 50,
+    "patchBytes": 3212
+  },
+  {
+    "instanceId": "oemof__tespy-921",
+    "repo": "oemof/tespy",
+    "createdAt": "2026-03-26 06:19:08",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.oemof_1776_tespy-921:latest",
+    "f2p": 1,
+    "p2p": 46,
+    "patchBytes": 2665
+  },
+  {
+    "instanceId": "tox-dev__tox-3904",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-03-26 04:52:51",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3904:latest",
+    "f2p": 2,
+    "p2p": 166,
+    "patchBytes": 3541
+  },
+  {
+    "instanceId": "marshmallow-code__marshmallow-2925_interface",
+    "repo": "marshmallow-code/marshmallow",
+    "createdAt": "2026-03-25 16:50:58",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.marshmallow-code_1776_marshmallow-2925_interface:latest",
+    "f2p": 2,
+    "p2p": 219,
+    "patchBytes": 2882
+  },
+  {
+    "instanceId": "holoviz__param-1117",
+    "repo": "holoviz/param",
+    "createdAt": "2026-03-25 14:50:38",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.holoviz_1776_param-1117:latest",
+    "f2p": 2,
+    "p2p": 94,
+    "patchBytes": 4380
+  },
+  {
+    "instanceId": "delgan__loguru-1451",
+    "repo": "Delgan/loguru",
+    "createdAt": "2026-03-25 02:34:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.delgan_1776_loguru-1451:latest",
+    "f2p": 2,
+    "p2p": 22,
+    "patchBytes": 1492
+  },
+  {
+    "instanceId": "scrapy__scrapy-7351_interface",
+    "repo": "scrapy/scrapy",
+    "createdAt": "2026-03-24 14:13:12",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.scrapy_1776_scrapy-7351_interface:latest",
+    "f2p": 2,
+    "p2p": 11,
+    "patchBytes": 2413
+  },
+  {
+    "instanceId": "pyinfra-dev__pyinfra-1630",
+    "repo": "pyinfra-dev/pyinfra",
+    "createdAt": "2026-03-24 13:55:45",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pyinfra-dev_1776_pyinfra-1630:latest",
+    "f2p": 7,
+    "p2p": 4,
+    "patchBytes": 4426
+  },
+  {
+    "instanceId": "pandas-dev__pandas-64816",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-03-24 01:27:57",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-64816:latest",
+    "f2p": 1,
+    "p2p": 131,
+    "patchBytes": 2789
+  },
+  {
+    "instanceId": "kubeflow__pipelines-13112",
+    "repo": "kubeflow/pipelines",
+    "createdAt": "2026-03-23 23:40:27",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.kubeflow_1776_pipelines-13112:latest",
+    "f2p": 7,
+    "p2p": 278,
+    "patchBytes": 6779
+  },
+  {
+    "instanceId": "pandas-dev__pandas-64797",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-03-23 21:01:03",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-64797:latest",
+    "f2p": 2,
+    "p2p": 2001,
+    "patchBytes": 7340
+  },
+  {
+    "instanceId": "pandas-dev__pandas-64796",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-03-23 21:00:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-64796:latest",
+    "f2p": 12,
+    "p2p": 511,
+    "patchBytes": 1885
+  },
+  {
+    "instanceId": "getmoto__moto-9903",
+    "repo": "getmoto/moto",
+    "createdAt": "2026-03-23 19:41:08",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9903:latest",
+    "f2p": 2,
+    "p2p": 147,
+    "patchBytes": 2179
+  },
+  {
+    "instanceId": "pgmpy__pgmpy-3137",
+    "repo": "pgmpy/pgmpy",
+    "createdAt": "2026-03-22 09:18:02",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pgmpy_1776_pgmpy-3137:latest",
+    "f2p": 1,
+    "p2p": 66,
+    "patchBytes": 2604
+  },
+  {
+    "instanceId": "sunpy__sunpy-8548_interface",
+    "repo": "sunpy/sunpy",
+    "createdAt": "2026-03-21 21:08:48",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.sunpy_1776_sunpy-8548_interface:latest",
+    "f2p": 6,
+    "p2p": 0,
+    "patchBytes": 3444
+  },
+  {
+    "instanceId": "harumiweb__exstruct-113",
+    "repo": "harumiWeb/exstruct",
+    "createdAt": "2026-03-21 08:53:23",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.harumiweb_1776_exstruct-113:latest",
+    "f2p": 2,
+    "p2p": 6,
+    "patchBytes": 8615
+  },
+  {
+    "instanceId": "genericmappingtools__pygmt-4463",
+    "repo": "GenericMappingTools/pygmt",
+    "createdAt": "2026-03-21 08:51:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.genericmappingtools_1776_pygmt-4463:latest",
+    "f2p": 9,
+    "p2p": 0,
+    "patchBytes": 9060
+  },
+  {
+    "instanceId": "idaholab__montepy-933_interface",
+    "repo": "idaholab/MontePy",
+    "createdAt": "2026-03-20 15:47:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.idaholab_1776_montepy-933_interface:latest",
+    "f2p": 6,
+    "p2p": 40,
+    "patchBytes": 1512
+  },
+  {
+    "instanceId": "hiero-ledger__hiero-sdk-python-2007_interface",
+    "repo": "hiero-ledger/hiero-sdk-python",
+    "createdAt": "2026-03-20 10:52:28",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.hiero-ledger_1776_hiero-sdk-python-2007_interface:latest",
+    "f2p": 2,
+    "p2p": 31,
+    "patchBytes": 12611
+  },
+  {
+    "instanceId": "stanfordnlp__dspy-9478_interface",
+    "repo": "stanfordnlp/dspy",
+    "createdAt": "2026-03-20 05:25:19",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.stanfordnlp_1776_dspy-9478_interface:latest",
+    "f2p": 7,
+    "p2p": 0,
+    "patchBytes": 3529
+  },
+  {
+    "instanceId": "vprusso__toqito-1484_interface",
+    "repo": "vprusso/toqito",
+    "createdAt": "2026-03-19 11:41:16",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.vprusso_1776_toqito-1484_interface:latest",
+    "f2p": 15,
+    "p2p": 0,
+    "patchBytes": 3525
+  },
+  {
+    "instanceId": "con__nwb2bids-347_interface",
+    "repo": "con/nwb2bids",
+    "createdAt": "2026-03-18 18:16:27",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.con_1776_nwb2bids-347_interface:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 4591
+  },
+  {
+    "instanceId": "psd-tools__psd-tools-593",
+    "repo": "psd-tools/psd-tools",
+    "createdAt": "2026-03-17 11:04:07",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.psd-tools_1776_psd-tools-593:latest",
+    "f2p": 4,
+    "p2p": 96,
+    "patchBytes": 1854
+  },
+  {
+    "instanceId": "scikit-learn__scikit-learn-33565",
+    "repo": "scikit-learn/scikit-learn",
+    "createdAt": "2026-03-17 10:54:06",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-33565:latest",
+    "f2p": 1,
+    "p2p": 76,
+    "patchBytes": 2459
+  },
+  {
+    "instanceId": "sqlfluff__sqlfluff-7622",
+    "repo": "sqlfluff/sqlfluff",
+    "createdAt": "2026-03-16 15:50:33",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.sqlfluff_1776_sqlfluff-7622:latest",
+    "f2p": 1,
+    "p2p": 29,
+    "patchBytes": 5719
+  },
+  {
+    "instanceId": "astropy__astropy-19438",
+    "repo": "astropy/astropy",
+    "createdAt": "2026-03-16 13:19:32",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-19438:latest",
+    "f2p": 1,
+    "p2p": 92,
+    "patchBytes": 6547
+  },
+  {
+    "instanceId": "sqlfluff__sqlfluff-7617",
+    "repo": "sqlfluff/sqlfluff",
+    "createdAt": "2026-03-16 06:55:25",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.sqlfluff_1776_sqlfluff-7617:latest",
+    "f2p": 1,
+    "p2p": 30,
+    "patchBytes": 4792
+  },
+  {
+    "instanceId": "dagster-io__dagster-33605",
+    "repo": "dagster-io/dagster",
+    "createdAt": "2026-03-15 15:42:33",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.dagster-io_1776_dagster-33605:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 2330
+  },
+  {
+    "instanceId": "sqlfluff__sqlfluff-7615",
+    "repo": "sqlfluff/sqlfluff",
+    "createdAt": "2026-03-15 12:31:18",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.sqlfluff_1776_sqlfluff-7615:latest",
+    "f2p": 1,
+    "p2p": 24,
+    "patchBytes": 2286
+  },
+  {
+    "instanceId": "conan-io__conan-19750",
+    "repo": "conan-io/conan",
+    "createdAt": "2026-03-13 10:20:23",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.conan-io_1776_conan-19750:latest",
+    "f2p": 1,
+    "p2p": 18,
+    "patchBytes": 1363
+  },
+  {
+    "instanceId": "pycqa__isort-2491",
+    "repo": "PyCQA/isort",
+    "createdAt": "2026-03-12 21:21:11",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pycqa_1776_isort-2491:latest",
+    "f2p": 1,
+    "p2p": 73,
+    "patchBytes": 4287
+  },
+  {
+    "instanceId": "destine-climate-dt__aqua-2768",
+    "repo": "DestinE-Climate-DT/AQUA",
+    "createdAt": "2026-03-12 01:12:01",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.destine-climate-dt_1776_aqua-2768:latest",
+    "f2p": 4,
+    "p2p": 13,
+    "patchBytes": 3709
+  },
+  {
+    "instanceId": "alibaba__opensandbox-426",
+    "repo": "alibaba/OpenSandbox",
+    "createdAt": "2026-03-11 12:47:51",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.alibaba_1776_opensandbox-426:latest",
+    "f2p": 6,
+    "p2p": 51,
+    "patchBytes": 10707
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-3046",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-03-10 16:48:04",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-3046:latest",
+    "f2p": 4,
+    "p2p": 514,
+    "patchBytes": 3661
+  },
+  {
+    "instanceId": "conan-io__conan-19735_interface",
+    "repo": "conan-io/conan",
+    "createdAt": "2026-03-10 10:33:02",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.conan-io_1776_conan-19735_interface:latest",
+    "f2p": 1,
+    "p2p": 21,
+    "patchBytes": 1520
+  },
+  {
+    "instanceId": "getmoto__moto-9841",
+    "repo": "getmoto/moto",
+    "createdAt": "2026-03-09 23:11:49",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9841:latest",
+    "f2p": 2,
+    "p2p": 149,
+    "patchBytes": 2506
+  },
+  {
+    "instanceId": "zauberzeug__nicegui-5858",
+    "repo": "zauberzeug/nicegui",
+    "createdAt": "2026-03-09 16:34:24",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.zauberzeug_1776_nicegui-5858:latest",
+    "f2p": 2,
+    "p2p": 3,
+    "patchBytes": 6186
+  },
+  {
+    "instanceId": "hiero-ledger__hiero-sdk-python-1914_interface",
+    "repo": "hiero-ledger/hiero-sdk-python",
+    "createdAt": "2026-03-06 14:12:44",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.hiero-ledger_1776_hiero-sdk-python-1914_interface:latest",
+    "f2p": 12,
+    "p2p": 9,
+    "patchBytes": 14238
+  },
+  {
+    "instanceId": "astronomy-commons__hats-648",
+    "repo": "astronomy-commons/hats",
+    "createdAt": "2026-03-06 10:12:00",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.astronomy-commons_1776_hats-648:latest",
+    "f2p": 15,
+    "p2p": 0,
+    "patchBytes": 1532
+  },
+  {
+    "instanceId": "containers__ramalama-2487",
+    "repo": "containers/ramalama",
+    "createdAt": "2026-03-05 10:57:45",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.containers_1776_ramalama-2487:latest",
+    "f2p": 1,
+    "p2p": 51,
+    "patchBytes": 3627
+  },
+  {
+    "instanceId": "tox-dev__tox-3846",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-03-03 15:34:23",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3846:latest",
+    "f2p": 7,
+    "p2p": 110,
+    "patchBytes": 2104
+  },
+  {
+    "instanceId": "keras-team__keras-22330",
+    "repo": "keras-team/keras",
+    "createdAt": "2026-03-02 18:17:38",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.keras-team_1776_keras-22330:latest",
+    "f2p": 1,
+    "p2p": 36,
+    "patchBytes": 1242
+  },
+  {
+    "instanceId": "tobymao__sqlglot-7187",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2026-03-02 15:56:17",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-7187:latest",
+    "f2p": 1,
+    "p2p": 38,
+    "patchBytes": 3408
+  },
+  {
+    "instanceId": "pallets__click-3239",
+    "repo": "pallets/click",
+    "createdAt": "2026-03-02 07:53:49",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.pallets_1776_click-3239:latest",
+    "f2p": 4,
+    "p2p": 694,
+    "patchBytes": 8534
+  },
+  {
+    "instanceId": "keras-team__keras-22316",
+    "repo": "keras-team/keras",
+    "createdAt": "2026-03-01 00:54:12",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.keras-team_1776_keras-22316:latest",
+    "f2p": 2,
+    "p2p": 8,
+    "patchBytes": 3408
+  },
+  {
+    "instanceId": "skypilot-org__skypilot-8908",
+    "repo": "skypilot-org/skypilot",
+    "createdAt": "2026-02-24 16:48:18",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.skypilot-org_1776_skypilot-8908:latest",
+    "f2p": 1,
+    "p2p": 27,
+    "patchBytes": 877
+  },
+  {
+    "instanceId": "psd-tools__psd-tools-551",
+    "repo": "psd-tools/psd-tools",
+    "createdAt": "2026-02-24 02:11:01",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.psd-tools_1776_psd-tools-551:latest",
+    "f2p": 3,
+    "p2p": 84,
+    "patchBytes": 1034
+  },
+  {
+    "instanceId": "aws__bedrock-agentcore-sdk-python-279_interface",
+    "repo": "aws/bedrock-agentcore-sdk-python",
+    "createdAt": "2026-02-23 17:33:52",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.aws_1776_bedrock-agentcore-sdk-python-279_interface:latest",
+    "f2p": 3,
+    "p2p": 90,
+    "patchBytes": 1966
+  },
+  {
+    "instanceId": "pytest-dev__pyfakefs-1286",
+    "repo": "pytest-dev/pyfakefs",
+    "createdAt": "2026-02-22 08:19:23",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.pytest-dev_1776_pyfakefs-1286:latest",
+    "f2p": 28,
+    "p2p": 0,
+    "patchBytes": 19967
+  },
+  {
+    "instanceId": "jmcgeheeiv__pyfakefs-1286",
+    "repo": "jmcgeheeiv/pyfakefs",
+    "createdAt": "2026-02-22 08:19:23",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.jmcgeheeiv_1776_pyfakefs-1286:latest",
+    "f2p": 28,
+    "p2p": 0,
+    "patchBytes": 19967
+  },
+  {
+    "instanceId": "tox-dev__tox-3810",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-02-22 06:43:19",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3810:latest",
+    "f2p": 1,
+    "p2p": 29,
+    "patchBytes": 2326
+  },
+  {
+    "instanceId": "joke2k__django-environ-592",
+    "repo": "joke2k/django-environ",
+    "createdAt": "2026-02-21 01:09:29",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.joke2k_1776_django-environ-592:latest",
+    "f2p": 3,
+    "p2p": 39,
+    "patchBytes": 3318
+  },
+  {
+    "instanceId": "marimo-team__marimo-8401",
+    "repo": "marimo-team/marimo",
+    "createdAt": "2026-02-20 22:10:54",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.marimo-team_1776_marimo-8401:latest",
+    "f2p": 1,
+    "p2p": 49,
+    "patchBytes": 1454
+  },
+  {
+    "instanceId": "huggingface__trl-5135",
+    "repo": "huggingface/trl",
+    "createdAt": "2026-02-20 10:46:54",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.huggingface_1776_trl-5135:latest",
+    "f2p": 6,
+    "p2p": 1,
+    "patchBytes": 4735
+  },
+  {
+    "instanceId": "marimo-team__marimo-8387_interface",
+    "repo": "marimo-team/marimo",
+    "createdAt": "2026-02-20 06:55:43",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.marimo-team_1776_marimo-8387_interface:latest",
+    "f2p": 16,
+    "p2p": 0,
+    "patchBytes": 1219
+  },
+  {
+    "instanceId": "strands-agents__sdk-python-1734",
+    "repo": "strands-agents/sdk-python",
+    "createdAt": "2026-02-19 17:24:04",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.strands-agents_1776_sdk-python-1734:latest",
+    "f2p": 4,
+    "p2p": 109,
+    "patchBytes": 2241
+  },
+  {
+    "instanceId": "jlowin__fastmcp-3237_interface",
+    "repo": "jlowin/fastmcp",
+    "createdAt": "2026-02-19 17:18:11",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.jlowin_1776_fastmcp-3237_interface:latest",
+    "f2p": 3,
+    "p2p": 39,
+    "patchBytes": 8922
+  },
+  {
+    "instanceId": "jlowin__fastmcp-3235",
+    "repo": "jlowin/fastmcp",
+    "createdAt": "2026-02-19 16:16:53",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.jlowin_1776_fastmcp-3235:latest",
+    "f2p": 5,
+    "p2p": 32,
+    "patchBytes": 6866
+  },
+  {
+    "instanceId": "opsmill__infrahub-8423",
+    "repo": "opsmill/infrahub",
+    "createdAt": "2026-02-19 16:08:58",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.opsmill_1776_infrahub-8423:latest",
+    "f2p": 1,
+    "p2p": 137,
+    "patchBytes": 3566
+  },
+  {
+    "instanceId": "narwhals-dev__narwhals-3480",
+    "repo": "narwhals-dev/narwhals",
+    "createdAt": "2026-02-19 15:51:39",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.narwhals-dev_1776_narwhals-3480:latest",
+    "f2p": 8,
+    "p2p": 98,
+    "patchBytes": 3672
+  },
+  {
+    "instanceId": "run-llama__llama_index-20748_interface",
+    "repo": "run-llama/llama_index",
+    "createdAt": "2026-02-19 14:24:24",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.run-llama_1776_llama_index-20748_interface:latest",
+    "f2p": 3,
+    "p2p": 0,
+    "patchBytes": 10668
+  },
+  {
+    "instanceId": "strands-agents__sdk-python-1719",
+    "repo": "strands-agents/sdk-python",
+    "createdAt": "2026-02-18 20:48:48",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.strands-agents_1776_sdk-python-1719:latest",
+    "f2p": 10,
+    "p2p": 10,
+    "patchBytes": 10627
+  },
+  {
+    "instanceId": "tox-dev__tox-3759",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-02-18 15:31:24",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3759:latest",
+    "f2p": 1,
+    "p2p": 32,
+    "patchBytes": 6625
+  },
+  {
+    "instanceId": "gammapy__gammapy-6409",
+    "repo": "gammapy/gammapy",
+    "createdAt": "2026-02-18 02:04:56",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.gammapy_1776_gammapy-6409:latest",
+    "f2p": 5,
+    "p2p": 19,
+    "patchBytes": 1540
+  },
+  {
+    "instanceId": "opsmill__infrahub-8407",
+    "repo": "opsmill/infrahub",
+    "createdAt": "2026-02-17 23:38:36",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.opsmill_1776_infrahub-8407:latest",
+    "f2p": 1,
+    "p2p": 26,
+    "patchBytes": 1939
+  },
+  {
+    "instanceId": "nilearn__nilearn-6031_interface",
+    "repo": "nilearn/nilearn",
+    "createdAt": "2026-02-17 22:03:22",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.nilearn_1776_nilearn-6031_interface:latest",
+    "f2p": 44,
+    "p2p": 0,
+    "patchBytes": 2373
+  },
+  {
+    "instanceId": "tox-dev__sphinx-autodoc-typehints-607",
+    "repo": "tox-dev/sphinx-autodoc-typehints",
+    "createdAt": "2026-02-17 21:41:44",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_sphinx-autodoc-typehints-607:latest",
+    "f2p": 2,
+    "p2p": 80,
+    "patchBytes": 1448
+  },
+  {
+    "instanceId": "tox-dev__sphinx-autodoc-typehints-606",
+    "repo": "tox-dev/sphinx-autodoc-typehints",
+    "createdAt": "2026-02-17 21:27:55",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_sphinx-autodoc-typehints-606:latest",
+    "f2p": 1,
+    "p2p": 83,
+    "patchBytes": 1230
+  },
+  {
+    "instanceId": "huggingface__transformers-44080",
+    "repo": "huggingface/transformers",
+    "createdAt": "2026-02-17 09:53:36",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.huggingface_1776_transformers-44080:latest",
+    "f2p": 1,
+    "p2p": 16,
+    "patchBytes": 1352
+  },
+  {
+    "instanceId": "newton-physics__newton-1653",
+    "repo": "newton-physics/newton",
+    "createdAt": "2026-02-16 14:47:26",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.newton-physics_1776_newton-1653:latest",
+    "f2p": 1,
+    "p2p": 137,
+    "patchBytes": 6650
+  },
+  {
+    "instanceId": "narwhals-dev__narwhals-3478",
+    "repo": "narwhals-dev/narwhals",
+    "createdAt": "2026-02-16 11:02:59",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.narwhals-dev_1776_narwhals-3478:latest",
+    "f2p": 1,
+    "p2p": 98,
+    "patchBytes": 2948
+  },
+  {
+    "instanceId": "docling-project__docling-2998",
+    "repo": "docling-project/docling",
+    "createdAt": "2026-02-16 01:14:19",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.docling-project_1776_docling-2998:latest",
+    "f2p": 3,
+    "p2p": 2,
+    "patchBytes": 11990
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-2998",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-02-14 06:35:10",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-2998:latest",
+    "f2p": 2,
+    "p2p": 309,
+    "patchBytes": 989
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-2996",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-02-14 06:19:51",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-2996:latest",
+    "f2p": 1,
+    "p2p": 503,
+    "patchBytes": 1384
+  },
+  {
+    "instanceId": "koxudaxi__datamodel-code-generator-2993",
+    "repo": "koxudaxi/datamodel-code-generator",
+    "createdAt": "2026-02-14 04:01:06",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.koxudaxi_1776_datamodel-code-generator-2993:latest",
+    "f2p": 2,
+    "p2p": 498,
+    "patchBytes": 1906
+  },
+  {
+    "instanceId": "scrapy__scrapy-7255",
+    "repo": "scrapy/scrapy",
+    "createdAt": "2026-02-13 13:19:49",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.scrapy_1776_scrapy-7255:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 1492
+  },
+  {
+    "instanceId": "tox-dev__tox-3683",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-02-13 08:57:34",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3683:latest",
+    "f2p": 7,
+    "p2p": 165,
+    "patchBytes": 2925
+  },
+  {
+    "instanceId": "pytorch__ignite-3532_interface",
+    "repo": "pytorch/ignite",
+    "createdAt": "2026-02-12 16:11:39",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.pytorch_1776_ignite-3532_interface:latest",
+    "f2p": 6,
+    "p2p": 51,
+    "patchBytes": 1205
+  },
+  {
+    "instanceId": "skrub-data__skrub-1899",
+    "repo": "skrub-data/skrub",
+    "createdAt": "2026-02-12 13:19:19",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.skrub-data_1776_skrub-1899:latest",
+    "f2p": 6,
+    "p2p": 125,
+    "patchBytes": 3432
+  },
+  {
+    "instanceId": "docling-project__docling-2983",
+    "repo": "docling-project/docling",
+    "createdAt": "2026-02-12 00:31:36",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.docling-project_1776_docling-2983:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 1030
+  },
+  {
+    "instanceId": "conan-io__conan-19604",
+    "repo": "conan-io/conan",
+    "createdAt": "2026-02-11 16:04:19",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.conan-io_1776_conan-19604:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 1178
+  },
+  {
+    "instanceId": "pyjanitor-devs__pyjanitor-1593",
+    "repo": "pyjanitor-devs/pyjanitor",
+    "createdAt": "2026-02-11 10:41:24",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.pyjanitor-devs_1776_pyjanitor-1593:latest",
+    "f2p": 3,
+    "p2p": 34,
+    "patchBytes": 11376
+  },
+  {
+    "instanceId": "a2aproject__a2a-python-682_interface",
+    "repo": "a2aproject/a2a-python",
+    "createdAt": "2026-02-11 08:01:42",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.a2aproject_1776_a2a-python-682_interface:latest",
+    "f2p": 2,
+    "p2p": 5,
+    "patchBytes": 1059
+  },
+  {
+    "instanceId": "joshuadavidthomas__django-bird-239",
+    "repo": "joshuadavidthomas/django-bird",
+    "createdAt": "2026-02-11 06:20:26",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.joshuadavidthomas_1776_django-bird-239:latest",
+    "f2p": 1,
+    "p2p": 58,
+    "patchBytes": 2665
+  },
+  {
+    "instanceId": "aws-cloudformation__cfn-python-lint-4368",
+    "repo": "aws-cloudformation/cfn-python-lint",
+    "createdAt": "2026-02-10 20:18:02",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.aws-cloudformation_1776_cfn-python-lint-4368:latest",
+    "f2p": 2,
+    "p2p": 7,
+    "patchBytes": 850
+  },
+  {
+    "instanceId": "packit__packit-2684",
+    "repo": "packit/packit",
+    "createdAt": "2026-02-10 15:25:33",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.packit_1776_packit-2684:latest",
+    "f2p": 3,
+    "p2p": 51,
+    "patchBytes": 1051
+  },
+  {
+    "instanceId": "deepset-ai__haystack-10547",
+    "repo": "deepset-ai/haystack",
+    "createdAt": "2026-02-10 10:52:48",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.deepset-ai_1776_haystack-10547:latest",
+    "f2p": 1,
+    "p2p": 26,
+    "patchBytes": 2553
+  },
+  {
+    "instanceId": "pandas-dev__pandas-64104",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-02-10 09:56:40",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-64104:latest",
+    "f2p": 7,
+    "p2p": 1008,
+    "patchBytes": 3266
+  },
+  {
+    "instanceId": "milvus-io__pymilvus-3273",
+    "repo": "milvus-io/pymilvus",
+    "createdAt": "2026-02-10 05:14:07",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.milvus-io_1776_pymilvus-3273:latest",
+    "f2p": 4,
+    "p2p": 32,
+    "patchBytes": 1182
+  },
+  {
+    "instanceId": "getmoto__moto-9727",
+    "repo": "getmoto/moto",
+    "createdAt": "2026-02-09 16:57:30",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9727:latest",
+    "f2p": 1,
+    "p2p": 30,
+    "patchBytes": 3409
+  },
+  {
+    "instanceId": "keras-team__keras-22138",
+    "repo": "keras-team/keras",
+    "createdAt": "2026-02-09 16:28:44",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.keras-team_1776_keras-22138:latest",
+    "f2p": 2,
+    "p2p": 306,
+    "patchBytes": 1074
+  },
+  {
+    "instanceId": "pandas-dev__pandas-64092",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-02-09 14:59:59",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-64092:latest",
+    "f2p": 1,
+    "p2p": 1095,
+    "patchBytes": 2500
+  },
+  {
+    "instanceId": "newton-physics__newton-1582",
+    "repo": "newton-physics/newton",
+    "createdAt": "2026-02-09 12:19:04",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.newton-physics_1776_newton-1582:latest",
+    "f2p": 1,
+    "p2p": 7,
+    "patchBytes": 1681
+  },
+  {
+    "instanceId": "optuna__optuna-6428",
+    "repo": "optuna/optuna",
+    "createdAt": "2026-02-09 05:12:21",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.optuna_1776_optuna-6428:latest",
+    "f2p": 1,
+    "p2p": 17,
+    "patchBytes": 1363
+  },
+  {
+    "instanceId": "litestar-org__advanced-alchemy-673_interface",
+    "repo": "litestar-org/advanced-alchemy",
+    "createdAt": "2026-02-06 21:58:50",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.litestar-org_1776_advanced-alchemy-673_interface:latest",
+    "f2p": 3,
+    "p2p": 171,
+    "patchBytes": 3776
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6991",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2026-02-06 14:31:53",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6991:latest",
+    "f2p": 1,
+    "p2p": 24,
+    "patchBytes": 2963
+  },
+  {
+    "instanceId": "astronomer__astronomer-cosmos-2332",
+    "repo": "astronomer/astronomer-cosmos",
+    "createdAt": "2026-02-05 17:46:35",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.astronomer_1776_astronomer-cosmos-2332:latest",
+    "f2p": 2,
+    "p2p": 128,
+    "patchBytes": 1960
+  },
+  {
+    "instanceId": "huggingface__transformers-43721_interface",
+    "repo": "huggingface/transformers",
+    "createdAt": "2026-02-03 20:01:08",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.huggingface_1776_transformers-43721_interface:latest",
+    "f2p": 2,
+    "p2p": 0,
+    "patchBytes": 2859
+  },
+  {
+    "instanceId": "omni-us__jsonargparse-839",
+    "repo": "omni-us/jsonargparse",
+    "createdAt": "2026-02-02 06:14:29",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.omni-us_1776_jsonargparse-839:latest",
+    "f2p": 1,
+    "p2p": 53,
+    "patchBytes": 1436
+  },
+  {
+    "instanceId": "scikit-learn__scikit-learn-33168",
+    "repo": "scikit-learn/scikit-learn",
+    "createdAt": "2026-02-01 21:08:10",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.scikit-learn_1776_scikit-learn-33168:latest",
+    "f2p": 1,
+    "p2p": 68,
+    "patchBytes": 1504
+  },
+  {
+    "instanceId": "stravalib__stravalib-709_interface",
+    "repo": "stravalib/stravalib",
+    "createdAt": "2026-02-01 14:52:01",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.stravalib_1776_stravalib-709_interface:latest",
+    "f2p": 2,
+    "p2p": 26,
+    "patchBytes": 2382
+  },
+  {
+    "instanceId": "open-telemetry__opentelemetry-python-4891",
+    "repo": "open-telemetry/opentelemetry-python",
+    "createdAt": "2026-02-01 11:56:11",
+    "split": "2026_02",
+    "imageName": "swerebench/sweb.eval.x86_64.open-telemetry_1776_opentelemetry-python-4891:latest",
+    "f2p": 1,
+    "p2p": 16,
+    "patchBytes": 1896
+  },
+  {
+    "instanceId": "nolar__kopf-1225",
+    "repo": "nolar/kopf",
+    "createdAt": "2026-01-30 16:28:51",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.nolar_1776_kopf-1225:latest",
+    "f2p": 4,
+    "p2p": 131,
+    "patchBytes": 1815
+  },
+  {
+    "instanceId": "pandas-dev__pandas-63945",
+    "repo": "pandas-dev/pandas",
+    "createdAt": "2026-01-30 04:30:20",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.pandas-dev_1776_pandas-63945:latest",
+    "f2p": 16252,
+    "p2p": 0,
+    "patchBytes": 1957
+  },
+  {
+    "instanceId": "yt-project__unyt-628",
+    "repo": "yt-project/unyt",
+    "createdAt": "2026-01-29 23:29:26",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.yt-project_1776_unyt-628:latest",
+    "f2p": 2,
+    "p2p": 620,
+    "patchBytes": 790
+  },
+  {
+    "instanceId": "python-scim__scim2-models-126",
+    "repo": "python-scim/scim2-models",
+    "createdAt": "2026-01-29 18:31:35",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.python-scim_1776_scim2-models-126:latest",
+    "f2p": 3,
+    "p2p": 337,
+    "patchBytes": 2318
+  },
+  {
+    "instanceId": "avaiga__taipy-2797",
+    "repo": "Avaiga/taipy",
+    "createdAt": "2026-01-29 12:16:37",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.avaiga_1776_taipy-2797:latest",
+    "f2p": 1,
+    "p2p": 84,
+    "patchBytes": 20999
+  },
+  {
+    "instanceId": "scipy__scipy-24454",
+    "repo": "scipy/scipy",
+    "createdAt": "2026-01-28 00:30:49",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.scipy_1776_scipy-24454:latest",
+    "f2p": 1,
+    "p2p": 5243,
+    "patchBytes": 3572
+  },
+  {
+    "instanceId": "beeware__briefcase-2651",
+    "repo": "beeware/briefcase",
+    "createdAt": "2026-01-27 16:12:15",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.beeware_1776_briefcase-2651:latest",
+    "f2p": 2,
+    "p2p": 82,
+    "patchBytes": 2505
+  },
+  {
+    "instanceId": "genericmappingtools__pygmt-4371",
+    "repo": "GenericMappingTools/pygmt",
+    "createdAt": "2026-01-27 00:32:36",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.genericmappingtools_1776_pygmt-4371:latest",
+    "f2p": 1,
+    "p2p": 6,
+    "patchBytes": 638
+  },
+  {
+    "instanceId": "pydap__pydap-624",
+    "repo": "pydap/pydap",
+    "createdAt": "2026-01-26 19:36:57",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.pydap_1776_pydap-624:latest",
+    "f2p": 3,
+    "p2p": 155,
+    "patchBytes": 2077
+  },
+  {
+    "instanceId": "linkml__linkml-3098",
+    "repo": "linkml/linkml",
+    "createdAt": "2026-01-26 15:40:05",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.linkml_1776_linkml-3098:latest",
+    "f2p": 1,
+    "p2p": 209,
+    "patchBytes": 961
+  },
+  {
+    "instanceId": "sissbruecker__linkding-1291",
+    "repo": "sissbruecker/linkding",
+    "createdAt": "2026-01-25 10:00:24",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.sissbruecker_1776_linkding-1291:latest",
+    "f2p": 9,
+    "p2p": 131,
+    "patchBytes": 6285
+  },
+  {
+    "instanceId": "python-scim__scim2-models-120",
+    "repo": "python-scim/scim2-models",
+    "createdAt": "2026-01-25 08:45:09",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.python-scim_1776_scim2-models-120:latest",
+    "f2p": 3,
+    "p2p": 300,
+    "patchBytes": 6783
+  },
+  {
+    "instanceId": "ardupilot__methodicconfigurator-1201",
+    "repo": "ArduPilot/MethodicConfigurator",
+    "createdAt": "2026-01-22 20:37:40",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.ardupilot_1776_methodicconfigurator-1201:latest",
+    "f2p": 1,
+    "p2p": 242,
+    "patchBytes": 1850
+  },
+  {
+    "instanceId": "scipp__plopp-513",
+    "repo": "scipp/plopp",
+    "createdAt": "2026-01-22 12:50:06",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.scipp_1776_plopp-513:latest",
+    "f2p": 1,
+    "p2p": 8,
+    "patchBytes": 4334
+  },
+  {
+    "instanceId": "holoviz__holoviews-6783",
+    "repo": "holoviz/holoviews",
+    "createdAt": "2026-01-22 08:49:37",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.holoviz_1776_holoviews-6783:latest",
+    "f2p": 1,
+    "p2p": 96,
+    "patchBytes": 740
+  },
+  {
+    "instanceId": "python-markdown__markdown-1587",
+    "repo": "Python-Markdown/markdown",
+    "createdAt": "2026-01-20 20:57:18",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.python-markdown_1776_markdown-1587:latest",
+    "f2p": 1,
+    "p2p": 117,
+    "patchBytes": 3234
+  },
+  {
+    "instanceId": "careamics__careamics-688",
+    "repo": "CAREamics/careamics",
+    "createdAt": "2026-01-20 14:30:22",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.careamics_1776_careamics-688:latest",
+    "f2p": 2,
+    "p2p": 55,
+    "patchBytes": 1492
+  },
+  {
+    "instanceId": "imperialcollegelondon__pyrealm-593",
+    "repo": "ImperialCollegeLondon/pyrealm",
+    "createdAt": "2026-01-19 13:54:15",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.imperialcollegelondon_1776_pyrealm-593:latest",
+    "f2p": 16,
+    "p2p": 586,
+    "patchBytes": 29644
+  },
+  {
+    "instanceId": "researchobject__ro-crate-py-248",
+    "repo": "ResearchObject/ro-crate-py",
+    "createdAt": "2026-01-19 10:59:25",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.researchobject_1776_ro-crate-py-248:latest",
+    "f2p": 1,
+    "p2p": 37,
+    "patchBytes": 3103
+  },
+  {
+    "instanceId": "idaholab__montepy-882",
+    "repo": "idaholab/MontePy",
+    "createdAt": "2026-01-18 01:51:09",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.idaholab_1776_montepy-882:latest",
+    "f2p": 3,
+    "p2p": 155,
+    "patchBytes": 2544
+  },
+  {
+    "instanceId": "sciunto-org__python-bibtexparser-515",
+    "repo": "sciunto-org/python-bibtexparser",
+    "createdAt": "2026-01-17 20:53:02",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.sciunto-org_1776_python-bibtexparser-515:latest",
+    "f2p": 6,
+    "p2p": 21,
+    "patchBytes": 2899
+  },
+  {
+    "instanceId": "ncar__geocat-comp-811",
+    "repo": "NCAR/geocat-comp",
+    "createdAt": "2026-01-17 01:44:24",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.ncar_1776_geocat-comp-811:latest",
+    "f2p": 4,
+    "p2p": 168,
+    "patchBytes": 5536
+  },
+  {
+    "instanceId": "modelcontextprotocol__python-sdk-1864",
+    "repo": "modelcontextprotocol/python-sdk",
+    "createdAt": "2026-01-15 15:40:41",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.modelcontextprotocol_1776_python-sdk-1864:latest",
+    "f2p": 3,
+    "p2p": 9,
+    "patchBytes": 1215
+  },
+  {
+    "instanceId": "scientific-python__docstub-123",
+    "repo": "scientific-python/docstub",
+    "createdAt": "2026-01-14 16:52:44",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.scientific-python_1776_docstub-123:latest",
+    "f2p": 6,
+    "p2p": 141,
+    "patchBytes": 5633
+  },
+  {
+    "instanceId": "ncar__geocat-comp-807",
+    "repo": "NCAR/geocat-comp",
+    "createdAt": "2026-01-13 22:46:44",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.ncar_1776_geocat-comp-807:latest",
+    "f2p": 76,
+    "p2p": 0,
+    "patchBytes": 16125
+  },
+  {
+    "instanceId": "pytest-dev__pyfakefs-1269",
+    "repo": "pytest-dev/pyfakefs",
+    "createdAt": "2026-01-13 00:14:22",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.pytest-dev_1776_pyfakefs-1269:latest",
+    "f2p": 1,
+    "p2p": 431,
+    "patchBytes": 2179
+  },
+  {
+    "instanceId": "joke2k__faker-2309",
+    "repo": "joke2k/faker",
+    "createdAt": "2026-01-12 20:47:22",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.joke2k_1776_faker-2309:latest",
+    "f2p": 2,
+    "p2p": 0,
+    "patchBytes": 2268
+  },
+  {
+    "instanceId": "jsonpickle__jsonpickle-588",
+    "repo": "jsonpickle/jsonpickle",
+    "createdAt": "2026-01-12 16:20:27",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.jsonpickle_1776_jsonpickle-588:latest",
+    "f2p": 1,
+    "p2p": 82,
+    "patchBytes": 3143
+  },
+  {
+    "instanceId": "sigstore__sigstore-python-1652",
+    "repo": "sigstore/sigstore-python",
+    "createdAt": "2026-01-12 09:37:57",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.sigstore_1776_sigstore-python-1652:latest",
+    "f2p": 1,
+    "p2p": 181,
+    "patchBytes": 1951
+  },
+  {
+    "instanceId": "genericmappingtools__pygmt-4342",
+    "repo": "GenericMappingTools/pygmt",
+    "createdAt": "2026-01-12 03:26:55",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.genericmappingtools_1776_pygmt-4342:latest",
+    "f2p": 1,
+    "p2p": 5,
+    "patchBytes": 1697
+  },
+  {
+    "instanceId": "jsonpickle__jsonpickle-587",
+    "repo": "jsonpickle/jsonpickle",
+    "createdAt": "2026-01-11 19:48:21",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.jsonpickle_1776_jsonpickle-587:latest",
+    "f2p": 2,
+    "p2p": 80,
+    "patchBytes": 5107
+  },
+  {
+    "instanceId": "psf__black-4952",
+    "repo": "psf/black",
+    "createdAt": "2026-01-10 22:44:10",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.psf_1776_black-4952:latest",
+    "f2p": 1,
+    "p2p": 150,
+    "patchBytes": 4541
+  },
+  {
+    "instanceId": "pypa__virtualenv-3015",
+    "repo": "pypa/virtualenv",
+    "createdAt": "2026-01-10 06:24:10",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.pypa_1776_virtualenv-3015:latest",
+    "f2p": 2,
+    "p2p": 96,
+    "patchBytes": 1193
+  },
+  {
+    "instanceId": "hdmf-dev__hdmf-1374",
+    "repo": "hdmf-dev/hdmf",
+    "createdAt": "2026-01-09 23:03:31",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.hdmf-dev_1776_hdmf-1374:latest",
+    "f2p": 1,
+    "p2p": 406,
+    "patchBytes": 6673
+  },
+  {
+    "instanceId": "tox-dev__tox-3666",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-01-08 15:30:44",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3666:latest",
+    "f2p": 4,
+    "p2p": 28,
+    "patchBytes": 3020
+  },
+  {
+    "instanceId": "unit8co__darts-2985",
+    "repo": "unit8co/darts",
+    "createdAt": "2026-01-08 11:02:52",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.unit8co_1776_darts-2985:latest",
+    "f2p": 1,
+    "p2p": 21,
+    "patchBytes": 47877
+  },
+  {
+    "instanceId": "ethereum__web3.py-3800",
+    "repo": "ethereum/web3.py",
+    "createdAt": "2026-01-08 01:40:03",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.ethereum_1776_web3.py-3800:latest",
+    "f2p": 1,
+    "p2p": 8,
+    "patchBytes": 2539
+  },
+  {
+    "instanceId": "niconoe__pyinaturalist-643",
+    "repo": "niconoe/pyinaturalist",
+    "createdAt": "2026-01-07 19:16:42",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.niconoe_1776_pyinaturalist-643:latest",
+    "f2p": 1,
+    "p2p": 315,
+    "patchBytes": 3856
+  },
+  {
+    "instanceId": "omni-us__jsonargparse-827",
+    "repo": "omni-us/jsonargparse",
+    "createdAt": "2026-01-07 16:47:41",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.omni-us_1776_jsonargparse-827:latest",
+    "f2p": 2,
+    "p2p": 139,
+    "patchBytes": 1119
+  },
+  {
+    "instanceId": "chaoss__augur-3512",
+    "repo": "chaoss/augur",
+    "createdAt": "2026-01-06 18:59:42",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.chaoss_1776_augur-3512:latest",
+    "f2p": 2,
+    "p2p": 41,
+    "patchBytes": 4656
+  },
+  {
+    "instanceId": "google__flax-5171",
+    "repo": "google/flax",
+    "createdAt": "2026-01-06 16:34:00",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.google_1776_flax-5171:latest",
+    "f2p": 1,
+    "p2p": 56,
+    "patchBytes": 1020
+  },
+  {
+    "instanceId": "pyfar__pyrato-113",
+    "repo": "pyfar/pyrato",
+    "createdAt": "2026-01-06 15:24:25",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.pyfar_1776_pyrato-113:latest",
+    "f2p": 4,
+    "p2p": 6,
+    "patchBytes": 2547
+  },
+  {
+    "instanceId": "scipy__scipy-24282",
+    "repo": "scipy/scipy",
+    "createdAt": "2026-01-06 00:20:58",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.scipy_1776_scipy-24282:latest",
+    "f2p": 1,
+    "p2p": 5197,
+    "patchBytes": 1294
+  },
+  {
+    "instanceId": "allenneuraldynamics__aind-data-schema-1677",
+    "repo": "AllenNeuralDynamics/aind-data-schema",
+    "createdAt": "2026-01-05 22:24:41",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.allenneuraldynamics_1776_aind-data-schema-1677:latest",
+    "f2p": 1,
+    "p2p": 68,
+    "patchBytes": 1474
+  },
+  {
+    "instanceId": "lincc-frameworks__nested-pandas-425",
+    "repo": "lincc-frameworks/nested-pandas",
+    "createdAt": "2026-01-05 19:13:22",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.lincc-frameworks_1776_nested-pandas-425:latest",
+    "f2p": 1,
+    "p2p": 111,
+    "patchBytes": 1225
+  },
+  {
+    "instanceId": "fsspec__universal_pathlib-529",
+    "repo": "fsspec/universal_pathlib",
+    "createdAt": "2026-01-04 23:27:20",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.fsspec_1776_universal_pathlib-529:latest",
+    "f2p": 2,
+    "p2p": 745,
+    "patchBytes": 6482
+  },
+  {
+    "instanceId": "delgan__loguru-1425",
+    "repo": "Delgan/loguru",
+    "createdAt": "2026-01-04 15:16:08",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.delgan_1776_loguru-1425:latest",
+    "f2p": 13,
+    "p2p": 51,
+    "patchBytes": 2157
+  },
+  {
+    "instanceId": "vyperlang__vyper-4801",
+    "repo": "vyperlang/vyper",
+    "createdAt": "2026-01-03 21:33:22",
+    "split": "2026_01",
+    "imageName": "swerebench/sweb.eval.x86_64.vyperlang_1776_vyper-4801:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 897
+  },
+  {
+    "instanceId": "basicmachines-co__basic-memory-484",
+    "repo": "basicmachines-co/basic-memory",
+    "createdAt": "2025-12-29 23:54:18",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.basicmachines-co_1776_basic-memory-484:latest",
+    "f2p": 1,
+    "p2p": 41,
+    "patchBytes": 5229
+  },
+  {
+    "instanceId": "getmoto__moto-9590",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-12-27 01:25:00",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9590:latest",
+    "f2p": 4,
+    "p2p": 90,
+    "patchBytes": 1432
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6632",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-12-24 10:32:13",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6632:latest",
+    "f2p": 1,
+    "p2p": 69,
+    "patchBytes": 964
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6610",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-12-19 17:50:12",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6610:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 1777
+  },
+  {
+    "instanceId": "py-pdf__pdfly-219",
+    "repo": "py-pdf/pdfly",
+    "createdAt": "2025-12-19 09:12:18",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.py-pdf_1776_pdfly-219:latest",
+    "f2p": 1,
+    "p2p": 3,
+    "patchBytes": 3217
+  },
+  {
+    "instanceId": "sympy__sympy-28790",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-12-18 17:55:29",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28790:latest",
+    "f2p": 1,
+    "p2p": 58,
+    "patchBytes": 1160
+  },
+  {
+    "instanceId": "ImperialCollegeLondon__proCAT-503",
+    "repo": "ImperialCollegeLondon/proCAT",
+    "createdAt": "2025-12-18 14:32:19",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.imperialcollegelondon_1776_procat-503:latest",
+    "f2p": 3,
+    "p2p": 27,
+    "patchBytes": 3324
+  },
+  {
+    "instanceId": "reata__sqllineage-743",
+    "repo": "reata/sqllineage",
+    "createdAt": "2025-12-17 11:36:49",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.reata_1776_sqllineage-743:latest",
+    "f2p": 6,
+    "p2p": 23,
+    "patchBytes": 5148
+  },
+  {
+    "instanceId": "ImperialCollegeLondon__virtual_ecosystem-1232",
+    "repo": "ImperialCollegeLondon/virtual_ecosystem",
+    "createdAt": "2025-12-17 10:49:57",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.imperialcollegelondon_1776_virtual_ecosystem-1232:latest",
+    "f2p": 2,
+    "p2p": 2,
+    "patchBytes": 3691
+  },
+  {
+    "instanceId": "PyPSA__PyPSA-1498",
+    "repo": "PyPSA/PyPSA",
+    "createdAt": "2025-12-17 10:25:53",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.pypsa_1776_pypsa-1498:latest",
+    "f2p": 1,
+    "p2p": 12,
+    "patchBytes": 4092
+  },
+  {
+    "instanceId": "bluesky__ophyd-async-1165",
+    "repo": "bluesky/ophyd-async",
+    "createdAt": "2025-12-17 09:56:07",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.bluesky_1776_ophyd-async-1165:latest",
+    "f2p": 2,
+    "p2p": 26,
+    "patchBytes": 2884
+  },
+  {
+    "instanceId": "conan-io__conan-19393",
+    "repo": "conan-io/conan",
+    "createdAt": "2025-12-17 00:11:20",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.conan-io_1776_conan-19393:latest",
+    "f2p": 1,
+    "p2p": 16,
+    "patchBytes": 2741
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6573",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-12-16 17:04:19",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6573:latest",
+    "f2p": 1,
+    "p2p": 67,
+    "patchBytes": 2771
+  },
+  {
+    "instanceId": "bluesky__ophyd-async-1164",
+    "repo": "bluesky/ophyd-async",
+    "createdAt": "2025-12-16 11:08:19",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.bluesky_1776_ophyd-async-1164:latest",
+    "f2p": 1,
+    "p2p": 5,
+    "patchBytes": 1396
+  },
+  {
+    "instanceId": "iluvcapra__pycmx-15",
+    "repo": "iluvcapra/pycmx",
+    "createdAt": "2025-12-15 23:35:35",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.iluvcapra_1776_pycmx-15:latest",
+    "f2p": 1,
+    "p2p": 9,
+    "patchBytes": 3466
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6563",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-12-15 18:54:17",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6563:latest",
+    "f2p": 1,
+    "p2p": 69,
+    "patchBytes": 1207
+  },
+  {
+    "instanceId": "astropy__astropy-19055",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-12-15 15:26:02",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-19055:latest",
+    "f2p": 2,
+    "p2p": 590,
+    "patchBytes": 3246
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6556",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-12-15 11:48:21",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6556:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 732
+  },
+  {
+    "instanceId": "oOo0oOo__leanclient-24",
+    "repo": "oOo0oOo/leanclient",
+    "createdAt": "2025-12-14 17:48:36",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.ooo0ooo_1776_leanclient-24:latest",
+    "f2p": 1,
+    "p2p": 12,
+    "patchBytes": 2430
+  },
+  {
+    "instanceId": "facelessuser__pymdown-extensions-2807",
+    "repo": "facelessuser/pymdown-extensions",
+    "createdAt": "2025-12-14 17:13:36",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.facelessuser_1776_pymdown-extensions-2807:latest",
+    "f2p": 1,
+    "p2p": 715,
+    "patchBytes": 1898
+  },
+  {
+    "instanceId": "getmoto__moto-9549",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-12-14 05:48:10",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9549:latest",
+    "f2p": 1,
+    "p2p": 54,
+    "patchBytes": 1040
+  },
+  {
+    "instanceId": "yukinarit__pyserde-682",
+    "repo": "yukinarit/pyserde",
+    "createdAt": "2025-12-13 10:54:48",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.yukinarit_1776_pyserde-682:latest",
+    "f2p": 1,
+    "p2p": 4,
+    "patchBytes": 2460
+  },
+  {
+    "instanceId": "DiamondLightSource__mx-bluesky-1519",
+    "repo": "DiamondLightSource/mx-bluesky",
+    "createdAt": "2025-12-11 14:26:05",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.diamondlightsource_1776_mx-bluesky-1519:latest",
+    "f2p": 2,
+    "p2p": 28,
+    "patchBytes": 1878
+  },
+  {
+    "instanceId": "equinor__ert-12491",
+    "repo": "equinor/ert",
+    "createdAt": "2025-12-11 07:05:40",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.equinor_1776_ert-12491:latest",
+    "f2p": 2,
+    "p2p": 61,
+    "patchBytes": 2930
+  },
+  {
+    "instanceId": "UXARRAY__uxarray-1423",
+    "repo": "UXARRAY/uxarray",
+    "createdAt": "2025-12-10 18:10:00",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.uxarray_1776_uxarray-1423:latest",
+    "f2p": 2,
+    "p2p": 13,
+    "patchBytes": 2342
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3405",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-12-10 12:36:40",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3405:latest",
+    "f2p": 1,
+    "p2p": 72,
+    "patchBytes": 1949
+  },
+  {
+    "instanceId": "sympy__sympy-28738",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-12-10 05:53:32",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28738:latest",
+    "f2p": 1,
+    "p2p": 89,
+    "patchBytes": 1434
+  },
+  {
+    "instanceId": "spack__spack-51723",
+    "repo": "spack/spack",
+    "createdAt": "2025-12-09 21:12:05",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.spack_1776_spack-51723:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 979
+  },
+  {
+    "instanceId": "Cambridge-ICCS__TCTrack-119",
+    "repo": "Cambridge-ICCS/TCTrack",
+    "createdAt": "2025-12-08 12:00:43",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.cambridge-iccs_1776_tctrack-119:latest",
+    "f2p": 17,
+    "p2p": 72,
+    "patchBytes": 3732
+  },
+  {
+    "instanceId": "sympy__sympy-28714",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-12-08 10:50:36",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28714:latest",
+    "f2p": 2,
+    "p2p": 180,
+    "patchBytes": 1147
+  },
+  {
+    "instanceId": "apache__iceberg-python-2797",
+    "repo": "apache/iceberg-python",
+    "createdAt": "2025-12-08 10:17:14",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.apache_1776_iceberg-python-2797:latest",
+    "f2p": 3,
+    "p2p": 325,
+    "patchBytes": 890
+  },
+  {
+    "instanceId": "aeye-lab__pymovements-1408",
+    "repo": "aeye-lab/pymovements",
+    "createdAt": "2025-12-08 09:48:43",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.aeye-lab_1776_pymovements-1408:latest",
+    "f2p": 1,
+    "p2p": 10,
+    "patchBytes": 2776
+  },
+  {
+    "instanceId": "microsoft__fabric-cicd-670",
+    "repo": "microsoft/fabric-cicd",
+    "createdAt": "2025-12-07 07:20:38",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.microsoft_1776_fabric-cicd-670:latest",
+    "f2p": 2,
+    "p2p": 63,
+    "patchBytes": 3832
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3388",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-12-06 00:13:34",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3388:latest",
+    "f2p": 1,
+    "p2p": 26,
+    "patchBytes": 2528
+  },
+  {
+    "instanceId": "plone__cookieplone-templates-322",
+    "repo": "plone/cookieplone-templates",
+    "createdAt": "2025-12-05 22:21:03",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.plone_1776_cookieplone-templates-322:latest",
+    "f2p": 2,
+    "p2p": 123,
+    "patchBytes": 1767
+  },
+  {
+    "instanceId": "networkx__networkx-8369",
+    "repo": "networkx/networkx",
+    "createdAt": "2025-12-05 17:39:56",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.networkx_1776_networkx-8369:latest",
+    "f2p": 1,
+    "p2p": 6423,
+    "patchBytes": 2715
+  },
+  {
+    "instanceId": "calliope-project__calliope-854",
+    "repo": "calliope-project/calliope",
+    "createdAt": "2025-12-05 16:26:57",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.calliope-project_1776_calliope-854:latest",
+    "f2p": 10,
+    "p2p": 36,
+    "patchBytes": 2631
+  },
+  {
+    "instanceId": "All-Hands-AI__OpenHands-11914",
+    "repo": "All-Hands-AI/OpenHands",
+    "createdAt": "2025-12-05 12:57:02",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.all-hands-ai_1776_openhands-11914:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 1964
+  },
+  {
+    "instanceId": "Cambridge-ICCS__TCTrack-118",
+    "repo": "Cambridge-ICCS/TCTrack",
+    "createdAt": "2025-12-04 11:09:49",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.cambridge-iccs_1776_tctrack-118:latest",
+    "f2p": 2,
+    "p2p": 87,
+    "patchBytes": 3514
+  },
+  {
+    "instanceId": "openai__openai-agents-python-2144",
+    "repo": "openai/openai-agents-python",
+    "createdAt": "2025-12-03 19:21:23",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.openai_1776_openai-agents-python-2144:latest",
+    "f2p": 1,
+    "p2p": 4,
+    "patchBytes": 1618
+  },
+  {
+    "instanceId": "deepset-ai__haystack-10189",
+    "repo": "deepset-ai/haystack",
+    "createdAt": "2025-12-03 15:28:12",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.deepset-ai_1776_haystack-10189:latest",
+    "f2p": 2,
+    "p2p": 28,
+    "patchBytes": 2796
+  },
+  {
+    "instanceId": "a2aproject__a2a-python-576",
+    "repo": "a2aproject/a2a-python",
+    "createdAt": "2025-12-03 10:42:24",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.a2aproject_1776_a2a-python-576:latest",
+    "f2p": 2,
+    "p2p": 37,
+    "patchBytes": 2000
+  },
+  {
+    "instanceId": "fsspec__universal_pathlib-495",
+    "repo": "fsspec/universal_pathlib",
+    "createdAt": "2025-12-02 22:50:06",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.fsspec_1776_universal_pathlib-495:latest",
+    "f2p": 2,
+    "p2p": 2585,
+    "patchBytes": 647
+  },
+  {
+    "instanceId": "ag2ai__faststream-2701",
+    "repo": "ag2ai/faststream",
+    "createdAt": "2025-12-02 14:22:26",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.ag2ai_1776_faststream-2701:latest",
+    "f2p": 1,
+    "p2p": 3,
+    "patchBytes": 1554
+  },
+  {
+    "instanceId": "microsoft__Agents-for-python-264",
+    "repo": "microsoft/Agents-for-python",
+    "createdAt": "2025-12-01 18:05:40",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.microsoft_1776_agents-for-python-264:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 1823
+  },
+  {
+    "instanceId": "deepset-ai__haystack-10171",
+    "repo": "deepset-ai/haystack",
+    "createdAt": "2025-12-01 16:13:39",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.deepset-ai_1776_haystack-10171:latest",
+    "f2p": 1,
+    "p2p": 52,
+    "patchBytes": 1289
+  },
+  {
+    "instanceId": "VRSEN__agency-swarm-468",
+    "repo": "VRSEN/agency-swarm",
+    "createdAt": "2025-12-01 11:27:15",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.vrsen_1776_agency-swarm-468:latest",
+    "f2p": 2,
+    "p2p": 38,
+    "patchBytes": 2917
+  },
+  {
+    "instanceId": "zwicker-group__py-pde-733",
+    "repo": "zwicker-group/py-pde",
+    "createdAt": "2025-12-01 10:25:41",
+    "split": "2025_12",
+    "imageName": "swerebench/sweb.eval.x86_64.zwicker-group_1776_py-pde-733:latest",
+    "f2p": 3,
+    "p2p": 8,
+    "patchBytes": 2603
+  },
+  {
+    "instanceId": "sympy__sympy-28660",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-11-26 14:13:53",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28660:latest",
+    "f2p": 1,
+    "p2p": 12,
+    "patchBytes": 921
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6413",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-25 20:15:27",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6413:latest",
+    "f2p": 1,
+    "p2p": 27,
+    "patchBytes": 2309
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6409",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-25 12:48:56",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6409:latest",
+    "f2p": 1,
+    "p2p": 27,
+    "patchBytes": 1368
+  },
+  {
+    "instanceId": "BerriAI__litellm-17027",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-24 14:49:20",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-17027:latest",
+    "f2p": 2,
+    "p2p": 43,
+    "patchBytes": 2441
+  },
+  {
+    "instanceId": "sympy__sympy-28639",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-11-23 18:24:05",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28639:latest",
+    "f2p": 1,
+    "p2p": 5,
+    "patchBytes": 651
+  },
+  {
+    "instanceId": "BerriAI__litellm-16997",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-23 10:54:24",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16997:latest",
+    "f2p": 2,
+    "p2p": 22,
+    "patchBytes": 1659
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6389",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-22 03:22:42",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6389:latest",
+    "f2p": 1,
+    "p2p": 44,
+    "patchBytes": 636
+  },
+  {
+    "instanceId": "BrianPugh__cyclopts-701",
+    "repo": "BrianPugh/cyclopts",
+    "createdAt": "2025-11-22 02:24:34",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.brianpugh_1776_cyclopts-701:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 879
+  },
+  {
+    "instanceId": "BerriAI__litellm-16943",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-21 22:52:03",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16943:latest",
+    "f2p": 2,
+    "p2p": 0,
+    "patchBytes": 1072
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6385",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-21 15:33:48",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6385:latest",
+    "f2p": 1,
+    "p2p": 44,
+    "patchBytes": 990
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6383",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-21 11:44:11",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6383:latest",
+    "f2p": 1,
+    "p2p": 80,
+    "patchBytes": 1621
+  },
+  {
+    "instanceId": "BerriAI__litellm-16899",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-21 00:28:57",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16899:latest",
+    "f2p": 5,
+    "p2p": 2,
+    "patchBytes": 1125
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6374",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-20 18:37:57",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6374:latest",
+    "f2p": 1,
+    "p2p": 17,
+    "patchBytes": 2831
+  },
+  {
+    "instanceId": "cal-itp__benefits-3330",
+    "repo": "cal-itp/benefits",
+    "createdAt": "2025-11-20 18:02:03",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.cal-itp_1776_benefits-3330:latest",
+    "f2p": 1,
+    "p2p": 21,
+    "patchBytes": 979
+  },
+  {
+    "instanceId": "BerriAI__litellm-16864",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-20 02:50:43",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16864:latest",
+    "f2p": 1,
+    "p2p": 7,
+    "patchBytes": 1834
+  },
+  {
+    "instanceId": "pyccel__pyccel-2512",
+    "repo": "pyccel/pyccel",
+    "createdAt": "2025-11-19 23:25:08",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.pyccel_1776_pyccel-2512:latest",
+    "f2p": 6,
+    "p2p": 323,
+    "patchBytes": 1983
+  },
+  {
+    "instanceId": "BerriAI__litellm-16852",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-19 22:44:09",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16852:latest",
+    "f2p": 1,
+    "p2p": 5,
+    "patchBytes": 1027
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3334",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-11-18 16:55:45",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3334:latest",
+    "f2p": 1,
+    "p2p": 70,
+    "patchBytes": 4995
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6346",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-18 11:03:24",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6346:latest",
+    "f2p": 1,
+    "p2p": 14,
+    "patchBytes": 1397
+  },
+  {
+    "instanceId": "astropy__astropy-18958",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-11-17 16:54:25",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18958:latest",
+    "f2p": 1,
+    "p2p": 527,
+    "patchBytes": 866
+  },
+  {
+    "instanceId": "mmornati__home-assistant-csnet-home-132",
+    "repo": "mmornati/home-assistant-csnet-home",
+    "createdAt": "2025-11-15 06:55:12",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.mmornati_1776_home-assistant-csnet-home-132:latest",
+    "f2p": 5,
+    "p2p": 72,
+    "patchBytes": 6729
+  },
+  {
+    "instanceId": "plone__cookieplone-templates-308",
+    "repo": "plone/cookieplone-templates",
+    "createdAt": "2025-11-15 01:35:13",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.plone_1776_cookieplone-templates-308:latest",
+    "f2p": 1,
+    "p2p": 98,
+    "patchBytes": 663
+  },
+  {
+    "instanceId": "bas-amop__PolarRoute-server-159",
+    "repo": "bas-amop/PolarRoute-server",
+    "createdAt": "2025-11-14 18:15:03",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.bas-amop_1776_polarroute-server-159:latest",
+    "f2p": 1,
+    "p2p": 13,
+    "patchBytes": 553
+  },
+  {
+    "instanceId": "astropy__astropy-18911",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-11-14 16:53:32",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18911:latest",
+    "f2p": 2,
+    "p2p": 78,
+    "patchBytes": 2330
+  },
+  {
+    "instanceId": "mlte-team__mlte-809",
+    "repo": "mlte-team/mlte",
+    "createdAt": "2025-11-13 17:49:43",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.mlte-team_1776_mlte-809:latest",
+    "f2p": 1,
+    "p2p": 6,
+    "patchBytes": 645
+  },
+  {
+    "instanceId": "BerriAI__litellm-16550",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-12 21:43:47",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16550:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 830
+  },
+  {
+    "instanceId": "equinor__ert-12275",
+    "repo": "equinor/ert",
+    "createdAt": "2025-11-12 12:49:56",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.equinor_1776_ert-12275:latest",
+    "f2p": 3,
+    "p2p": 49,
+    "patchBytes": 2042
+  },
+  {
+    "instanceId": "BerriAI__litellm-16526",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-12 12:28:12",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16526:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 3024
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6314",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-11-12 09:08:25",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6314:latest",
+    "f2p": 1,
+    "p2p": 24,
+    "patchBytes": 2507
+  },
+  {
+    "instanceId": "BerriAI__litellm-16487",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-11 12:33:48",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16487:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 6377
+  },
+  {
+    "instanceId": "astropy__astropy-18868",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-11-10 18:12:30",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18868:latest",
+    "f2p": 1,
+    "p2p": 382,
+    "patchBytes": 673
+  },
+  {
+    "instanceId": "BerriAI__litellm-16429",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-10 02:39:39",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16429:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 758
+  },
+  {
+    "instanceId": "sympy__sympy-28570",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-11-09 02:24:33",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28570:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 641
+  },
+  {
+    "instanceId": "sympy__sympy-28564",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-11-08 09:45:57",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28564:latest",
+    "f2p": 1,
+    "p2p": 14,
+    "patchBytes": 1119
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3291",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-11-07 16:33:12",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3291:latest",
+    "f2p": 1,
+    "p2p": 31,
+    "patchBytes": 1329
+  },
+  {
+    "instanceId": "BerriAI__litellm-16320",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-06 12:37:01",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16320:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 725
+  },
+  {
+    "instanceId": "BerriAI__litellm-16315",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-06 11:32:12",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16315:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 1202
+  },
+  {
+    "instanceId": "AbsaOSS__generate-release-notes-207",
+    "repo": "AbsaOSS/generate-release-notes",
+    "createdAt": "2025-11-06 11:22:51",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.absaoss_1776_generate-release-notes-207:latest",
+    "f2p": 14,
+    "p2p": 10,
+    "patchBytes": 4005
+  },
+  {
+    "instanceId": "deepset-ai__haystack-10029",
+    "repo": "deepset-ai/haystack",
+    "createdAt": "2025-11-06 11:04:24",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.deepset-ai_1776_haystack-10029:latest",
+    "f2p": 2,
+    "p2p": 2,
+    "patchBytes": 3754
+  },
+  {
+    "instanceId": "BerriAI__litellm-16275",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-11-05 16:40:36",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-16275:latest",
+    "f2p": 4,
+    "p2p": 26,
+    "patchBytes": 2032
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3270",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-11-05 15:29:10",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3270:latest",
+    "f2p": 5,
+    "p2p": 64,
+    "patchBytes": 3708
+  },
+  {
+    "instanceId": "cpp-linter__cpp-linter-hooks-142",
+    "repo": "cpp-linter/cpp-linter-hooks",
+    "createdAt": "2025-11-04 17:20:52",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.cpp-linter_1776_cpp-linter-hooks-142:latest",
+    "f2p": 2,
+    "p2p": 27,
+    "patchBytes": 1387
+  },
+  {
+    "instanceId": "idaholab__MontePy-850",
+    "repo": "idaholab/MontePy",
+    "createdAt": "2025-11-04 15:00:09",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.idaholab_1776_montepy-850:latest",
+    "f2p": 1,
+    "p2p": 12,
+    "patchBytes": 1035
+  },
+  {
+    "instanceId": "dstackai__gpuhunt-197",
+    "repo": "dstackai/gpuhunt",
+    "createdAt": "2025-11-04 08:51:41",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.dstackai_1776_gpuhunt-197:latest",
+    "f2p": 1,
+    "p2p": 101,
+    "patchBytes": 2781
+  },
+  {
+    "instanceId": "getmoto__moto-9440",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-11-04 01:20:26",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9440:latest",
+    "f2p": 4,
+    "p2p": 0,
+    "patchBytes": 8006
+  },
+  {
+    "instanceId": "astropy__astropy-18818",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-11-02 01:15:45",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18818:latest",
+    "f2p": 1,
+    "p2p": 40,
+    "patchBytes": 1068
+  },
+  {
+    "instanceId": "beeware__briefcase-2546",
+    "repo": "beeware/briefcase",
+    "createdAt": "2025-11-01 19:13:30",
+    "split": "2025_11",
+    "imageName": "swerebench/sweb.eval.x86_64.beeware_1776_briefcase-2546:latest",
+    "f2p": 3,
+    "p2p": 21,
+    "patchBytes": 2534
+  },
+  {
+    "instanceId": "SciTools__iris-6772",
+    "repo": "SciTools/iris",
+    "createdAt": "2025-10-30 10:38:31",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.scitools_1776_iris-6772:latest",
+    "f2p": 2,
+    "p2p": 34,
+    "patchBytes": 2797
+  },
+  {
+    "instanceId": "dask__dask-12119",
+    "repo": "dask/dask",
+    "createdAt": "2025-10-30 03:01:09",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.dask_1776_dask-12119:latest",
+    "f2p": 9,
+    "p2p": 426,
+    "patchBytes": 1012
+  },
+  {
+    "instanceId": "narwhals-dev__narwhals-3251",
+    "repo": "narwhals-dev/narwhals",
+    "createdAt": "2025-10-28 20:02:27",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.narwhals-dev_1776_narwhals-3251:latest",
+    "f2p": 6,
+    "p2p": 170,
+    "patchBytes": 2987
+  },
+  {
+    "instanceId": "spacetelescope__jwst-9967",
+    "repo": "spacetelescope/jwst",
+    "createdAt": "2025-10-28 15:05:29",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.spacetelescope_1776_jwst-9967:latest",
+    "f2p": 1,
+    "p2p": 18,
+    "patchBytes": 2372
+  },
+  {
+    "instanceId": "pymc-devs__pytensor-1701",
+    "repo": "pymc-devs/pytensor",
+    "createdAt": "2025-10-28 10:15:24",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pymc-devs_1776_pytensor-1701:latest",
+    "f2p": 2,
+    "p2p": 35,
+    "patchBytes": 2660
+  },
+  {
+    "instanceId": "BrianPugh__cyclopts-633",
+    "repo": "BrianPugh/cyclopts",
+    "createdAt": "2025-10-24 14:47:44",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.brianpugh_1776_cyclopts-633:latest",
+    "f2p": 2,
+    "p2p": 90,
+    "patchBytes": 1058
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6174",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-10-23 15:38:54",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6174:latest",
+    "f2p": 2,
+    "p2p": 160,
+    "patchBytes": 4840
+  },
+  {
+    "instanceId": "openai__openai-agents-python-1984",
+    "repo": "openai/openai-agents-python",
+    "createdAt": "2025-10-23 10:39:58",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.openai_1776_openai-agents-python-1984:latest",
+    "f2p": 2,
+    "p2p": 52,
+    "patchBytes": 8205
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-3195",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-10-22 13:54:22",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-3195:latest",
+    "f2p": 1,
+    "p2p": 192,
+    "patchBytes": 2492
+  },
+  {
+    "instanceId": "openai__openai-agents-python-1965",
+    "repo": "openai/openai-agents-python",
+    "createdAt": "2025-10-21 14:13:20",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.openai_1776_openai-agents-python-1965:latest",
+    "f2p": 8,
+    "p2p": 16,
+    "patchBytes": 2582
+  },
+  {
+    "instanceId": "BerriAI__litellm-15753",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-10-21 00:28:04",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-15753:latest",
+    "f2p": 2,
+    "p2p": 18,
+    "patchBytes": 5248
+  },
+  {
+    "instanceId": "adrn__gala-495",
+    "repo": "adrn/gala",
+    "createdAt": "2025-10-20 21:33:15",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.adrn_1776_gala-495:latest",
+    "f2p": 2,
+    "p2p": 2,
+    "patchBytes": 5117
+  },
+  {
+    "instanceId": "SciTools__iris-6754",
+    "repo": "SciTools/iris",
+    "createdAt": "2025-10-20 13:56:05",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.scitools_1776_iris-6754:latest",
+    "f2p": 2,
+    "p2p": 13,
+    "patchBytes": 2463
+  },
+  {
+    "instanceId": "PyPSA__PyPSA-1414",
+    "repo": "PyPSA/PyPSA",
+    "createdAt": "2025-10-20 07:36:20",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pypsa_1776_pypsa-1414:latest",
+    "f2p": 1,
+    "p2p": 8,
+    "patchBytes": 1741
+  },
+  {
+    "instanceId": "astropy__astropy-18752",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-10-19 11:10:21",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18752:latest",
+    "f2p": 3,
+    "p2p": 470,
+    "patchBytes": 3003
+  },
+  {
+    "instanceId": "collective__icalendar-921",
+    "repo": "collective/icalendar",
+    "createdAt": "2025-10-19 06:59:58",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.collective_1776_icalendar-921:latest",
+    "f2p": 1,
+    "p2p": 18,
+    "patchBytes": 2599
+  },
+  {
+    "instanceId": "pydata__xarray-10863",
+    "repo": "pydata/xarray",
+    "createdAt": "2025-10-17 14:10:14",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pydata_1776_xarray-10863:latest",
+    "f2p": 1,
+    "p2p": 485,
+    "patchBytes": 1114
+  },
+  {
+    "instanceId": "marimo-team__marimo-6819",
+    "repo": "marimo-team/marimo",
+    "createdAt": "2025-10-16 23:02:23",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.marimo-team_1776_marimo-6819:latest",
+    "f2p": 4,
+    "p2p": 8,
+    "patchBytes": 3491
+  },
+  {
+    "instanceId": "BrianPugh__cyclopts-609",
+    "repo": "BrianPugh/cyclopts",
+    "createdAt": "2025-10-16 13:05:59",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.brianpugh_1776_cyclopts-609:latest",
+    "f2p": 1,
+    "p2p": 80,
+    "patchBytes": 1714
+  },
+  {
+    "instanceId": "PyPSA__PyPSA-1404",
+    "repo": "PyPSA/PyPSA",
+    "createdAt": "2025-10-16 08:18:54",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pypsa_1776_pypsa-1404:latest",
+    "f2p": 1,
+    "p2p": 16,
+    "patchBytes": 1755
+  },
+  {
+    "instanceId": "pymc-devs__pytensor-1668",
+    "repo": "pymc-devs/pytensor",
+    "createdAt": "2025-10-15 14:27:07",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pymc-devs_1776_pytensor-1668:latest",
+    "f2p": 1,
+    "p2p": 451,
+    "patchBytes": 9595
+  },
+  {
+    "instanceId": "sympy__sympy-28467",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-10-14 22:34:26",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28467:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 1664
+  },
+  {
+    "instanceId": "scikit-rf__scikit-rf-1336",
+    "repo": "scikit-rf/scikit-rf",
+    "createdAt": "2025-10-14 17:06:22",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.scikit-rf_1776_scikit-rf-1336:latest",
+    "f2p": 1,
+    "p2p": 3,
+    "patchBytes": 2912
+  },
+  {
+    "instanceId": "piskvorky__smart_open-892",
+    "repo": "piskvorky/smart_open",
+    "createdAt": "2025-10-11 19:46:17",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.piskvorky_1776_smart_open-892:latest",
+    "f2p": 2,
+    "p2p": 75,
+    "patchBytes": 2867
+  },
+  {
+    "instanceId": "piskvorky__smart_open-889",
+    "repo": "piskvorky/smart_open",
+    "createdAt": "2025-10-11 08:27:13",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.piskvorky_1776_smart_open-889:latest",
+    "f2p": 1,
+    "p2p": 75,
+    "patchBytes": 5969
+  },
+  {
+    "instanceId": "getmoto__moto-9356",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-10-10 19:39:21",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9356:latest",
+    "f2p": 1,
+    "p2p": 15,
+    "patchBytes": 5568
+  },
+  {
+    "instanceId": "pydata__xarray-10838",
+    "repo": "pydata/xarray",
+    "createdAt": "2025-10-09 22:04:17",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.pydata_1776_xarray-10838:latest",
+    "f2p": 2,
+    "p2p": 193,
+    "patchBytes": 1119
+  },
+  {
+    "instanceId": "tobymao__sqlglot-6067",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-10-09 20:42:31",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-6067:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 1958
+  },
+  {
+    "instanceId": "dask__dask-12096",
+    "repo": "dask/dask",
+    "createdAt": "2025-10-09 07:24:22",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.dask_1776_dask-12096:latest",
+    "f2p": 1,
+    "p2p": 32,
+    "patchBytes": 1489
+  },
+  {
+    "instanceId": "getmoto__moto-9350",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-10-08 21:04:53",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9350:latest",
+    "f2p": 2,
+    "p2p": 34,
+    "patchBytes": 6389
+  },
+  {
+    "instanceId": "sktime__sktime-8937",
+    "repo": "sktime/sktime",
+    "createdAt": "2025-10-08 17:19:52",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sktime_1776_sktime-8937:latest",
+    "f2p": 1,
+    "p2p": 5,
+    "patchBytes": 1753
+  },
+  {
+    "instanceId": "yt-project__unyt-593",
+    "repo": "yt-project/unyt",
+    "createdAt": "2025-10-08 12:18:15",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.yt-project_1776_unyt-593:latest",
+    "f2p": 6,
+    "p2p": 124,
+    "patchBytes": 636
+  },
+  {
+    "instanceId": "nilearn__nilearn-5741",
+    "repo": "nilearn/nilearn",
+    "createdAt": "2025-10-08 10:38:40",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.nilearn_1776_nilearn-5741:latest",
+    "f2p": 1,
+    "p2p": 181,
+    "patchBytes": 6434
+  },
+  {
+    "instanceId": "basicmachines-co__basic-memory-341",
+    "repo": "basicmachines-co/basic-memory",
+    "createdAt": "2025-10-08 05:26:44",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.basicmachines-co_1776_basic-memory-341:latest",
+    "f2p": 3,
+    "p2p": 40,
+    "patchBytes": 3030
+  },
+  {
+    "instanceId": "gitpython-developers__GitPython-2075",
+    "repo": "gitpython-developers/GitPython",
+    "createdAt": "2025-10-07 19:21:31",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.gitpython-developers_1776_gitpython-2075:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 1129
+  },
+  {
+    "instanceId": "nilearn__nilearn-5739",
+    "repo": "nilearn/nilearn",
+    "createdAt": "2025-10-07 11:47:40",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.nilearn_1776_nilearn-5739:latest",
+    "f2p": 2,
+    "p2p": 212,
+    "patchBytes": 4457
+  },
+  {
+    "instanceId": "strands-agents__sdk-python-994",
+    "repo": "strands-agents/sdk-python",
+    "createdAt": "2025-10-07 11:38:49",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.strands-agents_1776_sdk-python-994:latest",
+    "f2p": 1,
+    "p2p": 22,
+    "patchBytes": 2986
+  },
+  {
+    "instanceId": "vndee__llm-sandbox-101",
+    "repo": "vndee/llm-sandbox",
+    "createdAt": "2025-10-07 03:43:51",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.vndee_1776_llm-sandbox-101:latest",
+    "f2p": 2,
+    "p2p": 19,
+    "patchBytes": 2179
+  },
+  {
+    "instanceId": "sdv-dev__SDV-2709",
+    "repo": "sdv-dev/SDV",
+    "createdAt": "2025-10-06 16:44:48",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sdv-dev_1776_sdv-2709:latest",
+    "f2p": 5,
+    "p2p": 10,
+    "patchBytes": 2670
+  },
+  {
+    "instanceId": "mwouts__jupytext-1443",
+    "repo": "mwouts/jupytext",
+    "createdAt": "2025-10-06 15:15:47",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.mwouts_1776_jupytext-1443:latest",
+    "f2p": 1,
+    "p2p": 14,
+    "patchBytes": 4196
+  },
+  {
+    "instanceId": "sdv-dev__SDV-2706",
+    "repo": "sdv-dev/SDV",
+    "createdAt": "2025-10-06 14:54:49",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sdv-dev_1776_sdv-2706:latest",
+    "f2p": 2,
+    "p2p": 2,
+    "patchBytes": 1526
+  },
+  {
+    "instanceId": "omni-us__jsonargparse-781",
+    "repo": "omni-us/jsonargparse",
+    "createdAt": "2025-10-06 05:33:04",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.omni-us_1776_jsonargparse-781:latest",
+    "f2p": 3,
+    "p2p": 74,
+    "patchBytes": 2856
+  },
+  {
+    "instanceId": "sktime__sktime-8921",
+    "repo": "sktime/sktime",
+    "createdAt": "2025-10-05 19:27:15",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sktime_1776_sktime-8921:latest",
+    "f2p": 3,
+    "p2p": 4,
+    "patchBytes": 1505
+  },
+  {
+    "instanceId": "astropy__astropy-18681",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-10-05 18:06:54",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18681:latest",
+    "f2p": 2,
+    "p2p": 18,
+    "patchBytes": 2444
+  },
+  {
+    "instanceId": "basicmachines-co__basic-memory-334",
+    "repo": "basicmachines-co/basic-memory",
+    "createdAt": "2025-10-05 15:30:07",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.basicmachines-co_1776_basic-memory-334:latest",
+    "f2p": 2,
+    "p2p": 24,
+    "patchBytes": 6711
+  },
+  {
+    "instanceId": "Ultraplot__UltraPlot-357",
+    "repo": "Ultraplot/UltraPlot",
+    "createdAt": "2025-10-04 06:38:15",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.ultraplot_1776_ultraplot-357:latest",
+    "f2p": 1,
+    "p2p": 46,
+    "patchBytes": 6830
+  },
+  {
+    "instanceId": "sympy__sympy-28454",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-10-04 05:33:46",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28454:latest",
+    "f2p": 3,
+    "p2p": 255,
+    "patchBytes": 3511
+  },
+  {
+    "instanceId": "google__adk-python-3088",
+    "repo": "google/adk-python",
+    "createdAt": "2025-10-03 21:08:25",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.google_1776_adk-python-3088:latest",
+    "f2p": 1,
+    "p2p": 19,
+    "patchBytes": 1640
+  },
+  {
+    "instanceId": "stanfordnlp__dspy-8890",
+    "repo": "stanfordnlp/dspy",
+    "createdAt": "2025-10-02 12:58:52",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.stanfordnlp_1776_dspy-8890:latest",
+    "f2p": 1,
+    "p2p": 18,
+    "patchBytes": 3098
+  },
+  {
+    "instanceId": "equinor__ert-11988",
+    "repo": "equinor/ert",
+    "createdAt": "2025-10-02 12:03:52",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.equinor_1776_ert-11988:latest",
+    "f2p": 1,
+    "p2p": 17,
+    "patchBytes": 2203
+  },
+  {
+    "instanceId": "marimo-team__marimo-6629",
+    "repo": "marimo-team/marimo",
+    "createdAt": "2025-10-01 16:31:09",
+    "split": "2025_10",
+    "imageName": "swerebench/sweb.eval.x86_64.marimo-team_1776_marimo-6629:latest",
+    "f2p": 3,
+    "p2p": 23,
+    "patchBytes": 2999
+  },
+  {
+    "instanceId": "cal-itp__benefits-3198",
+    "repo": "cal-itp/benefits",
+    "createdAt": "2025-09-23 21:11:24",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.cal-itp_1776_benefits-3198:latest",
+    "f2p": 2,
+    "p2p": 30,
+    "patchBytes": 906
+  },
+  {
+    "instanceId": "holoviz__param-1073",
+    "repo": "holoviz/param",
+    "createdAt": "2025-09-23 19:16:59",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.holoviz_1776_param-1073:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 2101
+  },
+  {
+    "instanceId": "Marker-Inc-Korea__AutoRAG-1150",
+    "repo": "Marker-Inc-Korea/AutoRAG",
+    "createdAt": "2025-09-23 05:07:14",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.marker-inc-korea_1776_autorag-1150:latest",
+    "f2p": 4,
+    "p2p": 6,
+    "patchBytes": 21348
+  },
+  {
+    "instanceId": "pyccel__pyccel-2454",
+    "repo": "pyccel/pyccel",
+    "createdAt": "2025-09-22 21:20:01",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pyccel_1776_pyccel-2454:latest",
+    "f2p": 3,
+    "p2p": 30,
+    "patchBytes": 1660
+  },
+  {
+    "instanceId": "SciTools__iris-6719",
+    "repo": "SciTools/iris",
+    "createdAt": "2025-09-22 15:29:05",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.scitools_1776_iris-6719:latest",
+    "f2p": 4,
+    "p2p": 132,
+    "patchBytes": 1017
+  },
+  {
+    "instanceId": "openai__openai-agents-python-1782",
+    "repo": "openai/openai-agents-python",
+    "createdAt": "2025-09-22 08:52:23",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.openai_1776_openai-agents-python-1782:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 23615
+  },
+  {
+    "instanceId": "pab1it0__prometheus-mcp-server-76",
+    "repo": "pab1it0/prometheus-mcp-server",
+    "createdAt": "2025-09-21 09:23:33",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pab1it0_1776_prometheus-mcp-server-76:latest",
+    "f2p": 1,
+    "p2p": 25,
+    "patchBytes": 809
+  },
+  {
+    "instanceId": "python-trio__trio-3334",
+    "repo": "python-trio/trio",
+    "createdAt": "2025-09-21 02:26:29",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.python-trio_1776_trio-3334:latest",
+    "f2p": 1,
+    "p2p": 31,
+    "patchBytes": 1261
+  },
+  {
+    "instanceId": "reata__sqllineage-723",
+    "repo": "reata/sqllineage",
+    "createdAt": "2025-09-20 07:43:37",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.reata_1776_sqllineage-723:latest",
+    "f2p": 1,
+    "p2p": 13,
+    "patchBytes": 1612
+  },
+  {
+    "instanceId": "Marker-Inc-Korea__AutoRAG-1147",
+    "repo": "Marker-Inc-Korea/AutoRAG",
+    "createdAt": "2025-09-20 02:30:14",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.marker-inc-korea_1776_autorag-1147:latest",
+    "f2p": 3,
+    "p2p": 0,
+    "patchBytes": 3010
+  },
+  {
+    "instanceId": "astropy__astropy-18627",
+    "repo": "astropy/astropy",
+    "createdAt": "2025-09-19 21:15:54",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.astropy_1776_astropy-18627:latest",
+    "f2p": 6,
+    "p2p": 1101,
+    "patchBytes": 1688
+  },
+  {
+    "instanceId": "GenericMappingTools__pygmt-4104",
+    "repo": "GenericMappingTools/pygmt",
+    "createdAt": "2025-09-19 12:34:21",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.genericmappingtools_1776_pygmt-4104:latest",
+    "f2p": 1,
+    "p2p": 6,
+    "patchBytes": 2288
+  },
+  {
+    "instanceId": "rwth-i6__returnn-1764",
+    "repo": "rwth-i6/returnn",
+    "createdAt": "2025-09-19 12:26:25",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.rwth-i6_1776_returnn-1764:latest",
+    "f2p": 3,
+    "p2p": 10,
+    "patchBytes": 2892
+  },
+  {
+    "instanceId": "tskit-dev__tskit-3274",
+    "repo": "tskit-dev/tskit",
+    "createdAt": "2025-09-19 11:19:31",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.tskit-dev_1776_tskit-3274:latest",
+    "f2p": 1,
+    "p2p": 298,
+    "patchBytes": 1234
+  },
+  {
+    "instanceId": "BerriAI__litellm-14715",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-09-19 06:08:44",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-14715:latest",
+    "f2p": 1,
+    "p2p": 9,
+    "patchBytes": 7906
+  },
+  {
+    "instanceId": "pasqal-io__Pulser-936",
+    "repo": "pasqal-io/Pulser",
+    "createdAt": "2025-09-18 15:55:26",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pasqal-io_1776_pulser-936:latest",
+    "f2p": 1,
+    "p2p": 22,
+    "patchBytes": 982
+  },
+  {
+    "instanceId": "aiidateam__aiida-quantumespresso-1142",
+    "repo": "aiidateam/aiida-quantumespresso",
+    "createdAt": "2025-09-18 01:24:49",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.aiidateam_1776_aiida-quantumespresso-1142:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 3599
+  },
+  {
+    "instanceId": "terrapower__armi-2285",
+    "repo": "terrapower/armi",
+    "createdAt": "2025-09-17 21:08:07",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.terrapower_1776_armi-2285:latest",
+    "f2p": 1,
+    "p2p": 24,
+    "patchBytes": 12398
+  },
+  {
+    "instanceId": "reframe-hpc__reframe-3553",
+    "repo": "reframe-hpc/reframe",
+    "createdAt": "2025-09-17 16:31:17",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.reframe-hpc_1776_reframe-3553:latest",
+    "f2p": 1,
+    "p2p": 111,
+    "patchBytes": 958
+  },
+  {
+    "instanceId": "google__secops-wrapper-119",
+    "repo": "google/secops-wrapper",
+    "createdAt": "2025-09-17 09:26:19",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.google_1776_secops-wrapper-119:latest",
+    "f2p": 1,
+    "p2p": 9,
+    "patchBytes": 1802
+  },
+  {
+    "instanceId": "aiidateam__aiida-quantumespresso-1136",
+    "repo": "aiidateam/aiida-quantumespresso",
+    "createdAt": "2025-09-17 01:18:13",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.aiidateam_1776_aiida-quantumespresso-1136:latest",
+    "f2p": 6,
+    "p2p": 49,
+    "patchBytes": 2562
+  },
+  {
+    "instanceId": "UXARRAY__uxarray-1369",
+    "repo": "UXARRAY/uxarray",
+    "createdAt": "2025-09-15 15:57:47",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.uxarray_1776_uxarray-1369:latest",
+    "f2p": 1,
+    "p2p": 19,
+    "patchBytes": 13940
+  },
+  {
+    "instanceId": "Ultraplot__UltraPlot-346",
+    "repo": "Ultraplot/UltraPlot",
+    "createdAt": "2025-09-15 07:17:00",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.ultraplot_1776_ultraplot-346:latest",
+    "f2p": 15,
+    "p2p": 78,
+    "patchBytes": 1124
+  },
+  {
+    "instanceId": "Jc2k__aiohomekit-500",
+    "repo": "Jc2k/aiohomekit",
+    "createdAt": "2025-09-14 12:40:04",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.jc2k_1776_aiohomekit-500:latest",
+    "f2p": 2,
+    "p2p": 1,
+    "patchBytes": 689
+  },
+  {
+    "instanceId": "agronholm__anyio-975",
+    "repo": "agronholm/anyio",
+    "createdAt": "2025-09-14 10:38:44",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.agronholm_1776_anyio-975:latest",
+    "f2p": 10,
+    "p2p": 375,
+    "patchBytes": 7264
+  },
+  {
+    "instanceId": "a2aproject__a2a-python-472",
+    "repo": "a2aproject/a2a-python",
+    "createdAt": "2025-09-13 08:41:21",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.a2aproject_1776_a2a-python-472:latest",
+    "f2p": 4,
+    "p2p": 77,
+    "patchBytes": 5857
+  },
+  {
+    "instanceId": "prometheus__client_python-1134",
+    "repo": "prometheus/client_python",
+    "createdAt": "2025-09-11 19:17:48",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.prometheus_1776_client_python-1134:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 652
+  },
+  {
+    "instanceId": "basicmachines-co__basic-memory-295",
+    "repo": "basicmachines-co/basic-memory",
+    "createdAt": "2025-09-11 14:11:40",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.basicmachines-co_1776_basic-memory-295:latest",
+    "f2p": 1,
+    "p2p": 8,
+    "patchBytes": 2832
+  },
+  {
+    "instanceId": "CQCL__guppylang-1259",
+    "repo": "CQCL/guppylang",
+    "createdAt": "2025-09-11 13:31:28",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.cqcl_1776_guppylang-1259:latest",
+    "f2p": 1,
+    "p2p": 33,
+    "patchBytes": 597
+  },
+  {
+    "instanceId": "hynek__svcs-140",
+    "repo": "hynek/svcs",
+    "createdAt": "2025-09-10 14:10:27",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.hynek_1776_svcs-140:latest",
+    "f2p": 1,
+    "p2p": 30,
+    "patchBytes": 1345
+  },
+  {
+    "instanceId": "elementsinteractive__twyn-317",
+    "repo": "elementsinteractive/twyn",
+    "createdAt": "2025-09-10 12:30:56",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.elementsinteractive_1776_twyn-317:latest",
+    "f2p": 13,
+    "p2p": 30,
+    "patchBytes": 7563
+  },
+  {
+    "instanceId": "cubed-dev__cubed-799",
+    "repo": "cubed-dev/cubed",
+    "createdAt": "2025-09-09 15:30:19",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.cubed-dev_1776_cubed-799:latest",
+    "f2p": 4,
+    "p2p": 135,
+    "patchBytes": 12302
+  },
+  {
+    "instanceId": "pydata__xarray-10723",
+    "repo": "pydata/xarray",
+    "createdAt": "2025-09-09 11:10:35",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pydata_1776_xarray-10723:latest",
+    "f2p": 4,
+    "p2p": 1063,
+    "patchBytes": 1422
+  },
+  {
+    "instanceId": "octodns__octodns-1300",
+    "repo": "octodns/octodns",
+    "createdAt": "2025-09-08 20:30:54",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.octodns_1776_octodns-1300:latest",
+    "f2p": 1,
+    "p2p": 20,
+    "patchBytes": 1627
+  },
+  {
+    "instanceId": "PlasmaControl__DESC-1901",
+    "repo": "PlasmaControl/DESC",
+    "createdAt": "2025-09-08 18:16:58",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.plasmacontrol_1776_desc-1901:latest",
+    "f2p": 1,
+    "p2p": 20,
+    "patchBytes": 1134
+  },
+  {
+    "instanceId": "omni-us__jsonargparse-770",
+    "repo": "omni-us/jsonargparse",
+    "createdAt": "2025-09-08 05:00:49",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.omni-us_1776_jsonargparse-770:latest",
+    "f2p": 1,
+    "p2p": 9,
+    "patchBytes": 4952
+  },
+  {
+    "instanceId": "All-Hands-AI__OpenHands-10867",
+    "repo": "All-Hands-AI/OpenHands",
+    "createdAt": "2025-09-07 13:33:54",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.all-hands-ai_1776_openhands-10867:latest",
+    "f2p": 2,
+    "p2p": 95,
+    "patchBytes": 416
+  },
+  {
+    "instanceId": "PyPSA__linopy-494",
+    "repo": "PyPSA/linopy",
+    "createdAt": "2025-09-07 10:43:10",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pypsa_1776_linopy-494:latest",
+    "f2p": 1,
+    "p2p": 47,
+    "patchBytes": 1130
+  },
+  {
+    "instanceId": "django-guardian__django-guardian-904",
+    "repo": "django-guardian/django-guardian",
+    "createdAt": "2025-09-06 23:39:28",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.django-guardian_1776_django-guardian-904:latest",
+    "f2p": 1,
+    "p2p": 17,
+    "patchBytes": 456
+  },
+  {
+    "instanceId": "sympy__sympy-28382",
+    "repo": "sympy/sympy",
+    "createdAt": "2025-09-06 02:38:04",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.sympy_1776_sympy-28382:latest",
+    "f2p": 1,
+    "p2p": 75,
+    "patchBytes": 2241
+  },
+  {
+    "instanceId": "Spenhouet__confluence-markdown-exporter-92",
+    "repo": "Spenhouet/confluence-markdown-exporter",
+    "createdAt": "2025-09-05 18:31:28",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.spenhouet_1776_confluence-markdown-exporter-92:latest",
+    "f2p": 1,
+    "p2p": 7,
+    "patchBytes": 6742
+  },
+  {
+    "instanceId": "travisghansen__hass-opnsense-433",
+    "repo": "travisghansen/hass-opnsense",
+    "createdAt": "2025-09-05 14:44:37",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.travisghansen_1776_hass-opnsense-433:latest",
+    "f2p": 25,
+    "p2p": 20,
+    "patchBytes": 6253
+  },
+  {
+    "instanceId": "zwicker-group__py-pde-712",
+    "repo": "zwicker-group/py-pde",
+    "createdAt": "2025-09-05 14:32:41",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.zwicker-group_1776_py-pde-712:latest",
+    "f2p": 2,
+    "p2p": 12,
+    "patchBytes": 13169
+  },
+  {
+    "instanceId": "stellarmesh__stellarmesh-51",
+    "repo": "stellarmesh/stellarmesh",
+    "createdAt": "2025-09-05 00:07:29",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.stellarmesh_1776_stellarmesh-51:latest",
+    "f2p": 2,
+    "p2p": 19,
+    "patchBytes": 21876
+  },
+  {
+    "instanceId": "canopen-python__canopen-613",
+    "repo": "canopen-python/canopen",
+    "createdAt": "2025-09-04 22:26:16",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.canopen-python_1776_canopen-613:latest",
+    "f2p": 2,
+    "p2p": 6,
+    "patchBytes": 5021
+  },
+  {
+    "instanceId": "aws-powertools__powertools-lambda-python-7315",
+    "repo": "aws-powertools/powertools-lambda-python",
+    "createdAt": "2025-09-04 13:09:32",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.aws-powertools_1776_powertools-lambda-python-7315:latest",
+    "f2p": 2,
+    "p2p": 57,
+    "patchBytes": 4245
+  },
+  {
+    "instanceId": "USNavalResearchLaboratory__eispac-124",
+    "repo": "USNavalResearchLaboratory/eispac",
+    "createdAt": "2025-09-03 16:36:28",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.usnavalresearchlaboratory_1776_eispac-124:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 21818
+  },
+  {
+    "instanceId": "pydy__pydy-525",
+    "repo": "pydy/pydy",
+    "createdAt": "2025-09-03 12:56:22",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.pydy_1776_pydy-525:latest",
+    "f2p": 16,
+    "p2p": 0,
+    "patchBytes": 8155
+  },
+  {
+    "instanceId": "ipython__ipython-14982",
+    "repo": "ipython/ipython",
+    "createdAt": "2025-09-03 12:09:11",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.ipython_1776_ipython-14982:latest",
+    "f2p": 3,
+    "p2p": 147,
+    "patchBytes": 11072
+  },
+  {
+    "instanceId": "materialsproject__fireworks-548",
+    "repo": "materialsproject/fireworks",
+    "createdAt": "2025-09-02 10:16:10",
+    "split": "2025_09",
+    "imageName": "swerebench/sweb.eval.x86_64.materialsproject_1776_fireworks-548:latest",
+    "f2p": 3,
+    "p2p": 0,
+    "patchBytes": 22676
+  },
+  {
+    "instanceId": "terrapower__armi-2245",
+    "repo": "terrapower/armi",
+    "createdAt": "2025-08-26 16:31:37+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.terrapower_1776_armi-2245:latest",
+    "f2p": 1,
+    "p2p": 8,
+    "patchBytes": 1278
+  },
+  {
+    "instanceId": "All-Hands-AI__OpenHands-10628",
+    "repo": "All-Hands-AI/OpenHands",
+    "createdAt": "2025-08-26 13:03:10+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.all-hands-ai_1776_openhands-10628:latest",
+    "f2p": 3,
+    "p2p": 93,
+    "patchBytes": 2499
+  },
+  {
+    "instanceId": "macbre__sql-metadata-583",
+    "repo": "macbre/sql-metadata",
+    "createdAt": "2025-08-25 19:48:38+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.macbre_1776_sql-metadata-583:latest",
+    "f2p": 1,
+    "p2p": 23,
+    "patchBytes": 332
+  },
+  {
+    "instanceId": "Ultraplot__UltraPlot-325",
+    "repo": "Ultraplot/UltraPlot",
+    "createdAt": "2025-08-23 22:59:17+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.ultraplot_1776_ultraplot-325:latest",
+    "f2p": 1,
+    "p2p": 31,
+    "patchBytes": 815
+  },
+  {
+    "instanceId": "getmoto__moto-9207",
+    "repo": "getmoto/moto",
+    "createdAt": "2025-08-23 06:25:47+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.getmoto_1776_moto-9207:latest",
+    "f2p": 2,
+    "p2p": 5,
+    "patchBytes": 2264
+  },
+  {
+    "instanceId": "dask__fastparquet-961",
+    "repo": "dask/fastparquet",
+    "createdAt": "2025-08-22 08:43:03+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.dask_1776_fastparquet-961:latest",
+    "f2p": 1,
+    "p2p": 0,
+    "patchBytes": 632
+  },
+  {
+    "instanceId": "BerriAI__litellm-13868",
+    "repo": "BerriAI/litellm",
+    "createdAt": "2025-08-21 18:58:01+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.berriai_1776_litellm-13868:latest",
+    "f2p": 8,
+    "p2p": 5,
+    "patchBytes": 9779
+  },
+  {
+    "instanceId": "sktime__sktime-8723",
+    "repo": "sktime/sktime",
+    "createdAt": "2025-08-21 16:47:46+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.sktime_1776_sktime-8723:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 11985
+  },
+  {
+    "instanceId": "All-Hands-AI__openhands-aci-157",
+    "repo": "All-Hands-AI/openhands-aci",
+    "createdAt": "2025-08-19 16:03:42+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.all-hands-ai_1776_openhands-aci-157:latest",
+    "f2p": 1,
+    "p2p": 4,
+    "patchBytes": 3475
+  },
+  {
+    "instanceId": "expectedparrot__edsl-2151",
+    "repo": "expectedparrot/edsl",
+    "createdAt": "2025-08-16 12:44:00+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.expectedparrot_1776_edsl-2151:latest",
+    "f2p": 8,
+    "p2p": 1,
+    "patchBytes": 3102
+  },
+  {
+    "instanceId": "hgrecco__pint-pandas-287",
+    "repo": "hgrecco/pint-pandas",
+    "createdAt": "2025-08-16 07:38:43+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.hgrecco_1776_pint-pandas-287:latest",
+    "f2p": 1,
+    "p2p": 23,
+    "patchBytes": 717
+  },
+  {
+    "instanceId": "jawah__niquests-277",
+    "repo": "jawah/niquests",
+    "createdAt": "2025-08-15 20:07:06+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.jawah_1776_niquests-277:latest",
+    "f2p": 1,
+    "p2p": 20,
+    "patchBytes": 931
+  },
+  {
+    "instanceId": "Ouranosinc__xclim-2225",
+    "repo": "Ouranosinc/xclim",
+    "createdAt": "2025-08-15 19:06:25+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.ouranosinc_1776_xclim-2225:latest",
+    "f2p": 1,
+    "p2p": 28,
+    "patchBytes": 1832
+  },
+  {
+    "instanceId": "iterative__dvc-10844",
+    "repo": "iterative/dvc",
+    "createdAt": "2025-08-15 17:07:16+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.iterative_1776_dvc-10844:latest",
+    "f2p": 1,
+    "p2p": 31,
+    "patchBytes": 654
+  },
+  {
+    "instanceId": "biopython__biopython-5041",
+    "repo": "biopython/biopython",
+    "createdAt": "2025-08-14 15:49:38+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.biopython_1776_biopython-5041:latest",
+    "f2p": 3,
+    "p2p": 75,
+    "patchBytes": 3328
+  },
+  {
+    "instanceId": "pyccel__pyccel-2418",
+    "repo": "pyccel/pyccel",
+    "createdAt": "2025-08-14 13:31:14+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pyccel_1776_pyccel-2418:latest",
+    "f2p": 2,
+    "p2p": 148,
+    "patchBytes": 3395
+  },
+  {
+    "instanceId": "openatx__adbutils-188",
+    "repo": "openatx/adbutils",
+    "createdAt": "2025-08-14 12:59:55+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.openatx_1776_adbutils-188:latest",
+    "f2p": 2,
+    "p2p": 4,
+    "patchBytes": 477
+  },
+  {
+    "instanceId": "mpmath__mpmath-992",
+    "repo": "mpmath/mpmath",
+    "createdAt": "2025-08-14 12:52:09+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.mpmath_1776_mpmath-992:latest",
+    "f2p": 1,
+    "p2p": 59,
+    "patchBytes": 704
+  },
+  {
+    "instanceId": "stfc__PSyclone-3093",
+    "repo": "stfc/PSyclone",
+    "createdAt": "2025-08-14 11:02:17+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.stfc_1776_psyclone-3093:latest",
+    "f2p": 1,
+    "p2p": 110,
+    "patchBytes": 2955
+  },
+  {
+    "instanceId": "fsspec__universal_pathlib-395",
+    "repo": "fsspec/universal_pathlib",
+    "createdAt": "2025-08-13 13:24:15+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.fsspec_1776_universal_pathlib-395:latest",
+    "f2p": 21,
+    "p2p": 0,
+    "patchBytes": 3766
+  },
+  {
+    "instanceId": "biopragmatics__bioregistry-1644",
+    "repo": "biopragmatics/bioregistry",
+    "createdAt": "2025-08-13 12:41:43+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.biopragmatics_1776_bioregistry-1644:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 7867
+  },
+  {
+    "instanceId": "tobymao__sqlglot-5566",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2025-08-13 10:22:17+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-5566:latest",
+    "f2p": 3,
+    "p2p": 78,
+    "patchBytes": 2662
+  },
+  {
+    "instanceId": "google__adk-python-2478",
+    "repo": "google/adk-python",
+    "createdAt": "2025-08-12 03:17:33+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.google_1776_adk-python-2478:latest",
+    "f2p": 2,
+    "p2p": 8,
+    "patchBytes": 2469
+  },
+  {
+    "instanceId": "pipecat-ai__pipecat-2413",
+    "repo": "pipecat-ai/pipecat",
+    "createdAt": "2025-08-11 02:41:02+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pipecat-ai_1776_pipecat-2413:latest",
+    "f2p": 4,
+    "p2p": 2,
+    "patchBytes": 1429
+  },
+  {
+    "instanceId": "yukinarit__pyserde-657",
+    "repo": "yukinarit/pyserde",
+    "createdAt": "2025-08-10 17:05:17+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.yukinarit_1776_pyserde-657:latest",
+    "f2p": 5,
+    "p2p": 7,
+    "patchBytes": 1908
+  },
+  {
+    "instanceId": "jlowin__fastmcp-1425",
+    "repo": "jlowin/fastmcp",
+    "createdAt": "2025-08-09 15:44:27+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.jlowin_1776_fastmcp-1425:latest",
+    "f2p": 3,
+    "p2p": 1,
+    "patchBytes": 1724
+  },
+  {
+    "instanceId": "spulec__freezegun-582",
+    "repo": "spulec/freezegun",
+    "createdAt": "2025-08-09 10:20:40+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.spulec_1776_freezegun-582:latest",
+    "f2p": 5,
+    "p2p": 5,
+    "patchBytes": 2300
+  },
+  {
+    "instanceId": "vprusso__toqito-1298",
+    "repo": "vprusso/toqito",
+    "createdAt": "2025-08-09 03:30:49+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.vprusso_1776_toqito-1298:latest",
+    "f2p": 1,
+    "p2p": 26,
+    "patchBytes": 674
+  },
+  {
+    "instanceId": "gidgethub__gidgethub-225",
+    "repo": "gidgethub/gidgethub",
+    "createdAt": "2025-08-08 23:05:52+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.gidgethub_1776_gidgethub-225:latest",
+    "f2p": 1,
+    "p2p": 56,
+    "patchBytes": 687
+  },
+  {
+    "instanceId": "OpenMDAO__dymos-1204",
+    "repo": "OpenMDAO/dymos",
+    "createdAt": "2025-08-08 15:49:13+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.openmdao_1776_dymos-1204:latest",
+    "f2p": 5,
+    "p2p": 0,
+    "patchBytes": 6877
+  },
+  {
+    "instanceId": "sunpy__sunpy-8316",
+    "repo": "sunpy/sunpy",
+    "createdAt": "2025-08-08 10:03:43+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.sunpy_1776_sunpy-8316:latest",
+    "f2p": 1,
+    "p2p": 49,
+    "patchBytes": 2657
+  },
+  {
+    "instanceId": "cea-hpc__clustershell-592",
+    "repo": "cea-hpc/clustershell",
+    "createdAt": "2025-08-08 07:37:07+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.cea-hpc_1776_clustershell-592:latest",
+    "f2p": 2,
+    "p2p": 2,
+    "patchBytes": 2705
+  },
+  {
+    "instanceId": "nipreps__smriprep-487",
+    "repo": "nipreps/smriprep",
+    "createdAt": "2025-08-07 16:41:18+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.nipreps_1776_smriprep-487:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 1197
+  },
+  {
+    "instanceId": "stanfordnlp__dspy-8607",
+    "repo": "stanfordnlp/dspy",
+    "createdAt": "2025-08-07 05:55:58+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.stanfordnlp_1776_dspy-8607:latest",
+    "f2p": 2,
+    "p2p": 52,
+    "patchBytes": 3392
+  },
+  {
+    "instanceId": "stan-dev__cmdstanpy-801",
+    "repo": "stan-dev/cmdstanpy",
+    "createdAt": "2025-08-07 02:32:53+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.stan-dev_1776_cmdstanpy-801:latest",
+    "f2p": 3,
+    "p2p": 25,
+    "patchBytes": 1903
+  },
+  {
+    "instanceId": "microsoft__fabric-cicd-465",
+    "repo": "microsoft/fabric-cicd",
+    "createdAt": "2025-08-06 18:42:36+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.microsoft_1776_fabric-cicd-465:latest",
+    "f2p": 3,
+    "p2p": 23,
+    "patchBytes": 10193
+  },
+  {
+    "instanceId": "mitmproxy__mitmproxy-7827",
+    "repo": "mitmproxy/mitmproxy",
+    "createdAt": "2025-08-06 05:26:37+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.mitmproxy_1776_mitmproxy-7827:latest",
+    "f2p": 39,
+    "p2p": 7,
+    "patchBytes": 2381
+  },
+  {
+    "instanceId": "pgmpy__pgmpy-2271",
+    "repo": "pgmpy/pgmpy",
+    "createdAt": "2025-08-06 04:52:54+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pgmpy_1776_pgmpy-2271:latest",
+    "f2p": 1,
+    "p2p": 56,
+    "patchBytes": 1520
+  },
+  {
+    "instanceId": "luolingchun__flask-openapi3-232",
+    "repo": "luolingchun/flask-openapi3",
+    "createdAt": "2025-08-05 22:41:21+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.luolingchun_1776_flask-openapi3-232:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 1678
+  },
+  {
+    "instanceId": "neurostuff__NiMARE-939",
+    "repo": "neurostuff/NiMARE",
+    "createdAt": "2025-08-05 20:19:37+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.neurostuff_1776_nimare-939:latest",
+    "f2p": 1,
+    "p2p": 27,
+    "patchBytes": 750
+  },
+  {
+    "instanceId": "pypa__virtualenv-2940",
+    "repo": "pypa/virtualenv",
+    "createdAt": "2025-08-05 01:25:51+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pypa_1776_virtualenv-2940:latest",
+    "f2p": 2,
+    "p2p": 4,
+    "patchBytes": 2464
+  },
+  {
+    "instanceId": "databricks__dbt-databricks-1131",
+    "repo": "databricks/dbt-databricks",
+    "createdAt": "2025-08-04 16:16:49+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.databricks_1776_dbt-databricks-1131:latest",
+    "f2p": 1,
+    "p2p": 50,
+    "patchBytes": 2274
+  },
+  {
+    "instanceId": "open-spaced-repetition__py-fsrs-127",
+    "repo": "open-spaced-repetition/py-fsrs",
+    "createdAt": "2025-08-04 04:27:40+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.open-spaced-repetition_1776_py-fsrs-127:latest",
+    "f2p": 1,
+    "p2p": 32,
+    "patchBytes": 961
+  },
+  {
+    "instanceId": "agronholm__sqlacodegen-419",
+    "repo": "agronholm/sqlacodegen",
+    "createdAt": "2025-08-03 19:54:46+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.agronholm_1776_sqlacodegen-419:latest",
+    "f2p": 9,
+    "p2p": 55,
+    "patchBytes": 1584
+  },
+  {
+    "instanceId": "Ljzd-PRO__KToolBox-302",
+    "repo": "Ljzd-PRO/KToolBox",
+    "createdAt": "2025-08-02 12:53:32+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.ljzd-pro_1776_ktoolbox-302:latest",
+    "f2p": 2,
+    "p2p": 4,
+    "patchBytes": 1690
+  },
+  {
+    "instanceId": "reagento__dishka-512",
+    "repo": "reagento/dishka",
+    "createdAt": "2025-08-02 10:34:01+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.reagento_1776_dishka-512:latest",
+    "f2p": 1,
+    "p2p": 14,
+    "patchBytes": 624
+  },
+  {
+    "instanceId": "schemathesis__schemathesis-2985",
+    "repo": "schemathesis/schemathesis",
+    "createdAt": "2025-08-01 23:08:06+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.schemathesis_1776_schemathesis-2985:latest",
+    "f2p": 1,
+    "p2p": 41,
+    "patchBytes": 2774
+  },
+  {
+    "instanceId": "sktime__skpro-574",
+    "repo": "sktime/skpro",
+    "createdAt": "2025-08-01 18:24:43+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.sktime_1776_skpro-574:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 2854
+  },
+  {
+    "instanceId": "quantumlib__ReCirq-410",
+    "repo": "quantumlib/ReCirq",
+    "createdAt": "2025-08-01 18:03:54+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.quantumlib_1776_recirq-410:latest",
+    "f2p": 1,
+    "p2p": 1,
+    "patchBytes": 1144
+  },
+  {
+    "instanceId": "pypa__virtualenv-2921",
+    "repo": "pypa/virtualenv",
+    "createdAt": "2025-08-01 14:12:22+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pypa_1776_virtualenv-2921:latest",
+    "f2p": 1,
+    "p2p": 23,
+    "patchBytes": 4136
+  },
+  {
+    "instanceId": "pasteurlabs__tesseract-core-302",
+    "repo": "pasteurlabs/tesseract-core",
+    "createdAt": "2025-08-01 12:58:38+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.pasteurlabs_1776_tesseract-core-302:latest",
+    "f2p": 1,
+    "p2p": 11,
+    "patchBytes": 6499
+  },
+  {
+    "instanceId": "oracle__macaron-1136",
+    "repo": "oracle/macaron",
+    "createdAt": "2025-08-01 05:31:57+00:00",
+    "split": "2025_08",
+    "imageName": "swerebench/sweb.eval.x86_64.oracle_1776_macaron-1136:latest",
+    "f2p": 1,
+    "p2p": 6,
+    "patchBytes": 6304
+  }
+]

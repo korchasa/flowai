@@ -13,7 +13,7 @@
  */
 import { assert, assertEquals } from "@std/assert";
 import { join } from "@std/path";
-import { prepareAcpClaudeHome } from "./auth.ts";
+import { prepareAcpClaudeHome, prepareAcpCodexHome } from "./auth.ts";
 
 /** Recursively snapshots a dir as a sorted map of relpath → contents. */
 async function snapshot(root: string): Promise<Record<string, string>> {
@@ -107,6 +107,131 @@ Deno.test("auth-related symlinks track host: present iff source exists", async (
       !claudeLinkExists,
       ".local/share/claude must be skipped when host source is absent",
     );
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});
+
+/**
+ * Codex isolation (FR-BENCH-SWE.IDE). Two leaks make an un-isolated codex run
+ * unusable as a benchmark arm, and both are live on the maintainer's host:
+ * `~/.codex/skills/` holds user-level skills that would shadow the sandbox pack
+ * (the codex twin of FR-ACCEPT-ISOLATION), and `~/.codex/config.toml` globally
+ * sets `model_reasoning_effort`/`model` — the exact operator-shell leak the
+ * effort invariant (FR-BENCH-SWE.SYMMETRY) forbids.
+ */
+Deno.test("codex bench-home isolates user skills AND user config", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-codex-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-codex-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
+  // Seed the two things that MUST NOT reach the bench session.
+  const userSkills = join(fakeHome, ".codex", "skills", "installed-skill");
+  await Deno.mkdir(userSkills, { recursive: true });
+  await Deno.writeTextFile(join(userSkills, "SKILL.md"), "# user-level v1\n");
+  await Deno.writeTextFile(
+    join(fakeHome, ".codex", "config.toml"),
+    `model = "gpt-5.6-sol"\nmodel_reasoning_effort = "ultra"\n`,
+  );
+  const before = await snapshot(join(fakeHome, ".codex", "skills"));
+
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const env = await prepareAcpCodexHome(sandboxPath);
+
+    // CODEX_HOME lives inside the bench-home, away from the real one.
+    assertEquals(env.CODEX_HOME, join(workDir, "bench-home", ".codex"));
+    assert(
+      !env.CODEX_HOME.startsWith(join(fakeHome, ".codex")),
+      "CODEX_HOME must not point into the user's real ~/.codex",
+    );
+
+    // Skills dir exists and is EMPTY — the sandbox pack wins.
+    let count = 0;
+    for await (const _ of Deno.readDir(join(env.CODEX_HOME, "skills"))) count++;
+    assertEquals(count, 0, "bench CODEX_HOME/skills must be empty");
+
+    // The user's config.toml is NOT mirrored: its effort/model must not leak.
+    let configLeaked = true;
+    try {
+      await Deno.lstat(join(env.CODEX_HOME, "config.toml"));
+    } catch {
+      configLeaked = false;
+    }
+    assert(
+      !configLeaked,
+      "user config.toml must not reach the bench — it pins effort and model",
+    );
+
+    // The user-level skills snapshot is untouched.
+    assertEquals(
+      await snapshot(join(fakeHome, ".codex", "skills")),
+      before,
+      "user-level ~/.codex/skills must be byte-identical",
+    );
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});
+
+Deno.test("codex auth.json is linked so subscription login survives", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-codex-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-codex-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
+  await Deno.mkdir(join(fakeHome, ".codex"), { recursive: true });
+  await Deno.writeTextFile(
+    join(fakeHome, ".codex", "auth.json"),
+    `{"tokens":{"access_token":"chatgpt-plan"}}`,
+  );
+
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const env = await prepareAcpCodexHome(sandboxPath);
+    const link = join(env.CODEX_HOME, "auth.json");
+    assert((await Deno.lstat(link)).isSymlink, "auth.json must be a symlink");
+    // Reads through to the real credentials → subscription auth works.
+    assertEquals(
+      JSON.parse(await Deno.readTextFile(link)).tokens.access_token,
+      "chatgpt-plan",
+    );
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});
+
+Deno.test("codex home also carries HOME — the judge stays on Claude", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-codex-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-codex-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const env = await prepareAcpCodexHome(sandboxPath);
+    // The gate/answer judge shells out to `claude -p` even when the agent under
+    // test is codex, so it needs the same isolated Claude bench-home — without
+    // it the developer's ~/.claude/CLAUDE.md leaks into judge replies.
+    assertEquals(env.HOME, join(workDir, "bench-home"));
+    let count = 0;
+    for await (
+      const _ of Deno.readDir(join(env.HOME, ".claude", "skills"))
+    ) count++;
+    assertEquals(count, 0, "the judge's .claude/skills must be empty too");
   } finally {
     if (realHome !== undefined) Deno.env.set("HOME", realHome);
     else Deno.env.delete("HOME");

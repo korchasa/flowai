@@ -1,6 +1,9 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
 import {
+  BaselineJudgeOperator,
+  DONE_TOKEN,
   implementTurnWithVerdict,
+  judgeAnswerMessages,
   judgeGateMessages,
   JudgeGateOperator,
 } from "./gate.ts";
@@ -112,6 +115,94 @@ Deno.test("JudgeGateOperator: no assistant message yet rejects (contract violati
   const op = new JudgeGateOperator(ISSUE, () => Promise.resolve("ok"));
   await assertRejects(
     () => op.getResponse([{ role: "user", content: "/plan ..." }]),
+    Error,
+    "assistant",
+  );
+});
+
+// --- FR-BENCH-SWE.SYMMETRY: the same judge answers questions in the bare arm ---
+
+const QUESTION =
+  "Should I also handle the legacy offset format, or only the tz name path?";
+
+Deno.test("judgeAnswerMessages: issue + agent message, no gold, DONE protocol, English", () => {
+  const msgs = judgeAnswerMessages(ISSUE, QUESTION);
+  const all = msgs.map((m) => m.content).join("\n");
+  assert(all.includes(ISSUE), "must carry the issue verbatim");
+  assert(all.includes(QUESTION), "must carry the agent's message verbatim");
+  assert(!/gold|FAIL_TO_PASS|test_patch/i.test(all), "no gold-data leakage");
+  const system = msgs.find((m) => m.role === "system")!;
+  assert(
+    /only|nothing beyond/i.test(system.content),
+    "judge's knowledge must be pinned to the issue text",
+  );
+  assert(
+    system.content.includes(DONE_TOKEN),
+    "system prompt must define the terminal token",
+  );
+  assert(/in English/.test(system.content), "reply language pinned to English");
+  assert(
+    /do not (write|include) code|no code/i.test(system.content),
+    "judge must not write code",
+  );
+});
+
+Deno.test("BaselineJudgeOperator: returns the judge's answer as a plain next turn", async () => {
+  const seen: string[] = [];
+  const op = new BaselineJudgeOperator(ISSUE, (_issue, msg) => {
+    seen.push(msg);
+    return Promise.resolve(
+      "Only the tz name path — the issue names nothing else; legacy is your call.",
+    );
+  });
+  const reply = await op.getResponse([
+    { role: "user", content: "fix the bug" },
+    { role: "assistant", content: QUESTION },
+  ]);
+  assertEquals(seen, [QUESTION], "judge must receive the LAST agent message");
+  assert(reply!.includes("your call"));
+  assert(
+    !reply!.startsWith("/"),
+    "baseline turns are plain text, not slash commands",
+  );
+});
+
+Deno.test("BaselineJudgeOperator: DONE token ends the session", async () => {
+  const op = new BaselineJudgeOperator(
+    ISSUE,
+    () => Promise.resolve(`  ${DONE_TOKEN}\n`),
+  );
+  assertEquals(
+    await op.getResponse([{ role: "assistant", content: "Fix is in place." }]),
+    null,
+  );
+});
+
+Deno.test("BaselineJudgeOperator: blank reply rejects (fail fast)", async () => {
+  const op = new BaselineJudgeOperator(ISSUE, () => Promise.resolve(" \n"));
+  await assertRejects(
+    () => op.getResponse([{ role: "assistant", content: "done?" }]),
+    Error,
+    "blank",
+  );
+});
+
+Deno.test("BaselineJudgeOperator: judge failure rejects (no silent fallback)", async () => {
+  const op = new BaselineJudgeOperator(
+    ISSUE,
+    () => Promise.reject(new Error("cli down")),
+  );
+  await assertRejects(
+    () => op.getResponse([{ role: "assistant", content: "q?" }]),
+    Error,
+    "cli down",
+  );
+});
+
+Deno.test("BaselineJudgeOperator: no assistant message rejects (contract violation)", async () => {
+  const op = new BaselineJudgeOperator(ISSUE, () => Promise.resolve("ok"));
+  await assertRejects(
+    () => op.getResponse([{ role: "user", content: "fix the bug" }]),
     Error,
     "assistant",
   );

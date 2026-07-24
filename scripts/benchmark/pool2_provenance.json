@@ -1,0 +1,767 @@
+{
+  "dataset": "nebius/SWE-rebench-leaderboard",
+  "forkCommit": "e4907b7a90eafaa1f0a6428fd04fe31cdd8b4284",
+  "k": 3,
+  "modelSnapshot": "claude-sonnet-5",
+  "trainingCutoff": "2026-01",
+  "gates": {
+    "tox-dev__tox-3904": {
+      "instanceId": "tox-dev__tox-3904",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:16:36.086Z"
+    },
+    "schemathesis__schemathesis-4087": {
+      "instanceId": "schemathesis__schemathesis-4087",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:21:55.346Z"
+    },
+    "aallan__vera-662_interface": {
+      "instanceId": "aallan__vera-662_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:25:29.082Z"
+    },
+    "cs-si__eodag-2176": {
+      "instanceId": "cs-si__eodag-2176",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:28:00.315Z"
+    },
+    "nesquena__hermes-webui-2056": {
+      "instanceId": "nesquena__hermes-webui-2056",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:30:04.454Z"
+    },
+    "geopython__pygeoapi-2338": {
+      "instanceId": "geopython__pygeoapi-2338",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:32:55.999Z"
+    },
+    "raullenchai__rapid-mlx-341_interface": {
+      "instanceId": "raullenchai__rapid-mlx-341_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:35:19.566Z"
+    },
+    "macbre__sql-metadata-625_interface": {
+      "instanceId": "macbre__sql-metadata-625_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:37:19.430Z"
+    },
+    "youssofal__mtplx-21": {
+      "instanceId": "youssofal__mtplx-21",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:39:30.867Z"
+    },
+    "raullenchai__rapid-mlx-289": {
+      "instanceId": "raullenchai__rapid-mlx-289",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:41:58.939Z"
+    },
+    "nesquena__hermes-webui-1818": {
+      "instanceId": "nesquena__hermes-webui-1818",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:44:16.709Z"
+    },
+    "olofk__fusesoc-776_interface": {
+      "instanceId": "olofk__fusesoc-776_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:50:58.245Z"
+    },
+    "python-wheel-build__fromager-1124": {
+      "instanceId": "python-wheel-build__fromager-1124",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:55:54.980Z"
+    },
+    "itsdnns__docsight-437": {
+      "instanceId": "itsdnns__docsight-437",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T19:59:53.780Z"
+    },
+    "agronholm__anyio-1134": {
+      "instanceId": "agronholm__anyio-1134",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:03:14.469Z"
+    },
+    "raullenchai__rapid-mlx-228": {
+      "instanceId": "raullenchai__rapid-mlx-228",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:05:53.312Z"
+    },
+    "raullenchai__rapid-mlx-227": {
+      "instanceId": "raullenchai__rapid-mlx-227",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:08:56.844Z"
+    },
+    "python-wheel-build__fromager-1106": {
+      "instanceId": "python-wheel-build__fromager-1106",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:10:56.770Z"
+    },
+    "schemathesis__schemathesis-3933": {
+      "instanceId": "schemathesis__schemathesis-3933",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:13:40.191Z"
+    },
+    "graphistry__pygraphistry-1277": {
+      "instanceId": "graphistry__pygraphistry-1277",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:19:13.515Z"
+    },
+    "pallets-eco__wtforms-892_interface": {
+      "instanceId": "pallets-eco__wtforms-892_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:21:12.840Z"
+    },
+    "tox-dev__tox-3931": {
+      "instanceId": "tox-dev__tox-3931",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:23:05.675Z"
+    },
+    "copier-org__copier-2646": {
+      "instanceId": "copier-org__copier-2646",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:25:22.908Z"
+    },
+    "hkuds__openharness-217": {
+      "instanceId": "hkuds__openharness-217",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:27:20.630Z"
+    },
+    "astronomy-commons__lsdb-1349": {
+      "instanceId": "astronomy-commons__lsdb-1349",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:30:03.943Z"
+    },
+    "beever-ai__beever-atlas-102": {
+      "instanceId": "beever-ai__beever-atlas-102",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:32:42.894Z"
+    },
+    "alibaba__opensandbox-816": {
+      "instanceId": "alibaba__opensandbox-816",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:35:02.841Z"
+    },
+    "apache__iceberg-python-3295": {
+      "instanceId": "apache__iceberg-python-3295",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T20:37:15.248Z"
+    },
+    "reframe-hpc__reframe-3660_interface": {
+      "instanceId": "reframe-hpc__reframe-3660_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T21:56:06.290Z"
+    },
+    "databricks__dbt-databricks-1428": {
+      "instanceId": "databricks__dbt-databricks-1428",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T21:58:41.077Z"
+    },
+    "zarr-developers__virtualizarr-979": {
+      "instanceId": "zarr-developers__virtualizarr-979",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:01:04.444Z"
+    },
+    "sigma67__ytmusicapi-909_interface": {
+      "instanceId": "sigma67__ytmusicapi-909_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:04:23.556Z"
+    },
+    "vprusso__toqito-1538": {
+      "instanceId": "vprusso__toqito-1538",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:06:41.096Z"
+    },
+    "agronholm__anyio-1121": {
+      "instanceId": "agronholm__anyio-1121",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:09:01.069Z"
+    },
+    "schemathesis__schemathesis-3778": {
+      "instanceId": "schemathesis__schemathesis-3778",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:12:15.306Z"
+    },
+    "pyinfra-dev__pyinfra-1679_interface": {
+      "instanceId": "pyinfra-dev__pyinfra-1679_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:14:24.554Z"
+    },
+    "mempalace__mempalace-1004": {
+      "instanceId": "mempalace__mempalace-1004",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:17:27.283Z"
+    },
+    "celestoai__smolvm-172": {
+      "instanceId": "celestoai__smolvm-172",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:19:48.054Z"
+    },
+    "pypa__twine-1309": {
+      "instanceId": "pypa__twine-1309",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:21:59.140Z"
+    },
+    "ultraplot__ultraplot-696": {
+      "instanceId": "ultraplot__ultraplot-696",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:26:09.996Z"
+    },
+    "pyinfra-dev__pyinfra-1665": {
+      "instanceId": "pyinfra-dev__pyinfra-1665",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:28:10.505Z"
+    },
+    "pipecat-ai__pipecat-4283": {
+      "instanceId": "pipecat-ai__pipecat-4283",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:32:57.274Z"
+    },
+    "pennylaneai__pennylane-9298": {
+      "instanceId": "pennylaneai__pennylane-9298",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:35:48.380Z"
+    },
+    "microsoft__qcodes-8039": {
+      "instanceId": "microsoft__qcodes-8039",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:38:30.662Z"
+    },
+    "deltares__hydrolib-core-1049_interface": {
+      "instanceId": "deltares__hydrolib-core-1049_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:40:56.061Z"
+    },
+    "pypsa__pypsa-1653": {
+      "instanceId": "pypsa__pypsa-1653",
+      "split": "2026_03",
+      "reps": [
+        false
+      ],
+      "pass": false,
+      "gatedAt": "2026-07-22T22:42:05.817Z"
+    },
+    "spack__spack-52244": {
+      "instanceId": "spack__spack-52244",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:44:44.040Z"
+    },
+    "nesquena__hermes-webui-330_interface": {
+      "instanceId": "nesquena__hermes-webui-330_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:46:42.135Z"
+    },
+    "agentscope-ai__qwenpaw-3278": {
+      "instanceId": "agentscope-ai__qwenpaw-3278",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:49:15.928Z"
+    },
+    "unit8co__darts-3065": {
+      "instanceId": "unit8co__darts-3065",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:51:39.775Z"
+    },
+    "meltano__meltano-9950": {
+      "instanceId": "meltano__meltano-9950",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:53:47.413Z"
+    },
+    "pypa__build-1027": {
+      "instanceId": "pypa__build-1027",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:55:51.189Z"
+    },
+    "tobymao__sqlglot-7479": {
+      "instanceId": "tobymao__sqlglot-7479",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T22:57:50.634Z"
+    },
+    "graphistry__pygraphistry-1107_interface": {
+      "instanceId": "graphistry__pygraphistry-1107_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:00:18.864Z"
+    },
+    "azure-samples__azure-search-openai-demo-3025": {
+      "instanceId": "azure-samples__azure-search-openai-demo-3025",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:02:48.850Z"
+    },
+    "keras-team__keras-22642": {
+      "instanceId": "keras-team__keras-22642",
+      "split": "2026_03",
+      "reps": [
+        false
+      ],
+      "pass": false,
+      "gatedAt": "2026-07-22T23:07:37.079Z"
+    },
+    "huggingface__huggingface_hub-4056": {
+      "instanceId": "huggingface__huggingface_hub-4056",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:10:02.481Z"
+    },
+    "cpp-linter__cpp-linter-hooks-206_interface": {
+      "instanceId": "cpp-linter__cpp-linter-hooks-206_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:14:17.104Z"
+    },
+    "tobymao__sqlglot-7457": {
+      "instanceId": "tobymao__sqlglot-7457",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:16:28.948Z"
+    },
+    "koxudaxi__datamodel-code-generator-3071": {
+      "instanceId": "koxudaxi__datamodel-code-generator-3071",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:19:10.692Z"
+    },
+    "koxudaxi__datamodel-code-generator-3070": {
+      "instanceId": "koxudaxi__datamodel-code-generator-3070",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:21:37.290Z"
+    },
+    "meltano__meltano-9929": {
+      "instanceId": "meltano__meltano-9929",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:24:02.820Z"
+    },
+    "python-scim__scim2-models-139_interface": {
+      "instanceId": "python-scim__scim2-models-139_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:26:06.743Z"
+    },
+    "pdm-project__pdm-3759": {
+      "instanceId": "pdm-project__pdm-3759",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:29:24.450Z"
+    },
+    "line__line-bot-sdk-python-981_interface": {
+      "instanceId": "line__line-bot-sdk-python-981_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:31:34.320Z"
+    },
+    "ucfopen__canvasapi-716": {
+      "instanceId": "ucfopen__canvasapi-716",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:33:30.544Z"
+    },
+    "zauberzeug__nicegui-5914": {
+      "instanceId": "zauberzeug__nicegui-5914",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:40:25.559Z"
+    },
+    "oemof__tespy-921": {
+      "instanceId": "oemof__tespy-921",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:43:05.477Z"
+    },
+    "marshmallow-code__marshmallow-2925_interface": {
+      "instanceId": "marshmallow-code__marshmallow-2925_interface",
+      "split": "2026_03",
+      "reps": [
+        true,
+        true,
+        true
+      ],
+      "pass": true,
+      "gatedAt": "2026-07-22T23:45:06.525Z"
+    }
+  },
+  "vintageCut": "2026-01-31",
+  "vintageRule": "admit only created_at strictly after trainingCutoff; enforced at selection + freeze integrity test",
+  "effort": "high"
+}

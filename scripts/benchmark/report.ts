@@ -10,6 +10,8 @@
  */
 
 import type { Candidate } from "./select.ts";
+import type { ArmCost } from "./metrics.ts";
+import type { InstanceWebAudit } from "./webaudit.ts";
 
 export interface ABRow {
   instanceId: string;
@@ -82,8 +84,83 @@ function mark(b: boolean): string {
   return b ? "✅" : "❌";
 }
 
+/**
+ * Render the per-arm cost totals (FR-BENCH-SWE.COST). Informative only —
+ * cost is measured, never a quality criterion, hence a separate section that
+ * never feeds the A/B verdict.
+ */
+function renderCostSection(
+  costs: Partial<Record<"baseline" | "flowai", ArmCost>>,
+): string[] {
+  const L: string[] = [];
+  L.push(`## Cost (informative — never a quality criterion)`);
+  L.push("");
+  for (const arm of ["baseline", "flowai"] as const) {
+    const c = costs[arm];
+    if (!c) continue;
+    const min = (c.wallClockMs / 60_000).toFixed(1);
+    L.push(
+      `- ${arm}: ${c.instances} instance(s) with metrics; wall-clock ${min} min` +
+        ` total; ${c.apiCalls} API calls; tokens in ${c.inputTokens}` +
+        ` (cache-read ${c.cacheReadTokens}, cache-write ${c.cacheCreationTokens})` +
+        ` / out ${c.outputTokens}; ${c.toolCalls} tool calls` +
+        (c.parseErrors > 0
+          ? `; ${c.parseErrors} transcript parse error(s)`
+          : "") +
+        `.`,
+    );
+  }
+  L.push(
+    `- flowai's judge-gate CLI shares bench-home, so gate tokens are counted` +
+      ` inside the flowai arm's overhead.`,
+  );
+  L.push("");
+  return L;
+}
+
+/**
+ * Render the per-arm web-access audit (FR-BENCH-SWE.WEBAUDIT). Research is
+ * normal agent work — accesses are totalled and only oracle-adjacent ones are
+ * listed verbatim for human review; a flag is disclosure, never an exclusion.
+ */
+function renderWebAuditSection(
+  audits: Partial<Record<"baseline" | "flowai", InstanceWebAudit[]>>,
+): string[] {
+  const L: string[] = [];
+  L.push(`## Web access (audited — flagged, never banned)`);
+  L.push("");
+  for (const arm of ["baseline", "flowai"] as const) {
+    const list = audits[arm];
+    if (!list) continue;
+    const total = list.reduce((n, a) => n + a.accesses.length, 0);
+    const flagged = list.reduce((n, a) => n + a.flaggedCount, 0);
+    L.push(
+      `- ${arm}: ${total} access(es) across ${list.length} instance(s);` +
+        ` ${flagged} flagged oracle-adjacent.`,
+    );
+    for (const a of list) {
+      for (const acc of a.accesses) {
+        if (!acc.flagged) continue;
+        L.push(`  - \`${a.instanceId}\` ${acc.tool}: ${acc.target}`);
+      }
+    }
+  }
+  L.push(
+    `- A flag means the target references the instance's own repo` +
+      ` PR/commit/issue or its ticket number — review by hand; nothing is` +
+      ` excluded automatically.`,
+  );
+  L.push("");
+  return L;
+}
+
 /** Render a committed markdown A/B report. */
-export function renderMarkdownAB(rep: ABReport, meta: ReportMeta): string {
+export function renderMarkdownAB(
+  rep: ABReport,
+  meta: ReportMeta,
+  costs?: Partial<Record<"baseline" | "flowai", ArmCost>>,
+  webAudits?: Partial<Record<"baseline" | "flowai", InstanceWebAudit[]>>,
+): string {
   const L: string[] = [];
   L.push(`# SWE-bench Verified — flowai vs pure Claude Code (same harness)`);
   L.push("");
@@ -138,6 +215,12 @@ export function renderMarkdownAB(rep: ABReport, meta: ReportMeta): string {
     for (const id of rep.flowaiWins) L.push(`- \`${id}\``);
   }
   L.push("");
+  if (costs && (costs.baseline || costs.flowai)) {
+    L.push(...renderCostSection(costs));
+  }
+  if (webAudits && (webAudits.baseline || webAudits.flowai)) {
+    L.push(...renderWebAuditSection(webAudits));
+  }
   L.push(`## Caveats`);
   L.push("");
   L.push(

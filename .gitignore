@@ -57,3 +57,7 @@ benchmark-*.log
 
 # FoxCode local profile/state (dev-only, not tracked)
 .foxcode/
+
+# SWE-rebench pool2 grading path (FR-BENCH-SWE.POOL2): fork + venv
+.venv-rebench/
+.swe-bench-fork/

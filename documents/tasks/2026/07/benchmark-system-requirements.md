@@ -1,10 +1,18 @@
 ---
 date: "2026-07-15"
-status: done
+status: superseded
+superseded_by: documents/tasks/2026/07/bench-swe-fix-problems.md
 tags: [benchmark, requirements, constitution, effect-measurement]
 related_tasks: []
 ---
 # Benchmark system — requirements & constraints (measure real user effect vs pure Claude Code / Codex)
+
+> **Superseded (user decision 2026-07-22):** the replace-the-benchmark track is
+> closed and FR-BENCH-V1 was removed from the SRS unbuilt. This document stays
+> as the record of the five adversarial critique rounds and the "Final design
+> v1" contract — the idea source for evolving the existing FR-BENCH-SWE harness
+> in place (endpoint conjunction, frozen human reply, pre-registration freeze,
+> vintage rule are adopted piecemeal there, not as a separate instrument).
 
 ## Goal
 

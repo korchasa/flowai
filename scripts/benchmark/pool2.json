@@ -1,0 +1,82 @@
+[
+  {
+    "instanceId": "agronholm__anyio-1121",
+    "repo": "agronholm/anyio",
+    "createdAt": "2026-04-21 14:00:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.agronholm_1776_anyio-1121:latest",
+    "f2p": 1,
+    "p2p": 32,
+    "patchBytes": 1768
+  },
+  {
+    "instanceId": "tox-dev__tox-3931",
+    "repo": "tox-dev/tox",
+    "createdAt": "2026-05-01 15:37:40",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tox-dev_1776_tox-3931:latest",
+    "f2p": 1,
+    "p2p": 2,
+    "patchBytes": 1848
+  },
+  {
+    "instanceId": "tobymao__sqlglot-7479",
+    "repo": "tobymao/sqlglot",
+    "createdAt": "2026-04-09 12:51:48",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.tobymao_1776_sqlglot-7479:latest",
+    "f2p": 1,
+    "p2p": 57,
+    "patchBytes": 1895
+  },
+  {
+    "instanceId": "raullenchai__rapid-mlx-228",
+    "repo": "raullenchai/Rapid-MLX",
+    "createdAt": "2026-05-05 17:40:54",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.raullenchai_1776_rapid-mlx-228:latest",
+    "f2p": 2,
+    "p2p": 30,
+    "patchBytes": 1975
+  },
+  {
+    "instanceId": "alibaba__opensandbox-816",
+    "repo": "alibaba/OpenSandbox",
+    "createdAt": "2026-04-29 07:35:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.alibaba_1776_opensandbox-816:latest",
+    "f2p": 1,
+    "p2p": 108,
+    "patchBytes": 2092
+  },
+  {
+    "instanceId": "graphistry__pygraphistry-1107_interface",
+    "repo": "graphistry/pygraphistry",
+    "createdAt": "2026-04-08 23:33:51",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.graphistry_1776_pygraphistry-1107_interface:latest",
+    "f2p": 7,
+    "p2p": 0,
+    "patchBytes": 3041
+  },
+  {
+    "instanceId": "nesquena__hermes-webui-330_interface",
+    "repo": "nesquena/hermes-webui",
+    "createdAt": "2026-04-12 21:10:36",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.nesquena_1776_hermes-webui-330_interface:latest",
+    "f2p": 4,
+    "p2p": 4,
+    "patchBytes": 4655
+  },
+  {
+    "instanceId": "graphistry__pygraphistry-1277",
+    "repo": "graphistry/pygraphistry",
+    "createdAt": "2026-05-04 02:58:43",
+    "split": "2026_03",
+    "imageName": "swerebench/sweb.eval.x86_64.graphistry_1776_pygraphistry-1277:latest",
+    "f2p": 2,
+    "p2p": 628,
+    "patchBytes": 5566
+  }
+]

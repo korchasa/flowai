@@ -49,6 +49,13 @@ export interface AcpAgentSpec {
  * → `authMode: "subscription"`. The package is being renamed to
  * `@agentclientprotocol/claude-agent-acp`; the old name still resolves. Pin a
  * version so the cache-key (FR-ACCEPT-CACHE) invalidates on upgrade.
+ *
+ * Codex is likewise reached through an npm bridge, NOT through its own CLI:
+ * codex-cli (verified 0.144.6) has no `acp` subcommand, so the former
+ * `codex acp` row started the interactive TUI with "acp" as the prompt and the
+ * codex transport could never have worked. `@agentclientprotocol/codex-acp`
+ * speaks ACP over the Codex app-server and supports ChatGPT-subscription login
+ * (`~/.codex/auth.json`), so no API key is provisioned for the bench.
  */
 export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   claude: {
@@ -71,8 +78,15 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   },
   codex: {
     ide: "codex",
-    launch: { command: "codex", args: ["acp"] },
-    authMode: "api-key",
+    launch: {
+      command: "npx",
+      args: ["-y", "@agentclientprotocol/codex-acp@1.1.7"],
+      // Start in full-access agent mode: the bridge's default mode may be
+      // read-only, which would let a bench session "finish" having written
+      // nothing and score as an honest miss (FR-BENCH-SWE.IDE).
+      env: { INITIAL_AGENT_MODE: "agent-full-access" },
+    },
+    authMode: "subscription",
     configDir: ".codex",
   },
   opencode: {

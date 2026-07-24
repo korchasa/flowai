@@ -86,3 +86,74 @@ Deno.test("renderMarkdownAB: no wins renders empty placeholder", () => {
   const md = renderMarkdownAB(rep, META);
   assertStringIncludes(md, "_None yet._");
 });
+
+Deno.test("renderMarkdownAB: cost section renders per-arm totals when present", () => {
+  const rep = aggregateAB(POOL, ["p1"], [], []);
+  const md = renderMarkdownAB(rep, META, {
+    baseline: {
+      instances: 2,
+      wallClockMs: 120_000,
+      apiCalls: 40,
+      inputTokens: 1_500_000,
+      outputTokens: 30_000,
+      cacheReadTokens: 900_000,
+      cacheCreationTokens: 10_000,
+      toolCalls: 55,
+      parseErrors: 0,
+    },
+  });
+  assertStringIncludes(md, "Cost (informative");
+  assertStringIncludes(md, "never a quality criterion");
+  assertStringIncludes(md, "baseline");
+  assertStringIncludes(md, "2 instance");
+  assertStringIncludes(md, "40");
+});
+
+Deno.test("renderMarkdownAB: no cost section without metrics", () => {
+  const rep = aggregateAB(POOL, ["p1"], [], []);
+  const md = renderMarkdownAB(rep, META);
+  assertEquals(md.includes("Cost (informative"), false);
+});
+
+Deno.test("renderMarkdownAB: web-access section lists totals and flagged accesses", () => {
+  const rep = aggregateAB(POOL, ["p1"], [], []);
+  const md = renderMarkdownAB(rep, META, undefined, {
+    baseline: [
+      {
+        instanceId: "p1",
+        repo: "django/django",
+        transcriptFiles: 2,
+        parseErrors: 0,
+        accesses: [
+          {
+            tool: "WebSearch",
+            target: "django 16454 fix",
+            flagged: true,
+          },
+          {
+            tool: "WebFetch",
+            target: "https://docs.djangoproject.com/",
+            flagged: false,
+          },
+        ],
+        flaggedCount: 1,
+      },
+    ],
+  });
+  assertStringIncludes(md, "Web access");
+  assertStringIncludes(md, "never banned");
+  assertStringIncludes(md, "2 access(es)");
+  assertStringIncludes(md, "1 flagged");
+  assertStringIncludes(md, "django 16454 fix");
+  assertEquals(
+    md.includes("docs.djangoproject.com"),
+    false,
+    "unflagged accesses are totalled, not listed",
+  );
+});
+
+Deno.test("renderMarkdownAB: no web-access section without audits", () => {
+  const rep = aggregateAB(POOL, ["p1"], [], []);
+  const md = renderMarkdownAB(rep, META);
+  assertEquals(md.includes("Web access"), false);
+});
