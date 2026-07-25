@@ -131,6 +131,30 @@ export function campaignMismatch(
     `but this run is ${curIde}/${current.model}@${current.effort}`;
 }
 
+/**
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * swebench's grading run id, scoped to the campaign.
+ *
+ * swebench caches each verdict at `logs/run_evaluation/<runId>/<model>/
+ * <instance>/report.json` and skips any instance already present. Since every
+ * campaign grades under model name `baseline`, a rep-only id makes the SECOND
+ * campaign inherit the FIRST one's verdicts wholesale — measured 2026-07-25,
+ * where the codex terra run reported 31/67 of which 64 instances were never
+ * graded, only replayed from the Sonnet campaign.
+ *
+ * The original claude/sonnet@high campaign keeps its historical id: its graded
+ * logs (and the pool2 freeze derived from them) already live under that path,
+ * and renaming would either orphan them or force a pointless regrade.
+ */
+export function campaignRunId(c: RepCampaign, rep: number): string {
+  const ide = c.ide ?? "claude";
+  if (ide === "claude" && c.model === "sonnet" && c.effort === "high") {
+    return `pool2-baseline-rep${rep}`;
+  }
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  return `pool2-${slug(ide)}-${slug(c.model)}-${slug(c.effort)}-rep${rep}`;
+}
+
 export interface BaselineBatchOptions {
   data: Map<string, InstanceData>;
   ids: string[];

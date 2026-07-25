@@ -57,6 +57,7 @@ import {
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
 import {
   campaignMismatch,
+  campaignRunId,
   gradePool2Predictions,
   type RepCampaign,
   runBaselineBatch,
@@ -382,7 +383,7 @@ await new Command()
     const resolved = await gradePool2Predictions(
       predPath,
       split,
-      `pool2-baseline-rep${opts.rep}`,
+      campaignRunId(thisCampaign, opts.rep),
       repoRoot,
     );
     const solves = Object.fromEntries(

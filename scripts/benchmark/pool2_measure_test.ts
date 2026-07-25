@@ -1,10 +1,48 @@
 import { assert, assertEquals } from "@std/assert";
 import {
   campaignMismatch,
+  campaignRunId,
   isHealthAbort,
   mapPool,
   pendingIds,
 } from "./pool2_measure.ts";
+
+/**
+ * swebench caches a graded verdict under `logs/run_evaluation/<runId>/<model>/
+ * <instance>/report.json` and SKIPS any instance already there ("N instances
+ * already run, skipping..."). The run id must therefore carry the campaign:
+ * with a rep-only id, the codex campaign inherited 64 of 67 verdicts from the
+ * Sonnet campaign that graded under the same id — a headroom number that
+ * measured the wrong agent (measured 2026-07-25).
+ */
+Deno.test("campaignRunId: each campaign grades under its own id", () => {
+  const terra = { ide: "codex", model: "gpt-5.6-terra", effort: "medium" };
+  const id = campaignRunId(terra, 1);
+  assertEquals(id, "pool2-codex-gpt-5-6-terra-medium-rep1");
+
+  // Every pin, and the rep, must move the id.
+  const differs = [
+    campaignRunId({ ...terra, model: "gpt-5.6-sol" }, 1),
+    campaignRunId({ ...terra, effort: "high" }, 1),
+    campaignRunId({ ...terra, ide: "claude" }, 1),
+    campaignRunId(terra, 2),
+  ];
+  assertEquals(new Set([id, ...differs]).size, 5, "ids must all be distinct");
+  // Docker/swebench path segment: no dots or slashes survive.
+  for (const v of [id, ...differs]) assertEquals(/^[a-z0-9-]+$/.test(v), true);
+
+  // The original claude/sonnet@high campaign keeps its historical id — its
+  // graded logs on disk (and the pool2 freeze derived from them) live there.
+  assertEquals(
+    campaignRunId({ ide: "claude", model: "sonnet", effort: "high" }, 3),
+    "pool2-baseline-rep3",
+  );
+  assertEquals(
+    campaignRunId({ model: "sonnet", effort: "high" }, 1),
+    "pool2-baseline-rep1",
+    "legacy reps carry no ide field and were all Claude",
+  );
+});
 
 /**
  * A rep dir is owned by exactly ONE campaign. `runBaselineBatch` resumes by
