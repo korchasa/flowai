@@ -1,5 +1,46 @@
 import { assert, assertEquals } from "@std/assert";
-import { isHealthAbort, mapPool, pendingIds } from "./pool2_measure.ts";
+import {
+  campaignMismatch,
+  isHealthAbort,
+  mapPool,
+  pendingIds,
+} from "./pool2_measure.ts";
+
+/**
+ * A rep dir is owned by exactly ONE campaign. `runBaselineBatch` resumes by
+ * reading the ids already in `baseline.jsonl`, so pointing a second campaign at
+ * another's dir does not error — it reports "0 pending" and silently adopts the
+ * first campaign's predictions as its own. That is the same class of failure as
+ * banking a never-attempted instance as a miss, so it must abort loudly.
+ */
+Deno.test("campaignMismatch: a rep dir belongs to one campaign", () => {
+  const codex = { ide: "codex", model: "gpt-5.6-terra", effort: "medium" };
+  // Fresh dir → nothing to conflict with.
+  assertEquals(campaignMismatch(null, codex), null);
+  // Same campaign resuming → allowed (that is the whole point of resume).
+  assertEquals(campaignMismatch({ ...codex }, codex), null);
+
+  // Any pin differing means the predictions in that dir are someone else's.
+  assert(campaignMismatch({ ...codex, model: "gpt-5.6-sol" }, codex));
+  assert(campaignMismatch({ ...codex, effort: "high" }, codex));
+  assert(campaignMismatch({ ...codex, ide: "claude" }, codex));
+
+  // Legacy reps predate the `ide` field and were all Claude runs; treat a
+  // missing ide as claude rather than as "matches anything".
+  const legacySonnet = { model: "sonnet", effort: "high" };
+  assertEquals(
+    campaignMismatch(legacySonnet, {
+      ide: "claude",
+      model: "sonnet",
+      effort: "high",
+    }),
+    null,
+  );
+  assert(
+    campaignMismatch(legacySonnet, codex),
+    "a codex run must not adopt the legacy Sonnet rep dir",
+  );
+});
 
 Deno.test("pendingIds: keeps only ids not already done (resume after a kill)", () => {
   assertEquals(

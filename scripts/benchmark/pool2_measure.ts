@@ -86,6 +86,51 @@ async function donePredictionIds(predPath: string): Promise<Set<string>> {
   }
 }
 
+/**
+ * Campaign pins recorded next to a run — per rep (`<repDir>/run-meta.json`) and
+ * per campaign base (`<baseOut>/campaign.json`, which owns rep1..rep3).
+ */
+export interface RepCampaign {
+  /** Absent in reps written before FR-BENCH-SWE.IDE — those were all Claude. */
+  ide?: string;
+  model: string;
+  effort: string;
+}
+
+/**
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * Guard an output dir against a SECOND campaign writing into it.
+ *
+ * Two things go wrong without this. At the REP level `runBaselineBatch` resumes
+ * from the ids already in `baseline.jsonl`, so aiming a codex campaign at the
+ * Sonnet rep dir does not fail — it reports "0 pending" and silently adopts
+ * Sonnet's predictions as codex's, measuring the wrong agent. At the CAMPAIGN
+ * BASE level it catches reps that blend two efforts (rep 1 at medium, rep 2 at
+ * high), which the provenance can no longer see now that effort is part of the
+ * campaign key.
+ *
+ * Returns a human-readable reason, or null when the dir is fresh or the same
+ * campaign is legitimately resuming.
+ */
+export function campaignMismatch(
+  prior: RepCampaign | null,
+  current: RepCampaign,
+): string | null {
+  if (!prior) return null;
+  // Reps written before the ide field were all Claude runs — back-fill the
+  // fact rather than letting a missing field match anything.
+  const priorIde = prior.ide ?? "claude";
+  const curIde = current.ide ?? "claude";
+  if (
+    priorIde === curIde && prior.model === current.model &&
+    prior.effort === current.effort
+  ) {
+    return null;
+  }
+  return `belongs to campaign ${priorIde}/${prior.model}@${prior.effort}, ` +
+    `but this run is ${curIde}/${current.model}@${current.effort}`;
+}
+
 export interface BaselineBatchOptions {
   data: Map<string, InstanceData>;
   ids: string[];

@@ -52,7 +52,64 @@ export interface Pool2Provenance {
   vintageCut?: string | null;
   /** Human-readable statement of the vintage rule (documentation field). */
   vintageRule?: string;
+  /**
+   * Per-campaign pins, keyed by `<ide>/<model>@<effort>` (see
+   * {@link campaignKey}).
+   *
+   * The gate results below are model-INDEPENDENT — the gold gate validates the
+   * instance and its Docker image, never the agent — so several campaigns share
+   * one gated candidate set. Their PINS do not: measuring codex/terra at
+   * `medium` must not collide with the claude/sonnet campaign pinned at `high`.
+   * The top-level `effort`/`modelSnapshot`/`trainingCutoff` fields above are the
+   * original claude/sonnet campaign's record and are left frozen; every campaign
+   * from 2026-07-25 on lives here (FR-BENCH-SWE.IDE).
+   */
+  campaigns?: Record<string, Pool2CampaignPins>;
   gates: Record<string, GateResult & { gatedAt: string }>;
+}
+
+/** Pins one measurement campaign: which agent ran, and at which effort. */
+export interface Pool2CampaignPins {
+  ide: string;
+  model: string;
+  effort: string;
+}
+
+/**
+ * Identity of a measurement campaign: the full (ide, model, effort) triple.
+ * Effort belongs in the identity because it is an operating point, not a
+ * setting — terra at medium and terra at high produce different pass rates and
+ * must never share one record. This is also what lets a ceiling probe coexist
+ * with its subject (codex/gpt-5.6-sol@high alongside codex/gpt-5.6-terra@medium).
+ *
+ * Consequence, deliberately accepted: the provenance can no longer notice that
+ * reps of ONE campaign blended two efforts, because a different effort is a
+ * different key here. That protection lives at the campaign DIRECTORY instead
+ * (`campaignMismatch`, pool2_measure.ts) — the correct scope, since one `--out`
+ * base holds rep1..rep3 of exactly one campaign.
+ */
+export function campaignKey(
+  ide: string,
+  model: string,
+  effort: string,
+): string {
+  return `${ide}/${model}@${effort}`;
+}
+
+/** Record this campaign's pins. Idempotent; never touches gate results. */
+export function stampCampaign(
+  prov: Pool2Provenance,
+  ide: string,
+  model: string,
+  effort: string,
+): Pool2Provenance {
+  const key = campaignKey(ide, model, effort);
+  const prior = prov.campaigns?.[key];
+  if (prior && prior.effort === effort) return prov;
+  return {
+    ...prov,
+    campaigns: { ...prov.campaigns, [key]: { ide, model, effort } },
+  };
 }
 
 /** Pass iff exactly k reps ran and ALL resolved (flaky or incomplete → out). */

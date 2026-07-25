@@ -51,11 +51,14 @@ import {
   POOL2_PROVENANCE_PATH,
   runGoldGate,
   saveProvenance,
+  stampCampaign,
   upsertGate,
 } from "./benchmark/pool2_gate.ts";
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
 import {
+  campaignMismatch,
   gradePool2Predictions,
+  type RepCampaign,
   runBaselineBatch,
 } from "./benchmark/pool2_measure.ts";
 import {
@@ -282,20 +285,6 @@ await new Command()
       );
       Deno.exit(1);
     }
-    // Stamp the pinned effort into the data of record. A conflicting prior
-    // value means a mixed-effort campaign — refuse rather than silently blend.
-    if (prov.effort && prov.effort !== opts.effort) {
-      console.error(
-        `[pool2-run] provenance effort=${prov.effort} conflicts with --effort ${opts.effort}; aborting`,
-      );
-      Deno.exit(1);
-    }
-    if (prov.effort !== opts.effort) {
-      await saveProvenance(POOL2_PROVENANCE_PATH, {
-        ...prov,
-        effort: opts.effort,
-      });
-    }
     // Optional subset (Opus ceiling probe runs only the 0/3 queue). Applied
     // before --limit so a metered slice takes the first N of the subset.
     passers = filterToWanted(passers, opts.instance as string[] | undefined);
@@ -308,17 +297,66 @@ await new Command()
       `[pool2-run] rep=${opts.rep} instances=${passers.length} split=${split}` +
         ` model=${opts.model} out=${outDir}`,
     );
+    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+    // A campaign dir belongs to ONE (ide, model, effort). Two guards, both
+    // needed:
+    //   - the BASE dir (`campaign.json`) holds rep1..rep3, so it is what catches
+    //     "rep 1 at medium, rep 2 at high" — the effort blending the provenance
+    //     can no longer see now that effort is part of the campaign key;
+    //   - the REP dir (`run-meta.json`) catches aiming a second campaign at
+    //     another's rep, where resume would report "0 pending" and silently
+    //     adopt the first campaign's patches. It also covers campaigns predating
+    //     `campaign.json` (the completed claude/sonnet reps).
+    await ensureDir(outDir);
+    const thisCampaign = {
+      ide: pool2Ide,
+      model: opts.model,
+      effort: opts.effort,
+    };
+    const readCampaign = async (p: string): Promise<RepCampaign | null> => {
+      try {
+        return JSON.parse(await Deno.readTextFile(p)) as RepCampaign;
+      } catch {
+        return null; // fresh dir
+      }
+    };
+    const basePath = join(baseOut, "campaign.json");
+    for (
+      const [path, scope] of [
+        [basePath, "campaign dir"],
+        [join(outDir, "run-meta.json"), "rep dir"],
+      ] as const
+    ) {
+      const mismatch = campaignMismatch(await readCampaign(path), thisCampaign);
+      if (mismatch) {
+        console.error(
+          `[pool2-run] ${scope}: ${mismatch}; use a separate --out — aborting`,
+        );
+        Deno.exit(1);
+      }
+    }
+    await Deno.writeTextFile(
+      basePath,
+      JSON.stringify(thisCampaign, null, 2) + "\n",
+    );
+    // Record this campaign's pins in the data of record. Campaigns share the
+    // gate results (those are model-independent), never the pins: codex/terra at
+    // medium, a sol ceiling probe at high and the original claude/sonnet run all
+    // live side by side, keyed by the full triple.
+    const stamped = stampCampaign(prov, pool2Ide, opts.model, opts.effort);
+    if (stamped !== prov) {
+      await saveProvenance(POOL2_PROVENANCE_PATH, stamped);
+    }
+
     const data = await loadPool2InstanceData(passers, split);
     // Record the pinned campaign settings next to the rep so a later flowai
     // arm (and the report) can prove baseline + flowai ran at the SAME effort.
-    await ensureDir(outDir);
     await Deno.writeTextFile(
       join(outDir, "run-meta.json"),
       JSON.stringify(
         {
           rep: opts.rep,
-          model: opts.model,
-          effort: opts.effort,
+          ...thisCampaign,
           split,
           stepTimeoutMs: opts.stepTimeout,
           concurrency: opts.concurrency,
