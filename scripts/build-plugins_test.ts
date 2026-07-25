@@ -12,6 +12,7 @@ import {
   DEFAULT_MARKETPLACE_NAME,
   resolveModelTier,
   transformAgentFrontmatter,
+  transformSkillFile,
 } from "./build-plugins.ts";
 
 const FRAMEWORK = join(Deno.cwd(), "framework");
@@ -483,7 +484,6 @@ Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
     mode: "subagent",
     opencode_tools: { write: false },
     model: "smart" as const,
-    effort: "medium" as const,
     maxTurns: 15,
     background: false,
     isolation: "worktree" as const,
@@ -494,8 +494,8 @@ Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
   assertEquals(out.description, "d");
   assertEquals(out.tools, "Bash");
   assertEquals(out.disallowedTools, "Write");
-  assertEquals(out.model, "sonnet");
-  assertEquals(out.effort, "medium");
+  assertEquals(out.model, "opus");
+  assertEquals(out.effort, "high");
   assertEquals(out.maxTurns, 15);
   assertEquals(out.background, false);
   assertEquals(out.isolation, "worktree");
@@ -506,12 +506,78 @@ Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
 });
 
 Deno.test("model-tier-resolution", () => {
-  assertEquals(resolveModelTier("max"), "opus");
-  assertEquals(resolveModelTier("smart"), "sonnet");
-  assertEquals(resolveModelTier("fast"), "haiku");
-  assertEquals(resolveModelTier("cheap"), "haiku");
+  // [REF:fr:dist.mapping | FR-DIST.MAPPING]: a tier resolves to a model + effort PAIR, so one tier can
+  // never ship with two different efforts.
+  assertEquals(resolveModelTier("max"), { model: "opus", effort: "max" });
+  assertEquals(resolveModelTier("smart"), { model: "opus", effort: "high" });
+  assertEquals(resolveModelTier("fast"), { model: "sonnet", effort: "medium" });
+  assertEquals(resolveModelTier("cheap"), { model: "sonnet", effort: "low" });
   assertEquals(resolveModelTier("inherit"), undefined);
   assertEquals(resolveModelTier(undefined), undefined);
+  // A concrete model id is not a tier: it carries no effort of its own.
+  assertEquals(resolveModelTier("opus"), { model: "opus" });
+});
+
+Deno.test("agent-tier-effort-overrides-source-effort", () => {
+  // A source `effort:` beside a tier is drift; the tier wins.
+  const out = transformAgentFrontmatter({
+    name: "ag",
+    description: "d",
+    model: "cheap",
+    effort: "high",
+  });
+  assertEquals(out.model, "sonnet");
+  assertEquals(out.effort, "low");
+});
+
+Deno.test("agent-inherit-drops-model-and-effort", () => {
+  const out = transformAgentFrontmatter({
+    name: "ag",
+    description: "d",
+    model: "inherit",
+    effort: "medium",
+  });
+  assertEquals(out.model, undefined);
+  assertEquals(out.effort, undefined);
+});
+
+Deno.test("skill-tier-writes-model-and-effort", () => {
+  const ctx = {
+    kind: "skill" as const,
+    sourceFile: "x/SKILL.md",
+    slashRewriter: (t: string) => t,
+    collectedTags: new Set<string>(),
+  };
+  const smart = transformSkillFile(
+    "---\nname: s\ndescription: d\nmodel: smart\n---\n\n# Body\n",
+    ctx,
+  );
+  assertStringIncludes(smart, "model: opus");
+  assertStringIncludes(smart, "effort: high");
+
+  const inherited = transformSkillFile(
+    "---\nname: s\ndescription: d\nmodel: inherit\neffort: low\n---\n\n# Body\n",
+    ctx,
+  );
+  assertEquals(inherited.includes("model:"), false);
+  assertEquals(inherited.includes("effort:"), false);
+
+  // No tier → a standalone effort is the skill's own business.
+  const standalone = transformSkillFile(
+    "---\nname: s\ndescription: d\neffort: high\n---\n\n# Body\n",
+    ctx,
+  );
+  assertStringIncludes(standalone, "effort: high");
+});
+
+Deno.test("agent-effort-without-tier-survives", () => {
+  const out = transformAgentFrontmatter({
+    name: "ag",
+    description: "d",
+    effort: "high",
+  });
+  assertEquals(out.model, undefined);
+  assertEquals(out.effort, "high");
 });
 
 // Regression guards for the `marketplaceName` override that

@@ -2,7 +2,6 @@
 name: deep-research
 description: Multi-directional deep research with sub-agents, scoring, source verification, and cited synthesis. Use for comprehensive research, deep analysis, or evidence-backed answers. Produces executive summary + markdown report. Supports search tools, playwright-cli, and MCP.
 model: smart
-effort: high
 ---
 
 # Deep Research Skill

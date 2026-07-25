@@ -117,7 +117,9 @@ Deno.test("copyFrameworkToIdeDir resolves abstract model tier in skills", async 
     );
     // The raw tier must NOT survive — it would crash the IDE CLI on invoke.
     assertEquals(content.includes("model: cheap"), false);
-    assertStringIncludes(content, "model: haiku");
+    // The tier resolves to a model + effort pair.
+    assertStringIncludes(content, "model: sonnet");
+    assertStringIncludes(content, "effort: low");
   } finally {
     await Deno.remove(root, { recursive: true });
   }

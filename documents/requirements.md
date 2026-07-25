@@ -879,7 +879,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - `<out>/plugins/<plugin>/.claude-plugin/plugin.json` — Claude manifest. Core emits `flowai`; optional packs emit `flowai-<pack>`. `version` mirrors upstream `deno.json`.
   - `<out>/plugins/<plugin>/.codex-plugin/plugin.json` — Codex manifest. Includes metadata, `skills: ./skills/`, optional `hooks: ./hooks/hooks.json` only when hooks exist. No `agents` component is declared because Codex plugin docs do not define it.
   - `<out>/plugins/<plugin>/skills/<stripped>/SKILL.md` (+ supporting subdirs except `acceptance-tests/`). `disable-model-invocation: true` injected on commands (source under `framework/<pack>/commands/`) and absent on skills (source under `framework/<pack>/skills/`). FR-PACKS.CMD-INVARIANT / SKILL-INVARIANT enforced fail-fast: any source SKILL.md that already carries the flag aborts the build with the offending path.
-  - `<out>/plugins/<plugin>/agents/<name>.md` — frontmatter passed through the universal → Claude-native mapping from FR-DIST.MAPPING (keeps `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color`; drops `readonly`, `mode`, `opencode_tools`; resolves `model` tier `max|smart|fast|cheap` to `opus|sonnet|haiku|haiku`, drops `inherit`).
+  - `<out>/plugins/<plugin>/agents/<name>.md` — frontmatter passed through the universal → Claude-native mapping from FR-DIST.MAPPING (keeps `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color`; drops `readonly`, `mode`, `opencode_tools`; resolves `model` tier `max|smart|fast|cheap` to the pair `opus/max|opus/high|sonnet/medium|sonnet/low` per FR-DIST.MAPPING, drops `inherit`).
   - `<out>/plugins/<plugin>/hooks/hooks.json` only when the source pack carries hooks. Hook commands keep `${CLAUDE_PLUGIN_ROOT}` because Claude Code requires it and Codex supports this compatibility variable. Codex users must enable `[features].plugin_hooks = true` before relying on hooks.
   - Output is byte-deterministic across runs.
 - **Distribution contract:** CI step `Sync generated artefacts to downstream` checks out `korchasa/flowai-plugins` via deploy key `FLOWAI_PLUGINS_DEPLOY_KEY`, replaces every top-level entry except `README.md` / `LICENSE` / `.git`, commits as `release: framework-vX.Y.Z`, and force-pushes the matching tag. Idempotent across re-runs (`git diff --cached --quiet` short-circuits; `git tag -f` + `git push --force-with-lease` tolerates a re-shot tag).
@@ -1054,8 +1054,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 | `readonly` | kept | dropped | dropped | dropped |
 | `mode` | dropped | dropped | kept | dropped |
 | `opencode_tools` (map) | dropped | dropped | renamed → `tools` | dropped |
-| `model` (tier) | resolved to IDE-native | resolved to IDE-native | resolved from .flowai.yaml or omitted | dropped (Codex subagents inherit the session model) |
-| `effort` | dropped | kept | dropped | dropped |
+| `model` (tier) | resolved to IDE-native model | resolved to IDE-native model + effort (pair) | resolved from .flowai.yaml or omitted | dropped (Codex subagents inherit the session model) |
+| `effort` | dropped | written by the tier (see Model tiers below); a source-level `effort:` beside a tier is a drift error | dropped | dropped |
 | `maxTurns` | dropped | kept | renamed → `steps` | dropped |
 | `background` | dropped | kept | dropped | dropped |
 | `isolation` | dropped | kept | dropped | dropped |
@@ -1071,9 +1071,29 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 | `description` | yes | yes | yes | Skill purpose |
 | `disable-model-invocation` | yes | yes | yes | User-invoked only |
 | `allowed-tools` | yes | — | — | Pre-approve tools |
-| `model` | yes (tier → resolved) | — | yes (tier → resolved) | Override model (tier: max/smart/fast/cheap/inherit) |
-| `effort` | yes | — | — | Reasoning effort level |
+| `model` | yes (tier → model + effort) | — | yes (tier → model) | Override model (tier: max/smart/fast/cheap/inherit) |
+| `effort` | yes | — | — | Reasoning effort. Written by the tier when one is present; standalone only on tier-less primitives |
 | `argument-hint` | yes | — | — | Argument placeholder |
+
+**Model tiers (tier → model + effort):**
+
+A tier is the single source of truth for a primitive's quality/cost intent. It resolves to a PAIR, so the same tier can never ship with two different efforts. Applies to agents and to skills/commands that declare `model:`.
+
+| Tier | Claude Code | Cursor | OpenCode | OpenAI Codex |
+|:---|:---|:---|:---|:---|
+| `max` | `opus` + `effort: max` | `slow` | user-configured | `gpt-5.4` |
+| `smart` | `opus` + `effort: high` | `slow` | user-configured | `gpt-5.3-codex` |
+| `fast` | `sonnet` + `effort: medium` | `fast` | user-configured | `gpt-5.4-mini` |
+| `cheap` | `sonnet` + `effort: low` | `fast` | user-configured | `gpt-5.4-mini` |
+| `inherit` / absent | both fields omitted | omitted | omitted | omitted |
+
+Only Claude Code consumes `effort`; the other IDEs keep the model half and drop the effort half, exactly as they already drop a standalone `effort:` field.
+
+Rules:
+
+- A framework source that declares a tier MUST NOT also declare `effort:` — two sources of truth for the same value. A tier-less primitive may declare `effort:` on its own (it runs on the session model).
+- User override in `.flowai.yaml` `models:` accepts two forms per tier — a bare string sets only the model and keeps the built-in effort (`smart: opus`), an object sets the pair (`smart: {model: opus, effort: high}`).
+- The reverse direction (IDE-native → tier, used by cross-IDE sync) keys off the PAIR for Claude, because a bare `opus` no longer identifies a tier: `opus`+`max`→`max`, `opus`+`high`→`smart`, `sonnet`+`medium`→`fast`, `sonnet`+`low`→`cheap`. A model with no matching effort falls back to the model-only guess and is documented as lossy. Other IDEs stay model-only and lossy as before.
 
 **Cross-IDE sync transformations (user_sync):**
 

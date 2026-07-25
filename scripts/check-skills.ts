@@ -28,6 +28,7 @@ import {
   type ResourceError,
   SkillFrontmatterSchema,
   validateFrontmatter,
+  validateTierEffortDrift,
 } from "./resource-types.ts";
 
 /** Re-export for backward compatibility with tests. */
@@ -228,13 +229,17 @@ export function validateSkillFrontmatter(
   dirName: string,
   frontmatter: Record<string, unknown>,
 ): SkillError[] {
-  return validateFrontmatter(
-    dirName,
-    "FR-UNIVERSAL.FRONTMATTER",
-    frontmatter,
-    SkillFrontmatterSchema,
-    dirName,
-  ).map(toSkillError);
+  return [
+    ...validateFrontmatter(
+      dirName,
+      "FR-UNIVERSAL.FRONTMATTER",
+      frontmatter,
+      SkillFrontmatterSchema,
+      dirName,
+    ),
+    // [REF:fr:dist.mapping | FR-DIST.MAPPING]: the tier owns effort — reject the two-sources-of-truth form.
+    ...validateTierEffortDrift(dirName, frontmatter),
+  ].map(toSkillError);
 }
 
 /**

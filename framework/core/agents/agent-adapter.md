@@ -4,7 +4,6 @@ description: Adapts a single agent to project specifics after upstream update. M
 tools: Bash
 mode: subagent
 model: smart
-effort: medium
 maxTurns: 15
 opencode_tools:
   write: false

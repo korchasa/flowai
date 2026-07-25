@@ -6,7 +6,6 @@ disallowedTools: Write, Edit
 readonly: true
 mode: subagent
 model: smart
-effort: high
 maxTurns: 30
 opencode_tools:
   write: false

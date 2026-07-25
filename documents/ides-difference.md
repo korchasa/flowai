@@ -401,7 +401,7 @@ Frontmatter transform:
 | `name` | `name` | Unchanged |
 | `description` | `description` | Unchanged |
 | `model: inherit` | `model: inherit` | Unchanged |
-| `model: fast` | `model: haiku` | Cursor "fast" = haiku-class |
+| `model: fast` | `model: sonnet` + `effort: medium` | Cursor "fast" reverse-maps to the `fast` tier, which resolves to a model+effort pair on Claude |
 | `readonly: true` | `disallowedTools: Write, Edit, NotebookEdit` | Or `permissionMode: plan` |
 
 Claude Code agent additional fields: `tools`, `disallowedTools`, `permissionMode`, `maxTurns`, `skills`, `mcpServers`, `hooks`, `memory` (`user`/`project`/`local`), `effort`, `isolation` (`worktree`), `omitClaudeMd`, `initialPrompt`, `background`, `color`. Agents support nesting (subagent can spawn subagents).

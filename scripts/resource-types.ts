@@ -139,3 +139,32 @@ export function validateFrontmatter(
 
   return errors;
 }
+
+/** Abstract model tiers, plus `inherit` — all of them own `effort`. */
+const MODEL_TIERS = new Set(["max", "smart", "fast", "cheap", "inherit"]);
+
+/**
+ * FR-DIST.MAPPING: a tier resolves to a model AND an effort, so a source that
+ * declares `effort:` beside a tier has two sources of truth for the same value.
+ * The install-time resolver silently overwrites the source value, which makes
+ * the drift invisible until someone reads the installed file — hence a
+ * build-time error rather than a warning.
+ *
+ * A concrete model id is not a tier: it carries no effort of its own, so a
+ * standalone `effort:` next to it is legitimate. Likewise for a primitive that
+ * declares no model at all — it runs on the session model.
+ */
+export function validateTierEffortDrift(
+  resource: string,
+  data: Record<string, unknown>,
+): ResourceError[] {
+  if (typeof data.model !== "string" || !MODEL_TIERS.has(data.model)) return [];
+  if (data.effort === undefined) return [];
+  return [{
+    resource,
+    criterion: "FR-DIST.MAPPING",
+    message:
+      `'effort' must not be declared beside the '${data.model}' model tier — ` +
+      `the tier resolves to model + effort. Drop the 'effort' line.`,
+  }];
+}

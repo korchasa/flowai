@@ -97,24 +97,41 @@ const SKILL_KEY_ORDER = [
 
 export type ModelTier = "max" | "smart" | "fast" | "cheap" | "inherit";
 
+/** What a tier resolves to on Claude: a model plus the effort that goes with it. */
+export interface ResolvedTier {
+  model: string;
+  effort?: string;
+}
+
+/**
+ * FR-DIST.MAPPING: a tier is the single source of truth for a primitive's
+ * quality/cost intent, so it resolves to a model + effort PAIR. A concrete
+ * model id passes through as a model with no effort of its own.
+ */
 export function resolveModelTier(
   tier: string | undefined,
-): string | undefined {
+): ResolvedTier | undefined {
   switch (tier) {
     case "max":
-      return "opus";
+      return { model: "opus", effort: "max" };
     case "smart":
-      return "sonnet";
+      return { model: "opus", effort: "high" };
     case "fast":
-      return "haiku";
+      return { model: "sonnet", effort: "medium" };
     case "cheap":
-      return "haiku";
+      return { model: "sonnet", effort: "low" };
     case "inherit":
     case undefined:
       return undefined;
     default:
-      return tier;
+      return { model: tier };
   }
+}
+
+/** True for a tier name, including `inherit` (which resolves to "drop both"). */
+function isTierName(value: string): boolean {
+  return value === "max" || value === "smart" || value === "fast" ||
+    value === "cheap" || value === "inherit";
 }
 
 export interface BuildOptions {
@@ -509,7 +526,7 @@ interface TransformSkillCtx {
   collectedTags: Set<string>;
 }
 
-function transformSkillFile(
+export function transformSkillFile(
   text: string,
   ctx: TransformSkillCtx,
 ): string {
@@ -538,10 +555,17 @@ function transformSkillFile(
     fm["disable-model-invocation"] = true;
   }
 
-  if (typeof fm.model === "string") {
+  // The tier owns `effort`; a concrete model id leaves a standalone effort alone.
+  if (typeof fm.model === "string" && isTierName(fm.model)) {
     const resolved = resolveModelTier(fm.model);
-    if (resolved === undefined) delete fm.model;
-    else fm.model = resolved;
+    if (resolved === undefined) {
+      delete fm.model;
+      delete fm.effort;
+    } else {
+      fm.model = resolved.model;
+      if (resolved.effort !== undefined) fm.effort = resolved.effort;
+      else delete fm.effort;
+    }
   }
 
   // (g) Collect tags for the marketplace entry, then drop from frontmatter —
@@ -708,10 +732,16 @@ export function transformAgentFrontmatter(
     if (!CLAUDE_AGENT_KEEP.has(k)) continue;
     out[k] = v;
   }
-  if (typeof out.model === "string") {
+  if (typeof out.model === "string" && isTierName(out.model)) {
     const resolved = resolveModelTier(out.model);
-    if (resolved === undefined) delete out.model;
-    else out.model = resolved;
+    if (resolved === undefined) {
+      delete out.model;
+      delete out.effort;
+    } else {
+      out.model = resolved.model;
+      if (resolved.effort !== undefined) out.effort = resolved.effort;
+      else delete out.effort;
+    }
   }
   return out;
 }

@@ -4,6 +4,58 @@ import {
   parseAgentFrontmatter,
   validateAgentFrontmatter,
 } from "./check-agents.ts";
+import { validateTierEffortDrift } from "./resource-types.ts";
+
+// --- tier owns effort (FR-DIST.MAPPING) ---
+
+Deno.test("AG: effort beside a model tier is a drift error", () => {
+  const errors = validateTierEffortDrift("my-agent", {
+    name: "my-agent",
+    description: "d",
+    model: "smart",
+    effort: "medium",
+  });
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-DIST.MAPPING");
+});
+
+Deno.test("AG: a tier without effort passes", () => {
+  const errors = validateTierEffortDrift("my-agent", {
+    name: "my-agent",
+    description: "d",
+    model: "smart",
+  });
+  assertEquals(errors.length, 0);
+});
+
+Deno.test("AG: effort without a tier passes", () => {
+  const errors = validateTierEffortDrift("my-agent", {
+    name: "my-agent",
+    description: "d",
+    effort: "high",
+  });
+  assertEquals(errors.length, 0);
+});
+
+Deno.test("AG: effort beside a concrete model passes", () => {
+  const errors = validateTierEffortDrift("my-agent", {
+    name: "my-agent",
+    description: "d",
+    model: "sonnet",
+    effort: "high",
+  });
+  assertEquals(errors.length, 0);
+});
+
+Deno.test("AG: effort beside inherit is a drift error", () => {
+  const errors = validateTierEffortDrift("my-agent", {
+    name: "my-agent",
+    description: "d",
+    model: "inherit",
+    effort: "high",
+  });
+  assertEquals(errors.length, 1);
+});
 
 // --- parseAgentFrontmatter ---
 

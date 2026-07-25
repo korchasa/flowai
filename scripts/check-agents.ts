@@ -11,6 +11,7 @@ import {
   parseFrontmatter,
   type ResourceError,
   validateFrontmatter,
+  validateTierEffortDrift,
 } from "./resource-types.ts";
 
 /** Re-export for backward compatibility with tests. */
@@ -35,13 +36,17 @@ export function validateAgentFrontmatter(
   fileName: string,
   data: Record<string, unknown>,
 ): AgentError[] {
-  return validateFrontmatter(
-    fileName,
-    "AG-1",
-    data,
-    AgentFrontmatterSchema,
-    fileName,
-  ).map(toAgentError);
+  return [
+    ...validateFrontmatter(
+      fileName,
+      "AG-1",
+      data,
+      AgentFrontmatterSchema,
+      fileName,
+    ),
+    // [REF:fr:dist.mapping | FR-DIST.MAPPING]: the tier owns effort — reject the two-sources-of-truth form.
+    ...validateTierEffortDrift(fileName, data),
+  ].map(toAgentError);
 }
 
 /** Validate a single agent file. */
