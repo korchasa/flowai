@@ -61,3 +61,6 @@ benchmark-*.log
 # SWE-rebench pool2 grading path (FR-BENCH-SWE.POOL2): fork + venv
 .venv-rebench/
 .swe-bench-fork/
+
+# swebench fork drops its per-run summary in the CWD; the real record is the cell.
+baseline.pool2-*.json

@@ -55,6 +55,8 @@ import {
   upsertGate,
 } from "./benchmark/pool2_gate.ts";
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
+import { CELLS_ROOT, currentCommit, readCellEnv } from "./benchmark/cells.ts";
+import { importCampaign, summariseCells } from "./benchmark/cells_import.ts";
 import {
   campaignMismatch,
   campaignRunId,
@@ -824,5 +826,53 @@ await new Command()
       await Deno.writeTextFile(opts.out, md);
       console.log(`[retro] written → ${opts.out}`);
     }
+  })
+  // ---- cells-import ----
+  .command(
+    "cells-import",
+    "Import a pre-cell campaign dir into a result cell (FR-BENCH-SWE.CELLS)",
+  )
+  .option("--from <path:string>", "Campaign base dir holding rep<N>/", {
+    required: true,
+  })
+  .option("--cells <path:string>", "Cells root", { default: CELLS_ROOT })
+  .option("--eval-root <path:string>", "swebench run_evaluation root", {
+    default: "logs/run_evaluation",
+  })
+  .option(
+    "--exclude <spec:string>",
+    "Instance id and reason as '<id>=<reason>' (repeatable)",
+    { collect: true },
+  )
+  .action(async (opts) => {
+    const excluded: Record<string, string> = {};
+    for (const spec of opts.exclude ?? []) {
+      const i = spec.indexOf("=");
+      if (i < 0) {
+        console.error(`--exclude needs '<id>=<reason>', got: ${spec}`);
+        Deno.exit(1);
+      }
+      excluded[spec.slice(0, i)] = spec.slice(i + 1);
+    }
+    const dir = await importCampaign({
+      campaignDir: opts.from,
+      cellsRoot: opts.cells,
+      evalRoot: opts.evalRoot,
+      harnessCommit: await currentCommit(),
+      env: await readCellEnv(),
+      excluded,
+    });
+    console.log(`[cells-import] ${opts.from} → ${dir}`);
+  })
+  // ---- cells-show ----
+  .command("cells-show", "List result cells with per-rep counts")
+  .option("--cells <path:string>", "Cells root", { default: CELLS_ROOT })
+  .action(async (opts) => {
+    const lines = await summariseCells(opts.cells);
+    if (lines.length === 0) {
+      console.log(`[cells-show] no cells under ${opts.cells}`);
+      return;
+    }
+    for (const l of lines) console.log(l);
   })
   .parse(Deno.args);
