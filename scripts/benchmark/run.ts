@@ -260,7 +260,14 @@ export async function runArm(
   data: InstanceData,
   opts: RunOptions,
 ): Promise<
-  { prediction: Prediction; code: number; logPath: string; authFailed: boolean }
+  {
+    prediction: Prediction;
+    code: number;
+    logPath: string;
+    authFailed: boolean;
+    wallClockMs: number;
+    turns: number;
+  }
 > {
   // Per-instance parent dir. `prepareAcpClaudeHome` builds the isolated Claude
   // $HOME as a SIBLING of the sandbox (`dirname(sandboxPath)/bench-home`). If
@@ -449,7 +456,20 @@ export async function runArm(
   // so the resumable measurement tier leaves the instance pending instead of
   // banking an empty patch as a real miss (see isAuthFailure / runBaselineBatch).
   const authFailed = isAuthFailure(result.logs);
-  return { prediction, code: result.code, logPath, authFailed };
+  // implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+  // wall-clock and turn count belong to the task row — without them a slow
+  // solve and a fast one look identical, and a session cut short at the step
+  // cap cannot be told from one that finished early.
+  const turns =
+    agent.getMessages().filter((m) => m.role === "assistant").length;
+  return {
+    prediction,
+    code: result.code,
+    logPath,
+    authFailed,
+    wallClockMs,
+    turns,
+  };
 }
 
 /** Drive one arm over the given instances and write its predictions file. */

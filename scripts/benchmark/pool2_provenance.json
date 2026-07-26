@@ -779,6 +779,11 @@
       "ide": "codex",
       "model": "gpt-5.6-terra",
       "effort": "medium"
+    },
+    "codex/gpt-5.6-sol@high": {
+      "ide": "codex",
+      "model": "gpt-5.6-sol",
+      "effort": "high"
     }
   }
 }

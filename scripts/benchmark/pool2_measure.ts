@@ -24,6 +24,7 @@ import {
   type Prediction,
   toPrediction,
 } from "./predictions.ts";
+import { appendTask, type TaskRecord, taskRecordFromRun } from "./cells.ts";
 import { stripTestHunks } from "./patch.ts";
 import { runRebenchEvaluation } from "./rebench.ts";
 
@@ -224,6 +225,18 @@ export interface BaselineBatchOptions {
   healthAttempts?: number;
   /** Injected for tests; production waits with setTimeout. */
   sleep?: (ms: number) => Promise<void>;
+  /** Rep number — stamped on every cell row. */
+  rep: number;
+  /** Cell dir to append task rows to (FR-BENCH-SWE.CELLS). Omit to skip. */
+  cellDir?: string;
+}
+
+/** What a batch did, beyond the predictions it wrote. */
+export interface BatchOutcome {
+  predPath: string;
+  /** Health-guard aborts seen, incl. the waits the backoff sat through. */
+  healthAborts: number;
+  backoffWaits: number;
 }
 
 /**
@@ -240,7 +253,7 @@ export const DEFAULT_HEALTH_ATTEMPTS = 8;
  */
 export async function runBaselineBatch(
   opts: BaselineBatchOptions,
-): Promise<string> {
+): Promise<BatchOutcome> {
   await ensureDir(opts.outDir);
   const predPath = join(opts.outDir, "baseline.jsonl");
   const done = await donePredictionIds(predPath);
@@ -249,6 +262,15 @@ export async function runBaselineBatch(
     `[pool2-measure] ${done.size} done, ${pending.length} pending` +
       ` (concurrency ${opts.concurrency})`,
   );
+  // implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+  // Every instance gets a row as it finishes — measured with its outcome, or
+  // pending with the reason it was not fairly attempted. Writing rows here (not
+  // at the end) is what keeps a killed run's record truthful.
+  let healthAborts = 0;
+  let backoffWaits = 0;
+  const row = async (rec: TaskRecord) => {
+    if (opts.cellDir) await appendTask(opts.cellDir, rec);
+  };
 
   await mapPool(pending, opts.concurrency, async (id) => {
     const data = opts.data.get(id);
@@ -269,18 +291,30 @@ export async function runBaselineBatch(
         }), {
         maxAttempts: opts.healthAttempts ?? DEFAULT_HEALTH_ATTEMPTS,
         sleep: opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms))),
-        onWait: (n, ms) =>
+        onWait: (n, ms) => {
+          healthAborts++;
+          backoffWaits++;
           console.error(
             `  [pool2-measure] HEALTH-ABORT ${id} (exit 75) — waiting ${
               Math.round(ms / 1000)
             }s before attempt ${n + 1}`,
-          ),
+          );
+        },
       });
       if (attempt.gaveUp) {
         // The host stayed overloaded for the whole budget — never ran, so leave
         // it pending for a later resume rather than banking a false miss.
+        healthAborts++;
         console.error(
           `  [pool2-measure] HEALTH-ABORT ${id} — gave up after ${attempt.attempts} attempts, left pending`,
+        );
+        await row(
+          taskRecordFromRun({
+            rep: opts.rep,
+            instanceId: id,
+            code: 75,
+            patch: "",
+          }),
         );
         return null;
       }
@@ -294,10 +328,28 @@ export async function runBaselineBatch(
         console.error(
           `  [pool2-measure] AUTH-FAIL ${id} — left pending (re-login / token refresh)`,
         );
+        await row(taskRecordFromRun({
+          rep: opts.rep,
+          instanceId: id,
+          code: res.code,
+          patch: "",
+          authFailed: true,
+          wallClockMs: res.wallClockMs,
+          turns: res.turns,
+        }));
         return null;
       }
       prediction = res.prediction;
       console.log(`  [pool2-measure] ${id} exit=${res.code}`);
+      await row(taskRecordFromRun({
+        rep: opts.rep,
+        instanceId: id,
+        code: res.code,
+        patch: prediction.model_patch ?? "",
+        wallClockMs: res.wallClockMs,
+        turns: res.turns,
+        patchPath: `rep${opts.rep}/baseline.jsonl`,
+      }));
     } catch (e) {
       const msg = (e as Error).message;
       if (isTransientSetupFailure(msg)) {
@@ -308,15 +360,31 @@ export async function runBaselineBatch(
         console.error(
           `  [pool2-measure] SETUP-FAIL ${id} — left pending (transient clone/DNS)`,
         );
+        await row(taskRecordFromRun({
+          rep: opts.rep,
+          instanceId: id,
+          code: 1,
+          patch: "",
+          setupFailed: true,
+        }));
         return null;
       }
       console.error(`  [pool2-measure] FAILED ${id}: ${msg}`);
       prediction = toPrediction(id, "baseline", "");
+      // A permanent failure (bad ref, missing metadata) DID consume the
+      // instance's turn — record it as measured-with-nothing, not pending, or a
+      // resume would retry it forever.
+      await row(taskRecordFromRun({
+        rep: opts.rep,
+        instanceId: id,
+        code: 1,
+        patch: "",
+      }));
     }
     await appendPrediction(opts.outDir, "baseline", prediction);
     return null;
   });
-  return predPath;
+  return { predPath, healthAborts, backoffWaits };
 }
 
 /**

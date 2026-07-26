@@ -235,6 +235,55 @@ export async function importCampaign(opts: ImportOptions): Promise<string> {
   return dir;
 }
 
+export interface ApplyVerdictsOptions {
+  cellDir: string;
+  rep: number;
+  runId: string;
+  evalRoot: string;
+  ids: string[];
+}
+
+/**
+ * implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+ * Fold swebench's verdicts into rows the batch already wrote. Only tasks that
+ * were MEASURED get one — a pending task has nothing to grade, and stamping it
+ * would erase the distinction the schema exists to keep.
+ */
+export async function applyVerdicts(
+  opts: ApplyVerdictsOptions,
+): Promise<number> {
+  const cell = await readCell(opts.cellDir);
+  const rows = new Map(
+    cell.tasks.filter((t) => t.rep === opts.rep).map((t) => [t.instanceId, t]),
+  );
+  let applied = 0;
+  for (const id of opts.ids) {
+    const row = rows.get(id);
+    if (!row || row.status !== "measured") continue;
+    const report = await readJson<unknown>(
+      join(opts.evalRoot, opts.runId, "baseline", id, "report.json"),
+    );
+    if (report === null) continue; // grading produced no report for it
+    const g = classifyReport(opts.runId, "baseline", id, report);
+    await appendTask(opts.cellDir, {
+      ...row,
+      verdict: {
+        resolved: g.resolved,
+        solved: g.solved,
+        noRegression: g.noRegression,
+        f2pPass: g.f2pPass,
+        f2pFail: g.f2pFail,
+        p2pPass: g.p2pPass,
+        p2pFail: g.p2pFail,
+        p2pFailedTests: g.p2pFailedTests,
+        klass: g.klass,
+      },
+    });
+    applied++;
+  }
+  return applied;
+}
+
 /** One-line summary per cell under `root` (for `cells-show`). */
 export async function summariseCells(root: string): Promise<string[]> {
   const lines: string[] = [];

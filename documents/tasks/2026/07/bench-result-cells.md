@@ -1,6 +1,6 @@
 ---
 date: 2026-07-26
-status: to do
+status: done
 implements:
   - FR-BENCH-SWE.CELLS
 ---
@@ -62,33 +62,39 @@ fingerprint belongs IN the key, not inside the cell (variant 1A) — so
 
 ## Definition of Done
 
-- [ ] FR-BENCH-SWE.CELLS: a cell id is the full key and nothing else collides
+- [x] FR-BENCH-SWE.CELLS: a cell id is the full key and nothing else collides
   - Test: `scripts/benchmark/cells_test.ts::cellId is the (ide, arm+fw, model, effort) key`
   - Evidence: `deno test -A scripts/benchmark/cells_test.ts`
-- [ ] FR-BENCH-SWE.CELLS: every task carries an explicit measurement status
+- [x] FR-BENCH-SWE.CELLS: every task carries an explicit measurement status
       (`measured | pending | excluded`), so an un-run task can never be counted
       as a miss
   - Test: `scripts/benchmark/cells_test.ts::pass rate refuses to count un-measured tasks`
   - Evidence: `deno test -A scripts/benchmark/cells_test.ts`
-- [ ] FR-BENCH-SWE.CELLS: a measured task records verdict (F2P/P2P
+- [x] FR-BENCH-SWE.CELLS: a measured task records verdict (F2P/P2P
       decomposition), exit code, turns, wall-clock, patch size, and — when the
       patch is empty — WHY (`agent-gave-up | timeout | health-abort |
       auth-fail | setup-fail`)
   - Test: `scripts/benchmark/cells_test.ts::a task record explains an empty patch`
   - Evidence: `deno test -A scripts/benchmark/cells_test.ts`
-- [ ] FR-BENCH-SWE.CELLS: the cell header pins task set + agent + judge +
+- [x] FR-BENCH-SWE.CELLS: the cell header pins task set + agent + judge +
       harness + environment, incl. the harness commit that produced it
   - Test: `scripts/benchmark/cells_test.ts::cell header pins everything needed to re-interpret it`
   - Evidence: `deno test -A scripts/benchmark/cells_test.ts`
-- [ ] FR-BENCH-SWE.CELLS: `pool2-run` writes the cell as it goes (resume-safe)
-  - Evidence: `deno run -A scripts/benchmark.ts pool2-run --rep 1 ... --limit 1` leaves
-    `runs/cells/<cellId>/{cell.json,tasks.jsonl}` with one measured row
-- [ ] FR-BENCH-SWE.CELLS: the completed codex campaigns are imported into cells
-      with honest gaps (unavailable fields null, not invented)
-  - Evidence: `deno run -A scripts/benchmark.ts cells-import --from scripts/benchmark/runs/pool2-codex-terra`
-    then `deno run -A scripts/benchmark.ts cells-show` lists 3 terra reps + 2 sol reps
-- [ ] Docs match the code
-  - Evidence: `deno task check` (traceability + SRS evidence gates)
+- [x] FR-BENCH-SWE.CELLS: `pool2-run` writes the cell as it goes (resume-safe)
+  - Evidence: live smoke 2026-07-26 — `pool2-run --rep 9 --ide codex --model gpt-5.6-terra
+    --effort medium --instance agronholm__anyio-1121 --cells <tmp>` exit 0; the cell holds a
+    header (`bridgeVersion 1.1.7`, `promptHash 946da8d8dd51fcad`, `commit ca432e92`,
+    env `Mac-mini/aarch64/10cpu/docker 29.4.0/rosetta`, rep 9 start+finish, 0 aborts) and two
+    rows for the instance — first the measured run (exit 0, 4125-byte patch, 1 turn,
+    240082 ms), then the same row folded with swebench's verdict (resolved, F2P 1/1, P2P 32/0)
+- [x] FR-BENCH-SWE.CELLS: the completed campaigns are imported into cells with
+      honest gaps (unavailable fields null, not invented)
+  - Evidence: `deno run -A scripts/benchmark.ts cells-show` →
+    `claude-baseline-none-sonnet-high: rep1 31/67, rep2 30/67, rep3 31/67`,
+    `codex-baseline-none-gpt-5-6-terra-medium: rep1 40/66, rep2 40/66, rep3 42/66`,
+    `codex-baseline-none-gpt-5-6-sol-high: rep1 5/17, rep2 2/12 (+5 pending)`
+- [x] Docs match the code
+  - Evidence: `deno task check` — exit 0, 638 + 173 tests, 0 failed (2026-07-26)
 
 ## Solution
 

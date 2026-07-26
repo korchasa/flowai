@@ -24,6 +24,8 @@
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import type { GradeClass } from "./retro.ts";
+import { ACP_AGENTS } from "@acceptance-tests/acp/registry.ts";
+import { baselineTask, commandPrefixFor } from "./operator.ts";
 
 export const CELLS_ROOT = "scripts/benchmark/cells";
 
@@ -191,6 +193,91 @@ export async function taskSetChecksum(ids: readonly string[]): Promise<string> {
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+export interface RunOutcome {
+  rep: number;
+  instanceId: string;
+  /** Session exit code (75 = health guard, 124 = timeout). */
+  code: number;
+  /** Working-tree diff the session left behind. */
+  patch: string;
+  wallClockMs?: number;
+  turns?: number;
+  /** ACP token expired mid-session. */
+  authFailed?: boolean;
+  /** Clone/DNS blip before the agent ran. */
+  setupFailed?: boolean;
+  patchPath?: string;
+}
+
+/**
+ * Turn one session's outcome into a task row.
+ *
+ * Two rules, both paid for in bad numbers this week:
+ *   - a session that was never FAIRLY attempted (health guard, auth outage,
+ *     clone blip) is `pending`, never a miss — with one exception: if a patch
+ *     exists, the model did engage, so it is a real measurement;
+ *   - an empty patch from a session that DID run must name its cause, so
+ *     "gave up" is never mistaken for "was cut short".
+ */
+export function taskRecordFromRun(o: RunOutcome): TaskRecord {
+  const patch = o.patch ?? "";
+  const empty = patch.trim() === "";
+  const base: TaskRecord = {
+    rep: o.rep,
+    instanceId: o.instanceId,
+    status: "measured",
+    exitCode: o.code,
+    patchBytes: patch.length,
+  };
+  if (o.wallClockMs !== undefined) base.wallClockMs = o.wallClockMs;
+  if (o.turns !== undefined) base.turns = o.turns;
+  if (o.patchPath !== undefined) base.patchPath = o.patchPath;
+
+  if (empty) {
+    const unfair: [boolean, EmptyReason, string][] = [
+      [o.code === 75, "health-abort", "system_health aborted the spawn"],
+      [o.authFailed === true, "auth-fail", "ACP token expired mid-session"],
+      [o.setupFailed === true, "setup-fail", "transient clone/DNS failure"],
+    ];
+    for (const [hit, reason, text] of unfair) {
+      if (hit) {
+        return {
+          ...base,
+          status: "pending",
+          pendingReason: `${reason}: ${text} — never fairly attempted`,
+        };
+      }
+    }
+    base.emptyReason = o.code === 124 ? "timeout" : "agent-gave-up";
+  }
+  return base;
+}
+
+/**
+ * ACP bridge version pinned for an IDE, or null when the IDE speaks ACP itself.
+ * Read from the registry's launch args, so a bridge bump cannot slip into a
+ * cell unnoticed.
+ */
+export function bridgeVersionFor(ide: string): string | null {
+  const spec = ACP_AGENTS[ide as keyof typeof ACP_AGENTS];
+  for (const arg of spec?.launch.args ?? []) {
+    const m = arg.match(/@[^@\s]+\/[^@\s]+@(\d+\.\d+\.\d+)/);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/**
+ * Hash of the TEMPLATE handed to the agent (placeholders instead of the actual
+ * repo and issue), plus the IDE's skill-invocation prefix. Wording moves
+ * results, so a silent prompt edit must show up as a different cell input.
+ */
+export async function promptHashFor(ide: string): Promise<string> {
+  const template = baselineTask("<REPO>", "<ISSUE>") +
+    `\nprefix=${commandPrefixFor(ide)}`;
+  return (await taskSetChecksum([template])).slice(0, 16);
 }
 
 async function capture(cmd: string, args: string[]): Promise<string | null> {

@@ -7,6 +7,7 @@ import {
   passRate,
   readCell,
   type TaskRecord,
+  taskRecordFromRun,
   taskSetChecksum,
   writeHeader,
 } from "./cells.ts";
@@ -146,6 +147,58 @@ Deno.test("pass rate refuses to count un-measured tasks", async () => {
   } finally {
     await Deno.remove(dir, { recursive: true });
   }
+});
+
+/**
+ * The driver's own outcome → a task row. Every "never fairly attempted" class
+ * must land as `pending`, and every empty patch from a session that DID run
+ * must name its cause — those are the two ways a number went wrong this week.
+ */
+Deno.test("taskRecordFromRun: pending for un-run, named cause for an empty patch", () => {
+  const base = { rep: 1, instanceId: "a__x-1", wallClockMs: 60_000, turns: 2 };
+
+  const solved = taskRecordFromRun({
+    ...base,
+    code: 0,
+    patch: "diff --git a/f b/f\n+x\n",
+  });
+  assertEquals(solved.status, "measured");
+  assertEquals(solved.emptyReason, undefined);
+  assertEquals(solved.turns, 2);
+  assertEquals(solved.wallClockMs, 60_000);
+
+  // Ran, produced nothing, exited cleanly — the agent's own outcome.
+  assertEquals(
+    taskRecordFromRun({ ...base, code: 0, patch: "" }).emptyReason,
+    "agent-gave-up",
+  );
+  // Ran out of time; a partial diff may exist, but an empty one is the timeout.
+  assertEquals(
+    taskRecordFromRun({ ...base, code: 124, patch: "" }).emptyReason,
+    "timeout",
+  );
+
+  // Never fairly attempted → pending, with the reason kept.
+  for (
+    const [outcome, reason] of [
+      [{ code: 75 }, "health-abort"],
+      [{ code: 1, authFailed: true }, "auth-fail"],
+      [{ code: 1, setupFailed: true }, "setup-fail"],
+    ] as const
+  ) {
+    const rec = taskRecordFromRun({ ...base, patch: "", ...outcome });
+    assertEquals(rec.status, "pending", `${reason} must not count as a miss`);
+    assert(rec.pendingReason?.includes(reason), rec.pendingReason);
+    assertEquals(rec.verdict, undefined);
+  }
+
+  // An auth failure that still produced a patch DID engage the model — that is
+  // a real measurement, not an infra artefact.
+  assertEquals(
+    taskRecordFromRun({ ...base, code: 1, authFailed: true, patch: "diff\n" })
+      .status,
+    "measured",
+  );
 });
 
 Deno.test("a task record explains an empty patch", async () => {
