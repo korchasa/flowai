@@ -38,7 +38,11 @@ import { aggregateAB, renderMarkdownAB } from "./benchmark/report.ts";
 import { renderRetroMarkdown, scanRun } from "./benchmark/retro.ts";
 import { loadRunMetrics, sumCost } from "./benchmark/metrics.ts";
 import { loadRunWebAudits } from "./benchmark/webaudit.ts";
-import { ensureRebenchSetup } from "./benchmark/rebench.ts";
+import {
+  ensureRebenchSetup,
+  FORK_PINNED_COMMIT,
+  REBENCH_DATASET,
+} from "./benchmark/rebench.ts";
 import {
   fetchAllCandidates,
   httpRowsFetcher,
@@ -55,8 +59,25 @@ import {
   upsertGate,
 } from "./benchmark/pool2_gate.ts";
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
-import { CELLS_ROOT, currentCommit, readCellEnv } from "./benchmark/cells.ts";
-import { importCampaign, summariseCells } from "./benchmark/cells_import.ts";
+import {
+  bridgeVersionFor,
+  cellId,
+  type CellKey,
+  type CellRep,
+  CELLS_ROOT,
+  currentCommit,
+  promptHashFor,
+  readCell,
+  readCellEnv,
+  taskSetChecksum,
+  writeHeader,
+} from "./benchmark/cells.ts";
+import {
+  applyVerdicts,
+  importCampaign,
+  summariseCells,
+} from "./benchmark/cells_import.ts";
+import { buildSelection } from "./benchmark/cell_select.ts";
 import {
   campaignMismatch,
   campaignRunId,
@@ -252,6 +273,9 @@ await new Command()
     { collect: true },
   )
   .option("--no-grade", "Skip fork grading (predictions only)")
+  .option("--cells <path:string>", "Result-cells root (FR-BENCH-SWE.CELLS)", {
+    default: CELLS_ROOT,
+  })
   .action(async (opts) => {
     // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
     // reject an unknown IDE or a cross-IDE model before any session is spawned.
@@ -368,7 +392,57 @@ await new Command()
         2,
       ) + "\n",
     );
-    const predPath = await runBaselineBatch({
+    // implements [FR-BENCH-SWE.CELLS](../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+    // The cell header goes down BEFORE the batch, so a run killed mid-way still
+    // leaves a record that says what it was measuring and with what.
+    const cellKey: CellKey = {
+      ide: pool2Ide,
+      arm: "baseline",
+      framework: null,
+      model: opts.model,
+      effort: opts.effort,
+    };
+    const cellDir = join(opts.cells, cellId(cellKey));
+    const priorReps = (await readCell(cellDir)).header?.reps ?? [];
+    const startedAt = new Date().toISOString();
+    const writeCellHeader = async (rep: Partial<CellRep> & { rep: number }) => {
+      await writeHeader(cellDir, cellKey, {
+        taskSet: {
+          dataset: REBENCH_DATASET,
+          split,
+          forkCommit: FORK_PINNED_COMMIT,
+          ids: passers,
+          checksum: await taskSetChecksum(passers),
+        },
+        agent: {
+          modelSnapshot: null,
+          ideVersion: null,
+          bridgeVersion: bridgeVersionFor(pool2Ide),
+        },
+        judge: { model: opts.judgeModel, effort: opts.effort },
+        harness: {
+          maxSteps: 3,
+          stepTimeoutMs: opts.stepTimeout,
+          promptHash: await promptHashFor(pool2Ide),
+          commit: await currentCommit(),
+        },
+        env: await readCellEnv(),
+        reps: [
+          ...priorReps.filter((r) => r.rep !== opts.rep),
+          {
+            startedAt,
+            finishedAt: null,
+            concurrency: opts.concurrency,
+            healthAborts: 0,
+            backoffWaits: 0,
+            ...rep,
+          },
+        ].sort((a, b) => a.rep - b.rep),
+      });
+    };
+    await writeCellHeader({ rep: opts.rep });
+
+    const batch = await runBaselineBatch({
       data,
       ids: passers,
       outDir,
@@ -379,15 +453,33 @@ await new Command()
       effort: opts.effort,
       ide: pool2Ide,
       judgeModel: opts.judgeModel,
+      rep: opts.rep,
+      cellDir,
     });
-    console.log(`[pool2-run] predictions → ${predPath}`);
+    const predPath = batch.predPath;
+    await writeCellHeader({
+      rep: opts.rep,
+      finishedAt: new Date().toISOString(),
+      healthAborts: batch.healthAborts,
+      backoffWaits: batch.backoffWaits,
+    });
+    console.log(`[pool2-run] predictions → ${predPath}; cell → ${cellDir}`);
     if (opts.grade === false) return;
+    const runId = campaignRunId(thisCampaign, opts.rep);
     const resolved = await gradePool2Predictions(
       predPath,
       split,
-      campaignRunId(thisCampaign, opts.rep),
+      runId,
       repoRoot,
     );
+    // The verdict is swebench's own; fold it into the rows already written.
+    await applyVerdicts({
+      cellDir,
+      rep: opts.rep,
+      runId,
+      evalRoot: join(repoRoot, "logs", "run_evaluation"),
+      ids: passers,
+    });
     const solves = Object.fromEntries(
       passers.map((id) => [id, resolved.has(id)]),
     );
@@ -863,6 +955,56 @@ await new Command()
       excluded,
     });
     console.log(`[cells-import] ${opts.from} → ${dir}`);
+  })
+  // ---- cells-select ----
+  .command(
+    "cells-select",
+    "Apply the pool keep-rule across a subject cell and a ceiling cell (FR-BENCH-SWE.CELLS)",
+  )
+  .option("--subject <cellId:string>", "Subject cell id", { required: true })
+  .option("--ceiling <cellId:string>", "Ceiling-probe cell id", {
+    required: true,
+  })
+  .option("--cells <path:string>", "Cells root", { default: CELLS_ROOT })
+  .option("--subject-reps <list:string>", "Subject reps", { default: "1,2,3" })
+  .option("--ceiling-reps <list:string>", "Ceiling reps", { default: "1,2" })
+  .option("--freeze <path:string>", "Write the selection to this path")
+  .action(async (opts) => {
+    const reps = (s: string) => s.split(",").map((n) => Number(n.trim()));
+    const sel = buildSelection({
+      subject: await readCell(join(opts.cells, opts.subject)),
+      ceiling: await readCell(join(opts.cells, opts.ceiling)),
+      subjectReps: reps(opts.subjectReps),
+      ceilingReps: reps(opts.ceilingReps),
+      subjectCellId: opts.subject,
+      ceilingCellId: opts.ceiling,
+    });
+    console.log(`[cells-select] rule: ${sel.rule}`);
+    for (const [verdict, n] of Object.entries(sel.counts)) {
+      console.log(`  ${verdict}: ${n}`);
+    }
+    console.log(`[cells-select] pool (${sel.pool.length}):`);
+    for (const id of sel.pool) console.log(`  ${id}`);
+    if (sel.counts.incomplete > 0 || sel.counts.undecided_no_ceiling_run > 0) {
+      console.log(
+        `[cells-select] NOT frozen into the pool and NOT rejected: ` +
+          `${sel.counts.incomplete} incomplete, ` +
+          `${sel.counts.undecided_no_ceiling_run} awaiting a ceiling run`,
+      );
+    }
+    if (opts.freeze) {
+      await ensureDir(join(opts.freeze, ".."));
+      await Deno.writeTextFile(
+        opts.freeze,
+        JSON.stringify(
+          { frozenAt: new Date().toISOString(), ...sel },
+          null,
+          2,
+        ) +
+          "\n",
+      );
+      console.log(`[cells-select] frozen → ${opts.freeze}`);
+    }
   })
   // ---- cells-show ----
   .command("cells-show", "List result cells with per-rep counts")

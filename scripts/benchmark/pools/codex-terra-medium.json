@@ -1,0 +1,513 @@
+{
+  "frozenAt": "2026-07-26T15:20:04.344Z",
+  "subjectCellId": "codex-baseline-none-gpt-5-6-terra-medium",
+  "ceilingCellId": "codex-baseline-none-gpt-5-6-sol-high",
+  "rule": "keep iff the subject solves exactly 1 of N reps, or solves 0 and the ceiling model solves at least once",
+  "subjectReps": [
+    1,
+    2,
+    3
+  ],
+  "ceilingReps": [
+    1,
+    2
+  ],
+  "pool": [
+    "agronholm__anyio-1134",
+    "celestoai__smolvm-172",
+    "geopython__pygeoapi-2338",
+    "graphistry__pygraphistry-1277",
+    "meltano__meltano-9929",
+    "mempalace__mempalace-1004",
+    "nesquena__hermes-webui-1818",
+    "pdm-project__pdm-3759",
+    "pennylaneai__pennylane-9298",
+    "pyinfra-dev__pyinfra-1665",
+    "schemathesis__schemathesis-3778",
+    "schemathesis__schemathesis-3933",
+    "tobymao__sqlglot-7457",
+    "zarr-developers__virtualizarr-979",
+    "zauberzeug__nicegui-5914"
+  ],
+  "counts": {
+    "keeper_unstable": 8,
+    "keeper_ceiling": 7,
+    "reject_no_headroom": 41,
+    "reject_no_ceiling": 10,
+    "undecided_no_ceiling_run": 0,
+    "incomplete": 0,
+    "excluded": 1
+  },
+  "instances": [
+    {
+      "instanceId": "aallan__vera-662_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "agentscope-ai__qwenpaw-3278",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "agronholm__anyio-1121",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "agronholm__anyio-1134",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "alibaba__opensandbox-816",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "apache__iceberg-python-3295",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "astronomy-commons__lsdb-1349",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "azure-samples__azure-search-openai-demo-3025",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "beever-ai__beever-atlas-102",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "celestoai__smolvm-172",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "copier-org__copier-2646",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "cpp-linter__cpp-linter-hooks-206_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "cs-si__eodag-2176",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "databricks__dbt-databricks-1428",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "deltares__hydrolib-core-1049_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "geopython__pygeoapi-2338",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "graphistry__pygraphistry-1107_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "graphistry__pygraphistry-1277",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "hkuds__openharness-217",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "huggingface__huggingface_hub-4056",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "itsdnns__docsight-437",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "koxudaxi__datamodel-code-generator-3070",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "koxudaxi__datamodel-code-generator-3071",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "line__line-bot-sdk-python-981_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "macbre__sql-metadata-625_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "marshmallow-code__marshmallow-2925_interface",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "meltano__meltano-9929",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "meltano__meltano-9950",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "mempalace__mempalace-1004",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "microsoft__qcodes-8039",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "nesquena__hermes-webui-1818",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "nesquena__hermes-webui-2056",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "nesquena__hermes-webui-330_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "oemof__tespy-921",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "olofk__fusesoc-776_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "pallets-eco__wtforms-892_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "pdm-project__pdm-3759",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "pennylaneai__pennylane-9298",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "pipecat-ai__pipecat-4283",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "pyinfra-dev__pyinfra-1665",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "pyinfra-dev__pyinfra-1679_interface",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "pypa__build-1027",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "pypa__twine-1309",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "python-scim__scim2-models-139_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "python-wheel-build__fromager-1106",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "python-wheel-build__fromager-1124",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": false,
+      "verdict": "reject_no_ceiling"
+    },
+    {
+      "instanceId": "raullenchai__rapid-mlx-227",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "raullenchai__rapid-mlx-228",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "raullenchai__rapid-mlx-289",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "raullenchai__rapid-mlx-341_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "reframe-hpc__reframe-3660_interface",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "schemathesis__schemathesis-3778",
+      "subjectSolves": 0,
+      "subjectMeasured": 3,
+      "ceilingSolved": true,
+      "verdict": "keeper_ceiling"
+    },
+    {
+      "instanceId": "schemathesis__schemathesis-3933",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "schemathesis__schemathesis-4087",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "sigma67__ytmusicapi-909_interface",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "spack__spack-52244",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "tobymao__sqlglot-7457",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "tobymao__sqlglot-7479",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "tox-dev__tox-3904",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "tox-dev__tox-3931",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "ucfopen__canvasapi-716",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "ultraplot__ultraplot-696",
+      "subjectSolves": 3,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "unit8co__darts-3065",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "vprusso__toqito-1538",
+      "subjectSolves": 2,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "reject_no_headroom"
+    },
+    {
+      "instanceId": "youssofal__mtplx-21",
+      "subjectSolves": 0,
+      "subjectMeasured": 0,
+      "ceilingSolved": null,
+      "verdict": "excluded",
+      "excludedReason": "dataset points at a commit the remote repo does not have"
+    },
+    {
+      "instanceId": "zarr-developers__virtualizarr-979",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    },
+    {
+      "instanceId": "zauberzeug__nicegui-5914",
+      "subjectSolves": 1,
+      "subjectMeasured": 3,
+      "ceilingSolved": null,
+      "verdict": "keeper_unstable"
+    }
+  ]
+}
