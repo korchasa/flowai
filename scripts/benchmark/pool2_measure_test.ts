@@ -2,10 +2,71 @@ import { assert, assertEquals } from "@std/assert";
 import {
   campaignMismatch,
   campaignRunId,
+  healthBackoffMs,
   isHealthAbort,
   mapPool,
   pendingIds,
+  withHealthBackoff,
 } from "./pool2_measure.ts";
+
+Deno.test("healthBackoffMs: doubles from a minute, capped at 15", () => {
+  assertEquals(healthBackoffMs(1), 60_000);
+  assertEquals(healthBackoffMs(2), 120_000);
+  assertEquals(healthBackoffMs(4), 480_000);
+  assertEquals(healthBackoffMs(5), 900_000, "cap reached");
+  assertEquals(healthBackoffMs(9), 900_000, "and stays there");
+});
+
+/**
+ * A health abort means the machine had no room for this session — the next
+ * instance would hit the same wall. Retrying it immediately turns the queue
+ * into a hot loop that clones repo after repo and heats the machine further:
+ * measured 2026-07-25, 45 of 51 instances aborted inside eight minutes while
+ * load climbed to 52 on 10 CPU. So wait, retry the SAME instance, and only give
+ * up after the attempt budget.
+ */
+Deno.test("withHealthBackoff: waits and retries the same instance until it runs", async () => {
+  const waits: number[] = [];
+  const sleep = (ms: number) => {
+    waits.push(ms);
+    return Promise.resolve();
+  };
+
+  let calls = 0;
+  const ran = await withHealthBackoff(() => {
+    calls++;
+    return Promise.resolve({ code: calls < 3 ? 75 : 0 });
+  }, { maxAttempts: 8, sleep });
+  assertEquals(calls, 3, "retried until the guard let it through");
+  assertEquals(waits, [60_000, 120_000], "waited between attempts, not after");
+  assertEquals(ran.gaveUp, false);
+  assertEquals(ran.result?.code, 0);
+
+  // A run that never gets in gives up after the budget and stays pending.
+  waits.length = 0;
+  let tries = 0;
+  const stuck = await withHealthBackoff(() => {
+    tries++;
+    return Promise.resolve({ code: 75 });
+  }, { maxAttempts: 3, sleep });
+  assertEquals(tries, 3);
+  assertEquals(stuck.gaveUp, true);
+  assertEquals(stuck.result, null, "no result to record — left pending");
+  assertEquals(waits.length, 2, "no wait after the final attempt");
+
+  // A healthy first run never sleeps.
+  waits.length = 0;
+  const clean = await withHealthBackoff(
+    () => Promise.resolve({ code: 0, patch: "x" }),
+    { maxAttempts: 8, sleep },
+  );
+  assertEquals(waits, []);
+  assertEquals(
+    clean.result?.patch,
+    "x",
+    "the caller's own fields pass through",
+  );
+});
 
 /**
  * swebench caches a graded verdict under `logs/run_evaluation/<runId>/<model>/

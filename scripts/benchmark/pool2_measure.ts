@@ -45,6 +45,56 @@ export function isHealthAbort(code: number): boolean {
 }
 
 /**
+ * Wait before retrying a health-aborted spawn: one minute, doubling, capped at
+ * fifteen. The cap keeps a long overload (someone else using the machine) from
+ * turning into an hours-long single sleep, while the growth stops a busy host
+ * from being polled every minute all night.
+ */
+export function healthBackoffMs(attempt: number): number {
+  return Math.min(60_000 * 2 ** (attempt - 1), 900_000);
+}
+
+export interface HealthBackoffOptions {
+  /** Spawn attempts for ONE instance before it is left pending. */
+  maxAttempts: number;
+  sleep: (ms: number) => Promise<void>;
+  /** Called before each wait — the driver logs it so an operator sees why. */
+  onWait?: (attempt: number, ms: number) => void;
+}
+
+/**
+ * implements [FR-BENCH-SWE.POOL2](../../documents/requirements.md#fr-bench-swe-pool2-second-task-pool-swe-rebench-with-measured-headroom-ancfrbench-swe-pool2):
+ * Run one instance, waiting out `system_health` aborts instead of racing past
+ * them.
+ *
+ * An abort means the host had no room for this session, so the NEXT instance
+ * would hit the same wall — retrying immediately turns the queue into a hot
+ * loop that clones repo after repo and heats the machine further (measured
+ * 2026-07-25: 45 of 51 instances aborted within eight minutes while load
+ * climbed to 52 on 10 CPU). Waiting and retrying the SAME instance keeps the
+ * queue intact; only after the attempt budget is it left pending.
+ *
+ * The guard itself is never bypassed — this only changes how the driver reacts
+ * to it.
+ */
+export async function withHealthBackoff<T extends { code: number }>(
+  run: () => Promise<T>,
+  opts: HealthBackoffOptions,
+): Promise<{ result: T | null; attempts: number; gaveUp: boolean }> {
+  for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
+    const result = await run();
+    if (!isHealthAbort(result.code)) {
+      return { result, attempts: attempt, gaveUp: false };
+    }
+    if (attempt === opts.maxAttempts) break;
+    const ms = healthBackoffMs(attempt);
+    opts.onWait?.(attempt, ms);
+    await opts.sleep(ms);
+  }
+  return { result: null, attempts: opts.maxAttempts, gaveUp: true };
+}
+
+/**
  * Order-preserving bounded-concurrency map: at most `n` of `fn` run at once,
  * results returned in input order. `fn` is responsible for its own error
  * handling (the batch runner wraps each instance so a failure yields a
@@ -170,7 +220,18 @@ export interface BaselineBatchOptions {
   ide?: AcpIde;
   /** Judge model — always Claude, independent of the IDE under test. */
   judgeModel?: string;
+  /** Spawn attempts per instance while the health guard keeps aborting. */
+  healthAttempts?: number;
+  /** Injected for tests; production waits with setTimeout. */
+  sleep?: (ms: number) => Promise<void>;
 }
+
+/**
+ * Attempts per instance under a tripping health guard. Eight covers roughly an
+ * hour of waiting (1+2+4+8+15+15+15 min) — long enough to sit out a build or a
+ * heavy app, short enough that a permanently busy host is reported, not hidden.
+ */
+export const DEFAULT_HEALTH_ATTEMPTS = 8;
 
 /**
  * Run the baseline arm over `ids` (skipping any already in the predictions
@@ -194,25 +255,36 @@ export async function runBaselineBatch(
     if (!data) throw new Error(`no metadata for ${id}`);
     let prediction: Prediction;
     try {
-      const res = await runArm(data, {
-        arm: "baseline",
-        instanceIds: [],
-        model: opts.model,
-        outDir: opts.outDir,
-        stepTimeoutMs: opts.stepTimeoutMs,
-        repoRoot: opts.repoRoot,
-        effort: opts.effort,
-        ide: opts.ide,
-        judgeModel: opts.judgeModel,
+      const attempt = await withHealthBackoff(() =>
+        runArm(data, {
+          arm: "baseline",
+          instanceIds: [],
+          model: opts.model,
+          outDir: opts.outDir,
+          stepTimeoutMs: opts.stepTimeoutMs,
+          repoRoot: opts.repoRoot,
+          effort: opts.effort,
+          ide: opts.ide,
+          judgeModel: opts.judgeModel,
+        }), {
+        maxAttempts: opts.healthAttempts ?? DEFAULT_HEALTH_ATTEMPTS,
+        sleep: opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms))),
+        onWait: (n, ms) =>
+          console.error(
+            `  [pool2-measure] HEALTH-ABORT ${id} (exit 75) — waiting ${
+              Math.round(ms / 1000)
+            }s before attempt ${n + 1}`,
+          ),
       });
-      if (isHealthAbort(res.code)) {
-        // Never ran (machine overloaded) — leave pending for a lower-concurrency
-        // resume instead of recording a false baseline miss.
+      if (attempt.gaveUp) {
+        // The host stayed overloaded for the whole budget — never ran, so leave
+        // it pending for a later resume rather than banking a false miss.
         console.error(
-          `  [pool2-measure] HEALTH-ABORT ${id} (exit 75) — left pending`,
+          `  [pool2-measure] HEALTH-ABORT ${id} — gave up after ${attempt.attempts} attempts, left pending`,
         );
         return null;
       }
+      const res = attempt.result!;
       if (res.authFailed && !(res.prediction.model_patch ?? "").trim()) {
         // ACP token expired mid-batch — the model never engaged, so an empty
         // diff here is an infra artefact, not a genuine miss. Leave it pending
