@@ -241,6 +241,11 @@ export interface ApplyVerdictsOptions {
   runId: string;
   evalRoot: string;
   ids: string[];
+  /**
+   * swebench's `model_name_or_path` — the arm the predictions graded under, and
+   * a path segment of the verdict cache. Defaults to the bare arm.
+   */
+  modelName?: string;
 }
 
 /**
@@ -256,15 +261,16 @@ export async function applyVerdicts(
   const rows = new Map(
     cell.tasks.filter((t) => t.rep === opts.rep).map((t) => [t.instanceId, t]),
   );
+  const modelName = opts.modelName ?? "baseline";
   let applied = 0;
   for (const id of opts.ids) {
     const row = rows.get(id);
     if (!row || row.status !== "measured") continue;
     const report = await readJson<unknown>(
-      join(opts.evalRoot, opts.runId, "baseline", id, "report.json"),
+      join(opts.evalRoot, opts.runId, modelName, id, "report.json"),
     );
     if (report === null) continue; // grading produced no report for it
-    const g = classifyReport(opts.runId, "baseline", id, report);
+    const g = classifyReport(opts.runId, modelName, id, report);
     await appendTask(opts.cellDir, {
       ...row,
       verdict: {

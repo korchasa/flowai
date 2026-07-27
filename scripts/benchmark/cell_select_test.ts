@@ -1,8 +1,9 @@
-import { assertEquals, assertThrows } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import type { Cell, TaskRecord } from "./cells.ts";
 import {
   buildSelection,
   classifyFromCells,
+  loadFrozenPool,
   subjectTally,
 } from "./cell_select.ts";
 
@@ -156,4 +157,44 @@ Deno.test("buildSelection: refuses a subject cell with no completed reps", () =>
     Error,
     "no instance",
   );
+});
+
+/**
+ * A frozen pool file is the contract a flowai campaign runs against, so reading
+ * it is a gate, not a convenience: an empty or malformed pool must stop the run
+ * before any paid session, never degrade into "measured zero instances".
+ */
+Deno.test("loadFrozenPool: returns the frozen ids, and refuses an empty pool", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "frozen-pool-" });
+  try {
+    const good = `${dir}/pool.json`;
+    await Deno.writeTextFile(
+      good,
+      JSON.stringify({
+        subjectCellId: "codex-baseline-none-gpt-5-6-terra-medium",
+        pool: ["b__b-2", "a__a-1"],
+      }),
+    );
+    const loaded = await loadFrozenPool(good);
+    assertEquals(
+      loaded.pool,
+      ["a__a-1", "b__b-2"],
+      "sorted, order-independent",
+    );
+    assertEquals(
+      loaded.subjectCellId,
+      "codex-baseline-none-gpt-5-6-terra-medium",
+      "the baseline cell this pool was frozen against travels with it",
+    );
+
+    const empty = `${dir}/empty.json`;
+    await Deno.writeTextFile(empty, JSON.stringify({ pool: [] }));
+    await assertRejects(() => loadFrozenPool(empty), Error, "empty");
+    await assertRejects(
+      () => loadFrozenPool(`${dir}/absent.json`),
+      Error,
+    );
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
 });

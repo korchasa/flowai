@@ -66,6 +66,7 @@ import {
   type CellRep,
   CELLS_ROOT,
   currentCommit,
+  frameworkFingerprint,
   promptHashFor,
   readCell,
   readCellEnv,
@@ -77,13 +78,13 @@ import {
   importCampaign,
   summariseCells,
 } from "./benchmark/cells_import.ts";
-import { buildSelection } from "./benchmark/cell_select.ts";
+import { buildSelection, loadFrozenPool } from "./benchmark/cell_select.ts";
 import {
   campaignMismatch,
   campaignRunId,
   gradePool2Predictions,
   type RepCampaign,
-  runBaselineBatch,
+  runArmBatch,
 } from "./benchmark/pool2_measure.ts";
 import {
   assembleSonnetReps,
@@ -242,16 +243,23 @@ await new Command()
   // ---- pool2-run ----
   .command(
     "pool2-run",
-    "Baseline measurement rep over gate-passing pool2 instances (FR-BENCH-SWE.POOL2)",
+    "Measurement rep of one arm over pool2 instances (FR-BENCH-SWE.POOL2)",
   )
   .option("--rep <n:number>", "Rep number (rep dir = <out>/rep<n>)", {
     default: 1,
   })
+  .option("--arm <arm:string>", "Arm under measurement: baseline | flowai", {
+    default: "baseline",
+  })
+  .option(
+    "--pool <path:string>",
+    "Frozen pool file from cells-select — run its instances instead of every gate-passer",
+  )
   .option("--concurrency <n:number>", "Concurrent agent sessions", {
     default: 4,
   })
   .option("--limit <n:number>", "Run only the first N passers (metered slice)")
-  .option("--out <dir:string>", "Base output dir (default runs/pool2-baseline)")
+  .option("--out <dir:string>", "Base output dir (default runs/pool2-<arm>)")
   .option("--model <name:string>", "Agent model", { default: "sonnet" })
   .option("--ide <name:string>", "IDE under test (claude | codex)", {
     default: "claude",
@@ -277,6 +285,11 @@ await new Command()
     default: CELLS_ROOT,
   })
   .action(async (opts) => {
+    const pool2Arm = opts.arm as Arm;
+    if (pool2Arm !== "baseline" && pool2Arm !== "flowai") {
+      console.error(`--arm must be 'baseline' or 'flowai', got '${opts.arm}'`);
+      Deno.exit(1);
+    }
     // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
     // reject an unknown IDE or a cross-IDE model before any session is spawned.
     const pool2Ide = opts.ide as AcpIde;
@@ -312,17 +325,49 @@ await new Command()
       );
       Deno.exit(1);
     }
+    // implements [FR-BENCH-SWE.POOL2](../documents/requirements.md#fr-bench-swe.pool2-fresh-frozen-pool-via-gated-admission-funnel-ancfrbench-swe-pool2):
+    // The flowai arm runs the FROZEN pool, not every gate-passer — the freeze is
+    // what keeps selection baseline-only. An id in the pool that the provenance
+    // never gated has no split and no gold evidence, so it aborts the run rather
+    // than being measured on trust.
+    if (opts.pool) {
+      const frozen = await loadFrozenPool(opts.pool);
+      const ungated = frozen.pool.filter((id) => !passers.includes(id));
+      if (ungated.length > 0) {
+        console.error(
+          `[pool2-run] frozen pool has ${ungated.length} instance(s) with no ` +
+            `gate evidence (${ungated.slice(0, 3).join(", ")}…); aborting`,
+        );
+        Deno.exit(1);
+      }
+      console.log(
+        `[pool2-run] frozen pool ${opts.pool}: ${frozen.pool.length} instances` +
+          ` (frozen against ${frozen.subjectCellId})`,
+      );
+      passers = frozen.pool;
+    }
     // Optional subset (Opus ceiling probe runs only the 0/3 queue). Applied
     // before --limit so a metered slice takes the first N of the subset.
     passers = filterToWanted(passers, opts.instance as string[] | undefined);
     if (opts.limit !== undefined) passers = passers.slice(0, opts.limit);
     const repoRoot = Deno.cwd();
+    // The arm is part of the default dir: aiming a flowai rep at the baseline's
+    // campaign dir is caught by campaignMismatch below, but the default should
+    // not walk into that guard in the first place.
     const baseOut = opts.out ??
-      join(repoRoot, "scripts/benchmark/runs/pool2-baseline");
+      join(repoRoot, `scripts/benchmark/runs/pool2-${pool2Arm}`);
     const outDir = join(baseOut, `rep${opts.rep}`);
+    // implements [FR-BENCH-SWE.CELLS](../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+    // WHICH flowai was installed is half the flowai arm's identity; the bare arm
+    // installs nothing, so it has no fingerprint to pin.
+    const framework = pool2Arm === "flowai"
+      ? await frameworkFingerprint(repoRoot)
+      : null;
     console.log(
-      `[pool2-run] rep=${opts.rep} instances=${passers.length} split=${split}` +
-        ` model=${opts.model} out=${outDir}`,
+      `[pool2-run] rep=${opts.rep} arm=${pool2Arm} instances=${passers.length}` +
+        ` split=${split} model=${opts.model}` +
+        (framework ? ` framework=${framework}` : "") +
+        ` out=${outDir}`,
     );
     // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
     // A campaign dir belongs to ONE (ide, model, effort). Two guards, both
@@ -335,10 +380,12 @@ await new Command()
     //     adopt the first campaign's patches. It also covers campaigns predating
     //     `campaign.json` (the completed claude/sonnet reps).
     await ensureDir(outDir);
-    const thisCampaign = {
+    const thisCampaign: RepCampaign = {
       ide: pool2Ide,
       model: opts.model,
       effort: opts.effort,
+      arm: pool2Arm,
+      framework,
     };
     const readCampaign = async (p: string): Promise<RepCampaign | null> => {
       try {
@@ -397,8 +444,8 @@ await new Command()
     // leaves a record that says what it was measuring and with what.
     const cellKey: CellKey = {
       ide: pool2Ide,
-      arm: "baseline",
-      framework: null,
+      arm: pool2Arm,
+      framework,
       model: opts.model,
       effort: opts.effort,
     };
@@ -442,9 +489,10 @@ await new Command()
     };
     await writeCellHeader({ rep: opts.rep });
 
-    const batch = await runBaselineBatch({
+    const batch = await runArmBatch({
       data,
       ids: passers,
+      arm: pool2Arm,
       outDir,
       repoRoot,
       model: opts.model,
@@ -471,6 +519,7 @@ await new Command()
       split,
       runId,
       repoRoot,
+      pool2Arm,
     );
     // The verdict is swebench's own; fold it into the rows already written.
     await applyVerdicts({
@@ -479,6 +528,7 @@ await new Command()
       runId,
       evalRoot: join(repoRoot, "logs", "run_evaluation"),
       ids: passers,
+      modelName: pool2Arm,
     });
     const solves = Object.fromEntries(
       passers.map((id) => [id, resolved.has(id)]),

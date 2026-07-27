@@ -150,3 +150,39 @@ Deno.test("diff_to_prediction_jsonl: jsonl is newline-delimited and round-trips"
     assertEquals(JSON.parse(lines[i]), preds[i]);
   }
 });
+
+/**
+ * The flowai arm installs the pack into the IDE's OWN config dir — `.claude` for
+ * Claude, `.codex` for codex, and so on. Excluding only `.claude` made the codex
+ * arm ship the whole installed pack as its "fix": measured 2026-07-27, a smoke
+ * run produced a 471 KB, 41-file patch of which every file was `.codex/skills/**`.
+ * The exclusion must therefore come from the IDE registry, not from one literal.
+ */
+Deno.test("captureDiff: excludes EVERY IDE's config dir, not just Claude's", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    await git(dir, ["init", "-q"]);
+    await git(dir, ["config", "user.email", "t@t"]);
+    await git(dir, ["config", "user.name", "t"]);
+    await Deno.writeTextFile(join(dir, "mod.py"), "x = 1\n");
+    await git(dir, ["add", "-A"]);
+    await git(dir, ["commit", "-qm", "base"]);
+
+    await Deno.writeTextFile(join(dir, "mod.py"), "x = 2\n");
+    for (const cfg of [".claude", ".codex", ".cursor", ".opencode"]) {
+      await ensureDir(join(dir, cfg, "skills", "plan"));
+      await Deno.writeTextFile(
+        join(dir, cfg, "skills", "plan", "SKILL.md"),
+        "installed pack\n",
+      );
+    }
+
+    const diff = await captureDiff(dir);
+    assertStringIncludes(diff, "+x = 2");
+    for (const cfg of [".claude", ".codex", ".cursor", ".opencode"]) {
+      assertEquals(diff.includes(cfg), false, `${cfg} leaked into the patch`);
+    }
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});

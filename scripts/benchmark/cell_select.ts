@@ -84,6 +84,23 @@ export interface Selection {
   instances: SelectionInstance[];
 }
 
+/**
+ * Read a frozen pool file (a `Selection` written by `cells-select`).
+ *
+ * A campaign runs against this file, so reading it is a gate: an absent,
+ * malformed or empty pool must stop the run before the first paid session
+ * rather than degrade into a campaign that measured nothing.
+ */
+export async function loadFrozenPool(path: string): Promise<Selection> {
+  const sel = JSON.parse(await Deno.readTextFile(path)) as Selection;
+  if (!Array.isArray(sel.pool) || sel.pool.length === 0) {
+    throw new Error(
+      `frozen pool ${path} is empty — nothing to run; re-freeze it first`,
+    );
+  }
+  return { ...sel, pool: [...sel.pool].sort() };
+}
+
 export interface BuildSelectionOptions {
   subject: Cell;
   ceiling: Cell;

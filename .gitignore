@@ -62,5 +62,7 @@ benchmark-*.log
 .venv-rebench/
 .swe-bench-fork/
 
-# swebench fork drops its per-run summary in the CWD; the real record is the cell.
+# swebench fork drops its per-run summary in the CWD, named after the arm it
+# graded; the real record is the cell.
 baseline.pool2-*.json
+flowai.pool2-*.json

@@ -1,11 +1,12 @@
 /**
- * Baseline measurement tier for pool2 (FR-BENCH-SWE.POOL2).
+ * Measurement tier for pool2 (FR-BENCH-SWE.POOL2).
  *
- * Drives the symmetric baseline arm (Claude Code + Sonnet, `BaselineJudgeOperator`
- * — FR-BENCH-SWE.SYMMETRY) over the gate-passing pool2 instances, then grades
- * the patches through the SWE-rebench fork (FR-BENCH-SWE.POOL2 grading path).
- * These baseline reps DOUBLE as the frozen baseline arm (honesty rule: selection
- * uses baseline behavior only), so the driver is:
+ * Drives ONE arm over pool2 instances under the symmetric harness
+ * (FR-BENCH-SWE.SYMMETRY — one judge serves both arms), then grades the patches
+ * through the SWE-rebench fork (FR-BENCH-SWE.POOL2 grading path). The baseline
+ * arm's reps DOUBLE as the frozen baseline (honesty rule: selection uses
+ * baseline behavior only); the flowai arm then runs over the frozen pool those
+ * reps selected. Either way the driver is:
  *   - RESUMABLE — a killed run (overnight sleep) keeps every completed instance
  *     in the rep's predictions file; a restart skips them (`pendingIds`);
  *   - CONCURRENT — a bounded pool (`mapPool`) runs several sessions at once, since
@@ -18,7 +19,7 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import type { InstanceData } from "./dataset.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
-import { isTransientSetupFailure, runArm } from "./run.ts";
+import { type Arm, isTransientSetupFailure, runArm } from "./run.ts";
 import {
   appendPrediction,
   type Prediction,
@@ -146,13 +147,17 @@ export interface RepCampaign {
   ide?: string;
   model: string;
   effort: string;
+  /** Absent in reps written before the flowai arm — those were all baseline. */
+  arm?: string;
+  /** Framework tree fingerprint; set only for the flowai arm. */
+  framework?: string | null;
 }
 
 /**
  * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
  * Guard an output dir against a SECOND campaign writing into it.
  *
- * Two things go wrong without this. At the REP level `runBaselineBatch` resumes
+ * Two things go wrong without this. At the REP level `runArmBatch` resumes
  * from the ids already in `baseline.jsonl`, so aiming a codex campaign at the
  * Sonnet rep dir does not fail — it reports "0 pending" and silently adopts
  * Sonnet's predictions as codex's, measuring the wrong agent. At the CAMPAIGN
@@ -172,14 +177,18 @@ export function campaignMismatch(
   // fact rather than letting a missing field match anything.
   const priorIde = prior.ide ?? "claude";
   const curIde = current.ide ?? "claude";
+  // Dirs written before the flowai arm existed held the baseline arm — back-fill
+  // the fact rather than letting a missing field match anything.
+  const priorArm = prior.arm ?? "baseline";
+  const curArm = current.arm ?? "baseline";
   if (
     priorIde === curIde && prior.model === current.model &&
-    prior.effort === current.effort
+    prior.effort === current.effort && priorArm === curArm
   ) {
     return null;
   }
-  return `belongs to campaign ${priorIde}/${prior.model}@${prior.effort}, ` +
-    `but this run is ${curIde}/${current.model}@${current.effort}`;
+  return `belongs to campaign ${priorArm}/${priorIde}/${prior.model}@${prior.effort}, ` +
+    `but this run is ${curArm}/${curIde}/${current.model}@${current.effort}`;
 }
 
 /**
@@ -193,23 +202,41 @@ export function campaignMismatch(
  * where the codex terra run reported 31/67 of which 64 instances were never
  * graded, only replayed from the Sonnet campaign.
  *
+ * The ARM is part of the campaign for the same reason: a flowai rep over the
+ * same (ide, model, effort) would otherwise find the baseline's cached reports
+ * and replay them. Baseline ids are left byte-identical — their graded logs
+ * already exist on disk — so only a non-baseline arm adds a segment.
+ *
  * The original claude/sonnet@high campaign keeps its historical id: its graded
  * logs (and the pool2 freeze derived from them) already live under that path,
  * and renaming would either orphan them or force a pointless regrade.
  */
 export function campaignRunId(c: RepCampaign, rep: number): string {
   const ide = c.ide ?? "claude";
-  if (ide === "claude" && c.model === "sonnet" && c.effort === "high") {
+  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const arm = c.arm ?? "baseline";
+  const armSeg = arm === "baseline" ? "" : `${slug(arm)}-`;
+  if (
+    arm === "baseline" && ide === "claude" && c.model === "sonnet" &&
+    c.effort === "high"
+  ) {
     return `pool2-baseline-rep${rep}`;
   }
-  const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-  return `pool2-${slug(ide)}-${slug(c.model)}-${slug(c.effort)}-rep${rep}`;
+  return `pool2-${armSeg}${slug(ide)}-${slug(c.model)}-${
+    slug(c.effort)
+  }-rep${rep}`;
 }
 
-export interface BaselineBatchOptions {
+export interface ArmBatchOptions {
   data: Map<string, InstanceData>;
   ids: string[];
-  /** Rep-scoped output dir; predictions land at `<outDir>/baseline.jsonl`. */
+  /**
+   * Arm under measurement. `baseline` is the bare IDE; `flowai` installs the
+   * core pack and is operator-driven (runArm owns both shapes). Defaults to
+   * baseline so pre-flowai callers keep their behaviour.
+   */
+  arm?: Arm;
+  /** Rep-scoped output dir; predictions land at `<outDir>/<arm>.jsonl`. */
   outDir: string;
   repoRoot: string;
   model: string;
@@ -247,15 +274,16 @@ export interface BatchOutcome {
 export const DEFAULT_HEALTH_ATTEMPTS = 8;
 
 /**
- * Run the baseline arm over `ids` (skipping any already in the predictions
- * file), append one prediction per instance, and return the predictions path.
- * Never truncates — append-only is what makes a restart resumable.
+ * Run ONE arm over `ids` (skipping any already in the predictions file), append
+ * one prediction per instance, and return the predictions path. Never truncates
+ * — append-only is what makes a restart resumable.
  */
-export async function runBaselineBatch(
-  opts: BaselineBatchOptions,
+export async function runArmBatch(
+  opts: ArmBatchOptions,
 ): Promise<BatchOutcome> {
+  const arm: Arm = opts.arm ?? "baseline";
   await ensureDir(opts.outDir);
-  const predPath = join(opts.outDir, "baseline.jsonl");
+  const predPath = join(opts.outDir, `${arm}.jsonl`);
   const done = await donePredictionIds(predPath);
   const pending = pendingIds(opts.ids, done);
   console.log(
@@ -279,7 +307,7 @@ export async function runBaselineBatch(
     try {
       const attempt = await withHealthBackoff(() =>
         runArm(data, {
-          arm: "baseline",
+          arm,
           instanceIds: [],
           model: opts.model,
           outDir: opts.outDir,
@@ -348,7 +376,7 @@ export async function runBaselineBatch(
         patch: prediction.model_patch ?? "",
         wallClockMs: res.wallClockMs,
         turns: res.turns,
-        patchPath: `rep${opts.rep}/baseline.jsonl`,
+        patchPath: `rep${opts.rep}/${arm}.jsonl`,
       }));
     } catch (e) {
       const msg = (e as Error).message;
@@ -370,7 +398,7 @@ export async function runBaselineBatch(
         return null;
       }
       console.error(`  [pool2-measure] FAILED ${id}: ${msg}`);
-      prediction = toPrediction(id, "baseline", "");
+      prediction = toPrediction(id, arm, "");
       // A permanent failure (bad ref, missing metadata) DID consume the
       // instance's turn — record it as measured-with-nothing, not pending, or a
       // resume would retry it forever.
@@ -381,14 +409,14 @@ export async function runBaselineBatch(
         patch: "",
       }));
     }
-    await appendPrediction(opts.outDir, "baseline", prediction);
+    await appendPrediction(opts.outDir, arm, prediction);
     return null;
   });
   return { predPath, healthAborts, backoffWaits };
 }
 
 /**
- * Grade a pool2 baseline predictions file through the fork and return the set
+ * Grade a pool2 predictions file through the fork and return the set
  * of resolved instance ids. Test hunks are stripped first (agent-authored
  * tests are never the oracle — same rule as the princeton path); the stripped
  * file is written alongside as `<path>.graded.jsonl`.
@@ -398,6 +426,11 @@ export async function gradePool2Predictions(
   split: string,
   runId: string,
   cwd: string = Deno.cwd(),
+  /**
+   * swebench's `model_name_or_path` — the arm. It is a path segment of the
+   * verdict cache, so it must match what `applyVerdicts` reads back.
+   */
+  modelName: string = "baseline",
 ): Promise<Set<string>> {
   const text = await Deno.readTextFile(predPath);
   const graded: string[] = [];
@@ -412,7 +445,7 @@ export async function gradePool2Predictions(
 
   const report = await runRebenchEvaluation({
     predictionsPath: gradedPath,
-    modelName: "baseline",
+    modelName,
     runId,
     split,
     cwd,

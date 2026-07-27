@@ -300,6 +300,38 @@ export async function currentCommit(): Promise<string> {
 }
 
 /**
+ * implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+ * Fingerprint of the framework the flowai arm installs — the `framework` half of
+ * the cell key.
+ *
+ * It is the git TREE hash of `framework/`, not the harness commit: the harness
+ * and the framework move independently, and a commit sha would let a run off an
+ * uncommitted tree claim the last commit's identity. A dirty worktree is
+ * reported as such rather than silently folded into the clean fingerprint — the
+ * cell then says plainly that its framework was not a committed state.
+ */
+export async function frameworkFingerprint(
+  repoRoot: string = Deno.cwd(),
+): Promise<string> {
+  const tree = await capture("git", [
+    "-C",
+    repoRoot,
+    "rev-parse",
+    "HEAD:framework",
+  ]);
+  if (tree === null) return "unknown";
+  const dirty = await capture("git", [
+    "-C",
+    repoRoot,
+    "status",
+    "--porcelain",
+    "--",
+    "framework",
+  ]);
+  return tree.slice(0, 12) + (dirty ? "-dirty" : "");
+}
+
+/**
  * Snapshot of the machine. Docker's version comes from the daemon, so it is
  * null when the daemon is down — which itself is worth recording, since a cell
  * graded without Docker has no verdicts.

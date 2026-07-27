@@ -4,6 +4,8 @@ import {
   appendTask,
   cellId,
   type CellKey,
+  currentCommit,
+  frameworkFingerprint,
   passRate,
   readCell,
   type TaskRecord,
@@ -307,4 +309,27 @@ Deno.test("cell header pins everything needed to re-interpret it", async () => {
   } finally {
     await Deno.remove(dir, { recursive: true });
   }
+});
+
+/**
+ * The flowai arm's cell key carries WHICH flowai was installed. A commit sha
+ * would not do: the framework is edited constantly and a run off an uncommitted
+ * tree must not claim the sha of the last commit. The tree hash names the
+ * content actually copied into the sandbox, and a dirty worktree says so.
+ */
+Deno.test("frameworkFingerprint names the framework tree, and admits when it is dirty", async () => {
+  const fp = await frameworkFingerprint(Deno.cwd());
+  assert(
+    /^[0-9a-f]{12}(-dirty)?$/.test(fp),
+    `not a fingerprint: ${fp}`,
+  );
+  assertEquals(
+    fp,
+    await frameworkFingerprint(Deno.cwd()),
+    "same tree, same fingerprint — otherwise two identical runs split cells",
+  );
+  assert(
+    fp !== await currentCommit(),
+    "the framework tree is not the harness commit — they move independently",
+  );
 });

@@ -8,6 +8,7 @@
  */
 
 import { join } from "@std/path";
+import { ACP_AGENTS } from "@acceptance-tests/acp/registry.ts";
 
 export interface Prediction {
   instance_id: string;
@@ -41,7 +42,13 @@ export function toJsonl(preds: Prediction[]): string {
  * source changes reach swebench.
  */
 export const DIFF_EXCLUDES: readonly string[] = [
-  ".claude",
+  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+  // EVERY IDE's config dir, taken from the registry rather than written out as
+  // `.claude` alone. The flowai arm installs the pack into whichever dir the
+  // IDE under test discovers skills in, so a single literal silently privileges
+  // one IDE: measured 2026-07-27, the codex arm's first smoke run shipped a
+  // 471 KB / 41-file patch that was entirely `.codex/skills/**`.
+  ...Object.values(ACP_AGENTS).map((a) => a.configDir),
   "AGENTS.md",
   // Whole flowai doc-system, not just tasks/: a faithful plan run may also write
   // documents/index.md or SRS back-pointers. None of it is the code fix, and no

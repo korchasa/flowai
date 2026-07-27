@@ -106,6 +106,38 @@ Deno.test("campaignRunId: each campaign grades under its own id", () => {
 });
 
 /**
+ * The arm is the measured variable, so it must move the grading id too. Without
+ * it a flowai rep over the same (ide, model, effort) would find the baseline's
+ * cached reports and REPLAY them — the exact 2026-07-25 failure, one axis over.
+ * Baseline ids stay byte-identical: their graded logs already exist on disk.
+ */
+Deno.test("campaignRunId: the arm moves the id, and baseline ids never move", () => {
+  const terra = { ide: "codex", model: "gpt-5.6-terra", effort: "medium" };
+  assertEquals(
+    campaignRunId({ ...terra, arm: "baseline" }, 1),
+    "pool2-codex-gpt-5-6-terra-medium-rep1",
+    "an explicit baseline arm keeps the id the completed campaigns graded under",
+  );
+  assertEquals(
+    campaignRunId({
+      ide: "claude",
+      model: "sonnet",
+      effort: "high",
+      arm: "baseline",
+    }, 3),
+    "pool2-baseline-rep3",
+    "the historical claude/sonnet id survives an explicit arm",
+  );
+
+  const flowai = campaignRunId({ ...terra, arm: "flowai" }, 1);
+  assert(
+    flowai !== campaignRunId(terra, 1),
+    "flowai must not grade under the baseline's id",
+  );
+  assertEquals(/^[a-z0-9-]+$/.test(flowai), true);
+});
+
+/**
  * A rep dir is owned by exactly ONE campaign. `runBaselineBatch` resumes by
  * reading the ids already in `baseline.jsonl`, so pointing a second campaign at
  * another's dir does not error — it reports "0 pending" and silently adopts the
@@ -138,6 +170,21 @@ Deno.test("campaignMismatch: a rep dir belongs to one campaign", () => {
   assert(
     campaignMismatch(legacySonnet, codex),
     "a codex run must not adopt the legacy Sonnet rep dir",
+  );
+
+  // The arm owns the dir as much as the model does: a flowai rep aimed at the
+  // baseline's dir would overwrite its run-meta and blend two arms' evidence.
+  assert(
+    campaignMismatch({ ...codex, arm: "baseline" }, {
+      ...codex,
+      arm: "flowai",
+    }),
+    "a flowai run must not write into a baseline rep dir",
+  );
+  assertEquals(
+    campaignMismatch({ ...codex }, { ...codex, arm: "baseline" }),
+    null,
+    "dirs written before the arm field held the baseline arm",
   );
 });
 
