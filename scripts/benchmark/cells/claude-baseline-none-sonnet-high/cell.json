@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "cellId": "claude-baseline-none-sonnet-high",
   "key": {
     "ide": "claude",
@@ -88,10 +88,6 @@
     "ideVersion": null,
     "bridgeVersion": null
   },
-  "judge": {
-    "model": "sonnet",
-    "effort": "high"
-  },
   "harness": {
     "maxSteps": 3,
     "stepTimeoutMs": 1200000,
@@ -131,5 +127,9 @@
       "healthAborts": 0,
       "backoffWaits": 0
     }
-  ]
+  ],
+  "humanEmulator": {
+    "model": "sonnet",
+    "effort": "high"
+  }
 }

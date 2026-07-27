@@ -100,7 +100,7 @@ export function usageFromTranscript(text: string): TranscriptUsage {
 
 /**
  * Harvest every transcript under `<benchHome>/.claude/projects` (main session
- * + subagents + the flowai arm's judge-gate CLI, which shares bench-home so
+ * + subagents + the flowai arm's gate-emulator CLI, which shares bench-home so
  * its tokens land in the flowai arm's overhead — by design). Fails fast when
  * the projects dir is absent: a session that produced no transcript is a
  * harness defect, not a zero-cost run.

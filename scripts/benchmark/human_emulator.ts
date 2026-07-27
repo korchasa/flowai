@@ -1,18 +1,22 @@
 /**
- * LLM-judged human gate for the SWE-bench flowai arm (FR-BENCH-SWE).
+ * The LLM that plays the human for both SWE-bench arms (FR-BENCH-SWE).
  *
  * The scripted operator's gate turn used to be an unconditional
  * "Go ahead with your recommended variant" — a rubber stamp. That made every
  * plan-phase quality effect invisible: a narrow or wrong plan was authorized
  * exactly like a good one (loop4 STOP-ANALYSIS, 2026-07-04). This module
- * replaces that single turn with an LLM judge playing the knowledgeable human
+ * replaces that single turn with an LLM playing the knowledgeable human
  * reviewer: it reads ONLY the issue and the planner's output (never gold
  * patches or FAIL_TO_PASS lists — measurement honesty), checks the plan's
  * outcome coverage against the issue, and authorizes exactly one variant,
  * optionally naming what the plan missed.
  *
+ * Naming: nothing here JUDGES. swebench's test run decides whether a task is
+ * solved; the acceptance-test suite has its own grader. This module only
+ * emulates the human on the other side of the conversation.
+ *
  * The gate is therefore stochastic (an LLM turn) — recorded as a harness
- * property in run.ts and in every report. Judge failure fails the instance
+ * property in run.ts and in every report. An emulator failure fails the instance
  * loudly; there is deliberately NO fallback to the rubber stamp.
  */
 
@@ -20,18 +24,25 @@ import type { LLMMessage } from "@acceptance-tests/types.ts";
 import { cliChatCompletion } from "@acceptance-tests/llm.ts";
 import { type CommandPrefix, reviewTurn } from "./operator.ts";
 
-/** Judge contract: (issue, plan output) → reviewer reply. External boundary. */
-export type GateJudge = (
+/**
+ * The LLM that plays the human across turns: (issue, the agent's last output) →
+ * the human's reply. External boundary.
+ *
+ * It is NOT a judge. Whether a task is solved is decided by swebench's own test
+ * run; this emulator only supplies the human side of the conversation, and it
+ * never sees gold patches or FAIL_TO_PASS lists.
+ */
+export type HumanEmulator = (
   problemStatement: string,
-  planOutput: string,
+  agentOutput: string,
 ) => Promise<string>;
 
 /**
- * Build the judge conversation. The system prompt frames a human reviewer at
+ * Build the gate conversation. The system prompt frames a human reviewer at
  * the planning gate: verify outcome coverage, authorize one variant, challenge
  * evidence-free "nothing to do" conclusions. No code, no solving.
  */
-export function judgeGateMessages(
+export function gateMessages(
   problemStatement: string,
   planOutput: string,
 ): LLMMessage[] {
@@ -61,7 +72,7 @@ export function judgeGateMessages(
 }
 
 /**
- * Wrap the judge's reviewer reply into the `implement` turn, keeping the
+ * Wrap the emulator's reviewer reply into the `implement` turn, keeping the
  * TDD and no-commit framing the scripted turn carried. The prefix is
  * IDE-dependent (`/` Claude, `$` Codex — see `commandPrefixFor`); only the
  * prefix varies, so both IDEs get the same instructions.
@@ -80,25 +91,25 @@ export function implementTurnWithVerdict(
 }
 
 /**
- * Operator with a judged gate: turn 1 after `/plan` is the judge's verdict
+ * Operator with an emulated gate: turn 1 after `/plan` is the human's verdict
  * wrapped into `/implement`, turn 2 is the scripted `/review`, then null.
  * Satisfies the `AcpAgent.run(userEmulator)` contract.
  */
-export class JudgeGateOperator {
+export class GateEmulatorOperator {
   #problemStatement: string;
-  #judge: GateJudge;
+  #emulator: HumanEmulator;
   #followups: string[];
   #prefix: CommandPrefix;
   #i = 0;
 
   constructor(
     problemStatement: string,
-    judge: GateJudge,
+    emulator: HumanEmulator,
     prefix: CommandPrefix = "/",
     followups: string[] = [reviewTurn(prefix)],
   ) {
     this.#problemStatement = problemStatement;
-    this.#judge = judge;
+    this.#emulator = emulator;
     this.#prefix = prefix;
     this.#followups = followups;
   }
@@ -112,12 +123,14 @@ export class JudgeGateOperator {
         ?.content;
       if (planOutput === undefined) {
         throw new Error(
-          "JudgeGateOperator: no assistant message to judge — the plan turn produced no output",
+          "GateEmulatorOperator: no assistant message to react to — the plan turn produced no output",
         );
       }
-      const verdict = await this.#judge(this.#problemStatement, planOutput);
+      const verdict = await this.#emulator(this.#problemStatement, planOutput);
       if (verdict.trim() === "") {
-        throw new Error("JudgeGateOperator: judge returned a blank verdict");
+        throw new Error(
+          "GateEmulatorOperator: the emulator returned a blank verdict",
+        );
       }
       return implementTurnWithVerdict(verdict, this.#prefix);
     }
@@ -127,26 +140,19 @@ export class JudgeGateOperator {
   }
 }
 
-// --- FR-BENCH-SWE.SYMMETRY: the same judge persona serves the bare arm ---
+// --- FR-BENCH-SWE.SYMMETRY: the same human persona serves the bare arm ---
 
-/** Terminal token: the judge replies with exactly this when the engineer is
+/** Terminal token: the human replies with exactly this when the engineer is
  * done and no reply is needed — the operator then ends the session. */
 export const DONE_TOKEN = "DONE";
 
-/** Answer-judge contract: (issue, agent's last message) → reviewer reply or
- * DONE_TOKEN. External boundary, same isolation rules as the gate judge. */
-export type AnswerJudge = (
-  problemStatement: string,
-  agentMessage: string,
-) => Promise<string>;
-
 /**
- * Build the answer-judge conversation for the bare arm. Same reviewer persona
- * as the gate judge — knows ONLY the issue text, never gold data — but the
+ * Build the answer conversation for the bare arm. Same reviewer persona
+ * as the gate — knows ONLY the issue text, never gold data — but the
  * duty here is answering the engineer's question (or ending the session),
  * not authorizing a plan variant.
  */
-export function judgeAnswerMessages(
+export function answerMessages(
   problemStatement: string,
   agentMessage: string,
 ): LLMMessage[] {
@@ -175,19 +181,19 @@ export function judgeAnswerMessages(
 }
 
 /**
- * Bare-arm operator: after every agent turn, the judge either answers the
+ * Bare-arm operator: after every agent turn, the human either answers the
  * engineer's question (session continues with that plain-text reply) or
- * replies DONE (session ends). Judge failure or a blank reply fails the
+ * replies DONE (session ends). An emulator failure or a blank reply fails the
  * instance loudly — no silent fallback, mirroring the gate operator.
  * Satisfies the `AcpAgent.run(userEmulator)` contract.
  */
-export class BaselineJudgeOperator {
+export class AnswerEmulatorOperator {
   #problemStatement: string;
-  #judge: AnswerJudge;
+  #emulator: HumanEmulator;
 
-  constructor(problemStatement: string, judge: AnswerJudge) {
+  constructor(problemStatement: string, emulator: HumanEmulator) {
     this.#problemStatement = problemStatement;
-    this.#judge = judge;
+    this.#emulator = emulator;
   }
 
   async getResponse(
@@ -196,56 +202,58 @@ export class BaselineJudgeOperator {
     const last = messages.findLast((m) => m.role === "assistant")?.content;
     if (last === undefined) {
       throw new Error(
-        "BaselineJudgeOperator: no assistant message to reply to — the agent turn produced no output",
+        "AnswerEmulatorOperator: no assistant message to reply to — the agent turn produced no output",
       );
     }
-    const reply = (await this.#judge(this.#problemStatement, last)).trim();
+    const reply = (await this.#emulator(this.#problemStatement, last)).trim();
     if (reply === "") {
-      throw new Error("BaselineJudgeOperator: judge returned a blank reply");
+      throw new Error(
+        "AnswerEmulatorOperator: the emulator returned a blank reply",
+      );
     }
     return reply === DONE_TOKEN ? null : reply;
   }
 }
 
 /**
- * Production judge over `claude -p` (existing CLI auth, no API key).
+ * Production emulator over `claude -p` (existing CLI auth, no API key).
  *
  * Isolation is two-fold, both mandatory (verified empirically 2026-07-04):
  * - `env` carries the bench's isolated `HOME` (the adapter's `prepareWorkspace`
  *   bench-home) so the developer's `~/.claude/CLAUDE.md` user memory does not
  *   load;
- * - the judge runs from a temp cwd OUTSIDE the developer's home, because
+ * - the emulator runs from a temp cwd OUTSIDE the developer's home, because
  *   ancestor-directory memory files (`CLAUDE.md`/`AGENTS.md` up the cwd path,
  *   e.g. `~/AGENTS.md`) load regardless of `HOME` and their preferences leak
  *   into the verdict (observed: a personal "reply in Russian" rule reached the
  *   bench agent mid-pipeline).
  */
-export function makeCliGateJudge(
+export function makeCliGateEmulator(
   model: string,
   env: Record<string, string> = {},
-): GateJudge {
+): HumanEmulator {
   let cwd: string | undefined;
   return async (problemStatement, planOutput) => {
-    cwd ??= await Deno.makeTempDir({ prefix: "gate-judge-" });
+    cwd ??= await Deno.makeTempDir({ prefix: "gate-emulator-" });
     const res = await cliChatCompletion(
-      judgeGateMessages(problemStatement, planOutput),
+      gateMessages(problemStatement, planOutput),
       { model, temperature: 0, env, cwd },
     );
     return res.content;
   };
 }
 
-/** CLI answer judge for the bare arm — same isolation rules as the gate judge
+/** CLI answer emulator for the bare arm — same isolation rules as the gate
  * (isolated HOME via env + temp cwd outside the developer's home). */
-export function makeCliAnswerJudge(
+export function makeCliAnswerEmulator(
   model: string,
   env: Record<string, string> = {},
-): AnswerJudge {
+): HumanEmulator {
   let cwd: string | undefined;
   return async (problemStatement, agentMessage) => {
-    cwd ??= await Deno.makeTempDir({ prefix: "answer-judge-" });
+    cwd ??= await Deno.makeTempDir({ prefix: "answer-emulator-" });
     const res = await cliChatCompletion(
-      judgeAnswerMessages(problemStatement, agentMessage),
+      answerMessages(problemStatement, agentMessage),
       { model, temperature: 0, env, cwd },
     );
     return res.content;

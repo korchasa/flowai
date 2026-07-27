@@ -2,7 +2,7 @@
  * Measurement tier for pool2 (FR-BENCH-SWE.POOL2).
  *
  * Drives ONE arm over pool2 instances under the symmetric harness
- * (FR-BENCH-SWE.SYMMETRY — one judge serves both arms), then grades the patches
+ * (FR-BENCH-SWE.SYMMETRY — one human emulator serves both arms), then grades the patches
  * through the SWE-rebench fork (FR-BENCH-SWE.POOL2 grading path). The baseline
  * arm's reps DOUBLE as the frozen baseline (honesty rule: selection uses
  * baseline behavior only); the flowai arm then runs over the frozen pool those
@@ -242,12 +242,12 @@ export interface ArmBatchOptions {
   model: string;
   stepTimeoutMs: number;
   concurrency: number;
-  /** Reasoning effort pinned for agent + judge (see run.ts effortEnv). */
+  /** Reasoning effort pinned for agent + human emulator (see run.ts effortEnv). */
   effort: string;
   /** IDE under test (FR-BENCH-SWE.IDE); defaults to `claude` in runArm. */
   ide?: AcpIde;
-  /** Judge model — always Claude, independent of the IDE under test. */
-  judgeModel?: string;
+  /** Human-emulator model — always Claude, independent of the IDE under test. */
+  humanEmulatorModel?: string;
   /** Spawn attempts per instance while the health guard keeps aborting. */
   healthAttempts?: number;
   /** Injected for tests; production waits with setTimeout. */
@@ -315,7 +315,7 @@ export async function runArmBatch(
           repoRoot: opts.repoRoot,
           effort: opts.effort,
           ide: opts.ide,
-          judgeModel: opts.judgeModel,
+          humanEmulatorModel: opts.humanEmulatorModel,
         }), {
         maxAttempts: opts.healthAttempts ?? DEFAULT_HEALTH_ATTEMPTS,
         sleep: opts.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms))),

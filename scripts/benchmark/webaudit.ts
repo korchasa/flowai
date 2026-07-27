@@ -121,7 +121,7 @@ export function accessesFromTranscript(
 
 /**
  * Harvest every transcript under `<benchHome>/.claude/projects` (main session
- * + subagents + the arm's judge CLI, which shares bench-home). Fails fast when
+ * + subagents + the arm's human-emulator CLI, which shares bench-home). Fails fast when
  * the projects dir is absent — a session with no transcript is a harness
  * defect, not a clean-network run.
  */

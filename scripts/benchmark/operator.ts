@@ -39,7 +39,7 @@ export function baseTask(repo: string, problemStatement: string): string {
  * Baseline arm prompt (FR-BENCH-SWE.SYMMETRY). The arms must share ONE
  * human-availability policy: the old "make every decision yourself and never
  * stop to ask" line gave the arms different conditions beyond flowai itself.
- * Now a reviewer (the same judge persona as the flowai gate) is reachable in
+ * Now a reviewer (the same human persona as the flowai gate) is reachable in
  * both arms — the bare agent may ask and gets an issue-text-only answer.
  */
 export function baselineTask(repo: string, problemStatement: string): string {

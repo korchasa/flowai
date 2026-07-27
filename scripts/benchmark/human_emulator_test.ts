@@ -1,12 +1,12 @@
 import { assert, assertEquals, assertRejects } from "@std/assert";
 import {
-  BaselineJudgeOperator,
+  AnswerEmulatorOperator,
+  answerMessages,
   DONE_TOKEN,
+  GateEmulatorOperator,
+  gateMessages,
   implementTurnWithVerdict,
-  judgeAnswerMessages,
-  judgeGateMessages,
-  JudgeGateOperator,
-} from "./gate.ts";
+} from "./human_emulator.ts";
 import { reviewTurn } from "./operator.ts";
 
 const ISSUE =
@@ -18,8 +18,8 @@ const PLAN = [
   "### Variant 2 — patch callers",
 ].join("\n");
 
-Deno.test("judgeGateMessages: carries the issue and the plan output, no gold fields", () => {
-  const msgs = judgeGateMessages(ISSUE, PLAN);
+Deno.test("gateMessages: carries the issue and the plan output, no gold fields", () => {
+  const msgs = gateMessages(ISSUE, PLAN);
   const all = msgs.map((m) => m.content).join("\n");
   assert(all.includes(ISSUE), "must carry the issue verbatim");
   assert(all.includes(PLAN), "must carry the plan output verbatim");
@@ -60,9 +60,9 @@ Deno.test("implementTurnWithVerdict: /implement turn embeds the verdict and keep
   assert(/TDD|red/i.test(t), "must keep the TDD framing");
 });
 
-Deno.test("JudgeGateOperator: judges the LAST assistant message, then review turn, then null", async () => {
+Deno.test("GateEmulatorOperator: judges the LAST assistant message, then review turn, then null", async () => {
   const seen: Array<{ issue: string; plan: string }> = [];
-  const op = new JudgeGateOperator(ISSUE, (issue, plan) => {
+  const op = new GateEmulatorOperator(ISSUE, (issue, plan) => {
     seen.push({ issue, plan });
     return Promise.resolve(
       "Go ahead with Variant 2 — it matches the root cause.",
@@ -90,8 +90,8 @@ Deno.test("JudgeGateOperator: judges the LAST assistant message, then review tur
   assertEquals(await op.getResponse(messages), null);
 });
 
-Deno.test("JudgeGateOperator: judge failure rejects (fail fast, no silent rubber stamp)", async () => {
-  const op = new JudgeGateOperator(
+Deno.test("GateEmulatorOperator: judge failure rejects (fail fast, no silent rubber stamp)", async () => {
+  const op = new GateEmulatorOperator(
     ISSUE,
     () => Promise.reject(new Error("cli down")),
   );
@@ -102,8 +102,8 @@ Deno.test("JudgeGateOperator: judge failure rejects (fail fast, no silent rubber
   );
 });
 
-Deno.test("JudgeGateOperator: blank verdict rejects", async () => {
-  const op = new JudgeGateOperator(ISSUE, () => Promise.resolve("   \n"));
+Deno.test("GateEmulatorOperator: blank verdict rejects", async () => {
+  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve("   \n"));
   await assertRejects(
     () => op.getResponse([{ role: "assistant", content: PLAN }]),
     Error,
@@ -111,8 +111,8 @@ Deno.test("JudgeGateOperator: blank verdict rejects", async () => {
   );
 });
 
-Deno.test("JudgeGateOperator: no assistant message yet rejects (contract violation)", async () => {
-  const op = new JudgeGateOperator(ISSUE, () => Promise.resolve("ok"));
+Deno.test("GateEmulatorOperator: no assistant message yet rejects (contract violation)", async () => {
+  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve("ok"));
   await assertRejects(
     () => op.getResponse([{ role: "user", content: "/plan ..." }]),
     Error,
@@ -125,8 +125,8 @@ Deno.test("JudgeGateOperator: no assistant message yet rejects (contract violati
 const QUESTION =
   "Should I also handle the legacy offset format, or only the tz name path?";
 
-Deno.test("judgeAnswerMessages: issue + agent message, no gold, DONE protocol, English", () => {
-  const msgs = judgeAnswerMessages(ISSUE, QUESTION);
+Deno.test("answerMessages: issue + agent message, no gold, DONE protocol, English", () => {
+  const msgs = answerMessages(ISSUE, QUESTION);
   const all = msgs.map((m) => m.content).join("\n");
   assert(all.includes(ISSUE), "must carry the issue verbatim");
   assert(all.includes(QUESTION), "must carry the agent's message verbatim");
@@ -147,9 +147,9 @@ Deno.test("judgeAnswerMessages: issue + agent message, no gold, DONE protocol, E
   );
 });
 
-Deno.test("BaselineJudgeOperator: returns the judge's answer as a plain next turn", async () => {
+Deno.test("AnswerEmulatorOperator: returns the judge's answer as a plain next turn", async () => {
   const seen: string[] = [];
-  const op = new BaselineJudgeOperator(ISSUE, (_issue, msg) => {
+  const op = new AnswerEmulatorOperator(ISSUE, (_issue, msg) => {
     seen.push(msg);
     return Promise.resolve(
       "Only the tz name path — the issue names nothing else; legacy is your call.",
@@ -167,8 +167,8 @@ Deno.test("BaselineJudgeOperator: returns the judge's answer as a plain next tur
   );
 });
 
-Deno.test("BaselineJudgeOperator: DONE token ends the session", async () => {
-  const op = new BaselineJudgeOperator(
+Deno.test("AnswerEmulatorOperator: DONE token ends the session", async () => {
+  const op = new AnswerEmulatorOperator(
     ISSUE,
     () => Promise.resolve(`  ${DONE_TOKEN}\n`),
   );
@@ -178,8 +178,8 @@ Deno.test("BaselineJudgeOperator: DONE token ends the session", async () => {
   );
 });
 
-Deno.test("BaselineJudgeOperator: blank reply rejects (fail fast)", async () => {
-  const op = new BaselineJudgeOperator(ISSUE, () => Promise.resolve(" \n"));
+Deno.test("AnswerEmulatorOperator: blank reply rejects (fail fast)", async () => {
+  const op = new AnswerEmulatorOperator(ISSUE, () => Promise.resolve(" \n"));
   await assertRejects(
     () => op.getResponse([{ role: "assistant", content: "done?" }]),
     Error,
@@ -187,8 +187,8 @@ Deno.test("BaselineJudgeOperator: blank reply rejects (fail fast)", async () => 
   );
 });
 
-Deno.test("BaselineJudgeOperator: judge failure rejects (no silent fallback)", async () => {
-  const op = new BaselineJudgeOperator(
+Deno.test("AnswerEmulatorOperator: judge failure rejects (no silent fallback)", async () => {
+  const op = new AnswerEmulatorOperator(
     ISSUE,
     () => Promise.reject(new Error("cli down")),
   );
@@ -199,8 +199,8 @@ Deno.test("BaselineJudgeOperator: judge failure rejects (no silent fallback)", a
   );
 });
 
-Deno.test("BaselineJudgeOperator: no assistant message rejects (contract violation)", async () => {
-  const op = new BaselineJudgeOperator(ISSUE, () => Promise.resolve("ok"));
+Deno.test("AnswerEmulatorOperator: no assistant message rejects (contract violation)", async () => {
+  const op = new AnswerEmulatorOperator(ISSUE, () => Promise.resolve("ok"));
   await assertRejects(
     () => op.getResponse([{ role: "user", content: "fix the bug" }]),
     Error,

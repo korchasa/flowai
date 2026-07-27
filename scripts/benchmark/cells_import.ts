@@ -7,7 +7,7 @@
  * set as run) and swebench's per-instance `report.json` (the verdict) — so the
  * import is a re-read, never a re-measurement.
  *
- * What those runs never captured (model snapshot, turns, wall-clock, judge
+ * What those runs never captured (model snapshot, turns, wall-clock, human-emulator
  * transcripts) stays null. A gap must look like a gap: inventing a number here
  * would make the cell lie about its own provenance.
  */
@@ -159,7 +159,7 @@ export async function importCampaign(opts: ImportOptions): Promise<string> {
       checksum: await taskSetChecksum(idList),
     },
     agent: { modelSnapshot: null, ideVersion: null, bridgeVersion: null },
-    judge: { model: "sonnet", effort: first.effort },
+    humanEmulator: { model: "sonnet", effort: first.effort },
     harness: {
       maxSteps: 3,
       stepTimeoutMs: first.stepTimeoutMs,

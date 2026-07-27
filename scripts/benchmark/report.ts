@@ -111,7 +111,7 @@ function renderCostSection(
     );
   }
   L.push(
-    `- flowai's judge-gate CLI shares bench-home, so gate tokens are counted` +
+    `- flowai's gate-emulator CLI shares bench-home, so gate tokens are counted` +
       ` inside the flowai arm's overhead.`,
   );
   L.push("");

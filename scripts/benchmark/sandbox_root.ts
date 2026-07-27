@@ -3,7 +3,7 @@
  *
  * Ancestor-directory memory files (`CLAUDE.md`/`AGENTS.md` up the agent's cwd
  * path, e.g. `~/AGENTS.md`) load REGARDLESS of the isolated `HOME` — proven by
- * bisection on the gate judge (see gate.ts) and observed live: bench agents
+ * bisection on the gate emulator (see human_emulator.ts) and observed live: bench agents
  * inherited the developer's personal rules in every run whose sandbox lived
  * under the repo (hence under `$HOME`). Agent sandboxes therefore live in a
  * temp root OUTSIDE the developer's home; the run dir keeps symlinks so

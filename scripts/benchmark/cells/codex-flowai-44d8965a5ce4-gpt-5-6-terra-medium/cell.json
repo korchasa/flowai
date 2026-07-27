@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "cellId": "codex-flowai-44d8965a5ce4-gpt-5-6-terra-medium",
   "key": {
     "ide": "codex",
@@ -36,15 +36,11 @@
     "ideVersion": null,
     "bridgeVersion": "1.1.7"
   },
-  "judge": {
-    "model": "sonnet",
-    "effort": "medium"
-  },
   "harness": {
     "maxSteps": 3,
     "stepTimeoutMs": 1200000,
     "promptHash": "946da8d8dd51fcad",
-    "commit": "6cd32946"
+    "commit": "7502e24a"
   },
   "env": {
     "hostname": "Mac-mini",
@@ -63,5 +59,9 @@
       "backoffWaits": 0,
       "rep": 1
     }
-  ]
+  ],
+  "humanEmulator": {
+    "model": "sonnet",
+    "effort": "medium"
+  }
 }

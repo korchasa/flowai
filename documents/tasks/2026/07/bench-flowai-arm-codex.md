@@ -1,6 +1,6 @@
 ---
 date: 2026-07-27
-status: in progress
+status: done
 implements:
   - FR-BENCH-SWE
 tags: [benchmark, flowai-arm, codex, pool2, cells]

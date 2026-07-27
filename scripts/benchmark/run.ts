@@ -20,7 +20,7 @@
  * grades the patch directly.
  *
  * Gate emulation (recorded in every report): the human decision gate after
- * `/plan` is played by an LLM judge (`gate.ts`) that reads ONLY the issue and
+ * `/plan` is played by an LLM emulating the human (`human_emulator.ts`) that reads ONLY the issue and
  * the plan output — it authorizes a variant and names missed outcomes, like a
  * knowledgeable reviewer. This makes plan quality measurable (the former
  * scripted "Go ahead with your recommended variant" rubber-stamped any plan)
@@ -53,11 +53,11 @@ import {
   planTurn,
 } from "./operator.ts";
 import {
-  BaselineJudgeOperator,
-  JudgeGateOperator,
-  makeCliAnswerJudge,
-  makeCliGateJudge,
-} from "./gate.ts";
+  AnswerEmulatorOperator,
+  GateEmulatorOperator,
+  makeCliAnswerEmulator,
+  makeCliGateEmulator,
+} from "./human_emulator.ts";
 import { collectBenchHomeMetrics, fmtCost } from "./metrics.ts";
 import { collectWebAudit } from "./webaudit.ts";
 
@@ -83,18 +83,18 @@ export interface RunOptions {
    */
   ide?: AcpIde;
   /**
-   * Model for the gate/answer judge, which stays on Claude regardless of the
+   * Model for the gate/answer human emulator, which stays on Claude regardless of the
    * IDE under test — one referee keeps campaigns comparable. Defaults to
    * `sonnet` (the historical value, so Claude campaigns are unchanged).
    */
-  judgeModel?: string;
+  humanEmulatorModel?: string;
   outDir: string;
   /** Per-agent-session timeout (ms). SWE-bench fixes need long autonomous runs. */
   stepTimeoutMs: number;
   /** Repo root (framework/ + template resolved relative to this). */
   repoRoot: string;
   /**
-   * Reasoning effort PINNED for the agent AND the judge. MUST be identical in
+   * Reasoning effort PINNED for the agent AND the human emulator. MUST be identical in
    * both arms — the same-harness A/B differs only by flowai, never by effort.
    * Defaults to `high` (the realistic Claude Code default for Sonnet 5).
    */
@@ -102,7 +102,7 @@ export interface RunOptions {
 }
 
 /**
- * implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-judge-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+ * implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
  * Deterministic effort env for a bench session. Claude Code inherits the
  * operator's shell env (Deno.Command does not clear it), so a stray
  * `CLAUDE_EFFORT`/`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` from the shell that
@@ -208,7 +208,7 @@ export function isTransientSetupFailure(msg: string): boolean {
 /**
  * Build the FIRST turn for an arm.
  * - baseline: the whole task in one neutral prompt; a reviewer (the answer
- *   judge) is reachable for questions in later turns.
+ *   emulator) is reachable for questions in later turns.
  * - flowai: a `/plan` invocation carrying only the issue; the `/implement` and
  *   `/review` steps are delivered later by the operator (see runArm), so the
  *   agent actually runs the skills as separate operator-issued commands
@@ -324,9 +324,9 @@ export async function runArm(
   const baseEnv = adapter.prepareWorkspace
     ? await adapter.prepareWorkspace(sandboxDir)
     : {};
-  // Pin reasoning effort for BOTH the agent and the judge (they share `env`),
+  // Pin reasoning effort for BOTH the agent and the human emulator (they share `env`),
   // so it is a property of the campaign, not of the operator's shell. The
-  // Claude keys are always present because the judge is always Claude; a codex
+  // Claude keys are always present because the emulator is always Claude; a codex
   // agent additionally gets its effort+model through CODEX_CONFIG.
   const effort = opts.effort ?? "high";
   const env = {
@@ -335,35 +335,35 @@ export async function runArm(
     ...(ide === "codex" ? codexAgentEnv(effort, opts.model) : {}),
   };
 
-  // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-judge-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
-  // ONE judge persona serves both arms, so the arms differ only by flowai.
+  // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+  // ONE human persona serves both arms, so the arms differ only by flowai.
   // flowai is operator-driven: turn 1 is `/plan` (buildPrompt); turn 2 is the
-  // LLM-JUDGED human gate — the judge reads the issue + the plan output and
+  // emulated human gate — the emulator reads the issue + the plan output and
   // authorizes a variant (or names missed outcomes); turn 3 is `/review`.
-  // baseline gets the SAME judge as an answer-operator: after each agent turn
+  // baseline gets the SAME human as an answer-operator: after each agent turn
   // it answers the engineer's question from the issue text only, or ends the
-  // session (DONE). Judge turns are stochastic in BOTH arms — a harness
-  // property every report must state. Judge failure fails the instance loudly
-  // (no fallback). Both judges share the bench's isolated HOME (env) so the
+  // session (DONE). Emulator turns are stochastic in BOTH arms — a harness
+  // property every report must state. An emulator failure fails the instance loudly
+  // (no fallback). Both emulators share the bench's isolated HOME (env) so the
   // developer's personal ~/.claude memory cannot leak into replies.
-  // The judge runs on Claude even when the agent under test is codex — it is
+  // The emulator runs on Claude even when the agent under test is codex — it is
   // the referee, not the subject, and one fixed referee keeps campaigns
   // comparable. Its model is therefore pinned separately from `opts.model`
   // (which names the AGENT's model and may be a codex id `claude -p` cannot
   // serve).
-  const judgeModel = opts.judgeModel ?? "sonnet";
+  const humanEmulatorModel = opts.humanEmulatorModel ?? "sonnet";
   // Skill-invocation prefix for THIS ide — `/plan …` is rejected outright by
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
   const operator: Operator = opts.arm === "flowai"
-    ? new JudgeGateOperator(
+    ? new GateEmulatorOperator(
       data.problemStatement,
-      makeCliGateJudge(judgeModel, env),
+      makeCliGateEmulator(humanEmulatorModel, env),
       prefix,
     )
-    : new BaselineJudgeOperator(
+    : new AnswerEmulatorOperator(
       data.problemStatement,
-      makeCliAnswerJudge(judgeModel, env),
+      makeCliAnswerEmulator(humanEmulatorModel, env),
     );
 
   const agent = new AcpAgent({
@@ -394,7 +394,7 @@ export async function runArm(
   // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
   // BOTH harvests below read Claude Code transcripts, so they describe the
   // agent only when the agent IS Claude. Under codex the sole transcripts in
-  // bench-home belong to the JUDGE — harvesting them would render a
+  // bench-home belong to the EMULATOR — harvesting them would render a
   // plausible-looking "session cost" that actually measures the referee. Skip
   // explicitly and say so, rather than publish a number that means something
   // else. Codex's own counters live in CODEX_HOME/sessions/rollout-*.jsonl
@@ -402,7 +402,7 @@ export async function runArm(
   const canHarvestTranscripts = ide === "claude";
   if (!canHarvestTranscripts) {
     console.log(
-      `  cost: unavailable (${ide} — Claude transcripts describe the judge, not the agent)`,
+      `  cost: unavailable (${ide} — Claude transcripts describe the human emulator, not the agent)`,
     );
     console.log(`  web: unavailable (${ide} — same reason)`);
   }

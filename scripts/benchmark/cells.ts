@@ -104,7 +104,7 @@ export interface TaskRecord {
   emptyReason?: EmptyReason;
   /** Cell-relative paths — the evidence behind the verdict. */
   patchPath?: string;
-  judgePath?: string;
+  emulatorPath?: string;
   web?: TaskWebAudit;
   /** Required when status is `excluded`; states the defect. */
   excludedReason?: string;
@@ -157,16 +157,47 @@ export interface CellRep {
   backoffWaits: number;
 }
 
+/**
+ * Schema 1 named this field `judge`, which collided with the two things that
+ * really do judge — swebench's verdict and the acceptance-test grader. Schema 2
+ * calls it what it is: the LLM that plays the human across turns.
+ */
+export const CELL_SCHEMA_VERSION = 2;
+
 export interface CellHeader {
-  schemaVersion: 1;
+  schemaVersion: number;
   cellId: string;
   key: CellKey;
   taskSet: CellTaskSet;
   agent: CellAgent;
-  judge: { model: string; effort: string };
+  /** The LLM playing the human operator — never the thing that grades. */
+  humanEmulator: { model: string; effort: string };
   harness: CellHarness;
   env: CellEnv;
   reps: CellRep[];
+}
+
+/**
+ * implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+ * Bring a header written under an older schema up to the current one.
+ *
+ * A rename is not worth losing a campaign to: the cells on disk hold pins that
+ * cannot be re-measured, so an old header is migrated, never rejected. Schema 1
+ * → 2 moves `judge` to `humanEmulator` and drops the old key, so nothing carries
+ * both names.
+ */
+export function migrateHeader(raw: CellHeader): CellHeader {
+  if (raw === null || raw.schemaVersion === CELL_SCHEMA_VERSION) return raw;
+  const legacy = raw as unknown as
+    & { judge?: { model: string; effort: string } }
+    & CellHeader;
+  const { judge, ...rest } = legacy;
+  return {
+    ...rest,
+    humanEmulator: rest.humanEmulator ?? judge ??
+      { model: "unknown", effort: "unknown" },
+    schemaVersion: CELL_SCHEMA_VERSION,
+  };
 }
 
 export type CellHeaderInput = Omit<
@@ -294,9 +325,28 @@ async function capture(cmd: string, args: string[]): Promise<string | null> {
   }
 }
 
-/** Harness commit that produced a measurement. `unknown` when git cannot say. */
-export async function currentCommit(): Promise<string> {
-  return await capture("git", ["rev-parse", "--short", "HEAD"]) ?? "unknown";
+/**
+ * Harness commit that produced a measurement — `unknown` when git cannot say,
+ * and suffixed `-dirty` when the worktree differs from it.
+ *
+ * The field answers "which code produced this number". A run off an
+ * uncommitted tree did not run the code at HEAD, so a bare sha there is the
+ * same lie `frameworkFingerprint` refuses to tell — and it was told on the
+ * first flowai campaign (2026-07-27).
+ */
+export async function currentCommit(
+  repoRoot: string = Deno.cwd(),
+): Promise<string> {
+  const sha = await capture("git", [
+    "-C",
+    repoRoot,
+    "rev-parse",
+    "--short",
+    "HEAD",
+  ]);
+  if (sha === null) return "unknown";
+  const dirty = await capture("git", ["-C", repoRoot, "status", "--porcelain"]);
+  return dirty ? `${sha}-dirty` : sha;
 }
 
 /**
@@ -354,6 +404,35 @@ export async function readCellEnv(): Promise<CellEnv> {
   };
 }
 
+/**
+ * implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
+ * Fold a rep's latest run into the header's rep list without erasing what the
+ * earlier run recorded.
+ *
+ * A rep row describes the WHOLE measurement of that rep, across every attempt.
+ * Rewriting it wholesale on a resume is how a regrade pass made rep 1 of the
+ * first flowai campaign claim a 0.3-second runtime with zero health aborts
+ * (measured 2026-07-27) — the second pass ran no sessions, so its own numbers
+ * were vacuously true and destroyed the real ones. Hence: the FIRST start is
+ * the start, the LATEST finish is the finish, and the guard counters add up.
+ */
+export function mergeRep(
+  prior: readonly CellRep[],
+  incoming: CellRep,
+): CellRep[] {
+  const previous = prior.find((r) => r.rep === incoming.rep);
+  const merged: CellRep = previous
+    ? {
+      ...incoming,
+      startedAt: previous.startedAt || incoming.startedAt,
+      healthAborts: previous.healthAborts + incoming.healthAborts,
+      backoffWaits: previous.backoffWaits + incoming.backoffWaits,
+    }
+    : incoming;
+  return [...prior.filter((r) => r.rep !== incoming.rep), merged]
+    .sort((a, b) => a.rep - b.rep);
+}
+
 export async function writeHeader(
   dir: string,
   key: CellKey,
@@ -361,7 +440,7 @@ export async function writeHeader(
 ): Promise<CellHeader> {
   await ensureDir(dir);
   const header: CellHeader = {
-    schemaVersion: 1,
+    schemaVersion: CELL_SCHEMA_VERSION,
     cellId: cellId(key),
     key,
     ...input,
@@ -393,9 +472,9 @@ export async function appendTask(
 export async function readCell(dir: string): Promise<Cell> {
   let header: CellHeader;
   try {
-    header = JSON.parse(
-      await Deno.readTextFile(join(dir, "cell.json")),
-    ) as CellHeader;
+    header = migrateHeader(
+      JSON.parse(await Deno.readTextFile(join(dir, "cell.json"))) as CellHeader,
+    );
   } catch (e) {
     if (!(e instanceof Deno.errors.NotFound)) throw e;
     header = null as unknown as CellHeader;

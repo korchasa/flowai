@@ -67,6 +67,7 @@ import {
   CELLS_ROOT,
   currentCommit,
   frameworkFingerprint,
+  mergeRep,
   promptHashFor,
   readCell,
   readCellEnv,
@@ -264,12 +265,16 @@ await new Command()
   .option("--ide <name:string>", "IDE under test (claude | codex)", {
     default: "claude",
   })
-  .option("--judge-model <name:string>", "Judge model (always Claude)", {
-    default: "sonnet",
-  })
+  .option(
+    "--human-emulator-model <name:string>",
+    "Human-emulator model (always Claude)",
+    {
+      default: "sonnet",
+    },
+  )
   .option(
     "--effort <level:string>",
-    "Reasoning effort pinned for agent + judge (same in both arms)",
+    "Reasoning effort pinned for agent + human emulator (same in both arms)",
     { default: "high" },
   )
   .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
@@ -466,7 +471,7 @@ await new Command()
           ideVersion: null,
           bridgeVersion: bridgeVersionFor(pool2Ide),
         },
-        judge: { model: opts.judgeModel, effort: opts.effort },
+        humanEmulator: { model: opts.humanEmulatorModel, effort: opts.effort },
         harness: {
           maxSteps: 3,
           stepTimeoutMs: opts.stepTimeout,
@@ -474,17 +479,16 @@ await new Command()
           commit: await currentCommit(),
         },
         env: await readCellEnv(),
-        reps: [
-          ...priorReps.filter((r) => r.rep !== opts.rep),
-          {
-            startedAt,
-            finishedAt: null,
-            concurrency: opts.concurrency,
-            healthAborts: 0,
-            backoffWaits: 0,
-            ...rep,
-          },
-        ].sort((a, b) => a.rep - b.rep),
+        // A resume or a regrade must not erase the first pass's timings and
+        // guard counters — mergeRep keeps the original start and accumulates.
+        reps: mergeRep(priorReps, {
+          startedAt,
+          finishedAt: null,
+          concurrency: opts.concurrency,
+          healthAborts: 0,
+          backoffWaits: 0,
+          ...rep,
+        }),
       });
     };
     await writeCellHeader({ rep: opts.rep });
@@ -500,7 +504,7 @@ await new Command()
       concurrency: opts.concurrency,
       effort: opts.effort,
       ide: pool2Ide,
-      judgeModel: opts.judgeModel,
+      humanEmulatorModel: opts.humanEmulatorModel,
       rep: opts.rep,
       cellDir,
     });
@@ -763,9 +767,13 @@ await new Command()
   .option("--ide <name:string>", "IDE under test (claude | codex)", {
     default: "claude",
   })
-  .option("--judge-model <name:string>", "Judge model (always Claude)", {
-    default: "sonnet",
-  })
+  .option(
+    "--human-emulator-model <name:string>",
+    "Human-emulator model (always Claude)",
+    {
+      default: "sonnet",
+    },
+  )
   .option("--out <dir:string>", "Output dir for predictions + logs")
   .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
     default: 1_200_000,
@@ -801,7 +809,7 @@ await new Command()
     await ensureDir(outDir);
     console.log(
       `[run] arm=${arm} ide=${ide} instances=${instanceIds.length} ` +
-        `model=${opts.model} judge=${opts.judgeModel}`,
+        `model=${opts.model} human-emulator=${opts.humanEmulatorModel}`,
     );
     console.log(`[run] out=${outDir}`);
     await runBenchmark({
@@ -809,7 +817,7 @@ await new Command()
       instanceIds,
       model: opts.model,
       ide,
-      judgeModel: opts.judgeModel,
+      humanEmulatorModel: opts.humanEmulatorModel,
       outDir,
       stepTimeoutMs: opts.stepTimeout,
       repoRoot,

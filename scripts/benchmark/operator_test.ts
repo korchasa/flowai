@@ -7,7 +7,7 @@ import {
   reviewTurn,
   ScriptedOperator,
 } from "./operator.ts";
-import { implementTurnWithVerdict } from "./gate.ts";
+import { implementTurnWithVerdict } from "./human_emulator.ts";
 
 Deno.test("ScriptedOperator: yields the fixed turn sequence then null, ignoring messages", async () => {
   const op = new ScriptedOperator(["/implement", "/review"]);
@@ -101,7 +101,7 @@ Deno.test("baselineTask: symmetric human availability — reviewer reachable, no
   const b = baselineTask("psf/requests", "Some bug");
   assert(b.includes("psf/requests"));
   assert(b.includes("Some bug"));
-  // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-judge-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+  // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
   // the arms must share one human-availability policy; the old "make every
   // decision yourself and never stop to ask" line made baseline's conditions
   // differ beyond flowai itself.

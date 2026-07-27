@@ -4,8 +4,10 @@ import {
   appendTask,
   cellId,
   type CellKey,
+  type CellRep,
   currentCommit,
   frameworkFingerprint,
+  mergeRep,
   passRate,
   readCell,
   type TaskRecord,
@@ -74,7 +76,7 @@ Deno.test("pass rate refuses to count un-measured tasks", async () => {
         ideVersion: "0.144.6",
         bridgeVersion: null,
       },
-      judge: { model: "sonnet", effort: "medium" },
+      humanEmulator: { model: "sonnet", effort: "medium" },
       harness: {
         maxSteps: 3,
         stepTimeoutMs: 1200000,
@@ -271,7 +273,7 @@ Deno.test("cell header pins everything needed to re-interpret it", async () => {
         ideVersion: "0.144.6",
         bridgeVersion: "1.1.7",
       },
-      judge: { model: "sonnet", effort: "medium" },
+      humanEmulator: { model: "sonnet", effort: "medium" },
       harness: {
         maxSteps: 3,
         stepTimeoutMs: 1200000,
@@ -332,4 +334,162 @@ Deno.test("frameworkFingerprint names the framework tree, and admits when it is 
     fp !== await currentCommit(),
     "the framework tree is not the harness commit — they move independently",
   );
+});
+
+/**
+ * Re-running a finished rep — to regrade, or to resume after a kill — must not
+ * erase what the first run recorded. Measured 2026-07-27: a regrade pass rewrote
+ * rep 1's header with a fresh `startedAt` and an immediate `finishedAt`, so the
+ * cell claimed a 15-instance campaign took 0.3 seconds, and the health-abort
+ * counters reset to zero. The rep row describes the WHOLE measurement, so the
+ * start stays put and the counters accumulate.
+ */
+Deno.test("mergeRep: a resume keeps the original start and accumulates counters", () => {
+  const first: CellRep = {
+    rep: 1,
+    startedAt: "2026-07-27T17:00:00.000Z",
+    finishedAt: "2026-07-27T19:00:00.000Z",
+    concurrency: 3,
+    healthAborts: 2,
+    backoffWaits: 5,
+  };
+  const other: CellRep = {
+    ...first,
+    rep: 2,
+    startedAt: "2026-07-27T20:00:00.000Z",
+  };
+
+  const merged = mergeRep([first, other], {
+    rep: 1,
+    startedAt: "2026-07-27T21:00:00.000Z",
+    finishedAt: "2026-07-27T21:00:01.000Z",
+    concurrency: 3,
+    healthAborts: 1,
+    backoffWaits: 1,
+  });
+
+  const rep1 = merged.find((r) => r.rep === 1)!;
+  assertEquals(
+    rep1.startedAt,
+    first.startedAt,
+    "the first start is the real one",
+  );
+  assertEquals(
+    rep1.finishedAt,
+    "2026-07-27T21:00:01.000Z",
+    "the latest finish wins",
+  );
+  assertEquals(rep1.healthAborts, 3, "aborts accumulate across attempts");
+  assertEquals(rep1.backoffWaits, 6);
+  assertEquals(merged.length, 2, "other reps survive untouched");
+  assertEquals(merged.find((r) => r.rep === 2)?.startedAt, other.startedAt);
+
+  // A rep the cell has never seen is simply added, in rep order.
+  const withNew = mergeRep(merged, { ...first, rep: 3 });
+  assertEquals(withNew.map((r) => r.rep), [1, 2, 3]);
+});
+
+/**
+ * `harness.commit` answers "which code produced this number". A run off an
+ * uncommitted tree did NOT run the code at HEAD, so recording the bare sha
+ * there is the same lie `frameworkFingerprint` refuses to tell — and it was
+ * told, on the first flowai campaign (2026-07-27).
+ */
+Deno.test("currentCommit: a dirty worktree cannot pass as its HEAD commit", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "harness-commit-" });
+  try {
+    const git = async (...args: string[]) => {
+      const { code } = await new Deno.Command("git", {
+        args: ["-C", dir, ...args],
+        stdout: "null",
+        stderr: "null",
+      }).output();
+      assertEquals(code, 0, `git ${args.join(" ")}`);
+    };
+    await git("init", "-q");
+    await git("config", "user.email", "t@t");
+    await git("config", "user.name", "t");
+    await Deno.writeTextFile(join(dir, "harness.ts"), "export const x = 1;\n");
+    await git("add", "-A");
+    await git("commit", "-qm", "base");
+
+    const clean = await currentCommit(dir);
+    assert(/^[0-9a-f]{7,}$/.test(clean), `not a sha: ${clean}`);
+
+    await Deno.writeTextFile(join(dir, "harness.ts"), "export const x = 2;\n");
+    assertEquals(await currentCommit(dir), `${clean}-dirty`);
+
+    // An untracked file counts too — a new module is code the run may have used.
+    await git("checkout", "--", "harness.ts");
+    assertEquals(await currentCommit(dir), clean);
+    await Deno.writeTextFile(join(dir, "extra.ts"), "export const y = 3;\n");
+    assertEquals(await currentCommit(dir), `${clean}-dirty`);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+/**
+ * The header field named the LLM that plays the human across turns, but called
+ * it `judge` — a word this project also uses for the thing that decides whether
+ * a task is solved (swebench) and for the acceptance-test grader. Renaming it to
+ * `humanEmulator` costs a schema bump, and the four cells already on disk must
+ * keep reading: a migration that loses a campaign's pins is worse than the
+ * ambiguous name it fixes.
+ */
+Deno.test("readCell migrates a schema-1 header's judge field to humanEmulator", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "cells-migrate-" });
+  try {
+    const legacy = {
+      schemaVersion: 1,
+      cellId: "codex-baseline-none-gpt-5-6-terra-medium",
+      key: { ...KEY, arm: "baseline", framework: null },
+      taskSet: {
+        dataset: "nebius/SWE-rebench-leaderboard",
+        split: "2026_03",
+        forkCommit: "e4907b7",
+        ids: ["a__x-1"],
+        checksum: await taskSetChecksum(["a__x-1"]),
+      },
+      agent: { modelSnapshot: null, ideVersion: null, bridgeVersion: "1.1.7" },
+      humanEmulator: { model: "sonnet", effort: "medium" },
+      harness: {
+        maxSteps: 3,
+        stepTimeoutMs: 1200000,
+        promptHash: "deadbeef",
+        commit: "6cd3294",
+      },
+      env: {
+        hostname: "host",
+        arch: "aarch64",
+        cpuCount: 10,
+        ramBytes: 1,
+        dockerVersion: "29.4.0",
+        rosetta: true,
+      },
+      reps: [],
+    };
+    await Deno.writeTextFile(
+      join(dir, "cell.json"),
+      JSON.stringify(legacy, null, 2) + "\n",
+    );
+
+    const cell = await readCell(dir);
+    assertEquals(cell.header.schemaVersion, 2);
+    assertEquals(cell.header.humanEmulator, {
+      model: "sonnet",
+      effort: "medium",
+    });
+    assertEquals(
+      (cell.header as unknown as Record<string, unknown>).judge,
+      undefined,
+      "the old name must not survive alongside the new one",
+    );
+    // Everything else the campaign pinned survives the migration untouched.
+    assertEquals(cell.header.harness.commit, "6cd3294");
+    assertEquals(cell.header.agent.bridgeVersion, "1.1.7");
+    assertEquals(cell.header.taskSet.split, "2026_03");
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
 });

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "cellId": "codex-baseline-none-gpt-5-6-terra-medium",
   "key": {
     "ide": "codex",
@@ -88,10 +88,6 @@
     "ideVersion": null,
     "bridgeVersion": null
   },
-  "judge": {
-    "model": "sonnet",
-    "effort": "medium"
-  },
   "harness": {
     "maxSteps": 3,
     "stepTimeoutMs": 1200000,
@@ -131,5 +127,9 @@
       "healthAborts": 0,
       "backoffWaits": 0
     }
-  ]
+  ],
+  "humanEmulator": {
+    "model": "sonnet",
+    "effort": "medium"
+  }
 }
