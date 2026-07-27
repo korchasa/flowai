@@ -186,3 +186,45 @@ Deno.test("captureDiff: excludes EVERY IDE's config dir, not just Claude's", asy
     await Deno.remove(dir, { recursive: true });
   }
 });
+
+/**
+ * Installing dependencies regenerates the project's lock file, and a lock file
+ * is environment state, not a fix: measured 2026-07-27, `pdm-3759` shipped a
+ * 395 KB patch whose real change was 937 bytes in `src/pdm/core.py` — the rest
+ * was a re-resolved `uv.lock`. Same class as `venv/`, and no gold patch in the
+ * pool touches one.
+ */
+Deno.test("captureDiff: drops regenerated lock files, keeps the source fix", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    await git(dir, ["init", "-q"]);
+    await git(dir, ["config", "user.email", "t@t"]);
+    await git(dir, ["config", "user.name", "t"]);
+    await ensureDir(join(dir, "src"));
+    await Deno.writeTextFile(join(dir, "src", "core.py"), "x = 1\n");
+    await Deno.writeTextFile(join(dir, "uv.lock"), "resolved = 1\n");
+    await git(dir, ["add", "-A"]);
+    await git(dir, ["commit", "-qm", "base"]);
+
+    await Deno.writeTextFile(join(dir, "src", "core.py"), "x = 2\n");
+    for (
+      const lock of ["uv.lock", "poetry.lock", "pdm.lock", "package-lock.json"]
+    ) {
+      await Deno.writeTextFile(join(dir, lock), "re-resolved by the agent\n");
+    }
+
+    const diff = await captureDiff(dir);
+    assertStringIncludes(diff, "+x = 2");
+    for (
+      const lock of ["uv.lock", "poetry.lock", "pdm.lock", "package-lock.json"]
+    ) {
+      assertEquals(
+        diff.includes(lock),
+        false,
+        `${lock} rode along with the fix`,
+      );
+    }
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});

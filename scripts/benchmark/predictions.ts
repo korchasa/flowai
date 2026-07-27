@@ -72,6 +72,17 @@ export const DIFF_EXCLUDES: readonly string[] = [
   ".pytest_cache",
   "__pycache__",
   "node_modules",
+  // Lock files re-resolved as a side effect of installing dependencies. Same
+  // class as `venv/`: environment state, never the fix. Measured 2026-07-27 on
+  // `pdm-3759` — a 395 KB patch whose actual change was 937 bytes of
+  // `src/pdm/core.py`, the rest a regenerated `uv.lock`.
+  "uv.lock",
+  "poetry.lock",
+  "pdm.lock",
+  "Pipfile.lock",
+  "package-lock.json",
+  "yarn.lock",
+  "pnpm-lock.yaml",
   // Stray pip-redirect artifacts: a botched `pip install "astroid>=2.6.0,..."`
   // leaves a file literally named `=2.6.0,` in the repo root.
   "=*",
