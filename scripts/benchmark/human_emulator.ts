@@ -54,10 +54,9 @@ export function gateMessages(
     `2. Authorization: authorize exactly ONE variant — the recommendation, unless another variant clearly better matches the issue's own description of the problem.`,
     `3. No-work claims: if the plan concludes nothing needs to change, accept that only with inspected evidence that the issue's required outcome already exists; absence of the described symptom alone is not enough — say so and ask for the evidence.`,
     ``,
-    `Start your reply with exactly one of these lines, and nothing else on that line:`,
-    `DECISION: AUTHORIZE — the plan presents real variants for the issue and you are authorizing one.`,
-    `DECISION: REPLAN — the plan is not usable and the engineer must plan again (no variants for the actual issue, an unsubstantiated "nothing to do", or the engineer stopped on their own tooling instead of analyzing the issue).`,
-    `Then, on the following lines, the message itself.`,
+    `Begin your reply with a decision line — the literal text "DECISION: AUTHORIZE" or "DECISION: REPLAN", and nothing else on that line. Then, from the next line on, the message itself.`,
+    `Choose AUTHORIZE when the plan presents real variants for the issue and you are authorizing one.`,
+    `Choose REPLAN when the plan is not usable and the engineer must plan again: no variants for the actual issue, an unsubstantiated "nothing to do", or the engineer stopped on their own tooling instead of analyzing the issue.`,
     ``,
     `Constraints: you know NOTHING beyond the issue text and the plan. Do not write code. Do not solve the issue yourself. Reply with a short chat message to the engineer, in English regardless of any other language preference: the authorization ("Go ahead with variant N") plus any corrections ("Also cover: ..."), or what the re-plan must fix. Nothing else.`,
   ].join("\n");
@@ -101,8 +100,18 @@ export interface GateVerdict {
   message: string;
 }
 
-const DECISION_LINE =
-  /^[^\S\n]*\**[^\S\n]*DECISION:[^\S\n]*(\w+)\**[^\S\n]*$/im;
+/**
+ * The decision PREFIX, not the whole line: anything the reviewer writes after
+ * the token on the same line is their message, not protocol.
+ *
+ * An end-anchored pattern failed the smoke run of 2026-07-28 — the emulator
+ * copied the system prompt's example line, gloss and all
+ * ("DECISION: AUTHORIZE — the plan presents real variants…"), and the instance
+ * died over punctuation. Only the two known words match, so an unknown token
+ * still falls through to the loud "no DECISION line" error.
+ */
+const DECISION_PREFIX =
+  /^[^\S\n]*\**[^\S\n]*DECISION:[^\S\n]*(AUTHORIZE|REPLAN)\b\**[^\S\n]*[—–:-]?[^\S\n]*/im;
 
 /**
  * Split the reviewer's reply into its decision and the prose the engineer reads.
@@ -119,7 +128,7 @@ const DECISION_LINE =
  * rule.
  */
 export function parseGateVerdict(raw: string): GateVerdict {
-  const m = raw.match(DECISION_LINE);
+  const m = raw.match(DECISION_PREFIX);
   const word = m?.[1]?.toLowerCase();
   if (word !== "authorize" && word !== "replan") {
     throw new Error(

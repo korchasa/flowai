@@ -101,6 +101,19 @@ Deno.test("parseGateVerdict: separates the decision from the message it carries"
     "authorize",
   );
 
+  // Measured on the smoke run of 2026-07-28: the emulator copied the system
+  // prompt's example line, gloss and all, onto the decision line. Requiring the
+  // line to END at the decision word failed the instance over punctuation.
+  const glossed = parseGateVerdict(
+    "DECISION: AUTHORIZE — go ahead with variant 2, and also cover the naive case.",
+  );
+  assertEquals(glossed.decision, "authorize");
+  assertEquals(
+    glossed.message,
+    "go ahead with variant 2, and also cover the naive case.",
+    "text riding on the decision line is the message, not protocol to discard",
+  );
+
   // No token, or an unknown one, is a protocol breach — never guessed at.
   assertThrows(
     () => parseGateVerdict("Go ahead with Variant 2."),
