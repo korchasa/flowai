@@ -5,7 +5,36 @@ import {
   effortEnv,
   isAuthFailure,
   isTransientSetupFailure,
+  timeoutLog,
 } from "./run.ts";
+
+/**
+ * A session that hits the wall clock is the one that most needs a transcript,
+ * and it used to be the only one that had none: the timeout branch returned the
+ * marker alone and dropped everything the agent had accumulated. Four of fifteen
+ * instances in the first flowai campaign (2026-07-27) left a 41-byte log — no
+ * turns, no commands, nothing to diagnose.
+ */
+Deno.test("timeoutLog: the partial transcript survives the timeout, marker last", () => {
+  const partial = "[health] ok\n\n[turn 1] > $plan …\n< a plan\n";
+  const out = timeoutLog(partial, "session timeout after 1200000ms");
+
+  assert(out.startsWith(partial), "everything logged before the cap is kept");
+  assert(
+    out.includes("[TIMEOUT] session timeout after 1200000ms"),
+    "the marker still states why the session ended",
+  );
+  assert(
+    out.trimEnd().endsWith("1200000ms"),
+    "the marker goes last — it is the final event, not a header",
+  );
+
+  // A session that produced nothing before the cap still reports the cause.
+  assertEquals(
+    timeoutLog("", "session timeout after 1ms").trim(),
+    "[TIMEOUT] session timeout after 1ms",
+  );
+});
 
 Deno.test("effortEnv: pins CLAUDE_EFFORT and neutralizes the adaptive-thinking disable", () => {
   const env = effortEnv("high");

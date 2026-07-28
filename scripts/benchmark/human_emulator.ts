@@ -22,7 +22,7 @@
 
 import type { LLMMessage } from "@acceptance-tests/types.ts";
 import { cliChatCompletion } from "@acceptance-tests/llm.ts";
-import { type CommandPrefix, reviewTurn } from "./operator.ts";
+import { type CommandPrefix, replanTurn, reviewTurn } from "./operator.ts";
 
 /**
  * The LLM that plays the human across turns: (issue, the agent's last output) →
@@ -54,7 +54,12 @@ export function gateMessages(
     `2. Authorization: authorize exactly ONE variant — the recommendation, unless another variant clearly better matches the issue's own description of the problem.`,
     `3. No-work claims: if the plan concludes nothing needs to change, accept that only with inspected evidence that the issue's required outcome already exists; absence of the described symptom alone is not enough — say so and ask for the evidence.`,
     ``,
-    `Constraints: you know NOTHING beyond the issue text and the plan. Do not write code. Do not solve the issue yourself. Reply with a short chat message to the engineer, in English regardless of any other language preference: the authorization ("Go ahead with variant N") plus any corrections ("Also cover: ..."). Nothing else.`,
+    `Start your reply with exactly one of these lines, and nothing else on that line:`,
+    `DECISION: AUTHORIZE — the plan presents real variants for the issue and you are authorizing one.`,
+    `DECISION: REPLAN — the plan is not usable and the engineer must plan again (no variants for the actual issue, an unsubstantiated "nothing to do", or the engineer stopped on their own tooling instead of analyzing the issue).`,
+    `Then, on the following lines, the message itself.`,
+    ``,
+    `Constraints: you know NOTHING beyond the issue text and the plan. Do not write code. Do not solve the issue yourself. Reply with a short chat message to the engineer, in English regardless of any other language preference: the authorization ("Go ahead with variant N") plus any corrections ("Also cover: ..."), or what the re-plan must fix. Nothing else.`,
   ].join("\n");
   const user = [
     `--- ISSUE ---`,
@@ -90,9 +95,59 @@ export function implementTurnWithVerdict(
   }`;
 }
 
+/** What the reviewer decided at the gate, and the message carrying it. */
+export interface GateVerdict {
+  decision: "authorize" | "replan";
+  message: string;
+}
+
+const DECISION_LINE =
+  /^[^\S\n]*\**[^\S\n]*DECISION:[^\S\n]*(\w+)\**[^\S\n]*$/im;
+
 /**
- * Operator with an emulated gate: turn 1 after `/plan` is the human's verdict
- * wrapped into `/implement`, turn 2 is the scripted `/review`, then null.
+ * Split the reviewer's reply into its decision and the prose the engineer reads.
+ *
+ * The decision has to be machine-readable because it selects the NEXT TURN, and
+ * the two outcomes need different ones. While every reply was wrapped into the
+ * `implement` turn, a rejection silently ate the implementation step: on the
+ * first flowai campaign four of eleven logged sessions were rejected at the gate
+ * and three reached `review` with an empty working tree.
+ *
+ * Formatting habits of an LLM are tolerated (bold, case); an absent or unknown
+ * token is not. Guessing the decision would restore exactly the ambiguity this
+ * token exists to remove, so it throws — consistent with the module's no-fallback
+ * rule.
+ */
+export function parseGateVerdict(raw: string): GateVerdict {
+  const m = raw.match(DECISION_LINE);
+  const word = m?.[1]?.toLowerCase();
+  if (word !== "authorize" && word !== "replan") {
+    throw new Error(
+      `GateEmulatorOperator: the reply carries no "DECISION: AUTHORIZE|REPLAN" line — got: ${
+        raw.slice(0, 120)
+      }`,
+    );
+  }
+  const message = raw.replace(m![0], "").trim();
+  if (message === "") {
+    throw new Error(
+      "GateEmulatorOperator: the emulator decided but said nothing — a blank message leaves the engineer no instruction",
+    );
+  }
+  return { decision: word, message };
+}
+
+/**
+ * Operator with an emulated gate. After `/plan` the human either authorizes
+ * (the message becomes the `/implement` turn, then the scripted `/review`, then
+ * null) or rejects — and a rejection buys its OWN `/plan` turn instead of
+ * spending the implementation one.
+ *
+ * The re-plan budget is `maxReplans` (1 by default). A reviewer who still
+ * objects once it is spent sends the objection along with the `/implement` turn:
+ * a session that spends every turn re-planning writes no code at all, which is
+ * the failure this whole mechanism exists to prevent.
+ *
  * Satisfies the `AcpAgent.run(userEmulator)` contract.
  */
 export class GateEmulatorOperator {
@@ -100,6 +155,8 @@ export class GateEmulatorOperator {
   #emulator: HumanEmulator;
   #followups: string[];
   #prefix: CommandPrefix;
+  #replansLeft: number;
+  #authorized = false;
   #i = 0;
 
   constructor(
@@ -107,18 +164,19 @@ export class GateEmulatorOperator {
     emulator: HumanEmulator,
     prefix: CommandPrefix = "/",
     followups: string[] = [reviewTurn(prefix)],
+    maxReplans = 1,
   ) {
     this.#problemStatement = problemStatement;
     this.#emulator = emulator;
     this.#prefix = prefix;
     this.#followups = followups;
+    this.#replansLeft = maxReplans;
   }
 
   async getResponse(
     messages: Array<{ role: string; content: string }>,
   ): Promise<string | null> {
-    if (this.#i === 0) {
-      this.#i++;
+    if (!this.#authorized) {
       const planOutput = messages.findLast((m) => m.role === "assistant")
         ?.content;
       if (planOutput === undefined) {
@@ -126,15 +184,21 @@ export class GateEmulatorOperator {
           "GateEmulatorOperator: no assistant message to react to — the plan turn produced no output",
         );
       }
-      const verdict = await this.#emulator(this.#problemStatement, planOutput);
-      if (verdict.trim() === "") {
+      const raw = await this.#emulator(this.#problemStatement, planOutput);
+      if (raw.trim() === "") {
         throw new Error(
           "GateEmulatorOperator: the emulator returned a blank verdict",
         );
       }
-      return implementTurnWithVerdict(verdict, this.#prefix);
+      const { decision, message } = parseGateVerdict(raw);
+      if (decision === "replan" && this.#replansLeft > 0) {
+        this.#replansLeft--;
+        return replanTurn(message, this.#prefix);
+      }
+      this.#authorized = true;
+      return implementTurnWithVerdict(message, this.#prefix);
     }
-    const idx = this.#i - 1;
+    const idx = this.#i;
     this.#i++;
     return idx < this.#followups.length ? this.#followups[idx] : null;
   }

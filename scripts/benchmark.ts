@@ -31,7 +31,12 @@ import {
 } from "./benchmark/instances.ts";
 import { dumpAllMeta } from "./benchmark/dataset.ts";
 import { selectCandidates } from "./benchmark/select.ts";
-import { type Arm, assertModelForIde, runBenchmark } from "./benchmark/run.ts";
+import {
+  type Arm,
+  assertModelForIde,
+  runBenchmark,
+  SESSION_MAX_STEPS,
+} from "./benchmark/run.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { SUPPORTED_IDES } from "@acceptance-tests/adapters/mod.ts";
 import { aggregateAB, renderMarkdownAB } from "./benchmark/report.ts";
@@ -473,7 +478,7 @@ await new Command()
         },
         humanEmulator: { model: opts.humanEmulatorModel, effort: opts.effort },
         harness: {
-          maxSteps: 3,
+          maxSteps: SESSION_MAX_STEPS,
           stepTimeoutMs: opts.stepTimeout,
           promptHash: await promptHashFor(pool2Ide),
           commit: await currentCommit(),

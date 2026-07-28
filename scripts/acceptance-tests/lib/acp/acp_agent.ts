@@ -85,6 +85,17 @@ export class AcpAgent {
     return this.#toolCalls;
   }
 
+  /**
+   * The transcript so far, readable while the run is still in flight.
+   *
+   * `run()` returns its log only when it finishes, so a caller that kills the
+   * agent on a wall-clock timeout otherwise loses the entire transcript of the
+   * session it most needs to read.
+   */
+  getPartialLog(): string {
+    return this.#log.join("");
+  }
+
   /** Drives the agent to completion; never throws — failures become a code. */
   async run(
     userEmulator?: {

@@ -2,6 +2,56 @@ import { assert } from "@std/assert";
 import { renderAgentsMd, renderDocStubs } from "./agents_md.ts";
 
 /**
+ * Every doc role the rendered AGENTS.md resolves MUST exist on disk, or the plan
+ * skill halts before it ever reads the issue. Measured on the first flowai
+ * campaign (2026-07-27): the SDS role resolves to `documents/design.md`, the
+ * stubs never wrote it, and four of eleven logged sessions ended with
+ * "Planning is blocked: the required SDS role resolves to `documents/design.md`,
+ * but that file does not exist" — three of them produced no patch at all.
+ */
+Deno.test("renderDocStubs: writes a stub for EVERY doc role AGENTS.md resolves", async () => {
+  const template = await Deno.readTextFile(TEMPLATE_URL);
+  const agentsMd = renderAgentsMd(template, {
+    repo: "django/django",
+    stack: ["Python"],
+  });
+  const stubs = renderDocStubs("django/django");
+
+  // Role paths the rendered AGENTS.md points the agent at.
+  const roles: Array<[string, keyof typeof stubs]> = [
+    ["documents/requirements.md", "requirements"],
+    ["documents/design.md", "design"],
+    ["documents/index.md", "index"],
+  ];
+  for (const [path, key] of roles) {
+    assert(
+      agentsMd.includes(path),
+      `AGENTS.md still resolves the role at ${path} — the test's role list is stale`,
+    );
+    assert(
+      (stubs[key] ?? "").trim() !== "",
+      `no stub is written for ${path}, so the plan skill halts on a missing role`,
+    );
+  }
+});
+
+/** The SDS stub must be a valid SDS the plan skill can read and extend. */
+Deno.test("renderDocStubs: the SDS stub is a real SDS, not a placeholder", () => {
+  const { design, requirements } = renderDocStubs("django/django");
+
+  assert(design.includes("django/django"), "SDS names the repo");
+  assert(/^# SDS/m.test(design), "SDS has an SDS title");
+  assert(
+    /## 2\. Arch/.test(design),
+    "SDS has the Arch section the plan skill resolves",
+  );
+  assert(
+    /ACTIVE/.test(requirements) && /SDS/.test(requirements),
+    "the SRS stub lists SDS among the active roles",
+  );
+});
+
+/**
  * The doc-system stubs must remove the "roles unbound → not flowai" misread that
  * skipped the plan task file on django-14792: both files must be present, name
  * the repo, frame this as a flowai task with no formal FRs, and carry valid

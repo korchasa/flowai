@@ -1,4 +1,4 @@
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
 import {
   AnswerEmulatorOperator,
   answerMessages,
@@ -6,8 +6,15 @@ import {
   GateEmulatorOperator,
   gateMessages,
   implementTurnWithVerdict,
+  parseGateVerdict,
 } from "./human_emulator.ts";
-import { reviewTurn } from "./operator.ts";
+import { replanTurn, reviewTurn } from "./operator.ts";
+
+const AUTHORIZE = "DECISION: AUTHORIZE\nGo ahead with Variant 2.";
+const REJECT = [
+  "DECISION: REPLAN",
+  "This isn't a plan — no variants were presented for the issue itself.",
+].join("\n");
 
 const ISSUE =
   "Fixed offset timezones lose their offset name in _get_timezone_name.";
@@ -47,6 +54,13 @@ Deno.test("gateMessages: carries the issue and the plan output, no gold fields",
     /in English/.test(system!.content),
     "verdict language pinned to English",
   );
+  // The reply drives which turn the agent gets next, so the decision must be
+  // stated in a form the harness can read.
+  assert(
+    /DECISION:/.test(system!.content) && /AUTHORIZE/.test(system!.content) &&
+      /REPLAN/.test(system!.content),
+    "reviewer must label the reply AUTHORIZE or REPLAN",
+  );
 });
 
 Deno.test("implementTurnWithVerdict: /implement turn embeds the verdict and keeps the no-commit framing", () => {
@@ -60,12 +74,109 @@ Deno.test("implementTurnWithVerdict: /implement turn embeds the verdict and keep
   assert(/TDD|red/i.test(t), "must keep the TDD framing");
 });
 
+/**
+ * The reviewer's two possible moves must be machine-readable, because they lead
+ * to DIFFERENT turns. Without a decision token the harness sent every reply —
+ * authorization and rejection alike — as the `implement` turn, so a rejected
+ * plan silently consumed the implementation step (four of eleven logged sessions
+ * of the first flowai campaign; three of them produced no patch at all).
+ */
+Deno.test("parseGateVerdict: separates the decision from the message it carries", () => {
+  const ok = parseGateVerdict(AUTHORIZE);
+  assertEquals(ok.decision, "authorize");
+  assertEquals(ok.message, "Go ahead with Variant 2.");
+  assert(
+    !/DECISION/i.test(ok.message),
+    "the token is protocol, not part of what the engineer reads",
+  );
+
+  const no = parseGateVerdict(REJECT);
+  assertEquals(no.decision, "replan");
+  assert(no.message.startsWith("This isn't a plan"));
+
+  // The emulator is an LLM: accept its formatting habits, not just one spelling.
+  assertEquals(
+    parseGateVerdict("**DECISION: authorize**\n\nGo ahead with variant 1.")
+      .decision,
+    "authorize",
+  );
+
+  // No token, or an unknown one, is a protocol breach — never guessed at.
+  assertThrows(
+    () => parseGateVerdict("Go ahead with Variant 2."),
+    Error,
+    "DECISION",
+  );
+  assertThrows(
+    () => parseGateVerdict("DECISION: MAYBE\nnot sure"),
+    Error,
+    "DECISION",
+  );
+  // A decision with nothing said to the engineer is useless.
+  assertThrows(
+    () => parseGateVerdict("DECISION: REPLAN"),
+    Error,
+    "said nothing",
+  );
+});
+
+/**
+ * A rejected plan must cost its OWN turn, not the implementation turn: the
+ * engineer re-plans, the reviewer looks again, and only then does implementation
+ * start. One re-plan is allowed; a reviewer who still objects afterwards sends
+ * the objection along with the implement turn rather than starving the session.
+ */
+Deno.test("GateEmulatorOperator: a rejected plan buys a re-plan turn, not a lost implement turn", async () => {
+  const replies = [REJECT, AUTHORIZE];
+  let n = 0;
+  const op = new GateEmulatorOperator(ISSUE, () => {
+    return Promise.resolve(replies[n++]);
+  });
+  const messages = [{ role: "assistant", content: PLAN }];
+
+  const first = await op.getResponse(messages);
+  assertEquals(
+    first,
+    replanTurn(
+      "This isn't a plan — no variants were presented for the issue itself.",
+    ),
+    "a rejection re-invokes the planner, carrying the reviewer's objection",
+  );
+
+  const second = await op.getResponse(messages);
+  assert(
+    second!.startsWith("/implement "),
+    "the second look authorizes and implementation finally starts",
+  );
+  assert(second!.includes("Go ahead with Variant 2."));
+
+  assertEquals(await op.getResponse(messages), reviewTurn());
+  assertEquals(await op.getResponse(messages), null);
+  assertEquals(n, 2, "the reviewer is consulted once per plan, no more");
+});
+
+Deno.test("GateEmulatorOperator: the re-plan budget is one — a second rejection still starts work", async () => {
+  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve(REJECT));
+  const messages = [{ role: "assistant", content: PLAN }];
+
+  assert((await op.getResponse(messages))!.startsWith("/plan "));
+  const second = await op.getResponse(messages);
+  assert(
+    second!.startsWith("/implement "),
+    "the session must not spend every turn re-planning",
+  );
+  assert(
+    second!.includes("This isn't a plan"),
+    "the standing objection travels with the implement turn",
+  );
+});
+
 Deno.test("GateEmulatorOperator: judges the LAST assistant message, then review turn, then null", async () => {
   const seen: Array<{ issue: string; plan: string }> = [];
   const op = new GateEmulatorOperator(ISSUE, (issue, plan) => {
     seen.push({ issue, plan });
     return Promise.resolve(
-      "Go ahead with Variant 2 — it matches the root cause.",
+      "DECISION: AUTHORIZE\nGo ahead with Variant 2 — it matches the root cause.",
     );
   });
   const messages = [

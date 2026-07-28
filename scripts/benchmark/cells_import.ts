@@ -161,6 +161,9 @@ export async function importCampaign(opts: ImportOptions): Promise<string> {
     agent: { modelSnapshot: null, ideVersion: null, bridgeVersion: null },
     humanEmulator: { model: "sonnet", effort: first.effort },
     harness: {
+      // The literal is the shape those campaigns ACTUALLY ran under; it must not
+      // follow SESSION_MAX_STEPS when the harness changes, or an import would
+      // restate history in today's terms.
       maxSteps: 3,
       stepTimeoutMs: first.stepTimeoutMs,
       promptHash: "",

@@ -224,10 +224,45 @@ export function buildPrompt(
 }
 
 /**
+ * Turn budget of ONE session, equal in both arms (FR-BENCH-SWE.SYMMETRY).
+ *
+ * Four rather than three, because the flowai gate may spend a turn sending a
+ * rejected plan back to the planner (`GateEmulatorOperator`). At three that
+ * rejection consumed the implementation turn instead, and the session reached
+ * `review` over an empty working tree — measured on the first flowai campaign
+ * (2026-07-27): four of eleven logged sessions were rejected at the gate, three
+ * of them produced no patch at all.
+ *
+ * The cap rises in BOTH arms so the equal-shape requirement stays literally
+ * true. For the bare arm it is not binding anyway: that session ends when the
+ * human replies DONE, which the recorded campaigns did within one or two turns.
+ *
+ * The cell header records this value (`harness.maxSteps`), so it lives here and
+ * is imported rather than repeated — a header that disagrees with the harness
+ * misdescribes every rep filed under it.
+ */
+export const SESSION_MAX_STEPS = 4;
+
+/**
+ * Close a timed-out session's transcript: everything the agent logged before the
+ * cap, then the marker saying why it stopped.
+ *
+ * The timeout branch used to return the marker ALONE, because `agent.run()` only
+ * hands its log back when it returns and a timed-out run never does. That threw
+ * away the whole transcript of exactly the sessions worth reading: in the first
+ * flowai campaign four of fifteen instances left a 41-byte file with no turns
+ * and no commands, so a fifth of the run could not be diagnosed at all.
+ */
+export function timeoutLog(partial: string, message: string): string {
+  const marker = `[TIMEOUT] ${message}`;
+  return partial === "" ? marker : `${partial}\n${marker}\n`;
+}
+
+/**
  * Run an ACP agent under a hard per-session timeout. AcpAgent has no built-in
  * turn timeout (the acceptance runner wraps it the same way); on timeout we kill
  * the process tree and report exit 124 so the empty/partial diff is still
- * captured.
+ * captured — along with the partial transcript (see {@link timeoutLog}).
  */
 async function runWithTimeout(
   agent: AcpAgent,
@@ -245,7 +280,10 @@ async function runWithTimeout(
     return await Promise.race([agent.run(operator), timeout]);
   } catch (e) {
     agent.kill();
-    return { code: 124, logs: `[TIMEOUT] ${(e as Error).message}` };
+    return {
+      code: 124,
+      logs: timeoutLog(agent.getPartialLog(), (e as Error).message),
+    };
   } finally {
     if (timer !== undefined) clearTimeout(timer);
   }
@@ -371,8 +409,7 @@ export async function runArm(
     workspace: sandboxDir,
     model: opts.model,
     prompt: buildPrompt(opts.arm, data, prefix),
-    // Equal session shape in both arms (FR-BENCH-SWE.SYMMETRY).
-    maxSteps: 3,
+    maxSteps: SESSION_MAX_STEPS,
     env,
     name: `bench/${opts.arm}/${data.instanceId}`,
   });

@@ -117,6 +117,33 @@ export function planTurn(
   );
 }
 
+/**
+ * Turn issued when the human reviewer REJECTS the plan: re-invoke the planner
+ * carrying the objection.
+ *
+ * Before this existed, a rejection was still wrapped into the `implement` turn,
+ * so the agent spent that turn re-planning and the session reached `review` with
+ * an empty working tree — measured on the first flowai campaign (2026-07-27):
+ * four of eleven logged sessions were rejected at the gate and three of them
+ * produced no patch at all. The objection deserves its own turn.
+ */
+export function replanTurn(
+  feedback: string,
+  prefix: CommandPrefix = "/",
+): string {
+  return slashTurn(
+    "plan",
+    [
+      feedback.trim(),
+      ``,
+      `Plan again and address the above.`,
+      `Do NOT modify any source or test files in this planning step.`,
+      `Present the implementation variants with your recommendation, then stop for my decision.`,
+    ].join("\n"),
+    prefix,
+  );
+}
+
 /** Follow-up turn: run the review skill over the working-tree diff. */
 export function reviewTurn(prefix: CommandPrefix = "/"): string {
   return slashTurn(

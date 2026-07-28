@@ -77,10 +77,17 @@ export function renderAgentsMd(
  * exist, and their prose states plainly that this is a flowai task with no
  * formal FRs. The whole `documents/` tree is excluded from the captured diff
  * (DIFF_EXCLUDES), so none of it reaches the prediction.
+ *
+ * EVERY role the rendered AGENTS.md resolves needs a stub, not just the ones a
+ * past incident named. Seeding SRS + Index but not SDS left `documents/design.md`
+ * missing, and the plan skill halted on it in four of eleven logged sessions of
+ * the first flowai campaign (2026-07-27) — verbatim: "Planning is blocked: the
+ * required SDS role resolves to `documents/design.md`, but that file does not
+ * exist." Three of those instances produced no patch at all.
  */
 export function renderDocStubs(
   repo: string,
-): { requirements: string; index: string } {
+): { requirements: string; design: string; index: string } {
   const requirements = [
     `# SRS — \`${repo}\` (flowai sandbox task)`,
     ``,
@@ -93,7 +100,26 @@ export function renderDocStubs(
     `- **Assumptions/Constraints:** Fix the ROOT CAUSE, not a downstream symptom; verify against the repository's OWN existing test suite, not only newly written tests.`,
     ``,
     `## 3. Functional Reqs`,
-    `No formal FR-* requirements: this is an upstream bug fix, not a flowai feature. The implementation is tracked by the plan task file under \`documents/tasks/\` with \`implements: []\`. The doc-system roles (SRS, Tasks, Index) are ACTIVE — treat absent FR sections as expected, not as "roles unbound".`,
+    `No formal FR-* requirements: this is an upstream bug fix, not a flowai feature. The implementation is tracked by the plan task file under \`documents/tasks/\` with \`implements: []\`. The doc-system roles (SRS, SDS, Tasks, Index) are ACTIVE and every one of them resolves to a file that exists — treat absent FR sections and thin design prose as expected, not as "roles unbound" and not as a reason to stop.`,
+    ``,
+  ].join("\n");
+
+  const design = [
+    `# SDS — \`${repo}\` (flowai sandbox task)`,
+    ``,
+    `## 1. Intro`,
+    `- **Purpose:** Record the design of the ONE upstream fix this task delivers.`,
+    `- **Rel to SRS:** Implements the single task described in \`documents/requirements.md\`; there are no FR-* clauses to trace.`,
+    ``,
+    `## 2. Arch`,
+    `- **Diagram:** None. The architecture is the upstream \`${repo}\` layout at its base commit, unchanged by this task.`,
+    `- **Subsystems:** Whatever the issue touches. Identify them during planning and describe the chosen change here.`,
+    ``,
+    `## 3. Components`,
+    `To be filled by the planner with the components the selected variant changes. An empty section is expected before planning — it is not a missing role.`,
+    ``,
+    `## 7. Constraints`,
+    `- **Simplified/Deferred:** Fix the root cause of the reported issue only. No refactors beyond it, no commits, no pushes.`,
     ``,
   ].join("\n");
 
@@ -105,13 +131,13 @@ export function renderDocStubs(
     ``,
   ].join("\n");
 
-  return { requirements, index };
+  return { requirements, design, index };
 }
 
 /**
- * Write the doc-system stubs (`documents/requirements.md`, `documents/index.md`)
- * and ensure the Tasks role dir exists. Static — no generation, no I/O beyond
- * the writes.
+ * Write the doc-system stubs (`documents/requirements.md`, `documents/design.md`,
+ * `documents/index.md`) and ensure the Tasks role dir exists. Static — no
+ * generation, no I/O beyond the writes.
  */
 export async function installDocStubs(
   sandboxDir: string,
@@ -119,8 +145,9 @@ export async function installDocStubs(
 ): Promise<void> {
   const docs = join(sandboxDir, "documents");
   await ensureDir(join(docs, "tasks"));
-  const { requirements, index } = renderDocStubs(repo);
+  const { requirements, design, index } = renderDocStubs(repo);
   await Deno.writeTextFile(join(docs, "requirements.md"), requirements);
+  await Deno.writeTextFile(join(docs, "design.md"), design);
   await Deno.writeTextFile(join(docs, "index.md"), index);
 }
 
