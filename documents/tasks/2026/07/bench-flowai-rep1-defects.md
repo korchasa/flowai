@@ -95,6 +95,53 @@ alone because `AcpAgent.run()` hands its log back only on return.
    campaigns actually ran under.
 5. Delete `scripts/benchmark/cells/codex-flowai-44d8965a5ce4-gpt-5-6-terra-medium/`.
 
+## Result — rep 1 re-measured on the fixed harness, 2026-07-28
+
+flowai **4/15** vs baseline 8 solves across 3 reps (2.67/15 per rep). ONE rep,
+so this is still noise-level, not an effect. 1 h 48 min, concurrency 2, zero
+health aborts, zero backoff waits.
+
+Every fix is confirmed live:
+
+- No session halted on a doc role. All 15 reached substantive work; two of the
+  three instances that produced NOTHING last time now carry patches
+  (`pygeoapi-2338` 7 KB, `meltano-9929` 8 KB).
+- Three sessions hit the 20-minute cap (`pygraphistry-1277`,
+  `schemathesis-3778`, `schemathesis-3933`) and all three kept their full
+  transcript — 14, 17 and 26 KB where the old harness wrote 41 bytes.
+- `schemathesis-3933` used FOUR turns: the gate rejected its plan, spent a turn
+  on the re-plan, and the session still produced an 8.9 KB patch. On the old
+  harness that instance would have ended empty.
+- No patch carries an IDE config dir, a lock file or `documents/`.
+
+Per-instance, flowai vs baseline-over-3-reps:
+
+- `anyio-1134` — baseline 0/3, flowai SOLVED. The only true baseline-fail →
+  flowai-pass cell of the run.
+- `pygeoapi-2338`, `sqlglot-7457`, `nicegui-5914` — baseline 1/3, flowai solved
+  (inside the unstable band, not evidence on their own).
+- `pygraphistry-1277` — `solved-broke` again: F2P 2/2, 622 P2P pass, 6 P2P fail,
+  all in `test_lowering.py`, the file the agent edited. Unlike the discarded rep
+  this session DID run the whole suite ("3,827 passed, 701 skipped"), so the
+  earlier "verifies too narrowly" reading does not hold here. The likelier
+  mechanism: the agent adjusted existing tests to its new behavior, grading
+  strips test-file hunks, and the original assertions then fail. The P2P
+  decomposition is what makes this visible at all.
+- `smolvm-172`, `virtualizarr-979` — no patch, both blocked on the SANDBOX
+  ENVIRONMENT, not on process: "Cargo has no configured Rust toolchain" and
+  "cannot collect tests due to missing `h5py`". `smolvm-172` produced a 24 KB
+  patch on the old harness, so for that instance this is a regression.
+
+## Open problem the re-measurement exposed
+
+The sandbox is a bare clone on the host; project dependencies are never
+installed (grading has proper Docker images, the agent does not). The flowai arm
+holds a RED → GREEN → REFACTOR discipline that requires running the suite, so
+where the suite cannot run the discipline turns into refusing to work — while
+the bare arm simply writes code. That asymmetry charges flowai for the harness's
+environment gap. Needs a decision: install project deps in the sandbox, or let
+the arm proceed without a runnable suite.
+
 ## Not done here
 
 - **Narrow verification in `review`** (`pygraphistry-1277`). This is skill
