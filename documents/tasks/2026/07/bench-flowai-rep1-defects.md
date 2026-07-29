@@ -65,8 +65,9 @@ alone because `AcpAgent.run()` hands its log back only on return.
   - Evidence: `deno test -A scripts/benchmark/run_test.ts`
 - [x] FR-BENCH-SWE.SYMMETRY: a rejected plan costs its own turn, not the
       implementation turn; the decision is machine-readable and never guessed
-  - Test: `scripts/benchmark/human_emulator_test.ts::GateEmulatorOperator: a rejected plan buys a re-plan turn, not a lost implement turn`
-  - Test: `scripts/benchmark/human_emulator_test.ts::parseGateVerdict: separates the decision from the message it carries`
+  - Test: `scripts/benchmark/human_emulator_test.ts::FlowaiOperator: a rejected plan buys a re-plan turn, not a lost implement turn`
+  - Test: `scripts/benchmark/human_emulator_test.ts::parseOperatorDecision: separates the decision from the message it carries`
+  - Note: the operator was renamed `GateEmulatorOperator` → `FlowaiOperator` by the follow-up task `bench-operator-every-turn.md`; the test names above are the current ones.
   - Evidence: `deno test -A scripts/benchmark/human_emulator_test.ts`
 - [x] FR-BENCH-SWE.SYMMETRY: the turn budget is one constant, equal in both arms,
       shared by the session and the cell header

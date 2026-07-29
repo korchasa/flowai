@@ -3,10 +3,10 @@ import {
   AnswerEmulatorOperator,
   answerMessages,
   DONE_TOKEN,
-  GateEmulatorOperator,
-  gateMessages,
+  FlowaiOperator,
   implementTurnWithVerdict,
-  parseGateVerdict,
+  operatorMessages,
+  parseOperatorDecision,
 } from "./human_emulator.ts";
 import { replanTurn, reviewTurn } from "./operator.ts";
 
@@ -15,6 +15,7 @@ const REJECT = [
   "DECISION: REPLAN",
   "This isn't a plan — no variants were presented for the issue itself.",
 ].join("\n");
+const REVIEW = "DECISION: REVIEW\nReview your diff against the issue.";
 
 const ISSUE =
   "Fixed offset timezones lose their offset name in _get_timezone_name.";
@@ -25,8 +26,8 @@ const PLAN = [
   "### Variant 2 — patch callers",
 ].join("\n");
 
-Deno.test("gateMessages: carries the issue and the plan output, no gold fields", () => {
-  const msgs = gateMessages(ISSUE, PLAN);
+Deno.test("operatorMessages: carries the issue and the plan output, no gold fields", () => {
+  const msgs = operatorMessages(ISSUE, PLAN);
   const all = msgs.map((m) => m.content).join("\n");
   assert(all.includes(ISSUE), "must carry the issue verbatim");
   assert(all.includes(PLAN), "must carry the plan output verbatim");
@@ -34,19 +35,24 @@ Deno.test("gateMessages: carries the issue and the plan output, no gold fields",
   assert(!/gold|FAIL_TO_PASS|test_patch/i.test(all), "no gold-data leakage");
   const system = msgs.find((m) => m.role === "system");
   assert(system, "must have a system message");
-  // Reviewer duties, not solver duties.
-  assert(/review/i.test(system!.content), "system prompt frames a reviewer");
+  // Human duties, not solver duties.
   assert(
     /miss|cover|omit/i.test(system!.content),
-    "reviewer must check outcome coverage against the issue",
+    "the human must check outcome coverage against the issue",
   );
   assert(
     /variant/i.test(system!.content),
-    "reviewer must authorize a variant",
+    "the human must authorize a variant",
   );
   assert(
     /do not (write|include) code|no code/i.test(system!.content),
-    "reviewer must not write code",
+    "the human must not write code",
+  );
+  // The human cannot see the diff, so assessing the finished work is not theirs
+  // to do — they hand the review task to the engineer and step out.
+  assert(
+    /do NOT check the engineer's work/.test(system!.content),
+    "the human must not assess the implementation",
   );
   // The bench agent works in English; user-level language memory must not leak
   // into the gate turn (observed: judge replied in Russian without this).
@@ -56,11 +62,13 @@ Deno.test("gateMessages: carries the issue and the plan output, no gold fields",
   );
   // The reply drives which turn the agent gets next, so the decision must be
   // stated in a form the harness can read.
-  assert(
-    /DECISION:/.test(system!.content) && /AUTHORIZE/.test(system!.content) &&
-      /REPLAN/.test(system!.content),
-    "reviewer must label the reply AUTHORIZE or REPLAN",
-  );
+  assert(/DECISION:/.test(system!.content), "the reply must carry a decision");
+  for (const d of ["AUTHORIZE", "REPLAN", "REVIEW", "ANSWER", "DONE"]) {
+    assert(
+      system!.content.includes(d),
+      `the prompt must offer the ${d} decision the parser accepts`,
+    );
+  }
 });
 
 Deno.test("implementTurnWithVerdict: /implement turn embeds the verdict and keeps the no-commit framing", () => {
@@ -75,14 +83,14 @@ Deno.test("implementTurnWithVerdict: /implement turn embeds the verdict and keep
 });
 
 /**
- * The reviewer's two possible moves must be machine-readable, because they lead
- * to DIFFERENT turns. Without a decision token the harness sent every reply —
+ * The human's moves must be machine-readable, because they lead to DIFFERENT
+ * turns. Without a decision token the harness sent every reply —
  * authorization and rejection alike — as the `implement` turn, so a rejected
  * plan silently consumed the implementation step (four of eleven logged sessions
  * of the first flowai campaign; three of them produced no patch at all).
  */
-Deno.test("parseGateVerdict: separates the decision from the message it carries", () => {
-  const ok = parseGateVerdict(AUTHORIZE);
+Deno.test("parseOperatorDecision: separates the decision from the message it carries", () => {
+  const ok = parseOperatorDecision(AUTHORIZE);
   assertEquals(ok.decision, "authorize");
   assertEquals(ok.message, "Go ahead with Variant 2.");
   assert(
@@ -90,13 +98,13 @@ Deno.test("parseGateVerdict: separates the decision from the message it carries"
     "the token is protocol, not part of what the engineer reads",
   );
 
-  const no = parseGateVerdict(REJECT);
+  const no = parseOperatorDecision(REJECT);
   assertEquals(no.decision, "replan");
   assert(no.message.startsWith("This isn't a plan"));
 
   // The emulator is an LLM: accept its formatting habits, not just one spelling.
   assertEquals(
-    parseGateVerdict("**DECISION: authorize**\n\nGo ahead with variant 1.")
+    parseOperatorDecision("**DECISION: authorize**\n\nGo ahead with variant 1.")
       .decision,
     "authorize",
   );
@@ -104,7 +112,7 @@ Deno.test("parseGateVerdict: separates the decision from the message it carries"
   // Measured on the smoke run of 2026-07-28: the emulator copied the system
   // prompt's example line, gloss and all, onto the decision line. Requiring the
   // line to END at the decision word failed the instance over punctuation.
-  const glossed = parseGateVerdict(
+  const glossed = parseOperatorDecision(
     "DECISION: AUTHORIZE — go ahead with variant 2, and also cover the naive case.",
   );
   assertEquals(glossed.decision, "authorize");
@@ -116,18 +124,18 @@ Deno.test("parseGateVerdict: separates the decision from the message it carries"
 
   // No token, or an unknown one, is a protocol breach — never guessed at.
   assertThrows(
-    () => parseGateVerdict("Go ahead with Variant 2."),
+    () => parseOperatorDecision("Go ahead with Variant 2."),
     Error,
     "DECISION",
   );
   assertThrows(
-    () => parseGateVerdict("DECISION: MAYBE\nnot sure"),
+    () => parseOperatorDecision("DECISION: MAYBE\nnot sure"),
     Error,
     "DECISION",
   );
   // A decision with nothing said to the engineer is useless.
   assertThrows(
-    () => parseGateVerdict("DECISION: REPLAN"),
+    () => parseOperatorDecision("DECISION: REPLAN"),
     Error,
     "said nothing",
   );
@@ -135,14 +143,14 @@ Deno.test("parseGateVerdict: separates the decision from the message it carries"
 
 /**
  * A rejected plan must cost its OWN turn, not the implementation turn: the
- * engineer re-plans, the reviewer looks again, and only then does implementation
- * start. One re-plan is allowed; a reviewer who still objects afterwards sends
+ * engineer re-plans, the human looks again, and only then does implementation
+ * start. One re-plan is allowed; a human who still objects afterwards sends
  * the objection along with the implement turn rather than starving the session.
  */
-Deno.test("GateEmulatorOperator: a rejected plan buys a re-plan turn, not a lost implement turn", async () => {
-  const replies = [REJECT, AUTHORIZE];
+Deno.test("FlowaiOperator: a rejected plan buys a re-plan turn, not a lost implement turn", async () => {
+  const replies = [REJECT, AUTHORIZE, REVIEW];
   let n = 0;
-  const op = new GateEmulatorOperator(ISSUE, () => {
+  const op = new FlowaiOperator(ISSUE, () => {
     return Promise.resolve(replies[n++]);
   });
   const messages = [{ role: "assistant", content: PLAN }];
@@ -153,7 +161,7 @@ Deno.test("GateEmulatorOperator: a rejected plan buys a re-plan turn, not a lost
     replanTurn(
       "This isn't a plan — no variants were presented for the issue itself.",
     ),
-    "a rejection re-invokes the planner, carrying the reviewer's objection",
+    "a rejection re-invokes the planner, carrying the human's objection",
   );
 
   const second = await op.getResponse(messages);
@@ -163,13 +171,17 @@ Deno.test("GateEmulatorOperator: a rejected plan buys a re-plan turn, not a lost
   );
   assert(second!.includes("Go ahead with Variant 2."));
 
-  assertEquals(await op.getResponse(messages), reviewTurn());
+  assertEquals(
+    await op.getResponse(messages),
+    reviewTurn("Review your diff against the issue."),
+    "the review task is handed over in the human's own words",
+  );
   assertEquals(await op.getResponse(messages), null);
-  assertEquals(n, 2, "the reviewer is consulted once per plan, no more");
+  assertEquals(n, 3, "every turn is authored by the emulator, none replayed");
 });
 
-Deno.test("GateEmulatorOperator: the re-plan budget is one — a second rejection still starts work", async () => {
-  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve(REJECT));
+Deno.test("FlowaiOperator: the re-plan budget is one — a second rejection still starts work", async () => {
+  const op = new FlowaiOperator(ISSUE, () => Promise.resolve(REJECT));
   const messages = [{ role: "assistant", content: PLAN }];
 
   assert((await op.getResponse(messages))!.startsWith("/plan "));
@@ -184,10 +196,10 @@ Deno.test("GateEmulatorOperator: the re-plan budget is one — a second rejectio
   );
 });
 
-Deno.test("GateEmulatorOperator: judges the LAST assistant message, then review turn, then null", async () => {
-  const seen: Array<{ issue: string; plan: string }> = [];
-  const op = new GateEmulatorOperator(ISSUE, (issue, plan) => {
-    seen.push({ issue, plan });
+Deno.test("FlowaiOperator: reacts to the LAST assistant message", async () => {
+  const seen: Array<{ issue: string; output: string }> = [];
+  const op = new FlowaiOperator(ISSUE, (issue, output) => {
+    seen.push({ issue, output });
     return Promise.resolve(
       "DECISION: AUTHORIZE\nGo ahead with Variant 2 — it matches the root cause.",
     );
@@ -202,20 +214,75 @@ Deno.test("GateEmulatorOperator: judges the LAST assistant message, then review 
   assertEquals(seen.length, 1);
   assertEquals(seen[0].issue, ISSUE);
   assertEquals(
-    seen[0].plan,
+    seen[0].output,
     PLAN,
-    "judge must receive the LAST assistant message",
+    "the human must react to the LAST assistant message",
   );
   assert(first!.startsWith("/implement "));
   assert(first!.includes("Go ahead with Variant 2"));
-
-  const second = await op.getResponse(messages);
-  assertEquals(second, reviewTurn());
-  assertEquals(await op.getResponse(messages), null);
 });
 
-Deno.test("GateEmulatorOperator: judge failure rejects (fail fast, no silent rubber stamp)", async () => {
-  const op = new GateEmulatorOperator(
+/**
+ * The human never assesses the work (user decision 2026-07-28). Handing over the
+ * review task is the last thing they say: the engineer answers it and the session
+ * ends, WITHOUT the emulator being asked to look at a diff it cannot see.
+ */
+Deno.test("FlowaiOperator: the session ends on the answer to the review turn, emulator not consulted again", async () => {
+  let calls = 0;
+  const op = new FlowaiOperator(ISSUE, () => {
+    calls++;
+    return Promise.resolve(REVIEW);
+  });
+  const messages = [{ role: "assistant", content: "Implementation is in." }];
+
+  const turn = await op.getResponse(messages);
+  assert(turn!.startsWith("/review "), `expected a review turn, got: ${turn}`);
+  assert(turn!.includes("Review your diff against the issue."));
+
+  assertEquals(
+    await op.getResponse([
+      ...messages,
+      { role: "assistant", content: "Reviewed; fixed two gaps." },
+    ]),
+    null,
+    "no one sits in judgement over the review answer",
+  );
+  assertEquals(calls, 1, "the emulator is not asked to assess the result");
+});
+
+Deno.test("FlowaiOperator: an ANSWER is a plain turn, a DONE ends the session", async () => {
+  const answer = new FlowaiOperator(
+    ISSUE,
+    () =>
+      Promise.resolve(
+        "DECISION: ANSWER\nInstall the toolchain yourself and continue; nobody else will.",
+      ),
+  );
+  const reply = await answer.getResponse([{
+    role: "assistant",
+    content: "Rust toolchain is not configured. How should I proceed?",
+  }]);
+  assertEquals(
+    reply,
+    "Install the toolchain yourself and continue; nobody else will.",
+    "a plain answer carries no command at all",
+  );
+
+  const done = new FlowaiOperator(
+    ISSUE,
+    () => Promise.resolve("DECISION: DONE"),
+  );
+  assertEquals(
+    await done.getResponse([{
+      role: "assistant",
+      content: "Fix is in place.",
+    }]),
+    null,
+  );
+});
+
+Deno.test("FlowaiOperator: emulator failure rejects (fail fast, no silent rubber stamp)", async () => {
+  const op = new FlowaiOperator(
     ISSUE,
     () => Promise.reject(new Error("cli down")),
   );
@@ -226,8 +293,8 @@ Deno.test("GateEmulatorOperator: judge failure rejects (fail fast, no silent rub
   );
 });
 
-Deno.test("GateEmulatorOperator: blank verdict rejects", async () => {
-  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve("   \n"));
+Deno.test("FlowaiOperator: blank reply rejects", async () => {
+  const op = new FlowaiOperator(ISSUE, () => Promise.resolve("   \n"));
   await assertRejects(
     () => op.getResponse([{ role: "assistant", content: PLAN }]),
     Error,
@@ -235,8 +302,8 @@ Deno.test("GateEmulatorOperator: blank verdict rejects", async () => {
   );
 });
 
-Deno.test("GateEmulatorOperator: no assistant message yet rejects (contract violation)", async () => {
-  const op = new GateEmulatorOperator(ISSUE, () => Promise.resolve("ok"));
+Deno.test("FlowaiOperator: no assistant message yet rejects (contract violation)", async () => {
+  const op = new FlowaiOperator(ISSUE, () => Promise.resolve("ok"));
   await assertRejects(
     () => op.getResponse([{ role: "user", content: "/plan ..." }]),
     Error,

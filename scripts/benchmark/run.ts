@@ -19,12 +19,15 @@
  * Produces `<out>/<arm>.jsonl` for `verify`/`report`. No commit/push — swebench
  * grades the patch directly.
  *
- * Gate emulation (recorded in every report): the human decision gate after
- * `/plan` is played by an LLM emulating the human (`human_emulator.ts`) that reads ONLY the issue and
- * the plan output — it authorizes a variant and names missed outcomes, like a
- * knowledgeable reviewer. This makes plan quality measurable (the former
- * scripted "Go ahead with your recommended variant" rubber-stamped any plan)
- * at the cost of a stochastic gate turn. It still under-approximates a real
+ * Human emulation (recorded in every report): EVERY turn after the first is
+ * authored by an LLM playing the human (`human_emulator.ts`), in both arms. It
+ * reads ONLY the issue and what the agent just said — never gold patches or
+ * FAIL_TO_PASS. In the flowai arm it authorizes a variant, sends a bad plan back
+ * to the planner, answers questions, hands over the review task, or ends the
+ * session; in the bare arm it answers or ends with DONE. It never assesses the
+ * work: it cannot see the diff, and judging is swebench's job.
+ *
+ * The cost is a stochastic turn in both arms. It still under-approximates a real
  * human, who carries context the issue text lacks.
  */
 
@@ -54,9 +57,9 @@ import {
 } from "./operator.ts";
 import {
   AnswerEmulatorOperator,
-  GateEmulatorOperator,
+  FlowaiOperator,
   makeCliAnswerEmulator,
-  makeCliGateEmulator,
+  makeCliOperatorEmulator,
 } from "./human_emulator.ts";
 import { collectBenchHomeMetrics, fmtCost } from "./metrics.ts";
 import { collectWebAudit } from "./webaudit.ts";
@@ -226,8 +229,8 @@ export function buildPrompt(
 /**
  * Turn budget of ONE session, equal in both arms (FR-BENCH-SWE.SYMMETRY).
  *
- * Four rather than three, because the flowai gate may spend a turn sending a
- * rejected plan back to the planner (`GateEmulatorOperator`). At three that
+ * Four rather than three, because the flowai human may spend a turn sending a
+ * rejected plan back to the planner (`FlowaiOperator`). At three that
  * rejection consumed the implementation turn instead, and the session reached
  * `review` over an empty working tree — measured on the first flowai campaign
  * (2026-07-27): four of eleven logged sessions were rejected at the gate, three
@@ -394,9 +397,9 @@ export async function runArm(
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
   const operator: Operator = opts.arm === "flowai"
-    ? new GateEmulatorOperator(
+    ? new FlowaiOperator(
       data.problemStatement,
-      makeCliGateEmulator(humanEmulatorModel, env),
+      makeCliOperatorEmulator(humanEmulatorModel, env),
       prefix,
     )
     : new AnswerEmulatorOperator(

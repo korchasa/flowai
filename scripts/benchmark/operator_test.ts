@@ -4,9 +4,13 @@ import {
   baseTask,
   commandPrefixFor,
   planTurn,
+  replanTurn,
   reviewTurn,
   ScriptedOperator,
 } from "./operator.ts";
+
+/** The human's own words, which every follow-up turn now carries. */
+const FEEDBACK = "Take another look at the diff against the issue.";
 import { implementTurnWithVerdict } from "./human_emulator.ts";
 
 Deno.test("ScriptedOperator: yields the fixed turn sequence then null, ignoring messages", async () => {
@@ -75,14 +79,26 @@ Deno.test("planTurn/reviewTurn: carry the IDE's prefix, args unchanged", () => {
   // the two IDEs would be measured on different prompts.
   assertEquals(codexPlan.slice(1), claudePlan.slice(1));
 
-  assert(reviewTurn().startsWith("/review "));
-  assert(reviewTurn("$").startsWith("$review "));
-  assertEquals(reviewTurn("$").slice(1), reviewTurn().slice(1));
+  assert(reviewTurn(FEEDBACK).startsWith("/review "));
+  assert(reviewTurn(FEEDBACK, "$").startsWith("$review "));
+  assertEquals(
+    reviewTurn(FEEDBACK, "$").slice(1),
+    reviewTurn(FEEDBACK).slice(1),
+  );
 });
 
-Deno.test("gate implement turn / reviewTurn: separate follow-up commands", () => {
+Deno.test("follow-up turns: separate commands, each carrying the human's words", () => {
   assert(implementTurnWithVerdict("Go ahead.").startsWith("/implement"));
-  assert(reviewTurn().startsWith("/review"));
+  const review = reviewTurn(FEEDBACK);
+  assert(review.startsWith("/review"));
+  assert(review.includes(FEEDBACK), "the human's words reach the engineer");
+  // The old constant told the agent to "proceed without further questions"
+  // while the seeded AGENTS.md tells it to STOP and ask on a broken
+  // environment — the arm was issuing both instructions at once.
+  assert(
+    !/without further questions/i.test(review),
+    "no canned no-questions line",
+  );
 });
 
 Deno.test("baseTask: neutral shared framing — repo + issue + no-commit, NO autonomy line", () => {
@@ -135,9 +151,10 @@ Deno.test("operator turns resolve as slash commands: clean name token + space se
     implementTurnWithVerdict(
       "Go ahead with Variant 1.\nAlso cover the edge case.",
     ),
-    reviewTurn(),
+    replanTurn("No variants were presented for the issue itself."),
+    reviewTurn(FEEDBACK),
   ];
-  const expected = ["plan", "implement", "review"];
+  const expected = ["plan", "implement", "plan", "review"];
   turns.forEach((t, i) => {
     const name = sdkCommandName(t);
     assertEquals(name, expected[i], `turn ${i} command name`);

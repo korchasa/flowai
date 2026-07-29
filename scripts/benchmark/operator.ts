@@ -144,13 +144,27 @@ export function replanTurn(
   );
 }
 
-/** Follow-up turn: run the review skill over the working-tree diff. */
-export function reviewTurn(prefix: CommandPrefix = "/"): string {
+/**
+ * Turn issued when the human asks for a review pass over the working tree.
+ *
+ * It carries the human's own words, like every other turn: the arm no longer
+ * replays a canned `/review` string after the gate (user decision 2026-07-28).
+ * The old constant also ended with "Proceed without further questions" while the
+ * seeded AGENTS.md tells the agent to STOP and ask when the environment is
+ * broken — the arm was issuing both instructions at once and then leaving the
+ * question unanswered.
+ */
+export function reviewTurn(
+  feedback: string,
+  prefix: CommandPrefix = "/",
+): string {
   return slashTurn(
     "review",
     [
-      `Review your working-tree diff for correctness AND completeness against the issue;`,
-      `fix any gaps you find. Do not commit or push. Proceed without further questions.`,
+      feedback.trim(),
+      ``,
+      `Review your working-tree diff for correctness AND completeness against the issue, and fix any gaps you find.`,
+      `Do not commit or push.`,
     ].join("\n"),
     prefix,
   );
