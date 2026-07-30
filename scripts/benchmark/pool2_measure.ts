@@ -211,20 +211,64 @@ export function campaignMismatch(
  * logs (and the pool2 freeze derived from them) already live under that path,
  * and renaming would either orphan them or force a pointless regrade.
  */
-export function campaignRunId(c: RepCampaign, rep: number): string {
+export function campaignRunId(
+  c: RepCampaign,
+  rep: number,
+  attempt = 1,
+): string {
   const ide = c.ide ?? "claude";
   const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
   const arm = c.arm ?? "baseline";
   const armSeg = arm === "baseline" ? "" : `${slug(arm)}-`;
+  // Attempt 1 keeps the historical id byte-identical, so every graded log on
+  // disk (and the pool2 freeze derived from it) stays where it is.
+  const attemptSeg = attempt > 1 ? `-a${attempt}` : "";
   if (
     arm === "baseline" && ide === "claude" && c.model === "sonnet" &&
     c.effort === "high"
   ) {
-    return `pool2-baseline-rep${rep}`;
+    return `pool2-baseline-rep${rep}${attemptSeg}`;
   }
   return `pool2-${armSeg}${slug(ide)}-${slug(c.model)}-${
     slug(c.effort)
-  }-rep${rep}`;
+  }-rep${rep}${attemptSeg}`;
+}
+
+/**
+ * Pick the grading attempt for a rep: which `logs/run_evaluation/<runId>` this
+ * measurement owns.
+ *
+ * swebench caches every verdict under that path and SKIPS any instance already
+ * present. Reusing the cache is exactly right for a RESUME — the rows belong to
+ * this same measurement. It is exactly wrong for a RE-MEASUREMENT: measured
+ * 2026-07-30, a discarded rep-1 was re-run under the same id, the regrade
+ * printed "14 instances already run, skipping..." and stamped `resolved: true`
+ * onto predictions whose patch was 0 bytes.
+ *
+ * The two cases are told apart by state, not by a flag the operator must
+ * remember to pass:
+ * - `recorded` (from `run-meta.json`) wins outright — a measurement never moves
+ *   its id once it has one, whatever else is on disk.
+ * - a rep dir that already holds predictions but no recorded attempt predates
+ *   this field; its logs live under attempt 1 and moving it would orphan them.
+ * - otherwise the rep dir is fresh, so any graded log under this id belongs to
+ *   a run that is no longer here: take the first free attempt.
+ */
+export function resolveRunAttempt(
+  opts: {
+    /** Attempt pinned in `run-meta.json`, if the rep was launched before. */
+    recorded?: number;
+    /** Does the rep dir already hold prediction rows? */
+    hasPredictions: boolean;
+    /** Is `logs/run_evaluation/<runId of attempt N>` already on disk? */
+    taken: (attempt: number) => boolean;
+  },
+): number {
+  if (opts.recorded !== undefined) return opts.recorded;
+  if (opts.hasPredictions) return 1;
+  let attempt = 1;
+  while (opts.taken(attempt)) attempt++;
+  return attempt;
 }
 
 export interface ArmBatchOptions {

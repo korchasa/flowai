@@ -191,6 +191,28 @@ export function isAuthFailure(logs: string): boolean {
 }
 
 /**
+ * Detect a dead HUMAN EMULATOR — the other half of "never fairly attempted".
+ *
+ * The emulator is a separate `claude -p` process (`cliChatCompletion`), so its
+ * failure never reaches ACP and `isAuthFailure` cannot see it. Measured
+ * 2026-07-30: the account's OAuth refresh token was revoked server-side
+ * ("OAuth refresh token is no longer valid" in the CLI's own debug log), every
+ * emulator call died, and 14 of 15 sessions banked an empty patch as an honest
+ * miss. The turn the human was supposed to take never happened — that is not a
+ * measurement, it is a hole.
+ *
+ * Deliberately keyed on the WRAPPER's exit-code phrasing rather than on the
+ * auth text: the CLI's result JSON is truncated in the session log, so the
+ * reason never survives, and an emulator that dies for any reason leaves the
+ * same hole. The caller still requires an empty patch before leaving the
+ * instance pending, so a session that did real work before the emulator died is
+ * kept as a genuine measurement (`mempalace-1004` shipped 31 KB that way).
+ */
+export function isEmulatorOutage(logs: string): boolean {
+  return /Claude CLI failed \(exit \d+\)/.test(logs);
+}
+
+/**
  * Detect a TRANSIENT sandbox-setup failure — a network/DNS blip during the repo
  * clone (`prepareSandbox` throws `git clone <url> <tmp> failed: …`). Like an
  * auth outage or a health abort, the instance was never fairly attempted, so
@@ -531,10 +553,12 @@ export async function runArm(
 
   const diff = await captureDiff(sandboxDir);
   const prediction = toPrediction(data.instanceId, opts.arm, diff);
-  // An ACP auth outage (token expiry) means the model never engaged — flag it
-  // so the resumable measurement tier leaves the instance pending instead of
-  // banking an empty patch as a real miss (see isAuthFailure / runBaselineBatch).
-  const authFailed = isAuthFailure(result.logs);
+  // Two ways a session can be un-attempted rather than failed: the AGENT never
+  // engaged (ACP auth outage) or the HUMAN never spoke (the emulator's own
+  // `claude -p` died). Both leave the instance pending in the measurement tier
+  // instead of banking an empty patch as a real miss.
+  const authFailed = isAuthFailure(result.logs) ||
+    isEmulatorOutage(result.logs);
   // implements [FR-BENCH-SWE.CELLS](../../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
   // wall-clock and turn count belong to the task row — without them a slow
   // solve and a fast one look identical, and a session cut short at the step

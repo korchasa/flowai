@@ -90,6 +90,7 @@ import {
   campaignRunId,
   gradePool2Predictions,
   type RepCampaign,
+  resolveRunAttempt,
   runArmBatch,
 } from "./benchmark/pool2_measure.ts";
 import {
@@ -433,6 +434,32 @@ await new Command()
     }
 
     const data = await loadPool2InstanceData(passers, split);
+    // Which `logs/run_evaluation/<runId>` this measurement owns. A resume keeps
+    // the attempt pinned by its first launch; a rep dir that is fresh while a
+    // graded log for this id already exists is a RE-MEASUREMENT of a discarded
+    // run, and must not inherit its verdicts (FR-BENCH-SWE.POOL2).
+    const priorMeta = await readCampaign(join(outDir, "run-meta.json")) as
+      | (RepCampaign & { attempt?: number })
+      | null;
+    const gradedIds = new Set<string>();
+    try {
+      for await (
+        const e of Deno.readDir(join(repoRoot, "logs/run_evaluation"))
+      ) {
+        if (e.isDirectory) gradedIds.add(e.name);
+      }
+    } catch { /* nothing graded on this machine yet */ }
+    const attempt = resolveRunAttempt({
+      recorded: priorMeta?.attempt,
+      hasPredictions: (await readPredIds(join(outDir, `${pool2Arm}.jsonl`)))
+        .length > 0,
+      taken: (n) => gradedIds.has(campaignRunId(thisCampaign, opts.rep, n)),
+    });
+    if (attempt > 1) {
+      console.log(
+        `[pool2-run] grading attempt ${attempt} — earlier attempts of rep${opts.rep} are still on disk`,
+      );
+    }
     // Record the pinned campaign settings next to the rep so a later flowai
     // arm (and the report) can prove baseline + flowai ran at the SAME effort.
     await Deno.writeTextFile(
@@ -441,6 +468,7 @@ await new Command()
         {
           rep: opts.rep,
           ...thisCampaign,
+          attempt,
           split,
           stepTimeoutMs: opts.stepTimeout,
           concurrency: opts.concurrency,
@@ -522,7 +550,7 @@ await new Command()
     });
     console.log(`[pool2-run] predictions → ${predPath}; cell → ${cellDir}`);
     if (opts.grade === false) return;
-    const runId = campaignRunId(thisCampaign, opts.rep);
+    const runId = campaignRunId(thisCampaign, opts.rep, attempt);
     const resolved = await gradePool2Predictions(
       predPath,
       split,

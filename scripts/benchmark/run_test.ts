@@ -4,6 +4,7 @@ import {
   codexAgentEnv,
   effortEnv,
   isAuthFailure,
+  isEmulatorOutage,
   isTransientSetupFailure,
   timeoutLog,
 } from "./run.ts";
@@ -136,4 +137,34 @@ Deno.test("isTransientSetupFailure: transient clone/DNS failures leave pending; 
   // A genuine empty agent diff (no exception text) is not a setup failure.
   assertEquals(isTransientSetupFailure(""), false);
   assertEquals(isTransientSetupFailure("agent produced no changes"), false);
+});
+
+/**
+ * The human emulator runs as a separate `claude -p` process, and its failure is
+ * NOT an ACP error — `isAuthFailure` cannot see it. Measured 2026-07-30: the
+ * account's OAuth refresh token was revoked server-side, every emulator call
+ * died, and 14 of 15 sessions banked an empty patch as an honest miss. The turn
+ * the human was supposed to take never happened, so the instance was never
+ * fairly attempted — same class as a health abort or a clone blip.
+ */
+Deno.test("isEmulatorOutage: a dead human emulator leaves the instance unmeasured, not missed", () => {
+  // Verbatim from the 2026-07-30 sessions (the result JSON is truncated in the
+  // log, so the auth text itself never reaches us — the wrapper message does).
+  const outage =
+    `[acp-fatal] Error: Claude CLI failed (exit 1): stderr=(empty) ` +
+    `result={"is_error":true,"duration_api_ms":0,"num_turns":1,` +
+    `"stop_reason":"stop_sequence","total_cost_usd":0}`;
+  assert(isEmulatorOutage(outage), "the emulator never spoke — leave pending");
+
+  // Any exit code, not just 1: the point is that the CLI died before answering.
+  assert(isEmulatorOutage(`Error: Claude CLI failed (exit 143): killed`));
+
+  // A session where the emulator answered is a real attempt, whatever else the
+  // log holds — including a repo whose own text talks about failing CLIs.
+  assertEquals(isEmulatorOutage("normal successful session"), false);
+  assertEquals(
+    isEmulatorOutage(`README: "if the Claude CLI failed, retry the command"`),
+    false,
+    "prose without the wrapper's exit-code form is not an outage",
+  );
 });

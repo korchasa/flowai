@@ -6,6 +6,7 @@ import {
   isHealthAbort,
   mapPool,
   pendingIds,
+  resolveRunAttempt,
   withHealthBackoff,
 } from "./pool2_measure.ts";
 
@@ -239,4 +240,61 @@ Deno.test("isHealthAbort: exit 75 stays pending; ran/timeout codes record", () =
   assertEquals(isHealthAbort(0), false, "success records");
   assertEquals(isHealthAbort(124), false, "timeout left a real partial diff");
   assertEquals(isHealthAbort(1), false);
+});
+
+/**
+ * swebench caches each verdict under `logs/run_evaluation/<runId>/…` and SKIPS
+ * any instance already there. So a rep that is discarded and re-measured under
+ * the same id inherits the discarded run's verdicts: measured 2026-07-30, the
+ * regrade printed "14 instances already run, skipping..." and stamped
+ * `resolved: true` onto predictions whose patch was 0 bytes.
+ *
+ * A RESUME must keep its id (the cache is its own, and reusing it is the point);
+ * a RE-MEASUREMENT must move to a fresh one.
+ */
+Deno.test("resolveRunAttempt: a resume keeps its id, a re-measurement moves off the stale cache", () => {
+  const taken = (n: number) => n <= 2; // attempts 1 and 2 already graded
+
+  // Recorded in run-meta by the first launch — every later resume must agree,
+  // no matter what is on disk.
+  assertEquals(
+    resolveRunAttempt({ recorded: 2, hasPredictions: true, taken }),
+    2,
+  );
+  assertEquals(
+    resolveRunAttempt({ recorded: 1, hasPredictions: false, taken }),
+    1,
+  );
+
+  // A rep dir that already holds predictions and predates the field: its logs
+  // live under attempt 1, and moving it would orphan them.
+  assertEquals(resolveRunAttempt({ hasPredictions: true, taken }), 1);
+
+  // The re-measurement case: fresh rep dir, but the eval logs of the discarded
+  // run are still on disk — take the first free attempt.
+  assertEquals(resolveRunAttempt({ hasPredictions: false, taken }), 3);
+
+  // Nothing graded yet — the historical id, byte-identical.
+  assertEquals(
+    resolveRunAttempt({ hasPredictions: false, taken: () => false }),
+    1,
+  );
+});
+
+Deno.test("campaignRunId: attempt 1 keeps the historical id, later attempts get their own", () => {
+  const c = {
+    ide: "codex",
+    model: "gpt-5.6-terra",
+    effort: "medium",
+    arm: "flowai",
+  };
+  assertEquals(campaignRunId(c, 1), campaignRunId(c, 1, 1));
+  assertEquals(campaignRunId(c, 1, 2), `${campaignRunId(c, 1)}-a2`);
+  assert(campaignRunId(c, 1, 2) !== campaignRunId(c, 1));
+  // Baseline ids must stay byte-identical on attempt 1 — their graded logs and
+  // the pool2 freeze derived from them already live under that path.
+  assertEquals(
+    campaignRunId({ ide: "claude", model: "sonnet", effort: "high" }, 3, 1),
+    "pool2-baseline-rep3",
+  );
 });
