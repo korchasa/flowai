@@ -71,6 +71,7 @@ export const DIFF_EXCLUDES: readonly string[] = [
   ".tox",
   ".pytest_cache",
   "__pycache__",
+  "*.egg-info",
   "node_modules",
   // Lock files re-resolved as a side effect of installing dependencies. Same
   // class as `venv/`: environment state, never the fix. Measured 2026-07-27 on

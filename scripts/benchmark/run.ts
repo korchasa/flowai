@@ -40,6 +40,7 @@ import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
 import { candidateById } from "./instances.ts";
 import { type InstanceData, loadInstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
+import { installProjectDeps } from "./install_env.ts";
 import { externalSandboxRoot, linkIntoRunDir } from "./sandbox_root.ts";
 import { installAgentsMd, installDocStubs } from "./agents_md.ts";
 import {
@@ -335,6 +336,34 @@ export async function runArm(
 
   await prepareSandbox(data, sandboxDir, cacheDir);
 
+  // implements [FR-BENCH-SWE.POOL2](../../documents/requirements.md#fr-bench-swe.pool2-fresh-frozen-pool-via-gated-admission-funnel-ancfrbench-swe-pool2):
+  // Replay the dataset's own dependency recipe into a sandbox venv, identically
+  // in BOTH arms. A bare clone has no importable package and no runnable suite,
+  // which is not a neutral gap: flowai's RED → GREEN discipline needs the suite,
+  // so where it cannot run the discipline turns into refusing to work while the
+  // bare arm just writes code (rep 1, 2026-07-28: `smolvm-172` and
+  // `virtualizarr-979` produced no patch). The recipes were written for the
+  // graders' Debian images, so a step that cannot run here (apt-get, a missing
+  // toolchain) stops the recipe and is REPORTED — a partial environment beats a
+  // bare one, and the gap is on the record instead of hidden.
+  const install = data.installConfig
+    ? await installProjectDeps(sandboxDir, data.installConfig, {
+      pipCacheDir: join(cacheDir, "_pip-cache"),
+    })
+    : null;
+  if (install) {
+    await Deno.writeTextFile(join(instDir, "install.log"), install.log);
+    console.log(
+      install.ok
+        ? `  env: installed (${install.steps.length} step(s), ${install.pythonBin})`
+        : `  env: PARTIAL — stopped at: ${
+          install.failedStep ?? "(venv creation)"
+        }`,
+    );
+  } else {
+    console.log(`  env: none (dataset row carries no install recipe)`);
+  }
+
   // IDE under test (FR-BENCH-SWE.IDE). The config dir comes from the ACP
   // registry (`.claude` / `.codex` / …), never a literal, so installing the
   // pack lands where THIS IDE discovers skills.
@@ -374,6 +403,16 @@ export async function runArm(
     ...baseEnv,
     ...effortEnv(effort),
     ...(ide === "codex" ? codexAgentEnv(effort, opts.model) : {}),
+    // The sandbox venv goes FIRST on the agent's PATH, so `python` and `pytest`
+    // resolve to the installed project without the agent being told anything —
+    // an instruction it could ignore, whereas PATH it cannot. Same in both arms.
+    ...(install
+      ? {
+        PATH: `${install.venvBin}:${
+          baseEnv.PATH ?? Deno.env.get("PATH") ?? ""
+        }`,
+      }
+      : {}),
   };
 
   // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):

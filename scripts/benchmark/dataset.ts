@@ -9,6 +9,7 @@
 
 import { DATASET, VENV_PYTHON } from "./verify.ts";
 import type { InstanceMeta } from "./select.ts";
+import type { InstallConfig } from "./install_env.ts";
 
 export interface InstanceData {
   instanceId: string;
@@ -16,6 +17,13 @@ export interface InstanceData {
   baseCommit: string;
   problemStatement: string;
   version: string;
+  /**
+   * The dataset's own dependency recipe, replayed into the sandbox venv so the
+   * agent gets an importable package and a runnable suite (FR-BENCH-SWE.POOL2).
+   * `null`/absent when the dataset carries none — the princeton loader does not,
+   * and a bare clone is honest where a guessed recipe would not be.
+   */
+  installConfig?: InstallConfig | null;
 }
 
 const EXTRACT_PY = `

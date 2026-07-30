@@ -10,6 +10,7 @@
  */
 
 import type { InstanceData } from "./dataset.ts";
+import { parseInstallConfig } from "./install_env.ts";
 import type { RowsFetcher } from "./pool2_fetch.ts";
 import { httpRowsFetcher } from "./pool2_fetch.ts";
 
@@ -47,6 +48,9 @@ export async function loadPool2InstanceData(
         baseCommit: str(row, "base_commit"),
         problemStatement: str(row, "problem_statement"),
         version: str(row, "version"),
+        // The recipe the graders use. Replayed into the sandbox venv so the
+        // agent can import the package and run the suite (FR-BENCH-SWE.POOL2).
+        installConfig: parseInstallConfig(row["install_config"]),
       });
     }
     offset += page.rows.length;
