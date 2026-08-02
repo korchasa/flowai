@@ -9,12 +9,15 @@ import {
   frameworkFingerprint,
   mergeRep,
   passRate,
+  promptHashFor,
+  promptTemplateFor,
   readCell,
   type TaskRecord,
   taskRecordFromRun,
   taskSetChecksum,
   writeHeader,
 } from "./cells.ts";
+import { baselineTask, reviewTurn } from "./operator.ts";
 
 const KEY: CellKey = {
   ide: "codex",
@@ -66,6 +69,57 @@ Deno.test("cellId: the session budget is part of the key, legacy ids unchanged",
   ]);
   assertEquals(ids.size, 3, "each budget must produce its own cell");
   for (const id of ids) assert(/^[a-z0-9-]+$/.test(id), `not a slug: ${id}`);
+});
+
+Deno.test("cellId: the prompt hash is part of the key when it is known", () => {
+  const id = cellId({ ...KEY, promptHash: "946da8d8dd51fcad" });
+  assertEquals(id, "codex-flowai-a1b2c3d-gpt-5-6-terra-medium-p946da8d8dd51");
+  assert(/^[a-z0-9-]+$/.test(id), `not a slug: ${id}`);
+
+  // A key that does not know its prompt says so by omission — that is every
+  // cell written before the wording became part of the identity, and renaming
+  // them retroactively would orphan the data they hold.
+  assertEquals(cellId(KEY), "codex-flowai-a1b2c3d-gpt-5-6-terra-medium");
+
+  assertEquals(
+    new Set([
+      cellId(KEY),
+      cellId({ ...KEY, promptHash: "946da8d8dd51fcad" }),
+      cellId({ ...KEY, promptHash: "0000000000000000" }),
+    ]).size,
+    3,
+    "each wording must produce its own cell",
+  );
+});
+
+Deno.test("promptTemplateFor: the flowai arm hashes the turns it actually sends", async () => {
+  const bare = promptTemplateFor("codex", "baseline");
+  const flowai = promptTemplateFor("codex", "flowai");
+
+  // The bare arm's whole prompt IS the task text, and it must stay exactly what
+  // the cells on disk were hashed from.
+  assertEquals(bare, baselineTask("<REPO>", "<ISSUE>") + "\nprefix=$");
+
+  // The flowai arm's prompt is the sequence of turns plus the operator prompt
+  // that authors them — a review-turn edit is a different measurement, and the
+  // old hash covered none of it.
+  assert(flowai.includes(reviewTurn("<FEEDBACK>", "$")), "review turn missing");
+  assert(flowai.includes("REVIEW —"), "operator's REVIEW hand-off missing");
+  assert(
+    flowai.includes("$plan") && flowai.includes("$implement"),
+    "plan/implement turns missing",
+  );
+
+  assert(
+    await promptHashFor("codex", "flowai") !==
+      await promptHashFor("codex", "baseline"),
+    "the two arms must not share a prompt hash",
+  );
+  assertEquals(
+    await promptHashFor("codex", "baseline"),
+    "946da8d8dd51fcad",
+    "the bare arm's hash is pinned by the cells already on disk",
+  );
 });
 
 Deno.test("taskSetChecksum: order-independent, content-sensitive", async () => {

@@ -481,15 +481,18 @@ await new Command()
     // implements [FR-BENCH-SWE.CELLS](../documents/requirements.md#fr-bench-swe.cells-one-self-describing-record-per-measurement-cell-ancfrbench-swe-cells):
     // The cell header goes down BEFORE the batch, so a run killed mid-way still
     // leaves a record that says what it was measuring and with what.
+    const promptHash = await promptHashFor(pool2Ide, pool2Arm);
     const cellKey: CellKey = {
       ide: pool2Ide,
       arm: pool2Arm,
       framework,
       model: opts.model,
       effort: opts.effort,
-      // The budget is part of the identity, not just a condition — a run at a
-      // different cap is a different measurement and gets its own record.
+      // The budget and the wording are part of the identity, not conditions of
+      // it — a run at a different cap, or with a rewritten turn, is a different
+      // measurement and gets its own record.
       stepTimeoutMs: opts.stepTimeout,
+      promptHash,
     };
     const cellDir = join(opts.cells, cellId(cellKey));
     const priorReps = (await readCell(cellDir)).header?.reps ?? [];
@@ -512,7 +515,7 @@ await new Command()
         harness: {
           maxSteps: SESSION_MAX_STEPS,
           stepTimeoutMs: opts.stepTimeout,
-          promptHash: await promptHashFor(pool2Ide),
+          promptHash,
           commit: await currentCommit(),
         },
         env: await readCellEnv(),

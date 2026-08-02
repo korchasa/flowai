@@ -74,7 +74,13 @@ the bound goes in the harness's review invocation, NOT in
     of the key, legacy ids unchanged`
   - Evidence: `deno test -A scripts/benchmark/cells_test.ts`; the two cells read
     10/45 measured and 2/11 measured + 34 pending
-- [x] SRS + SDS record all three decisions and why the review bound is
+- [x] FR-BENCH-SWE.CELLS: the prompt hash is arm-aware and part of the cell key,
+      so the bounded review turn cannot extend a cell measured without it
+  - Test: `scripts/benchmark/cells_test.ts::promptTemplateFor: the flowai arm
+    hashes the turns it actually sends`
+  - Evidence: `deno test -A scripts/benchmark/cells_test.ts`; the next flowai
+    run resolves to `…-t40m-p762a762bcceb`, leaving `…-t40m` untouched
+- [x] SRS + SDS record all four decisions and why the review bound is
       benchmark-only
   - Evidence: `deno task check` (exit 0)
 - [ ] Re-measure the flowai arm at 40 min with the bounded review turn
@@ -91,4 +97,6 @@ the bound goes in the harness's review invocation, NOT in
 4. Sync SRS FR-BENCH-SWE.SYMMETRY and SDS §3.22 (Arm prompting, Components).
 5. Put the budget in the cell key (segment omitted for the legacy 20 min so no
    directory on disk is renamed) and split the blended cell along the seam.
-6. Re-measure — still open.
+6. Make `promptHashFor` arm-aware and put it in the key; the re-measurement then
+   claims its own directory instead of overwriting the surgical one.
+7. Re-measure — still open.

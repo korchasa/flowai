@@ -25,7 +25,17 @@ import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import type { GradeClass } from "./retro.ts";
 import { ACP_AGENTS } from "@acceptance-tests/acp/registry.ts";
-import { baselineTask, commandPrefixFor } from "./operator.ts";
+import {
+  baselineTask,
+  commandPrefixFor,
+  planTurn,
+  replanTurn,
+  reviewTurn,
+} from "./operator.ts";
+import {
+  implementTurnWithVerdict,
+  operatorMessages,
+} from "./human_emulator.ts";
 
 export const CELLS_ROOT = "scripts/benchmark/cells";
 
@@ -43,6 +53,12 @@ export interface CellKey {
    * which is also what every cell written before 2026-08-01 ran under.
    */
   stepTimeoutMs?: number;
+  /**
+   * `promptHashFor(ide, arm)`. Optional: absent means the cell does not know
+   * what wording produced it — true of every record written before 2026-08-02,
+   * and of imports from the pre-cell layout, which captured no prompt at all.
+   */
+  promptHash?: string;
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -72,6 +88,12 @@ function budgetSegment(ms: number): string {
  * cap was free for baseline (0 of 198 sessions reached it) and binding for
  * flowai (11 of 45), so a cell blending both budgets would describe no single
  * measurement. Re-measured data now lands in its own record.
+ *
+ * The prompt hash joined it for the same reason and by the same rule: the
+ * harness's own wording moves results, so a rewritten turn is a new
+ * measurement. A key that omits the hash is saying it does not know its
+ * wording, which is the honest state of everything measured before the hash
+ * became part of the identity — those directories keep their names.
  */
 export function cellId(key: CellKey): string {
   const budget = key.stepTimeoutMs ?? LEGACY_CELL_STEP_TIMEOUT_MS;
@@ -82,6 +104,7 @@ export function cellId(key: CellKey): string {
     key.model,
     key.effort,
     ...(budget === LEGACY_CELL_STEP_TIMEOUT_MS ? [] : [budgetSegment(budget)]),
+    ...(key.promptHash ? [`p${key.promptHash.slice(0, 12)}`] : []),
   ].map(slug).join("-");
 }
 
@@ -330,14 +353,40 @@ export function bridgeVersionFor(ide: string): string | null {
 }
 
 /**
- * Hash of the TEMPLATE handed to the agent (placeholders instead of the actual
- * repo and issue), plus the IDE's skill-invocation prefix. Wording moves
- * results, so a silent prompt edit must show up as a different cell input.
+ * The TEMPLATE handed to the agent over a whole session: placeholders instead
+ * of the actual repo and issue, plus the IDE's skill-invocation prefix.
+ *
+ * It is arm-specific because the arms do not send the same thing. The bare arm
+ * IS its task text and nothing more. The flowai arm sends a sequence of turns
+ * that the operator authors, so its prompt surface is `plan` → `implement` →
+ * `review` (plus the re-plan turn) AND the operator system prompt that decides
+ * between them. Hashing only the task text — which is what this did until
+ * 2026-08-02 — meant the review turn could be rewritten end to end and every
+ * cell would still claim the same prompt.
  */
-export async function promptHashFor(ide: string): Promise<string> {
-  const template = baselineTask("<REPO>", "<ISSUE>") +
-    `\nprefix=${commandPrefixFor(ide)}`;
-  return (await taskSetChecksum([template])).slice(0, 16);
+export function promptTemplateFor(ide: string, arm: string = "baseline") {
+  const prefix = commandPrefixFor(ide);
+  const base = baselineTask("<REPO>", "<ISSUE>") + `\nprefix=${prefix}`;
+  if (arm === "baseline") return base;
+  return [
+    base,
+    planTurn("<REPO>", "<ISSUE>", prefix),
+    replanTurn("<FEEDBACK>", prefix),
+    implementTurnWithVerdict("<VERDICT>", prefix),
+    reviewTurn("<FEEDBACK>", prefix),
+    operatorMessages("<ISSUE>", "<OUTPUT>").map((m) => m.content).join("\n"),
+  ].join("\n---\n");
+}
+
+/**
+ * Hash of {@link promptTemplateFor}. Wording moves results, so a silent prompt
+ * edit must show up as a different cell.
+ */
+export async function promptHashFor(
+  ide: string,
+  arm: string = "baseline",
+): Promise<string> {
+  return (await taskSetChecksum([promptTemplateFor(ide, arm)])).slice(0, 16);
 }
 
 async function capture(cmd: string, args: string[]): Promise<string | null> {
