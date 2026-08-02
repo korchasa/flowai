@@ -2,6 +2,7 @@
 date: 2026-08-02
 implements:
   - FR-BENCH-SWE.SYMMETRY
+  - FR-BENCH-SWE.CELLS
 status: in progress
 ---
 
@@ -67,7 +68,13 @@ the bound goes in the harness's review invocation, NOT in
   - Test: `scripts/benchmark/human_emulator_test.ts::operatorMessages: the REVIEW
     hand-off stays inside the issue's scope`
   - Evidence: `deno test -A scripts/benchmark/human_emulator_test.ts`
-- [x] SRS + SDS record both decisions and why the review bound is
+- [x] FR-BENCH-SWE.CELLS: the session budget is part of the cell key, and the
+      blended flowai cell is split into a 20-minute and a 40-minute record
+  - Test: `scripts/benchmark/cells_test.ts::cellId: the session budget is part
+    of the key, legacy ids unchanged`
+  - Evidence: `deno test -A scripts/benchmark/cells_test.ts`; the two cells read
+    10/45 measured and 2/11 measured + 34 pending
+- [x] SRS + SDS record all three decisions and why the review bound is
       benchmark-only
   - Evidence: `deno task check` (exit 0)
 - [ ] Re-measure the flowai arm at 40 min with the bounded review turn
@@ -82,4 +89,6 @@ the bound goes in the harness's review invocation, NOT in
 3. Extract `SESSION_BUDGET_MS` with the measurement that justifies 40 min in the
    doc comment; point both `--step-timeout` defaults at it.
 4. Sync SRS FR-BENCH-SWE.SYMMETRY and SDS §3.22 (Arm prompting, Components).
-5. Re-measure — still open.
+5. Put the budget in the cell key (segment omitted for the legacy 20 min so no
+   directory on disk is renamed) and split the blended cell along the seam.
+6. Re-measure — still open.
