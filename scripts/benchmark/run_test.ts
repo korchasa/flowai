@@ -1,4 +1,5 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
+import { isAbsolute } from "@std/path";
 import {
   assertModelForIde,
   codexAgentEnv,
@@ -6,8 +7,32 @@ import {
   isAuthFailure,
   isEmulatorOutage,
   isTransientSetupFailure,
+  repoCacheDir,
   timeoutLog,
 } from "./run.ts";
+
+/**
+ * The cache dir is handed to pip as `PIP_CACHE_DIR`, and pip runs with the
+ * SANDBOX as its cwd. A relative path therefore resolves inside the sandbox,
+ * where every downloaded wheel becomes an untracked file the diff capture picks
+ * up as the agent's work. Measured 2026-08-02: two sessions of a campaign
+ * started with a relative `--out` shipped 262 KB / 158 files and 534 KB / 218
+ * files, of which the actual fix was one and two files.
+ */
+Deno.test("repoCacheDir: absolute whatever the caller passed", () => {
+  const rel = repoCacheDir("scripts/benchmark/runs/pool2-flowai-bounded/rep1");
+  assert(
+    isAbsolute(rel),
+    `relative outDir must still yield an absolute cache dir: ${rel}`,
+  );
+  assert(rel.endsWith("/pool2-flowai-bounded/_repo-cache"), rel);
+
+  // An absolute outDir keeps its own root — the fix must not re-anchor it.
+  assertEquals(
+    repoCacheDir("/tmp/campaign/rep2"),
+    "/tmp/campaign/_repo-cache",
+  );
+});
 
 /**
  * A session that hits the wall clock is the one that most needs a transcript,

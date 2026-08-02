@@ -287,6 +287,23 @@ export const SESSION_MAX_STEPS = 4;
 export const SESSION_BUDGET_MS = 2_400_000;
 
 /**
+ * Shared clone + pip cache for a campaign, one level above the rep dir.
+ *
+ * ALWAYS absolute, and that is the whole point. The path is handed to pip as
+ * `PIP_CACHE_DIR`, and pip runs with the SANDBOX as its cwd — so a relative one
+ * resolves inside the sandbox and every downloaded wheel lands there as an
+ * untracked file that the diff capture reads as the agent's work. It went
+ * unseen because the DEFAULT `--out` is built from the repo root and is already
+ * absolute; the first campaign started with a relative `--out` (2026-08-02)
+ * shipped patches of 262 KB / 158 files and 534 KB / 218 files whose real fix
+ * was one and two files. Resolving here covers every caller, rather than
+ * trusting each one to pass an absolute path.
+ */
+export function repoCacheDir(outDir: string): string {
+  return resolve(outDir, "..", "_repo-cache");
+}
+
+/**
  * Close a timed-out session's transcript: everything the agent logged before the
  * cap, then the marker saying why it stopped.
  *
@@ -371,7 +388,7 @@ export async function runArm(
   const sandboxDir = join(extInstDir, "sandbox");
   await ensureDir(instDir);
   await ensureDir(extInstDir);
-  const cacheDir = join(opts.outDir, "..", "_repo-cache");
+  const cacheDir = repoCacheDir(opts.outDir);
 
   await prepareSandbox(data, sandboxDir, cacheDir);
 
