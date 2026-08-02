@@ -38,21 +38,50 @@ export interface CellKey {
   framework: string | null;
   model: string;
   effort: string;
+  /**
+   * Whole-session budget in ms. Optional: absent means the legacy 20 minutes,
+   * which is also what every cell written before 2026-08-01 ran under.
+   */
+  stepTimeoutMs?: number;
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 /**
+ * The one budget whose segment is omitted from `cellId`.
+ *
+ * This is a compatibility anchor, NOT the current default (that is
+ * `SESSION_BUDGET_MS`, 40 min). Every cell on disk was written at 20 minutes
+ * under a key that had no budget in it; anchoring the omission here keeps those
+ * directory names byte-identical instead of orphaning them behind a rename.
+ * Same idiom as `campaignRunId`, which suffixes only attempts after the first.
+ */
+export const LEGACY_CELL_STEP_TIMEOUT_MS = 1_200_000;
+
+/** `2_400_000` → `t40m`; a budget that is not whole minutes keeps its ms. */
+function budgetSegment(ms: number): string {
+  return ms % 60_000 === 0 ? `t${ms / 60_000}m` : `t${ms}ms`;
+}
+
+/**
  * Directory name for a cell. Every key component appears, so no two
  * configurations can land in one record.
+ *
+ * The session budget earned its place in the key the hard way: it sat in the
+ * header as a mere condition while it was in fact load-bearing — the 20-minute
+ * cap was free for baseline (0 of 198 sessions reached it) and binding for
+ * flowai (11 of 45), so a cell blending both budgets would describe no single
+ * measurement. Re-measured data now lands in its own record.
  */
 export function cellId(key: CellKey): string {
+  const budget = key.stepTimeoutMs ?? LEGACY_CELL_STEP_TIMEOUT_MS;
   return [
     key.ide,
     key.arm,
     key.framework ?? "none",
     key.model,
     key.effort,
+    ...(budget === LEGACY_CELL_STEP_TIMEOUT_MS ? [] : [budgetSegment(budget)]),
   ].map(slug).join("-");
 }
 

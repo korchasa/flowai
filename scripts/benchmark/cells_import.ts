@@ -108,11 +108,13 @@ export async function importCampaign(opts: ImportOptions): Promise<string> {
   for (const m of metas) {
     if (
       (m.ide ?? "claude") !== (first.ide ?? "claude") ||
-      m.model !== first.model || m.effort !== first.effort
+      m.model !== first.model || m.effort !== first.effort ||
+      m.stepTimeoutMs !== first.stepTimeoutMs
     ) {
       throw new Error(
         `${opts.campaignDir} blends campaigns: ` +
-          `${m.ide}/${m.model}@${m.effort} vs ${first.ide}/${first.model}@${first.effort}`,
+          `${m.ide}/${m.model}@${m.effort}/${m.stepTimeoutMs}ms vs ` +
+          `${first.ide}/${first.model}@${first.effort}/${first.stepTimeoutMs}ms`,
       );
     }
   }
@@ -123,6 +125,8 @@ export async function importCampaign(opts: ImportOptions): Promise<string> {
     framework: null,
     model: first.model,
     effort: first.effort,
+    // History in its own terms: the imported campaign's real cap, not today's.
+    stepTimeoutMs: first.stepTimeoutMs,
   };
   const dir = join(opts.cellsRoot, cellId(key));
 

@@ -487,6 +487,9 @@ await new Command()
       framework,
       model: opts.model,
       effort: opts.effort,
+      // The budget is part of the identity, not just a condition — a run at a
+      // different cap is a different measurement and gets its own record.
+      stepTimeoutMs: opts.stepTimeout,
     };
     const cellDir = join(opts.cells, cellId(cellKey));
     const priorReps = (await readCell(cellDir)).header?.reps ?? [];

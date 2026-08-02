@@ -46,6 +46,28 @@ Deno.test("cellId is the (ide, arm+fw, model, effort) key", () => {
   );
 });
 
+Deno.test("cellId: the session budget is part of the key, legacy ids unchanged", () => {
+  // The budget was a header field while it was a hidden variable: the 20-minute
+  // cap was load-bearing for the flowai arm and free for baseline, so data taken
+  // under two budgets must not land in one record.
+  assertEquals(
+    cellId({ ...KEY, stepTimeoutMs: 2_400_000 }),
+    "codex-flowai-a1b2c3d-gpt-5-6-terra-medium-t40m",
+  );
+
+  // The legacy 20-minute value keeps its segment OFF, so every cell already on
+  // disk answers to the same directory name it was written under.
+  assertEquals(cellId({ ...KEY, stepTimeoutMs: 1_200_000 }), cellId(KEY));
+
+  const ids = new Set([
+    cellId(KEY),
+    cellId({ ...KEY, stepTimeoutMs: 2_400_000 }),
+    cellId({ ...KEY, stepTimeoutMs: 600_000 }),
+  ]);
+  assertEquals(ids.size, 3, "each budget must produce its own cell");
+  for (const id of ids) assert(/^[a-z0-9-]+$/.test(id), `not a slug: ${id}`);
+});
+
 Deno.test("taskSetChecksum: order-independent, content-sensitive", async () => {
   const a = await taskSetChecksum(["b__x-2", "a__y-1"]);
   const b = await taskSetChecksum(["a__y-1", "b__x-2"]);
