@@ -87,6 +87,32 @@ Deno.test("planTurn/reviewTurn: carry the IDE's prefix, args unchanged", () => {
   );
 });
 
+Deno.test("reviewTurn: bounds the fix to the issue instead of inviting a wider diff", () => {
+  const turn = reviewTurn(FEEDBACK);
+  // Still a review that fixes what the issue actually requires.
+  assert(
+    /review/i.test(turn) && /fix/i.test(turn),
+    "still asks to review and fix",
+  );
+  // The open invitation that produced the doubling is gone. Measured over three
+  // reps: `review` edited code in 91% of sessions and twice turned a patch that
+  // passed into one that did not — SWE-bench grades against a hidden suite, so a
+  // change the issue never asked for can only cost P2P tests.
+  assert(
+    !/fix any gaps you find/i.test(turn),
+    "the unbounded 'fix any gaps' invitation must be gone",
+  );
+  assert(
+    /still pass|keep .*passing|currently pass/i.test(turn),
+    "must say the repository's other tests have to keep passing",
+  );
+  assert(
+    /nothing else|beyond what the issue|the issue does not ask/i.test(turn),
+    "must forbid changes the issue does not ask for",
+  );
+  assert(/do not commit or push/i.test(turn), "no-commit rule survives");
+});
+
 Deno.test("follow-up turns: separate commands, each carrying the human's words", () => {
   assert(implementTurnWithVerdict("Go ahead.").startsWith("/implement"));
   const review = reviewTurn(FEEDBACK);

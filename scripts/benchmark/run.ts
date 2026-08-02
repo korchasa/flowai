@@ -95,6 +95,7 @@ export interface RunOptions {
   outDir: string;
   /** Per-agent-session timeout (ms). SWE-bench fixes need long autonomous runs. */
   stepTimeoutMs: number;
+  // (see SESSION_BUDGET_MS below for the default and why it is 40 minutes)
   /** Repo root (framework/ + template resolved relative to this). */
   repoRoot: string;
   /**
@@ -268,6 +269,22 @@ export function buildPrompt(
  * misdescribes every rep filed under it.
  */
 export const SESSION_MAX_STEPS = 4;
+
+/**
+ * Default whole-session budget: 40 minutes.
+ *
+ * It was 20, and that cap was load-bearing in a way nobody intended. The
+ * baseline arm never reached it (0 of 198 sessions), while the flowai arm — which
+ * spends the same budget on plan → implement → review — hit it in 11 of 45. So a
+ * nominally symmetric setting was charging one arm for its own workflow.
+ *
+ * Re-measuring those 11 at 40 minutes settled it: 10 finished the full cycle, and
+ * the arm's score did NOT improve (10/45 -> 9/45). Twice the cap had been cutting
+ * `review` off while the patch still passed, and the extra time let review double
+ * the diff and break it. The budget was never the constraint — so make it wide
+ * enough that it stops being a hidden variable, and read the arms on their merits.
+ */
+export const SESSION_BUDGET_MS = 2_400_000;
 
 /**
  * Close a timed-out session's transcript: everything the agent logged before the
@@ -489,7 +506,7 @@ export async function runArm(
   // harvest cost counters from the bench-home transcripts
   // NOW — bench-home lives in the OS temp root and is purged within days.
   // Collection failure is loud but never fails the instance: the prediction
-  // (a 20-minute LLM session's primary measurement) is not sacrificed to a
+  // (a long LLM session's primary measurement) is not sacrificed to a
   // counter.
   //
   // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):

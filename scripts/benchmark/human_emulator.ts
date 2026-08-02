@@ -67,7 +67,7 @@ export function operatorMessages(
     `Begin your reply with a decision line — the literal text "DECISION: X", where X is one of AUTHORIZE, REPLAN, REVIEW, ANSWER, DONE — and nothing else on that line. Then, from the next line on, your message to the engineer.`,
     `AUTHORIZE — a plan with variants is on the table and you are authorizing one; the engineer proceeds to implementation.`,
     `REPLAN — the plan is unusable and they must plan again: no variants for the actual issue, an unsubstantiated "nothing to do", or they stopped on their own tooling instead of analyzing the issue.`,
-    `REVIEW — implementation work exists; hand the engineer the task of reviewing it against the issue and fixing what they find. This is the LAST thing you say: the session ends once they answer it, and you will not see or assess the result.`,
+    `REVIEW — implementation work exists; hand the engineer the task of reviewing it against the issue and fixing what the issue itself requires, and nothing else. This is the LAST thing you say: the session ends once they answer it, and you will not see or assess the result.`,
     `ANSWER — they asked something, or are blocked, and your reply is a plain answer rather than a workflow step.`,
     `DONE — there is nothing further you can usefully say. The session ends here.`,
     ``,

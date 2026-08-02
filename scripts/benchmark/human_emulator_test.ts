@@ -26,6 +26,25 @@ const PLAN = [
   "### Variant 2 — patch callers",
 ].join("\n");
 
+Deno.test("operatorMessages: the REVIEW hand-off stays inside the issue's scope", () => {
+  const system = operatorMessages(ISSUE, PLAN).find((m) =>
+    m.role === "system"
+  )!;
+  const line = system.content.split("\n").find((l) => l.startsWith("REVIEW —"));
+  assert(line, "the REVIEW decision must still be described");
+  // The human still hands over a review, but no longer as an open-ended
+  // invitation to keep improving: on this benchmark a change the issue never
+  // asked for can only break tests that already passed.
+  assert(
+    !/fixing what they find/i.test(line!),
+    "the unbounded 'fixing what they find' hand-off must be gone",
+  );
+  assert(
+    /the issue|scope|nothing else/i.test(line!),
+    "the REVIEW description must bound the fix to the issue",
+  );
+});
+
 Deno.test("operatorMessages: carries the issue and the plan output, no gold fields", () => {
   const msgs = operatorMessages(ISSUE, PLAN);
   const all = msgs.map((m) => m.content).join("\n");

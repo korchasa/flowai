@@ -153,6 +153,15 @@ export function replanTurn(
  * seeded AGENTS.md tells the agent to STOP and ask when the environment is
  * broken — the arm was issuing both instructions at once and then leaving the
  * question unanswered.
+ *
+ * The turn also BOUNDS the fix to the issue, which is a benchmark-specific rule
+ * and lives here rather than in the framework's own review skill. On real work an
+ * extra fix is a win: a human and CI see it before it ships. SWE-bench has neither
+ * — it grades against a hidden suite, so a change the issue never asked for can
+ * only lose PASS_TO_PASS tests. Measured over three reps: review edited code in
+ * 91% of sessions, and twice (pygraphistry-1277, schemathesis-3778) it took a diff
+ * that passed and doubled it into one that failed. The earlier wording invited
+ * exactly that by asking the agent to "fix any gaps you find".
  */
 export function reviewTurn(
   feedback: string,
@@ -163,7 +172,9 @@ export function reviewTurn(
     [
       feedback.trim(),
       ``,
-      `Review your working-tree diff for correctness AND completeness against the issue, and fix any gaps you find.`,
+      `Review your working-tree diff for correctness AND completeness against the issue, and fix what the issue itself requires.`,
+      `Change nothing else: the repository's other tests must still pass, so leave working code alone — do not rename or restructure existing tests, do not add coverage the issue does not ask for, and do not touch files unrelated to the fix.`,
+      `Anything you would improve beyond the issue goes in the report, not in the diff.`,
       `Do not commit or push.`,
     ].join("\n"),
     prefix,

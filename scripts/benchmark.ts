@@ -35,6 +35,7 @@ import {
   type Arm,
   assertModelForIde,
   runBenchmark,
+  SESSION_BUDGET_MS,
   SESSION_MAX_STEPS,
 } from "./benchmark/run.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
@@ -284,7 +285,7 @@ await new Command()
     { default: "high" },
   )
   .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
-    default: 1_200_000,
+    default: SESSION_BUDGET_MS,
   })
   .option(
     "--instance <id:string>",
@@ -809,7 +810,7 @@ await new Command()
   )
   .option("--out <dir:string>", "Output dir for predictions + logs")
   .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
-    default: 1_200_000,
+    default: SESSION_BUDGET_MS,
   })
   .action(async (opts) => {
     const arm = opts.arm as Arm;
