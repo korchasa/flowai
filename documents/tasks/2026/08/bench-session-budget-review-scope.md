@@ -3,7 +3,7 @@ date: 2026-08-02
 implements:
   - FR-BENCH-SWE.SYMMETRY
   - FR-BENCH-SWE.CELLS
-status: in progress
+status: done
 ---
 
 # Session budget 40 min + review-turn scope bound (benchmark)
@@ -83,9 +83,11 @@ the bound goes in the harness's review invocation, NOT in
 - [x] SRS + SDS record all four decisions and why the review bound is
       benchmark-only
   - Evidence: `deno task check` (exit 0)
-- [ ] Re-measure the flowai arm at 40 min with the bounded review turn
+- [x] Re-measure the flowai arm at 40 min with the bounded review turn
   - Evidence: three reps of 15 in
-    `scripts/benchmark/runs/pool2-flowai/rep{1,2,3}/flowai.jsonl`
+    `scripts/benchmark/runs/pool2-flowai-bounded/rep{1,2,3}/flowai.jsonl`; cell
+    `codex-flowai-44d8965a5ce4-gpt-5-6-terra-medium-t40m-p762a762bcceb` reads
+    4 + 5 + 6 = 15/45, five instances stable across >=2 of 3 reps
 
 ## Solution
 
@@ -99,4 +101,25 @@ the bound goes in the harness's review invocation, NOT in
    directory on disk is renamed) and split the blended cell along the seam.
 6. Make `promptHashFor` arm-aware and put it in the key; the re-measurement then
    claims its own directory instead of overwriting the surgical one.
-7. Re-measure — still open.
+7. Re-measure — done 2026-08-03, 12 h 46 min for 45 sessions at concurrency 1.
+
+## Result
+
+flowai at 40 min with the bounded review turn: 15/45 (4, 5, 6 per rep), five
+instances solved in >=2 of 3 reps — `anyio-1134`, `pygeoapi-2338`,
+`schemathesis-3778`, `schemathesis-3933`, `sqlglot-7457`. The bare arm over the
+same 15 keepers: 8/45 and NOTHING stable — every one of its eight solves
+happened in exactly one rep. That contrast, not the raw total, is the finding.
+
+Two caveats, stated rather than buried:
+
+1. The comparison against the earlier 10/45 moves TWO variables at once (budget
+   20 -> 40 min AND the review wording), so neither can be credited alone. The
+   earlier cell also carries four measured-but-ungraded rows — no report on
+   disk — so its 10 is out of 41 graded, not 45.
+2. `solved-broke` did NOT fall: 2 before, 3 after. Bounding the review's scope
+   was aimed squarely at this, and the data does not support the expectation. At
+   these counts the difference is noise, but so is any claimed improvement.
+
+Data quality: 45 of 45 sessions produced a patch, none empty, none oversize
+(max 33 KB, median ~7 KB) — the `repoCacheDir` fix held for the whole run.
