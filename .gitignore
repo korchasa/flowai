@@ -54,6 +54,15 @@ scripts/benchmark/runs/
 *.bench-*.json
 gold.*.json
 benchmark-*.log
+# swebench drops a <model_name_or_path>.<run-id>.json summary into the working
+# directory on every grading pass, and the arm names are our model names; the
+# real record is the cell. A narrower pair (baseline.pool2-*, flowai.pool2-*)
+# used to sit further down and missed every other run id — which is how
+# baseline.ab-baseline.json, 550 lines, rode into the repo root with an early
+# commit and sat there unread until 2026-08-03. Root-anchored, so a
+# legitimately tracked flowai.*.json somewhere below is still committed.
+/baseline.*.json
+/flowai.*.json
 
 # FoxCode local profile/state (dev-only, not tracked)
 .foxcode/
@@ -61,8 +70,3 @@ benchmark-*.log
 # SWE-rebench pool2 grading path (FR-BENCH-SWE.POOL2): fork + venv
 .venv-rebench/
 .swe-bench-fork/
-
-# swebench fork drops its per-run summary in the CWD, named after the arm it
-# graded; the real record is the cell.
-baseline.pool2-*.json
-flowai.pool2-*.json
