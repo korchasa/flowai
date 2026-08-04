@@ -1,18 +1,20 @@
 /**
- * SWE-bench Verified benchmark CLI for flowai-core (FR-BENCH-SWE).
+ * SWE-rebench A/B benchmark CLI for flowai-core (FR-BENCH-SWE).
  *
- * Same-harness A/B: both arms are Claude Code + Sonnet over ACP; the only
- * difference is flowai. We run our OWN baseline (no flowai) over a
- * high-confidence pool (instances a stronger Claude Code config AND tools-Sonnet
- * both failed), then run flowai over the baseline's actual failures. The signal
- * is baseline-fail → flowai-pass.
+ * Same-harness A/B: both arms are the same IDE + model over ACP; the only
+ * difference is flowai. Both arms are measured over the frozen pool, and the
+ * signal is the baseline-fail -> flowai-pass cell.
  *
  * Subcommands:
- *   setup       — create venv, install swebench, warm dataset cache.
- *   select      — regenerate candidates.json (cheapest sonnet-unsolved).
- *   verify      — grade predictions (or `--gold`) via the Python swebench harness.
- *   run         — drive one arm (baseline|flowai) over the pool, emit predictions.
- *   report      — grade both arms and render the A/B markdown report.
+ *   setup        — create venv, install swebench, warm dataset cache.
+ *   pool2-*      — fetch, gate, measure and select the frozen pool.
+ *   verify       — grade predictions (or `--gold`) via the Python swebench harness.
+ *   retro        — regression decomposition of already-graded runs (no LLM).
+ *   cells-*      — import, select over and inspect result cells.
+ *
+ * The retired SWE-bench Verified path (`select` / `run` / `report` over
+ * `pool.json`) was removed 2026-08-04 — see
+ * `documents/benchmarks/retired-approaches.md`.
  *
  * Orchestration is Deno/TS; grading is delegated to Python `swebench`.
  */
@@ -21,29 +23,17 @@ import { Command } from "@cliffy/command";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { ensureSetup } from "./benchmark/setup.ts";
-import { DATASET, runEvaluation } from "./benchmark/verify.ts";
+import { runEvaluation } from "./benchmark/verify.ts";
 import { stripTestHunks } from "./benchmark/patch.ts";
-import {
-  ARM64_DENY,
-  POOL,
-  poolIds,
-  SONNET_RESOLVED,
-} from "./benchmark/instances.ts";
-import { dumpAllMeta } from "./benchmark/dataset.ts";
-import { selectCandidates } from "./benchmark/select.ts";
 import {
   type Arm,
   assertModelForIde,
-  runBenchmark,
   SESSION_BUDGET_MS,
   SESSION_MAX_STEPS,
 } from "./benchmark/run.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { SUPPORTED_IDES } from "@acceptance-tests/adapters/mod.ts";
-import { aggregateAB, renderMarkdownAB } from "./benchmark/report.ts";
 import { renderRetroMarkdown, scanRun } from "./benchmark/retro.ts";
-import { loadRunMetrics, sumCost } from "./benchmark/metrics.ts";
-import { loadRunWebAudits } from "./benchmark/webaudit.ts";
 import {
   ensureRebenchSetup,
   FORK_PINNED_COMMIT,
@@ -104,12 +94,6 @@ import {
   zeroRepIds,
   zeroRepsMissingOpus,
 } from "./benchmark/pool2_select.ts";
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-const CANDIDATES_PATH = "scripts/benchmark/candidates.json";
 
 /** Read instance ids out of a predictions JSONL file (empty if absent). */
 async function readPredIds(path: string): Promise<string[]> {
@@ -737,17 +721,6 @@ await new Command()
       }
     }
   })
-  // ---- select ----
-  .command("select", "Regenerate candidates.json (cheapest sonnet-unsolved)")
-  .action(async () => {
-    const meta = await dumpAllMeta(Deno.cwd());
-    const out = selectCandidates(meta, SONNET_RESOLVED, new Set(ARM64_DENY));
-    await Deno.writeTextFile(
-      CANDIDATES_PATH,
-      JSON.stringify(out, null, 2) + "\n",
-    );
-    console.log(`[select] wrote ${out.length} candidates → ${CANDIDATES_PATH}`);
-  })
   // ---- verify ----
   .command("verify", "Grade predictions (or --gold) via the swebench harness")
   .option("--gold", "Apply dataset reference patches instead of predictions")
@@ -791,149 +764,6 @@ await new Command()
       Deno.exit(1);
     }
   })
-  // ---- run ----
-  .command(
-    "run",
-    "Drive one arm (baseline|flowai) over the pool, emit predictions",
-  )
-  .option("--arm <arm:string>", "Arm to run: baseline | flowai", {
-    required: true,
-  })
-  .option("--instance <id:string>", "Restrict to instance id (repeatable)", {
-    collect: true,
-  })
-  .option("--limit <n:number>", "Run only the cheapest N pool instances")
-  .option("--model <name:string>", "Agent model", { default: "sonnet" })
-  .option("--ide <name:string>", "IDE under test (claude | codex)", {
-    default: "claude",
-  })
-  .option(
-    "--human-emulator-model <name:string>",
-    "Human-emulator model (always Claude)",
-    {
-      default: "sonnet",
-    },
-  )
-  .option("--out <dir:string>", "Output dir for predictions + logs")
-  .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
-    default: SESSION_BUDGET_MS,
-  })
-  .action(async (opts) => {
-    const arm = opts.arm as Arm;
-    if (arm !== "baseline" && arm !== "flowai") {
-      console.error(`--arm must be 'baseline' or 'flowai', got '${arm}'`);
-      Deno.exit(1);
-    }
-    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
-    // reject a cross-IDE model at the CLI edge, before any session is spawned.
-    const ide = opts.ide as AcpIde;
-    if (!SUPPORTED_IDES.includes(ide)) {
-      console.error(
-        `--ide must be one of ${SUPPORTED_IDES.join(", ")}, got '${opts.ide}'`,
-      );
-      Deno.exit(1);
-    }
-    try {
-      assertModelForIde(ide, opts.model);
-    } catch (e) {
-      console.error((e as Error).message);
-      Deno.exit(1);
-    }
-    let instanceIds = (opts.instance as string[] | undefined) ?? poolIds();
-    if (opts.limit !== undefined) {
-      instanceIds = instanceIds.slice(0, opts.limit);
-    }
-    const repoRoot = Deno.cwd();
-    const outDir = opts.out ??
-      join(repoRoot, "scripts/benchmark/runs", today());
-    await ensureDir(outDir);
-    console.log(
-      `[run] arm=${arm} ide=${ide} instances=${instanceIds.length} ` +
-        `model=${opts.model} human-emulator=${opts.humanEmulatorModel}`,
-    );
-    console.log(`[run] out=${outDir}`);
-    await runBenchmark({
-      arm,
-      instanceIds,
-      model: opts.model,
-      ide,
-      humanEmulatorModel: opts.humanEmulatorModel,
-      outDir,
-      stepTimeoutMs: opts.stepTimeout,
-      repoRoot,
-    });
-  })
-  // ---- report ----
-  .command("report", "Grade both arms and render the A/B markdown report")
-  .option(
-    "--out <dir:string>",
-    "Predictions dir (contains baseline.jsonl/flowai.jsonl)",
-    {
-      required: true,
-    },
-  )
-  .option("--model <name:string>", "Harness model label", { default: "sonnet" })
-  .option("--report <path:string>", "Markdown report output path")
-  .action(async (opts) => {
-    const baselinePreds = join(opts.out, "baseline.jsonl");
-    try {
-      await Deno.stat(baselinePreds);
-    } catch {
-      console.error(`missing baseline predictions: ${baselinePreds}`);
-      Deno.exit(1);
-    }
-    console.log(`[report] grading baseline (${baselinePreds})`);
-    const bRes = await runEvaluation({
-      predictionsPath: await writeGradablePredictions(baselinePreds),
-      modelName: "baseline",
-      runId: "bench-baseline",
-    });
-
-    const flowaiPreds = join(opts.out, "flowai.jsonl");
-    let fResolved: string[] = [];
-    let fAttempted: string[] = [];
-    if (await Deno.stat(flowaiPreds).then(() => true).catch(() => false)) {
-      console.log(`[report] grading flowai (${flowaiPreds})`);
-      const fRes = await runEvaluation({
-        predictionsPath: await writeGradablePredictions(flowaiPreds),
-        modelName: "flowai",
-        runId: "bench-flowai",
-      });
-      fResolved = fRes.resolvedIds;
-      fAttempted = await readPredIds(flowaiPreds);
-    } else {
-      console.log(`[report] no flowai predictions yet — baseline-only report`);
-    }
-
-    const rep = aggregateAB(POOL, bRes.resolvedIds, fResolved, fAttempted);
-    // implements [FR-BENCH-SWE.COST](../documents/requirements.md#fr-bench-swe.cost-session-cost-counters-informative-never-a-quality-criterion-ancfrbench-swe-cost):
-    // attach per-arm cost totals when the run captured metrics (older
-    // campaigns predate capture — the section is simply absent).
-    const byArm = await loadRunMetrics(opts.out);
-    const costs = {
-      baseline: byArm.baseline ? sumCost(byArm.baseline) : undefined,
-      flowai: byArm.flowai ? sumCost(byArm.flowai) : undefined,
-    };
-    // implements [FR-BENCH-SWE.WEBAUDIT](../documents/requirements.md#fr-bench-swe.webaudit-per-instance-web-access-audit-flagged-never-banned-ancfrbench-swe-webaudit):
-    // attach the per-arm web-access audit when the run captured it.
-    const audits = await loadRunWebAudits(opts.out);
-    const md = renderMarkdownAB(
-      rep,
-      {
-        date: today(),
-        model: opts.model,
-        dataset: DATASET,
-      },
-      costs.baseline || costs.flowai ? costs : undefined,
-      audits.baseline || audits.flowai ? audits : undefined,
-    );
-    const reportPath = opts.report ??
-      join("documents/benchmarks", `swe-verified-${today()}.md`);
-    await ensureDir(join(reportPath, ".."));
-    await Deno.writeTextFile(reportPath, md);
-    console.log(`\n${md}`);
-    console.log(`[report] written → ${reportPath}`);
-  })
   // ---- retro ----
   .command(
     "retro",
@@ -952,7 +782,6 @@ await new Command()
     "Run-id glob over --dir (repeatable; * and ? wildcards)",
     { collect: true },
   )
-  .option("--pool-only", "Keep only instances of the current pool.json")
   .option("--title <text:string>", "Report title", {
     default: "Regression decomposition (retro)",
   })
@@ -995,16 +824,12 @@ await new Command()
         Deno.exit(1);
       }
     }
-    let grades = (await Promise.all(
+    const grades = (await Promise.all(
       [...runIds].sort().map((id) => scanRun(opts.dir, id)),
     )).flat().filter((g) => {
       const arm = armFilter.get(g.runId);
       return arm === undefined || g.arm === arm;
     });
-    if (opts.poolOnly) {
-      const pool = new Set(poolIds());
-      grades = grades.filter((g) => pool.has(g.instanceId));
-    }
     if (grades.length === 0) {
       console.error("retro: matched runs contain no graded instances");
       Deno.exit(1);

@@ -12,13 +12,31 @@
  *   4. selectPool2        — apply the shared keep-rule (isHeadroomKeeper) and
  *                           freeze the cheapest-first N, minus excluded bad ids.
  *
- * Keep-rule rationale lives with `isHeadroomKeeper` (instances.ts): keep an
- * instance iff our Sonnet is not already reliable (0 or 1 of 3) AND someone on
- * our scaffold can solve it (Sonnet ≥1 rep, or Opus) — i.e. real A/B headroom.
+ * Keep-rule rationale lives with `isHeadroomKeeper` below: keep an instance iff
+ * our Sonnet is not already reliable (0 or 1 of 3) AND someone on our scaffold
+ * can solve it (Sonnet ≥1 rep, or Opus) — i.e. real A/B headroom.
  */
 
-import { isHeadroomKeeper } from "./instances.ts";
 import type { Pool2Candidate } from "./pool2_fetch.ts";
+
+/**
+ * Pool keep-rule: an instance belongs in the pool iff our subject arm is NOT
+ * already reliable (resolved in 0 or 1 of 3 reps) AND it is solvable by someone
+ * on our scaffold (subject resolved ≥1 rep, OR the ceiling arm resolved it).
+ * Excludes always-solved (no headroom for flowai to demonstrate) and
+ * nobody-solved (no ceiling, so a miss proves nothing).
+ *
+ * Written for the retired SWE-bench Verified pool and carried forward unchanged
+ * — the rule is about headroom, not about which dataset supplied the rows.
+ */
+export function isHeadroomKeeper(
+  m: { sonnet_reps: number; opus_resolved: boolean | null } | undefined,
+): boolean {
+  if (!m) return false;
+  if (m.sonnet_reps === 1) return true;
+  if (m.sonnet_reps === 0 && m.opus_resolved === true) return true;
+  return false;
+}
 
 /** Per-instance headroom on our scaffold, mirroring measured_headroom.json. */
 export interface Pool2Headroom {

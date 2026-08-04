@@ -37,19 +37,12 @@ import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { createAdapter } from "@acceptance-tests/adapters/mod.ts";
 import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
-import { candidateById } from "./instances.ts";
-import { type InstanceData, loadInstanceData } from "./dataset.ts";
+import type { InstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
 import { installProjectDeps } from "./install_env.ts";
 import { externalSandboxRoot, linkIntoRunDir } from "./sandbox_root.ts";
 import { installAgentsMd, installDocStubs } from "./agents_md.ts";
-import {
-  appendPrediction,
-  captureDiff,
-  initPredictionsFile,
-  type Prediction,
-  toPrediction,
-} from "./predictions.ts";
+import { captureDiff, type Prediction, toPrediction } from "./predictions.ts";
 import {
   baselineTask,
   type CommandPrefix,
@@ -607,42 +600,4 @@ export async function runArm(
     wallClockMs,
     turns,
   };
-}
-
-/** Drive one arm over the given instances and write its predictions file. */
-export async function runBenchmark(opts: RunOptions): Promise<string> {
-  // Absolute outDir: the Claude adapter builds bench-home adjacent to the
-  // sandbox resolved against the agent's cwd — a relative outDir would place
-  // bench-home INSIDE the sandbox and pollute the captured diff.
-  opts = { ...opts, outDir: resolve(opts.outDir) };
-  await ensureDir(opts.outDir);
-  const data = await loadInstanceData(opts.instanceIds, opts.repoRoot);
-
-  // Truncate the predictions file up front, then append one record per instance
-  // so an interruption (e.g. the harness killing this long background task)
-  // keeps every completed instance on disk instead of losing the whole batch.
-  const preds: Prediction[] = [];
-  const path = await initPredictionsFile(opts.outDir, opts.arm);
-  for (const id of opts.instanceIds) {
-    const cand = candidateById(id);
-    const tag = cand ? `${cand.difficulty}, ${cand.patchBytes}b` : "unlisted";
-    console.log(`[run] ${opts.arm} ${id} (${tag})`);
-    let prediction: Prediction;
-    try {
-      const res = await runArm(data.get(id)!, opts);
-      prediction = res.prediction;
-      const patchLines = prediction.model_patch.split("\n").length;
-      console.log(
-        `  exit=${res.code} patch=${patchLines} lines log=${res.logPath}`,
-      );
-    } catch (e) {
-      console.error(`  FAILED ${opts.arm} ${id}: ${(e as Error).message}`);
-      // Empty patch → swebench scores it unresolved, keeps the queue complete.
-      prediction = toPrediction(id, opts.arm, "");
-    }
-    preds.push(prediction);
-    await appendPrediction(opts.outDir, opts.arm, prediction);
-  }
-  console.log(`[run] wrote ${preds.length} ${opts.arm} predictions → ${path}`);
-  return opts.outDir;
 }

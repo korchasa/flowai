@@ -178,7 +178,7 @@ export function finalizeRun(
     console.log(
       `\n${
         ansi("\x1b[31m")
-      }Cache check failed: one or more scenarios had no matching cache entry. Run \`deno task bench --refresh-cache\` and commit acceptance-tests/cache/.${
+      }Cache check failed: one or more scenarios had no matching cache entry. Run \`deno task acceptance-tests --refresh-cache\` to rebuild the local cache (it is gitignored — nothing to commit).${
         ansi("\x1b[0m")
       }`,
     );

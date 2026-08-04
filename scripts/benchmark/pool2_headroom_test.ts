@@ -7,9 +7,9 @@
  */
 
 import { assert, assertEquals } from "@std/assert";
-import { isHeadroomKeeper } from "./instances.ts";
 import {
   classifyInstance,
+  isHeadroomKeeper,
   type Pool2HeadroomEntry,
   type Pool2Verdict,
   verdictSummary,

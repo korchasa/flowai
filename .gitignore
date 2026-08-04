@@ -4,8 +4,14 @@ skeleton.md
 tmp/
 acceptance-tests/runs/
 acceptance-tests/acceptance-tests.lock
-# acceptance-tests/cache/ is intentionally tracked — committed per-scenario verdicts
-# short-circuit agent + judge calls when inputs haven't changed (FR-ACCEPT-CACHE).
+# acceptance-tests/cache/ was tracked until 2026-08-04 so a fresh clone would
+# inherit verdicts. Measured: `acceptance-tests --cache-check` scored 0 hits and
+# 313 misses over the 307 committed entries. The key hashes the whole runner
+# (`scripts/acceptance-tests/lib/**`) and the IDE's `--version`, so ONE harness
+# commit — 202a7bb3, 2026-07-28 — invalidated every entry recorded up to
+# 2026-07-05. The cache still pays off locally between edits; it just cannot
+# survive the trip through git (FR-ACCEPT-CACHE).
+acceptance-tests/cache/
 framework/*/skills/*/acceptance-tests/runs/
 framework/*/commands/*/acceptance-tests/runs/
 framework/*/agents/*/acceptance-tests/runs/

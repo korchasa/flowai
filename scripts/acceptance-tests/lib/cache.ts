@@ -1,6 +1,6 @@
 // [REF:fr:accept-cache | FR-ACCEPT-CACHE]
 /**
- * Benchmark result cache — content-addressed, committed to the repo.
+ * Benchmark result cache — content-addressed, LOCAL (gitignored since 2026-08-04).
  *
  * ## Purpose
  *
@@ -76,7 +76,7 @@ export const whitelistedCrossPackageFiles: readonly string[] = [
   "scripts/utils.ts",
 ];
 
-/** Trimmed form of `BenchmarkResult` suitable for committing. */
+/** Trimmed form of `BenchmarkResult` suitable for storing. */
 export interface CachedResult {
   success: boolean;
   score: number;
@@ -249,7 +249,7 @@ export async function writeCache(
   await Deno.writeTextFile(path, JSON.stringify(entry, null, 2) + "\n");
 }
 
-/** Projects a `BenchmarkResult` onto the committed `CachedResult` shape. */
+/** Projects a `BenchmarkResult` onto the stored `CachedResult` shape. */
 export function trimResultForCache(r: BenchmarkResult): CachedResult {
   const checklistResults: CachedResult["checklistResults"] = {};
   for (const [id, v] of Object.entries(r.checklistResults)) {
