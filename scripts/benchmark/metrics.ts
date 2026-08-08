@@ -11,7 +11,8 @@
  * Rollout quirks this module encodes:
  * - `token_count` events carry a RUNNING TOTAL (`total_token_usage`), re-emitted
  *   after every API response → take the LAST event, never the sum;
- * - `function_call` items repeat across retries → dedupe by their own `fc_*` id;
+ * - `function_call` items repeat across retries → dedupe by `call_id` (the
+ *   field codex actually writes) falling back to `id`;
  * - a killed session truncates the final line → malformed lines are counted
  *   (`parseErrors`), never silently dropped.
  *
@@ -31,7 +32,7 @@ export interface TranscriptUsage {
   cacheReadTokens: number;
   /** Always 0 on codex, which reports no cache-creation counter. */
   cacheCreationTokens: number;
-  /** Unique `function_call` items (deduped by `fc_*` id). */
+  /** Unique `function_call` items (deduped by `call_id`, else `id`). */
   toolCalls: number;
   /** Unparseable non-empty lines (e.g. the torn tail of a killed session). */
   parseErrors: number;
@@ -94,8 +95,17 @@ export function usageFromRollout(text: string): TranscriptUsage {
       }
       continue;
     }
-    if (payload.type === "function_call" && typeof payload.id === "string") {
-      toolIds.add(payload.id);
+    if (payload.type === "function_call") {
+      // `call_id` is the identifier codex actually writes: measured over every
+      // rollout on this host (1493 files, 43669 function_call records) 94% carry
+      // `call_id` alone and no `id`. Keying on `id` alone counted zero tool
+      // calls in almost every real session.
+      const id = typeof payload.call_id === "string"
+        ? payload.call_id
+        : typeof payload.id === "string"
+        ? payload.id
+        : undefined;
+      if (id !== undefined) toolIds.add(id);
     }
   }
 

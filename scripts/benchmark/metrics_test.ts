@@ -85,6 +85,14 @@ function fnCall(id: string, name: string): string {
   });
 }
 
+/** The dominant real shape: `call_id` only, no `id`. */
+function fnCallByCallId(callId: string, name: string): string {
+  return JSON.stringify({
+    type: "response_item",
+    payload: { type: "function_call", call_id: callId, name },
+  });
+}
+
 Deno.test("usageFromRollout: total_token_usage is cumulative, last occurrence wins", () => {
   // Codex re-emits the running total after every API response, so summing the
   // events would multiply the real cost. Only the final event counts.
@@ -119,6 +127,19 @@ Deno.test("usageFromRollout: dedupes tool calls by function_call id", () => {
     fnCall("fc_1", "exec"),
     fnCall("fc_1", "exec"),
     fnCall("fc_2", "exec"),
+    tokenCount({ input_tokens: 1, output_tokens: 1, total_tokens: 2 }),
+  ].join("\n");
+  assertEquals(usageFromRollout(text).toolCalls, 2);
+});
+
+Deno.test("usageFromRollout: identifies tool calls by call_id, not only id", () => {
+  // Measured over every rollout on this host (1493 files, 43669 function_call
+  // records): 94% carry `call_id` alone and no `id`. Keying on `id` counted
+  // zero tool calls in almost every real session.
+  const text = [
+    fnCallByCallId("call_1", "exec_command"),
+    fnCallByCallId("call_1", "exec_command"),
+    fnCallByCallId("call_2", "shell_command"),
     tokenCount({ input_tokens: 1, output_tokens: 1, total_tokens: 2 }),
   ].join("\n");
   assertEquals(usageFromRollout(text).toolCalls, 2);
