@@ -117,6 +117,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
   2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence):
      Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
+- **Deleting an artifact orphans the evidence that cites it**: before removing a run directory, data file, or module, run `grep -rn "<name>" documents/tasks/` and annotate every `Evidence:` line the deletion breaks — say where the evidence moved, or that it was retired on purpose. Task files are permanent records and their `Evidence:` lines are NOT rewritten after the fact, but an orphaned path with no note reads as lost data. Observed 2026-08-04: removing the retired campaign dirs left three live `Evidence:` paths in two task files pointing at nothing, while the verdicts themselves were safe in the committed cells all along.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a benchmark scenario ID (flowai's own idiom, matched by `check-fr-coverage.ts`), a test `path::name`, a verification command, or `manual — <reviewer>`. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Enforced by `plan` (DoD tuple), `review` / `review-and-commit` (FR Coverage Audit — blocking), and `commit` / `review-and-commit` (FR Acceptance Gate on SRS edits).
 
 ### SRS Format (`documents/requirements.md`)
@@ -386,6 +387,7 @@ Build tooling, verification, and acceptance test infrastructure for flowai.
   These are **intentional test fixtures** inside `runCommandsInParallelBuffered` tests in `task-check_test.ts` — they verify that the parallel runner correctly reports failed sub-commands. They are NOT real failures.
 - **Real verdict** comes from the final `N passed | M failed` summary lines, NOT from the presence of `=== FAIL` strings. Always grep for `failed` count, not for `FAIL`.
 - If the agent stops on `=== FAIL deno eval Deno.exit(...)` without checking the summary line, it is a false alarm.
+- `scripts/acceptance-tests/lib/process_watchdog_test.ts` is timing-bound: it waits up to 2000 ms for a process group to collapse, and under host load it fails with `pgid=<N> never reached 1 members within 2000 ms`. That failure does NOT mean the watchdog regressed. Before fixing anything, re-run the single file: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts`. Load noise → a DIFFERENT test of that file fails on the retry, or everything passes. A real defect → the SAME test fails three runs in a row. Observed 2026-08-04: two failures with different test names within one hour, then two clean runs, on a diff that touched no file under `scripts/acceptance-tests/`.
 
 ### Acceptance Test Infrastructure Smoke Test
 
