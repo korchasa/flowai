@@ -154,7 +154,7 @@ export interface RepCampaign {
 }
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
  * Guard an output dir against a SECOND campaign writing into it.
  *
  * Two things go wrong without this. At the REP level `runArmBatch` resumes
@@ -192,7 +192,7 @@ export function campaignMismatch(
 }
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
  * swebench's grading run id, scoped to the campaign.
  *
  * swebench caches each verdict at `logs/run_evaluation/<runId>/<model>/

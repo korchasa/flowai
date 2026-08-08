@@ -28,11 +28,19 @@ import { stripTestHunks } from "./benchmark/patch.ts";
 import {
   type Arm,
   assertModelForIde,
+  humanEmulatorConfig,
   SESSION_BUDGET_MS,
   SESSION_MAX_STEPS,
 } from "./benchmark/run.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
-import { SUPPORTED_IDES } from "@acceptance-tests/adapters/mod.ts";
+/**
+ * IDEs this benchmark can put UNDER TEST. Narrower than the acceptance-test
+ * runner's `SUPPORTED_IDES` on purpose: that list stays wide because the
+ * framework's own primitives are tested on every IDE, while the benchmark's
+ * cost capture, human emulator and frozen pool are all codex-shaped since the
+ * Claude subject arm was retired (2026-08-09).
+ */
+const BENCH_SUBJECT_IDES: readonly string[] = ["codex"];
 import { renderRetroMarkdown, scanRun } from "./benchmark/retro.ts";
 import {
   ensureRebenchSetup,
@@ -149,7 +157,7 @@ async function writeGradablePredictions(
 await new Command()
   .name("benchmark")
   .description(
-    "SWE-bench Verified A/B benchmark for flowai-core (FR-BENCH-SWE)",
+    "SWE-rebench same-harness A/B benchmark for flowai-core, codex under test (FR-BENCH-SWE)",
   )
   .action(function () {
     this.showHelp();
@@ -252,21 +260,23 @@ await new Command()
   })
   .option("--limit <n:number>", "Run only the first N passers (metered slice)")
   .option("--out <dir:string>", "Base output dir (default runs/pool2-<arm>)")
-  .option("--model <name:string>", "Agent model", { default: "sonnet" })
-  .option("--ide <name:string>", "IDE under test (claude | codex)", {
-    default: "claude",
+  .option("--model <name:string>", "Agent model", {
+    default: "gpt-5.6-terra",
+  })
+  .option("--ide <name:string>", "IDE under test (codex)", {
+    default: "codex",
   })
   .option(
     "--human-emulator-model <name:string>",
-    "Human-emulator model (always Claude)",
+    "Human-emulator model (one referee for both arms, pinned at medium effort)",
     {
-      default: "sonnet",
+      default: "gpt-5.6-sol",
     },
   )
   .option(
     "--effort <level:string>",
-    "Reasoning effort pinned for agent + human emulator (same in both arms)",
-    { default: "high" },
+    "Reasoning effort pinned for the AGENT (same in both arms); the human emulator is fixed at medium",
+    { default: "medium" },
   )
   .option("--step-timeout <ms:number>", "Per-session timeout (ms)", {
     default: SESSION_BUDGET_MS,
@@ -286,12 +296,15 @@ await new Command()
       console.error(`--arm must be 'baseline' or 'flowai', got '${opts.arm}'`);
       Deno.exit(1);
     }
-    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
     // reject an unknown IDE or a cross-IDE model before any session is spawned.
     const pool2Ide = opts.ide as AcpIde;
-    if (!SUPPORTED_IDES.includes(pool2Ide)) {
+    if (!BENCH_SUBJECT_IDES.includes(pool2Ide)) {
       console.error(
-        `--ide must be one of ${SUPPORTED_IDES.join(", ")}, got '${opts.ide}'`,
+        `--ide must be one of ${BENCH_SUBJECT_IDES.join(", ")}, got ` +
+          `'${opts.ide}'. The Claude subject arm was retired 2026-08-09 — cost ` +
+          `capture, the human emulator and the frozen pool are all codex-shaped ` +
+          `now (documents/tasks/2026/08/bench-codex-only.md).`,
       );
       Deno.exit(1);
     }
@@ -365,7 +378,7 @@ await new Command()
         (framework ? ` framework=${framework}` : "") +
         ` out=${outDir}`,
     );
-    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
     // A campaign dir belongs to ONE (ide, model, effort). Two guards, both
     // needed:
     //   - the BASE dir (`campaign.json`) holds rep1..rep3, so it is what catches
@@ -495,7 +508,9 @@ await new Command()
           ideVersion: null,
           bridgeVersion: bridgeVersionFor(pool2Ide),
         },
-        humanEmulator: { model: opts.humanEmulatorModel, effort: opts.effort },
+        // The referee's own operating point — NOT the agent's effort. Writing
+        // opts.effort here would stamp a cell with a judge config it never ran.
+        humanEmulator: humanEmulatorConfig(opts),
         harness: {
           maxSteps: SESSION_MAX_STEPS,
           stepTimeoutMs: opts.stepTimeout,
@@ -573,7 +588,7 @@ await new Command()
   // ---- pool2-select ----
   .command(
     "pool2-select",
-    "Assemble the pool2 headroom data-of-record from the 3 Sonnet reps + Opus probe (FR-BENCH-SWE.POOL2)",
+    "Assemble the pool2 headroom data-of-record from the subject reps + ceiling probe (FR-BENCH-SWE.POOL2)",
   )
   .option("--baseline <dir:string>", "Sonnet rep base dir", {
     default: "scripts/benchmark/runs/pool2-baseline",

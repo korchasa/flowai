@@ -4,108 +4,8 @@ import {
   loadRunMetrics,
   type SessionMetrics,
   sumCost,
-  usageFromTranscript,
+  usageFromRollout,
 } from "./metrics.ts";
-
-/** One assistant transcript line in the Claude Code jsonl shape. */
-function asst(
-  id: string,
-  usage: Record<string, number>,
-  content: unknown[] = [],
-): string {
-  return JSON.stringify({
-    type: "assistant",
-    message: { id, role: "assistant", usage, content },
-  });
-}
-
-Deno.test("usageFromTranscript: dedupes usage by message id, last occurrence wins", () => {
-  // One API response spans multiple lines with the same message.id; usage is
-  // cumulative, so only the LAST occurrence counts.
-  const text = [
-    asst("m1", { input_tokens: 100, output_tokens: 1 }),
-    asst("m1", {
-      input_tokens: 100,
-      output_tokens: 50,
-      cache_read_input_tokens: 200,
-      cache_creation_input_tokens: 10,
-    }),
-    asst("m2", { input_tokens: 5, output_tokens: 7 }),
-  ].join("\n");
-  const u = usageFromTranscript(text);
-  assertEquals(u.apiCalls, 2);
-  assertEquals(u.inputTokens, 105);
-  assertEquals(u.outputTokens, 57);
-  assertEquals(u.cacheReadTokens, 200);
-  assertEquals(u.cacheCreationTokens, 10);
-});
-
-Deno.test("usageFromTranscript: counts tool_use blocks once per toolu id", () => {
-  const text = [
-    asst("m1", { input_tokens: 1, output_tokens: 1 }, [
-      { type: "tool_use", id: "toolu_1", name: "Bash" },
-    ]),
-    asst("m1", { input_tokens: 1, output_tokens: 2 }, [
-      { type: "tool_use", id: "toolu_1", name: "Bash" },
-    ]),
-    asst("m2", { input_tokens: 1, output_tokens: 1 }, [
-      { type: "tool_use", id: "toolu_2", name: "Read" },
-      { type: "text", text: "hi" },
-    ]),
-  ].join("\n");
-  const u = usageFromTranscript(text);
-  assertEquals(u.toolCalls, 2);
-});
-
-Deno.test("usageFromTranscript: ignores non-assistant lines, counts malformed ones", () => {
-  const text = [
-    JSON.stringify({ type: "user", message: { role: "user", content: "go" } }),
-    asst("m1", { input_tokens: 3, output_tokens: 4 }),
-    '{"type":"assis', // truncated tail of a killed session
-    "",
-  ].join("\n");
-  const u = usageFromTranscript(text);
-  assertEquals(u.apiCalls, 1);
-  assertEquals(u.inputTokens, 3);
-  assertEquals(u.parseErrors, 1);
-});
-
-Deno.test("collectBenchHomeMetrics: sums every transcript under .claude/projects", async () => {
-  const home = await Deno.makeTempDir();
-  try {
-    const slug = `${home}/.claude/projects/-tmp-sandbox`;
-    await Deno.mkdir(`${slug}/sess/subagents`, { recursive: true });
-    await Deno.writeTextFile(
-      `${slug}/main.jsonl`,
-      asst("m1", { input_tokens: 10, output_tokens: 20 }) + "\n",
-    );
-    await Deno.writeTextFile(
-      `${slug}/sess/subagents/agent.jsonl`,
-      asst("m2", { input_tokens: 1, output_tokens: 2 }) + "\n",
-    );
-    const m = await collectBenchHomeMetrics(home, 5000);
-    assertEquals(m.wallClockMs, 5000);
-    assertEquals(m.transcriptFiles, 2);
-    assertEquals(m.apiCalls, 2);
-    assertEquals(m.inputTokens, 11);
-    assertEquals(m.outputTokens, 22);
-  } finally {
-    await Deno.remove(home, { recursive: true });
-  }
-});
-
-Deno.test("collectBenchHomeMetrics: missing projects dir fails fast", async () => {
-  const home = await Deno.makeTempDir();
-  try {
-    await assertRejects(
-      () => collectBenchHomeMetrics(home, 1),
-      Error,
-      "projects",
-    );
-  } finally {
-    await Deno.remove(home, { recursive: true });
-  }
-});
 
 function metrics(over: Partial<SessionMetrics> = {}): SessionMetrics {
   return {
@@ -164,4 +64,111 @@ Deno.test("sumCost: totals a list of session metrics", () => {
   assertEquals(t.apiCalls, 3);
   assertEquals(t.inputTokens, 15);
   assertEquals(t.wallClockMs, 2000);
+});
+
+/** One codex rollout line carrying cumulative token counters. */
+function tokenCount(total: Record<string, number>): string {
+  return JSON.stringify({
+    type: "event_msg",
+    payload: {
+      type: "token_count",
+      info: { total_token_usage: total, last_token_usage: total },
+    },
+  });
+}
+
+/** One codex rollout line describing a tool invocation. */
+function fnCall(id: string, name: string): string {
+  return JSON.stringify({
+    type: "response_item",
+    payload: { type: "function_call", id, name },
+  });
+}
+
+Deno.test("usageFromRollout: total_token_usage is cumulative, last occurrence wins", () => {
+  // Codex re-emits the running total after every API response, so summing the
+  // events would multiply the real cost. Only the final event counts.
+  const text = [
+    tokenCount({
+      input_tokens: 100,
+      cached_input_tokens: 40,
+      output_tokens: 10,
+      total_tokens: 110,
+    }),
+    tokenCount({
+      input_tokens: 320,
+      cached_input_tokens: 250,
+      output_tokens: 45,
+      reasoning_output_tokens: 12,
+      total_tokens: 365,
+    }),
+  ].join("\n");
+  const u = usageFromRollout(text);
+  assertEquals(u.inputTokens, 320);
+  assertEquals(u.cacheReadTokens, 250);
+  assertEquals(u.outputTokens, 45);
+  // One token_count event per API response.
+  assertEquals(u.apiCalls, 2);
+  // Codex reports no cache-creation counter; the field stays zero rather than
+  // borrowing a number that means something else.
+  assertEquals(u.cacheCreationTokens, 0);
+});
+
+Deno.test("usageFromRollout: dedupes tool calls by function_call id", () => {
+  const text = [
+    fnCall("fc_1", "exec"),
+    fnCall("fc_1", "exec"),
+    fnCall("fc_2", "exec"),
+    tokenCount({ input_tokens: 1, output_tokens: 1, total_tokens: 2 }),
+  ].join("\n");
+  assertEquals(usageFromRollout(text).toolCalls, 2);
+});
+
+Deno.test("usageFromRollout: counts malformed lines instead of dropping them", () => {
+  const text = [
+    tokenCount({ input_tokens: 7, output_tokens: 3, total_tokens: 10 }),
+    "{not json",
+    "",
+  ].join("\n");
+  const u = usageFromRollout(text);
+  assertEquals(u.inputTokens, 7);
+  assertEquals(u.parseErrors, 1);
+});
+
+Deno.test("collectBenchHomeMetrics: harvests codex rollouts under CODEX_HOME", async () => {
+  const benchHome = await Deno.makeTempDir();
+  try {
+    const sessions = `${benchHome}/.codex/sessions/2026/08/09`;
+    await Deno.mkdir(sessions, { recursive: true });
+    await Deno.writeTextFile(
+      `${sessions}/rollout-a.jsonl`,
+      [
+        fnCall("fc_a", "exec"),
+        tokenCount({
+          input_tokens: 200,
+          cached_input_tokens: 100,
+          output_tokens: 20,
+          total_tokens: 220,
+        }),
+      ].join("\n"),
+    );
+    const m = await collectBenchHomeMetrics(benchHome, 1234);
+    assertEquals(m.transcriptFiles, 1);
+    assertEquals(m.inputTokens, 200);
+    assertEquals(m.cacheReadTokens, 100);
+    assertEquals(m.outputTokens, 20);
+    assertEquals(m.toolCalls, 1);
+    assertEquals(m.wallClockMs, 1234);
+  } finally {
+    await Deno.remove(benchHome, { recursive: true });
+  }
+});
+
+Deno.test("collectBenchHomeMetrics: fails fast when the sessions dir is absent", async () => {
+  const benchHome = await Deno.makeTempDir();
+  try {
+    await assertRejects(() => collectBenchHomeMetrics(benchHome, 1));
+  } finally {
+    await Deno.remove(benchHome, { recursive: true });
+  }
 });

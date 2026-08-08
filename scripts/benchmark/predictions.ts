@@ -42,7 +42,7 @@ export function toJsonl(preds: Prediction[]): string {
  * source changes reach swebench.
  */
 export const DIFF_EXCLUDES: readonly string[] = [
-  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
   // EVERY IDE's config dir, taken from the registry rather than written out as
   // `.claude` alone. The flowai arm installs the pack into whichever dir the
   // IDE under test discovers skills in, so a single literal silently privileges

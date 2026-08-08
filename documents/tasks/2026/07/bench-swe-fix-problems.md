@@ -1,6 +1,7 @@
 ---
 date: "2026-07-22"
-status: in progress
+status: superseded
+superseded_by: documents/tasks/2026/08/bench-codex-only.md
 implements:
   - FR-BENCH-SWE
 tags: [benchmark, pool, symmetry, freeze, web-audit]
@@ -10,6 +11,20 @@ related_tasks:
   - documents/tasks/2026/07/bench-v1-harness.md
 ---
 # FR-BENCH-SWE: fix the current benchmark's problems in place
+
+> **Superseded 2026-08-09.** The four open DoD items all describe the Claude
+> Sonnet-plus-Opus admission funnel. That funnel is gone: the live pool is
+> `scripts/benchmark/pools/codex-terra-medium.json` — 15 instances frozen
+> 2026-07-26 by `cells-select` from the codex subject cell
+> (`codex-baseline-none-gpt-5-6-terra-medium`, 3 reps) against the codex ceiling
+> cell (`codex-baseline-none-gpt-5-6-sol-high`, 2 reps), under the same keep-rule
+> this task was funnelling towards. The 20-instance target was never reached and
+> no longer applies: the funnel produced 8 certain keepers and the Opus ceiling
+> probe resolved 0 of 26, which is what retired the Claude path in the first
+> place (`documents/benchmarks/retired-approaches.md`, approaches 7 and 8).
+> The two items already marked `[x]` (SYMMETRY, WEBAUDIT) stay true and are not
+> re-opened. Follow-up work lives in
+> `documents/tasks/2026/08/bench-codex-only.md`.
 
 ## Goal
 

@@ -4,6 +4,7 @@ import {
   assertModelForIde,
   codexAgentEnv,
   effortEnv,
+  humanEmulatorConfig,
   isAuthFailure,
   isEmulatorOutage,
   isTransientSetupFailure,
@@ -191,5 +192,23 @@ Deno.test("isEmulatorOutage: a dead human emulator leaves the instance unmeasure
     isEmulatorOutage(`README: "if the Claude CLI failed, retry the command"`),
     false,
     "prose without the wrapper's exit-code form is not an outage",
+  );
+});
+
+Deno.test("humanEmulatorConfig: the referee is pinned, not inherited from the agent", () => {
+  // One referee serves BOTH arms (FR-BENCH-SWE.SYMMETRY), so its operating point
+  // must not move when the subject's does. The agent effort below varies; the
+  // emulator's does not.
+  assertEquals(humanEmulatorConfig({ effort: "high" }).effort, "medium");
+  assertEquals(humanEmulatorConfig({ effort: "low" }).effort, "medium");
+  assertEquals(humanEmulatorConfig({}).model, "gpt-5.6-sol");
+});
+
+Deno.test("humanEmulatorConfig: an explicit model still wins", () => {
+  // A campaign may pin a different referee snapshot; the default is a default,
+  // not a lock.
+  assertEquals(
+    humanEmulatorConfig({ humanEmulatorModel: "gpt-5.6-terra" }).model,
+    "gpt-5.6-terra",
   );
 });

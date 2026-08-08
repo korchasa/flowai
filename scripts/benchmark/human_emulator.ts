@@ -21,7 +21,7 @@
  */
 
 import type { LLMMessage } from "@acceptance-tests/types.ts";
-import { cliChatCompletion } from "@acceptance-tests/llm.ts";
+import { codexChatCompletion } from "@acceptance-tests/llm.ts";
 import { type CommandPrefix, replanTurn, reviewTurn } from "./operator.ts";
 
 /**
@@ -322,46 +322,53 @@ export class AnswerEmulatorOperator {
   }
 }
 
+/** Operating point of the referee, from `humanEmulatorConfig` in run.ts. */
+export interface EmulatorConfig {
+  model: string;
+  effort: string;
+}
+
 /**
- * Production emulator over `claude -p` (existing CLI auth, no API key).
+ * Production emulator over `codex exec` (existing CLI auth, no API key). It ran
+ * on `claude -p` until 2026-08-09, when the Claude subject arm was retired.
  *
  * Isolation is two-fold, both mandatory (verified empirically 2026-07-04):
- * - `env` carries the bench's isolated `HOME` (the adapter's `prepareWorkspace`
- *   bench-home) so the developer's `~/.claude/CLAUDE.md` user memory does not
- *   load;
+ * - `env` carries the bench's isolated config root (the adapter's
+ *   `prepareWorkspace` bench-home + `CODEX_HOME`) so the developer's personal
+ *   user memory does not load;
  * - the emulator runs from a temp cwd OUTSIDE the developer's home, because
  *   ancestor-directory memory files (`CLAUDE.md`/`AGENTS.md` up the cwd path,
- *   e.g. `~/AGENTS.md`) load regardless of `HOME` and their preferences leak
- *   into the verdict (observed: a personal "reply in Russian" rule reached the
- *   bench agent mid-pipeline).
+ *   e.g. `~/AGENTS.md`) load regardless of the config root and their preferences
+ *   leak into the verdict (observed: a personal "reply in Russian" rule reached
+ *   the bench agent mid-pipeline).
  */
 export function makeCliOperatorEmulator(
-  model: string,
+  config: EmulatorConfig,
   env: Record<string, string> = {},
 ): HumanEmulator {
   let cwd: string | undefined;
   return async (problemStatement, agentOutput) => {
     cwd ??= await Deno.makeTempDir({ prefix: "flowai-operator-" });
-    const res = await cliChatCompletion(
+    const res = await codexChatCompletion(
       operatorMessages(problemStatement, agentOutput),
-      { model, temperature: 0, env, cwd },
+      { ...config, env, cwd },
     );
     return res.content;
   };
 }
 
 /** CLI answer emulator for the bare arm — same isolation rules as the gate
- * (isolated HOME via env + temp cwd outside the developer's home). */
+ * (isolated config root via env + temp cwd outside the developer's home). */
 export function makeCliAnswerEmulator(
-  model: string,
+  config: EmulatorConfig,
   env: Record<string, string> = {},
 ): HumanEmulator {
   let cwd: string | undefined;
   return async (problemStatement, agentMessage) => {
     cwd ??= await Deno.makeTempDir({ prefix: "answer-emulator-" });
-    const res = await cliChatCompletion(
+    const res = await codexChatCompletion(
       answerMessages(problemStatement, agentMessage),
-      { model, temperature: 0, env, cwd },
+      { ...config, env, cwd },
     );
     return res.content;
   };

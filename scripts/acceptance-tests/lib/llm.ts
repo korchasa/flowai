@@ -68,6 +68,123 @@ export async function loadConfig(
   }
 }
 
+/**
+ * Build the `codex exec` argv for ONE emulator turn.
+ *
+ * Pure so the pinning can be unit-tested without spawning a session. Every flag
+ * here is deliberate:
+ * - `--model` + `-c model_reasoning_effort` pin the campaign's operating point;
+ *   `~/.codex/config.toml` sets both globally on a developer machine, and an
+ *   un-pinned emulator would take its effort from whoever launched the run.
+ * - `--ignore-user-config` keeps that file out entirely (auth still resolves
+ *   through `CODEX_HOME`).
+ * - `--sandbox read-only` — the emulator plays the human in a conversation and
+ *   has no business editing the workspace. Structural, not a promise in a prompt.
+ * - `--skip-git-repo-check` because it runs from a temp cwd outside any repo.
+ * - `--output-last-message` is the clean way to get the final reply; parsing it
+ *   out of the event stream would also pick up the agent's intermediate chatter.
+ * - trailing `-` makes codex read the prompt from stdin, which avoids E2BIG on
+ *   a long conversation.
+ *
+ * Session files are deliberately NOT suppressed (`--ephemeral` is absent): the
+ * rollout lands under the bench `CODEX_HOME` and its tokens are harvested into
+ * the arm's overhead, matching how the gate emulator was always accounted.
+ */
+export function codexExecArgs(opts: {
+  model: string;
+  effort: string;
+  lastMessageFile: string;
+}): string[] {
+  return [
+    "exec",
+    "--model",
+    opts.model,
+    "-c",
+    `model_reasoning_effort="${opts.effort}"`,
+    "--ignore-user-config",
+    "--sandbox",
+    "read-only",
+    "--skip-git-repo-check",
+    "--color",
+    "never",
+    "--output-last-message",
+    opts.lastMessageFile,
+    "-",
+  ];
+}
+
+/**
+ * Fold a chat-shaped message list into the single prompt `codex exec` accepts.
+ * There is no separate system channel, so the persona leads the text or it is
+ * lost; the remaining turns keep their order and are labelled by role.
+ */
+export function codexPrompt(messages: LLMMessage[]): string {
+  const system = messages.filter((m) => m.role === "system").map((m) =>
+    m.content
+  );
+  const rest = messages.filter((m) => m.role !== "system").map((m) =>
+    `[${m.role}]\n${m.content}`
+  );
+  return [...system, ...rest].join("\n\n");
+}
+
+/**
+ * Chat completion via the Codex CLI (`codex exec`). No API key — uses the
+ * existing CLI auth under `CODEX_HOME`.
+ *
+ * Exists alongside `cliChatCompletion` rather than replacing it: the benchmark's
+ * human emulator moved to codex with the Claude subject arm's retirement
+ * (2026-08-09), while the acceptance-test judge still runs on `claude -p`.
+ */
+export async function codexChatCompletion(
+  messages: LLMMessage[],
+  config: {
+    model: string;
+    effort: string;
+    env?: Record<string, string>;
+    cwd?: string;
+  },
+  signal?: AbortSignal,
+): Promise<LLMResponse> {
+  const lastMessageFile = await Deno.makeTempFile({ prefix: "codex-reply-" });
+  try {
+    const cmd = new Deno.Command("codex", {
+      args: codexExecArgs({
+        model: config.model,
+        effort: config.effort,
+        lastMessageFile,
+      }),
+      stdin: "piped",
+      stdout: "piped",
+      stderr: "piped",
+      env: { ...Deno.env.toObject(), ...(config.env ?? {}) },
+      ...(config.cwd ? { cwd: config.cwd } : {}),
+      signal,
+    });
+    const process = cmd.spawn();
+    const writer = process.stdin.getWriter();
+    await writer.write(new TextEncoder().encode(codexPrompt(messages)));
+    await writer.close();
+    const output = await process.output();
+
+    if (!output.success) {
+      const stderr = new TextDecoder().decode(output.stderr);
+      throw new Error(
+        `Codex CLI failed (exit ${output.code}): stderr=${stderr || "(empty)"}`,
+      );
+    }
+    const content = (await Deno.readTextFile(lastMessageFile)).trim();
+    if (content === "") {
+      // A blank human turn leaves the engineer with no instruction — the
+      // benchmark treats that as a dead emulator, never as silence to guess at.
+      throw new Error("Codex CLI: empty final message");
+    }
+    return { content, usage: undefined };
+  } finally {
+    await Deno.remove(lastMessageFile).catch(() => {});
+  }
+}
+
 interface ClaudeCliEvent {
   type?: string;
   result?: string;

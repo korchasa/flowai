@@ -57,7 +57,7 @@ export function baselineTask(repo: string, problemStatement: string): string {
 export type CommandPrefix = "/" | "$";
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
  * The skill-invocation prefix is IDE-dependent, and the wrong one silently
  * disables the entire flowai arm.
  *

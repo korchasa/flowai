@@ -1,9 +1,9 @@
 /**
  * Same-harness A/B agent driver for the SWE-bench benchmark (FR-BENCH-SWE).
  *
- * Both arms run the SAME harness — one IDE over the ACP transport, Claude Code
- * by default and Codex via `--ide codex` (FR-BENCH-SWE.IDE) — so the only
- * difference within a campaign is flowai:
+ * Both arms run the SAME harness — Codex over the ACP transport
+ * (FR-BENCH-SWE.IDE; the Claude subject arm was retired 2026-08-09) — so the
+ * only difference within a campaign is flowai:
  *   - baseline: nothing installed, neutral "fix the bug" prompt.
  *   - flowai:   local `core` pack + process-rules AGENTS.md installed, prompt
  *               steering plan → implement → review.
@@ -74,15 +74,15 @@ export interface RunOptions {
   instanceIds: string[];
   model: string;
   /**
-   * IDE under test (FR-BENCH-SWE.IDE). Defaults to `claude`. Both arms of one
-   * campaign MUST use the same IDE — it is a harness variable, not the thing
-   * being measured (flowai is).
+   * IDE under test (FR-BENCH-SWE.IDE). Defaults to `codex`, the only subject
+   * IDE since 2026-08-09. Both arms of one campaign MUST use the same IDE — it
+   * is a harness variable, not the thing being measured (flowai is).
    */
   ide?: AcpIde;
   /**
-   * Model for the gate/answer human emulator, which stays on Claude regardless of the
-   * IDE under test — one referee keeps campaigns comparable. Defaults to
-   * `sonnet` (the historical value, so Claude campaigns are unchanged).
+   * Model for the gate/answer human emulator — one referee for both arms keeps
+   * campaigns comparable. Pinned separately from `model` (the AGENT's) and run
+   * at a fixed effort; see `humanEmulatorConfig` for the defaults and why.
    */
   humanEmulatorModel?: string;
   outDir: string;
@@ -92,9 +92,11 @@ export interface RunOptions {
   /** Repo root (framework/ + template resolved relative to this). */
   repoRoot: string;
   /**
-   * Reasoning effort PINNED for the agent AND the human emulator. MUST be identical in
-   * both arms — the same-harness A/B differs only by flowai, never by effort.
-   * Defaults to `high` (the realistic Claude Code default for Sonnet 5).
+   * Reasoning effort PINNED for the AGENT. MUST be identical in both arms — the
+   * same-harness A/B differs only by flowai, never by effort. The human
+   * emulator no longer follows it (`humanEmulatorConfig` fixes the referee at
+   * medium), so a campaign can change the subject's operating point without
+   * also moving the judge. Defaults to `medium`, the live campaigns' point.
    */
   effort?: string;
 }
@@ -118,7 +120,7 @@ export function effortEnv(effort: string): Record<string, string> {
 }
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
  * Deterministic effort + model env for a Codex bench session. Codex reads its
  * reasoning effort and model from `~/.codex/config.toml`, so an un-pinned run
  * would inherit whatever the maintainer's machine happens to set (this host:
@@ -139,6 +141,31 @@ export function codexAgentEnv(
   };
 }
 
+/**
+ * implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+ * Operating point of the human emulator — ONE referee for both arms.
+ *
+ * Its effort is PINNED at `medium` (user decision 2026-08-09) and deliberately
+ * does NOT track the agent's: the subject may run at medium in one campaign and
+ * high in another (the ceiling does), and a referee that moves with the subject
+ * would make those campaigns incomparable through the judge rather than through
+ * flowai. The agent's own effort keeps flowing through `effortEnv` /
+ * `codexAgentEnv` untouched.
+ *
+ * Model defaults to `gpt-5.6-sol`: the emulator moved off `claude -p` with the
+ * Claude subject arm's retirement. Consequence, recorded not hidden — the
+ * emulator identity is part of the cell key, so cells measured before this
+ * change are not comparable with cells measured after it.
+ */
+export function humanEmulatorConfig(
+  opts: { humanEmulatorModel?: string; effort?: string },
+): { model: string; effort: string } {
+  return {
+    model: opts.humanEmulatorModel ?? "gpt-5.6-sol",
+    effort: "medium",
+  };
+}
+
 /** Model-id families each IDE can actually serve. */
 const IDE_MODEL_PATTERNS: Record<string, RegExp> = {
   claude: /^(sonnet|opus|haiku|claude[-.])/i,
@@ -146,7 +173,7 @@ const IDE_MODEL_PATTERNS: Record<string, RegExp> = {
 };
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
  * Fail fast when the campaign's model belongs to a DIFFERENT IDE than the one
  * under test (`--ide codex --model sonnet`). Without this the label reaches a
  * bridge that cannot serve it, and the run either dies deep inside a session
@@ -416,7 +443,7 @@ export async function runArm(
   // IDE under test (FR-BENCH-SWE.IDE). The config dir comes from the ACP
   // registry (`.claude` / `.codex` / …), never a literal, so installing the
   // pack lands where THIS IDE discovers skills.
-  const ide: AcpIde = opts.ide ?? "claude";
+  const ide: AcpIde = opts.ide ?? "codex";
   const adapter = createAdapter(ide);
 
   if (opts.arm === "flowai") {
@@ -447,7 +474,7 @@ export async function runArm(
   // so it is a property of the campaign, not of the operator's shell. The
   // Claude keys are always present because the emulator is always Claude; a codex
   // agent additionally gets its effort+model through CODEX_CONFIG.
-  const effort = opts.effort ?? "high";
+  const effort = opts.effort ?? "medium";
   const env = {
     ...baseEnv,
     ...effortEnv(effort),
@@ -473,26 +500,23 @@ export async function runArm(
   // it answers the engineer's question from the issue text only, or ends the
   // session (DONE). Emulator turns are stochastic in BOTH arms — a harness
   // property every report must state. An emulator failure fails the instance loudly
-  // (no fallback). Both emulators share the bench's isolated HOME (env) so the
-  // developer's personal ~/.claude memory cannot leak into replies.
-  // The emulator runs on Claude even when the agent under test is codex — it is
-  // the referee, not the subject, and one fixed referee keeps campaigns
-  // comparable. Its model is therefore pinned separately from `opts.model`
-  // (which names the AGENT's model and may be a codex id `claude -p` cannot
-  // serve).
-  const humanEmulatorModel = opts.humanEmulatorModel ?? "sonnet";
+  // (no fallback). Both emulators share the bench's isolated config root (env)
+  // so the developer's personal memory cannot leak into replies.
+  // The referee is pinned SEPARATELY from `opts.model` (which names the AGENT's
+  // model) and at a fixed effort — see `humanEmulatorConfig`.
+  const emulator = humanEmulatorConfig(opts);
   // Skill-invocation prefix for THIS ide — `/plan …` is rejected outright by
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
   const operator: Operator = opts.arm === "flowai"
     ? new FlowaiOperator(
       data.problemStatement,
-      makeCliOperatorEmulator(humanEmulatorModel, env),
+      makeCliOperatorEmulator(emulator, env),
       prefix,
     )
     : new AnswerEmulatorOperator(
       data.problemStatement,
-      makeCliAnswerEmulator(humanEmulatorModel, env),
+      makeCliAnswerEmulator(emulator, env),
     );
 
   const agent = new AcpAgent({
@@ -519,39 +543,34 @@ export async function runArm(
   // (a long LLM session's primary measurement) is not sacrificed to a
   // counter.
   //
-  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-second-ide-under-test-codex-arm-ancfrbench-swe-ide):
-  // BOTH harvests below read Claude Code transcripts, so they describe the
-  // agent only when the agent IS Claude. Under codex the sole transcripts in
-  // bench-home belong to the EMULATOR — harvesting them would render a
-  // plausible-looking "session cost" that actually measures the referee. Skip
-  // explicitly and say so, rather than publish a number that means something
-  // else. Codex's own counters live in CODEX_HOME/sessions/rollout-*.jsonl
-  // (`total_token_usage`) and are a deferred port, not a lost measurement.
-  const canHarvestTranscripts = ide === "claude";
-  if (!canHarvestTranscripts) {
-    console.log(
-      `  cost: unavailable (${ide} — Claude transcripts describe the human emulator, not the agent)`,
+  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
+  // Cost is harvested from the codex rollouts the session just wrote under the
+  // bench CODEX_HOME. The Claude-transcript reader this replaced was retired
+  // with the Claude subject arm (2026-08-09): it produced nothing on the codex
+  // path, which is the only path campaigns run on.
+  try {
+    const metrics = await collectBenchHomeMetrics(
+      join(extInstDir, "bench-home"),
+      wallClockMs,
     );
-    console.log(`  web: unavailable (${ide} — same reason)`);
+    await Deno.writeTextFile(
+      join(instDir, `${data.instanceId}.metrics.json`),
+      JSON.stringify(metrics, null, 2) + "\n",
+    );
+    console.log(`  cost: ${fmtCost(metrics)}`);
+  } catch (e) {
+    console.error(
+      `  [metrics] FAILED ${data.instanceId}: ${(e as Error).message}`,
+    );
   }
 
-  if (canHarvestTranscripts) {
-    try {
-      const metrics = await collectBenchHomeMetrics(
-        join(extInstDir, "bench-home"),
-        wallClockMs,
-      );
-      await Deno.writeTextFile(
-        join(instDir, `${data.instanceId}.metrics.json`),
-        JSON.stringify(metrics, null, 2) + "\n",
-      );
-      console.log(`  cost: ${fmtCost(metrics)}`);
-    } catch (e) {
-      console.error(
-        `  [metrics] FAILED ${data.instanceId}: ${(e as Error).message}`,
-      );
-    }
-  }
+  // The web audit has NOT been ported yet and stays off rather than silently
+  // reporting zero accesses. Its Claude reader classified `WebFetch`/`WebSearch`
+  // tool calls; codex reaches the network through `exec` shell commands, which
+  // is a different classifier, not a rename. Tracked in
+  // documents/tasks/2026/08/bench-codex-only.md.
+  const canHarvestTranscripts = false;
+  console.log(`  web: not measured on ${ide} — audit port pending`);
 
   // implements [FR-BENCH-SWE.WEBAUDIT](../../documents/requirements.md#fr-bench-swe.webaudit-per-instance-web-access-audit-flagged-never-banned-ancfrbench-swe-webaudit):
   // audit web accesses from the same soon-to-be-purged transcripts — research

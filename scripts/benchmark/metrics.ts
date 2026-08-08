@@ -2,32 +2,36 @@
  * Session cost counters for benchmark runs (FR-BENCH-SWE.COST).
  *
  * Cost is always measured, never a quality criterion (FR-BENCH-V1 principle).
- * Token usage lives ONLY in the bench-home Claude Code transcripts
- * (every `*.jsonl` under `.claude/projects/`), and bench-home sits in the OS temp root
- * that macOS purges within days (all pre-2026-07-22 campaign transcripts were
- * lost exactly this way) — so the harness harvests counters IMMEDIATELY after
- * each session and persists them durably next to the run artifacts.
+ * Token usage lives ONLY in the bench-home codex rollouts (every `*.jsonl`
+ * under `.codex/sessions/`), and bench-home sits in the OS temp root that macOS
+ * purges within days (all pre-2026-07-22 campaign transcripts were lost exactly
+ * this way) — so the harness harvests counters IMMEDIATELY after each session
+ * and persists them durably next to the run artifacts.
  *
- * Transcript quirks this module encodes:
- * - one API response spans multiple jsonl lines sharing `message.id`, each
- *   carrying a cumulative `usage` → dedupe by id, LAST occurrence wins;
- * - `tool_use` content blocks repeat across those lines → dedupe by their
- *   own `toolu_*` block id;
+ * Rollout quirks this module encodes:
+ * - `token_count` events carry a RUNNING TOTAL (`total_token_usage`), re-emitted
+ *   after every API response → take the LAST event, never the sum;
+ * - `function_call` items repeat across retries → dedupe by their own `fc_*` id;
  * - a killed session truncates the final line → malformed lines are counted
  *   (`parseErrors`), never silently dropped.
+ *
+ * The Claude Code transcript reader this replaced was retired 2026-08-09 with
+ * the Claude subject arm: it produced nothing on the codex path, which is the
+ * only path campaigns run on.
  */
 
 import { join } from "@std/path";
 import { walk } from "@std/fs";
 
 export interface TranscriptUsage {
-  /** Unique assistant API responses (deduped by message id). */
+  /** API responses — one `token_count` event each. */
   apiCalls: number;
   inputTokens: number;
   outputTokens: number;
   cacheReadTokens: number;
+  /** Always 0 on codex, which reports no cache-creation counter. */
   cacheCreationTokens: number;
-  /** Unique tool_use blocks (deduped by toolu id). */
+  /** Unique `function_call` items (deduped by `fc_*` id). */
   toolCalls: number;
   /** Unparseable non-empty lines (e.g. the torn tail of a killed session). */
   parseErrors: number;
@@ -51,9 +55,21 @@ export interface ArmCost extends TranscriptUsage {
 const num = (o: Record<string, unknown>, k: string): number =>
   typeof o[k] === "number" ? o[k] as number : 0;
 
-/** Aggregate one transcript's jsonl text into usage counters. */
-export function usageFromTranscript(text: string): TranscriptUsage {
-  const usageById = new Map<string, Record<string, unknown>>();
+/**
+ * Aggregate one codex rollout's jsonl text into usage counters.
+ *
+ * Shape differences from the retired Claude reader, all deliberate:
+ * - codex re-emits a RUNNING TOTAL (`total_token_usage`) after every API
+ *   response, so the counters are taken from the LAST such event rather than
+ *   summed — summing would multiply the real cost by the number of turns;
+ * - one `token_count` event is emitted per API response, so counting the events
+ *   gives `apiCalls`;
+ * - codex reports no cache-CREATION counter, only `cached_input_tokens` (a read).
+ *   The field stays 0 rather than borrowing a number that means something else.
+ */
+export function usageFromRollout(text: string): TranscriptUsage {
+  let latestTotal: Record<string, unknown> | undefined;
+  let apiCalls = 0;
   const toolIds = new Set<string>();
   let parseErrors = 0;
 
@@ -66,54 +82,51 @@ export function usageFromTranscript(text: string): TranscriptUsage {
       parseErrors++;
       continue;
     }
-    if (j.type !== "assistant") continue;
-    const msg = (j.message ?? {}) as Record<string, unknown>;
-    const id = typeof msg.id === "string" ? msg.id : undefined;
-    const usage = msg.usage as Record<string, unknown> | undefined;
-    if (id !== undefined && usage !== undefined) {
-      usageById.set(id, usage); // cumulative — last occurrence wins
+    const payload = (j.payload ?? {}) as Record<string, unknown>;
+    if (payload.type === "token_count") {
+      const info = (payload.info ?? {}) as Record<string, unknown>;
+      const total = info.total_token_usage as
+        | Record<string, unknown>
+        | undefined;
+      if (total !== undefined) {
+        latestTotal = total; // cumulative — last occurrence wins
+        apiCalls++;
+      }
+      continue;
     }
-    const content = Array.isArray(msg.content) ? msg.content : [];
-    for (const block of content) {
-      const b = block as Record<string, unknown>;
-      if (b.type === "tool_use" && typeof b.id === "string") toolIds.add(b.id);
+    if (payload.type === "function_call" && typeof payload.id === "string") {
+      toolIds.add(payload.id);
     }
   }
 
-  const totals = {
-    apiCalls: usageById.size,
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
+  const u = latestTotal ?? {};
+  return {
+    apiCalls,
+    inputTokens: num(u, "input_tokens"),
+    outputTokens: num(u, "output_tokens"),
+    cacheReadTokens: num(u, "cached_input_tokens"),
     cacheCreationTokens: 0,
     toolCalls: toolIds.size,
     parseErrors,
   };
-  for (const u of usageById.values()) {
-    totals.inputTokens += num(u, "input_tokens");
-    totals.outputTokens += num(u, "output_tokens");
-    totals.cacheReadTokens += num(u, "cache_read_input_tokens");
-    totals.cacheCreationTokens += num(u, "cache_creation_input_tokens");
-  }
-  return totals;
 }
 
 /**
- * Harvest every transcript under `<benchHome>/.claude/projects` (main session
- * + subagents + the flowai arm's gate-emulator CLI, which shares bench-home so
- * its tokens land in the flowai arm's overhead — by design). Fails fast when
- * the projects dir is absent: a session that produced no transcript is a
+ * Harvest every rollout under `<benchHome>/.codex/sessions` (main session +
+ * the human emulator, which shares the bench CODEX_HOME so its tokens land in
+ * the arm's overhead — by design, same as the retired Claude harvest). Fails
+ * fast when the sessions dir is absent: a session that produced no rollout is a
  * harness defect, not a zero-cost run.
  */
 export async function collectBenchHomeMetrics(
   benchHome: string,
   wallClockMs: number,
 ): Promise<SessionMetrics> {
-  const projects = join(benchHome, ".claude", "projects");
+  const projects = join(benchHome, ".codex", "sessions");
   try {
     await Deno.stat(projects);
   } catch {
-    throw new Error(`no transcripts: projects dir absent at ${projects}`);
+    throw new Error(`no transcripts: sessions dir absent at ${projects}`);
   }
   const totals: SessionMetrics = {
     wallClockMs,
@@ -129,7 +142,7 @@ export async function collectBenchHomeMetrics(
   for await (
     const entry of walk(projects, { includeDirs: false, exts: [".jsonl"] })
   ) {
-    const u = usageFromTranscript(await Deno.readTextFile(entry.path));
+    const u = usageFromRollout(await Deno.readTextFile(entry.path));
     totals.transcriptFiles++;
     totals.apiCalls += u.apiCalls;
     totals.inputTokens += u.inputTokens;
