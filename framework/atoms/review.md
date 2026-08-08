@@ -73,6 +73,7 @@ Input sources: git diff (unstaged / staged / `<base>..HEAD`); the original User 
    - Flag requirements with no corresponding changes as `[critical] Missing`.
    - Flag plan items marked "done" but not present in diff as `[critical] Phantom completion`.
    - Check for regressions: do changed files break existing functionality?
+   - **Doc drift**: for each changed source path, read the docs that describe it (the Documentation Map in AGENTS.md when present, else the resolved `SRS` / `SDS` / `README`). A doc still describing behaviour the diff removed or changed → `[warning] Doc drift` naming the doc `file:line` and the contradicting hunk. Drift alone is NEVER `[critical]` and never blocks the verdict — the commit phase owns Documentation Sync, so escalating here would stop the workflow before the step that fixes it. Do NOT edit the doc in this review.
 
 4a. **FR Coverage Audit** _(blocking gate — see Requirements Lifecycle in AGENTS.md)_
    - **FRs in scope**: (a) FR-* in the task file's `implements:`; (b) FR sections added/modified in the diff to `SRS`; (c) `[REF:fr:<id>]` SALP markers touched in the diff.
@@ -152,7 +153,7 @@ Input sources: git diff (unstaged / staged / `<base>..HEAD`); the original User 
    ### Diff (optional) — offer diff/details for optional inspection; verdict stands without it; never block (Model B). MUST close the report.
    ```
 
-   ≥1 surviving catching test → verdict = `Request Changes` regardless of other findings. Rank findings top-5 by `severity × uniqueness`. No issues AND zero catching tests → "Changes look good. All requirements covered, no issues found, no behavioural regressions detected." (last clause only when JiT actually ran).
+   **Verdict selection** (decide in this order, first match wins): (1) `Request Changes` — ≥1 `[critical]` finding, ≥1 surviving catching test, or a blocking gate (4a FR coverage, 4b existing-suite, Rule 13) still unsatisfied. (2) `Needs Discussion` — no blocker, but a design decision genuinely needs the human before merging. (3) `Approve` — everything else. `[warning]` and `[nit]` findings NEVER force `Request Changes` on their own: list them, hand them to the author, approve. An `Approve` carrying warnings is the normal outcome, not a contradiction. Rank findings top-5 by `severity × uniqueness`. No issues AND zero catching tests → "Changes look good. All requirements covered, no issues found, no behavioural regressions detected." (last clause only when JiT actually ran).
 
 11. **Ephemeral Dispose (JiT)** _(skip when no catching tests exist)_ — prompt: `save <name>` / `save all` / `discard all`. On `save`: propose destination beside file-under-test, confirm, `git mv`, stage. On `discard all` (default for timeout/ambiguous): delete entire scratch directory, leave no stray files.
 
