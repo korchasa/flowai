@@ -22,6 +22,14 @@ then re-measure.
 
 Findings from `scripts/benchmark/runs/pool2-flowai/rep1/`, 15 sessions:
 
+> **Path retired 2026-08-08:** `runs/pool2-flowai/` was deleted with the rest of
+> the pre-cell run layout (commit `318fed26`), and this arm produced no result
+> cell — Claude/Sonnet as the subject IDE was itself retired (see
+> `documents/benchmarks/retired-approaches.md`, approach 8). The session logs are
+> gone with no substitute; the findings distilled below ARE the surviving record
+> of that campaign. Nothing here can be re-derived from data, so do not treat the
+> path as fetchable.
+
 - 4 of the 11 sessions with a surviving log were rejected at the plan gate
   because the plan skill halted on a missing `documents/design.md`. Verbatim
   (`pygeoapi-2338`): "Planning is blocked: the required SDS role resolves to

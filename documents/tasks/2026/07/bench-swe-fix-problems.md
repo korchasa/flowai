@@ -418,6 +418,16 @@ grade do), so running the 26 under `--model opus` into a separate `--out`
 needs a small CLI addition first. Opus cost unknown (pricier than Sonnet's
 ~$0.97/sess) — meter the first probe session before committing all 26.
 
+> **Path retired 2026-08-08:** `runs/pool2-baseline/` was deleted with the rest
+> of the pre-cell run layout (commit `318fed26`). The 3 Sonnet reps it held
+> survive as 201 rows in
+> `scripts/benchmark/cells/claude-baseline-none-sonnet-high/tasks.jsonl`, and the
+> derived per-instance rep counts in `scripts/benchmark/pool2_headroom.json`
+> (`.instances[].sonnet_reps`). The `opus_probe_queue.json` list is recoverable
+> from that same file: 27 instances carry `sonnet_reps == 0`, and the 26-id queue
+> is those minus `youssofal__mtplx-21`, which is stamped `verdict: "excluded"`
+> (unfetchable). Only the raw session transcripts are gone, on purpose.
+
 **OPUS-PROBE INFRA + METERING LAUNCHED (2026-07-24, user A):** added a
 `--instance` subset filter to `pool2-run` (TDD: `filterToWanted` in
 pool2_select.ts, 9 tests green, fmt/lint clean) — same `collect:true` pattern
@@ -428,6 +438,13 @@ provenance write). Launched ONE metered Opus session on the cheapest 0/3
 instance `pypa__twine-1309` (1131 B patch) into a SEPARATE
 `runs/pool2-opus-probe/rep1` (isolated from the Sonnet reps), concurrency 1,
 graded. Watching for cost + verdict before committing the other 25.
+
+> **Path retired 2026-08-08:** `runs/pool2-opus-probe/` was deleted with the rest
+> of the pre-cell run layout (commit `318fed26`). The probe's verdicts survive in
+> `scripts/benchmark/pool2_headroom.json`: all 26 queued instances carry an
+> `opus_resolved` field, and `.provenance.opusProbe` records the outcome
+> (`queueSize: 26`, `resolved: 0`). Only the raw session transcripts are gone,
+> on purpose.
 
 **OPUS METER RESULT + FULL PROBE LAUNCHED (2026-07-24):** the meter proved Opus
 runs HONESTLY, not degraded — initial read (1.2 min, 8 API calls, out 0k)
