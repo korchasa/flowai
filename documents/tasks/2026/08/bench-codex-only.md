@@ -113,18 +113,20 @@ than the pending item rewritten away.
   - Evidence: `deno task benchmark --help | grep -c 'SWE-bench Verified'` returns 0
 - [x] `bench-swe-fix-problems.md` marked `superseded` with the reason.
   - Evidence: `grep -m1 '^status:' documents/tasks/2026/07/bench-swe-fix-problems.md`
-- [x] FR-BENCH-SWE.ISOLATION: the agent and the human emulator no longer share a
-      codex session store, and the harness reads both.
-  - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts` (separate root, credentials only) + `scripts/benchmark/run_test.ts::emulatorEnvFor` + `metrics_test.ts` / `webaudit_test.ts` (two-store harvest)
-  - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts scripts/benchmark/run_test.ts scripts/benchmark/metrics_test.ts scripts/benchmark/webaudit_test.ts`
-- [x] FR-BENCH-SWE.ISOLATION live smoke (2026-08-09): a `codex exec` turn under a
-      hand-built emulator home — empty `skills/`, only `auth.json` symlinked —
-      authenticated, answered, and wrote its rollout into THAT home
-      (`sessions/**/*.jsonl`, 1 file). `collectSessionMetrics` then read it back:
-      1 API call, 12895 in / 5 out / 9984 cache-read, 0 parse errors. This was
-      the risk worth checking before a campaign: if a lone `auth.json` were not
-      enough for a separate `CODEX_HOME`, every emulator turn would have died.
-  - Evidence: `EMU=$(mktemp -d); mkdir -p "$EMU/.codex/skills"; ln -s ~/.codex/auth.json "$EMU/.codex/auth.json"; echo "Reply with exactly: OK" | env HOME="$EMU" CODEX_HOME="$EMU/.codex" codex exec --model gpt-5.6-sol -c model_reasoning_effort="medium" --ignore-user-config --sandbox read-only --skip-git-repo-check --color never --output-last-message "$EMU/last.txt" -`
+- [x] FR-BENCH-SWE.ISOLATION: one bench codex root at `~/.flowai-dev`,
+      credentials symlinked once, a per-run store beneath it shared by the agent
+      and the emulator.
+  - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts` (root layout, per-run stores, credentials through the root link, idempotent re-prepare) + `scripts/benchmark/run_test.ts::emulatorEnvFor`
+  - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts scripts/benchmark/run_test.ts`
+- [x] FR-BENCH-SWE.ISOLATION live smoke (2026-08-09): `prepareBenchCodexHome`
+      built `~/.flowai-dev/bench/smoke-probe-0001/.codex` with `auth.json ->
+      ~/.flowai-dev/auth.json -> ~/.codex/auth.json`; a `codex exec` turn under
+      it authenticated through that double link, answered, and wrote 1 rollout
+      into the store. `collectSessionMetrics` read it back (1 API call, 14k in,
+      0 parse errors) and `collectPeekAudit` reported 0 peeks over 1 transcript.
+      This was the risk worth checking before a campaign: if the double symlink
+      had not resolved, every session would have died on auth.
+  - Evidence: `CH=$(deno eval --no-check "import { prepareBenchCodexHome } from './scripts/acceptance-tests/lib/acp/auth.ts'; console.log(await prepareBenchCodexHome('/tmp/flowai-bench/smoke-probe-0001/sandbox'))"); echo "Reply with exactly: OK" | env CODEX_HOME="$CH" codex exec --model gpt-5.6-sol -c model_reasoning_effort="low" --ignore-user-config --sandbox read-only --skip-git-repo-check --color never --output-last-message /tmp/last.txt -` (probe store removed afterwards)
 - [x] FR-BENCH-SWE.ISOLATION: the harness checks whether either side read the
       other's session, since codex offers no read-denying sandbox.
   - Test: `scripts/benchmark/peek_audit_test.ts` (4)
@@ -148,20 +150,27 @@ files, 43669 records) — the counter would have reported ~0 tool calls while ev
 unit test passed, because the fixtures came from the single record shape that has
 both fields. Fixed in `eb99272a` with a test on the dominant shape.
 
-### Isolation, and what it does not promise
+### Isolation: separation was tried, then replaced by a check
 
-Added 2026-08-09 on the user's requirement: "у эмулятора и исполнителя не должно
-быть возможности прочитать сессии друг друга. А судья должен иметь возможность
-читать обе сессии." Both sides now have their own `CODEX_HOME`, neither
-environment names the other's, and the harness reads both (the run dir gains an
-`emulator-home` symlink next to `bench-home`).
+The requirement arrived as "у эмулятора и исполнителя не должно быть возможности
+прочитать сессии друг друга. А судья должен иметь возможность читать обе
+сессии." Separate `CODEX_HOME`s were built first and then deliberately dropped,
+because measurement said they did not buy the guarantee the wording asks for:
+codex-cli 0.144.6 has no sandbox mode that denies disk reads — a `--sandbox
+read-only` session read `~/.zshrc` and printed its first line — so separating the
+roots removed a pointer and nothing more.
 
-The limit is stated here rather than discovered later: this is separation by
-construction of the paths handed out, not an OS-enforced denial. Measured on
-codex-cli 0.144.6, a `--sandbox read-only` session read `~/.zshrc` and printed
-its first line, so reads are unrestricted in every sandbox mode codex offers and
-a session that deliberately scans the temp root can still reach the other store.
-Making it hard would need a distinct OS user or a custom seatbelt profile.
+What stands instead, on the user's decision the same day: one bench root at
+`~/.flowai-dev` holding the credentials once, a per-run store beneath it shared
+by both sides, and `peek_audit.ts` checking afterwards whether either reached for
+a session store. The store is per RUN, not one directory for the whole benchmark,
+because the cost harvest attributes tokens by walking a store and instances run
+four at a time by default — one shared directory would interleave four sessions'
+rollouts with no way to separate them.
+
+Nothing purges `~/.flowai-dev`, unlike the temp homes. That is deliberate — the
+sessions stay readable after a campaign — and it grows. Pruning is a maintainer
+decision, never the harness's.
 
 ### Note for whoever runs the next campaign
 

@@ -215,32 +215,24 @@ Deno.test("humanEmulatorConfig: an explicit model still wins", () => {
 });
 
 /**
- * implements [FR-BENCH-SWE.ISOLATION]: the emulator's environment is built
- * from its own home, NOT by patching the agent's. A spread of the agent env
- * would carry `CODEX_HOME`, `CODEX_CONFIG` and the sandbox venv `PATH` along
- * with it — the first names the agent's session store outright, and the last
- * two would let the operator's campaign settings reach a referee that is meant
- * to be pinned by argv alone.
+ * implements [FR-BENCH-SWE.ISOLATION]: the emulator shares the run's codex
+ * store with the agent (one bench home under `~/.flowai-dev`) but NOT the
+ * agent's environment. A spread of the agent env would carry `CODEX_CONFIG` —
+ * the agent's model and effort, which the referee is pinned away from by argv —
+ * and the sandbox venv `PATH`, and any key added there later would reach the
+ * referee silently.
  */
-Deno.test("emulatorEnvFor: carries the emulator's own home and nothing of the agent's", () => {
+Deno.test("emulatorEnvFor: exactly the two keys codex needs, nothing of the agent's", () => {
   const env = emulatorEnvFor({
-    HOME: "/tmp/emu-home",
-    CODEX_HOME: "/tmp/emu-home/.codex",
+    HOME: "/tmp/bench-home",
+    CODEX_HOME: "/Users/x/.flowai-dev/bench/anyio-1134-abc/.codex",
   });
   assertEquals(env, {
-    HOME: "/tmp/emu-home",
-    CODEX_HOME: "/tmp/emu-home/.codex",
-  });
-  const agentEnv = {
     HOME: "/tmp/bench-home",
-    CODEX_HOME: "/tmp/bench-home/.codex",
-    CODEX_CONFIG: '{"model":"gpt-5.6-terra"}',
-    PATH: "/tmp/venv/bin:/usr/bin",
-  };
-  for (const [k, v] of Object.entries(env)) {
-    assert(
-      agentEnv[k as keyof typeof agentEnv] !== v,
-      `${k} must not equal the agent's value`,
-    );
-  }
+    CODEX_HOME: "/Users/x/.flowai-dev/bench/anyio-1134-abc/.codex",
+  });
+  assertEquals(Object.keys(env).sort(), ["CODEX_HOME", "HOME"]);
+  assertEquals("CODEX_CONFIG" in env, false);
+  assertEquals("PATH" in env, false);
+  assertEquals("CLAUDE_EFFORT" in env, false);
 });

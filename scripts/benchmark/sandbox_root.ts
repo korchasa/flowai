@@ -54,25 +54,21 @@ export async function externalSandboxRoot(
  * Replace `instDir/sandbox` and `instDir/bench-home` with symlinks to the
  * external instance dir. Idempotent: a resumed run re-links in place.
  *
- * implements [FR-BENCH-SWE.ISOLATION]: `emulatorHome`, when given, is linked as
- * `instDir/emulator-home`. The two session stores are kept apart from each
- * other but BOTH are reachable from the run dir, which is the harness side —
- * whoever reads a campaign after the fact needs both halves of the conversation.
- * It is a separate argument because the emulator's root deliberately lives
- * outside `extInstDir`, so walking up from the agent's sandbox does not find it.
+ * implements [FR-BENCH-SWE.ISOLATION]: `codexHome`, when given, is linked as
+ * `instDir/codex-home`. The run's codex store lives under `~/.flowai-dev`, NOT
+ * inside `extInstDir`, so it needs its own argument — and the run dir is the
+ * harness side, where both halves of the conversation must stay readable.
  */
 export async function linkIntoRunDir(
   instDir: string,
   extInstDir: string,
-  emulatorHome?: string,
+  codexHome?: string,
 ): Promise<void> {
   await ensureDir(instDir);
   const targets: Array<[string, string]> = [
     ["sandbox", join(extInstDir, "sandbox")],
     ["bench-home", join(extInstDir, "bench-home")],
-    ...(emulatorHome
-      ? [["emulator-home", emulatorHome] as [string, string]]
-      : []),
+    ...(codexHome ? [["codex-home", codexHome] as [string, string]] : []),
   ];
   for (const [name, target] of targets) {
     const link = join(instDir, name);

@@ -37,7 +37,7 @@ import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { createAdapter } from "@acceptance-tests/adapters/mod.ts";
 import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
-import { prepareEmulatorCodexHome } from "@acceptance-tests/acp/auth.ts";
+import { prepareBenchCodexHome } from "@acceptance-tests/acp/auth.ts";
 import type { InstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
 import { installProjectDeps } from "./install_env.ts";
@@ -123,15 +123,17 @@ export function effortEnv(effort: string): Record<string, string> {
 
 /**
  * implements [FR-BENCH-SWE.ISOLATION]: the environment for the human emulator's
- * `codex exec`, built from the emulator's OWN home rather than by patching the
- * agent's.
+ * `codex exec`.
  *
- * Written as a whitelist on purpose. Spreading the agent env and overriding
- * `CODEX_HOME` would still pass down `CODEX_CONFIG` (the agent's model and
- * effort, which the referee must NOT inherit — see `humanEmulatorConfig`) and
- * the sandbox venv `PATH`, and any key added to the agent env later would reach
- * the emulator silently. Two keys are what codex needs: `CODEX_HOME` for auth
- * and its session store, `HOME` so nothing resolves back to the developer's.
+ * The emulator SHARES the agent's session store (user decision 2026-08-09 — one
+ * bench home under `~/.flowai-dev`, checked afterwards by `peek_audit.ts`
+ * rather than split apart), but it does not share the agent's ENVIRONMENT.
+ * Written as a whitelist on purpose: spreading the agent env would pass down
+ * `CODEX_CONFIG` (the agent's model and effort, which the referee must NOT
+ * inherit — see `humanEmulatorConfig`) and the sandbox venv `PATH`, and any key
+ * added there later would reach the referee silently. Two keys are what codex
+ * needs: `CODEX_HOME` for auth and its session store, `HOME` so nothing
+ * resolves back to the developer's.
  */
 export function emulatorEnvFor(
   home: { HOME: string; CODEX_HOME: string },
@@ -485,11 +487,22 @@ export async function runArm(
   }
 
   // ACP transport (FR-ACCEPT.ACP): build the isolated $HOME so sandbox skills
-  // win over the user-level snapshot and subscription auth survives. For codex
-  // this also yields CODEX_HOME (its own config root).
-  const baseEnv = adapter.prepareWorkspace
+  // win over the user-level snapshot and subscription auth survives.
+  const adapterEnv: Record<string, string> = adapter.prepareWorkspace
     ? await adapter.prepareWorkspace(sandboxDir)
     : {};
+  // implements [FR-BENCH-SWE.ISOLATION]: the BENCH's codex store lives under
+  // `~/.flowai-dev`, not inside the temp bench-home the adapter builds — one
+  // predictable root outside the project, holding the credentials once, with a
+  // per-run store beneath it (user decision 2026-08-09). The adapter's own
+  // `CODEX_HOME` is overridden rather than reused: the acceptance-test runner
+  // shares that code path and must keep writing into its own temp home.
+  const benchHome = adapterEnv.HOME ?? Deno.env.get("HOME") ?? "";
+  const codexHome = await prepareBenchCodexHome(sandboxDir);
+  const baseEnv: Record<string, string> = {
+    ...adapterEnv,
+    CODEX_HOME: codexHome,
+  };
   // Pin reasoning effort for the agent, so it is a property of the campaign and
   // not of the operator's shell. The emulator does NOT read it from here — it is
   // pinned separately by argv (`humanEmulatorConfig`) and runs in its own env.
@@ -522,15 +535,12 @@ export async function runArm(
   // (no fallback). The referee is pinned SEPARATELY from `opts.model` (which
   // names the AGENT's model) and at a fixed effort — see `humanEmulatorConfig`.
   //
-  // implements [FR-BENCH-SWE.ISOLATION]: the emulator runs under its OWN codex
-  // config root, so neither side's environment names the other's session store.
-  // One shared root put the human persona and the `DECISION:` protocol in a
-  // directory the agent is pointed at, and the agent's reasoning in one the
-  // emulator is pointed at — while the emulator is supposed to answer from the
-  // issue text and the engineer's latest message alone.
+  // implements [FR-BENCH-SWE.ISOLATION]: agent and emulator share the run's
+  // codex store under `~/.flowai-dev`, and `peek_audit.ts` checks afterwards
+  // whether either reached for the other's session. The emulator still gets a
+  // whitelisted env, not the agent's.
   const emulator = humanEmulatorConfig(opts);
-  const emulatorHome = await prepareEmulatorCodexHome();
-  const emuEnv = emulatorEnvFor(emulatorHome);
+  const emuEnv = emulatorEnvFor({ HOME: benchHome, CODEX_HOME: codexHome });
   // Skill-invocation prefix for THIS ide — `/plan …` is rejected outright by
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
@@ -560,7 +570,7 @@ export async function runArm(
   const wallClockMs = Date.now() - wallStart;
   const logPath = join(instDir, `${data.instanceId}.log`);
   await Deno.writeTextFile(logPath, result.logs);
-  await linkIntoRunDir(instDir, extInstDir, emulatorHome.HOME);
+  await linkIntoRunDir(instDir, extInstDir, codexHome);
 
   // implements [FR-BENCH-SWE.COST](../../documents/requirements.md#fr-bench-swe.cost-session-cost-counters-informative-never-a-quality-criterion-ancfrbench-swe-cost):
   // harvest cost counters from the bench-home transcripts
@@ -575,10 +585,7 @@ export async function runArm(
   // with the Claude subject arm (2026-08-09): it produced nothing on the codex
   // path, which is the only path campaigns run on.
   try {
-    const metrics = await collectSessionMetrics(
-      [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
-      wallClockMs,
-    );
+    const metrics = await collectSessionMetrics([codexHome], wallClockMs);
     await Deno.writeTextFile(
       join(instDir, `${data.instanceId}.metrics.json`),
       JSON.stringify(metrics, null, 2) + "\n",
@@ -599,7 +606,7 @@ export async function runArm(
   {
     try {
       const audit = await collectWebAudit(
-        [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
+        [codexHome],
         data.repo,
         data.instanceId,
       );
@@ -624,10 +631,7 @@ export async function runArm(
   // store at all. Disclosure, never automatic exclusion; loud on failure, never
   // fails the instance (same as metrics and the web audit).
   try {
-    const peek = await collectPeekAudit(
-      [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
-      data.instanceId,
-    );
+    const peek = await collectPeekAudit([codexHome], data.instanceId);
     await Deno.writeTextFile(
       join(instDir, `${data.instanceId}.peekaudit.json`),
       JSON.stringify(peek, null, 2) + "\n",

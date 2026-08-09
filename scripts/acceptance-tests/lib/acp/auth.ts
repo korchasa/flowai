@@ -17,7 +17,7 @@
  * This is the single owner of the bench-home construction (the direct
  * `ClaudeAdapter` that previously held a copy was retired with the ACP cutover).
  */
-import { dirname, join } from "@std/path";
+import { basename, dirname, join } from "@std/path";
 
 /** Real-`$HOME` entries symlinked into the bench-home for OAuth/Keychain auth. */
 const ISOLATED_HOME_LINKS = [
@@ -113,51 +113,75 @@ export async function prepareAcpCodexHome(
 }
 
 /**
- * Builds a SEPARATE codex config root for the benchmark's human emulator
- * (FR-BENCH-SWE.ISOLATION).
+ * Builds the benchmark's ONE codex config root, under `~/.flowai-dev`
+ * (FR-BENCH-SWE.ISOLATION, user decision 2026-08-09).
  *
- * The emulator and the agent under test used to share one `CODEX_HOME`, so both
- * session stores sat in one directory and each side's environment named it. That
- * is a measurement leak in both directions: the emulator's rollout carries the
- * human persona and the `DECISION:` protocol the agent is being graded against,
- * while the agent's rollout carries the reasoning the emulator is supposed not
- * to see (it answers from the issue text and the engineer's latest message
- * alone). Neither leak needs an adversary — one `ls` of the store either side is
- * pointed at is enough.
+ * Layout — one predictable place outside the project, per-run stores beneath it:
  *
- * The root is created OUTSIDE the run's instance directory, under the OS temp
- * root with a random name, so it is not reachable by walking up from the
- * agent's sandbox. The caller is responsible for removing it after the harvest.
+ *     ~/.flowai-dev/auth.json            -> ~/.codex/auth.json
+ *     ~/.flowai-dev/bench/<runKey>/.codex/
+ *         auth.json                      -> ~/.flowai-dev/auth.json
+ *         skills/                        (empty)
  *
- * Scope, stated rather than implied: this separates the stores and removes the
- * pointer from each side's environment. It is NOT an OS-enforced denial —
- * measured on codex-cli 0.144.6, `--sandbox read-only` blocks writes and leaves
- * disk READS unrestricted, so a session that deliberately scans the temp root
- * can still reach the other store. Enforcing that would need a distinct OS user
- * or a custom seatbelt profile; neither is in place.
+ * The single root-level `auth.json` is the point: credentials live in one named
+ * place the maintainer can inspect and repair, instead of a symlink per run into
+ * a temp directory the OS purges. The agent under test and the human emulator
+ * SHARE the per-run store — they no longer get separate ones, because codex has
+ * no sandbox mode that denies disk reads (measured on 0.144.6), so separating
+ * them bought a removed pointer rather than a guarantee. What replaced it is a
+ * check: `peek_audit.ts` flags any shell command that reached for a session
+ * store, in either transcript.
+ *
+ * The store stays PER RUN rather than one directory for the whole benchmark
+ * because the cost harvest attributes tokens by walking a store: instances run
+ * four at a time by default, and a shared directory would interleave four
+ * sessions' rollouts with no way to tell them apart. `runKey` is the instance
+ * dir name, so a resumed run re-prepares the same store instead of orphaning it.
+ *
+ * Empty `skills/` and no `config.toml` for the reason `prepareAcpCodexHome`
+ * documents: `~/.codex/skills/` would shadow the sandbox pack, and
+ * `~/.codex/config.toml` globally pins model + reasoning effort.
+ *
+ * Unlike the temp-root homes, nothing purges this tree — that is deliberate (the
+ * sessions stay readable after a campaign) and it grows. Pruning is the
+ * maintainer's call, never this function's.
  */
 // implements [FR-BENCH-SWE.ISOLATION]
-export async function prepareEmulatorCodexHome(): Promise<
-  { HOME: string; CODEX_HOME: string }
-> {
-  const home = await Deno.makeTempDir({ prefix: "flowai-bench-emulator-" });
-  const codexHome = join(home, ".codex");
-  // Empty `skills/` for the same reason the agent's root has one: a user-level
-  // `~/.codex/skills/` must not reach a referee that is pinned by argv.
-  await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
-
+export async function prepareBenchCodexHome(
+  sandboxPath: string,
+): Promise<string> {
   const realHome = Deno.env.get("HOME");
-  if (realHome) {
-    const src = join(realHome, ".codex", "auth.json");
-    try {
-      await Deno.lstat(src);
-      await Deno.symlink(src, join(codexHome, "auth.json"));
-    } catch (e) {
-      if (e instanceof Deno.errors.AlreadyExists) {
-        /* idempotent re-prepare */
-      }
-    }
+  if (realHome === undefined) {
+    throw new Error("HOME is unset — cannot place the bench codex home");
   }
+  const root = join(realHome, ".flowai-dev");
+  const rootAuth = join(root, "auth.json");
+  await Deno.mkdir(root, { recursive: true });
+  await linkOnce(join(realHome, ".codex", "auth.json"), rootAuth);
 
-  return { HOME: home, CODEX_HOME: codexHome };
+  // `runKey` = the per-instance dir name (`<instance>-<hash>`), the same
+  // identity the sandbox and bench-home already carry.
+  const runKey = basename(dirname(sandboxPath));
+  const codexHome = join(root, "bench", runKey, ".codex");
+  await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
+  await linkOnce(rootAuth, join(codexHome, "auth.json"));
+  return codexHome;
+}
+
+/**
+ * Symlink `dst` -> `src`, tolerating a re-prepare. A missing source leaves no
+ * link at all, so the session surfaces a real auth error rather than a dangling
+ * one.
+ */
+async function linkOnce(src: string, dst: string): Promise<void> {
+  try {
+    await Deno.lstat(src);
+  } catch {
+    return;
+  }
+  try {
+    await Deno.symlink(src, dst);
+  } catch (e) {
+    if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+  }
 }
