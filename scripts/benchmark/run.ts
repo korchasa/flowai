@@ -58,6 +58,7 @@ import {
 } from "./human_emulator.ts";
 import { collectSessionMetrics, fmtCost } from "./metrics.ts";
 import { collectWebAudit } from "./webaudit.ts";
+import { collectPeekAudit } from "./peek_audit.ts";
 
 /** AcpAgent user-emulator contract — both arm operators satisfy it. */
 type Operator = {
@@ -614,6 +615,35 @@ export async function runArm(
         `  [webaudit] FAILED ${data.instanceId}: ${(e as Error).message}`,
       );
     }
+  }
+
+  // implements [FR-BENCH-SWE.ISOLATION]: check that the separation actually
+  // held. Codex has no sandbox mode that denies disk reads, so keeping the two
+  // session stores apart removes the pointer and nothing more — this pass reads
+  // the same rollouts and flags any shell command that reached for a session
+  // store at all. Disclosure, never automatic exclusion; loud on failure, never
+  // fails the instance (same as metrics and the web audit).
+  try {
+    const peek = await collectPeekAudit(
+      [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
+      data.instanceId,
+    );
+    await Deno.writeTextFile(
+      join(instDir, `${data.instanceId}.peekaudit.json`),
+      JSON.stringify(peek, null, 2) + "\n",
+    );
+    if (peek.peekCount > 0) {
+      console.log(
+        `  peek: ${peek.peekCount} command(s) reached for a session store — REVIEW`,
+      );
+      for (const p of peek.peeks) console.log(`    ${p.matched}: ${p.command}`);
+    } else {
+      console.log(`  peek: none`);
+    }
+  } catch (e) {
+    console.error(
+      `  [peekaudit] FAILED ${data.instanceId}: ${(e as Error).message}`,
+    );
   }
 
   const diff = await captureDiff(sandboxDir);

@@ -83,6 +83,31 @@ export function accessesFromRollout(
   repo: string,
   instanceId: string,
 ): { accesses: WebAccess[]; parseErrors: number } {
+  const { commands, parseErrors } = shellCommandsFromRollout(text);
+  const accesses: WebAccess[] = [];
+  for (const cmd of commands) {
+    for (const url of cmd.match(URL_RE) ?? []) {
+      accesses.push({
+        tool: "Shell",
+        target: url,
+        flagged: isOracleAdjacent(url, repo, instanceId),
+      });
+    }
+  }
+  return { accesses, parseErrors };
+}
+
+/**
+ * Every shell command one rollout recorded, deduped by call id.
+ *
+ * Shared with the cross-session peek audit (FR-BENCH-SWE.ISOLATION) — both
+ * checks ask a different question of the SAME command text, and a second parser
+ * would be a second place for the `exec_command`/`shell_command` field-name
+ * difference to be got wrong.
+ */
+export function shellCommandsFromRollout(
+  text: string,
+): { commands: string[]; parseErrors: number } {
   // Dedupe at the call level (codex repeats a tool call across retries) —
   // last occurrence wins, matching metrics.ts.
   const callsById = new Map<string, string>();
@@ -126,17 +151,7 @@ export function accessesFromRollout(
     if (cmd !== undefined) callsById.set(id, cmd);
   }
 
-  const accesses: WebAccess[] = [];
-  for (const cmd of callsById.values()) {
-    for (const url of cmd.match(URL_RE) ?? []) {
-      accesses.push({
-        tool: "Shell",
-        target: url,
-        flagged: isOracleAdjacent(url, repo, instanceId),
-      });
-    }
-  }
-  return { accesses, parseErrors };
+  return { commands: [...callsById.values()], parseErrors };
 }
 
 /**
