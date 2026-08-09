@@ -83,6 +83,12 @@ import {
   importCampaign,
   summariseCells,
 } from "./benchmark/cells_import.ts";
+import {
+  BENCH_STORE_ROOT,
+  fmtBytes,
+  listBenchRuns,
+  pruneBenchRuns,
+} from "./benchmark/prune_homes.ts";
 import { buildSelection, loadFrozenPool } from "./benchmark/cell_select.ts";
 import {
   campaignMismatch,
@@ -954,5 +960,59 @@ await new Command()
       return;
     }
     for (const l of lines) console.log(l);
+  })
+  // ---- prune-store ----
+  .command(
+    "prune-store",
+    "Remove old bench codex session stores under ~/.flowai-dev (dry run by default)",
+  )
+  .option(
+    "--older-than <days:number>",
+    "Remove runs at least this many days old; 0 removes every run",
+    { default: 14 },
+  )
+  .option("--root <path:string>", "Store root", { default: BENCH_STORE_ROOT })
+  .option("--yes", "Actually delete — without it the command only reports")
+  .action(async (opts) => {
+    const plan = await pruneBenchRuns({
+      root: opts.root,
+      olderThanDays: opts.olderThan,
+      confirm: opts.yes === true,
+    });
+    if (plan.removed.length === 0 && plan.kept.length === 0) {
+      console.log(`[prune-store] no runs under ${plan.root}/bench`);
+      return;
+    }
+    const verb = plan.dryRun ? "to remove" : "removed";
+    const row = (
+      tag: string,
+      r: { name: string; ageDays: number; bytes: number },
+    ) => `  ${tag.padEnd(9)}  ${r.name}  ${r.ageDays}d  ${fmtBytes(r.bytes)}`;
+    for (const r of plan.removed) console.log(row(verb, r));
+    for (const r of plan.kept) console.log(row("keep", r));
+    console.log(
+      `[prune-store] ${plan.removed.length} run(s) ${verb}, ` +
+        `${fmtBytes(plan.freedBytes)}; ${plan.kept.length} kept ` +
+        `(threshold ${plan.olderThanDays}d)`,
+    );
+    if (plan.dryRun && plan.removed.length > 0) {
+      console.log(`[prune-store] re-run with --yes to delete`);
+    }
+  })
+  // ---- show-store ----
+  .command("show-store", "List bench codex session stores with age and size")
+  .option("--root <path:string>", "Store root", { default: BENCH_STORE_ROOT })
+  .action(async (opts) => {
+    const runs = await listBenchRuns(opts.root);
+    if (runs.length === 0) {
+      console.log(`[show-store] no runs under ${opts.root}/bench`);
+      return;
+    }
+    let total = 0;
+    for (const r of runs) {
+      total += r.bytes;
+      console.log(`  ${r.name}  ${r.ageDays}d  ${fmtBytes(r.bytes)}`);
+    }
+    console.log(`[show-store] ${runs.length} run(s), ${fmtBytes(total)} total`);
   })
   .parse(Deno.args);

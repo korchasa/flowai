@@ -131,7 +131,11 @@ than the pending item rewritten away.
       other's session, since codex offers no read-denying sandbox.
   - Test: `scripts/benchmark/peek_audit_test.ts` (4)
   - Evidence: `deno test -A scripts/benchmark/peek_audit_test.ts`
-- [x] `deno task check` green (664 + 173, 0 failed).
+- [x] FR-BENCH-SWE.ISOLATION: the maintainer can reclaim the store the OS no
+      longer purges, without a hand-written `rm -rf`.
+  - Test: `scripts/benchmark/prune_homes_test.ts` (8)
+  - Evidence: `deno test -A scripts/benchmark/prune_homes_test.ts`; CLI smoke over a seeded root — `deno run -A scripts/benchmark.ts prune-store --root <root>` listed one run to remove and one kept and deleted nothing, `--yes` removed it, `--older-than 0 --yes` took the rest
+- [x] `deno task check` green (672 + 173, 0 failed).
   - Evidence: `deno task check`
 
 ## Solution
@@ -169,8 +173,14 @@ four at a time by default — one shared directory would interleave four session
 rollouts with no way to separate them.
 
 Nothing purges `~/.flowai-dev`, unlike the temp homes. That is deliberate — the
-sessions stay readable after a campaign — and it grows. Pruning is a maintainer
-decision, never the harness's.
+sessions stay readable after a campaign — and it grows, so reclaiming it is a
+command the maintainer runs: `deno task benchmark show-store` to see what is
+there, `prune-store [--older-than <days>] [--yes]` to remove it. Dry run is the
+default and prints what stays as well as what would go; the deletion refuses any
+target that does not resolve strictly under the store root, never touches the
+root or its `auth.json`, and treats a negative age as an error rather than a
+silent zero. The harness never prunes on its own — those rollouts are the
+evidence behind a campaign's cost and audit numbers.
 
 ### Note for whoever runs the next campaign
 
