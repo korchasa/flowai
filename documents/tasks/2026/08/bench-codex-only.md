@@ -131,7 +131,22 @@ than the pending item rewritten away.
       other's session, since codex offers no read-denying sandbox.
   - Test: `scripts/benchmark/peek_audit_test.ts` (4)
   - Evidence: `deno test -A scripts/benchmark/peek_audit_test.ts`
-- [x] `deno task check` green (664 + 173, 0 failed).
+- [x] FR-BENCH-SWE.ISOLATION: the per-run store is keyed by the FULL sandbox
+      path, so two reps of one instance never share it. The first version keyed
+      on the instance dir name alone and the rep lives a level above
+      `<arm>/<instance>`, so the 2026-08-09 baseline campaign wrote 45 sessions
+      into 15 stores and reps 2 and 3 harvested the earlier reps' rollouts as
+      their own (`transcriptFiles` 2, 4, 6). Solve verdicts were untouched — they
+      come from swebench grading — and the campaign's per-rep cost was recovered
+      by filtering rollouts on the rep windows in `cell.json`: rep1 271 API calls
+      / 10.3M in / 84k out, rep2 342 / 14.5M / 100k, rep3 308 / 12.6M / 95k, 30
+      rollouts each and none outside a window. The committed cell is clean —
+      `tasks.jsonl` records no cost — but the run dir's `<instance>.metrics.json`
+      files and the console aggregate they add up to (1805 calls / 72.7M in) are
+      the double-counted figures and must not be quoted.
+  - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts` (rep1 store ≠ rep2 store)
+  - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts`
+- [x] `deno task check` green (665 + 173, 0 failed).
   - Evidence: `deno task check`
 
 ## Solution

@@ -14,6 +14,7 @@
 import { assert, assertEquals } from "@std/assert";
 import { join } from "@std/path";
 import {
+  benchRunKey,
   prepareAcpClaudeHome,
   prepareAcpCodexHome,
   prepareBenchCodexHome,
@@ -308,9 +309,31 @@ Deno.test("bench codex home sits under ~/.flowai-dev, per run, credentials linke
 
     assertEquals(
       a,
-      join(fakeHome, ".flowai-dev", "bench", "anyio-1134-abc", ".codex"),
+      join(
+        fakeHome,
+        ".flowai-dev",
+        "bench",
+        await benchRunKey(sandboxA),
+        ".codex",
+      ),
+    );
+    assert(
+      (await benchRunKey(sandboxA)).startsWith("anyio-1134-abc-"),
+      "the run key stays readable: instance dir name plus a path hash",
     );
     assert(a !== b, "each instance run gets its own store");
+    // The run key must separate REPS of one instance, not just instances.
+    // Measured 2026-08-09: keying on the parent dir name alone produced 15
+    // stores for 45 sessions, because the rep lives a level above `<arm>/<id>` —
+    // so rep2's cost harvest counted rep1's rollouts too (transcriptFiles went
+    // 2, 4, 6 across the three reps of one campaign).
+    const rep1 = await prepareBenchCodexHome(
+      join(workDir, "run-x", "rep1", "baseline", "anyio-1134", "sandbox"),
+    );
+    const rep2 = await prepareBenchCodexHome(
+      join(workDir, "run-x", "rep2", "baseline", "anyio-1134", "sandbox"),
+    );
+    assert(rep1 !== rep2, `two reps shared one store: ${rep1}`);
     // Credentials resolve through the single root-level auth.json.
     assertEquals(await Deno.readTextFile(join(a, "auth.json")), "{}\n");
     assertEquals(

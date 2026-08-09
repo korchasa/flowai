@@ -17,7 +17,7 @@
  * This is the single owner of the bench-home construction (the direct
  * `ClaudeAdapter` that previously held a copy was retired with the ACP cutover).
  */
-import { basename, dirname, join } from "@std/path";
+import { basename, dirname, join, resolve } from "@std/path";
 
 /** Real-`$HOME` entries symlinked into the bench-home for OAuth/Keychain auth. */
 const ISOLATED_HOME_LINKS = [
@@ -135,8 +135,16 @@ export async function prepareAcpCodexHome(
  * The store stays PER RUN rather than one directory for the whole benchmark
  * because the cost harvest attributes tokens by walking a store: instances run
  * four at a time by default, and a shared directory would interleave four
- * sessions' rollouts with no way to tell them apart. `runKey` is the instance
- * dir name, so a resumed run re-prepares the same store instead of orphaning it.
+ * sessions' rollouts with no way to tell them apart.
+ *
+ * `runKey` is therefore the instance name plus a hash of the FULL sandbox path,
+ * unique per (campaign, rep, arm, instance) and stable across a resume. The
+ * instance name alone is not enough, and the first version of this function got
+ * exactly that wrong: the rep lives a level above `<arm>/<instance>`, so all
+ * three reps of one instance shared a store and rep2's harvest counted rep1's
+ * rollouts as well — measured on the 2026-08-09 baseline campaign,
+ * `transcriptFiles` ran 2, 4, 6 across the reps and 45 sessions left only 15
+ * stores on disk.
  *
  * Empty `skills/` and no `config.toml` for the reason `prepareAcpCodexHome`
  * documents: `~/.codex/skills/` would shadow the sandbox pack, and
@@ -159,13 +167,32 @@ export async function prepareBenchCodexHome(
   await Deno.mkdir(root, { recursive: true });
   await linkOnce(join(realHome, ".codex", "auth.json"), rootAuth);
 
-  // `runKey` = the per-instance dir name (`<instance>-<hash>`), the same
-  // identity the sandbox and bench-home already carry.
-  const runKey = basename(dirname(sandboxPath));
+  const runKey = await benchRunKey(sandboxPath);
   const codexHome = join(root, "bench", runKey, ".codex");
   await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
   await linkOnce(rootAuth, join(codexHome, "auth.json"));
   return codexHome;
+}
+
+/**
+ * `<instance>-<8 hex of the full sandbox path>`.
+ *
+ * Readable at a glance and unique across reps and arms, which the bare parent
+ * directory name is not — see `prepareBenchCodexHome`. Deterministic, so a
+ * resumed run re-prepares the same store instead of orphaning it.
+ */
+export async function benchRunKey(sandboxPath: string): Promise<string> {
+  const abs = resolve(sandboxPath);
+  // crypto.subtle rejects Uint8Array views over ArrayBufferLike — copy into a
+  // fresh ArrayBuffer first (known Deno TS2345 quirk).
+  const bytes = new TextEncoder().encode(abs);
+  const buf = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buf).set(bytes);
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", buf));
+  const hash = Array.from(digest.slice(0, 4))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+  return `${basename(dirname(abs))}-${hash}`;
 }
 
 /**

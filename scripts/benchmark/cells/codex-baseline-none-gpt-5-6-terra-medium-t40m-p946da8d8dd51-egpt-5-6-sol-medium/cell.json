@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "cellId": "codex-baseline-none-gpt-5-6-terra-medium-t40m-p946da8d8dd51-egpt-5-6-sol-medium",
+  "key": {
+    "ide": "codex",
+    "arm": "baseline",
+    "framework": null,
+    "model": "gpt-5.6-terra",
+    "effort": "medium",
+    "stepTimeoutMs": 2400000,
+    "promptHash": "946da8d8dd51fcad",
+    "humanEmulator": {
+      "model": "gpt-5.6-sol",
+      "effort": "medium"
+    }
+  },
+  "taskSet": {
+    "dataset": "nebius/SWE-rebench-leaderboard",
+    "split": "2026_03",
+    "forkCommit": "e4907b7a90eafaa1f0a6428fd04fe31cdd8b4284",
+    "ids": [
+      "agronholm__anyio-1134",
+      "celestoai__smolvm-172",
+      "geopython__pygeoapi-2338",
+      "graphistry__pygraphistry-1277",
+      "meltano__meltano-9929",
+      "mempalace__mempalace-1004",
+      "nesquena__hermes-webui-1818",
+      "pdm-project__pdm-3759",
+      "pennylaneai__pennylane-9298",
+      "pyinfra-dev__pyinfra-1665",
+      "schemathesis__schemathesis-3778",
+      "schemathesis__schemathesis-3933",
+      "tobymao__sqlglot-7457",
+      "zarr-developers__virtualizarr-979",
+      "zauberzeug__nicegui-5914"
+    ],
+    "checksum": "a3ca83a344e4c7296a0330812e62187444f8000b382e03adf1310a3dd428fbc6"
+  },
+  "agent": {
+    "modelSnapshot": null,
+    "ideVersion": null,
+    "bridgeVersion": "1.1.7"
+  },
+  "humanEmulator": {
+    "model": "gpt-5.6-sol",
+    "effort": "medium"
+  },
+  "harness": {
+    "maxSteps": 4,
+    "stepTimeoutMs": 2400000,
+    "promptHash": "946da8d8dd51fcad",
+    "commit": "251085ca-dirty"
+  },
+  "env": {
+    "hostname": "Mac-mini",
+    "arch": "aarch64",
+    "cpuCount": 10,
+    "ramBytes": 17179869184,
+    "dockerVersion": "29.4.0",
+    "rosetta": true
+  },
+  "reps": [
+    {
+      "startedAt": "2026-08-09T13:19:30.382Z",
+      "finishedAt": "2026-08-09T13:34:52.089Z",
+      "concurrency": 4,
+      "healthAborts": 0,
+      "backoffWaits": 0,
+      "rep": 1
+    },
+    {
+      "startedAt": "2026-08-09T13:43:49.136Z",
+      "finishedAt": "2026-08-09T14:02:11.412Z",
+      "concurrency": 4,
+      "healthAborts": 0,
+      "backoffWaits": 0,
+      "rep": 2
+    },
+    {
+      "startedAt": "2026-08-09T14:10:56.574Z",
+      "finishedAt": "2026-08-09T14:26:21.091Z",
+      "concurrency": 4,
+      "healthAborts": 0,
+      "backoffWaits": 0,
+      "rep": 3
+    }
+  ]
+}
