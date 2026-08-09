@@ -87,9 +87,12 @@ than the pending item rewritten away.
       medium effort in both arms, independent of the agent's effort.
   - Test: `scripts/benchmark/run_test.ts::humanEmulatorConfig` + `scripts/acceptance-tests/lib/llm_test.ts` (codex argv pinning)
   - Evidence: `deno test -A scripts/benchmark/run_test.ts scripts/benchmark/human_emulator_test.ts`
-- [ ] FR-BENCH-SWE.WEBAUDIT: web audit reads codex `exec` commands, or the FR is
-      explicitly re-scoped to "not measured on codex" with the reason recorded.
-  - Test: `scripts/benchmark/webaudit_test.ts`
+- [x] FR-BENCH-SWE.WEBAUDIT: web audit reads codex shell commands
+      (`exec_command` field `cmd`, `shell_command` field `command`), deduped by
+      `call_id`; `isOracleAdjacent` unchanged. Narrowing recorded, not hidden:
+      the codex sandbox has no WebFetch/WebSearch tools, so a search the model
+      performs internally leaves no trace.
+  - Test: `scripts/benchmark/webaudit_test.ts` (6)
   - Evidence: `deno test -A scripts/benchmark/webaudit_test.ts`
 - [x] No `"claude"` fallback remains in the RUN path. The legacy readers
       (`pool2_measure.ts`, `cells_import.ts`) keep theirs on purpose: a recorded
@@ -106,11 +109,23 @@ than the pending item rewritten away.
 
 ## Solution
 
-Filled after the open question below is answered.
+Answered 2026-08-09 (user 5A): port the audit rather than drop it — the ability
+to read the instance's own upstream fix mid-session is the central honesty risk,
+and the rollouts carry the command text needed to check it.
 
-### Open question
+Done, in order: codex cost reader (`usageFromRollout`) → subject IDE narrowed to
+codex → human emulator to `codex exec` at a pinned medium effort → web audit
+ported to shell commands → SRS/SDS/CLI text aligned.
 
-Web audit on codex has no one-to-one port. Either build an `exec`-command
-classifier (curl / wget / pip / git fetch / …) or re-scope the FR and say plainly
-that network access is not audited on codex. Decide before touching
-`webaudit.ts`.
+One defect found and fixed after the first commit: tool calls were deduped by
+`payload.id`, which 94% of real records do not carry (measured over 1493 rollout
+files, 43669 records) — the counter would have reported ~0 tool calls while every
+unit test passed, because the fixtures came from the single record shape that has
+both fields. Fixed in `eb99272a` with a test on the dominant shape.
+
+### Remaining
+
+Live smoke: one real session verifying that `metrics.json` AND `webaudit.json`
+land on disk. Neither is provable by unit tests — they check that the parsers
+understand shapes put into them by hand, not that the rollout appears where the
+collector looks.

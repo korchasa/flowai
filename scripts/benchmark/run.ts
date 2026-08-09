@@ -564,19 +564,13 @@ export async function runArm(
     );
   }
 
-  // The web audit has NOT been ported yet and stays off rather than silently
-  // reporting zero accesses. Its Claude reader classified `WebFetch`/`WebSearch`
-  // tool calls; codex reaches the network through `exec` shell commands, which
-  // is a different classifier, not a rename. Tracked in
-  // documents/tasks/2026/08/bench-codex-only.md.
-  const canHarvestTranscripts = false;
-  console.log(`  web: not measured on ${ide} — audit port pending`);
-
   // implements [FR-BENCH-SWE.WEBAUDIT](../../documents/requirements.md#fr-bench-swe.webaudit-per-instance-web-access-audit-flagged-never-banned-ancfrbench-swe-webaudit):
-  // audit web accesses from the same soon-to-be-purged transcripts — research
-  // is allowed, oracle-adjacent hits are flagged for the report, never banned.
-  // Loud on failure, never fails the instance (same exception as metrics).
-  if (canHarvestTranscripts) {
+  // audit web accesses from the same soon-to-be-purged rollouts — research is
+  // allowed, oracle-adjacent hits are flagged for the report, never banned.
+  // Under codex the shell is the whole surface: no WebFetch/WebSearch tools
+  // exist in the sandbox, so `exec_command` / `shell_command` text is what gets
+  // scanned. Loud on failure, never fails the instance (same as metrics).
+  {
     try {
       const audit = await collectWebAudit(
         join(extInstDir, "bench-home"),

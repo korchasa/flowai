@@ -5,25 +5,33 @@
  * AUDITED, never banned. The risk being audited: a benchmark instance's real
  * upstream fix is public on GitHub during the run, so an unlogged fetch of the
  * own-repo PR/commit is an invisible oracle leak. This module extracts every
- * web access from the bench-home Claude Code transcripts — `WebFetch` URLs,
- * `WebSearch` queries, and `http(s)` URLs inside `Bash` commands (curl/wget
- * would otherwise bypass the audit) — and flags oracle-adjacent targets for
- * human review. Flags are disclosure, not disqualification: false positives
- * are acceptable and no automatic exclusion happens.
+ * `http(s)` URL from the shell commands recorded in the bench-home codex
+ * rollouts, and flags oracle-adjacent targets for human review. Flags are
+ * disclosure, not disqualification: false positives are acceptable and no
+ * automatic exclusion happens.
  *
- * Same transcript discipline as metrics.ts (FR-BENCH-SWE.COST): `tool_use`
- * blocks repeat across jsonl lines of one API response → dedupe by `toolu_*`
- * block id; malformed lines are counted (`parseErrors`), never dropped;
- * harvest runs IMMEDIATELY after the session because the OS purges bench-home
- * within days.
+ * The shell IS the whole audit surface here. The retired Claude reader also had
+ * `WebFetch` URLs and `WebSearch` queries to read, but codex has no such tools
+ * in the bench sandbox — it reaches the network through `exec_command` /
+ * `shell_command`, whose argument carries the command text verbatim. Measured
+ * across every rollout on this host: 33465 `exec_command` records (field `cmd`)
+ * and 5588 `shell_command` records (field `command`), all string-valued.
+ * Consequence stated, not hidden: a search the model performs internally, with
+ * no shell command, leaves no trace here.
+ *
+ * Same rollout discipline as metrics.ts (FR-BENCH-SWE.COST): tool calls repeat
+ * across retries → dedupe by `call_id`; malformed lines are counted
+ * (`parseErrors`), never dropped; harvest runs IMMEDIATELY after the session
+ * because the OS purges bench-home within days.
  */
 
 import { join } from "@std/path";
 import { walk } from "@std/fs";
 
 export interface WebAccess {
-  tool: "WebFetch" | "WebSearch" | "Bash";
-  /** URL (WebFetch/Bash) or search query (WebSearch). */
+  /** Only the shell reaches the network under codex. */
+  tool: "Shell";
+  /** The URL found in the command text. */
   target: string;
   /** Oracle-adjacent — needs human review in the report. */
   flagged: boolean;
@@ -68,14 +76,14 @@ export function isOracleAdjacent(
 }
 
 /** Extract deduped, flagged web accesses from one transcript's jsonl text. */
-export function accessesFromTranscript(
+export function accessesFromRollout(
   text: string,
   repo: string,
   instanceId: string,
 ): { accesses: WebAccess[]; parseErrors: number } {
-  // Dedupe at the block level (one API response repeats its tool_use blocks
-  // across jsonl lines) — last occurrence wins, matching metrics.ts.
-  const blocksById = new Map<string, Record<string, unknown>>();
+  // Dedupe at the call level (codex repeats a tool call across retries) —
+  // last occurrence wins, matching metrics.ts.
+  const callsById = new Map<string, string>();
   let parseErrors = 0;
 
   for (const line of text.split("\n")) {
@@ -87,54 +95,64 @@ export function accessesFromTranscript(
       parseErrors++;
       continue;
     }
-    if (j.type !== "assistant") continue;
-    const msg = (j.message ?? {}) as Record<string, unknown>;
-    const content = Array.isArray(msg.content) ? msg.content : [];
-    for (const block of content) {
-      const b = block as Record<string, unknown>;
-      if (b.type === "tool_use" && typeof b.id === "string") {
-        blocksById.set(b.id, b);
-      }
+    const payload = (j.payload ?? {}) as Record<string, unknown>;
+    if (payload.type !== "function_call") continue;
+    if (payload.name !== "exec_command" && payload.name !== "shell_command") {
+      continue;
     }
+    const id = typeof payload.call_id === "string"
+      ? payload.call_id
+      : typeof payload.id === "string"
+      ? payload.id
+      : undefined;
+    if (id === undefined) continue;
+    let args: Record<string, unknown>;
+    try {
+      args = JSON.parse(
+        typeof payload.arguments === "string" ? payload.arguments : "{}",
+      ) as Record<string, unknown>;
+    } catch {
+      parseErrors++;
+      continue;
+    }
+    // `exec_command` names it `cmd`, `shell_command` names it `command`.
+    const cmd = typeof args.cmd === "string"
+      ? args.cmd
+      : typeof args.command === "string"
+      ? args.command
+      : undefined;
+    if (cmd !== undefined) callsById.set(id, cmd);
   }
 
   const accesses: WebAccess[] = [];
-  const push = (tool: WebAccess["tool"], target: string): void => {
-    accesses.push({
-      tool,
-      target,
-      flagged: isOracleAdjacent(target, repo, instanceId),
-    });
-  };
-  for (const b of blocksById.values()) {
-    const input = (b.input ?? {}) as Record<string, unknown>;
-    if (b.name === "WebFetch" && typeof input.url === "string") {
-      push("WebFetch", input.url);
-    } else if (b.name === "WebSearch" && typeof input.query === "string") {
-      push("WebSearch", input.query);
-    } else if (b.name === "Bash" && typeof input.command === "string") {
-      for (const url of input.command.match(URL_RE) ?? []) push("Bash", url);
+  for (const cmd of callsById.values()) {
+    for (const url of cmd.match(URL_RE) ?? []) {
+      accesses.push({
+        tool: "Shell",
+        target: url,
+        flagged: isOracleAdjacent(url, repo, instanceId),
+      });
     }
   }
   return { accesses, parseErrors };
 }
 
 /**
- * Harvest every transcript under `<benchHome>/.claude/projects` (main session
- * + subagents + the arm's human-emulator CLI, which shares bench-home). Fails fast when
- * the projects dir is absent — a session with no transcript is a harness
- * defect, not a clean-network run.
+ * Harvest every rollout under `<benchHome>/.codex/sessions` (main session + the
+ * arm's human emulator, which shares the bench CODEX_HOME). Fails fast when the
+ * sessions dir is absent — a session with no rollout is a harness defect, not a
+ * clean-network run.
  */
 export async function collectWebAudit(
   benchHome: string,
   repo: string,
   instanceId: string,
 ): Promise<InstanceWebAudit> {
-  const projects = join(benchHome, ".claude", "projects");
+  const projects = join(benchHome, ".codex", "sessions");
   try {
     await Deno.stat(projects);
   } catch {
-    throw new Error(`no transcripts: projects dir absent at ${projects}`);
+    throw new Error(`no transcripts: sessions dir absent at ${projects}`);
   }
   const audit: InstanceWebAudit = {
     instanceId,
@@ -147,7 +165,7 @@ export async function collectWebAudit(
   for await (
     const entry of walk(projects, { includeDirs: false, exts: [".jsonl"] })
   ) {
-    const { accesses, parseErrors } = accessesFromTranscript(
+    const { accesses, parseErrors } = accessesFromRollout(
       await Deno.readTextFile(entry.path),
       repo,
       instanceId,
