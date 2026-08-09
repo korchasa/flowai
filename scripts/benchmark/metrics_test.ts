@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from "@std/assert";
 import {
-  collectBenchHomeMetrics,
+  collectSessionMetrics,
   loadRunMetrics,
   type SessionMetrics,
   sumCost,
@@ -156,10 +156,10 @@ Deno.test("usageFromRollout: counts malformed lines instead of dropping them", (
   assertEquals(u.parseErrors, 1);
 });
 
-Deno.test("collectBenchHomeMetrics: harvests codex rollouts under CODEX_HOME", async () => {
-  const benchHome = await Deno.makeTempDir();
+Deno.test("collectSessionMetrics: harvests codex rollouts under a CODEX_HOME", async () => {
+  const codexHome = await Deno.makeTempDir();
   try {
-    const sessions = `${benchHome}/.codex/sessions/2026/08/09`;
+    const sessions = `${codexHome}/sessions/2026/08/09`;
     await Deno.mkdir(sessions, { recursive: true });
     await Deno.writeTextFile(
       `${sessions}/rollout-a.jsonl`,
@@ -173,7 +173,7 @@ Deno.test("collectBenchHomeMetrics: harvests codex rollouts under CODEX_HOME", a
         }),
       ].join("\n"),
     );
-    const m = await collectBenchHomeMetrics(benchHome, 1234);
+    const m = await collectSessionMetrics([codexHome], 1234);
     assertEquals(m.transcriptFiles, 1);
     assertEquals(m.inputTokens, 200);
     assertEquals(m.cacheReadTokens, 100);
@@ -181,15 +181,56 @@ Deno.test("collectBenchHomeMetrics: harvests codex rollouts under CODEX_HOME", a
     assertEquals(m.toolCalls, 1);
     assertEquals(m.wallClockMs, 1234);
   } finally {
-    await Deno.remove(benchHome, { recursive: true });
+    await Deno.remove(codexHome, { recursive: true });
   }
 });
 
-Deno.test("collectBenchHomeMetrics: fails fast when the sessions dir is absent", async () => {
-  const benchHome = await Deno.makeTempDir();
+// The agent and the human emulator no longer share one session store
+// (FR-BENCH-SWE.ISOLATION), so the arm's cost is the SUM over both stores —
+// reading only the agent's would silently drop the emulator overhead that the
+// COST clause has always counted.
+Deno.test("collectSessionMetrics: sums the agent's and the emulator's stores", async () => {
+  const root = await Deno.makeTempDir();
   try {
-    await assertRejects(() => collectBenchHomeMetrics(benchHome, 1));
+    const agent = `${root}/agent/.codex`;
+    const emulator = `${root}/emulator/.codex`;
+    await Deno.mkdir(`${agent}/sessions`, { recursive: true });
+    await Deno.mkdir(`${emulator}/sessions`, { recursive: true });
+    await Deno.writeTextFile(
+      `${agent}/sessions/rollout-agent.jsonl`,
+      [
+        fnCall("fc_a", "exec"),
+        tokenCount({ input_tokens: 200, output_tokens: 20, total_tokens: 220 }),
+      ].join("\n"),
+    );
+    await Deno.writeTextFile(
+      `${emulator}/sessions/rollout-emu.jsonl`,
+      [
+        fnCall("fc_e", "exec"),
+        tokenCount({ input_tokens: 50, output_tokens: 5, total_tokens: 55 }),
+      ].join("\n"),
+    );
+    const m = await collectSessionMetrics([agent, emulator], 7);
+    assertEquals(m.transcriptFiles, 2);
+    assertEquals(m.inputTokens, 250);
+    assertEquals(m.outputTokens, 25);
+    assertEquals(m.toolCalls, 2);
   } finally {
-    await Deno.remove(benchHome, { recursive: true });
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectSessionMetrics: fails fast naming the store whose sessions dir is absent", async () => {
+  const root = await Deno.makeTempDir();
+  try {
+    const agent = `${root}/agent/.codex`;
+    await Deno.mkdir(`${agent}/sessions`, { recursive: true });
+    await assertRejects(
+      () => collectSessionMetrics([agent, `${root}/emulator/.codex`], 1),
+      Error,
+      `${root}/emulator/.codex`,
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
   }
 });

@@ -133,33 +133,34 @@ Deno.test("accessesFromRollout: repeated tool calls dedupe by call_id; bad lines
   assertEquals(parseErrors, 1);
 });
 
-Deno.test("collectWebAudit: harvests every rollout; an absent sessions dir fails fast", async () => {
+// Both stores are audited (FR-BENCH-SWE.ISOLATION): the emulator runs under
+// `--sandbox read-only`, which blocks writes but not the network, so its shell
+// commands are as auditable a surface as the agent's.
+Deno.test("collectWebAudit: harvests the agent's and the emulator's stores; an absent sessions dir fails fast", async () => {
   const tmp = await Deno.makeTempDir({ prefix: "webaudit-test-" });
   try {
-    const sessions = join(tmp, "bench-home", ".codex", "sessions", "2026");
-    await ensureDir(sessions);
+    const agent = join(tmp, "bench-home", ".codex");
+    const emulator = join(tmp, "emulator-home", ".codex");
+    await ensureDir(join(agent, "sessions", "2026"));
+    await ensureDir(join(emulator, "sessions"));
     await Deno.writeTextFile(
-      join(sessions, "rollout-a.jsonl"),
+      join(agent, "sessions", "2026", "rollout-a.jsonl"),
       execCommand("call_a", `curl https://github.com/${REPO}/commit/abc`) +
         "\n",
     );
     await Deno.writeTextFile(
-      join(sessions, "rollout-b.jsonl"),
+      join(emulator, "sessions", "rollout-b.jsonl"),
       shellCommand("call_b", "curl https://docs.djangoproject.com/") + "\n",
     );
 
-    const audit = await collectWebAudit(
-      join(tmp, "bench-home"),
-      REPO,
-      INSTANCE,
-    );
+    const audit = await collectWebAudit([agent, emulator], REPO, INSTANCE);
     assertEquals(audit.instanceId, INSTANCE);
     assertEquals(audit.transcriptFiles, 2);
     assertEquals(audit.accesses.length, 2);
     assertEquals(audit.flaggedCount, 1, "only the own-repo commit flags");
 
     await assertRejects(
-      () => collectWebAudit(join(tmp, "nope"), REPO, INSTANCE),
+      () => collectWebAudit([agent, join(tmp, "nope")], REPO, INSTANCE),
       Error,
       "sessions dir absent",
     );

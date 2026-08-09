@@ -53,19 +53,34 @@ export async function externalSandboxRoot(
 /**
  * Replace `instDir/sandbox` and `instDir/bench-home` with symlinks to the
  * external instance dir. Idempotent: a resumed run re-links in place.
+ *
+ * implements [FR-BENCH-SWE.ISOLATION]: `emulatorHome`, when given, is linked as
+ * `instDir/emulator-home`. The two session stores are kept apart from each
+ * other but BOTH are reachable from the run dir, which is the harness side —
+ * whoever reads a campaign after the fact needs both halves of the conversation.
+ * It is a separate argument because the emulator's root deliberately lives
+ * outside `extInstDir`, so walking up from the agent's sandbox does not find it.
  */
 export async function linkIntoRunDir(
   instDir: string,
   extInstDir: string,
+  emulatorHome?: string,
 ): Promise<void> {
   await ensureDir(instDir);
-  for (const name of ["sandbox", "bench-home"]) {
+  const targets: Array<[string, string]> = [
+    ["sandbox", join(extInstDir, "sandbox")],
+    ["bench-home", join(extInstDir, "bench-home")],
+    ...(emulatorHome
+      ? [["emulator-home", emulatorHome] as [string, string]]
+      : []),
+  ];
+  for (const [name, target] of targets) {
     const link = join(instDir, name);
     try {
       await Deno.remove(link, { recursive: true });
     } catch (e) {
       if (!(e instanceof Deno.errors.NotFound)) throw e;
     }
-    await Deno.symlink(join(extInstDir, name), link);
+    await Deno.symlink(target, link);
   }
 }

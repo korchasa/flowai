@@ -2,11 +2,13 @@
  * Session cost counters for benchmark runs (FR-BENCH-SWE.COST).
  *
  * Cost is always measured, never a quality criterion (FR-BENCH-V1 principle).
- * Token usage lives ONLY in the bench-home codex rollouts (every `*.jsonl`
- * under `.codex/sessions/`), and bench-home sits in the OS temp root that macOS
- * purges within days (all pre-2026-07-22 campaign transcripts were lost exactly
- * this way) — so the harness harvests counters IMMEDIATELY after each session
- * and persists them durably next to the run artifacts.
+ * Token usage lives ONLY in the codex rollouts (every `*.jsonl` under
+ * `<CODEX_HOME>/sessions/`). There are TWO such roots per instance since
+ * FR-BENCH-SWE.ISOLATION split the human emulator's store away from the agent's,
+ * and both sit in the OS temp root that macOS purges within days (all
+ * pre-2026-07-22 campaign transcripts were lost exactly this way) — so the
+ * harness harvests counters IMMEDIATELY after each session and persists them
+ * durably next to the run artifacts.
  *
  * Rollout quirks this module encodes:
  * - `token_count` events carry a RUNNING TOTAL (`total_token_usage`), re-emitted
@@ -122,21 +124,30 @@ export function usageFromRollout(text: string): TranscriptUsage {
 }
 
 /**
- * Harvest every rollout under `<benchHome>/.codex/sessions` (main session +
- * the human emulator, which shares the bench CODEX_HOME so its tokens land in
- * the arm's overhead — by design, same as the retired Claude harvest). Fails
- * fast when the sessions dir is absent: a session that produced no rollout is a
- * harness defect, not a zero-cost run.
+ * Harvest every rollout under `<codexHome>/sessions` for each store listed.
+ *
+ * Two stores, not one, since FR-BENCH-SWE.ISOLATION split the human emulator's
+ * config root away from the agent's: the arm's cost is their SUM, which keeps
+ * the emulator's tokens inside the arm's overhead exactly as they were counted
+ * when both shared a directory. Reading only the agent's store would quietly
+ * shrink every measured cost.
+ *
+ * Fails fast, naming the offending store, when a sessions dir is absent: a
+ * session that produced no rollout is a harness defect, not a zero-cost run.
  */
-export async function collectBenchHomeMetrics(
-  benchHome: string,
+export async function collectSessionMetrics(
+  codexHomes: readonly string[],
   wallClockMs: number,
 ): Promise<SessionMetrics> {
-  const projects = join(benchHome, ".codex", "sessions");
-  try {
-    await Deno.stat(projects);
-  } catch {
-    throw new Error(`no transcripts: sessions dir absent at ${projects}`);
+  const sessionDirs: string[] = [];
+  for (const home of codexHomes) {
+    const dir = join(home, "sessions");
+    try {
+      await Deno.stat(dir);
+    } catch {
+      throw new Error(`no transcripts: sessions dir absent at ${dir}`);
+    }
+    sessionDirs.push(dir);
   }
   const totals: SessionMetrics = {
     wallClockMs,
@@ -149,18 +160,20 @@ export async function collectBenchHomeMetrics(
     toolCalls: 0,
     parseErrors: 0,
   };
-  for await (
-    const entry of walk(projects, { includeDirs: false, exts: [".jsonl"] })
-  ) {
-    const u = usageFromRollout(await Deno.readTextFile(entry.path));
-    totals.transcriptFiles++;
-    totals.apiCalls += u.apiCalls;
-    totals.inputTokens += u.inputTokens;
-    totals.outputTokens += u.outputTokens;
-    totals.cacheReadTokens += u.cacheReadTokens;
-    totals.cacheCreationTokens += u.cacheCreationTokens;
-    totals.toolCalls += u.toolCalls;
-    totals.parseErrors += u.parseErrors;
+  for (const dir of sessionDirs) {
+    for await (
+      const entry of walk(dir, { includeDirs: false, exts: [".jsonl"] })
+    ) {
+      const u = usageFromRollout(await Deno.readTextFile(entry.path));
+      totals.transcriptFiles++;
+      totals.apiCalls += u.apiCalls;
+      totals.inputTokens += u.inputTokens;
+      totals.outputTokens += u.outputTokens;
+      totals.cacheReadTokens += u.cacheReadTokens;
+      totals.cacheCreationTokens += u.cacheCreationTokens;
+      totals.toolCalls += u.toolCalls;
+      totals.parseErrors += u.parseErrors;
+    }
   }
   return totals;
 }

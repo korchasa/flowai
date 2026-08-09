@@ -4,6 +4,7 @@ import {
   assertModelForIde,
   codexAgentEnv,
   effortEnv,
+  emulatorEnvFor,
   humanEmulatorConfig,
   isAuthFailure,
   isEmulatorOutage,
@@ -211,4 +212,35 @@ Deno.test("humanEmulatorConfig: an explicit model still wins", () => {
     humanEmulatorConfig({ humanEmulatorModel: "gpt-5.6-terra" }).model,
     "gpt-5.6-terra",
   );
+});
+
+/**
+ * implements [FR-BENCH-SWE.ISOLATION]: the emulator's environment is built
+ * from its own home, NOT by patching the agent's. A spread of the agent env
+ * would carry `CODEX_HOME`, `CODEX_CONFIG` and the sandbox venv `PATH` along
+ * with it — the first names the agent's session store outright, and the last
+ * two would let the operator's campaign settings reach a referee that is meant
+ * to be pinned by argv alone.
+ */
+Deno.test("emulatorEnvFor: carries the emulator's own home and nothing of the agent's", () => {
+  const env = emulatorEnvFor({
+    HOME: "/tmp/emu-home",
+    CODEX_HOME: "/tmp/emu-home/.codex",
+  });
+  assertEquals(env, {
+    HOME: "/tmp/emu-home",
+    CODEX_HOME: "/tmp/emu-home/.codex",
+  });
+  const agentEnv = {
+    HOME: "/tmp/bench-home",
+    CODEX_HOME: "/tmp/bench-home/.codex",
+    CODEX_CONFIG: '{"model":"gpt-5.6-terra"}',
+    PATH: "/tmp/venv/bin:/usr/bin",
+  };
+  for (const [k, v] of Object.entries(env)) {
+    assert(
+      agentEnv[k as keyof typeof agentEnv] !== v,
+      `${k} must not equal the agent's value`,
+    );
+  }
 });

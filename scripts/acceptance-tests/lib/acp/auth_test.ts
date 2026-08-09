@@ -13,7 +13,11 @@
  */
 import { assert, assertEquals } from "@std/assert";
 import { join } from "@std/path";
-import { prepareAcpClaudeHome, prepareAcpCodexHome } from "./auth.ts";
+import {
+  prepareAcpClaudeHome,
+  prepareAcpCodexHome,
+  prepareEmulatorCodexHome,
+} from "./auth.ts";
 
 /** Recursively snapshots a dir as a sorted map of relpath → contents. */
 async function snapshot(root: string): Promise<Record<string, string>> {
@@ -268,6 +272,63 @@ Deno.test("never mirrors .credentials.json into bench-home", async () => {
   } finally {
     if (realHome !== undefined) Deno.env.set("HOME", realHome);
     else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(workDir, { recursive: true });
+  }
+});
+
+/**
+ * implements [FR-BENCH-SWE.ISOLATION]: the human emulator gets its OWN codex
+ * config root, so the environment handed to it never names the agent's session
+ * store — and vice versa. Before this split both ran under one `CODEX_HOME`,
+ * which put the emulator's persona and decision protocol inside a directory the
+ * agent (launched `agent-full-access`) is pointed at by its own env.
+ */
+Deno.test("emulator codex home is separate from the agent's and carries no user config", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-emu-home-" });
+  const workDir = await Deno.makeTempDir({ prefix: "acp-emu-work-" });
+  const sandboxPath = join(workDir, "sandbox");
+  await Deno.mkdir(sandboxPath, { recursive: true });
+  // A user config that must NOT reach either home.
+  await Deno.mkdir(join(fakeHome, ".codex", "skills", "leak"), {
+    recursive: true,
+  });
+  await Deno.writeTextFile(
+    join(fakeHome, ".codex", "config.toml"),
+    'model_reasoning_effort = "xhigh"\n',
+  );
+  await Deno.writeTextFile(join(fakeHome, ".codex", "auth.json"), "{}\n");
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const agent = await prepareAcpCodexHome(sandboxPath);
+    const emulator = await prepareEmulatorCodexHome();
+
+    assert(
+      emulator.CODEX_HOME !== agent.CODEX_HOME,
+      "emulator must not share the agent's session store",
+    );
+    assert(
+      !emulator.CODEX_HOME.startsWith(agent.HOME),
+      `emulator home ${emulator.CODEX_HOME} sits inside the agent's ${agent.HOME}`,
+    );
+    assert(
+      !agent.HOME.startsWith(emulator.HOME),
+      "agent home must not sit inside the emulator's",
+    );
+    // Same isolation contract as the agent's root: credentials only.
+    const entries: string[] = [];
+    for await (const e of Deno.readDir(emulator.CODEX_HOME)) {
+      entries.push(e.name);
+    }
+    assertEquals(entries.sort(), ["auth.json", "skills"]);
+    assertEquals(
+      await Deno.readTextFile(join(emulator.CODEX_HOME, "auth.json")),
+      "{}\n",
+    );
+    await Deno.remove(emulator.HOME, { recursive: true });
+  } finally {
+    if (realHome) Deno.env.set("HOME", realHome);
     await Deno.remove(fakeHome, { recursive: true });
     await Deno.remove(workDir, { recursive: true });
   }

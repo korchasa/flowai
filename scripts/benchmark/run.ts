@@ -37,6 +37,7 @@ import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { createAdapter } from "@acceptance-tests/adapters/mod.ts";
 import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
+import { prepareEmulatorCodexHome } from "@acceptance-tests/acp/auth.ts";
 import type { InstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
 import { installProjectDeps } from "./install_env.ts";
@@ -55,7 +56,7 @@ import {
   makeCliAnswerEmulator,
   makeCliOperatorEmulator,
 } from "./human_emulator.ts";
-import { collectBenchHomeMetrics, fmtCost } from "./metrics.ts";
+import { collectSessionMetrics, fmtCost } from "./metrics.ts";
 import { collectWebAudit } from "./webaudit.ts";
 
 /** AcpAgent user-emulator contract — both arm operators satisfy it. */
@@ -117,6 +118,24 @@ export function effortEnv(effort: string): Record<string, string> {
     // Neutralize an inherited disable so effort is the sole reasoning control.
     CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING: "0",
   };
+}
+
+/**
+ * implements [FR-BENCH-SWE.ISOLATION]: the environment for the human emulator's
+ * `codex exec`, built from the emulator's OWN home rather than by patching the
+ * agent's.
+ *
+ * Written as a whitelist on purpose. Spreading the agent env and overriding
+ * `CODEX_HOME` would still pass down `CODEX_CONFIG` (the agent's model and
+ * effort, which the referee must NOT inherit — see `humanEmulatorConfig`) and
+ * the sandbox venv `PATH`, and any key added to the agent env later would reach
+ * the emulator silently. Two keys are what codex needs: `CODEX_HOME` for auth
+ * and its session store, `HOME` so nothing resolves back to the developer's.
+ */
+export function emulatorEnvFor(
+  home: { HOME: string; CODEX_HOME: string },
+): Record<string, string> {
+  return { HOME: home.HOME, CODEX_HOME: home.CODEX_HOME };
 }
 
 /**
@@ -470,10 +489,9 @@ export async function runArm(
   const baseEnv = adapter.prepareWorkspace
     ? await adapter.prepareWorkspace(sandboxDir)
     : {};
-  // Pin reasoning effort for BOTH the agent and the human emulator (they share `env`),
-  // so it is a property of the campaign, not of the operator's shell. The
-  // Claude keys are always present because the emulator is always Claude; a codex
-  // agent additionally gets its effort+model through CODEX_CONFIG.
+  // Pin reasoning effort for the agent, so it is a property of the campaign and
+  // not of the operator's shell. The emulator does NOT read it from here — it is
+  // pinned separately by argv (`humanEmulatorConfig`) and runs in its own env.
   const effort = opts.effort ?? "medium";
   const env = {
     ...baseEnv,
@@ -500,23 +518,30 @@ export async function runArm(
   // it answers the engineer's question from the issue text only, or ends the
   // session (DONE). Emulator turns are stochastic in BOTH arms — a harness
   // property every report must state. An emulator failure fails the instance loudly
-  // (no fallback). Both emulators share the bench's isolated config root (env)
-  // so the developer's personal memory cannot leak into replies.
-  // The referee is pinned SEPARATELY from `opts.model` (which names the AGENT's
-  // model) and at a fixed effort — see `humanEmulatorConfig`.
+  // (no fallback). The referee is pinned SEPARATELY from `opts.model` (which
+  // names the AGENT's model) and at a fixed effort — see `humanEmulatorConfig`.
+  //
+  // implements [FR-BENCH-SWE.ISOLATION]: the emulator runs under its OWN codex
+  // config root, so neither side's environment names the other's session store.
+  // One shared root put the human persona and the `DECISION:` protocol in a
+  // directory the agent is pointed at, and the agent's reasoning in one the
+  // emulator is pointed at — while the emulator is supposed to answer from the
+  // issue text and the engineer's latest message alone.
   const emulator = humanEmulatorConfig(opts);
+  const emulatorHome = await prepareEmulatorCodexHome();
+  const emuEnv = emulatorEnvFor(emulatorHome);
   // Skill-invocation prefix for THIS ide — `/plan …` is rejected outright by
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
   const operator: Operator = opts.arm === "flowai"
     ? new FlowaiOperator(
       data.problemStatement,
-      makeCliOperatorEmulator(emulator, env),
+      makeCliOperatorEmulator(emulator, emuEnv),
       prefix,
     )
     : new AnswerEmulatorOperator(
       data.problemStatement,
-      makeCliAnswerEmulator(emulator, env),
+      makeCliAnswerEmulator(emulator, emuEnv),
     );
 
   const agent = new AcpAgent({
@@ -534,7 +559,7 @@ export async function runArm(
   const wallClockMs = Date.now() - wallStart;
   const logPath = join(instDir, `${data.instanceId}.log`);
   await Deno.writeTextFile(logPath, result.logs);
-  await linkIntoRunDir(instDir, extInstDir);
+  await linkIntoRunDir(instDir, extInstDir, emulatorHome.HOME);
 
   // implements [FR-BENCH-SWE.COST](../../documents/requirements.md#fr-bench-swe.cost-session-cost-counters-informative-never-a-quality-criterion-ancfrbench-swe-cost):
   // harvest cost counters from the bench-home transcripts
@@ -549,8 +574,8 @@ export async function runArm(
   // with the Claude subject arm (2026-08-09): it produced nothing on the codex
   // path, which is the only path campaigns run on.
   try {
-    const metrics = await collectBenchHomeMetrics(
-      join(extInstDir, "bench-home"),
+    const metrics = await collectSessionMetrics(
+      [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
       wallClockMs,
     );
     await Deno.writeTextFile(
@@ -573,7 +598,7 @@ export async function runArm(
   {
     try {
       const audit = await collectWebAudit(
-        join(extInstDir, "bench-home"),
+        [join(extInstDir, "bench-home", ".codex"), emulatorHome.CODEX_HOME],
         data.repo,
         data.instanceId,
       );

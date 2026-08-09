@@ -87,8 +87,9 @@ export async function loadConfig(
  *   a long conversation.
  *
  * Session files are deliberately NOT suppressed (`--ephemeral` is absent): the
- * rollout lands under the bench `CODEX_HOME` and its tokens are harvested into
- * the arm's overhead, matching how the gate emulator was always accounted.
+ * rollout lands under the emulator's OWN `CODEX_HOME` (FR-BENCH-SWE.ISOLATION —
+ * separate from the agent under test) and its tokens are harvested into the
+ * arm's overhead, matching how the gate emulator was always accounted.
  */
 export function codexExecArgs(opts: {
   model: string;

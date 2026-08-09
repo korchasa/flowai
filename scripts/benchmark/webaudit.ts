@@ -5,10 +5,12 @@
  * AUDITED, never banned. The risk being audited: a benchmark instance's real
  * upstream fix is public on GitHub during the run, so an unlogged fetch of the
  * own-repo PR/commit is an invisible oracle leak. This module extracts every
- * `http(s)` URL from the shell commands recorded in the bench-home codex
- * rollouts, and flags oracle-adjacent targets for human review. Flags are
- * disclosure, not disqualification: false positives are acceptable and no
- * automatic exclusion happens.
+ * `http(s)` URL from the shell commands recorded in the codex rollouts — the
+ * agent's store AND the human emulator's, which FR-BENCH-SWE.ISOLATION keeps
+ * apart but which are equally auditable (the emulator's `--sandbox read-only`
+ * blocks writes, not the network) — and flags oracle-adjacent targets for human
+ * review. Flags are disclosure, not disqualification: false positives are
+ * acceptable and no automatic exclusion happens.
  *
  * The shell IS the whole audit surface here. The retired Claude reader also had
  * `WebFetch` URLs and `WebSearch` queries to read, but codex has no such tools
@@ -22,7 +24,7 @@
  * Same rollout discipline as metrics.ts (FR-BENCH-SWE.COST): tool calls repeat
  * across retries → dedupe by `call_id`; malformed lines are counted
  * (`parseErrors`), never dropped; harvest runs IMMEDIATELY after the session
- * because the OS purges bench-home within days.
+ * because the OS purges both session roots within days.
  */
 
 import { join } from "@std/path";
@@ -138,21 +140,25 @@ export function accessesFromRollout(
 }
 
 /**
- * Harvest every rollout under `<benchHome>/.codex/sessions` (main session + the
- * arm's human emulator, which shares the bench CODEX_HOME). Fails fast when the
- * sessions dir is absent — a session with no rollout is a harness defect, not a
- * clean-network run.
+ * Harvest every rollout under `<codexHome>/sessions` for each store listed — the
+ * agent's and the human emulator's, which FR-BENCH-SWE.ISOLATION keeps separate.
+ * Fails fast, naming the offending store, when a sessions dir is absent: a
+ * session with no rollout is a harness defect, not a clean-network run.
  */
 export async function collectWebAudit(
-  benchHome: string,
+  codexHomes: readonly string[],
   repo: string,
   instanceId: string,
 ): Promise<InstanceWebAudit> {
-  const projects = join(benchHome, ".codex", "sessions");
-  try {
-    await Deno.stat(projects);
-  } catch {
-    throw new Error(`no transcripts: sessions dir absent at ${projects}`);
+  const sessionDirs: string[] = [];
+  for (const home of codexHomes) {
+    const dir = join(home, "sessions");
+    try {
+      await Deno.stat(dir);
+    } catch {
+      throw new Error(`no transcripts: sessions dir absent at ${dir}`);
+    }
+    sessionDirs.push(dir);
   }
   const audit: InstanceWebAudit = {
     instanceId,
@@ -162,17 +168,19 @@ export async function collectWebAudit(
     accesses: [],
     flaggedCount: 0,
   };
-  for await (
-    const entry of walk(projects, { includeDirs: false, exts: [".jsonl"] })
-  ) {
-    const { accesses, parseErrors } = accessesFromRollout(
-      await Deno.readTextFile(entry.path),
-      repo,
-      instanceId,
-    );
-    audit.transcriptFiles++;
-    audit.parseErrors += parseErrors;
-    audit.accesses.push(...accesses);
+  for (const dir of sessionDirs) {
+    for await (
+      const entry of walk(dir, { includeDirs: false, exts: [".jsonl"] })
+    ) {
+      const { accesses, parseErrors } = accessesFromRollout(
+        await Deno.readTextFile(entry.path),
+        repo,
+        instanceId,
+      );
+      audit.transcriptFiles++;
+      audit.parseErrors += parseErrors;
+      audit.accesses.push(...accesses);
+    }
   }
   audit.flaggedCount = audit.accesses.filter((a) => a.flagged).length;
   return audit;

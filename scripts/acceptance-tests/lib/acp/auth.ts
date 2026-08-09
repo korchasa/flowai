@@ -111,3 +111,53 @@ export async function prepareAcpCodexHome(
 
   return { HOME, CODEX_HOME: codexHome };
 }
+
+/**
+ * Builds a SEPARATE codex config root for the benchmark's human emulator
+ * (FR-BENCH-SWE.ISOLATION).
+ *
+ * The emulator and the agent under test used to share one `CODEX_HOME`, so both
+ * session stores sat in one directory and each side's environment named it. That
+ * is a measurement leak in both directions: the emulator's rollout carries the
+ * human persona and the `DECISION:` protocol the agent is being graded against,
+ * while the agent's rollout carries the reasoning the emulator is supposed not
+ * to see (it answers from the issue text and the engineer's latest message
+ * alone). Neither leak needs an adversary — one `ls` of the store either side is
+ * pointed at is enough.
+ *
+ * The root is created OUTSIDE the run's instance directory, under the OS temp
+ * root with a random name, so it is not reachable by walking up from the
+ * agent's sandbox. The caller is responsible for removing it after the harvest.
+ *
+ * Scope, stated rather than implied: this separates the stores and removes the
+ * pointer from each side's environment. It is NOT an OS-enforced denial —
+ * measured on codex-cli 0.144.6, `--sandbox read-only` blocks writes and leaves
+ * disk READS unrestricted, so a session that deliberately scans the temp root
+ * can still reach the other store. Enforcing that would need a distinct OS user
+ * or a custom seatbelt profile; neither is in place.
+ */
+// implements [FR-BENCH-SWE.ISOLATION]
+export async function prepareEmulatorCodexHome(): Promise<
+  { HOME: string; CODEX_HOME: string }
+> {
+  const home = await Deno.makeTempDir({ prefix: "flowai-bench-emulator-" });
+  const codexHome = join(home, ".codex");
+  // Empty `skills/` for the same reason the agent's root has one: a user-level
+  // `~/.codex/skills/` must not reach a referee that is pinned by argv.
+  await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
+
+  const realHome = Deno.env.get("HOME");
+  if (realHome) {
+    const src = join(realHome, ".codex", "auth.json");
+    try {
+      await Deno.lstat(src);
+      await Deno.symlink(src, join(codexHome, "auth.json"));
+    } catch (e) {
+      if (e instanceof Deno.errors.AlreadyExists) {
+        /* idempotent re-prepare */
+      }
+    }
+  }
+
+  return { HOME: home, CODEX_HOME: codexHome };
+}

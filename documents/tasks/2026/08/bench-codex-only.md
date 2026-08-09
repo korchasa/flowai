@@ -3,6 +3,7 @@ date: 2026-08-09
 status: done
 implements:
   - FR-BENCH-SWE.IDE
+  - FR-BENCH-SWE.ISOLATION
   - FR-BENCH-SWE.COST
   - FR-BENCH-SWE.SYMMETRY
   - FR-BENCH-SWE.WEBAUDIT
@@ -112,7 +113,19 @@ than the pending item rewritten away.
   - Evidence: `deno task benchmark --help | grep -c 'SWE-bench Verified'` returns 0
 - [x] `bench-swe-fix-problems.md` marked `superseded` with the reason.
   - Evidence: `grep -m1 '^status:' documents/tasks/2026/07/bench-swe-fix-problems.md`
-- [x] `deno task check` green (657 + 173, 0 failed).
+- [x] FR-BENCH-SWE.ISOLATION: the agent and the human emulator no longer share a
+      codex session store, and the harness reads both.
+  - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts` (separate root, credentials only) + `scripts/benchmark/run_test.ts::emulatorEnvFor` + `metrics_test.ts` / `webaudit_test.ts` (two-store harvest)
+  - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts scripts/benchmark/run_test.ts scripts/benchmark/metrics_test.ts scripts/benchmark/webaudit_test.ts`
+- [x] FR-BENCH-SWE.ISOLATION live smoke (2026-08-09): a `codex exec` turn under a
+      hand-built emulator home — empty `skills/`, only `auth.json` symlinked —
+      authenticated, answered, and wrote its rollout into THAT home
+      (`sessions/**/*.jsonl`, 1 file). `collectSessionMetrics` then read it back:
+      1 API call, 12895 in / 5 out / 9984 cache-read, 0 parse errors. This was
+      the risk worth checking before a campaign: if a lone `auth.json` were not
+      enough for a separate `CODEX_HOME`, every emulator turn would have died.
+  - Evidence: `EMU=$(mktemp -d); mkdir -p "$EMU/.codex/skills"; ln -s ~/.codex/auth.json "$EMU/.codex/auth.json"; echo "Reply with exactly: OK" | env HOME="$EMU" CODEX_HOME="$EMU/.codex" codex exec --model gpt-5.6-sol -c model_reasoning_effort="medium" --ignore-user-config --sandbox read-only --skip-git-repo-check --color never --output-last-message "$EMU/last.txt" -`
+- [x] `deno task check` green (660 + 173, 0 failed).
   - Evidence: `deno task check`
 
 ## Solution
@@ -130,6 +143,21 @@ One defect found and fixed after the first commit: tool calls were deduped by
 files, 43669 records) — the counter would have reported ~0 tool calls while every
 unit test passed, because the fixtures came from the single record shape that has
 both fields. Fixed in `eb99272a` with a test on the dominant shape.
+
+### Isolation, and what it does not promise
+
+Added 2026-08-09 on the user's requirement: "у эмулятора и исполнителя не должно
+быть возможности прочитать сессии друг друга. А судья должен иметь возможность
+читать обе сессии." Both sides now have their own `CODEX_HOME`, neither
+environment names the other's, and the harness reads both (the run dir gains an
+`emulator-home` symlink next to `bench-home`).
+
+The limit is stated here rather than discovered later: this is separation by
+construction of the paths handed out, not an OS-enforced denial. Measured on
+codex-cli 0.144.6, a `--sandbox read-only` session read `~/.zshrc` and printed
+its first line, so reads are unrestricted in every sandbox mode codex offers and
+a session that deliberately scans the temp root can still reach the other store.
+Making it hard would need a distinct OS user or a custom seatbelt profile.
 
 ### Note for whoever runs the next campaign
 
