@@ -1,6 +1,6 @@
 ---
 date: "2026-07-22"
-status: in progress
+status: done
 implements:
   - FR-BENCH-SWE
 tags: [benchmark, regression, efficiency, harness, retro]
@@ -92,10 +92,14 @@ track is closed; its clauses are adopted piecemeal into FR-BENCH-SWE).
   - Test: `scripts/benchmark/metrics_test.ts` (loader) +
     `scripts/benchmark/report_test.ts` (render)
   - Evidence: `deno test -A scripts/benchmark/`
-- [ ] FR-BENCH-SWE.COST live smoke: one real `run --arm baseline --limit 1`
-      writes a non-empty metrics.json (needs an LLM session).
-  - Evidence: `deno task benchmark run --arm baseline --limit 1` then
-    `cat <out>/baseline/*/*.metrics.json` — manual, deferred to user.
+- [x] FR-BENCH-SWE.COST live smoke — done 2026-08-09, on the codex reader that
+      replaced the Claude one. The `run` subcommand named here was retired with
+      the SWE-bench Verified path (2026-08-04); the equivalent is `pool2-run`.
+      `agronholm__anyio-1134`, baseline: wall 141407 ms, 15 API calls, 339226 in
+      / 3289 out / 311552 cache-read, 3 tool calls, 0 parse errors.
+  - Evidence: recorded with the command in
+    `documents/tasks/2026/08/bench-codex-only.md` (FR-BENCH-SWE.COST + WEBAUDIT
+    live smoke item).
 - [x] SRS sub-FRs `FR-BENCH-SWE.P2P` / `FR-BENCH-SWE.COST` added; SDS §3.22
       components/subcommands updated; pool count fixed 13→12 in SRS+SDS.
   - Evidence: `grep -n "FR-BENCH-SWE.P2P" documents/requirements.md documents/design.md`
