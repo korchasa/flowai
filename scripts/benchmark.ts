@@ -490,6 +490,11 @@ await new Command()
       // measurement and gets its own record.
       stepTimeoutMs: opts.stepTimeout,
       promptHash,
+      // The referee too: two campaigns judged by different human emulators are
+      // not one measurement, and until 2026-08-09 it lived only in the header —
+      // so a re-run at the same operating point with a new referee would have
+      // appended into the old cell with nothing in the name to say so.
+      humanEmulator: humanEmulatorConfig(opts),
     };
     const cellDir = join(opts.cells, cellId(cellKey));
     const priorReps = (await readCell(cellDir)).header?.reps ?? [];

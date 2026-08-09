@@ -59,6 +59,13 @@ export interface CellKey {
    * and of imports from the pre-cell layout, which captured no prompt at all.
    */
   promptHash?: string;
+  /**
+   * The human emulator that judged the run. Optional: absent means the legacy
+   * referee (`sonnet`), which is what every cell written before 2026-08-09 ran
+   * under. Two campaigns judged by different emulators are not one measurement
+   * — see `emulatorSegment`.
+   */
+  humanEmulator?: { model: string; effort: string };
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
@@ -77,6 +84,31 @@ export const LEGACY_CELL_STEP_TIMEOUT_MS = 1_200_000;
 /** `2_400_000` → `t40m`; a budget that is not whole minutes keeps its ms. */
 function budgetSegment(ms: number): string {
   return ms % 60_000 === 0 ? `t${ms / 60_000}m` : `t${ms}ms`;
+}
+
+/**
+ * The one referee whose segment is omitted from `cellId`.
+ *
+ * Compatibility anchor, not the current default (that is `gpt-5.6-sol` at a
+ * pinned medium — `humanEmulatorConfig`). Every cell on disk was judged by
+ * `sonnet` under a key that had no referee in it; anchoring the omission here
+ * keeps those directory names byte-identical. Same idiom as the budget.
+ */
+export const LEGACY_CELL_EMULATOR_MODEL = "sonnet";
+
+/**
+ * `{gpt-5.6-sol, medium}` → `egpt-5-6-sol-medium`; the legacy referee → omitted.
+ *
+ * The EFFORT is in the segment as well as the model, because a referee moved
+ * from medium to high judges differently even under the same name — and the
+ * effort stopped tracking the agent's on 2026-08-09, so it is now an
+ * independent property of the campaign rather than a restatement of `effort`.
+ */
+function emulatorSegment(
+  e: { model: string; effort: string },
+): string | undefined {
+  if (e.model === LEGACY_CELL_EMULATOR_MODEL) return undefined;
+  return `e${e.model}-${e.effort}`;
 }
 
 /**
@@ -105,6 +137,9 @@ export function cellId(key: CellKey): string {
     key.effort,
     ...(budget === LEGACY_CELL_STEP_TIMEOUT_MS ? [] : [budgetSegment(budget)]),
     ...(key.promptHash ? [`p${key.promptHash.slice(0, 12)}`] : []),
+    ...(key.humanEmulator
+      ? [emulatorSegment(key.humanEmulator)].filter((x) => x !== undefined)
+      : []),
   ].map(slug).join("-");
 }
 

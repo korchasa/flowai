@@ -92,6 +92,50 @@ Deno.test("cellId: the prompt hash is part of the key when it is known", () => {
   );
 });
 
+/**
+ * The referee is part of the identity, not a footnote in the header. Two
+ * campaigns judged by different human emulators are not one measurement, and
+ * until 2026-08-09 the emulator lived only in `cell.json` — so a re-run at the
+ * same operating point with a new referee would have appended its rows to the
+ * old cell and nothing in the directory name would have said so.
+ */
+Deno.test("cellId: the human emulator is part of the key, sonnet ids unchanged", () => {
+  const id = cellId({
+    ...KEY,
+    humanEmulator: { model: "gpt-5.6-sol", effort: "medium" },
+  });
+  assertEquals(
+    id,
+    "codex-flowai-a1b2c3d-gpt-5-6-terra-medium-egpt-5-6-sol-medium",
+  );
+  assert(/^[a-z0-9-]+$/.test(id), `not a slug: ${id}`);
+
+  // Every cell on disk was judged by sonnet under a key that had no referee in
+  // it. Anchoring the omission there keeps those directory names byte-identical
+  // instead of orphaning the data they hold — the same idiom as the budget.
+  assertEquals(
+    cellId({ ...KEY, humanEmulator: { model: "sonnet", effort: "high" } }),
+    "codex-flowai-a1b2c3d-gpt-5-6-terra-medium",
+  );
+  assertEquals(cellId(KEY), "codex-flowai-a1b2c3d-gpt-5-6-terra-medium");
+
+  assertEquals(
+    new Set([
+      cellId(KEY),
+      cellId({
+        ...KEY,
+        humanEmulator: { model: "gpt-5.6-sol", effort: "medium" },
+      }),
+      cellId({
+        ...KEY,
+        humanEmulator: { model: "gpt-5.6-sol", effort: "high" },
+      }),
+    ]).size,
+    3,
+    "model AND effort each make their own referee",
+  );
+});
+
 Deno.test("promptTemplateFor: the flowai arm hashes the turns it actually sends", async () => {
   const bare = promptTemplateFor("codex", "baseline");
   const flowai = promptTemplateFor("codex", "flowai");
