@@ -1,6 +1,6 @@
 ---
 date: 2026-08-09
-status: in progress
+status: done
 implements:
   - FR-BENCH-SWE.IDE
   - FR-BENCH-SWE.COST
@@ -79,10 +79,18 @@ than the pending item rewritten away.
       `<instance>.metrics.json` harvested from `rollout-*.jsonl`.
   - Test: `scripts/benchmark/metrics_test.ts` (5 rollout tests)
   - Evidence: `deno test -A scripts/benchmark/metrics_test.ts`
-- [ ] FR-BENCH-SWE.COST live smoke: one real
-      `pool2-run --arm baseline --rep 1 --instance <id>` writes a non-empty
-      metrics.json.
-  - Evidence: `deno task benchmark pool2-run --arm baseline --pool scripts/benchmark/pools/codex-terra-medium.json --rep 1 --instance <id>` then `cat <repDir>/baseline/<id>/<id>.metrics.json`
+- [x] FR-BENCH-SWE.COST + WEBAUDIT live smoke (2026-08-09,
+      `agronholm__anyio-1134`, baseline, `--no-grade`): the session wrote
+      `metrics.json` — wall 141407 ms, 15 API calls, 339226 in / 3289 out /
+      311552 cache-read, **3 tool calls**, 0 parse errors over 2 rollouts — and
+      `webaudit.json` (0 accesses, 0 flagged; the session made no network call).
+      The 2 rollouts are the agent AND the human emulator, which confirms the
+      emulator now runs on codex under the same bench CODEX_HOME. The non-zero
+      tool count is the check that mattered: before `eb99272a` it would have
+      been 0. Since the session itself touched no URL, extraction was verified
+      separately against 192 real historical rollouts — 5 URLs found in shell
+      commands, e.g. `https://raw.githubusercontent.com/...`.
+  - Evidence: `deno task benchmark pool2-run --arm baseline --pool scripts/benchmark/pools/codex-terra-medium.json --rep 1 --instance agronholm__anyio-1134 --no-grade --out scratch/cost-smoke` then `cat scratch/cost-smoke/rep1/baseline/<id>/<id>.{metrics,webaudit}.json`
 - [x] FR-BENCH-SWE.SYMMETRY: the human emulator runs on `gpt-5.6-sol` at a FIXED
       medium effort in both arms, independent of the agent's effort.
   - Test: `scripts/benchmark/run_test.ts::humanEmulatorConfig` + `scripts/acceptance-tests/lib/llm_test.ts` (codex argv pinning)
@@ -104,7 +112,7 @@ than the pending item rewritten away.
   - Evidence: `deno task benchmark --help | grep -c 'SWE-bench Verified'` returns 0
 - [x] `bench-swe-fix-problems.md` marked `superseded` with the reason.
   - Evidence: `grep -m1 '^status:' documents/tasks/2026/07/bench-swe-fix-problems.md`
-- [ ] `deno task check` green.
+- [x] `deno task check` green (657 + 173, 0 failed).
   - Evidence: `deno task check`
 
 ## Solution
@@ -123,9 +131,9 @@ files, 43669 records) — the counter would have reported ~0 tool calls while ev
 unit test passed, because the fixtures came from the single record shape that has
 both fields. Fixed in `eb99272a` with a test on the dominant shape.
 
-### Remaining
+### Note for whoever runs the next campaign
 
-Live smoke: one real session verifying that `metrics.json` AND `webaudit.json`
-land on disk. Neither is provable by unit tests — they check that the parsers
-understand shapes put into them by hand, not that the rollout appears where the
-collector looks.
+A `pool2-run` writes a result cell even under `--no-grade`. The smoke created
+`cells/codex-baseline-none-gpt-5-6-terra-medium-t40m-p946da8d8dd51` — a one-row
+ungraded record with a new prompt-hash suffix — and it was removed by hand so it
+would not enter the data of record. Expect the same after any throwaway run.

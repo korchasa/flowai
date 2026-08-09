@@ -1869,7 +1869,7 @@ Rules:
 - **Tasks:** [bench-swe-regression-efficiency](tasks/2026/07/bench-swe-regression-efficiency.md)
 - **Scenario:** Maintainer runs `deno task benchmark pool2-run --arm baseline --pool <frozen.json> --rep 1 --instance <id>`; after the session the harness prints a one-line cost summary and `<repDir>/baseline/<id>/<id>.metrics.json` exists. (The former `run`/`report` subcommands were removed with the SWE-bench Verified path on 2026-08-04 — see `documents/benchmarks/retired-approaches.md`; the counters themselves moved unchanged to the pool2 driver.)
 - **Acceptance:** `deno test -A scripts/benchmark/metrics_test.ts` (rollout aggregation, running-total handling, tool-call dedupe, loader) — pass; live-run smoke (one real `pool2-run --arm baseline --rep 1 --instance <id>` writes a non-empty metrics.json): manual — korchasa.
-- **Status:** [ ]
+- **Status:** [x]
 
 #### FR-BENCH-SWE.SYMMETRY: One human emulator for both arms — equal human availability [ANC:fr:bench-swe-symmetry]
 
@@ -1885,7 +1885,7 @@ Rules:
 - **Tasks:** [bench-swe-fix-problems](tasks/2026/07/bench-swe-fix-problems.md)
 - **Scenario:** During a baseline session the agent runs `curl https://github.com/<repo>/pull/<n>.diff` and `pip download foo -i https://pypi.org/simple` → `webaudit.json` records both and flags only the own-repo PR fetch as oracle-adjacent; nothing is excluded automatically.
 - **Acceptance:** `deno test -A scripts/benchmark/webaudit_test.ts` (URL extraction from both codex shell-tool shapes with `call_id` dedupe; oracle-adjacent flagging; bench-home harvest fail-fast on an absent sessions dir) — pass; live-run smoke (the same single `pool2-run --arm baseline --rep 1 --instance <id>` session as FR-BENCH-SWE.COST writes `<id>.webaudit.json`): manual — korchasa.
-- **Status:** [ ]
+- **Status:** [x]
 
 #### FR-BENCH-SWE.POOL2: Fresh frozen pool via gated admission funnel [ANC:fr:bench-swe-pool2]
 
