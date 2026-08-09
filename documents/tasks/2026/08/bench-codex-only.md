@@ -169,8 +169,17 @@ four at a time by default — one shared directory would interleave four session
 rollouts with no way to separate them.
 
 Nothing purges `~/.flowai-dev`, unlike the temp homes. That is deliberate — the
-sessions stay readable after a campaign — and it grows. Pruning is a maintainer
-decision, never the harness's.
+sessions stay readable after a campaign — and it grows:
+
+    du -sh ~/.flowai-dev/bench/* | sort -h
+    find ~/.flowai-dev/bench -maxdepth 1 -mindepth 1 -mtime +14 -exec rm -rf {} +
+
+A `prune-store` / `show-store` pair was written for this and reverted the same
+day (`102eba21`, reverted by `66ba4003`) after the user asked what it was for.
+The honest answer was nothing the two lines above do not: 388 lines across six
+files, whose safety guards — target must resolve under the root, age must not be
+negative — protected against failure modes the script itself introduced and
+`find` does not have. Recorded so the idea is not re-proposed.
 
 ### Note for whoever runs the next campaign
 
