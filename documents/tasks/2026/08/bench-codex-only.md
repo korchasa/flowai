@@ -69,6 +69,14 @@ than the pending item rewritten away.
   commands. A codex audit is a different classifier, not a rename.
 - Deleting an artifact orphans evidence citing it (AGENTS.md) — the retired
   Claude cell `claude-baseline-none-sonnet-high` is DATA and stays.
+  **Overruled 2026-08-09 by the user:** every cell but the live baseline
+  (`codex-baseline-none-gpt-5-6-terra-medium-t40m-p946da8d8dd51-egpt-5-6-sol-medium`)
+  was deleted, the Claude one included. The citing lines were annotated in
+  `documents/benchmarks/retired-approaches.md` §8 and §9 rather than left
+  dangling; every deleted cell's per-rep counts are quoted in prose there and in
+  `documents/tasks/2026/07/bench-result-cells.md`, and the rows are recoverable
+  from git at commit `a0cc26ae`. The frozen pool is unaffected —
+  `loadFrozenPool` reads only the pool JSON.
 
 ## Definition of Done
 

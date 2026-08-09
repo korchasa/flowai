@@ -130,8 +130,13 @@ around.
   specifically"; the 8-keeper band was too thin for a three-rep campaign.
 - **Retired because:** measuring a second IDE was worth more than a fourth
   Claude campaign (FR-BENCH-SWE.IDE). The Claude baseline over 67 instances ×
-  3 reps stays as the cell `claude-baseline-none-sonnet-high` — it is the
-  evidence the pool2 freeze was derived from, and must not be re-run.
+  3 reps was the cell `claude-baseline-none-sonnet-high` — the evidence the
+  pool2 freeze was derived from. **Deleted 2026-08-09 (user decision)** together
+  with every other cell but the live baseline: the IDE is retired, so the cell
+  can never be half of a comparison again. Its numbers are quoted in this file
+  and in `documents/tasks/2026/07/bench-result-cells.md` (rep1 31/67, rep2
+  30/67, rep3 31/67), and the rows themselves stay recoverable from git history
+  at commit `a0cc26ae`. Do not re-run it.
   Known consequence: codex campaigns run over a **Sonnet-selected** pool, so
   they are mechanism finders, never a recalibrated pool. Every codex report says
   so.
@@ -148,8 +153,16 @@ around.
 - **Retired because:** repurposed from subject to **ceiling**. The subject arm
   moved to `terra` at medium effort, where a three-rep campaign is affordable
   and the headroom band is wide enough to see a flowai effect. The partial sol
-  data survives as `codex-baseline-none-gpt-5-6-sol-high` and is read as a
-  ceiling reference, not as a comparison arm.
+  data was the cell `codex-baseline-none-gpt-5-6-sol-high`, read as a ceiling
+  reference and never as a comparison arm. **Deleted 2026-08-09 (user
+  decision).** Its counts survive here and in
+  `documents/tasks/2026/07/bench-result-cells.md` (rep1 5/17, rep2 2/12 with 5
+  rows pending), and the rows in git history at commit `a0cc26ae`.
+  `scripts/benchmark/pools/codex-terra-medium.json` still names it in
+  `ceilingCellId`, and `codex-baseline-none-gpt-5-6-terra-medium` in
+  `subjectCellId` — both pointers are now historical labels, not paths on disk.
+  Nothing at run time follows them: `loadFrozenPool` reads the pool's own JSON
+  and never opens a cell, so the frozen 15-instance pool keeps working.
 
 ## 10. Pre-cell run layout
 
