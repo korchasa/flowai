@@ -125,7 +125,11 @@ than the pending item rewritten away.
       the risk worth checking before a campaign: if a lone `auth.json` were not
       enough for a separate `CODEX_HOME`, every emulator turn would have died.
   - Evidence: `EMU=$(mktemp -d); mkdir -p "$EMU/.codex/skills"; ln -s ~/.codex/auth.json "$EMU/.codex/auth.json"; echo "Reply with exactly: OK" | env HOME="$EMU" CODEX_HOME="$EMU/.codex" codex exec --model gpt-5.6-sol -c model_reasoning_effort="medium" --ignore-user-config --sandbox read-only --skip-git-repo-check --color never --output-last-message "$EMU/last.txt" -`
-- [x] `deno task check` green (660 + 173, 0 failed).
+- [x] FR-BENCH-SWE.ISOLATION: the harness checks whether either side read the
+      other's session, since codex offers no read-denying sandbox.
+  - Test: `scripts/benchmark/peek_audit_test.ts` (4)
+  - Evidence: `deno test -A scripts/benchmark/peek_audit_test.ts`
+- [x] `deno task check` green (664 + 173, 0 failed).
   - Evidence: `deno task check`
 
 ## Solution
