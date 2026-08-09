@@ -154,6 +154,13 @@ than the pending item rewritten away.
       the double-counted figures and must not be quoted.
   - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts` (rep1 store ≠ rep2 store)
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts`
+- [x] The codex-only harness produced a comparable A/B pair at one operating
+      point: baseline and flowai over the frozen 15, 3 reps each, same referee
+      and same 40-min budget. flowai 13/45 clean against baseline 5/45,
+      directional but not significant (p ≈ 0.34 by an instance-paired exact
+      binomial), and ×5.6 the API calls. Snapshot with per-instance counts,
+      cost, and run integrity: `documents/benchmarks/ab-frozen15-2026-08-09.md`.
+  - Evidence: `deno run -A scripts/benchmark.ts cells-show`
 - [x] `deno task check` green (665 + 173, 0 failed).
   - Evidence: `deno task check`
 
