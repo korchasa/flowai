@@ -88,6 +88,13 @@ the bound goes in the harness's review invocation, NOT in
     `scripts/benchmark/runs/pool2-flowai-bounded/rep{1,2,3}/flowai.jsonl`; cell
     `codex-flowai-44d8965a5ce4-gpt-5-6-terra-medium-t40m-p762a762bcceb` reads
     4 + 5 + 6 = 15/45, five instances stable across >=2 of 3 reps
+  - **Retired 2026-08-09 (user decision):** that cell was deleted with every
+    other one but the live pair, and the run dir was removed with it — the
+    counts quoted above are now the whole surviving record. The measurement was
+    superseded the same day by the flowai arm at the SAME 40-min bound but with
+    the new referee (`gpt-5.6-sol` pinned at medium), cell
+    `codex-flowai-a6ef462a6b49-gpt-5-6-terra-medium-t40m-p762a762bcceb-egpt-5-6-sol-medium`,
+    which reads 4 + 6 + 3 = 13/45 against a baseline measured at the same point.
 
 ## Solution
 
