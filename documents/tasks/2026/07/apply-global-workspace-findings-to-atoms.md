@@ -73,14 +73,25 @@ Key findings relevant to prompt authoring:
 
 ## Definition of Done
 
-- `atoms/review.md` no longer requires holding multiple review lenses
-  concurrently within a single reasoning pass; the chosen mechanism
-  (sequential / subagent / enumerate-first) is explicit in the atom.
-- Every `do not / never / avoid` rule in `framework/atoms/*.md` either is a
-  trigger guard or is paired with a positive alternative.
-- `atoms/plan.md` phase steps restate the constraints that apply to them.
-- Prompt-authoring skill documents the three principles with a citation of the
-  source paper.
-- Existing acceptance tests / benchmark baseline pass unchanged
-  (`deno task check`, relevant acceptance-tests); no atom loses existing
-  behavior guarantees.
+No FR covers this task yet — the SRS clause is authored in step 1 below, so the
+items carry acceptance references without an FR-ID until then.
+
+- [ ] `atoms/review.md` no longer requires holding multiple review lenses
+      concurrently within a single reasoning pass; the chosen mechanism
+      (sequential / subagent / enumerate-first) is explicit in the atom.
+  - Evidence: `! grep -qi "in parallel, not sequentially" framework/atoms/review.md`
+    (still present at Rule 3 as of 2026-08-10 — the pattern the paper flags)
+- [ ] Every `do not / never / avoid` rule in `framework/atoms/*.md` either is a
+      trigger guard or is paired with a positive alternative.
+  - Evidence: manual — reviewer, one pass per atom. Baseline count 2026-08-10:
+    `commit` 12, `implement` 15, `plan` 19, `push` 19, `review` 24
+    (`grep -coiE "do not|never|avoid" framework/atoms/*.md`)
+- [ ] `atoms/plan.md` phase steps restate the constraints that apply to them.
+  - Evidence: manual — reviewer
+- [ ] Prompt-authoring skill documents the three principles with a citation of
+      the source paper.
+  - Evidence: `grep -q "transformer-circuits.pub/2026/workspace"
+    framework/engineering/skills/engineer-prompts-for-reasoning/SKILL.md`
+- [ ] Existing acceptance tests / benchmark baseline pass unchanged; no atom
+      loses existing behavior guarantees.
+  - Evidence: `deno task check` && `deno task acceptance-tests -f review-`
