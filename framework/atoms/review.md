@@ -1,6 +1,6 @@
 ---
 name: review
-description: Use when the user asks to review CURRENT uncommitted changes (staged, unstaged, or branch diff) as QA + lead engineer before committing — verdict on task completion, code quality, architecture, cleanup, plus ephemeral regression probes (pass-on-parent / fail-on-diff). Requires an existing diff. Do NOT trigger without a diff or on post-merge review of historical commits.
+description: Use when the user asks to review CURRENT uncommitted changes (staged, unstaged, branch diff) before committing, or to synthesize JiT tests against the diff to catch hidden regressions — QA + lead-engineer verdict on completion, quality, architecture, cleanup, plus probes passing on parent and failing on diff. Requires a diff. Do NOT trigger without a diff or on historical commits.
 ---
 
 # Task: Review Changes
