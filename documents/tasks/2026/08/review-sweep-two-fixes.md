@@ -59,9 +59,11 @@ of `framework/atoms/commit.md`. Both are older gaps the sweep exposed.
 - [x] FR-JIT-REVIEW: diff-regression wording ("synthesize JiT tests against my
       diff") routes to `review`. The capability was always in the atom; the
       description named it only as "ephemeral regression probes", which is not
-      how a user says it. Rewritten description is 95 tokens — shorter than the
-      94-token original it replaced, so the cap is not merely satisfied but
-      unchanged in practice.
+      how a user says it. Shipped description measures 97 tokens against the
+      original's 94, inside the 100 cap. (The first draft spelled the idea out
+      and hit 154, failing `check-skills.ts`.) Measure with the same formula the
+      checker uses — `(len(name) + len(description)) / 4` — before editing a
+      description that is already near the cap.
   - Test: `Benchmark: review-trigger-adj-1`
   - Evidence: `deno task acceptance-tests -f review-trigger-adj-1` — PASSED
     2026-08-10T07:17Z (failed twice before the fix)
