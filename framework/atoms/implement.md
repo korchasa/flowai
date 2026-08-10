@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Use when the user asks to execute an existing task plan's Solution under TDD — RED → GREEN → REFACTOR → CHECK per AGENTS.md. Requires a written plan resolved through the `tasks` role in AGENTS.md. Do NOT trigger on planning, reviewing committed changes, or fixing pre-existing failing tests outside a plan.
+description: Use when a written task plan exists and its Solution must be driven to green under TDD — RED → GREEN → REFACTOR → CHECK per AGENTS.md. Triggers human- or agent-initiated; not for authoring plans or reviewing already-committed code.
 _params:
   TERMINATION:
     choices: [TOTAL_STOP, HAND_OFF_TO_NEXT]

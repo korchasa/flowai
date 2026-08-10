@@ -1,6 +1,6 @@
 ---
 name: review-and-commit
-description: "Streamlined two-phase workflow: review, then commit. Verdict gate between phases. Self-contained — execute the inlined steps directly, do NOT invoke other skills via the Skill tool."
+description: "Use when changes should be reviewed and then committed in one streamlined two-phase flow with a verdict gate between phases. Triggers human- or agent-initiated. Self-contained — execute the inlined steps directly; does not invoke other skills via the Skill tool."
 ---
 
 # Task: Review and Commit

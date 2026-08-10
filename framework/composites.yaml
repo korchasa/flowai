@@ -16,7 +16,7 @@ atoms:
     target: framework/core/skills/review/SKILL.md
   commit:
     source: framework/atoms/commit.md
-    target: framework/core/commands/commit/SKILL.md
+    target: framework/core/skills/commit/SKILL.md
     default_params:
       DIFF_SOURCE: FRESH_READ
   implement:
@@ -31,7 +31,7 @@ atoms:
       TERMINATION: TOTAL_STOP
 composites:
   review-and-commit:
-    target: framework/core/commands/review-and-commit/SKILL.md
+    target: framework/core/skills/review-and-commit/SKILL.md
     wrapper: framework/composites/review-and-commit.md
     phases:
       - title: Phase 1 — Review

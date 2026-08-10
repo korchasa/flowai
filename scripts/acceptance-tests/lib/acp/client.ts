@@ -43,11 +43,34 @@ export interface AcpClientOptions {
   closed?: Promise<unknown>;
 }
 
+/**
+ * Compact, judge-friendly descriptor of an ACP `tool_call` update — the tool
+ * title plus the most identifying raw-input field (skill/command/path). Kept
+ * short so a turn's tool list stays readable in the judge evidence.
+ */
+function describeToolCall(u: unknown): string {
+  const o = (u ?? {}) as Record<string, unknown>;
+  const title = typeof o.title === "string" ? o.title.trim() : "";
+  const kind = typeof o.kind === "string" ? o.kind : "tool";
+  let arg = "";
+  const ri = o.rawInput;
+  if (ri && typeof ri === "object") {
+    const r = ri as Record<string, unknown>;
+    const id = r.skill ?? r.command ?? r.name ?? r.file_path ?? r.path ??
+      r.pattern;
+    if (id !== undefined) arg = String(id).replace(/\s+/g, " ").slice(0, 80);
+  }
+  const head = title || kind;
+  return arg ? `${head} :: ${arg}` : head;
+}
+
 export class AcpClient {
   readonly #conn: ClientSideConnection;
   readonly #closed?: Promise<unknown>;
   /** Per-session accumulated assistant text. */
   readonly #buffers = new Map<string, string[]>();
+  /** Per-session compact tool-call descriptors (for the judge). */
+  readonly #toolCalls = new Map<string, string[]>();
 
   constructor(opts: AcpClientOptions) {
     this.#closed = opts.closed;
@@ -97,6 +120,7 @@ export class AcpClient {
    */
   async prompt(sessionId: string, text: string): Promise<ParsedAgentOutput> {
     this.#buffers.set(sessionId, []);
+    this.#toolCalls.set(sessionId, []);
     let dropped = false;
     const dropGuard = this.#closed?.then(() => {
       dropped = true;
@@ -117,6 +141,7 @@ export class AcpClient {
         result: assistantText,
         subtype: resp.stopReason === "end_turn" ? "success" : resp.stopReason,
         assistantText,
+        toolCalls: this.#toolCalls.get(sessionId) ?? [],
         raw: { stopReason: resp.stopReason },
       };
     } catch (e) {
@@ -144,6 +169,12 @@ export class AcpClient {
     ) {
       const buf = this.#buffers.get(params.sessionId);
       if (buf) buf.push(u.content.text);
+    } else if (u.sessionUpdate === "tool_call") {
+      // Record the INITIAL tool_call (not later `tool_call_update` status
+      // frames) as a compact descriptor so the judge can verify tool/skill
+      // invocation from evidence instead of inferring it from narration.
+      const calls = this.#toolCalls.get(params.sessionId);
+      if (calls) calls.push(describeToolCall(u));
     }
     return Promise.resolve();
   }

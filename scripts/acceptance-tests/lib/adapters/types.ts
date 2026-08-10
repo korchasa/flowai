@@ -43,5 +43,12 @@ export interface ParsedAgentOutput {
   subtype: string | null; // "success" | "input_required" | "error"
   /** Full concatenated text from all assistant messages (for UserEmulator context). */
   assistantText: string | null;
+  /**
+   * Compact descriptors of the tool calls observed during the turn (e.g.
+   * `Skill(commit)`, `Bash`, `Read`). Surfaced to the judge so checklist items
+   * about tool/skill invocation can be verified from evidence (FR-ACCEPT.TRIGGER)
+   * instead of guessing from assistant narration alone.
+   */
+  toolCalls?: string[];
   raw: unknown;
 }

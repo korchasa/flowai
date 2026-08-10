@@ -250,6 +250,14 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Acceptance:** `deno test scripts/check-skills_test.ts` passes (incl. the WHEN-trigger cases) AND `deno test framework/devtools/skills/engineer-skill/scripts/skill_scripts_test.ts` passes (engineer-skill validator floor) AND `deno task acceptance-tests -f engineer-skill` green (Phase 4 behavioral gate — manual — korchasa).
 - **Status:** [ ]
 
+### FR-WORKFLOW-AGENT-INVOKE: Agent-Invocable Workflow Primitives [ANC:fr:workflow-agent-invoke]
+
+- **Desc:** The core engineering-workflow primitives MUST be invocable by agents (autonomous runs and subagents), not only by humans via `/name`. In-scope: `plan`, `implement`, `review`, `commit`, `review-and-commit`, plus the utility `investigate` (outside the mandatory SDLC sequence but useful, e.g. for SWE-bench). These live under `framework/<pack>/skills/` (NOT `commands/`), so the CLI writer does NOT inject `disable-model-invocation: true`; their `description` is authored for model-classifier discovery (WHAT + WHEN-trigger, no human-only gating like "Use ONLY when the user explicitly asks" / "Do NOT trigger"). Human invocation via `/name` stays available — this is an addition, not a replacement (vision unchanged). Primitives with irreversible external side-effects — `push`, and the composites embedding a Push phase (`ship`, `ship-task`) — STAY user-only commands.
+- **Scenario:** An agent given a coding task auto-activates `plan`/`implement`/`review`/`commit` by description match without being told the skill name; `push` does not auto-activate.
+- **Acceptance verified by acceptance tests:** `plan-trigger-pos-1`, `review-trigger-pos-1`, `implement-trigger-pos-1`, `investigate-trigger-pos-1`, `commit-trigger-pos-1`, `review-and-commit-trigger-pos-1` (positive auto-activation); `commit-trigger-adj-1`, `commit-trigger-false-1`, `review-and-commit-trigger-adj-1`, `review-and-commit-trigger-false-1` (no over-trigger).
+- **Evidence (structural gates, pass on current commit):** `deno test scripts/check-trigger-coverage_test.ts scripts/check-skills_test.ts` green; `deno run -A scripts/generate-skill-composites.ts --check` green; `ls framework/core/skills/commit framework/core/skills/review-and-commit` && `! test -d framework/core/commands/commit`.
+- **Status:** [ ] Structural reclassification (commit/review-and-commit → skills/), description rewrites, and trigger-scenario coverage landed and machine-gated. Positive auto-activation verified: all 6 `*-trigger-pos-1` PASS (judge cites `Skill :: <name>` from the new `[tools]` evidence line; `plan` is N=1-flaky against Claude Code's native plan-mode — PASS on re-run). Remaining: negative re-baseline (`*-trigger-adj-1`/`*-trigger-false-1`) — handed off per Acceptance Test TDD CHECK phase.
+
 ### FR-ACCEPT.OPENCODE: OpenCode Adapter for Acceptance Test Runner [ANC:fr:accept.opencode]
 
 - **Desc (original requirement — SUPERSEDED, retained for history):** The runner was to ship a hand-written `OpencodeAdapter` implementing the full per-IDE `AgentAdapter` interface (buildArgs/parseOutput/setupMocks/…) for the `opencode` CLI, restoring 4-IDE parity (Cursor, Claude Code, OpenCode, Codex). This bespoke-adapter approach was abandoned: FR-ACCEPT.ACP replaces all four per-IDE adapter classes with a single ACP client + data-only registry, so OpenCode parity is now achieved by the `ACP_AGENTS.opencode` registry row (`opencode acp`), not a class.
@@ -713,7 +721,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 ### FR-REVIEW-COMMIT: Review-and-Commit Workflow — `review-and-commit` [ANC:fr:review-commit]
 
-- **Description:** Composite command: review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
+- **Description:** Composite **agent-invocable skill** (FR-WORKFLOW-AGENT-INVOKE; lives under `framework/core/skills/`): review → gate (Approve only) → commit. Stops on Request Changes/Needs Discussion.
 - **Generated origin:** `framework/composites.yaml` + `framework/composites/review-and-commit.md` per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `review-and-commit-approve`, `review-and-commit-reject`, `review-and-commit-auto-docs`, `review-and-commit-auto-invoke-reflect`, `review-and-commit-phase-2-diff-eliminated`, `review-and-commit-post-reflect-cleanup-commit`, `review-and-commit-parallel-delegation`, `review-and-commit-non-deno-project`

@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Commit current changes as atomic, conventional commits with targeted documentation sync — groups the diff into logical commits and updates the docs each change affects.
+description: Use when changes are ready to be committed — groups the diff into atomic, conventional commits with targeted documentation sync, updating the docs each change affects. Triggers human- or agent-initiated; does not push.
 _params:
   DIFF_SOURCE:
     choices: [FRESH_READ, REUSE_PRIOR_PHASE]

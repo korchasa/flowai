@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Use ONLY when the user explicitly asks to plan a task, create a role-resolved task file, produce a GODS-format breakdown, or prepare a critiqued implementation strategy before coding. Writes tasks under the `tasks` role with extended frontmatter. Do NOT trigger on brief design discussion, ad-hoc code suggestions, or casual "how would you approach X?" questions.
+description: Use when a non-trivial change needs a plan before coding — creates a role-resolved task file with a GODS-format breakdown, variants, and DoD. Triggers human- or agent-initiated; not for brief design chat or casual scheduling questions.
 argument-hint: task description or issue URL
 effort: high
 _params:

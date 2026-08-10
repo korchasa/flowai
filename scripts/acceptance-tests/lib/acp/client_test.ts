@@ -73,6 +73,14 @@ Deno.test({
       const sentinel = join(cwd, "tool-ran.txt");
       await Deno.lstat(sentinel); // throws if the tool was NOT allowed to run
       assertStringIncludes(out.assistantText ?? "", "ran:");
+      // The turn's `tool_call` update is recorded for the judge (FR-ACCEPT.TRIGGER):
+      // `describeToolCall` renders `<title> :: <command>` from the stub's update.
+      assert(
+        (out.toolCalls ?? []).some((d) => d.includes("echo hello")),
+        `toolCalls should record the tool_call descriptor, got ${
+          JSON.stringify(out.toolCalls)
+        }`,
+      );
     } finally {
       await shutdown(child);
     }

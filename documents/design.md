@@ -39,32 +39,31 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 #### Generation pipeline
 
-- atom `commit`: `framework/atoms/commit.md` → `framework/core/commands/commit/SKILL.md` (used by 3 composites)
+- atom `commit`: `framework/atoms/commit.md` → `framework/core/skills/commit/SKILL.md` (used by 3 composites)
 - atom `implement`: `framework/atoms/implement.md` → `framework/core/skills/implement/SKILL.md` (used by 2 composites)
 - atom `plan`: `framework/atoms/plan.md` → `framework/core/skills/plan/SKILL.md` (used by 1 composite)
 - atom `push`: `framework/atoms/push.md` → `framework/core/commands/push/SKILL.md` (used by 2 composites)
 - atom `review`: `framework/atoms/review.md` → `framework/core/skills/review/SKILL.md` (used by 3 composites)
-- composite `review-and-commit`: `framework/composites/review-and-commit.md` → `framework/core/commands/review-and-commit/SKILL.md` (atoms: review + commit)
+- composite `review-and-commit`: `framework/composites/review-and-commit.md` → `framework/core/skills/review-and-commit/SKILL.md` (atoms: review + commit)
 - composite `ship`: `framework/composites/ship.md` → `framework/core/commands/ship/SKILL.md` (atoms: plan, implement, review, commit, push)
 - composite `ship-task`: `framework/composites/ship-task.md` → `framework/core/commands/ship-task/SKILL.md` (atoms: implement, review, commit, push)
 
-#### Commands by pack (8) — all in `core`
+#### Commands by pack (6) — all in `core`
 
 - `adapt` — standalone — `framework/core/commands/adapt/SKILL.md`
-- `commit` — generated from atom `commit`
 - `init` — standalone — `framework/core/commands/init/SKILL.md`
 - `push` — generated from atom `push`
-- `review-and-commit` — generated from composite `review-and-commit`
 - `ship` — generated from composite `ship`
 - `ship-task` — generated from composite `ship-task`
 - `update` — standalone — `framework/core/commands/update/SKILL.md`
 
-#### Skills by pack (44)
+#### Skills by pack (46)
 
 **beta (3):** `ai-ide-runner`, `delegate-to-ide` (cross-IDE bridge, see §3.17), `select-llm-model` (see §3.21) — standalone
 
-**core (10):**
+**core (12):**
 
+- `commit` — generated from atom `commit`
 - `configure-deno-commands` — standalone
 - `epic` — standalone
 - `implement` — generated from atom `implement`
@@ -74,6 +73,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `reflect` — standalone
 - `reflect-by-history` — standalone
 - `review` — generated from atom `review`
+- `review-and-commit` — generated from composite `review-and-commit`
 - `setup-ai-ide-devcontainer` — standalone
 
 **deno (2):** `cli`, `deploy` — standalone
@@ -145,8 +145,8 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs are the full installed names (e.g., `commit/`, `write-dep/`). flowai copies them as-is — no name transformation at install time.
 - **Categories (by installed prefix):**
-  - `commands/<name>`: User-only commands (e.g., `commit`, `review-and-commit`, `update`).
-  - `skills/<name>`: Agent-auto-invocable skills (e.g., `plan`, `fix-tests`, `setup-agent-code-style-deno`).
+  - `commands/<name>`: User-only commands (e.g., `push`, `ship`, `update`).
+  - `skills/<name>`: Agent-auto-invocable skills (e.g., `plan`, `commit`, `review-and-commit`, `fix-tests`).
 - **Composition**: Skills can delegate to other skills (e.g., `init` delegates development command configuration to `configure-*-commands`). Composite SKILL.md files (`review-and-commit`, `ship`, `ship-task`) are **gitignored build artefacts** — materialized from `framework/atoms/*.md` sources + `framework/composites/*.md` wrappers + `framework/composites.yaml` manifest by `scripts/generate-skill-composites.ts` per FR-SKILL-COMPOSE (see §3.1.1.1). Every consumer regenerates first via `--write`, so drift between source and rendered output is structurally impossible. Composite canon (no delegation, no source-skill names in description, explicit verdict-gate success/failure branches, single `<step_by_step>` per atom slot, 700-line cap) is machine-enforced inside the generator. Never hand-edit a generated SKILL.md.
 - **Streamlined commit flow:** `commit` and `review-and-commit` use targeted doc sync, inline grouping, auto-invoked `reflect`, and a *Post-Reflect Cleanup Commit*: when reflect leaves working-tree edits, the workflow stages and commits them as a separate `agent: apply reflect-suggested improvements` commit before exit. `review-and-commit` additionally preserves task-status derivation and persistent new-shape task cleanup semantics required by FR-DOC-TASK-LIFECYCLE.
 - **Terminal full-cycle composite (FR-SHIP):** `ship` (user-only command at `framework/core/commands/ship/`) drives plan → implement → review → commit → push in one invocation. Generated from five atoms: `plan` + `implement` + `review` + `commit` + `push`. Four explicit gates: variant-selection (Plan→Implement), green project check (Implement→Review), verdict gate (Review→Commit), clean-tree + branch-protection check (Commit→Push). Post-push verification: `git rev-parse @{u}` matches local `HEAD`. The Push atom forbids `--force`, gates `--force-with-lease` on per-push user authorization, and refuses divergent pushes to protected branches.
@@ -269,7 +269,7 @@ Adoption is optional. IDEs that support `allowed-tools` will auto-approve matchi
   - **JSON Configuration**: `acceptance-tests/config.json` stores unified model presets.
   - **Direct Model Support**: If a preset is not found, the system uses the provided name as the model identifier with default settings (temperature: 0).
   - **Side-Effect Validation**: System checks sandbox state (files, git) using LLM-Judge via Claude CLI (`cliChatCompletion` in `llm.ts`). Uses `--output-format json` + `--json-schema` for structured verdicts. No external API key required. Judge retries once on failure before marking items failed.
-  - **Evidence Pipeline**: `AcpAgent` accumulates a readable per-turn transcript (user/assistant + stderr diagnostics) directly — no NDJSON `stream-json` parse/format step (the `format_logs.ts` converter was retired with the direct-CLI adapters). Evidence (user query, agent transcript, git diff/status/log, task files, generated files) is written to `<runDir>/judge-evidence.md` and passed to Claude CLI via `--append-system-prompt-file`. This avoids E2BIG/stdin size limits for large traces (~250KB). The user message to judge contains only the checklist and evaluation instruction. Evidence files persist in run directory for debugging.
+  - **Evidence Pipeline**: `AcpAgent` accumulates a readable per-turn transcript (user/assistant + per-turn `[tools]` line + stderr diagnostics) directly — no NDJSON `stream-json` parse/format step (the `format_logs.ts` converter was retired with the direct-CLI adapters). The `[tools]` line lists compact descriptors of the turn's ACP `tool_call` updates (`AcpClient` records them in `ParsedAgentOutput.toolCalls`; `describeToolCall` renders `<title> :: <skill|command|path>`), so the judge can verify Skill/tool invocation from evidence (FR-ACCEPT.TRIGGER) instead of inferring it from assistant narration. Evidence (user query, agent transcript, git diff/status/log, task files, generated files) is written to `<runDir>/judge-evidence.md` and passed to Claude CLI via `--append-system-prompt-file`. This avoids E2BIG/stdin size limits for large traces (~250KB). The user message to judge contains only the checklist and evaluation instruction. Evidence files persist in run directory for debugging.
   - **Execution Stability**: `AcpAgent` global scenario timeout (default 15 min, `totalTimeoutMs`) + watchdog (FR-ACCEPT-GUARDS). Kills agent (`AcpAgent.kill()`, process-group SIGTERM) and proceeds to judge with partial evidence on expiry.
   - **Skill Integration**: Both `framework/<pack>/skills/` and `framework/<pack>/commands/` are copied into the sandbox IDE config dir (pack-scoped) by `copyFrameworkToIdeDir` in `scripts/acceptance-tests/lib/utils.ts`. Commands land in the same `.{ide}/skills/` target as skills; each command's `SKILL.md` gets `disable-model-invocation: true` injected via `injectDisableModelInvocation` from `cli/src/sync.ts` (single source of truth, mirrors production sync). The flag marks the primitive as user-only — it remains discoverable but is not auto-triggered by the model.
   - **Project Instructions**: Scenarios MUST declare `agentsTemplateVars` (required field; PROJECT_NAME, TOOLING_STACK, etc.) — runner renders the single AGENTS.md from the pack-level template (`framework/<pack>/assets/AGENTS.template.md`) at runtime (single source of truth). All sections (documentation rules, development commands, planning rules, TDD flow) live in this one template. For Claude adapter, a root CLAUDE.md symlink is created automatically. Legacy `agentsMarkdown` and fixture `AGENTS.md` are not supported.

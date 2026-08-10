@@ -72,7 +72,7 @@ Assumes users follow the workflows and keep documentation current. Assumes the a
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). At the framework source level they are split into two sibling directories per pack, which is the **primary classifier**:
 
-- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/commit` or plugin `/flowai:commit`); the agent does not auto-discover them. Name: short kebab-case without the legacy `flowai-` prefix (e.g. `commit`, `review-and-commit`, `update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the CLI writer injects `disable-model-invocation: true` at sync time based on directory placement.
+- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/push` or plugin `/flowai:push`); the agent does not auto-discover them. Name: short kebab-case without the legacy `flowai-` prefix (e.g. `init`, `push`, `ship`, `update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the CLI writer injects `disable-model-invocation: true` at sync time based on directory placement. NOTE: the core engineering-workflow primitives `plan`/`implement`/`review`/`commit`/`review-and-commit`/`investigate` are **skills** (agent-invocable), not commands — see FR-WORKFLOW-AGENT-INVOKE.
 - **Skills** — `framework/<pack>/skills/<name>/SKILL.md`. Agent-invocable capabilities (e.g. `draw-mermaid-diagrams`). Name: short kebab-case without the legacy `flowai-` prefix; command-vs-skill classification is determined by source directory. Source SKILL.md MUST NOT declare `disable-model-invocation`.
 
 ### Two meanings of "command" — don't confuse them
@@ -215,7 +215,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 
 When a task creates a new framework primitive, decide the subdir FIRST:
 
-- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/commit`, `/update`, `/review-and-commit`.
+- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/init`, `/update`, `/push`, `/ship`.
 - **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `fix-tests`, `deep-research`.
 
 Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.

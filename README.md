@@ -243,12 +243,10 @@ The framework is organized into **packs** — modular groups of skills, agents, 
 
 ### core
 
-Base commands for development workflows (commit, plan, review, init, etc.).
+Base workflow primitives (plan, implement, review, commit, init, push, etc.) + core agents.
 
-**Commands:**
+**Commands** (user-invoked only):
 - `init` — project initialization (AGENTS.md, docs scaffolding, dev commands)
-- `commit` — streamlined atomic commits (targeted doc sync, inline grouping, auto-invoked reflect)
-- `review-and-commit` — streamlined review + commit (reuses diff across phases)
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
 - `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)
@@ -260,6 +258,8 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `plan` — task planning; writes persistent GODS tasks at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
 - `epic` — structured feature specification for multi-session features
 - `review` — QA + code review of current changes
+- `commit` — streamlined atomic commits (targeted doc sync, inline grouping, auto-invoked reflect); does not push
+- `review-and-commit` — streamlined review + commit in one flow (reuses diff across phases)
 - `reflect` — self-analysis of the current session
 - `reflect-by-history` — cross-session analysis of past IDE transcripts
 - `investigate` — deep bug investigation via hypothesis-driven experiments

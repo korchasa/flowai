@@ -178,6 +178,12 @@ export class AcpAgent {
         const out = await client.prompt(this.#sessionId, nextPrompt);
         const text = out.assistantText ?? out.result ?? "";
         this.#messages.push({ role: "assistant", content: text });
+        // Surface the turn's tool calls to the judge (FR-ACCEPT.TRIGGER): the
+        // assistant narration alone cannot prove a Skill/tool was invoked.
+        const toolCalls = out.toolCalls ?? [];
+        if (toolCalls.length > 0) {
+          this.#log.push(`[tools] ${toolCalls.join(" | ")}\n`);
+        }
         this.#log.push(`< ${text}\n`);
         if (out.subtype === "error") {
           code = 1;

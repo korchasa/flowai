@@ -19,7 +19,7 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 
 ## Packs
 
-- `core` — Base commands (commit, plan, review, init, etc.) + core agents.
+- `core` — Base workflow primitives: agent-invocable skills (`plan`, `implement`, `review`, `commit`, `review-and-commit`, `investigate`) + user-only commands (`init`, `push`, `ship`, `ship-task`, `update`, `adapt`) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, fix-tests, etc.).
 - `deno` — Deno-specific skills.
