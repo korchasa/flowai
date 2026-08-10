@@ -99,7 +99,7 @@ than the pending item rewritten away.
       been 0. Since the session itself touched no URL, extraction was verified
       separately against 192 real historical rollouts — 5 URLs found in shell
       commands, e.g. `https://raw.githubusercontent.com/...`.
-  - Evidence: `deno task benchmark pool2-run --arm baseline --pool scripts/benchmark/pools/codex-terra-medium.json --rep 1 --instance agronholm__anyio-1134 --no-grade --out scratch/cost-smoke` then `cat scratch/cost-smoke/rep1/baseline/<id>/<id>.{metrics,webaudit}.json`
+  - Evidence: `deno task benchmark pool2-run --arm baseline --pool scripts/benchmark/pools/codex-terra-medium.json --rep 1 --instance agronholm__anyio-1134 --no-grade --out scratch/cost-smoke` then `cat scratch/cost-smoke/rep1/baseline/<id>/<id>.{metrics,webaudit}.json`. The run dir was deleted 2026-08-10 with the rest of `scratch/` (17 MB, almost all of it a repo clone) and `scratch/` is now gitignored — the figures quoted above are the record, and the command re-creates the dir if the smoke needs repeating.
 - [x] FR-BENCH-SWE.SYMMETRY: the human emulator runs on `gpt-5.6-sol` at a FIXED
       medium effort in both arms, independent of the agent's effort.
   - Test: `scripts/benchmark/run_test.ts::humanEmulatorConfig` + `scripts/acceptance-tests/lib/llm_test.ts` (codex argv pinning)

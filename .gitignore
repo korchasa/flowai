@@ -76,3 +76,8 @@ benchmark-*.log
 # SWE-rebench pool2 grading path (FR-BENCH-SWE.POOL2): fork + venv
 .venv-rebench/
 .swe-bench-fork/
+
+# Session working files (run logs, one-off driver scripts, smoke run dirs).
+# Nothing here is a record: conclusions belong in documents/tasks/, raw
+# acceptance traces in acceptance-tests/runs/, campaign results in cells.
+scratch/
