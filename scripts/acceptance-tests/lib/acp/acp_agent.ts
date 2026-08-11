@@ -219,11 +219,7 @@ export class AcpAgent {
         this.#log.push(
           `\n[tool-calls] ${
             this.#toolCalls
-              .map((t) =>
-                `${t.title}${t.kind ? `(${t.kind})` : ""}: ${
-                  JSON.stringify(t.rawInput ?? {})
-                }`
-              )
+              .map((t) => describeToolCall(t))
               .join("\n             ")
           }\n`,
         );
@@ -275,4 +271,30 @@ export class AcpAgent {
       this.#child.kill("SIGTERM");
     } catch { /* leader gone */ }
   }
+}
+
+/**
+ * Renders one captured tool call for the `[tool-calls]` trace block.
+ *
+ * ACP notifications carry a human `title` and a `kind` from a fixed enum
+ * (read / edit / execute / think / …) — never the tool's NAME. The previous
+ * `${title}(${kind})` form therefore read as if `kind` were the tool: a
+ * subagent dispatch rendered as `Enumerate affected surface(think): {...}`,
+ * and the LLM judge scoring `scout_subagent_dispatched` rejected it as "the
+ * extended-thinking tool, not a Task/Agent invocation" — on a run where the
+ * dispatch had in fact happened. The identical rendering was accepted in
+ * another run, so the checklist item was decided by how the judge read an
+ * ambiguous string.
+ *
+ * A dispatch is now named for what it is, taken from the one field that does
+ * identify it (`rawInput.subagent_type`), and `kind` is labelled so it cannot
+ * be mistaken for a tool name.
+ */
+export function describeToolCall(t: CapturedToolCall): string {
+  const sub = t.rawInput?.subagent_type;
+  const head = typeof sub === "string" && sub.length > 0
+    ? `subagent dispatch -> ${sub} (via Task/Agent tool)`
+    : t.title;
+  const kind = t.kind ? ` [kind=${t.kind}]` : "";
+  return `${head}${kind}: ${JSON.stringify(t.rawInput ?? {})}`;
 }

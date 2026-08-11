@@ -58,6 +58,14 @@ export function run(argv: string[]): string {
     );
     // The SRS is left untouched by the diff — it still names the dead command.
     // This is the drift the review must catch.
+    //
+    // FR-EXPORT deliberately carries NO completion claim. An FR marked `[x]`
+    // whose implementation the diff deletes is `[critical] Phantom completion`
+    // under the review skill's FR Coverage Audit, which forbids Approve — so a
+    // `[x]` here would put this scenario's expected verdict in direct conflict
+    // with that gate, and the agent would be right to reject. The drift under
+    // test is stale documentation, nothing else: the Interfaces section still
+    // states, as present fact, that the CLI accepts `export`.
     await Deno.mkdir(`${sandboxDir}/documents`, { recursive: true });
     await Deno.writeTextFile(
       `${sandboxDir}/documents/requirements.md`,
@@ -78,7 +86,13 @@ export function run(argv: string[]): string {
 - **Desc:** Export a report to a file.
 - **Scenario:** Maintainer runs \`deno task reportkit export --out <path>\`; the
   file appears at the given path.
-- **Status:** [x]
+- **Status:** [ ]
+
+## 5. Interfaces
+
+- **CLI:** \`reportkit\` accepts two subcommands. \`render\` writes the report to
+  stdout. \`export --out <path>\` writes it to the given file; run it whenever a
+  report has to be archived.
 `,
     );
   }
@@ -87,7 +101,7 @@ export function run(argv: string[]): string {
     {
       id: "drift_detected",
       description:
-        "Did the agent NAME the mismatch — that documents/requirements.md still tells the maintainer to run the `export` subcommand which this diff deletes? Merely reading the SRS is not enough; the finding must appear in the report.",
+        "Did the agent NAME the mismatch — that documents/requirements.md (§5 Interfaces) still states the CLI accepts the `export` subcommand which this diff deletes? Merely reading the SRS is not enough; the finding must appear in the report.",
       critical: true,
     },
     {
