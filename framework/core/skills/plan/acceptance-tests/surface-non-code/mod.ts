@@ -49,7 +49,7 @@ export const PlanSurfaceNonCodeBench = new class
     {
       id: "surface_table_persisted",
       description:
-        "Does the task file contain an '### Affected Surface' subsection under '## Overview' with the scout's verbatim output block AND per-item disposition bullets?",
+        "Does the task file contain an '### Affected Surface' subsection under '## Overview' with per-item disposition bullets? Judge the section's presence and content only — do NOT require the scout's raw text to be quoted verbatim (subagent dispatch is asynchronous and returns no text; whether the planner consumed the scout's findings is tested separately by plan-uses-scout-findings).",
       critical: true,
     },
     {

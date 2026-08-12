@@ -9,12 +9,22 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * the STRUCTURAL mechanism added by the surface-scout change, none of which
  * exists in the pre-change atom:
  * - a `surface-scout` subagent dispatch visible in the tool trace;
- * - the scout's raw output persisted VERBATIM in `### Affected Surface` under
- *   `## Overview` of the task file (the durable artifact plan-critic and
- *   review recompute the set-diff from — loop5 critic round 3, user decision
- *   2026-07-05);
+ * - an `### Affected Surface` subsection under `## Overview` of the task file
+ *   (the durable artifact plan-critic and review recompute the set-diff from —
+ *   loop5 critic round 3, user decision 2026-07-05);
  * - plain-bullet disposition rows (checkbox syntax would corrupt
  *   deriveStatusFromDoD — loop5 critic round 2 objection 3).
+ *
+ * This scenario checks that the dispatch HAPPENS and that the surface content
+ * lands. Whether the planner actually consumed what the scout returned is a
+ * separate question with its own scenario, `plan-uses-scout-findings` — the
+ * split exists because the two failure modes are independent and because
+ * requiring the scout's verbatim text here produced a FALSE PASS: subagent
+ * dispatch is asynchronous, the call returns only `agentId` plus usage
+ * counters (172 bytes, measured 2026-08-11 in two runs), so any "verbatim
+ * block" the planner writes at that point cannot have been copied from the
+ * scout. The judge accepted such a block once and rejected an identical
+ * situation in the next run.
  *
  * The fixture plants a duplicated truncation implementation in the Slack
  * notifier that the request does not mention (parallel-file class: mirrors
@@ -24,7 +34,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 export const PlanAffectedSurfaceScoutBench = new class
   extends AcceptanceTestScenario {
   id = "plan-affected-surface-scout";
-  name = "Plan dispatches surface-scout and persists its verbatim output";
+  name = "Plan dispatches surface-scout and persists the affected surface";
   skill = "plan";
   stepTimeoutMs = 420_000;
   agentsTemplateVars = {
@@ -56,9 +66,9 @@ export const PlanAffectedSurfaceScoutBench = new class
       critical: true,
     },
     {
-      id: "verbatim_scout_block_persisted",
+      id: "surface_section_persisted",
       description:
-        "Does the task file contain an '### Affected Surface' subsection under '## Overview' that includes the scout's returned output as a clearly delimited verbatim block (quoted or fenced), not merely a paraphrase or summary of it?",
+        "Does the task file contain an '### Affected Surface' subsection under '## Overview' holding the enumerated surface? Judge the SECTION's presence and content only — do NOT require the scout's raw text to be quoted verbatim, and do NOT fail this item because the content came from the agent's own enumeration.",
       critical: true,
     },
     {
