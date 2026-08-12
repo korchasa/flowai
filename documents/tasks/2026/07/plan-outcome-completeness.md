@@ -1,6 +1,6 @@
 ---
 date: "2026-07-02"
-status: to do
+status: in progress
 implements: [FR-PLAN-OUTCOME-COMPLETENESS]
 tags: [plan, benchmark, completeness, dod]
 related_tasks: [2026/06/plan-reco-root-cause-ranking.md, 2026/06/review-run-existing-tests.md]
@@ -32,13 +32,13 @@ Root-cause investigation of 11 failed flowai SWE-bench sessions (see `scripts/be
 
 ## Definition of Done
 
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS (pre-gate half): plan seeds DoD from the request's stated outcomes (verbatim expected values), enumerates the affected surface proactively (undisclosed duplicated site), names dropped outcomes in variant Cons; verified RED→GREEN.
+- [x] FR-PLAN-OUTCOME-COMPLETENESS (pre-gate half): plan seeds DoD from the request's stated outcomes (verbatim expected values), enumerates the affected surface proactively (undisclosed duplicated site), names dropped outcomes in variant Cons; verified RED→GREEN.
   - Test: `Benchmark: plan-dod-covers-stated-outcomes`
   - Evidence: `deno task acceptance-tests -f plan-dod-covers-stated-outcomes`
 - [ ] FR-PLAN-OUTCOME-COMPLETENESS (post-selection half): after an explicit user scope cut, dropped outcomes are recorded under `## Follow-ups` in the task file and the Step-7 completeness check maps every stated outcome to DoD/Solution/Follow-ups; verified RED→GREEN.
   - Test: `Benchmark: plan-records-dropped-outcomes`
   - Evidence: `deno task acceptance-tests -f plan-records-dropped-outcomes`
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS: add FR section to SRS with `**Acceptance verified by acceptance tests:**` field; register row in `documents/index.md`; SRS `**Tasks:**` back-pointer.
+- [x] FR-PLAN-OUTCOME-COMPLETENESS: add FR section to SRS with `**Acceptance verified by acceptance tests:**` field; register row in `documents/index.md`; SRS `**Tasks:**` back-pointer.
   - Test: `manual — SRS/index diff in this task's commit`
   - Evidence: `deno task check` (check-salp, check-fr-coverage, check-srs-evidence pass)
 - [ ] No regression across the plan primitive's existing scenarios.
