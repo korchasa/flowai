@@ -289,12 +289,22 @@ export class AcpAgent {
  * A dispatch is now named for what it is, taken from the one field that does
  * identify it (`rawInput.subagent_type`), and `kind` is labelled so it cannot
  * be mistaken for a tool name.
+ *
+ * On a dispatch the `kind` is dropped entirely. Labelling it did not stop the
+ * misreading: in the 2026-08-12 sweep the judge rejected
+ * `subagent dispatch -> surface-scout (via Task/Agent tool) [kind=think]` with
+ * "tagged [kind=think], indicating an internal reasoning step, NOT an actual
+ * tool invocation" — on a run whose raw session shows the `Task` call and the
+ * subagent's own 81-line transcript. ACP reports `think` for every Task call,
+ * so the field carries no information here and only invites that inference.
  */
 export function describeToolCall(t: CapturedToolCall): string {
   const sub = t.rawInput?.subagent_type;
-  const head = typeof sub === "string" && sub.length > 0
-    ? `subagent dispatch -> ${sub} (via Task/Agent tool)`
-    : t.title;
+  if (typeof sub === "string" && sub.length > 0) {
+    return `subagent dispatch -> ${sub} (via Task/Agent tool): ${
+      JSON.stringify(t.rawInput ?? {})
+    }`;
+  }
   const kind = t.kind ? ` [kind=${t.kind}]` : "";
-  return `${head}${kind}: ${JSON.stringify(t.rawInput ?? {})}`;
+  return `${t.title}${kind}: ${JSON.stringify(t.rawInput ?? {})}`;
 }
