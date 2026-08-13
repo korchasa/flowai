@@ -44,6 +44,28 @@ export interface CapturedToolCall {
   kind?: string;
   rawInput?: Record<string, unknown>;
   locations?: { path: string }[];
+  /**
+   * Flattened text of the call's RESULT, from ACP `content` blocks (which
+   * usually arrive on the `tool_call_update`, not the initial `tool_call`).
+   *
+   * Without this the trace showed inputs only, and a judge asked whether a
+   * block quoted verbatim in a file matches what a subagent returned had no
+   * way to answer — it scored `no_fabricated_verbatim` as a fabrication on a
+   * run where the quotation was real (2026-08-13, plan-uses-scout-findings).
+   */
+  resultText?: string;
+}
+
+/** Flattens ACP tool-call `content` blocks into the text a judge can read. */
+function flattenToolCallContent(content: unknown): string | undefined {
+  if (!Array.isArray(content)) return undefined;
+  const parts: string[] = [];
+  for (const block of content) {
+    const inner = (block as { content?: unknown })?.content ?? block;
+    const text = (inner as { text?: unknown })?.text;
+    if (typeof text === "string" && text.length > 0) parts.push(text);
+  }
+  return parts.length > 0 ? parts.join("\n") : undefined;
 }
 
 export interface AcpClientOptions {
@@ -178,6 +200,7 @@ export class AcpClient {
         kind: u.kind ?? undefined,
         rawInput: u.rawInput,
         locations: u.locations?.map((l) => ({ path: l.path })),
+        resultText: flattenToolCallContent(u.content),
       });
     } else if (u.sessionUpdate === "tool_call_update") {
       // Merge later detail (rawInput/locations often arrive on the update) into
@@ -191,6 +214,7 @@ export class AcpClient {
         rawInput: u.rawInput ?? prev.rawInput,
         locations: u.locations?.map((l) => ({ path: l.path })) ??
           prev.locations,
+        resultText: flattenToolCallContent(u.content) ?? prev.resultText,
       });
     }
     return Promise.resolve();

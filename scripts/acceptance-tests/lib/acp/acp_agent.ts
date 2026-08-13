@@ -303,8 +303,35 @@ export function describeToolCall(t: CapturedToolCall): string {
   if (typeof sub === "string" && sub.length > 0) {
     return `subagent dispatch -> ${sub} (via Task/Agent tool): ${
       JSON.stringify(t.rawInput ?? {})
-    }`;
+    }\n${indentBlock(describeDispatchResult(t.resultText))}`;
   }
   const kind = t.kind ? ` [kind=${t.kind}]` : "";
   return `${t.title}${kind}: ${JSON.stringify(t.rawInput ?? {})}`;
+}
+
+/** Cap on the dispatch result carried into the trace, in characters. */
+const DISPATCH_RESULT_LIMIT = 4000;
+
+/**
+ * Renders what a dispatch RETURNED, so a judge can check a quotation against
+ * its source. Only dispatches carry their result into the trace: every tool
+ * call doing so would bury the trace under file contents, and the dispatch is
+ * where the question "did the agent quote what came back, or write it itself?"
+ * is actually asked.
+ */
+export function describeDispatchResult(resultText?: string): string {
+  if (!resultText) {
+    return "-> returned: (no result payload captured for this dispatch)";
+  }
+  const clipped = resultText.length > DISPATCH_RESULT_LIMIT
+    ? `${resultText.slice(0, DISPATCH_RESULT_LIMIT)}\n… [truncated ${
+      resultText.length - DISPATCH_RESULT_LIMIT
+    } chars]`
+    : resultText;
+  return `-> returned:\n${clipped}`;
+}
+
+/** Indents a block so it reads as belonging to the line above it. */
+function indentBlock(text: string): string {
+  return text.split("\n").map((l) => `               ${l}`).join("\n");
 }
