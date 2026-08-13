@@ -40,8 +40,14 @@ export const ReviewAndCommitPostReflectCleanupCommitBench = new class
     ]);
   }
 
+  // The slash command MUST open the message. Claude Code expands a slash
+  // command only when it starts the prompt, so the session-context prose that
+  // used to precede it silently disabled expansion: the skill then loaded only
+  // when the model chose to call the Skill tool on its own — 2 runs out of 8
+  // (measured 2026-08-13). The other six reproduced the workflow from memory
+  // and never reached steps 7 and 8, which is what the checklist scores.
   userQuery =
-    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready. /review-and-commit Review and commit the new utility functions.";
+    "/review-and-commit Review and commit the new utility functions. This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready.";
 
   userPersona =
     `You are a developer who had a difficult session with many errors and retries before reaching this point.

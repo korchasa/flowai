@@ -35,8 +35,10 @@ export const ReviewAndCommitAutoInvokeReflectBench = new class
     ]);
   }
 
+  // Slash command first — see the sibling `post-reflect-cleanup-commit`
+  // scenario: prose ahead of it stops Claude Code from expanding the command.
   userQuery =
-    "This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready. /review-and-commit Review and commit the new utility functions.";
+    "/review-and-commit Review and commit the new utility functions. This session was rough — I hit several errors, had to retry tests multiple times, and you suggested a wrong approach twice before I corrected you. Now the code is ready.";
 
   userPersona =
     `You are a developer who had a difficult session with many errors and retries before reaching this point.
