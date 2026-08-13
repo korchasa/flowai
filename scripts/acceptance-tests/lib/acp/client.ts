@@ -30,6 +30,7 @@ import {
   type SessionNotification,
   type Stream,
 } from "@zed-industries/agent-client-protocol";
+import type { AnyMessage } from "@zed-industries/agent-client-protocol";
 import { isAbsolute, join, normalize, resolve } from "@std/path";
 import type { ParsedAgentOutput } from "../adapters/types.ts";
 
@@ -115,6 +116,9 @@ export function flattenRawOutput(rawOutput: unknown): string | undefined {
   if (typeof rawOutput === "string") {
     return rawOutput.length > 0 ? rawOutput : undefined;
   }
+  // A dispatch answers with the subagent's content blocks at the top level.
+  // Left to the JSON fallback the judge reads the report as one escaped line.
+  if (Array.isArray(rawOutput)) return flattenToolCallContent(rawOutput);
   const fromContent = flattenToolCallContent(
     (rawOutput as { content?: unknown }).content,
   );
@@ -133,6 +137,40 @@ export function flattenToolCallContent(content: unknown): string | undefined {
     if (typeof text === "string" && text.length > 0) parts.push(text);
   }
   return parts.length > 0 ? parts.join("\n") : undefined;
+}
+
+/**
+ * Passes every incoming ACP message to `observe` before the client library
+ * parses it, then forwards it untouched.
+ *
+ * The library validates each notification against its schema and answers a
+ * mismatch with `-32602 Invalid params`, dropping the notification instead of
+ * delivering it. claude-code-acp closes a subagent dispatch with the answer in
+ * `rawOutput` as a bare STRING, which is exactly such a mismatch, so the
+ * client's handler never saw a dispatch's return value: the only text captured
+ * for the call was the prompt echoed by the OPENING notification. The trace then
+ * read `-> returned: <the prompt>`, and on 2026-08-13 a judge concluded from it
+ * both that the scout had returned nothing and that the report quoted in the
+ * task file was fabricated — on a run whose raw session holds the real report.
+ *
+ * Observation never throws into the transport: a failure here would cost the
+ * whole run, and what it protects is a trace detail.
+ */
+export function tapIncoming(
+  stream: Stream,
+  observe: (message: unknown) => void,
+): Stream {
+  const readable = stream.readable.pipeThrough(
+    new TransformStream<AnyMessage, AnyMessage>({
+      transform(chunk, controller) {
+        try {
+          observe(chunk);
+        } catch { /* a trace detail must never break the transport */ }
+        controller.enqueue(chunk);
+      },
+    }),
+  );
+  return { writable: stream.writable, readable };
 }
 
 export interface AcpClientOptions {
@@ -177,7 +215,45 @@ export class AcpClient {
           p.content,
         ).then(() => ({})),
     };
-    this.#conn = new ClientSideConnection(() => client, opts.stream);
+    this.#conn = new ClientSideConnection(
+      () => client,
+      tapIncoming(opts.stream, (m) => this.#observeRawMessage(m)),
+    );
+  }
+
+  /**
+   * Records tool-call detail straight off the wire, so a notification the
+   * library refuses still reaches the trace. Merges rather than replaces: the
+   * validated handler runs right after this one for every message that does
+   * pass, and neither may erase what the other established.
+   */
+  #observeRawMessage(message: unknown): void {
+    const m = message as {
+      method?: string;
+      params?: { update?: Record<string, unknown> };
+    };
+    if (m?.method !== "session/update") return;
+    const u = m.params?.update;
+    const kind = u?.sessionUpdate;
+    if (kind !== "tool_call" && kind !== "tool_call_update") return;
+    const id = u?.toolCallId;
+    if (typeof id !== "string" || id.length === 0) return;
+
+    const prev = this.#toolCalls.get(id) ?? { toolCallId: id, title: "" };
+    const result = flattenRawOutput(u?.rawOutput) ??
+      flattenToolCallContent(u?.content);
+    this.#toolCalls.set(id, {
+      ...prev,
+      title: typeof u?.title === "string" ? u.title : prev.title,
+      kind: typeof u?.kind === "string" ? u.kind : prev.kind,
+      rawInput: (u?.rawInput as Record<string, unknown> | undefined) ??
+        prev.rawInput,
+      // A closing notification's own result wins over the prompt the opening
+      // one carried; absent a result, whatever was already captured stands.
+      resultText: kind === "tool_call_update"
+        ? result ?? prev.resultText
+        : prev.resultText ?? result,
+    });
   }
 
   /** All tool calls observed so far across every prompt turn this run. */

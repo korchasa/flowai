@@ -18,6 +18,7 @@ import {
   flattenToolCallContent,
   resolveSessionPath,
 } from "./client.ts";
+import { DISPATCH_REPORT } from "./stub_agent.ts";
 
 const STUB = fromFileUrl(new URL("./stub_agent.ts", import.meta.url));
 
@@ -90,6 +91,43 @@ Deno.test({
   },
 });
 
+/**
+ * A dispatch's closing notification carries the subagent's answer in `rawOutput`
+ * as a bare string, which the client library's schema refuses (`-32602 Invalid
+ * params`) — the notification never reaches the client's handler, and the only
+ * text ever captured for the call is the prompt sent down with the opening one.
+ * The trace then rendered `-> returned: <the prompt>`, and on 2026-08-13 a judge
+ * read that as "the scout returned nothing" and, seeing the scout's report
+ * quoted in the task file, as a fabricated quotation. The raw session for that
+ * run holds the real 40-line report.
+ */
+Deno.test({
+  name:
+    "a dispatch's return value survives a closing notification the schema refuses",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    const cwd = await Deno.makeTempDir({ prefix: "acp-test-" });
+    const child = spawnStub();
+    const client = AcpClient.fromChild(child);
+    try {
+      await client.initialize();
+      const sessionId = await client.newSession(cwd);
+      await client.prompt(sessionId, "map the surface [[DISPATCH]]");
+
+      const dispatch = client.getToolCalls().find(
+        (c) =>
+          (c.rawInput as { subagent_type?: string } | undefined)
+            ?.subagent_type === "surface-scout",
+      );
+      assert(dispatch, "the dispatch itself was not captured");
+      assertStringIncludes(dispatch.resultText ?? "", DISPATCH_REPORT);
+    } finally {
+      await shutdown(child);
+    }
+  },
+});
+
 Deno.test({
   name: "connection drop maps to exit_code_zero failure verdict",
   sanitizeResources: false,
@@ -130,6 +168,16 @@ Deno.test("flattenRawOutput reads content blocks nested in an object return valu
   assertEquals(
     flattenRawOutput({ content: [{ type: "text", text: "## Surface" }] }),
     "## Surface",
+  );
+});
+
+Deno.test("flattenRawOutput reads content blocks handed over at the top level", () => {
+  assertEquals(
+    flattenRawOutput([{ type: "text", text: "## Surface" }, {
+      type: "text",
+      text: "- a.ts:3",
+    }]),
+    "## Surface\n- a.ts:3",
   );
 });
 
