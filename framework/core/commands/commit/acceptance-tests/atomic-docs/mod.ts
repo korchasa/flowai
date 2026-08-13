@@ -1,4 +1,5 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 import { join } from "@std/path";
 
 export const CommitAtomicDocsBench = new class extends AcceptanceTestScenario {
@@ -19,15 +20,39 @@ export const CommitAtomicDocsBench = new class extends AcceptanceTestScenario {
   };
 
   override async setup(sandboxPath: string) {
-    // Runner already committed everything as "init".
-    // Change 1: Docs
-    await Deno.writeTextFile(join(sandboxPath, "README.md"), "# New Title");
-    // Change 2: Code. A real function, not a reworded string — the baseline is
-    // `console.log("hi");`, and rewriting it to `console.log('hello');` changes
-    // the quotes and the text at once. The agent read the quotes, committed
-    // `style:`, and failed a checklist that asks for feat/fix/refactor
-    // (2026-08-13). This scenario tests the docs-vs-code split, so the code
-    // side has to be unambiguously code.
+    // The runner's baseline is a one-line README and `console.log("hi")`, and
+    // the two edits below have to be UNRELATED for the split to be the right
+    // answer. Two earlier fixtures failed that test in opposite ways: a quote
+    // rewrite read as `style:` rather than feat/fix/refactor, and a retitled
+    // README next to a new function read as one story — the agent committed
+    // both together as "add greet function and update project title", which is
+    // correct atomic-commit behaviour for changes that belong together
+    // (2026-08-13). So: a docs-only correction that no code change explains,
+    // and a code change no doc line mentions.
+    await Deno.writeTextFile(
+      join(sandboxPath, "README.md"),
+      `# Old Title
+
+## Requirements
+
+Deno 1.30 or newer.
+`,
+    );
+    await runGit(sandboxPath, ["add", "README.md"]);
+    await runGit(sandboxPath, ["commit", "-m", "Document requirements"]);
+
+    // Change 1: docs only — the stated minimum version was wrong. Nothing in
+    // the code moves with it.
+    await Deno.writeTextFile(
+      join(sandboxPath, "README.md"),
+      `# Old Title
+
+## Requirements
+
+Deno 2.0 or newer.
+`,
+    );
+    // Change 2: code only — a new exported function the README never mentions.
     await Deno.writeTextFile(
       join(sandboxPath, "main.ts"),
       `export function greet(name: string): string {
