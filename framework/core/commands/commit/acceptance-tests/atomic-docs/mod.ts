@@ -22,10 +22,20 @@ export const CommitAtomicDocsBench = new class extends AcceptanceTestScenario {
     // Runner already committed everything as "init".
     // Change 1: Docs
     await Deno.writeTextFile(join(sandboxPath, "README.md"), "# New Title");
-    // Change 2: Code
+    // Change 2: Code. A real function, not a reworded string — the baseline is
+    // `console.log("hi");`, and rewriting it to `console.log('hello');` changes
+    // the quotes and the text at once. The agent read the quotes, committed
+    // `style:`, and failed a checklist that asks for feat/fix/refactor
+    // (2026-08-13). This scenario tests the docs-vs-code split, so the code
+    // side has to be unambiguously code.
     await Deno.writeTextFile(
       join(sandboxPath, "main.ts"),
-      "console.log('hello');",
+      `export function greet(name: string): string {
+  return \`Hello, \${name}!\`;
+}
+
+console.log(greet("world"));
+`,
     );
   }
 
