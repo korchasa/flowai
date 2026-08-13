@@ -51,6 +51,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 6. **Documentation First**: Every logical change MUST be reflected in documentation. Commits without corresponding documentation updates (if applicable) are forbidden.
 7. **Error Handling**: On any error (commit failure, merge conflict, unexpected git state): investigate the cause, propose a fix method to the user, and **STOP** without making corrections.
 8. **Session Scope**: If the working tree contains pre-existing uncommitted changes (files already modified/untracked at session start — visible in git status snapshot from system context), exclude them from the commit scope. Only commit files created or modified by the agent in the current session. If unsure which changes are yours, ask the user before staging.
+9. **Three obligations outlive the commit**: landing the commit finishes step 4, not the workflow. After it you still owe (a) the session-complexity check with its spoken verdict — step 6, (b) the post-reflect cleanup commit when reflect edited anything — step 7, and (c) the clean-state check — step 8. Summarising the work, reporting success, or handing control back before all three is the most common way this workflow is left half-done; the commit landing is exactly the moment it feels finished and is not.
 </rules>
 
 ## Instructions
@@ -120,6 +121,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 8. **Verify Clean State**
    - Run `git status` to confirm all changes are committed.
    - If uncommitted changes remain, investigate and report to the user.
+   - Before you report anything, re-read your own output for the step-6 line. Missing? Step 6 did not run — go back and run it now. This is the last place the omission can still be caught.
 </step_by_step>
 
 ## Verification
@@ -147,4 +149,5 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
    - The diff and file list are already in context from the prior phase. Do NOT re-read them.
    - Run only `git status -s` to confirm nothing changed between phases.
    - If new changes appeared (unexpected), report and STOP.
+   - **`git diff` is banned for the rest of this phase — every form of it.** Not `git diff`, not `--cached`, not `--stat`, not a single file path, not "just to confirm what I staged" and not "to check the working tree matches the index". You have already read this content; `git add` moves files between index and working tree and cannot alter what is inside them, so a second read can only return what you already have, at the cost of the context this phase exists to save. `git status -s` answers every question you legitimately have here, because the only open question is WHICH files are staged.
 </param-branch>
