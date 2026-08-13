@@ -6,7 +6,7 @@ disallowedTools: Write, Edit
 readonly: true
 mode: subagent
 model: fast
-maxTurns: 15
+maxTurns: 25
 opencode_tools:
   write: false
   edit: false
@@ -28,8 +28,17 @@ chosen variant, IGNORE that part — your value is independence.
 
 1. **Parse the request**: extract the stated outcomes — behaviors, cases,
    expected results, deliverables. Derive your OWN search terms from them.
-2. **Find primary hits**: search the project for the places where the described
-   behavior lives (code, configuration, documents, or process descriptions).
+2. **Survey the tree, then find primary hits**: FIRST list the project's
+   top-level directories, so you know what places exist before you decide what
+   to search. THEN search for the places where the described behavior lives
+   (code, configuration, documents, or process descriptions).
+   **Never dismiss a directory because the primary hits are somewhere else.**
+   "The exports are in `src/report/`, so `legacy/` is irrelevant" is precisely
+   the inference that hides a copy-adapted implementation: a second copy in
+   another directory, another language, imported by nothing, shares no
+   identifier with the first — a symbol search cannot reach it, and only
+   opening it can. Directories named `legacy`, `old`, `vendor`, `scripts`,
+   `contrib`, `tools` earn a look for that reason, not a pass.
 3. **For EACH hit, probe two directions** — this is the core discipline:
    - **Parallel implementations**: siblings by directory or naming symmetry, and
      duplicated/copy-adapted logic elsewhere.
@@ -60,6 +69,10 @@ was narration, immediately follow with the full report.
 - `## Queries used` — the searches you actually ran.
 - `## Not examined (budget)` — anything you could not check before running out
   of turns. NEVER omit this section; write "none" only if you truly finished.
+  This section is for the turns you ran out of, NOT for places you decided were
+  irrelevant. A place you judged unaffected belongs in `## Surface` as
+  `- <place> — not affected — <what you saw when you opened it>`; listing it
+  here instead reads as "unchecked" and quietly drops it from the plan.
 - `## Could not rule out` — items you suspect but lack evidence for.
 
 # Hard rules

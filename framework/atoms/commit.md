@@ -97,9 +97,10 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
 4. **Commit Execution Loop**
    - **Iterate** through the planned groups:
      1. Stage specific files for the group.
-     2. Verify the staged content matches the group's intent.
+     2. Verify the staged content matches the group's intent — check WHICH files are staged with `git status --short`. When step 1 reused a diff from a prior phase rather than reading one, that is the whole check: staging moves files, it cannot change content you have already read, so do NOT run `git diff` in any form (`--cached`, `--stat`, per-file) to re-confirm it.
      3. **Task Status Lifecycle** (FR-DOC-TASK-LIFECYCLE) — for each staged task file under the resolved `tasks` role with `date:` frontmatter (skip legacy flat-path), first check frontmatter `status:`. If it is `superseded`, require/keep `superseded_by:` and skip DoD derivation because the stale original DoD no longer maps to current reality. Otherwise count top-level `- [ ]`/`- [x]` items in `## Definition of Done`. Derive `status`: `K=0→"to do"`, `0<K<N→"in progress"`, `K=N→"done"` (warn if no DoD). Rewrite frontmatter and `git add` if it differs. Idempotent. Never downgrade `done`. Warn-only on parse errors.
      4. Commit with a Conventional Commits message (including any task-status frontmatter edit).
+   - **The commit is not the end of this workflow.** Steps 6, 7 and 8 still run after the last group lands. Reporting completion, summarising what you did, or handing control back before step 8 leaves the workflow half-executed.
 5. **Task files are never deleted** _(only if a task file was used in step 2)_ — task files of ANY shape (new-shape `date:` frontmatter or legacy flat-path) are persistent canonical records; `commit` MUST NOT delete them, regardless of DoD completion. The only lifecycle action is the status derivation in step 4.3; `status: superseded` records are preserved.
 6. **Session Complexity Check → Auto-Invoke Reflect**
    - After all commits are done, analyze the current conversation for complexity signals:
@@ -113,7 +114,7 @@ The project follows Conventional Commits 1.0.0 and uses a structured documentati
      b. **Pre-command signal check**: if the signals appear only in the invocation message (i.e., the problematic interactions predated this command and are not visible in the conversation history), output: "You mentioned a rough session — briefly describe what went wrong and what you corrected. This will be included as reflect context." Use the user's answer as additional context when invoking reflect.
      c. Invoke the `reflect` skill directly (via the Skill tool, native slash-command execution, or inline execution of its `SKILL.md` instructions — whichever the host IDE supports).
      d. Do NOT ask the user for confirmation before invoking; proceed autonomously (the context question in step b is not a confirmation request — it gathers missing information).
-   - If none detected, skip silently.
+   - **Always say aloud how the check came out** — one line either way: `Session complexity: none detected — skipping reflect`, or the announcement from (a). A silent skip is indistinguishable from having forgotten the step, both to the user and to you on the next read.
 7. **Post-Reflect Cleanup Commit** _(skip if reflect produced no edits)_
    - Run `git status`. If reflect left working-tree edits (typically `AGENTS.md`, `**/CLAUDE.md`, `framework/**`, `.claude/**`, `documents/**`): stage them and commit as `agent: apply reflect-suggested improvements` (or narrower scope, e.g. `agent(commit): tighten doc-audit gate`). The Conventional Commits **type MUST be `agent`** — it marks a change to the agent's own instructions. Do NOT classify by the file touched: a reflect-driven edit to a Markdown instruction file is `agent:`, never `docs:`, `chore:`, or `feat:`. Do NOT amend earlier commits — keep reflect-driven edits as a separate commit. If `git status` is clean, skip.
 8. **Verify Clean State**
