@@ -196,14 +196,18 @@ async function prepareSandboxFiles(
   const rootContent = await renderAgentsMd(templateVars);
   await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), rootContent);
 
-  // Create root CLAUDE.md symlink for Claude Code compatibility
+  // Root CLAUDE.md for Claude Code compatibility — a REAL FILE, not a symlink.
+  //
+  // Claude Code auto-loads CLAUDE.md from the session cwd; that is how project
+  // rules reach the model without anyone reading a file. In sandboxes where it
+  // was a symlink the rules never arrived: no transcript of a short scenario
+  // contains a line from them, and the ones that do got it from the agent's own
+  // Read call (2026-08-13, plan-trigger-pos-1 / review-trigger-pos-1 — both
+  // performed their skill's workflow inline while the "prefer the right skill"
+  // rule sat unread on disk). Writing the content makes the sandbox behave like
+  // a real project checkout, which is the whole point of the sandbox.
   if (adapter.ide === "claude") {
-    const agentsPath = join(sandboxPath, "AGENTS.md");
-    const claudePath = join(sandboxPath, "CLAUDE.md");
-    try {
-      await Deno.stat(agentsPath);
-      await Deno.symlink("AGENTS.md", claudePath);
-    } catch (_) { /* AGENTS.md doesn't exist — skip */ }
+    await Deno.writeTextFile(join(sandboxPath, "CLAUDE.md"), rootContent);
   }
 }
 
