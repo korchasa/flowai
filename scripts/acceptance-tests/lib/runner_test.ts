@@ -6,7 +6,7 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import { load } from "@std/dotenv";
-import { runScenario } from "./runner.ts";
+import { runScenario, withProjectInstructions } from "./runner.ts";
 import type { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
 import type { evaluateChecklist } from "./judge.ts";
@@ -257,4 +257,25 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
+});
+
+Deno.test("withProjectInstructions delivers the sandbox's AGENTS.md ahead of the query, the way a real session receives CLAUDE.md", async () => {
+  const dir = await Deno.makeTempDir();
+  await Deno.writeTextFile(
+    `${dir}/AGENTS.md`,
+    "# Rules\n- Prefer the skill.\n",
+  );
+  const out = await withProjectInstructions(dir, "review my diff");
+  assertStringIncludes(out, "Prefer the skill.");
+  assertStringIncludes(out, "review my diff");
+  assertEquals(out.trimEnd().endsWith("review my diff"), true);
+  await Deno.remove(dir, { recursive: true });
+});
+
+Deno.test("withProjectInstructions leaves the query alone when the sandbox has no instructions", async () => {
+  const dir = await Deno.makeTempDir();
+  assertEquals(await withProjectInstructions(dir, "hello"), "hello");
+  await Deno.writeTextFile(`${dir}/AGENTS.md`, "   \n");
+  assertEquals(await withProjectInstructions(dir, "hello"), "hello");
+  await Deno.remove(dir, { recursive: true });
 });

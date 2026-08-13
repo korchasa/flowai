@@ -285,8 +285,12 @@ async function runAgentWithTimeout(
   options: RunnerOptions,
 ): Promise<AgentRunOutcome> {
   console.log("  Starting agent interaction...");
+  // (see withProjectInstructions below)
   const start = performance.now();
-  const fullPrompt = scenario.userQuery;
+  const fullPrompt = await withProjectInstructions(
+    sandboxPath,
+    scenario.userQuery,
+  );
 
   const userEmulator = scenario.interactive && scenario.userPersona
     ? new UserEmulator({
@@ -761,4 +765,40 @@ async function collectGeneratedFiles(
 
   await walk(sandboxPath, "");
   return parts.join("\n");
+}
+
+/**
+ * Prepends the sandbox's project instructions to the first prompt, the way a
+ * real Claude Code session receives them.
+ *
+ * Claude Code injects `CLAUDE.md` from the session cwd into the first user
+ * turn. The ACP wrapper does not: across every 2026-08-13 run, a line from the
+ * sandbox's rules appears in a transcript ONLY when the agent opened the file
+ * itself, and never in a short scenario. So the bench was running agents
+ * without the project instructions the product always gives them — which is
+ * why plan-trigger-pos-1 and review-trigger-pos-1 each performed their skill's
+ * whole workflow inline, with "prefer the right skill … invoke it instead of
+ * improvising" sitting unread on disk. Making the sandbox behave like a real
+ * checkout is fidelity, not a hint: the instructions are the project's, and
+ * the scenario's own query is untouched below them.
+ */
+export async function withProjectInstructions(
+  sandboxPath: string,
+  userQuery: string,
+): Promise<string> {
+  let rules: string;
+  try {
+    rules = await Deno.readTextFile(join(sandboxPath, "AGENTS.md"));
+  } catch {
+    return userQuery; // No instructions in this sandbox — nothing to inject.
+  }
+  if (rules.trim().length === 0) return userQuery;
+  return `<system-reminder>
+The project's instructions (AGENTS.md / CLAUDE.md) follow. They apply to
+everything you do in this repository. Do not reply to this block; act on it.
+
+${rules}
+</system-reminder>
+
+${userQuery}`;
 }
