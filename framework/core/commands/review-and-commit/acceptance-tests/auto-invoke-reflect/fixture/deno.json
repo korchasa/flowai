@@ -2,7 +2,23 @@
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19"
   },
-  "fmt": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
-  "lint": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
-  "test": { "exclude": [".claude/", "acceptance-tests/"] }
+  "tasks": {
+    "test": "deno test -A",
+    "check": "deno fmt --check && deno lint && deno test -A"
+  },
+  "fmt": {
+    "exclude": [
+      ".claude/",
+      "documents/",
+      "acceptance-tests/",
+      "AGENTS.md",
+      "CLAUDE.md"
+    ]
+  },
+  "lint": {
+    "exclude": [".claude/", "documents/", "acceptance-tests/"]
+  },
+  "test": {
+    "exclude": [".claude/", "acceptance-tests/"]
+  }
 }
