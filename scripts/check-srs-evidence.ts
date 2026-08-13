@@ -56,9 +56,14 @@ const TEST_REF =
 /** Fallback for unbacktickled refs: same shape, terminated by period+EOL,
  * comma, or end-of-line. Test names CAN contain whitespace — the terminator
  * is terminal punctuation, not internal spacing. Example:
- *   `Evidence: cli/src/foo_test.ts::my multi word test.` → name="my multi word test". */
+ *   `Evidence: cli/src/foo_test.ts::my multi word test.` → name="my multi word test".
+ *
+ * The lookbehind rejects a hyphen as well as a word char, backtick and slash: a
+ * path segment may contain a hyphen, so allowing one would let the match start
+ * mid-segment and report a truncated path (`scripts/acceptance-tests/…` seen as
+ * `tests/…`). */
 const TEST_REF_UNQUOTED =
-  /(?<![\w`/])([\w./-]+?_test\.(?:ts|tsx|js|mjs))(?:::([^\n`]+?)|:\d+(?:-\d+)?)?(?=[,;]|\.\s|\.$|$)/g;
+  /(?<![\w`/-])([\w./-]+?_test\.(?:ts|tsx|js|mjs))(?:::([^\n`]+?)|:\d+(?:-\d+)?)?(?=[,;]|\.\s|\.$|$)/g;
 
 /** Extract all evidence claims from a markdown file. */
 export function extractEvidenceClaims(

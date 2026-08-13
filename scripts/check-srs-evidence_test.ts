@@ -22,6 +22,25 @@ Deno.test("extractEvidenceClaims - picks up unquoted file+test", () => {
   assertEquals(claims[0].testName, "my test name");
 });
 
+/**
+ * A hyphen used to be a legal place for the unquoted fallback to START a match,
+ * so a backticked ref under `scripts/acceptance-tests/` also matched from
+ * `tests/...` onward. That truncated path only survived when the test name
+ * carried an early terminator — a comma — which is why the false positive stayed
+ * hidden until an FR-ACCEPT-ISOLATION criterion cited one (2026-08-13).
+ */
+Deno.test("extractEvidenceClaims - a hyphenated directory does not spawn a truncated second claim", () => {
+  const content =
+    "Evidence: `scripts/acceptance-tests/lib/acp/client_test.ts::anchors the path, not the cwd`.";
+  const claims = extractEvidenceClaims("doc.md", content);
+  assertEquals(claims.length, 1);
+  assertEquals(
+    claims[0].targetFile,
+    "scripts/acceptance-tests/lib/acp/client_test.ts",
+  );
+  assertEquals(claims[0].testName, "anchors the path, not the cwd");
+});
+
 Deno.test("extractEvidenceClaims - picks up file-only evidence", () => {
   const content = `Evidence: \`cli/src/foo_test.ts\` passes.`;
   const claims = extractEvidenceClaims("doc.md", content);

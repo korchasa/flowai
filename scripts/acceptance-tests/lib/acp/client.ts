@@ -30,7 +30,54 @@ import {
   type SessionNotification,
   type Stream,
 } from "@zed-industries/agent-client-protocol";
+import { isAbsolute, join, normalize, resolve } from "@std/path";
 import type { ParsedAgentOutput } from "../adapters/types.ts";
+
+/**
+ * FR-ACCEPT-ISOLATION: anchors a client-side fs path to the session sandbox.
+ *
+ * ACP declares these paths absolute, but claude-code-acp forwards the model's
+ * `file_path` verbatim, so a relative one arrives as-is. Handing it to
+ * `Deno.readTextFile` / `Deno.writeTextFile` resolves it against the RUNNER's
+ * cwd — this repository — which is how a sandboxed `plan` run wrote a task file
+ * into the real tree on 2026-08-13.
+ */
+export function resolveSessionPath(
+  sessionCwd: string | undefined,
+  path: string,
+): string {
+  if (isAbsolute(path)) return normalize(path);
+  if (!sessionCwd) {
+    throw new Error(
+      `client fs: relative path ${path} with no session cwd to anchor it to`,
+    );
+  }
+  return join(resolve(sessionCwd), path);
+}
+
+/**
+ * Same anchoring, plus the containment a write needs: the agent under test may
+ * only write inside its own sandbox. Anything else is a bench defect, and it
+ * fails loudly rather than reaching the developer's working tree.
+ */
+export function confineWritePath(
+  sessionCwd: string | undefined,
+  path: string,
+): string {
+  if (!sessionCwd) {
+    throw new Error(
+      `client fs: refusing to write ${path} — outside the sandbox (none established yet)`,
+    );
+  }
+  const resolved = resolveSessionPath(sessionCwd, path);
+  const root = resolve(sessionCwd);
+  if (resolved !== root && !resolved.startsWith(`${root}/`)) {
+    throw new Error(
+      `client fs: refusing to write ${resolved} — outside the sandbox ${root}`,
+    );
+  }
+  return resolved;
+}
 
 /**
  * A tool invocation observed during the run, captured deterministically from
@@ -106,6 +153,8 @@ export class AcpClient {
   readonly #buffers = new Map<string, string[]>();
   /** Tool calls observed this run, keyed by toolCallId (ordered by Map). */
   readonly #toolCalls = new Map<string, CapturedToolCall>();
+  /** Sandbox root of the current session; anchors every client-side fs path. */
+  #sessionCwd?: string;
 
   constructor(opts: AcpClientOptions) {
     this.#closed = opts.closed;
@@ -120,9 +169,13 @@ export class AcpClient {
       // `skill_not_invoked` scenarios. Invocation is detected from main-session
       // `tool_call` notifications only (the `Skill` tool call).
       readTextFile: (p) =>
-        Deno.readTextFile(p.path).then((content) => ({ content })),
+        Deno.readTextFile(resolveSessionPath(this.#sessionCwd, p.path))
+          .then((content) => ({ content })),
       writeTextFile: (p) =>
-        Deno.writeTextFile(p.path, p.content).then(() => ({})),
+        Deno.writeTextFile(
+          confineWritePath(this.#sessionCwd, p.path),
+          p.content,
+        ).then(() => ({})),
     };
     this.#conn = new ClientSideConnection(() => client, opts.stream);
   }
@@ -154,6 +207,7 @@ export class AcpClient {
   }
 
   async newSession(cwd: string): Promise<string> {
+    this.#sessionCwd = resolve(cwd);
     const resp = await this.#conn.newSession({ cwd, mcpServers: [] });
     return resp.sessionId;
   }

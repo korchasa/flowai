@@ -4,12 +4,19 @@
  * use a real implementation (the stub speaks the official protocol), not a mock
  * of our own code.
  */
-import { assert, assertEquals, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertStringIncludes,
+  assertThrows,
+} from "@std/assert";
 import { fromFileUrl, join } from "@std/path";
 import {
   AcpClient,
+  confineWritePath,
   flattenRawOutput,
   flattenToolCallContent,
+  resolveSessionPath,
 } from "./client.ts";
 
 const STUB = fromFileUrl(new URL("./stub_agent.ts", import.meta.url));
@@ -135,6 +142,65 @@ Deno.test("flattenRawOutput treats empty and absent alike so the caller can fall
   assertEquals(flattenRawOutput(null), undefined);
   assertEquals(flattenRawOutput(""), undefined);
   assertEquals(flattenRawOutput({}), undefined);
+});
+
+/**
+ * Sandbox escape (2026-08-13). The ACP spec says client-fs paths are absolute,
+ * but claude-code-acp forwards the model's `file_path` verbatim, so a relative
+ * one arrives as-is. `Deno.writeTextFile` then resolved it against the RUNNER's
+ * cwd — this repository — and a `plan-writes-task-new-frontmatter` sandbox wrote
+ * `documents/tasks/2026/08/add-healthz-endpoint.md` into the real tree; other
+ * runs read and rewrote the real `.github/workflows/ci.yml`, `documents/index.md`
+ * and two `scripts/check-*.ts`, stripping SALP anchors. A write to the real
+ * `documents/requirements.md` was attempted and missed by luck.
+ */
+Deno.test("resolveSessionPath anchors a relative client-fs path to the sandbox, not the runner cwd", () => {
+  assertEquals(
+    resolveSessionPath("/tmp/run-1/sandbox", "documents/tasks/x.md"),
+    "/tmp/run-1/sandbox/documents/tasks/x.md",
+  );
+});
+
+Deno.test("resolveSessionPath keeps an absolute path as given", () => {
+  assertEquals(
+    resolveSessionPath(
+      "/tmp/run-1/sandbox",
+      "/tmp/run-1/bench-home/.claude/settings.json",
+    ),
+    "/tmp/run-1/bench-home/.claude/settings.json",
+  );
+});
+
+Deno.test("resolveSessionPath refuses to guess when no session cwd is known", () => {
+  assertThrows(
+    () => resolveSessionPath(undefined, "documents/x.md"),
+    Error,
+    "no session cwd",
+  );
+});
+
+Deno.test("confineWritePath accepts a write inside the sandbox", () => {
+  assertEquals(
+    confineWritePath("/tmp/run-1/sandbox", "documents/x.md"),
+    "/tmp/run-1/sandbox/documents/x.md",
+  );
+});
+
+Deno.test("confineWritePath rejects a write that escapes the sandbox", () => {
+  assertThrows(
+    () =>
+      confineWritePath(
+        "/tmp/run-1/sandbox",
+        "/Users/korchasa/www/flowai/flowai/documents/index.md",
+      ),
+    Error,
+    "outside the sandbox",
+  );
+  assertThrows(
+    () => confineWritePath("/tmp/run-1/sandbox", "../../../documents/index.md"),
+    Error,
+    "outside the sandbox",
+  );
 });
 
 Deno.test("flattenToolCallContent joins text blocks and ignores blocks without text", () => {
