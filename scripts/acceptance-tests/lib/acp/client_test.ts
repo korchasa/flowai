@@ -6,7 +6,11 @@
  */
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { fromFileUrl, join } from "@std/path";
-import { AcpClient } from "./client.ts";
+import {
+  AcpClient,
+  flattenRawOutput,
+  flattenToolCallContent,
+} from "./client.ts";
 
 const STUB = fromFileUrl(new URL("./stub_agent.ts", import.meta.url));
 
@@ -103,4 +107,44 @@ Deno.test({
       await shutdown(child);
     }
   },
+});
+
+/**
+ * `rawOutput` vs `content` on a tool call: claude-code-acp fills `content` for
+ * a subagent dispatch with an echo of the PROMPT, so reading it first rendered
+ * `-> returned: <the original request>` in the trace and a judge concluded the
+ * scout had echoed its input (2026-08-13, plan-uses-scout-findings).
+ */
+Deno.test("flattenRawOutput reads a string return value", () => {
+  assertEquals(flattenRawOutput("agentId: a1"), "agentId: a1");
+});
+
+Deno.test("flattenRawOutput reads content blocks nested in an object return value", () => {
+  assertEquals(
+    flattenRawOutput({ content: [{ type: "text", text: "## Surface" }] }),
+    "## Surface",
+  );
+});
+
+Deno.test("flattenRawOutput falls back to JSON for a shape it does not recognise, rather than dropping the result", () => {
+  assertEquals(flattenRawOutput({ agentId: "a1" }), '{"agentId":"a1"}');
+});
+
+Deno.test("flattenRawOutput treats empty and absent alike so the caller can fall through to content", () => {
+  assertEquals(flattenRawOutput(undefined), undefined);
+  assertEquals(flattenRawOutput(null), undefined);
+  assertEquals(flattenRawOutput(""), undefined);
+  assertEquals(flattenRawOutput({}), undefined);
+});
+
+Deno.test("flattenToolCallContent joins text blocks and ignores blocks without text", () => {
+  assertEquals(
+    flattenToolCallContent([
+      { type: "text", text: "one" },
+      { type: "image" },
+      { content: { type: "text", text: "two" } },
+    ]),
+    "one\ntwo",
+  );
+  assertEquals(flattenToolCallContent(undefined), undefined);
 });

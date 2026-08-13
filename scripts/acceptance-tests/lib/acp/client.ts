@@ -45,19 +45,39 @@ export interface CapturedToolCall {
   rawInput?: Record<string, unknown>;
   locations?: { path: string }[];
   /**
-   * Flattened text of the call's RESULT, from ACP `content` blocks (which
-   * usually arrive on the `tool_call_update`, not the initial `tool_call`).
+   * Flattened text of the call's RESULT.
    *
-   * Without this the trace showed inputs only, and a judge asked whether a
+   * Source order matters: ACP's `rawOutput` is the tool's actual return value,
+   * while `content` is a display collection that claude-code-acp populates for
+   * a subagent dispatch with an ECHO OF THE PROMPT. Reading `content` first
+   * therefore rendered `-> returned: <the original user request>` and a judge
+   * reasonably concluded "the scout returned an echo of the input"
+   * (2026-08-13, plan-uses-scout-findings). `rawOutput` wins; `content` is the
+   * fallback for tools that fill only it.
+   *
+   * Without either the trace showed inputs only, and a judge asked whether a
    * block quoted verbatim in a file matches what a subagent returned had no
-   * way to answer — it scored `no_fabricated_verbatim` as a fabrication on a
-   * run where the quotation was real (2026-08-13, plan-uses-scout-findings).
+   * way to answer.
    */
   resultText?: string;
 }
 
+/** Flattens ACP `rawOutput` — the tool's real return value — into text. */
+export function flattenRawOutput(rawOutput: unknown): string | undefined {
+  if (rawOutput === undefined || rawOutput === null) return undefined;
+  if (typeof rawOutput === "string") {
+    return rawOutput.length > 0 ? rawOutput : undefined;
+  }
+  const fromContent = flattenToolCallContent(
+    (rawOutput as { content?: unknown }).content,
+  );
+  if (fromContent) return fromContent;
+  const json = JSON.stringify(rawOutput);
+  return json && json !== "{}" ? json : undefined;
+}
+
 /** Flattens ACP tool-call `content` blocks into the text a judge can read. */
-function flattenToolCallContent(content: unknown): string | undefined {
+export function flattenToolCallContent(content: unknown): string | undefined {
   if (!Array.isArray(content)) return undefined;
   const parts: string[] = [];
   for (const block of content) {
@@ -200,7 +220,8 @@ export class AcpClient {
         kind: u.kind ?? undefined,
         rawInput: u.rawInput,
         locations: u.locations?.map((l) => ({ path: l.path })),
-        resultText: flattenToolCallContent(u.content),
+        resultText: flattenRawOutput(u.rawOutput) ??
+          flattenToolCallContent(u.content),
       });
     } else if (u.sessionUpdate === "tool_call_update") {
       // Merge later detail (rawInput/locations often arrive on the update) into
@@ -214,7 +235,8 @@ export class AcpClient {
         rawInput: u.rawInput ?? prev.rawInput,
         locations: u.locations?.map((l) => ({ path: l.path })) ??
           prev.locations,
-        resultText: flattenToolCallContent(u.content) ?? prev.resultText,
+        resultText: flattenRawOutput(u.rawOutput) ??
+          flattenToolCallContent(u.content) ?? prev.resultText,
       });
     }
     return Promise.resolve();
