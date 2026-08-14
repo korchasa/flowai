@@ -127,7 +127,15 @@ export class DataProcessor {
           if (def.type === "string" && typeof value === "string") {
             transformed[field] = value.trim();
           } else if (def.type === "date" && typeof value === "string") {
-            transformed[field] = new Date(value).toISOString();
+            // Validated before formatting: `new Date("nope").toISOString()`
+            // throws RangeError, and a reviewer that spots it is right to
+            // refuse the diff. This scenario measures parallel delegation and
+            // phase-2 reuse, so the fixture must not carry a real defect.
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) {
+              throw new Error(`invalid date in field ${field}: ${value}`);
+            }
+            transformed[field] = parsed.toISOString();
           } else {
             transformed[field] = value;
           }
