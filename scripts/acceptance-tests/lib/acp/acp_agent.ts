@@ -17,7 +17,7 @@
  * via the client's deterministic failure verdict (FR-ACCEPT.ACP error mapping).
  */
 import { dirname, fromFileUrl, join } from "@std/path";
-import { ndJsonStream } from "@zed-industries/agent-client-protocol";
+import { ndJsonStream } from "@agentclientprotocol/sdk";
 import { startWatchdog, type WatchdogHandle } from "../process_watchdog.ts";
 import {
   assertHealthy,

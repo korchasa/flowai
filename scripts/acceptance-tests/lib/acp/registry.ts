@@ -15,7 +15,7 @@
 
 /**
  * Pinned version of the official ACP client library. Kept in lock-step with the
- * `npm:@zed-industries/agent-client-protocol@<v>` import specifiers across this
+ * `npm:@agentclientprotocol/sdk@<v>` import specifiers across this
  * dir. Folded into the benchmark cache-key (FR-ACCEPT-CACHE) so a lib upgrade
  * invalidates stale ACP verdicts.
  */
@@ -46,9 +46,13 @@ export interface AcpAgentSpec {
  * Claude is reached via the `claude-code-acp` wrapper over the Claude Agent SDK.
  * Phase-0 spike (2026-06-21) proved subscription auth (Keychain via the
  * code-signed binary) survives through the wrapper with NO `ANTHROPIC_API_KEY`
- * → `authMode: "subscription"`. The package is being renamed to
- * `@agentclientprotocol/claude-agent-acp`; the old name still resolves. Pin a
- * version so the cache-key (FR-ACCEPT-CACHE) invalidates on upgrade.
+ * → `authMode: "subscription"`. The rename to
+ * `@agentclientprotocol/claude-agent-acp` completed: npm marks the old
+ * `@zed-industries/claude-code-acp` deprecated ("please migrate to continue
+ * receiving updates") and freezes it at 0.16.2, which is why a `latest` check
+ * against the old name looks reassuring and answers nothing — the new name was
+ * 52 releases ahead. Pin a version so the cache-key (FR-ACCEPT-CACHE)
+ * invalidates on upgrade.
  *
  * Codex is likewise reached through an npm bridge, NOT through its own CLI:
  * codex-cli (verified 0.144.6) has no `acp` subcommand, so the former
@@ -62,7 +66,7 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     ide: "claude",
     launch: {
       command: "npx",
-      args: ["-y", "@zed-industries/claude-code-acp@0.16.2"],
+      args: ["-y", "@agentclientprotocol/claude-agent-acp@0.68.0"],
       // Allow spawning claude inside a claude session (unset the marker the
       // outer Claude Code session exports).
       env: { CLAUDECODE: "" },

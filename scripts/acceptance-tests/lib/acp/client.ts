@@ -1,7 +1,7 @@
 /**
  * ACP transport client (FR-ACCEPT.ACP).
  *
- * Wraps the official `@zed-industries/agent-client-protocol` client over a
+ * Wraps the official `@agentclientprotocol/sdk` client over a
  * child's stdio (the child is spawned + guarded by `AcpAgent`, preserving
  * FR-ACCEPT-GUARDS). Drives one prompt turn end-to-end —
  * `initialize → session/new → session/prompt` — accumulating assistant text into
@@ -29,8 +29,8 @@ import {
   type RequestPermissionResponse,
   type SessionNotification,
   type Stream,
-} from "@zed-industries/agent-client-protocol";
-import type { AnyMessage } from "@zed-industries/agent-client-protocol";
+} from "@agentclientprotocol/sdk";
+import type { AnyMessage } from "@agentclientprotocol/sdk";
 import { isAbsolute, join, normalize, resolve } from "@std/path";
 import type { ParsedAgentOutput } from "../adapters/types.ts";
 
@@ -108,6 +108,18 @@ export interface CapturedToolCall {
    * way to answer.
    */
   resultText?: string;
+}
+
+/**
+ * Narrows a tool call's `rawInput` to the record the deterministic detector
+ * reads. The SDK types it loosely (`unknown` on `tool_call`, `{}` on the
+ * update) because ACP puts no shape on it, so the narrowing belongs here rather
+ * than at each of the two call sites.
+ */
+export function asRecord(v: unknown): Record<string, unknown> | undefined {
+  return typeof v === "object" && v !== null && !Array.isArray(v)
+    ? v as Record<string, unknown>
+    : undefined;
 }
 
 /** Flattens ACP `rawOutput` — the tool's real return value — into text. */
@@ -348,7 +360,7 @@ export class AcpClient {
         toolCallId: u.toolCallId,
         title: u.title,
         kind: u.kind ?? undefined,
-        rawInput: u.rawInput,
+        rawInput: asRecord(u.rawInput),
         locations: u.locations?.map((l) => ({ path: l.path })),
         resultText: flattenRawOutput(u.rawOutput) ??
           flattenToolCallContent(u.content),
@@ -362,7 +374,7 @@ export class AcpClient {
         ...prev,
         title: u.title ?? prev.title,
         kind: u.kind ?? prev.kind,
-        rawInput: u.rawInput ?? prev.rawInput,
+        rawInput: asRecord(u.rawInput) ?? prev.rawInput,
         locations: u.locations?.map((l) => ({ path: l.path })) ??
           prev.locations,
         resultText: flattenRawOutput(u.rawOutput) ??

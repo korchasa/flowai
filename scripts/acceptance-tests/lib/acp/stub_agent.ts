@@ -36,7 +36,7 @@ import {
   type PromptRequest,
   type PromptResponse,
   PROTOCOL_VERSION,
-} from "@zed-industries/agent-client-protocol";
+} from "@agentclientprotocol/sdk";
 import { join } from "@std/path";
 
 const TOOL_MARKER = /\[\[TOOL:([^\]]*)\]\]/;
