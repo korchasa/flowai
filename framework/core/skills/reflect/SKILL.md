@@ -219,5 +219,6 @@ When proposing a fix, classify *where* it belongs:
    - Present the revised report from steps 12–13.
    - Clearly mark which findings were adjusted during self-criticism and why.
    - List the proposed actionable items.
-   - Ask the user if they want to apply these changes immediately. **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/plan` separately. Do not re-list them here; do not offer to write the task file yourself.
+   - Ask the user if they want to apply these changes immediately. **Exception — the caller already asked**: if the invocation context states that the user has decided about your proposed edits, do NOT ask again. On `apply`, apply them yourself and then do exactly what that context tells you to do next — a calling workflow that pre-collected the approval owns a step after you, and your report is not the end of its run. On `report only`, stop at the report and change nothing. A second approval question here is what the caller moved the gate to avoid: asked at the end, it lands where no work is left, and the answer becomes the last thing that happens.
+   - **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/plan` separately. Do not re-list them here; do not offer to write the task file yourself.
 </step_by_step>
