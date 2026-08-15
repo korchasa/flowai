@@ -77,6 +77,7 @@ export function run(argv: string[]): string {
 
 - **Desc:** Render a report to stdout.
 - **Scenario:** Maintainer runs \`deno task reportkit render\`.
+- **Acceptance:** manual — maintainer
 - **Status:** [x]
 
 ---
@@ -86,6 +87,7 @@ export function run(argv: string[]): string {
 - **Desc:** Export a report to a file.
 - **Scenario:** Maintainer runs \`deno task reportkit export --out <path>\`; the
   file appears at the given path.
+- **Acceptance:** manual — maintainer
 - **Status:** [ ]
 
 ## 5. Interfaces
