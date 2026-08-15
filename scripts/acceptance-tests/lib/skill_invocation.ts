@@ -36,16 +36,24 @@ const SKILL_NAME_KEYS = ["skill", "name", "skillName"];
  * Returns true iff the captured tool calls contain an explicit Skill-tool call
  * naming the given skill (exact match on the argument — no substring
  * cross-match). Bare file reads do not count (see module doc).
+ *
+ * `equivalents` are host-provided skills the scenario accepts in place of
+ * `skill` (see `BenchmarkScenario.equivalentSkills`): an IDE built-in that
+ * answers the same request cannot be uninstalled from the sandbox, so a
+ * scenario may declare it as a second acceptable answer.
  */
 export function detectSkillInvocation(
   toolCalls: CapturedToolCall[],
   skill: string,
+  equivalents: readonly string[] = [],
 ): boolean {
-  if (!skill) return false;
+  const accepted = new Set([skill, ...equivalents].filter((s) => s));
+  if (accepted.size === 0) return false;
   for (const tc of toolCalls) {
     const rawInput = tc.rawInput ?? {};
     for (const key of SKILL_NAME_KEYS) {
-      if (rawInput[key] === skill) return true;
+      const named = rawInput[key];
+      if (typeof named === "string" && accepted.has(named)) return true;
     }
   }
   return false;

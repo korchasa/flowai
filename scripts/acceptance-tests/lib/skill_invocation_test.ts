@@ -77,6 +77,43 @@ Deno.test("detectSkillInvocation: matches alt key (name) for cross-IDE robustnes
   assertEquals(detectSkillInvocation([call], "fix-tests"), true);
 });
 
+Deno.test("detectSkillInvocation: a declared equivalent satisfies the check", () => {
+  // Claude Code ships `code-review` as a built-in; the bench cannot uninstall
+  // it, so a scenario may accept it in place of the framework's own `review`.
+  assertEquals(
+    detectSkillInvocation([skillCall("code-review")], "review", [
+      "code-review",
+    ]),
+    true,
+  );
+});
+
+Deno.test("detectSkillInvocation: an equivalent is only accepted when declared", () => {
+  assertEquals(
+    detectSkillInvocation([skillCall("code-review")], "review"),
+    false,
+  );
+});
+
+Deno.test("detectSkillInvocation: a declared equivalent does not widen to other skills", () => {
+  assertEquals(
+    detectSkillInvocation([skillCall("reflect")], "review", ["code-review"]),
+    false,
+  );
+});
+
+Deno.test("detectSkillInvocation: an empty skill with an equivalent still matches it", () => {
+  // Guards the falsy-filter: "" must never become an accepted name.
+  assertEquals(
+    detectSkillInvocation([skillCall("")], "", ["code-review"]),
+    false,
+  );
+  assertEquals(
+    detectSkillInvocation([skillCall("code-review")], "", ["code-review"]),
+    true,
+  );
+});
+
 Deno.test("detectSkillInvocation: substring skill names do not cross-match", () => {
   // "tests" must not match a call invoking "fix-tests".
   assertEquals(

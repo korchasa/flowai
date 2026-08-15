@@ -561,22 +561,32 @@ async function judgeAndScore(
     DETERMINISTIC_SKILL_CHECK_IDS.has(i.id)
   );
   if (detItems.length > 0) {
-    const invoked = detectSkillInvocation(toolCalls, scenario.skill ?? "");
+    const equivalents = scenario.equivalentSkills ?? [];
+    const invoked = detectSkillInvocation(
+      toolCalls,
+      scenario.skill ?? "",
+      equivalents,
+    );
     const n = toolCalls.length;
+    // Name the accepted alternatives in the verdict — a pass earned by a host
+    // built-in must not read like a pass earned by the skill under test.
+    const alt = equivalents.length > 0
+      ? ` (or an accepted equivalent: ${equivalents.join(", ")})`
+      : "";
     for (const item of detItems) {
       if (item.id === "skill_invoked") {
         checklistResults[item.id] = {
           pass: invoked,
           reason: invoked
-            ? `Deterministic: skill "${scenario.skill}" invoked (Skill tool call or SKILL.md read found in trace).`
-            : `Deterministic: no tool call invoking skill "${scenario.skill}" found in trace (${n} tool call(s) observed).`,
+            ? `Deterministic: skill "${scenario.skill}"${alt} invoked (Skill tool call found in trace).`
+            : `Deterministic: no tool call invoking skill "${scenario.skill}"${alt} found in trace (${n} tool call(s) observed).`,
         };
       } else { // skill_not_invoked
         checklistResults[item.id] = {
           pass: !invoked,
           reason: !invoked
-            ? `Deterministic: skill "${scenario.skill}" not invoked (${n} tool call(s) observed).`
-            : `Deterministic: skill "${scenario.skill}" was invoked but should not have been.`,
+            ? `Deterministic: skill "${scenario.skill}"${alt} not invoked (${n} tool call(s) observed).`
+            : `Deterministic: skill "${scenario.skill}"${alt} was invoked but should not have been.`,
         };
       }
     }

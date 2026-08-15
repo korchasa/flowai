@@ -22,6 +22,17 @@ export const ReviewTriggerAdj1 = new class extends AcceptanceTestScenario {
     TOOLING_STACK: "- TypeScript\n- Deno",
   };
 
+  /**
+   * Claude Code ships its own `code-review` built-in, and it answers this exact
+   * request. The bench isolates the developer's `~/.claude/skills/` but cannot
+   * uninstall an IDE built-in — verified absent from both `<sandbox>/.claude`
+   * and `bench-home`, so it arrives with the CLI itself. A five-run series on
+   * 2026-08-15 split 4/5 for that reason alone: the losing run invoked
+   * `code-review` (with `ReportFindings` and nine subagents) and did the work.
+   * Either capability answering this wording is the passing outcome here.
+   */
+  equivalentSkills = ["code-review"];
+
   override sandboxState = {
     commits: [],
     modified: ["discount.ts"],
@@ -75,7 +86,7 @@ export function applyDiscount(price: number, threshold: number): number {
   checklist = [{
     id: "skill_invoked",
     description:
-      "Did the agent load `review`? JiT regression probing is now part of the review workflow, so this diff-regression wording should route to `review` rather than being treated as a separate adjacent skill.",
+      "Did the agent load `review` (or the host's built-in `code-review`, declared as an accepted equivalent)? JiT regression probing is now part of the review workflow, so this diff-regression wording should route to a diff-review capability rather than being treated as a separate adjacent skill.",
     critical: true,
   }];
 }();

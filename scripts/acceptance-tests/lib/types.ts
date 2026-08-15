@@ -23,6 +23,25 @@ export interface BenchmarkScenario {
   extraPacks?: string[];
 
   /**
+   * Host-provided skills that satisfy the deterministic skill-invocation check
+   * in place of `skill` (FR-ACCEPT.TRIGGER).
+   *
+   * The bench isolates `~/.claude/skills/`, but it cannot remove the skills the
+   * IDE itself ships: Claude Code's built-in `code-review` is present in every
+   * sandbox and is never installed by us (verified — absent from both
+   * `<sandbox>/.claude` and `bench-home`). When such a built-in answers the same
+   * request as the skill under test, the model splits between the two and the
+   * trigger scenario oscillates for a reason that is not the skill's routing.
+   *
+   * Declaring the built-in here says: this query must reach a capability of this
+   * kind, and either one counts. It deliberately WEAKENS the assertion from "our
+   * skill won" to "a skill of this kind ran" — set it only where a host built-in
+   * genuinely competes, never to quiet a routing bug of our own. Applies to
+   * `skill_not_invoked` with the same meaning inverted.
+   */
+  equivalentSkills?: readonly string[];
+
+  /**
    * Sandbox state when the agent starts.
    *
    * Runner lifecycle:
