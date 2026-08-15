@@ -14,6 +14,10 @@ import {
 import { UserEmulator } from "./user_emulator.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { renderAgentsMd } from "./template.ts";
+import {
+  externalSandboxRoot,
+  linkIntoRunDir,
+} from "../../benchmark/sandbox_root.ts";
 
 export interface RunnerOptions {
   agentModel: string;
@@ -71,15 +75,33 @@ function buildSkippedResult(
   };
 }
 
-/** Initialize the sandbox directory (clean prior run, mkdir). */
+/**
+ * Initialize the sandbox directory (clean prior run, mkdir).
+ *
+ * The sandbox lives in an external root, NOT under the run dir (FR-ACCEPT-ISOLATION).
+ * Kept under `runs/<ts>/<scenario>/run-N/`, every concurrent run shares a
+ * grandparent, and one `ls ..` reaches the neighbours. Observed 2026-08-15: a
+ * `reflect` run looking for its own session history walked up from its
+ * bench-home, read run-1's and run-2's transcripts and git logs, and reported
+ * their outcome in its findings as a recurring pattern of the session under
+ * test. The run dir keeps `sandbox`/`bench-home` symlinks, so every post-run
+ * analysis path is unchanged.
+ */
 async function setupSandbox(workDir: string): Promise<string> {
-  const sandboxPath = join(workDir, "sandbox");
-  try {
-    await Deno.remove(workDir, { recursive: true });
-  } catch (e) {
-    if (!(e instanceof Deno.errors.NotFound)) throw e;
+  const extInstDir = await externalSandboxRoot(workDir);
+  const sandboxPath = join(extInstDir, "sandbox");
+  for (const dir of [workDir, extInstDir]) {
+    try {
+      await Deno.remove(dir, { recursive: true });
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) throw e;
+    }
   }
   await Deno.mkdir(sandboxPath, { recursive: true });
+  // bench-home is derived as `dirname(sandboxPath)/bench-home` by
+  // prepareAcpClaudeHome, so it follows the sandbox out of the run dir; the
+  // link is created ahead of it and resolves once that dir exists.
+  await linkIntoRunDir(workDir, extInstDir);
   console.log(`  Sandbox created: ${sandboxPath}`);
   return sandboxPath;
 }

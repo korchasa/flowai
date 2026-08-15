@@ -74,6 +74,9 @@ export const MAX_REASON_LEN = 200;
  */
 export const whitelistedCrossPackageFiles: readonly string[] = [
   "scripts/utils.ts",
+  // Places the sandbox outside the run dir (FR-ACCEPT-ISOLATION) — it decides
+  // what the agent under test can reach, so a change to it can change verdicts.
+  "scripts/benchmark/sandbox_root.ts",
 ];
 
 /** Trimmed form of `BenchmarkResult` suitable for storing. */

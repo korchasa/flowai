@@ -3,7 +3,7 @@
  * These tests use the default IDE from acceptance-tests/config.json.
  */
 
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import { load } from "@std/dotenv";
 import { runScenario } from "./runner.ts";
@@ -131,6 +131,19 @@ Deno.test("Runner - Fixture Copying", async () => {
     assertEquals(
       await Deno.readTextFile(join(sandboxPath, "subdir/file2.txt")),
       "content2",
+    );
+
+    // implements [FR-ACCEPT-ISOLATION](../../../documents/requirements.md#fr-accept-isolation-sandbox-isolation-from-user-level-skills-ancfraccept-isolation)
+    // The sandbox must NOT live inside the run dir.
+    // Under it, every concurrent run shares a grandparent and an agent that
+    // walks up from its own bench-home reads the neighbours' transcripts and
+    // git logs. The run dir keeps a symlink so analysis paths still resolve.
+    const linkStat = await Deno.lstat(sandboxPath);
+    assert(linkStat.isSymlink, "run-dir sandbox must be a symlink");
+    const realSandbox = await Deno.realPath(sandboxPath);
+    assert(
+      !realSandbox.startsWith(await Deno.realPath(scenarioWorkDir)),
+      `sandbox must resolve outside the run dir, got ${realSandbox}`,
     );
   } finally {
     await Deno.remove(tempDir, { recursive: true });
