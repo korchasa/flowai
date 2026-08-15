@@ -14,8 +14,8 @@
  *    transport could never have worked. Codex reaches ACP only through the
  *    external `@agentclientprotocol/codex-acp` bridge.
  */
-import { assert, assertMatch } from "@std/assert";
-import { ACP_AGENTS, type AcpAgentSpec } from "./registry.ts";
+import { assert, assertEquals, assertMatch } from "@std/assert";
+import { ACP_AGENTS, ACP_LIB_VERSION, type AcpAgentSpec } from "./registry.ts";
 
 const specs = Object.values(ACP_AGENTS) as AcpAgentSpec[];
 
@@ -53,5 +53,25 @@ Deno.test("codex authenticates by subscription, like claude", () => {
     ACP_AGENTS.codex.authMode === "subscription",
     `codex authMode is "${ACP_AGENTS.codex.authMode}" but the bench logs in ` +
       `through the ChatGPT subscription, not an API key`,
+  );
+});
+
+Deno.test("ACP_LIB_VERSION tracks the import-map pin", async () => {
+  // The constant is folded into the benchmark cache key, so a lib bump is
+  // supposed to invalidate stale verdicts. It only does that while the two
+  // agree. Found drifted 2026-08-15: the import map had moved to
+  // @agentclientprotocol/sdk@1.3.0 while this still read 0.4.5 — the migration
+  // invalidated the cache through the registry fingerprint instead, by luck,
+  // and the next sdk-only bump would have invalidated nothing.
+  const denoJson = JSON.parse(
+    await Deno.readTextFile(new URL("../../../../deno.json", import.meta.url)),
+  ) as { imports: Record<string, string> };
+  const spec = denoJson.imports["@agentclientprotocol/sdk"];
+  assert(spec, "deno.json must pin @agentclientprotocol/sdk");
+  const pinned = spec.slice(spec.lastIndexOf("@") + 1);
+  assertEquals(
+    ACP_LIB_VERSION,
+    pinned,
+    `ACP_LIB_VERSION (${ACP_LIB_VERSION}) must equal the import-map pin (${pinned})`,
   );
 });

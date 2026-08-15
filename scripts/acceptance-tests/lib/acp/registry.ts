@@ -19,7 +19,7 @@
  * dir. Folded into the benchmark cache-key (FR-ACCEPT-CACHE) so a lib upgrade
  * invalidates stale ACP verdicts.
  */
-export const ACP_LIB_VERSION = "0.4.5";
+export const ACP_LIB_VERSION = "1.3.0";
 
 export type AcpIde = "claude" | "cursor" | "codex" | "opencode";
 
