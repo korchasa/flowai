@@ -37,6 +37,19 @@ export const CommitBetaAutoInvokeReflectBench = new class
   userQuery =
     "/commit I had to fix the parse function after several failed attempts — parseInt was silently returning NaN, tests kept failing, and you suggested the wrong approach twice before I corrected you. The new version throws on invalid input. Commit this fix.";
 
+  // Interactive since 2026-08-16. Step 6c of the commit atom collects ONE
+  // approval before reflect runs — not permission to run it, but a decision
+  // about the edits reflect may make to the user's own AGENTS.md / CLAUDE.md.
+  // Without an emulated user to answer, the workflow correctly waits and
+  // reflect never runs, which read as this scenario's own failure.
+  interactive = true;
+  userPersona =
+    `You are a developer who just had a rough session with retries and two
+corrected approaches. Answer briefly and affirmatively. If asked whether to
+apply edits reflect proposes to the instruction files, reply: 'apply'. If asked
+what went wrong, say the parse helper returned NaN silently and the first two
+approaches were wrong. Never volunteer instructions about running /reflect.`;
+
   checklist = [
     {
       id: "file_committed",
@@ -57,7 +70,7 @@ export const CommitBetaAutoInvokeReflectBench = new class
     {
       id: "reflect_not_asking_permission",
       description:
-        "Did the agent proceed autonomously (without asking the user 'should I run /reflect?' or waiting for confirmation) once it detected session-complexity signals?",
+        "Did the agent decide to RUN reflect on its own — never asking 'should I run /reflect?' and never waiting for permission to start it? The single approval it is supposed to collect first is a DIFFERENT question, about what happens to edits reflect may propose to AGENTS.md / CLAUDE.md ('apply' vs 'report only'); asking that one, and waiting for the answer, is correct and must NOT fail this item.",
       critical: false,
     },
   ];

@@ -45,6 +45,7 @@ export const ReviewAndCommitAutoInvokeReflectBench = new class
 When the agent asks questions or proposes a review plan, confirm and let it proceed.
 When shown review results, approve them. When asked to confirm commit, approve.
 If the agent asks about the session difficulties, confirm that there were errors, retries, and corrections.
+If asked whether to apply edits reflect proposes to the instruction files, reply: 'apply'.
 Keep answers brief and affirmative.`;
 
   checklist = [
@@ -73,7 +74,7 @@ Keep answers brief and affirmative.`;
     {
       id: "reflect_not_asking_permission",
       description:
-        "Did the agent proceed autonomously (without asking the user 'should I run /reflect?' or waiting for confirmation) once it detected session-complexity signals?",
+        "Did the agent decide to RUN reflect on its own — never asking 'should I run /reflect?' and never waiting for permission to start it? The single approval it is supposed to collect first is a DIFFERENT question, about what happens to edits reflect may propose to AGENTS.md / CLAUDE.md ('apply' vs 'report only'); asking that one, and waiting for the answer, is correct and must NOT fail this item.",
       critical: false,
     },
   ];
