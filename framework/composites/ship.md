@@ -16,7 +16,7 @@ Single user-invoked command that drives a task end-to-end and reaches the remote
 3. **Review Phase** — QA + lead-engineer review of the diff with a structured verdict.
 4. **Commit Phase** — targeted documentation sync + Conventional Commits + task-status auto-flip.
 5. **Push Phase** — safe `git push` with upstream and divergence gates.
-6. **Reflect Phase** — audit the session, criticise the findings, apply the corrective edits to the instruction files, show them, and commit them once the user agrees.
+6. **Reflect Phase** — audit the session, criticise the findings, apply the corrective edits to the instruction files, show them, commit them, and ask whether to push that commit.
 
 Four explicit gates between phases:
 

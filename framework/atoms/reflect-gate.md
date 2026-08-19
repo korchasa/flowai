@@ -1,6 +1,6 @@
 ---
 name: reflect-gate
-description: Close a finished session — audit how it went, criticise the findings, apply the corrective edits to the project's instruction files, show exactly what changed, and commit them once the user agrees.
+description: Close a finished session — audit how it went, criticise the findings, apply the corrective edits to the project's instruction files, show exactly what changed, commit them, and ask whether to push that commit or drop it again.
 _params:
   TERMINATION:
     choices: [TOTAL_STOP, HAND_OFF_TO_NEXT]
@@ -14,7 +14,8 @@ _params:
 
 Runs after the work has landed. Audits the session, criticises its own
 findings, applies the corrective edits to the project's instruction files,
-reports each edit concretely, and commits them once the user agrees.
+reports each edit concretely, commits them, and asks whether to push that
+commit — a refusal takes the commit and the edits back.
 
 ## Context
 
@@ -33,9 +34,12 @@ Push Phase never reached. Inline steps have no such ending.
 <rules>
 1. **No delegation**: perform the audit yourself with the steps below. Do NOT
    invoke `reflect`, `reflect-by-history`, or any other skill for it.
-2. **Edits before questions, commit after**: you apply the corrective edits
-   yourself and ask exactly one question about them — whether to commit. That
-   question is the only place in this atom where stopping is correct.
+2. **Apply and commit without asking; ask only about the push**: the edits and
+   their commit are local and reversible, so you make both yourself. The one
+   question in this atom is whether to push that commit, and it is the only
+   place here where stopping is correct. A refusal is a verdict on the edits
+   themselves, not just on the push: you take both the commit and the edits
+   back.
 3. **Scope of edits**: the project's own instruction files, tracked in this
    repository — `AGENTS.md`, `**/CLAUDE.md`, and the rule/skill files they
    point at. Never application code, never a task file, never SRS/SDS, and
@@ -58,7 +62,7 @@ Push Phase never reached. Inline steps have no such ending.
      - Explicit descriptors in the invocation message — "rough session", "had to retry", "wrong approach", "failed", "had to correct you". These count on their own.
    - **Say the verdict aloud either way** — one line: `Session complexity: none detected — skipping reflection`, or `Detected retries and a user correction — reflecting`. A silent skip is indistinguishable from a forgotten step.
    - No signals → skip to the final step. Signals → continue.
-   - Do NOT ask whether to reflect. That is not the user's call here; the one question in this atom comes at step 5.
+   - Do NOT ask whether to reflect. That is not the user's call here; the one question in this atom comes at step 6, and it is about pushing.
 
 2. **Audit the session**
    - **Execution flow**: where did the work go wrong, and what did it cost — failed commands, wrong assumptions, rework.
@@ -84,18 +88,23 @@ Push Phase never reached. Inline steps have no such ending.
    - One edit per surviving finding. A finding that produces no concrete edit is a report line, not a corrective action — say so and move on.
    - Keep them small and local: tighten an existing rule where one exists, add a new one only where none does.
 
-5. **Show the edits, then ask about the commit — and end your turn on the question**
+5. **Show the edits and commit them — no question here**
    - List what you changed, file by file: the path, the section, what the rule now says, and which finding it came from. The user must be able to judge the edit from this list without opening a diff.
-   - Then ask, in one line: `Commit these edits? Reply "yes" to commit them, or "no" to leave them in the working tree.`
-   - **Write nothing after the question until the reply arrives.** A question followed in the same breath by "committing now" is not a question, it is an announcement — the user never got to answer.
-   - **You may not answer it on the user's behalf.** There is no default here and no pre-authorization to inherit: invoking the calling workflow authorises the commits it makes, never edits to the user's own instruction files. "The user pre-approved this" written by you, about a question you never asked, is the one way this gate fails.
-   - **Do not skip the question by not editing.** If the audit produced findings and you applied none of them, say why in one line — silence here reads as a clean session, and it was not.
+   - Then commit, in this same turn, without asking. The edits are already written; a commit of what is already on disk adds no risk the edit did not, and both are undone by one git command. Do not offer to commit, do not wait for encouragement.
+   - Run `git status`. Stage ONLY the files you edited in step 4, by explicit path — never `git add -A`, never `.`; a working tree you did not touch is not yours to commit.
+   - Commit with type `agent` and a scope naming what you tightened: `agent: apply reflect-suggested improvements`, or narrower, e.g. `agent(commit): tighten the doc-audit gate`. The type is `agent` because the change is to the agent's own instructions — never `docs:`, `chore:` or `feat:`, whatever the file extension says. Never amend an existing commit.
+   - **Do not skip this step by not editing.** If the audit produced findings and you applied none of them, say why in one line — silence here reads as a clean session, and it was not.
 
-6. **Commit on agreement — in the same turn as the reply**
-   - The reply arrives with exactly one thing left to do, and that is the trap: answering and finishing feel like the same moment, so the commit gets announced instead of made. Make it first, then write your summary.
-   - On `yes`: run `git status`. Stage ONLY the files you edited in step 4, by explicit path — never `git add -A`, never `.`; a working tree you did not touch is not yours to commit. Commit with type `agent` and a scope naming what you tightened: `agent: apply reflect-suggested improvements`, or narrower, e.g. `agent(commit): tighten the doc-audit gate`. The type is `agent` because the change is to the agent's own instructions — never `docs:`, `chore:` or `feat:`, whatever the file extension says. Never amend an existing commit.
-   - On `no`: leave the edits in the working tree, name the files that stay uncommitted, and do not revert them. The user declined the commit, not the analysis.
-   - Then say in one line which files you committed and under which message, or which files you left behind.
+6. **Ask whether to push it — and end your turn on the question**
+   - This commit sits on top of whatever the calling workflow already pushed, so it is local until somebody sends it. That is why the question exists: it is the one thing here that reaches beyond this machine.
+   - Ask, in one line, naming the branch: `Committed as <sha> on <branch>. Push it? Reply "yes" to push, or "no" to drop the commit and the edits with it.`
+   - **Write nothing after the question until the reply arrives.** A question followed in the same breath by "pushing now" is not a question, it is an announcement — the user never got to answer. **You may not answer it on the user's behalf**: no pre-authorization carries over to a push, whatever the calling workflow already did.
+   - On `yes`: run `git push` with no flags, then verify `git rev-parse @{u}` matches `HEAD` and say so. **Never `--force`, never `--force-with-lease`, never `--set-upstream`.** If the branch has no upstream, or the remote has commits you do not, do NOT improvise: report it and tell the user to run the project's push workflow, which owns those decisions.
+   - On `no`: the edits are not wanted. Undo the commit and the edits together — a declined improvement left sitting in the branch is the same unwanted change, one `git log` further away.
+     - **Check two things first, then it is one command.** (a) `git rev-parse HEAD` still equals the sha you reported — nothing landed on top of your commit. (b) `git status --porcelain` prints nothing — the tree carries no other work. Both hold by construction here: the earlier phases committed and pushed everything, and you committed your own edits in step 5.
+     - Both true → `git reset --hard HEAD~1`. That is the whole undo: the commit and the file contents go together, and there is nothing to restore by hand.
+     - Either check fails → **STOP and change nothing.** A `--hard` reset discards uncommitted work outright, and whatever made those checks fail is work you did not put there. Report what you found, leave your commit in place, and let the user decide.
+     - Then confirm with `git log -1` that your commit is gone, and say in one line what you removed.
 
 {{TERMINATION}}
 </step_by_step>
@@ -106,20 +115,21 @@ Push Phase never reached. Inline steps have no such ending.
 - [ ] Complexity verdict spoken aloud either way.
 - [ ] Audit and self-criticism performed inline, without invoking another skill.
 - [ ] Corrective edits applied and listed file by file.
-- [ ] Commit question asked, and answered by the user before anything was committed.
-- [ ] On agreement: one `agent:` commit staging only the edited files.
+- [ ] One `agent:` commit staging only the edited files, made without asking.
+- [ ] Push question asked, and answered by the user before anything was pushed.
+- [ ] On refusal: both guards checked, then one `git reset --hard HEAD~1`; on a failed guard, nothing changed at all.
 </verification>
 
 <param-branch name="TERMINATION" value="TOTAL_STOP">
 7. **TOTAL STOP**
-   - Report in one line whether the reflection ran, what it changed, and under which commit. Then stop.
+   - Report in one line whether the reflection ran, what it changed, under which commit, and whether that commit was pushed. Then stop.
 </param-branch>
 
 <param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
 7. **Hand off to the next phase**
-   - Report in one line whether the reflection ran, what it changed, and under which commit.
+   - Report in one line whether the reflection ran, what it changed, under which commit, and whether that commit was pushed.
    - Announce: "Reflection complete; entering the next phase of the composite workflow."
    - Do NOT issue a TOTAL STOP, and do NOT wait for the user to tell you to carry on. Continue immediately into the next phase, in this same turn.
    - **This is the step this atom exists to protect.** A reflection closes with a report, and a report reads like an ending — that is exactly how the phase after this one gets lost. Measured 2026-08-17: the calling workflow's Push Phase never ran, the commit stayed local, and the last thing written was the reflection report.
-   - A declined commit does not stop the hand-off either. The edits stay in the working tree, and the next phase runs anyway.
+   - A declined push does not stop the hand-off either. You undo the commit and the edits, and the next phase runs anyway.
 </param-branch>

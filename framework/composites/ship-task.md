@@ -15,7 +15,7 @@ User-invoked command that picks up the SDLC cycle AFTER the planning phase: the 
 2. **Review Phase** — QA + lead-engineer review of the diff with a structured verdict.
 3. **Commit Phase** — targeted documentation sync + Conventional Commits + task-status auto-flip.
 4. **Push Phase** — safe `git push` with upstream and divergence gates.
-5. **Reflect Phase** — audit the session, criticise the findings, apply the corrective edits to the instruction files, show them, and commit them once the user agrees.
+5. **Reflect Phase** — audit the session, criticise the findings, apply the corrective edits to the instruction files, show them, commit them, and ask whether to push that commit.
 
 Four explicit gates between phases:
 

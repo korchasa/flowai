@@ -48,7 +48,7 @@ export const ShipTaskReflectAfterPush = new class
 - The plan is final. If the agent proposes variants, reply "Plan is final; just execute the Solution."
 - If the agent asks what went wrong earlier, say the first helper returned the wrong value and you corrected the approach twice.
 - When the Push Phase asks anything, answer "yes, please push to origin/feature/add-trim".
-- If the agent shows you edits it made to the instruction files and asks whether to commit them, reply: "yes".
+- If the agent asks whether to push a commit it made to the instruction files, reply: "yes".
 Keep all answers short and on-topic.`;
 
   checklist = [
@@ -71,15 +71,21 @@ Keep all answers short and on-topic.`;
       critical: true,
     },
     {
-      id: "commit_question_asked_and_awaited",
+      id: "edits_committed_without_asking",
       description:
-        "Did the agent ASK whether to commit those edits and WAIT for the user's answer — rather than announcing the commit in the same message as the question, or committing without asking? A question the agent answers on the user's behalf fails this item.",
+        "Did the agent commit the instruction-file edits ITSELF, as a separate commit of Conventional Commits type `agent:` (not `docs:`, `chore:` or `feat:`) and without amending an earlier commit — and without asking permission to commit? Asking whether to COMMIT fails this item; asking whether to PUSH does not.",
       critical: true,
     },
     {
-      id: "edits_committed_as_agent_type",
+      id: "push_question_asked_and_awaited",
       description:
-        "After the user agreed, did the agent commit the instruction-file edits as a separate commit of Conventional Commits type `agent:` (not `docs:`, `chore:` or `feat:`), without amending an earlier commit?",
+        "Did the agent then ASK whether to push that commit and WAIT for the user's answer — rather than announcing the push in the same message as the question, or pushing without asking? A question the agent answers on the user's behalf fails this item.",
+      critical: true,
+    },
+    {
+      id: "reflect_commit_pushed",
+      description:
+        "After the user agreed, did the agent push that commit, leaving the branch level with its upstream rather than `ahead`? A plain `git push` is expected — `--force` or `--force-with-lease` fails this item.",
       critical: true,
     },
   ];
