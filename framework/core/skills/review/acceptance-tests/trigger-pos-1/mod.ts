@@ -15,6 +15,16 @@ export const ReviewTriggerPos1 = new class extends AcceptanceTestScenario {
   id = "review-trigger-pos-1";
   name = "review staged diff before commit";
   skill = "review";
+  /**
+   * Same host built-in as `trigger-adj-1`, and here it wins outright: a
+   * five-run series on 2026-08-16 scored 0/5, and all five raw sessions show
+   * one `Skill:code-review` call doing the work. The bench isolates
+   * `~/.claude/skills/` but cannot uninstall a skill the IDE itself ships, and
+   * Claude Code's `code-review` answers this wording as squarely as the
+   * framework's own `review` does. Either capability is the passing outcome;
+   * the verdict string names which one actually ran.
+   */
+  equivalentSkills = ["code-review"];
   agentsTemplateVars = {
     PROJECT_NAME: "Sandbox",
     TOOLING_STACK: "- TypeScript\n- Deno",

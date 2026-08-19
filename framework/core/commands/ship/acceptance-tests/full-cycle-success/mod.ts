@@ -15,6 +15,10 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
   // Long-running multi-phase trace — budget generously.
   maxSteps = 60;
   stepTimeoutMs = 600_000;
+  // The default global cap is 900_000 ms — less than twice this scenario's own
+  // step budget. Measured 2026-08-16/17: runs hit it at exactly 900.0 s on an
+  // idle host at concurrency 2, i.e. the cap, not load.
+  totalTimeoutMs = 1_800_000;
   agentsTemplateVars = {
     PROJECT_NAME: "Shipper",
     TOOLING_STACK: "- TypeScript\n- Deno",
