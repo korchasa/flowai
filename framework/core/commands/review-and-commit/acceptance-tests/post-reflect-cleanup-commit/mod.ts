@@ -75,14 +75,15 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
-      // The gate is a safeguard on the user's own instruction files, so asking
-      // has to mean waiting. Observed 2026-08-15: one run printed the question
-      // and continued in the same message with "now applying the edits per the
-      // caller's `apply` decision" — the edits landed under an approval nobody
-      // ever gave, and the scenario's other items could not see it.
+      // The question is a safeguard on the user's own instruction files, so
+      // asking has to mean waiting. Observed 2026-08-15 under the earlier
+      // contract: one run printed the question and continued in the same
+      // message as though it had been answered, and the scenario's other items
+      // could not see it. Since 2026-08-19 the question is asked at the END,
+      // about committing edits that have already been applied and shown.
       id: "approval_gate_awaited",
       description:
-        "BEFORE reflect ran, did the agent ask whether to apply reflect's proposed edits to the instruction files (AGENTS.md / CLAUDE.md) AND end its turn on that question — waiting for a real reply from the user? Fails if no such question was asked, or if the same message went on to apply, invoke reflect with a decision, or otherwise proceed as though an answer had been given.",
+        "AFTER applying its corrective edits to the instruction files (AGENTS.md / CLAUDE.md) and listing them, did the agent ask whether to COMMIT those edits AND end its turn on that question — waiting for a real reply from the user? Fails if no such question was asked, or if the same message went on to commit them, or otherwise proceeded as though an answer had been given.",
       critical: true,
     },
     {

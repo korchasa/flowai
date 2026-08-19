@@ -219,14 +219,7 @@ When proposing a fix, classify *where* it belongs:
    - Present the revised report from steps 12–13.
    - Clearly mark which findings were adjusted during self-criticism and why.
    - List the proposed actionable items.
-   - Ask the user if they want to apply these changes immediately. **Exception — the caller already asked**: if the invocation context states that the user has decided about your proposed edits, do NOT ask again. On `report only`, stop at the report and change nothing. On `apply`, apply the edits AND commit them yourself, in this run, before you finish — see step 15. A second approval question here is what the caller moved the gate to avoid: asked at the end, it lands where no work is left, and the answer becomes the last thing that happens.
+   - Ask the user if they want to apply these changes immediately.
    - **Exception**: Decision rescue items emitted in step 2b are already done — they are STANDALONE recommendations for the user to run `/plan` separately. Do not re-list them here; do not offer to write the task file yourself.
 
-15. **Commit your own edits** _(only under a caller's `apply`; never when a user invoked you directly)_
-   - **Do this before you finish, not after.** Your run ends when you stop writing, and a caller's step that was supposed to follow does not get reached — measured, not assumed: across 19 benchmark runs the five failures all ended on a sentence announcing the return to the caller's commit step, with the edit left uncommitted. What happens after your ending is not yours to schedule; what happens before it is.
-   - Do NOT invoke the project's commit workflow or any commit skill for this. Your edits are of one narrow kind — the project's own instruction files — and they need one commit, not a documentation-sync pass, change grouping or a task-status sweep.
-   - Run `git status`. Stage ONLY the files you edited in this run, by explicit path — never `git add -A`, never `.`; a working tree you did not touch is not yours to commit.
-   - Commit with type `agent` and a scope naming what you tightened: `agent: apply reflect-suggested improvements`, or narrower, e.g. `agent(commit): tighten the doc-audit gate`. The type is `agent` because the change is to the agent's own instructions — never `docs:`, `chore:` or `feat:`, whatever the file extension says.
-   - Never amend an existing commit. Your edit is a separate commit sitting on top of whatever the caller already landed.
-   - Then say, in one line, which files you committed and under which message.
 </step_by_step>

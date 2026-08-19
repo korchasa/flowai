@@ -29,6 +29,11 @@ atoms:
     target: framework/core/commands/push/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
+  reflect-gate:
+    source: framework/atoms/reflect-gate.md
+    target: framework/core/commands/reflect-gate/SKILL.md
+    default_params:
+      TERMINATION: TOTAL_STOP
 composites:
   review-and-commit:
     target: framework/core/commands/review-and-commit/SKILL.md
@@ -40,6 +45,10 @@ composites:
         atom: commit
         params:
           DIFF_SOURCE: REUSE_PRIOR_PHASE
+      - title: Phase 3 — Reflect
+        atom: reflect-gate
+        params:
+          TERMINATION: TOTAL_STOP
   ship:
     target: framework/core/commands/ship/SKILL.md
     wrapper: framework/composites/ship.md
@@ -61,6 +70,10 @@ composites:
       - title: Push Phase
         atom: push
         params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Reflect Phase
+        atom: reflect-gate
+        params:
           TERMINATION: TOTAL_STOP
   ship-task:
     target: framework/core/commands/ship-task/SKILL.md
@@ -78,5 +91,9 @@ composites:
           DIFF_SOURCE: REUSE_PRIOR_PHASE
       - title: Push Phase
         atom: push
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Reflect Phase
+        atom: reflect-gate
         params:
           TERMINATION: TOTAL_STOP

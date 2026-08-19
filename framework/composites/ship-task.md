@@ -15,12 +15,14 @@ User-invoked command that picks up the SDLC cycle AFTER the planning phase: the 
 2. **Review Phase** — QA + lead-engineer review of the diff with a structured verdict.
 3. **Commit Phase** — targeted documentation sync + Conventional Commits + task-status auto-flip.
 4. **Push Phase** — safe `git push` with upstream and divergence gates.
+5. **Reflect Phase** — audit the session, criticise the findings, apply the corrective edits to the instruction files, show them, and commit them once the user agrees.
 
-Three explicit gates between phases:
+Four explicit gates between phases:
 
 - **Implement → Review** — project check MUST exit 0 AND `git status` MUST be non-empty.
 - **Review → Commit** — verdict MUST be Approve. Request Changes / Needs Discussion / crash → STOP.
 - **Commit → Push** — `git status` MUST be clean (all changes committed) AND if pushing main/master with remote-ahead, the Push Phase will ask before pushing.
+- **Push → Reflect** — the push report does NOT end the run; the Reflect Phase follows in the same turn, whether the push succeeded or the user declined it.
 
 ## Context
 
@@ -33,10 +35,10 @@ ship-task is the SDLC continuation composite: by the time the agent exits, work 
 <rules>
 1. **No delegation**: All four phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any implement, review, commit, or push skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
 2. **Task file is mandatory input**: The user MUST provide either a path to the task file or an unambiguous identifier resolvable through the `tasks` role in AGENTS.md. If neither is provided, ask once and STOP. If the resolved file does not exist or its `## Solution` section is empty, STOP with a clear message — this composite does not plan.
-3. **Four Phases, Strict Order**: Execute Implement fully, then Review, then Commit, then Push. Never interleave; never skip a gate.
+3. **Five Phases, Strict Order**: Execute Implement fully, then Review, then Commit, then Push, then Reflect. Never interleave; never skip a gate.
 4. **Implement → Review Gate**: project check MUST exit 0 AND `git status` MUST be non-empty. Otherwise STOP.
 5. **Verdict Gate**: only Approve proceeds to Commit. Request Changes / Needs Discussion / crash → STOP. Phase output is reported regardless.
-6. **Commit → Push Gate**: `git status` MUST be clean. Push Phase's safety contract handles upstream + divergence + force decisions.
+6. **Commit → Push → Reflect Gates**: `git status` MUST be clean before the push. Push Phase's safety contract handles upstream + divergence + force decisions. The push report is not the end of the run — the Reflect Phase follows it.
 7. **No partial commit**: any earlier-phase failure (errors, crash, gate violation) STOPs the workflow.
 8. **Transparency**: each phase reports its artefact (Implement test results, Review verdict, Commit SHAs, Push remote ref).
 9. **Planning**: use a task management tool (e.g. `todo_write`, `todowrite`, `Task`) to track all four phases as a single plan.
@@ -66,7 +68,8 @@ Output a combined summary:
 [ ] Verdict gate enforced: only Approve proceeded to Commit.
 [ ] Documentation sync performed.
 [ ] Commits used Conventional Commits format; task status auto-flipped per FR-DOC-TASK-LIFECYCLE.
-[ ] Commit → Push gate enforced: working tree clean before Push Phase.
+[ ] Commit → Push gate enforced: working tree clean before the Push Phase.
+[ ] Push → Reflect gate enforced: the Reflect Phase ran after the push report, in the same turn.
 [ ] Push Phase: no `--force` used; `--force-with-lease` only with explicit per-push authorization; first-push gate satisfied; protected-branch divergence handled before push attempt.
 [ ] Post-push verification: `git rev-parse @{u}` matches `HEAD`.
 [ ] Implement / Review / Commit / Push results all reported to user.
@@ -93,7 +96,14 @@ After completing the Review report:
 <gate after="3">
 ### Commit → Push Gate
 
-- `git status` MUST be clean — every Implement-Phase change committed during the Commit Phase. If `git status` shows uncommitted edits, **STOP** and report which files remain dirty.
+- `git status` MUST be clean — every change from the earlier phases committed during the Commit Phase. If `git status` shows uncommitted edits, **STOP** and report which files remain dirty.
 - If the current branch is `main` / `master` AND the remote is ahead, the Push Phase below will ask the user before pushing (per FR-ATOM-PUSH safety contract); do not pre-empt that gate here.
-- Otherwise → enter Push Phase. If the user explicitly declines the push at the Push Phase's first-push or divergence gate, **STOP** — the Commit Phase's commits remain locally and can be pushed manually later.
+- Otherwise → enter Push Phase. If the user explicitly declines the push at the Push Phase's first-push or divergence gate, **STOP** — the commits remain locally and can be pushed manually later.
+</gate>
+
+<gate after="4">
+### Push → Reflect Gate
+
+- The push report is not the end of the run. The Reflect Phase below still has to run, in this same turn, without waiting for the user to ask for it.
+- Enter the Reflect Phase whether the push succeeded or the user declined it. The session is worth auditing either way, and the phase decides for itself whether it earned a reflection — do not decide that here.
 </gate>

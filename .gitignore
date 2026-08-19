@@ -42,6 +42,7 @@ dist/
 # scripts/check-skills.ts enforces parity.
 framework/core/commands/commit/SKILL.md
 framework/core/commands/push/SKILL.md
+framework/core/commands/reflect-gate/SKILL.md
 framework/core/commands/review-and-commit/SKILL.md
 framework/core/commands/ship/SKILL.md
 framework/core/commands/ship-task/SKILL.md

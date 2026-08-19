@@ -121,5 +121,6 @@ Push the current branch to its remote with a strict safety contract that reflect
 <param-branch name="TERMINATION" value="HAND_OFF_TO_NEXT">
 7. **Hand off to the next phase**
    - Final report: target branch, upstream, pushed SHA, post-push verification result, CI await result (`skipped`, `green`, or `not reached — stopped earlier`).
-   - Announce: "Push complete; entering the next phase of the composite workflow." (If the push step is the last phase of the composite, this branch behaves like TOTAL_STOP — no next phase to enter.)
+   - Announce: "Push complete; entering the next phase of the composite workflow."
+   - Do NOT issue a TOTAL STOP, and do NOT wait for the user to tell you to carry on. The push report reads like the end of the work — in `ship` and `ship-task` the Reflect Phase follows it, in this same turn.
 </param-branch>
