@@ -148,19 +148,96 @@ export async function validateAllTriggerCoverage(
   return errors;
 }
 
+/** Minimum characters of evidence a `noPositiveTrigger` declaration must carry. */
+export const NO_POSITIVE_TRIGGER_MIN_EVIDENCE = 80;
+
+/**
+ * Guard the `noPositiveTrigger` escape hatch.
+ *
+ * It retires a positive trigger as an accepted decision, so it must be hard to
+ * reach by accident and impossible to reach silently. Two rules: it belongs
+ * only on a `trigger-pos-*` scenario, and it must state the evidence — which
+ * sweeps, how many runs, what the raw sessions showed. A one-word reason turns
+ * a measured finding into a shrug, and the next reader cannot tell whether
+ * anyone looked.
+ *
+ * Pure on purpose: takes the path and the source text, returns messages.
+ */
+export function validateNoPositiveTrigger(
+  modPath: string,
+  source: string,
+): string[] {
+  const match = source.match(/noPositiveTrigger\s*=\s*(["`'])/);
+  if (!match) return [];
+
+  const out: string[] = [];
+  if (!/\/trigger-pos-\d+\/mod\.ts$/.test(modPath.replaceAll("\\", "/"))) {
+    out.push(
+      `${modPath}: noPositiveTrigger is only legitimate on a trigger-pos-* scenario. ` +
+        `A failing adjacent, false-use or execution scenario is a defect to fix, not a trigger to retire.`,
+    );
+  }
+
+  const quote = match[1];
+  const start = (match.index ?? 0) + match[0].length;
+  const end = source.indexOf(quote, start);
+  const reason = end === -1 ? "" : source.slice(start, end);
+  if (reason.trim().length < NO_POSITIVE_TRIGGER_MIN_EVIDENCE) {
+    out.push(
+      `${modPath}: noPositiveTrigger needs the evidence, not a label — name the sweeps, ` +
+        `the run count and what the raw sessions showed (at least ${NO_POSITIVE_TRIGGER_MIN_EVIDENCE} characters).`,
+    );
+  }
+  return out;
+}
+
+/** Walk every scenario `mod.ts` under framework/ and guard the escape hatch. */
+export async function validateAllNoPositiveTrigger(
+  frameworkDir: string,
+): Promise<string[]> {
+  const out: string[] = [];
+  const walk = async (dir: string): Promise<void> => {
+    let entries: Deno.DirEntry[];
+    try {
+      entries = [];
+      for await (const e of Deno.readDir(dir)) entries.push(e);
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      const full = join(dir, e.name);
+      if (e.isDirectory) {
+        await walk(full);
+      } else if (e.name === "mod.ts") {
+        out.push(
+          ...validateNoPositiveTrigger(full, await Deno.readTextFile(full)),
+        );
+      }
+    }
+  };
+  await walk(frameworkDir);
+  return out;
+}
+
 if (import.meta.main) {
   console.log(
     "Checking trigger benchmark coverage (FR-ACCEPT.TRIGGER: 3 scenarios per skill)...",
   );
   const errors = await validateAllTriggerCoverage("framework");
+  const hatchErrors = await validateAllNoPositiveTrigger("framework");
+  for (const m of hatchErrors) {
+    console.error(`❌ [FR-ACCEPT.TRIGGER] ${m}`);
+  }
 
-  if (errors.length > 0) {
+  if (errors.length > 0 || hatchErrors.length > 0) {
     for (const e of errors) {
       console.error(
         `❌ [FR-ACCEPT.TRIGGER] ${e.pack}/${e.skill}: ${e.message}`,
       );
     }
-    console.error(`\n${errors.length} violation(s) found.`);
+    console.error(
+      `\n${errors.length + hatchErrors.length} violation(s) found.`,
+    );
     Deno.exit(1);
   } else {
     console.log(

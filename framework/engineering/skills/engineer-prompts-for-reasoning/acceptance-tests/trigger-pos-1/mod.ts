@@ -32,6 +32,9 @@ export const EngineerPromptsForReasoningTriggerPos1 = new class
    * the task unaided, and it needs a decision about what a positive trigger
    * means for capabilities the model already believes it has.
    */
+  noPositiveTrigger =
+    "Three sweeps of three runs on 2026-08-19/20, nine raw sessions, ZERO tool calls in every one: the agent writes the prompt in its first breath and never lists the skill catalog. Two description rewrites were measured against it and neither moved it off 0/3, while the same rewrite took the sibling engineer-prompts-for-instant from 1/3 to 2/3. The lever is not the description — a request the model believes it can answer unaided never reaches the catalog at all.";
+
   userQuery =
     "Help me structure a prompt for Gemini Pro so it can work through a multi-step contract review with full context.";
   checklist = [{

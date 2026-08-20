@@ -154,6 +154,29 @@ export interface BenchmarkScenario {
    * If set, the scenario will not be executed and will be reported as skipped.
    */
   skip?: string;
+
+  /**
+   * Positive trigger declared unreachable, with the evidence for it.
+   *
+   * Some skills describe work the model believes it can already do — write a
+   * prompt, tidy a paragraph, run a CLI. A request for that work never reaches
+   * the skill catalog at all: the model answers in its first breath, with zero
+   * tool calls, and no wording inside a skill it never reads can change that.
+   * Measured across three sweeps and nine raw sessions on
+   * `engineer-prompts-for-reasoning-trigger-pos-1` on 2026-08-19/20.
+   *
+   * Setting this records the finding as a DECISION instead of leaving a red
+   * test nobody can turn green. The scenario is not executed; the sweep prints
+   * it under its own heading and the summary counts it separately, so it stays
+   * visible rather than passing quietly like `skip`.
+   *
+   * Only legitimate on a `trigger-pos-*` scenario, and only with evidence:
+   * state the sweeps, the run count and what the raw sessions showed.
+   * `check-trigger-coverage.ts` still requires the file to exist, so coverage
+   * bookkeeping is unchanged. Do NOT use it to retire a scenario that is merely
+   * failing — a routing miss that a description could fix is a defect, not this.
+   */
+  noPositiveTrigger?: string;
 }
 
 /**

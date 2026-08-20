@@ -76,6 +76,42 @@ function buildSkippedResult(
 }
 
 /**
+ * Result for a positive trigger declared unreachable (`noPositiveTrigger`).
+ *
+ * Reported as an accepted decision, not as a pass. It is loud on purpose: a
+ * scenario retired this way must stay readable in the sweep output, because the
+ * whole point is that somebody chose to stop chasing it and said why.
+ */
+export function buildNoPositiveTriggerResult(
+  scenario: BenchmarkScenario,
+  agentModel: string,
+): BenchmarkResult {
+  const reason = scenario.noPositiveTrigger ?? "";
+  console.log(`  NO POSITIVE TRIGGER (accepted decision): ${reason}`);
+  const results: Record<string, { pass: boolean; reason: string }> = {};
+  for (const item of scenario.checklist) {
+    results[item.id] = {
+      pass: true,
+      reason: `Not run — positive trigger declared unreachable: ${reason}`,
+    };
+  }
+  return {
+    scenarioId: scenario.id,
+    success: true,
+    score: 100,
+    errorsCount: 0,
+    warningsCount: 0,
+    durationMs: 0,
+    tokensUsed: 0,
+    totalCost: 0,
+    toolCallsCount: 0,
+    model: agentModel,
+    checklistResults: results,
+    logs: `NO POSITIVE TRIGGER (accepted decision): ${reason}`,
+  };
+}
+
+/**
  * Initialize the sandbox directory (clean prior run, mkdir).
  *
  * The sandbox lives in an external root, NOT under the run dir (FR-ACCEPT-ISOLATION).
@@ -670,6 +706,10 @@ export async function runScenario(
   const adapter = options.adapter;
   const runIndex = options.runIndex ?? 1;
   console.log(`\nRunning scenario: ${scenario.name} (${scenario.id})...`);
+
+  if (scenario.noPositiveTrigger) {
+    return buildNoPositiveTriggerResult(scenario, options.agentModel);
+  }
 
   if (scenario.skip) {
     return buildSkippedResult(scenario, options.agentModel);

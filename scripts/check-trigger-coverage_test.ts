@@ -3,6 +3,7 @@ import { join } from "@std/path";
 import {
   expectedTriggerDirs,
   validateAllTriggerCoverage,
+  validateNoPositiveTrigger,
   validateSkillTriggerCoverage,
 } from "./check-trigger-coverage.ts";
 
@@ -169,4 +170,43 @@ Deno.test("validateAllTriggerCoverage: scans unprefixed skill directories", asyn
   } finally {
     await Deno.remove(tmp, { recursive: true });
   }
+});
+
+const EVIDENCE =
+  "Three sweeps of three runs on 2026-08-19/20, nine raw sessions, zero tool calls in every one — the agent answers unaided.";
+
+Deno.test("validateNoPositiveTrigger accepts an evidenced declaration on a positive trigger", () => {
+  assertEquals(
+    validateNoPositiveTrigger(
+      "framework/engineering/skills/x/acceptance-tests/trigger-pos-1/mod.ts",
+      `  noPositiveTrigger = "${EVIDENCE}";`,
+    ),
+    [],
+  );
+});
+
+Deno.test("validateNoPositiveTrigger rejects the hatch on anything but a positive trigger — a failing adjacent scenario is a defect, not a trigger to retire", () => {
+  const out = validateNoPositiveTrigger(
+    "framework/engineering/skills/x/acceptance-tests/trigger-adj-1/mod.ts",
+    `  noPositiveTrigger = "${EVIDENCE}";`,
+  );
+  assertEquals(out.length, 1);
+});
+
+Deno.test("validateNoPositiveTrigger rejects a label with no evidence behind it", () => {
+  const out = validateNoPositiveTrigger(
+    "framework/engineering/skills/x/acceptance-tests/trigger-pos-1/mod.ts",
+    '  noPositiveTrigger = "model does it unaided";',
+  );
+  assertEquals(out.length, 1);
+});
+
+Deno.test("validateNoPositiveTrigger stays silent on a scenario that does not use it", () => {
+  assertEquals(
+    validateNoPositiveTrigger(
+      "framework/engineering/skills/x/acceptance-tests/trigger-pos-1/mod.ts",
+      '  userQuery = "write me a prompt";',
+    ),
+    [],
+  );
 });
