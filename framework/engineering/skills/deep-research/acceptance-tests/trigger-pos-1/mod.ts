@@ -5,13 +5,23 @@ export const DeepResearchTriggerPos1 = new class
   id = "deep-research-trigger-pos-1";
   name = "evidence-backed market research";
   skill = "deep-research";
-  // KNOWN RED — do NOT "fix" by raising the cap again. Measured 2026-08-16 at
-  // the default 900_000 ms cap: 0/5, exit 124 every run. Re-measured 2026-08-19
-  // at 1_800_000 ms: still 0/3, still exit 124, and the deterministic scorer
-  // saw ZERO tool calls in all three traces. Doubling the budget changed
-  // nothing, so the cap is not the cause and the run is not a long research
-  // pass — the agent produces no tool call at all before the kill. Diagnose the
-  // hang from a raw session before touching this scenario again.
+  // Not a routing failure, and never was. The raw session of 2026-08-20 shows
+  // the agent calling `Skill` with `deep-research` on its first move, then
+  // dispatching a `deep-research-worker` subagent that ran 101 turns of real
+  // research until the cap killed it. The scenario failed for two reasons that
+  // had nothing to do with the description:
+  //
+  //  1. `AcpAgent` snapshotted its tool calls in `run()`'s `finally`, which a
+  //     timeout kill never reaches, so every timed-out run scored "0 tool
+  //     call(s) observed" — and this one carried that verdict across two
+  //     sweeps. The comment that used to sit here concluded from it that the
+  //     agent never started, and told the next reader not to touch the cap.
+  //  2. A routing checklist was scored on the exit code, so even a correct
+  //     verdict lost to the clock.
+  //
+  // Both are fixed (`resolveToolCalls`, `shouldInjectExitCodeCheck`). The run
+  // still exceeds the cap — real research does — and that is now allowed to be
+  // irrelevant to what this scenario measures.
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
     "I need a thorough evidence-backed analysis of the current vector database landscape with cited sources and a written summary.";

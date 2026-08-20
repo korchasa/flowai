@@ -58,6 +58,22 @@ interface Message {
   content: string;
 }
 
+/**
+ * Pick the tool-call list to score: the run's own snapshot when it exists,
+ * otherwise whatever the client has captured so far.
+ *
+ * Split out to be testable. The snapshot wins because it is taken after the
+ * session closes; the live list only ever matters for a run that was killed
+ * before it could take one.
+ */
+export function resolveToolCalls(
+  snapshot: CapturedToolCall[],
+  live: CapturedToolCall[] | undefined,
+): CapturedToolCall[] {
+  if (snapshot.length > 0) return snapshot;
+  return live ?? [];
+}
+
 /** Executes one IDE agent over ACP for the full (multi-turn) scenario. */
 export class AcpAgent {
   #child: Deno.ChildProcess | null = null;
@@ -66,6 +82,7 @@ export class AcpAgent {
   #messages: Message[] = [];
   #log: string[] = [];
   #toolCalls: CapturedToolCall[] = [];
+  #client: { getToolCalls(): CapturedToolCall[] } | null = null;
   readonly #spec: AcpAgentSpec;
 
   constructor(private opts: AcpAgentOptions) {
@@ -80,9 +97,18 @@ export class AcpAgent {
     return this.#messages;
   }
 
-  /** Tool calls observed this run — used for deterministic checklist items. */
+  /**
+   * Tool calls observed this run — used for deterministic checklist items.
+   *
+   * Falls back to the live client while a run is still in flight. `run()`
+   * snapshots the calls in its `finally`, which never executes when a caller
+   * kills the agent on a wall-clock timeout — so every timed-out scenario used
+   * to score "0 tool call(s) observed" no matter what the agent had done.
+   * `deep-research-trigger-pos-1` carried that verdict across two sweeps and
+   * five months of cap-raising, and it was read as "the agent never started".
+   */
   getToolCalls(): CapturedToolCall[] {
-    return this.#toolCalls;
+    return resolveToolCalls(this.#toolCalls, this.#client?.getToolCalls());
   }
 
   /**
@@ -180,6 +206,7 @@ export class AcpAgent {
       stream: ndJsonStream(child.stdin, child.stdout),
       closed: child.status,
     });
+    this.#client = client;
 
     let code = 0;
     try {

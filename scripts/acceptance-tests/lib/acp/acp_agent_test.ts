@@ -5,7 +5,11 @@
  * dispatch form is pinned here.
  */
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { describeDispatchResult, describeToolCall } from "./acp_agent.ts";
+import {
+  describeDispatchResult,
+  describeToolCall,
+  resolveToolCalls,
+} from "./acp_agent.ts";
 
 Deno.test("describeToolCall names a subagent dispatch by its agent type", () => {
   const line = describeToolCall({
@@ -72,4 +76,25 @@ Deno.test("describeToolCall ignores a non-string subagent_type", () => {
     rawInput: { subagent_type: 7 },
   });
   assertStringIncludes(line, "Some call [kind=other]");
+});
+
+/**
+ * A killed run never reaches the `finally` that snapshots its tool calls, so
+ * the scorer has to fall back to the live client — otherwise every timed-out
+ * scenario reads as "0 tool call(s) observed", which is indistinguishable from
+ * an agent that never started.
+ */
+Deno.test("resolveToolCalls falls back to the live client when the run was killed", () => {
+  const live = [{ toolCallId: "t1", title: "WebSearch", kind: "search" }];
+  assertEquals(resolveToolCalls([], live).length, 1);
+});
+
+Deno.test("resolveToolCalls prefers the run's own snapshot", () => {
+  const snap = [{ toolCallId: "a", title: "Read", kind: "read" }];
+  const live = [{ toolCallId: "b", title: "Bash", kind: "execute" }];
+  assertEquals(resolveToolCalls(snap, live)[0].toolCallId, "a");
+});
+
+Deno.test("resolveToolCalls returns empty when there is nothing anywhere", () => {
+  assertEquals(resolveToolCalls([], undefined).length, 0);
 });
