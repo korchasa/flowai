@@ -88,6 +88,15 @@ Fixed and verified, all with the result cache bypassed (`-n 3`):
     dissolved every blocker before the review; see the scenario docstring)
   - Evidence: `deno task acceptance-tests -f ship-task-rejects-on-changes-requested -n 3`
     — 2/3 on 2026-08-20, threshold 2/3
+- [x] FR-SHIP-TASK: a STOP ends the run — no Reflect Phase, no instruction-file
+      edit, no commit and no push after it.
+  - Benchmark: `ship-task-rejects-on-changes-requested`, item
+    `no_phase_ran_after_the_stop`
+  - Evidence: `deno task acceptance-tests -f ship-task-rejects-on-changes-requested -n 3`
+    — 3/3 on 2026-08-20, every item green in every run. An earlier sweep the same
+    evening returned 1/3 under host memory pressure (swap 96%, two runs never
+    opening `contract/` at all); the repeat sweep on the identical tree returned
+    3/3, so that was load variance, not a regression from the rule-7 rewrite.
 - [x] FR-REVIEW: the Existing-Suite gate finds a suite the project check command
       deliberately excludes.
   - Benchmark: `ship-task-rejects-on-changes-requested`, item
@@ -121,10 +130,16 @@ Fixed and verified, all with the result cache bypassed (`-n 3`):
 
 ## Follow-ups
 
-- **Does a mid-workflow STOP still get a Reflect Phase?** In the one failing run
-  of the final sweep the Verdict Gate stopped the workflow, and the Reflect
-  Phase then ran anyway: it committed its `CLAUDE.md` edit, asked about pushing
-  it, and pushed on the user's yes. The composite says both things — rule 7
-  ("any earlier-phase failure STOPs the workflow") and the Reflect Phase's own
-  "the session is worth auditing either way". Unresolved on purpose; the owner
-  decides.
+- **Does a mid-workflow STOP still get a Reflect Phase? — decided 2026-08-20: no.**
+  The composite used to say both things: rule 7 ("any earlier-phase failure STOPs
+  the workflow") and the Reflect Phase's own "the session is worth auditing
+  either way". One run in three read the second half and, after stopping at the
+  Verdict Gate, reflected anyway — committed its `CLAUDE.md` edit, asked about
+  pushing it, and pushed on the user's yes. The owner chose the terminal
+  reading. Rule 7 now says a STOP ends the run with no later phase, Reflect
+  included, and the Push → Reflect gate says it is reachable only by a completed
+  Push Phase. Covered by the scenario's `no_phase_ran_after_the_stop` item.
+- **`review-and-commit` carries the same ambiguity** and was left alone: its
+  Phase 3 invokes `reflect` and its verdict gate stops on Request Changes,
+  with nothing saying which wins. Not fixed here because the fix needs its own
+  acceptance coverage, and this task's scenario covers `ship-task` only.
