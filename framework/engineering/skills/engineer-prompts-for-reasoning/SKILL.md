@@ -1,6 +1,6 @@
 ---
 name: engineer-prompts-for-reasoning
-description: Guide to writing prompts for reasoning models (Gemini Pro, GPT-4o, Claude Sonnet), focused on structure and context. Use when the user is writing or tuning prompts for a reasoning or smart model.
+description: Write, structure or fix a prompt for a reasoning/smart model (Gemini Pro, GPT-4o, Claude Sonnet) so it holds context across a multi-step task. Use for any request to draft, structure, tune or debug such a prompt — producing it IS the work, even when you could write one unaided. Not for fast models (use engineer-prompts-for-instant).
 ---
 
 # HOW TO WRITE PROMPTS FOR REASONING MODELS

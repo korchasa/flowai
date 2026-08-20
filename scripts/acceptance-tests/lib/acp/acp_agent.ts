@@ -236,6 +236,20 @@ export class AcpAgent {
     return { code: trip ? 137 : code, logs: this.#log.join("") };
   }
 
+  /**
+   * Everything captured so far, readable while `run()` is still in flight.
+   *
+   * The global-timeout path needs this: it rejects the race and kills the
+   * process, so `run()` never returns its own logs. Without a partial read the
+   * runner has nothing but a synthetic marker to score, and every timed-out
+   * scenario reports "0 tool calls observed" no matter how much work it did —
+   * which reads as "the agent did nothing" and is how a timeout gets
+   * misdiagnosed as a routing failure.
+   */
+  get partialLogs(): string {
+    return this.#log.join("");
+  }
+
   /** Public termination for the runner's global-timeout path. */
   kill(): void {
     this.#kill();

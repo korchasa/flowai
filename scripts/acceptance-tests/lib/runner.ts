@@ -301,6 +301,20 @@ interface AgentRunOutcome {
  * returned with a synthetic log. Always resolves with an outcome — never
  * throws.
  */
+/**
+ * Trace for a run the global timeout killed.
+ *
+ * Keep what the agent actually did and append the marker. Replacing the trace
+ * with the marker alone makes every timed-out run score "0 tool call(s)
+ * observed", which reads as "the agent never started" and hides the real
+ * cause — measured on `deep-research-trigger-pos-1`, where three timed-out
+ * runs were diagnosed as a routing failure on exactly that evidence.
+ */
+export function composeTimeoutLogs(partial: string, message: string): string {
+  const marker = `[GLOBAL TIMEOUT] ${message}`;
+  return partial ? `${partial}\n${marker}` : marker;
+}
+
 async function runAgentWithTimeout(
   scenario: BenchmarkScenario,
   sandboxPath: string,
@@ -357,7 +371,10 @@ async function runAgentWithTimeout(
     agent.kill();
     const err = e as Error;
     console.warn(`  ${err.message}`);
-    agentResult = { code: 124, logs: `[GLOBAL TIMEOUT] ${err.message}` };
+    agentResult = {
+      code: 124,
+      logs: composeTimeoutLogs(agent.partialLogs, err.message),
+    };
   } finally {
     if (globalTimeoutId !== undefined) clearTimeout(globalTimeoutId);
   }

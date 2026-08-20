@@ -15,11 +15,22 @@ export const EngineerPromptsForReasoningTriggerPos1 = new class
    * taking every run. Naming a non-Anthropic model removes that hook and lets
    * the scenario measure this skill's description instead of the host's.
    *
-   * KNOWN RED. Re-measured 2026-08-19 with this wording: 0/3, every run with
-   * ZERO tool calls in 36–40 s. The collision is gone and a second, separate
-   * problem is now visible — the agent answers the prompt-writing request in
-   * prose and never reaches for a skill at all. Rewording the query will not
-   * fix that; the skill's own description has to make the agent want it.
+   * KNOWN RED — and not for want of trying. Three sweeps of three runs on
+   * 2026-08-19/20, nine raw sessions, ZERO tool calls in every one: the agent
+   * writes the prompt itself in its first breath and never lists the skill
+   * catalog at all. Two description rewrites were measured against it — an
+   * action-first form ("Write or fix a prompt ... producing it IS the work"),
+   * then the same plus the user's own verb `structure` — and neither moved it
+   * off 0/3, while the SAME action-first rewrite took the sibling
+   * `engineer-prompts-for-instant` from 1/3 to 2/3.
+   *
+   * So the lever is not the description. The failure is the general one this
+   * project keeps meeting: a request the model believes it can answer in one
+   * breath never reaches the catalog, and no wording inside a skill it never
+   * reads can change that. Do NOT "fix" this by hinting in the query — that is
+   * test-fitting. It belongs with the other scenarios where the agent solves
+   * the task unaided, and it needs a decision about what a positive trigger
+   * means for capabilities the model already believes it has.
    */
   userQuery =
     "Help me structure a prompt for Gemini Pro so it can work through a multi-step contract review with full context.";
