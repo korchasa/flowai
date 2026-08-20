@@ -361,8 +361,21 @@ export function composeTimeoutLogs(partial: string, message: string): string {
  * an empty trace. Read off the summary table that looks exactly like "the model
  * answered without reaching for the skill", and three scenarios were marked as
  * unreachable positive triggers on the strength of it.
+ *
+ * `toolCallCount` is what separates our dead session from a live one. Some
+ * scenarios ask the agent to run another IDE's CLI, and that child reports its
+ * own `OAuth session expired` through a tool result — a correct observation
+ * about the sandbox, not a broken bench. Same day, same hour: this guard fired
+ * three runs in a row on `delegate-to-ide-trigger-adj-1`, whose query asks for a
+ * prompt to be run in Claude Code, and threw away a measurement that was
+ * working. Our own failure leaves NO tool calls at all, because the agent never
+ * got as far as its first one.
  */
-export function detectAuthFailure(logs: string): string | null {
+export function detectAuthFailure(
+  logs: string,
+  toolCallCount: number,
+): string | null {
+  if (toolCallCount > 0) return null;
   const patterns = [
     "OAuth session expired",
     "Failed to authenticate",
@@ -374,6 +387,34 @@ export function detectAuthFailure(logs: string): string | null {
     `Nothing measured here is a behavioural result — the CLI never ran the ` +
     `task. Export the repo's OAuth token before the sweep ` +
     `(set -a; . ./.env; set +a) and run again.`;
+}
+
+/**
+ * Should the run's exit code be scored as a checklist item?
+ *
+ * For a trigger scenario the whole verdict is the routing decision, and that
+ * decision is already in the trace: the deterministic items read it directly.
+ * A global timeout on top of it adds nothing — the agent picked its skill (or
+ * did not) long before the clock ran out. Measured 2026-08-20 on
+ * `ai-ide-runner-trigger-adj-1`: once the adjacent `deep-research` was actually
+ * mounted, the agent deferred to it correctly in all three runs and then spent
+ * 89–116 tool calls doing the research, hitting the cap every time. The routing
+ * item passed 3/3 and the scenario still scored 0/3 on the exit code alone.
+ *
+ * Narrow on purpose. Only a global timeout (124) is forgiven, only for a
+ * checklist that is nothing but skill-invocation items, and only when the agent
+ * actually made tool calls — a negative scenario that scores "skill not
+ * invoked" out of an empty trace is an infrastructure failure wearing a pass.
+ */
+export function shouldInjectExitCodeCheck(
+  checklist: readonly { id: string }[],
+  code: number,
+  toolCallCount: number,
+): boolean {
+  if (code === 0) return false;
+  const routingOnly = checklist.length > 0 &&
+    checklist.every((i) => DETERMINISTIC_SKILL_CHECK_IDS.has(i.id));
+  return !(routingOnly && code === 124 && toolCallCount > 0);
 }
 
 async function runAgentWithTimeout(
@@ -443,7 +484,10 @@ async function runAgentWithTimeout(
   const durationMs = performance.now() - start;
   console.log(`  Agent finished with exit code ${agentResult.code}`);
 
-  const authFailure = detectAuthFailure(agentResult.logs);
+  const authFailure = detectAuthFailure(
+    agentResult.logs,
+    agent.getToolCalls().length,
+  );
   if (authFailure) {
     agent.kill();
     throw new Error(authFailure);
@@ -700,7 +744,7 @@ async function judgeAndScore(
 
   // Build full checklist including dynamic exit_code_zero if agent crashed
   const checklistToJudge = [...scenario.checklist];
-  if (code !== 0) {
+  if (shouldInjectExitCodeCheck(scenario.checklist, code, toolCalls.length)) {
     checklistToJudge.push({
       id: "exit_code_zero",
       description: "Agent should exit successfully",

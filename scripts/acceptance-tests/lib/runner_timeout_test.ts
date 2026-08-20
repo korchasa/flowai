@@ -5,7 +5,11 @@
  * `scripts/task-check.ts` --ignore) — a unit test parked there never runs.
  */
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
-import { composeTimeoutLogs, detectAuthFailure } from "./runner.ts";
+import {
+  composeTimeoutLogs,
+  detectAuthFailure,
+  shouldInjectExitCodeCheck,
+} from "./runner.ts";
 
 Deno.test("composeTimeoutLogs keeps the partial trace so a timed-out run stays diagnosable", () => {
   const out = composeTimeoutLogs(
@@ -27,6 +31,7 @@ Deno.test("composeTimeoutLogs returns the marker alone when nothing was captured
 Deno.test("detectAuthFailure: names the expired session and the remedy", () => {
   const msg = detectAuthFailure(
     "Failed to authenticate: OAuth session expired and could not be refreshed",
+    0,
   );
   assertEquals(typeof msg, "string");
   assertStringIncludes(msg!, "not authenticated");
@@ -35,7 +40,44 @@ Deno.test("detectAuthFailure: names the expired session and the remedy", () => {
 
 Deno.test("detectAuthFailure: stays silent on an ordinary trace", () => {
   assertEquals(
-    detectAuthFailure("[turn 1] > run the tests\nAll 12 tests passed."),
+    detectAuthFailure("[turn 1] > run the tests\nAll 12 tests passed.", 0),
     null,
+  );
+});
+
+Deno.test("detectAuthFailure: a child CLI's auth error is not ours", () => {
+  assertEquals(
+    detectAuthFailure(
+      "[tool-calls] Bash: claude -p 'hi'\nOAuth session expired",
+      4,
+    ),
+    null,
+  );
+});
+
+Deno.test("shouldInjectExitCodeCheck: a routing scenario survives the global timeout", () => {
+  const routing = [{ id: "skill_not_invoked" }];
+  assertEquals(shouldInjectExitCodeCheck(routing, 124, 89), false);
+});
+
+Deno.test("shouldInjectExitCodeCheck: an empty trace is never forgiven", () => {
+  const routing = [{ id: "skill_not_invoked" }];
+  assertEquals(shouldInjectExitCodeCheck(routing, 124, 0), true);
+});
+
+Deno.test("shouldInjectExitCodeCheck: only the timeout is forgiven, not a crash", () => {
+  const routing = [{ id: "skill_invoked" }];
+  assertEquals(shouldInjectExitCodeCheck(routing, 1, 40), true);
+});
+
+Deno.test("shouldInjectExitCodeCheck: a behavioural checklist keeps the exit-code item", () => {
+  const behavioural = [{ id: "skill_invoked" }, { id: "wrote_the_file" }];
+  assertEquals(shouldInjectExitCodeCheck(behavioural, 124, 89), true);
+});
+
+Deno.test("shouldInjectExitCodeCheck: a clean exit never adds the item", () => {
+  assertEquals(
+    shouldInjectExitCodeCheck([{ id: "skill_invoked" }], 0, 3),
+    false,
   );
 });

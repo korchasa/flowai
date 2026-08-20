@@ -1,6 +1,6 @@
 ---
 name: delegate-to-ide
-description: Delegate a task to another AI IDE's CLI (codex / claude / opencode / cursor-agent) through an isolated-context subagent. Triggers on "delegate to <ide>", "have <ide> do <task>", "execute <task> in <ide>", "offload to <ide>". For one-shot relay or fan-out comparison use `ai-ide-runner` instead.
+description: Delegate a task to another AI IDE's CLI (codex / claude / opencode / cursor-agent) through an isolated-context subagent. Use when the user says "delegate to <ide>", "have <ide> do <task>", "execute <task> in <ide>", "offload to <ide>" — running that CLI from a shell yourself is the wrong path, the isolated context is the point. For one-shot relay or fan-out use `ai-ide-runner`.
 ---
 
 # Delegate to Another AI IDE
