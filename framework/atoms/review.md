@@ -83,8 +83,10 @@ Input sources: git diff (unstaged / staged / `<base>..HEAD`); the original User 
    - **Gate**: blocking — verdict cannot be `Approve` while any FR-gate issue remains.
 
 4b. **QA: Existing-Suite Execution** _(blocking gate — Rule 13)_
-   - **Locate** the repository's PRE-EXISTING test module(s) covering the changed symbols: grep the test tree for each changed symbol AND for its direct CALLERS (importers) — transitive coverage often never names the changed symbol. Exclude test files added by this diff.
-   - **RUN** each located module, scoped per AGENTS.md conventions — never a full-suite run. Any failure → `[critical]`; verdict cannot be `Approve`.
+   - **Locate** the repository's PRE-EXISTING test module(s) covering the changed symbols: grep the WHOLE repository — not just the directory the change lives in — for each changed symbol AND for its direct CALLERS (importers); transitive coverage often never names the changed symbol. Exclude test files added by this diff.
+   - **Do these three things before you decide what to run**, and say what each returned: (1) grep the whole repository for the changed symbol and for its importers; (2) read AGENTS.md for a section naming test suites kept outside the default check — contract, integration, e2e, acceptance — and how to run them; (3) open the test-runner config and read the check/test task's `exclude` list and any path it is scoped to. Each one can surface coverage the other two miss, and skipping the last two is how a suite that exists gets reported as absent.
+   - **The project's check or test command is NOT this search, and running it does not discharge this step.** Those commands encode what the project runs on every change; this gate asks what covers the symbols YOU changed, and the two differ by design. A suite the check command deliberately excludes — contract tests, integration tests, anything a config `exclude` or a scoped path argument skips — is precisely what this gate exists to reach: it was excluded for cost, not because it stopped being coverage. Before deciding what to run, read AGENTS.md for a section naming where such tests live and how to run them, and check the test-runner config for `exclude` entries and for scoped paths in the check task. If either points at a suite covering your changed symbols, run it. "The project check passed" is not an answer to this step; name the modules you located and the command you ran on each.
+   - **RUN** each located module, scoped per AGENTS.md conventions — never a full-suite run. Any failure → `[critical]`; verdict cannot be `Approve`. A pre-existing test that contradicts the diff is a finding under Rule 12, not a file to update.
    - None found → record "no pre-existing coverage for the changed symbols".
    - Module cannot run locally (live service, missing env) → record module + reason in `### Degradation Notes`; never fabricate a pass.
    - Self-authored tests NEVER satisfy this gate, regardless of how many pass.
@@ -172,7 +174,7 @@ Input sources: git diff (unstaged / staged / `<base>..HEAD`); the original User 
 [ ] Diff collected and reviewed (not the whole project).
 [ ] Each requirement/plan item mapped to changes.
 [ ] FR Coverage Audit: every FR in scope has runnable Acceptance reference, passing test, code marker, no phantom `[x]`.
-[ ] Existing-Suite gate: pre-existing modules (incl. caller tests) located and RUN — or reason recorded; no Approve on self-authored tests alone.
+[ ] Existing-Suite gate: repo-wide grep, AGENTS.md out-of-check suites, and the runner config's `exclude` / scoped paths all consulted; pre-existing modules (incl. caller tests) located and RUN by name — or reason recorded; the project check command alone does NOT satisfy this; no Approve on self-authored tests alone.
 [ ] Intents enumerated (≤5) when JiT subset active.
 [ ] Risk hypotheses tied to intents (≤3 per intent), diff-specific.
 [ ] Hygiene: no temp files, debug output, unfinished markers in diff.
