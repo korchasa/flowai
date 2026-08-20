@@ -1,6 +1,6 @@
 ---
 name: fix-tests
-description: Fix failing or broken tests by finding the root cause and correcting the source code (not the test). Use when tests fail, a suite is red, or the user asks to fix or repair tests or a CI test failure.
+description: Fix a failing or broken test by finding the root cause and correcting the source code, never the test. Use for ANY red test, however small it looks — running the diagnosis IS the work, even when the fix already seems obvious. Covers one failure, a red suite, or a CI test failure. Not for green tests you want reviewed or sped up.
 effort: high
 ---
 

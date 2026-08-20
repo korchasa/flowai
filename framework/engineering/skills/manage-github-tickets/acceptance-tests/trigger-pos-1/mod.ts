@@ -1,16 +1,29 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
+/**
+ * The query carries the repository and the whole body of the issue. It did not
+ * until 2026-08-20: the old wording asked for an issue "in our backend repo for
+ * the rate-limiter regression" and named neither the repo nor the regression, so
+ * all three runs ended `blocked`, asking for "GitHub org/repo, regression
+ * description, repro steps, expected behavior". A scenario that stalls on
+ * missing input measures nothing about the skill's description — and this one
+ * was briefly recorded as an unreachable positive trigger because its tool-call
+ * count was zero, read off the summary table without opening the session.
+ *
+ * With the material supplied the scenario finally measures something, and what
+ * it measures is red: 0/3 on 2026-08-20, exit 0 every run. The agent drafts the
+ * issue body itself and stops at `blocked` asking for confirmation to post it,
+ * never opening the skill that defines the GODS issue format. Still open.
+ */
 export const ManageGithubTicketsTriggerPos1 = new class
   extends AcceptanceTestScenario {
   id = "manage-github-tickets-trigger-pos-1";
   name = "create new GitHub issue";
   skill = "manage-github-tickets";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
-  noPositiveTrigger =
-    "Measured 2026-08-20, 3 runs, every raw session with ZERO tool calls in 18 s: the agent writes the issue text straight into its reply rather than reaching for the skill. Same shape as engineer-prompts-for-reasoning-trigger-pos-1 — a request the model believes it can answer unaided never reaches the catalog, so no description wording can win it.";
 
   userQuery =
-    "Open a new GitHub issue in our backend repo for the rate-limiter regression, with a clear repro and expected behaviour.";
+    "Open a GitHub issue in acme/backend: since the 2.4 deploy the rate limiter rejects valid traffic. Repro — send 5 requests per second to /api/search with a valid key, and the fourth comes back 429. Expected — no 429 below 10 requests per second.";
   checklist = [{
     id: "skill_invoked",
     description:

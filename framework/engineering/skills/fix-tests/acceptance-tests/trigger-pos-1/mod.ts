@@ -1,11 +1,16 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// KNOWN RED, and NOT a case for `noPositiveTrigger`. Measured 2026-08-20,
-// 3 runs, 0/3 — but the traces show 2-5 tool calls per run in 26 s: the agent
-// reads the failing test and patches it with generic tools instead of invoking this skill. That is a
-// routing miss with a live tool path, not the "answers unaided in one breath"
-// shape that retires a positive trigger, so a description rewrite is still the
-// lever here and the scenario stays red until someone pulls it.
+// Was 0/3 on 2026-08-20 with 2-5 tool calls per run: the agent read the failing
+// test and patched it with generic tools instead of invoking this skill. A live
+// tool path and no skill is a routing miss, not an unreachable trigger, so the
+// description was rewritten action-first on the same day — "running the
+// diagnosis IS the work, even when the fix already seems obvious" — the clause
+// that took engineer-prompts-for-instant from 1/3 to 2/3. The query is left
+// alone: it is a plain, unhinted report of a red test, exactly the skill's case.
+// The rewrite did NOT move it: still 0/3 the same evening, exit 0 in every run,
+// 8, 3 and 15 tool calls — the agent opens the test, finds the cause and fixes
+// the source itself. It does the skill's procedure without the skill, so the
+// description has nothing left to promise. Still open.
 export const FixTestsTriggerPos1 = new class extends AcceptanceTestScenario {
   id = "fix-tests-trigger-pos-1";
   name = "natural failing-test query";

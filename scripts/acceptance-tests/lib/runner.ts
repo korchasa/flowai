@@ -351,6 +351,31 @@ export function composeTimeoutLogs(partial: string, message: string): string {
   return partial ? `${partial}\n${marker}` : marker;
 }
 
+/**
+ * Detect a dead agent session — the CLI answered with an authentication error
+ * instead of doing the task.
+ *
+ * This is not a behavioural result and must never be scored as one. On
+ * 2026-08-20 an expired subscription session turned twelve trigger scenarios
+ * into a uniform 0/3, negatives included, each run exiting 1 after ~12 s with
+ * an empty trace. Read off the summary table that looks exactly like "the model
+ * answered without reaching for the skill", and three scenarios were marked as
+ * unreachable positive triggers on the strength of it.
+ */
+export function detectAuthFailure(logs: string): string | null {
+  const patterns = [
+    "OAuth session expired",
+    "Failed to authenticate",
+    "Invalid API key",
+  ];
+  const hit = patterns.find((p) => logs.includes(p));
+  if (!hit) return null;
+  return `Agent session is not authenticated (matched: "${hit}"). ` +
+    `Nothing measured here is a behavioural result — the CLI never ran the ` +
+    `task. Export the repo's OAuth token before the sweep ` +
+    `(set -a; . ./.env; set +a) and run again.`;
+}
+
 async function runAgentWithTimeout(
   scenario: BenchmarkScenario,
   sandboxPath: string,
@@ -417,6 +442,12 @@ async function runAgentWithTimeout(
 
   const durationMs = performance.now() - start;
   console.log(`  Agent finished with exit code ${agentResult.code}`);
+
+  const authFailure = detectAuthFailure(agentResult.logs);
+  if (authFailure) {
+    agent.kill();
+    throw new Error(authFailure);
+  }
 
   // Warn on suspiciously short agent output — likely infrastructure issue
   // (skill not mounted, prompt rejected, sandbox misconfigured).

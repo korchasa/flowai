@@ -1,6 +1,6 @@
 ---
 name: setup-agent-code-style-strict
-description: Use when the user asks to add TypeScript strict-mode code-style rules to AGENTS.md for a TypeScript project using strict mode. Do NOT trigger for Deno projects (use setup-agent-code-style-deno) or non-strict TS configurations.
+description: Add TypeScript strict-mode code-style rules to AGENTS.md. The rule text ships inside this skill, so write it from here, not from memory. Use when the user asks for strict-mode style rules in a TypeScript project. Not for Deno projects (use setup-agent-code-style-deno), non-strict configs, or explaining what `strict` turns on.
 ---
 
 ## Purpose

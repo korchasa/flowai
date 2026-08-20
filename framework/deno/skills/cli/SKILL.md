@@ -1,6 +1,6 @@
 ---
 name: cli
-description: Manage all Deno capabilities via CLI (run, test, fmt, lint, task, add, etc.). Use this skill when you need to execute Deno commands, manage dependencies, run tests, or handle local development workflows.
+description: Run Deno from the command line with the right flags — permissions for run/test, `deno task` over raw commands, unstable-feature opt-ins, and dependencies via `deno add`/`outdated`/`remove`. Use when wiring or running any Deno command — these flags are not guessable. Not for Deno Deploy (use deploy) or npm/package.json projects.
 ---
 
 # Deno CLI

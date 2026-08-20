@@ -1,18 +1,19 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// KNOWN RED, and NOT a case for `noPositiveTrigger`. Measured 2026-08-20,
-// 3 runs, 0/3 — but the traces show 2-5 tool calls per run in 26 s: the agent
-// runs `deno test` itself with generic tools instead of invoking this skill. That is a
-// routing miss with a live tool path, not the "answers unaided in one breath"
-// shape that retires a positive trigger, so a description rewrite is still the
-// lever here and the scenario stays red until someone pulls it.
+// The query was retargeted on 2026-08-20. The old one — "run the unit tests in
+// this project and tell me which ones fail" — sat in the domain but picked its
+// most trivial slice: `deno test` is the one Deno command a model runs without
+// consulting anything, and 3 runs of 3 showed exactly that (2-5 tool calls, no
+// skill). The description no longer claims that slice either; it now names what
+// the reference actually adds — permission flags, `deno task`, unstable opt-ins
+// and dependency management. This query asks for all three of those at once.
 export const DenoCliTriggerPos1 = new class extends AcceptanceTestScenario {
   id = "cli-trigger-pos-1";
-  name = "natural deno test invocation";
+  name = "deno dependency and task wiring";
   skill = "cli";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Run the unit tests in this project and tell me which ones fail. It's a Deno project.";
+    "Add the JSR http package to this Deno project and give me a `dev` task in deno.json that serves src/main.ts with the permissions it needs.";
   checklist = [{
     id: "skill_invoked",
     description:

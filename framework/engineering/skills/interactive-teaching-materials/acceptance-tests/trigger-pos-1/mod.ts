@@ -6,8 +6,18 @@ export const InteractiveTeachingMaterialsTriggerPos1 = new class
   name = "explorable tutorial request";
   skill = "interactive-teaching-materials";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
+  /**
+   * The query deliberately avoids artifact-shaped phrasing — "build me a page",
+   * "open it in the browser", "clickable HTML". The host CLI ships its own
+   * artifact skills (`artifact-design`, `web-artifacts-builder`) whose triggers
+   * fire on exactly those words and whose subject is page design, not teaching
+   * a process. The same collision cost `engineer-prompts-for-reasoning` five
+   * runs to `claude-api` before the model name was changed. What is left names
+   * the need instead of the medium: a reader stepping through state
+   * transitions, which is this skill's subject and nobody else's.
+   */
   userQuery =
-    "Can you build me a clickable, explorable tutorial about TCP handshake states that I can open in the browser and play with?";
+    "Our on-call runbook explains the TCP handshake in prose and nobody retains it. Turn it into an explorable teaching material where the reader steps through each state transition and sees what changes at each step.";
   checklist = [{
     id: "skill_invoked",
     description:

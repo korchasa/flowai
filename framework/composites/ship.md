@@ -24,7 +24,7 @@ Four explicit gates between phases:
 - **Implement → Review** — project check MUST exit 0 AND `git status` MUST be non-empty.
 - **Review → Commit** — verdict MUST be Approve. Request Changes / Needs Discussion / crash → STOP.
 - **Commit → Push** — `git status --porcelain` MUST be empty, untracked files included, AND if pushing main/master with remote-ahead, the Push Phase will ask before pushing.
-- **Push → Reflect** — the push report does NOT end the run; the Reflect Phase follows in the same turn, whether the push succeeded or the user declined it.
+- **Push → Reflect** — the push report does NOT end the run; the Reflect Phase follows in the same turn, whether the push succeeded or the user declined it. Reached only by a run that got this far: a STOP at an earlier gate ends the run and skips it.
 
 ## Context
 
@@ -41,7 +41,7 @@ ship is the terminal composite of the SDLC: by the time the agent exits, work ei
 4. **Implement → Review Gate**: project check MUST exit 0 AND `git status` MUST be non-empty. Otherwise STOP.
 5. **Verdict Gate**: only Approve proceeds to Commit. Request Changes / Needs Discussion / crash → STOP. Phase output is reported regardless.
 6. **Commit → Push → Reflect Gates**: `git status --porcelain` MUST be empty before the push — untracked files count, and Session Scope does not exempt them. Push Phase's safety contract handles upstream + divergence + force decisions. The push report is not the end of the run — the Reflect Phase follows it.
-7. **No partial commit**: any earlier-phase failure (errors, crash, gate violation) STOPs the workflow.
+7. **No partial commit — and a STOP ends the run**: any earlier-phase failure (errors, crash, gate violation) STOPs the workflow. **STOP means the run is over.** No later phase runs after it — the Reflect Phase included. A stopped run is not a finished run, so nothing downstream of the stop is owed: do not audit the session, do not edit instruction files, do not commit, do not push. Report which gate stopped you and why, then hand control back to the user and wait.
 8. **Transparency**: each phase reports its artefact (Plan path, Implement test results, Review verdict, Commit SHAs, Push remote ref).
 9. **Planning**: use a task management tool (e.g. `todo_write`, `todowrite`, `Task`) to track all five phases as a single plan.
 10. **Session Scope**: for Review, Commit, and Push, exclude files already modified/untracked at session start (compare to git-status snapshot from system context). Files created during Implement Phase ARE in scope. If unsure, ask before staging.
@@ -73,6 +73,7 @@ Output a combined summary:
 [ ] Commits used Conventional Commits format; task status auto-flipped per FR-DOC-TASK-LIFECYCLE.
 [ ] Commit → Push gate enforced: `git status --porcelain` empty (untracked included) before the Push Phase.
 [ ] Push → Reflect gate enforced: the Reflect Phase ran after the push report, in the same turn.
+[ ] No phase ran after a STOP: if an earlier gate stopped the run, the Reflect Phase did NOT run and no instruction-file edit, commit or push happened after the stop.
 [ ] Push Phase: no `--force` used; `--force-with-lease` only with explicit per-push authorization; first-push gate satisfied; protected-branch divergence handled before push attempt.
 [ ] Post-push verification: `git rev-parse @{u}` matches `HEAD`.
 [ ] Plan / Implement / Review / Commit / Push results all reported to user.
@@ -116,6 +117,7 @@ After completing the Review report:
 <gate after="5">
 ### Push → Reflect Gate
 
+- **You are only here if every earlier gate passed.** This gate is reached by completing the Push Phase, and by no other route. A STOP at any earlier gate ends the run on the spot (rule 7) and never arrives here, so nothing below applies to a stopped run.
 - The push report is not the end of the run. The Reflect Phase below still has to run, in this same turn, without waiting for the user to ask for it.
-- Enter the Reflect Phase whether the push succeeded or the user declined it. The session is worth auditing either way, and the phase decides for itself whether it earned a reflection — do not decide that here.
+- Enter the Reflect Phase whether the push succeeded or the user declined it. A declined push is still a completed run — the work is done and sitting in local commits — and the session is worth auditing either way, so the phase decides for itself whether it earned a reflection. A run stopped at an earlier gate is a different case entirely and does not reach this line.
 </gate>

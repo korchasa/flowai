@@ -1,15 +1,23 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
+/**
+ * The prompt to relay is IN the query. It was not, until 2026-08-20: the old
+ * wording said "take this prompt and run it in OpenCode" and then supplied no
+ * prompt, so all three runs ended `blocked` with the agent asking "Could you
+ * share the prompt text you want executed in OpenCode?". That is a malformed
+ * scenario, not a routing miss — and it was briefly recorded as an unreachable
+ * positive trigger on the strength of a tool-call count of zero, read off the
+ * summary table without opening the session. Zero calls means the agent had
+ * nothing to work on just as easily as it means the agent needed nothing.
+ */
 export const AiIdeRunnerTriggerPos1 = new class extends AcceptanceTestScenario {
   id = "ai-ide-runner-trigger-pos-1";
   name = "run prompt in another IDE";
   skill = "ai-ide-runner";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
-  noPositiveTrigger =
-    "Measured 2026-08-20, 3 runs, every raw session with ZERO tool calls in 22 s: the agent explains what it would run and answers about OpenCode from what it already knows, never listing the skill catalog. Same shape as engineer-prompts-for-reasoning-trigger-pos-1 — a request the model believes it can answer unaided never reaches the catalog, so no description wording can win it.";
 
   userQuery =
-    "Take this prompt and run it in OpenCode for me, then show me the raw output.";
+    'Run this prompt in OpenCode and show me its raw output, word for word: "Name the three hardest parts of writing a JSON parser by hand."';
   checklist = [{
     id: "skill_invoked",
     description:

@@ -1,16 +1,47 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
+/**
+ * The page to rewrite is written into the sandbox by `setup`, and the query
+ * names its path. Until 2026-08-20 the query said "rewrite this product page"
+ * and no page existed anywhere, so all three runs ended `blocked` with "Please
+ * paste the text you'd like rewritten". The scenario was then briefly recorded
+ * as an unreachable positive trigger, with an evidence line claiming the agent
+ * "rewrites the text on the spot" — the opposite of what the session says. The
+ * count of tool calls came from the summary table; the session was never opened.
+ */
 export const WriteInInformationalStyleTriggerPos1 = new class
   extends AcceptanceTestScenario {
   id = "write-in-informational-style-trigger-pos-1";
   name = "rewrite marketing copy as neutral";
   skill = "write-in-informational-style";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
-  noPositiveTrigger =
-    "Measured 2026-08-20, 3 runs, every raw session with ZERO tool calls in 15 s: the agent rewrites the text on the spot, which is the fastest unaided answer of the whole trigger suite. Same shape as engineer-prompts-for-reasoning-trigger-pos-1 — a request the model believes it can answer unaided never reaches the catalog, so no description wording can win it.";
+
+  override async setup(sandboxPath: string) {
+    await Deno.writeTextFile(
+      `${sandboxPath}/product-page.md`,
+      [
+        "# Orbit Sync — Effortless Backups That Just Work",
+        "",
+        "Orbit Sync is the world's most powerful backup companion, trusted by",
+        "thousands of happy teams who never worry about their data again. Our",
+        "revolutionary engine works its magic in the background, so you can",
+        "focus on what really matters.",
+        "",
+        "## Why teams love Orbit Sync",
+        "",
+        "- Blazing-fast incremental snapshots, every 15 minutes.",
+        "- Rock-solid encryption that keeps prying eyes out (AES-256).",
+        "- Seamless restore in just a couple of clicks.",
+        "- Unbeatable value starting at $4 per seat per month.",
+        "",
+        "Stop losing sleep over lost files. Join the backup revolution today.",
+        "",
+      ].join("\n"),
+    );
+  }
 
   userQuery =
-    "Rewrite this product page so it reads as a neutral informational article — no marketing tone, no superlatives, just factual prose.";
+    "Rewrite product-page.md so it reads as a neutral informational article — no marketing tone, no superlatives, just factual prose. Keep the numbers.";
   checklist = [{
     id: "skill_invoked",
     description:

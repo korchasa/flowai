@@ -1,11 +1,14 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// KNOWN RED, and NOT a case for `noPositiveTrigger`. Measured 2026-08-20,
-// 3 runs, 0/3 — but the traces show 3-4 tool calls per run in 67 s: the agent
-// edits AGENTS.md itself with generic tools instead of invoking this skill. That is a
-// routing miss with a live tool path, not the "answers unaided in one breath"
-// shape that retires a positive trigger, so a description rewrite is still the
-// lever here and the scenario stays red until someone pulls it.
+// Was 0/3 on 2026-08-20 with 3-4 tool calls per run: the agent wrote its own
+// rules into AGENTS.md instead of invoking this skill, which carries the rule
+// text. Notable because the old description matched this query almost verbatim
+// and still lost — a "Use when the user asks to..." opener describes the
+// occasion but never says what the skill produces. Rewritten action-first on the
+// same day, naming the artefact and stating the rule text ships inside the skill.
+// That moved it from 0/3 to 1/3, no further. In the two losing runs the agent
+// reads AGENTS.md, writes its own rules and reports `review_ready` in ~50 s.
+// Still open.
 export const TsStrictStyleTriggerPos1 = new class
   extends AcceptanceTestScenario {
   id = "setup-agent-code-style-strict-trigger-pos-1";
