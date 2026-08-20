@@ -6,6 +6,9 @@ export const ManageGithubTicketsTriggerPos1 = new class
   name = "create new GitHub issue";
   skill = "manage-github-tickets";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
+  noPositiveTrigger =
+    "Measured 2026-08-20, 3 runs, every raw session with ZERO tool calls in 18 s: the agent writes the issue text straight into its reply rather than reaching for the skill. Same shape as engineer-prompts-for-reasoning-trigger-pos-1 — a request the model believes it can answer unaided never reaches the catalog, so no description wording can win it.";
+
   userQuery =
     "Open a new GitHub issue in our backend repo for the rate-limiter regression, with a clear repro and expected behaviour.";
   checklist = [{
