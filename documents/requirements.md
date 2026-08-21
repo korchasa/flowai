@@ -782,10 +782,15 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
     MUST state the moment they bind, not only the requirement, and each binding
     MUST carry a string assertion in `check-agents-template_test.ts`. A pack-level
     sweep costs hours; the assertion costs milliseconds and catches a silent
-    revert. Five such assertions exist (TDD first-edit; pre-refactor test run;
+    revert. Seven such assertions exist (TDD first-edit; pre-refactor test run;
     contradiction non-resolution; the clarifying question as a complete
-    deliverable; the contradiction carve-out in `Proactive Resolution`) — see
+    deliverable; the contradiction carve-out in `Proactive Resolution`; the
+    missing input as a blocker; Test Rules agreeing with that blocker rather
+    than offering an accuracy exemption) — see
     [agents-rules-nest-three-red](tasks/2026/08/agents-rules-nest-three-red.md).
+    Where two rules claim one case, the weaker one wins: both the
+    `Proactive Resolution` and the Test Rules assertions guard a neighbour
+    that had to be aligned before the hardened rule could take effect.
 
 ### FR-DEV-SYNC: Multi-IDE Dev Resource Distribution [ANC:fr:dev-sync]
 
