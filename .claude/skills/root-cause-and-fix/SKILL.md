@@ -1,6 +1,6 @@
 ---
 name: root-cause-and-fix
-description: Autonomous investigate → root-cause → fix → verify loop for THIS repo's own defects, especially failing acceptance scenarios. Decides first whether the product or the measuring instrument is broken, then fixes the right layer and proves it with the test that would have caught it. Use when a scenario, a check or a benchmark fails and the cause is not already known.
+description: Autonomous investigate → root-cause → fix → verify loop for this repo's own defects. Decides first whether the product or the measuring instrument is broken, fixes that layer, proves it with the test that would have caught it, and writes what it learned back into itself. Use when a scenario, check or benchmark fails and the cause is not known.
 ---
 
 # Root-Cause And Fix
@@ -54,6 +54,10 @@ fails — then emit a STOP-ANALYSIS REPORT per AGENTS.md.
 8. **Distinguish variance from regression.** A real defect fails the same way
    three runs in a row. One sweep disagreeing with the next on an unchanged tree
    is load noise; re-measure before diagnosing.
+9. **This file is an output of the loop.** Rules 5 and 7 apply to it as they do
+   to any scenario or comment: a signature here that proves wrong gets corrected
+   in place, and what the loop learns gets written back (Phase 6). A lesson left
+   in chat is lost at the end of the session.
 
 ## Phase 0 — Instrument or product
 
@@ -167,6 +171,39 @@ date, number of runs, what the sessions showed.
 - The commit message states what was wrong, what the evidence was, and what
   remains red. A fix whose measurement did not move says so.
 
+## Phase 6 — Amend this skill
+
+The loop's own text is the only artefact that carries a lesson into the next
+session. Decide at the end of every run whether this file should change, and say
+which way you decided — a silent skip is indistinguishable from a forgotten step.
+
+**Earns an edit:**
+
+- A cause Phase 0 would NOT have caught, that can recur. Add one bullet with the
+  date and what it cost.
+- A rule you broke that cost real work. Add it, or sharpen the one that failed
+  to stop you.
+- A signature here that turned out wrong or misleading. Correct it in place and
+  keep the retracted claim visible — the next reader needs to know it was
+  believed, not just that it is gone.
+- A command, path or flag that changed under you. Fix it without ceremony.
+
+**Does not earn an edit:**
+
+- A one-off in one machine's environment.
+- A restatement of a rule already present, in different words.
+- A finding about the PRODUCT rather than about diagnosing it — that belongs in
+  the SRS, the SDS or a task file.
+- A run that went well. Success teaches this file nothing.
+
+**Budget**: stay under ~220 lines. When an addition would pass that, compress an
+existing item instead of appending — two bullets describing one failure shape are
+one bullet. Growth without pruning turns the signature list into something nobody
+reads to the end, which is the same as having no list.
+
+Commit the amendment with the work that produced it, staged by explicit path,
+and say in the message what was learned rather than that the skill was updated.
+
 ## Verification
 
 <verification>
@@ -179,4 +216,6 @@ date, number of runs, what the sessions showed.
 [ ] Scenario re-measured with `-n 3`; variance separated from regression.
 [ ] `deno task check` green; commit by explicit paths after a separate index check.
 [ ] Report names what is still red and why.
+[ ] Phase 6 decision stated aloud: this file amended with what was learned, or
+    deliberately left alone with the reason.
 </verification>
