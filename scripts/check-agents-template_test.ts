@@ -153,3 +153,114 @@ Deno.test("AGENTS.template.md — declares forward-motion rule with named except
     "Template's forward-motion rule does not name the irreversible-action exception in the same vicinity",
   );
 });
+
+/*
+ * The three tests below guard hardenings added on 2026-08-21. Each one exists
+ * because the matching pack-level acceptance scenario failed identically in two
+ * independent sweeps (2026-08-16T13-03-00 and 2026-08-20T23-49-00), four days
+ * and two model runs apart. In every case the raw sandbox session showed the
+ * template WAS in context — the agent ran `NO_COLOR=1 deno task check`, a rule
+ * that exists nowhere else — and the rule still did not fire. The scenarios cost
+ * hours to run; these string assertions cost milliseconds and stop the hardening
+ * from being reverted unnoticed.
+ */
+
+Deno.test("AGENTS.template.md — binds the TDD cycle to the first edit, with no size exemption", async () => {
+  const content = await readTemplate();
+  // agents-rules-tdd-cycle: the agent answered "add function X to file Y" with
+  // exactly two tool calls, Read then Edit, and declared the task done. The old
+  // text ("Follow the TDD flow described below") named the requirement but not
+  // the moment it binds, so a change that looked small never reached the cycle.
+  const firstEdit = /failing test is your first edit/i;
+  assert(
+    firstEdit.test(content),
+    "Template no longer binds the failing test to the first edit",
+  );
+  const noExemption = /task size is not an exemption/i;
+  assert(
+    noExemption.test(content),
+    "Template no longer denies the small-task exemption from the TDD cycle",
+  );
+});
+
+Deno.test("AGENTS.template.md — binds the pre-refactor test run to the request, not the plan", async () => {
+  const content = await readTemplate();
+  // agents-rules-functionality-preservation: the agent read logger.test.ts,
+  // wrote formatter.ts, made six edits, and only then ran the suite once. The
+  // rule lives under `## Planning Rules`, so a refactor asked for directly —
+  // with no planning phase in front of it — read as out of its scope.
+  const bindsOnRequest = /binds on the request, not on the plan/i;
+  assert(
+    bindsOnRequest.test(content),
+    "Template's Functionality Preservation rule no longer binds on the request itself",
+  );
+  const readingIsNotRunning = /reading the test file is not running it/i;
+  assert(
+    readingIsNotRunning.test(content),
+    "Template no longer distinguishes reading a test file from running it",
+  );
+});
+
+Deno.test("AGENTS.template.md — forbids self-resolving a contradiction after naming it", async () => {
+  const content = await readTemplate();
+  // agents-rules-contradictions: the agent enumerated FR-1, FR-2 and FR-3,
+  // then split `apiKey === ""` from `apiKey === undefined` so each requirement
+  // held on its own branch, and shipped. Both sweeps scored
+  // `contradiction_detected` as PASS and `asks_user` as FAIL — detection was
+  // never the gap. This repo's own AGENTS.md had already been hardened against
+  // exactly that; the hardening had not been backported to the template.
+  const noticingNotEnough = /noticing the contradiction and proceeding anyway/i;
+  assert(
+    noticingNotEnough.test(content),
+    "Template no longer rejects noticing-then-proceeding as compliance",
+  );
+  const noInventedDistinction =
+    /inventing a distinction the requirements never draw/i;
+  assert(
+    noInventedDistinction.test(content),
+    "Template no longer names the invented-distinction workaround shape",
+  );
+});
+
+Deno.test("AGENTS.template.md — makes the clarifying question a complete deliverable", async () => {
+  const content = await readTemplate();
+  // Second fix, 2026-08-21. Hardening the prohibition alone left the scenario
+  // at 0/3: the rule reached the agent and lost an argument. Raw session
+  // `5f034948` (run 2 of 2026-08-21T11-54-48): "maybe this is a genuine
+  // contradiction I should flag rather than resolve through interpretation,
+  // since CLAUDE.md explicitly instructs me to surface contradictions" —
+  // followed two sentences later by "I'll proceed with this coherent
+  // interpretation since the alternative would make implementation
+  // impossible." The rule said what not to do and never said what compliance
+  // produces, so stopping read as failing the task.
+  const questionIsDeliverable = /the question is the deliverable/i;
+  assert(
+    questionIsDeliverable.test(content),
+    "Template no longer states that the clarifying question is itself a complete answer",
+  );
+  const impossibilityIsNotExemption =
+    /signature of the situation this rule is for, not an exemption/i;
+  assert(
+    impossibilityIsNotExemption.test(content),
+    "Template no longer rejects 'stopping would make the task impossible' as an exemption",
+  );
+});
+
+Deno.test("AGENTS.template.md — carves contradictions out of Proactive Resolution", async () => {
+  const content = await readTemplate();
+  // Same three sessions: `Proactive Resolution` fired against the contradiction
+  // rule and won. Run 2 reasoned "I should avoid guessing at the correct
+  // interpretation and instead check the actual codebase and recent git changes
+  // to requirements.md for clarity" — a faithful application of the wrong rule.
+  // The two must not both claim the case; the carve-out has to be explicit and
+  // sit in the Proactive Resolution bullet, where the agent is when it decides.
+  const bullet = content
+    .split("\n")
+    .find((l) => l.includes("**Proactive Resolution**"));
+  assert(bullet, "Template no longer declares a Proactive Resolution rule");
+  const carveOut = /does NOT cover a contradiction between two requirements/i;
+  assert(
+    carveOut.test(bullet!),
+    "Proactive Resolution no longer excludes requirement contradictions from self-service research",
+  );
+});
