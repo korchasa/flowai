@@ -8,21 +8,19 @@ description: Autonomous investigate → root-cause → fix → verify loop for t
 ## Overview
 
 Dev-only loop for the flowai repo. A red test is a claim about the world, not a
-fact about the product: it can equally mean the harness lost the evidence, the
-checklist tests yesterday's framework, or the scenario never supplied what it
+fact about the product: the harness may have lost the evidence, the checklist may
+test yesterday's framework, or the scenario may never have supplied what it
 demands. On 2026-08-20 the split was 7 instrument faults to 1 product defect; on
-2026-08-21 a nest of 4 went the other way, 1 to 3. So the loop starts by deciding
-which of the two it is looking at, and only then fixes anything.
+2026-08-21 a nest of 4 went 1 to 3. Decide the layer first, fix second.
 
 **Autonomy contract**: invoking this skill IS authorization for the whole loop —
 reading sandboxes, running single scenarios, editing the layer the diagnosis
 points at, re-measuring, and committing on a non-`main` branch. Do NOT pause to
-ask which hypothesis to test or whether a run may be started. The audit trail is
-the printed Hypothesis Board plus the evidence quoted in each finding. Stop and
-hand back only on a hard blocker: a safety guard fires (`system_health`,
-`process_watchdog`, a pre-commit hook), the environment is missing (auth, Docker,
-disk), or the second fix attempt for the same failure fails — then emit a
-STOP-ANALYSIS REPORT per AGENTS.md.
+ask which hypothesis to test or whether a run may be started; the audit trail is
+the Hypothesis Board plus the evidence quoted in each finding. Hand back only on
+a hard blocker — a guard fires (`system_health`, `process_watchdog`, a
+pre-commit hook), the environment is missing (auth, Docker, disk), or the second
+fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 
 ## Rules
 
@@ -42,11 +40,11 @@ STOP-ANALYSIS REPORT per AGENTS.md.
    quiet a red test by editing whichever of the three is easiest to reach.
 5. **Never flip a checklist into its opposite.** Rewriting "must have X" as "must
    NOT have X" trades one red for another and hides that the requirement was
-   conditional all along. Scope the item to what it tests, say why it does not
-   adjudicate the rest, and record every dead version in the file.
+   conditional. Scope the item to what it tests, say why it does not adjudicate
+   the rest, and record every dead version in the file.
 6. **No test-fitting.** Do not hint the answer in `userQuery`, do not script the
-   persona, do not pre-create what the skill should produce. If a query must
-   change, change it because it was malformed, and say so in the file.
+   persona, do not pre-create what the skill should produce. Change a query only
+   because it was malformed, and say so in the file.
 7. **Correct the record where the wrong claim lives.** A comment that encoded a
    wrong diagnosis costs the next reader a whole investigation — rewrite it in
    place with what the evidence shows, and keep the retracted version visible.
@@ -70,18 +68,17 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Exit 124 with tool calls present.** A global timeout. On a checklist of only
   skill-invocation items the routing verdict is already in the trace and the
   clock is irrelevant (`shouldInjectExitCodeCheck`); on a behavioural one, ask
-  whether the work legitimately outlives the cap — `deep-research` does.
+  whether the work outlives the cap — `deep-research` does.
 - **Judge reports a section "not present" in a large file.** Files are elided in
   the middle above 30 KB (`renderFileForEvidence`); check the file on disk first.
-  This scored `doc_rules_present` missing on two `init` scenarios while the
-  section sat six KB past the old cut.
+  This scored `doc_rules_present` missing on two `init` scenarios.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
   means the model produced the artefact unaided; `blocked` means it stopped to
-  ask for material the query never supplied — a malformed scenario, not a
-  routing miss. Four scenarios were misdiagnosed on this in one day.
-- **Adjacent-negative fails and the correct neighbour lives in another pack.**
-  The runner mounts `core` plus the scenario's own pack, so the agent had nothing
-  to defer to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
+  ask for material the query never supplied — a malformed scenario, not a routing
+  miss. Four scenarios were misdiagnosed on this in one day.
+- **Adjacent-negative fails, correct neighbour lives in another pack.** The
+  runner mounts `core` plus the scenario's own pack, so the agent had nothing to
+  defer to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first. `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
@@ -89,16 +86,16 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent: find an unrelated instruction from the same file obeyed in
   the same session (`NO_COLOR=1` settled it for `agents-rules-*`). Then read the
-  session for which of two faults it is. An agent that never mentions the rule
-  was never bound by it — fix with a binding moment ("this is your FIRST
-  action"). An agent that quotes it and overrides it lost an argument — say what
-  compliance PRODUCES, and grep the document for a neighbouring rule claiming
-  the same decision. The second shape cost an extra measure round on 2026-08-21:
-  hardening the prohibition moved the reasoning and left behaviour at 0/3,
-  because `Proactive Resolution` owned the case and won.
-- **A rule stated as a consequence is refutable by denying the consequence.**
-  "Do not X, it ships wrong values" was answered with "my values are right".
-  Forbid the act, not the harm.
+  session for the shape. Never mentions the rule → never bound by it; fix with a
+  binding moment, and place it ahead of the decision, because an agent that
+  already has a solution reads the rule for exemptions. Quotes it and overrides
+  it → it lost an argument; say what compliance PRODUCES, and grep for a
+  neighbouring rule claiming the same decision, since the weaker of two always
+  wins (`Proactive Resolution`, then the `Test Rules` accuracy wording — one
+  extra measure round each). Obeys it and reclassifies the case → your own
+  carve-out is the escape; scope it to what the user NAMED. And a rule stated as
+  a consequence is refutable by denying the consequence — forbid the act, not
+  the harm.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
@@ -116,10 +113,16 @@ Read in this order and stop as soon as the cause is unambiguous.
      subagent transcripts sit under `<uuid>/subagents/`.
 2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the
    agent actually wrote settles claims no transcript reading can.
-3. If the run dir was pruned, the transcript and the judge's per-item JSON both
+3. The failed agent itself, when the diagnosis is about wording. Resume in place
+   (`cd <sandbox> && HOME=<bench-home> claude -p --resume <uuid> "<question>"`)
+   and ask neutrally which phrase left room and what the rule would have had to
+   say. Three runs named the same defective sentence in one round on 2026-08-21,
+   after three rounds of guessing had not. The transcript shows what it did; the
+   interview shows the words it justified it with, and those are the ones to fix.
+4. If the run dir was pruned, the transcript and the judge's per-item JSON both
    survive in `report.html` — parse with python, never grep the raw HTML, and
    never `Read` a `.jsonl` (one such read reported 104 000 tokens for 44 lines).
-4. The scenario file: what it asserts, and whether the query supplies what it
+5. The scenario file: what it asserts, and whether the query supplies what it
    demands. Then the primitive's own text — the atom under `framework/atoms/`,
    never the generated `SKILL.md`.
 
@@ -160,18 +163,16 @@ hold that, so its guard test holds it instead.
 - Single scenario, cache bypassed: `deno task acceptance-tests -f <id> -n 3`.
   `-f` takes ONE substring, last wins on repeats; `-p` sets concurrency.
 - Always in the background, with `.env` sourced in the same shell — a foreground
-  run past the tool's cap is killed mid-flight and the measurement is lost, and
-  shells do not persist between tool calls.
+  run past the tool's cap is killed mid-flight and shells do not persist.
 - Host preflight before any sweep: load, free swap, and orphaned runners
   (`ps -Ao pid,etime,command | grep -E "runtests.py|benchmark.ts run"`). Under
   memory pressure `system_health` aborts sessions and every result is noise.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
-  a product fix, against the raw sessions and the sandbox on disk. Either way
-  the number has to move for the reason claimed.
-- Name what the green number covers before reporting it. A rule phrased "if you
-  see X" binds at every stage, but the suite usually holds one, so "3/3" reads
-  as general when it is not — say which stage, and add a scenario for the one
-  that costs most. Missed on 2026-08-21, caught by the user.
+  a product fix, against the raw sessions and the sandbox on disk. The number
+  has to move for the reason claimed.
+- Name what the green number covers. A rule phrased "if you see X" binds at
+  every stage, but the suite usually holds one, so "3/3" reads as general when
+  it is not — say which stage, and add a scenario for the one that costs most.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
@@ -179,8 +180,7 @@ hold that, so its guard test holds it instead.
 ## Phase 5 — Record and commit
 
 - Update the docs the change maps to (AGENTS.md Documentation Map). An
-  instrument change belongs in SDS §3.4; a rule learned about triggers belongs in
-  the FR-ACCEPT.TRIGGER clause.
+  instrument change belongs in SDS §3.4; a trigger lesson in FR-ACCEPT.TRIGGER.
 - Check `git diff --cached --stat` in a SEPARATE tool call, then commit by
   explicit paths. The tree is shared with other sessions.
 - The commit message states what was wrong, what the evidence was, and what
@@ -193,23 +193,19 @@ Decide at the end of every run whether it should change, and say which way you
 decided — a silent skip is indistinguishable from a forgotten step.
 
 **Earns an edit:** a cause Phase 0 would NOT have caught, that can recur (one
-bullet, with the date and what it cost); a rule you broke that cost real work —
-add it, or sharpen the one that failed; a signature here that proved wrong —
-correct it in place and keep the retracted claim visible, since the next reader
-needs to know it was believed and not just that it is gone; a command, path or
-flag that changed under you.
+bullet, with the date and what it cost); a rule you broke that cost real work; a
+signature here that proved wrong — correct it in place and keep the retracted
+claim visible; a command, path or flag that changed under you.
 
 **Does not earn an edit:** a one-off in one environment; a restatement of a rule
 already here; a finding about the PRODUCT rather than about diagnosing it (that
-belongs in the SRS, the SDS or a task file); a run that went well — success
-teaches this file nothing.
+belongs in the SRS, the SDS or a task file); a run that went well.
 
 **Budget**: stay under ~220 lines. When an addition would pass that, compress an
 existing item instead of appending — two bullets describing one failure shape are
 one bullet. Growth without pruning turns the signature list into something nobody
-reads to the end, which is the same as having no list. Commit the amendment with
-the work that produced it, staged by explicit path, and say in the message what
-was learned rather than that the skill was updated.
+reads to the end. Commit the amendment with the work that produced it, staged by
+explicit path, and say what was learned rather than that the skill was updated.
 
 ## Verification
 
