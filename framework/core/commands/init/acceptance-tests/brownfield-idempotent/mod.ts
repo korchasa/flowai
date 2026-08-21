@@ -50,7 +50,7 @@ Confirm all other actions like creating missing documents.`;
     {
       id: "dev_commands_created",
       description:
-        "Were development command scripts created (e.g., scripts/check.ts)?",
+        "Does the project's OWN command runner end up carrying a real standard interface — check / test / dev / prod as tasks in deno.json, scripts in package.json, or targets in a Makefile — each wired to actual tooling rather than a stub echo? Either shape passes: the command inline in the task, or the task calling a script. This item does NOT adjudicate which; the skill bans wrapper scripts only when the runner can do the job directly, and that condition is not decidable from the artefacts. Twice stale before 2026-08-20: the item first demanded `scripts/check.ts` and failed a run that used plain tasks, then demanded its absence and failed a run that used a wrapper.",
       critical: true,
     },
   ];

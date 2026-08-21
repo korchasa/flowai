@@ -371,17 +371,40 @@ export function composeTimeoutLogs(partial: string, message: string): string {
  * working. Our own failure leaves NO tool calls at all, because the agent never
  * got as far as its first one.
  */
+export const HARNESS_FAULT_PATTERNS: readonly string[] = [
+  "OAuth session expired",
+  "Failed to authenticate",
+  "Invalid API key",
+  "Usage credits required",
+];
+
+/**
+ * The same signal seen in a run that DID make tool calls.
+ *
+ * Here it cannot be trusted as ours — a scenario that drives another IDE's CLI
+ * surfaces that child's billing or auth error the same way — so it warns
+ * instead of aborting. `agents-rules-stop-analysis` lost a run to
+ * "Usage credits required" mid-session on 2026-08-20 and was scored as an agent
+ * that failed to report a blocker.
+ */
+export function detectHarnessFaultWarning(
+  logs: string,
+  toolCallCount: number,
+): string | null {
+  if (toolCallCount === 0) return null;
+  const hit = HARNESS_FAULT_PATTERNS.find((p) => logs.includes(p));
+  if (!hit) return null;
+  return `Trace contains "${hit}" and the run made ${toolCallCount} tool ` +
+    `call(s). If that came from THIS session rather than a CLI it drove, the ` +
+    `result is a harness fault, not behaviour — check before trusting it.`;
+}
+
 export function detectAuthFailure(
   logs: string,
   toolCallCount: number,
 ): string | null {
   if (toolCallCount > 0) return null;
-  const patterns = [
-    "OAuth session expired",
-    "Failed to authenticate",
-    "Invalid API key",
-  ];
-  const hit = patterns.find((p) => logs.includes(p));
+  const hit = HARNESS_FAULT_PATTERNS.find((p) => logs.includes(p));
   if (!hit) return null;
   return `Agent session is not authenticated (matched: "${hit}"). ` +
     `Nothing measured here is a behavioural result — the CLI never ran the ` +
@@ -492,6 +515,11 @@ async function runAgentWithTimeout(
     agent.kill();
     throw new Error(authFailure);
   }
+  const faultWarning = detectHarnessFaultWarning(
+    agentResult.logs,
+    agent.getToolCalls().length,
+  );
+  if (faultWarning) console.warn(`  WARNING: ${faultWarning}`);
 
   // Warn on suspiciously short agent output — likely infrastructure issue
   // (skill not mounted, prompt rejected, sandbox misconfigured).
@@ -865,12 +893,43 @@ export async function runScenario(
 }
 
 /**
+ * Render one file for the judge, keeping both ends when it does not fit.
+ *
+ * Head-only truncation is how a present section becomes an absent one. The
+ * generated AGENTS.md of an `init` run is ~24 KB against a 10 KB cap, so the
+ * judge saw the file end mid-"Documentation Map" and scored
+ * `doc_rules_present` as missing on both `init-greenfield` and
+ * `init-brownfield` — the section was there, 6 KB further down. The marker says
+ * outright that the gap is the harness's doing, because a judge reading a
+ * truncated file otherwise treats the silence as proof.
+ */
+export function renderFileForEvidence(
+  relPath: string,
+  content: string,
+  maxFileSize: number,
+): string {
+  if (content.length <= maxFileSize) {
+    return `--- ${relPath} ---\n${content}`;
+  }
+  const half = Math.floor(maxFileSize / 2);
+  const dropped = content.length - maxFileSize;
+  return [
+    `--- ${relPath} (${content.length} bytes, middle elided) ---`,
+    content.slice(0, half),
+    `\n...[HARNESS ELIDED ${dropped} BYTES FROM THE MIDDLE OF THIS FILE. ` +
+    `Content missing from this excerpt is NOT evidence that the file lacks ` +
+    `it — say so rather than scoring an item as absent.]...\n`,
+    content.slice(-half),
+  ].join("\n");
+}
+
+/**
  * Recursively collects text file contents from the sandbox for judge inspection.
  * Skips hidden dirs (.claude, .git), binary files, and oversized files.
  */
 async function collectGeneratedFiles(
   sandboxPath: string,
-  maxFileSize = 10_000,
+  maxFileSize = 30_000,
 ): Promise<string> {
   const parts: string[] = [];
   const skipDirs = new Set([".claude", ".git", "node_modules"]);
@@ -907,15 +966,8 @@ async function collectGeneratedFiles(
         const isDockerfile = entry.name.toLowerCase() === "dockerfile";
         if (!textExtensions.has(ext) && !isDockerfile) continue;
         try {
-          const stat = await Deno.stat(join(dir, entry.name));
-          if (stat.size > maxFileSize) {
-            parts.push(`--- ${entryRel} (${stat.size} bytes, truncated) ---`);
-            const content = await Deno.readTextFile(join(dir, entry.name));
-            parts.push(content.slice(0, maxFileSize));
-          } else {
-            parts.push(`--- ${entryRel} ---`);
-            parts.push(await Deno.readTextFile(join(dir, entry.name)));
-          }
+          const content = await Deno.readTextFile(join(dir, entry.name));
+          parts.push(renderFileForEvidence(entryRel, content, maxFileSize));
         } catch (_) {
           // skip unreadable files
         }

@@ -8,6 +8,8 @@ import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import {
   composeTimeoutLogs,
   detectAuthFailure,
+  detectHarnessFaultWarning,
+  renderFileForEvidence,
   shouldInjectExitCodeCheck,
 } from "./runner.ts";
 
@@ -80,4 +82,36 @@ Deno.test("shouldInjectExitCodeCheck: a clean exit never adds the item", () => {
     shouldInjectExitCodeCheck([{ id: "skill_invoked" }], 0, 3),
     false,
   );
+});
+
+Deno.test("renderFileForEvidence keeps a small file whole", () => {
+  const out = renderFileForEvidence("AGENTS.md", "# Title\nbody", 100);
+  assertStringIncludes(out, "--- AGENTS.md ---");
+  assertStringIncludes(out, "body");
+});
+
+Deno.test("renderFileForEvidence keeps the tail of a large file — head-only truncation is how a present section reads as absent", () => {
+  const content = "HEAD-MARKER\n" + "x".repeat(500) +
+    "\n## Documentation Rules";
+  const out = renderFileForEvidence("AGENTS.md", content, 100);
+  assertStringIncludes(out, "HEAD-MARKER");
+  assertStringIncludes(out, "## Documentation Rules");
+});
+
+Deno.test("renderFileForEvidence tells the judge the gap is not evidence of absence", () => {
+  const out = renderFileForEvidence("AGENTS.md", "y".repeat(400), 100);
+  assertStringIncludes(out, "HARNESS ELIDED");
+  assertStringIncludes(out, "NOT evidence");
+});
+
+Deno.test("detectHarnessFaultWarning flags a credits error that arrived mid-session", () => {
+  const msg = detectHarnessFaultWarning(
+    "...Usage credits required for 1M context",
+    12,
+  );
+  assertStringIncludes(msg!, "harness fault");
+});
+
+Deno.test("detectHarnessFaultWarning stays quiet when the trace is empty — that case throws instead", () => {
+  assertEquals(detectHarnessFaultWarning("Usage credits required", 0), null);
 });

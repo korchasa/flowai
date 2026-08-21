@@ -52,7 +52,7 @@ Always confirm when asked to apply diffs.`;
     {
       id: "interconnectedness_principle_present",
       description:
-        "Does root AGENTS.md contain a '## Interconnectedness Principle' section declaring that ALL cross-references — doc-to-doc AND code-to-doc — use standard GFM markdown links of the form `[text](path.md#anchor)`, and explicitly rejecting custom anchor / wikilink / ID-only / bare-ID-comment forms? (FR-DOC-LINKS)",
+        "Does root AGENTS.md contain a '## Interconnectedness Principle' section declaring ONE mechanism for ALL cross-references — doc-to-doc AND code-to-doc — namely the SALP grammar, with an anchor token declaring a target and a reference token pointing at one? Wording may vary; what must be there is a single named mechanism covering both directions. (FR-DOC-LINKS). Stale until 2026-08-20: this item demanded GFM markdown links and rejected custom anchor forms, which is what SALP is — the template moved and the checklist did not.",
       critical: true,
     },
     {
