@@ -27,9 +27,10 @@ STOP-ANALYSIS REPORT per AGENTS.md.
 ## Rules
 
 1. **Raw session over any rendering.** `judge-evidence.md` and `report.html` are
-   the judge's rendering. The ground truth is the transcript the sandboxed CLI
-   wrote for itself. Read it before forming any hypothesis about what the agent
-   did or did not do.
+   the judge's rendering; ground truth is the transcript the sandboxed CLI wrote
+   for itself, plus the sandbox on disk. Read those before forming any hypothesis
+   about what the agent did. Renderings also reorder: a `report.html` verdict
+   block is NOT necessarily the run directory of the same index.
 2. **Absence in a rendering is not absence in the world.** Every "the agent never
    X" claim must come from a tool-call count or a session line, never from not
    seeing X in a summary.
@@ -50,8 +51,8 @@ STOP-ANALYSIS REPORT per AGENTS.md.
    wrong diagnosis costs the next reader a whole investigation — rewrite it in
    place with what the evidence shows, and keep the retracted version visible.
 8. **Distinguish variance from regression.** A real defect fails the same way
-   three runs in a row. One sweep disagreeing with the next on an unchanged tree
-   is load noise; re-measure before diagnosing.
+   three runs in a row; one sweep disagreeing with the next on an unchanged tree
+   is load noise. Re-measure before diagnosing.
 9. **This file is an output of the loop.** Rules 5 and 7 apply to it as to any
    scenario or comment: a signature that proves wrong gets corrected in place,
    and what the loop learns gets written back (Phase 6). A lesson left in chat is
@@ -66,38 +67,38 @@ Run this BEFORE anything else. Each signature below was paid for once.
   never ran the task. Remedy: `set -a; . ./.env; set +a` before the sweep.
   `detectAuthFailure` throws on this, but only with zero tool calls — a scenario
   driving another IDE's CLI surfaces THAT child's auth error, a true observation.
-- **Exit 124 with tool calls present.** A global timeout. For a checklist made
-  only of skill-invocation items the routing verdict is already in the trace and
-  the clock is irrelevant (`shouldInjectExitCodeCheck`). For a behavioural
-  checklist, ask whether the work legitimately outlives the cap — `deep-research`
-  does — before treating the timeout as a defect.
+- **Exit 124 with tool calls present.** A global timeout. On a checklist of only
+  skill-invocation items the routing verdict is already in the trace and the
+  clock is irrelevant (`shouldInjectExitCodeCheck`); on a behavioural one, ask
+  whether the work legitimately outlives the cap — `deep-research` does.
 - **Judge reports a section "not present" in a large file.** Files are elided in
-  the middle above 30 KB (`renderFileForEvidence`); check the file on disk in the
-  sandbox first. This scored `doc_rules_present` missing on two `init` scenarios
-  while the section sat six KB past the old cut.
-- **Zero tool calls, exit 0.** Ambiguous by itself. Open the session and read the
-  turn status: `review_ready` means the model produced the artefact unaided;
-  `blocked` means it stopped to ask for material the query never supplied — a
-  malformed scenario, not a routing miss. Four scenarios were misdiagnosed on
-  this in one day.
+  the middle above 30 KB (`renderFileForEvidence`); check the file on disk first.
+  This scored `doc_rules_present` missing on two `init` scenarios while the
+  section sat six KB past the old cut.
+- **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
+  means the model produced the artefact unaided; `blocked` means it stopped to
+  ask for material the query never supplied — a malformed scenario, not a
+  routing miss. Four scenarios were misdiagnosed on this in one day.
 - **Adjacent-negative fails and the correct neighbour lives in another pack.**
   The runner mounts `core` plus the scenario's own pack, so the agent had nothing
   to defer to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
-  SKILL.md before believing the item. `init` forbids wrapper scripts when the
-  project's runner suffices, while its checklist demanded `scripts/check.ts`.
+  SKILL.md first. `init` forbids wrapper scripts when the project's runner
+  suffices, while its checklist demanded `scripts/check.ts`.
 - **A verdict that changed with no tree change.** Load noise. Re-measure.
-- **The rule was in the file and still did not fire.** Two different faults wear
-  this face, so first prove the text reached the agent: find an unrelated
-  instruction from the same file being obeyed in the same session (`NO_COLOR=1`
-  settled it for `agents-rules-*`). Then read the session for the tell. An agent
-  that never mentions the rule was never bound by it — the fix is a binding
-  moment ("this is your FIRST action"). An agent that quotes the rule and
-  overrides it lost an argument — the fix is to say what compliance PRODUCES,
-  and to grep the same document for a neighbouring rule claiming the same
-  decision. On 2026-08-21 that second shape cost a whole extra measure round:
-  hardening the prohibition moved the reasoning and left the behaviour at 0/3,
+- **The rule was in the file and still did not fire.** First prove the text
+  reached the agent: find an unrelated instruction from the same file obeyed in
+  the same session (`NO_COLOR=1` settled it for `agents-rules-*`). Then read the
+  session for which of two faults it is. An agent that never mentions the rule
+  was never bound by it — fix with a binding moment ("this is your FIRST
+  action"). An agent that quotes it and overrides it lost an argument — say what
+  compliance PRODUCES, and grep the document for a neighbouring rule claiming
+  the same decision. The second shape cost an extra measure round on 2026-08-21:
+  hardening the prohibition moved the reasoning and left behaviour at 0/3,
   because `Proactive Resolution` owned the case and won.
+- **A rule stated as a consequence is refutable by denying the consequence.**
+  "Do not X, it ships wrong values" was answered with "my values are right".
+  Forbid the act, not the harm.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
@@ -111,17 +112,16 @@ Read in this order and stop as soon as the cause is unambiguous.
    `find` the `.claude/projects/<slug>/<uuid>.jsonl` inside it.
    - Tool histogram:
      `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
-   - Skill calls:
-     `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use" and .name=="Skill") | .input | tostring' <file>`
-   - Subagent transcripts sit under `<uuid>/subagents/`.
-2. If the run dir was pruned, the transcript and the judge's per-item JSON both
-   survive inside `report.html` — parse it with python, never grep the raw HTML,
-   and never `Read` a `.jsonl` (one such read reported 104 000 tokens for 44
-   lines).
-3. The scenario file: what it actually asserts, and whether the query supplies
-   what it demands.
-4. The primitive's own text — the atom under `framework/atoms/`, never the
-   generated `SKILL.md`.
+   - Same filter with `and .name=="Skill"`, piped to `.input`, for skill calls;
+     subagent transcripts sit under `<uuid>/subagents/`.
+2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the
+   agent actually wrote settles claims no transcript reading can.
+3. If the run dir was pruned, the transcript and the judge's per-item JSON both
+   survive in `report.html` — parse with python, never grep the raw HTML, and
+   never `Read` a `.jsonl` (one such read reported 104 000 tokens for 44 lines).
+4. The scenario file: what it asserts, and whether the query supplies what it
+   demands. Then the primitive's own text — the atom under `framework/atoms/`,
+   never the generated `SKILL.md`.
 
 ## Phase 2 — Hypotheses
 
@@ -146,14 +146,14 @@ wrote.
   `deno run -A scripts/generate-skill-composites.ts --write`. Generated
   `SKILL.md` files are gitignored build artefacts.
 - **Instrument**: edit `scripts/acceptance-tests/lib/`. Extract the decision into
-  a pure exported function and unit-test it — put the test in a file
-  `deno task check` actually runs, NOT `runner_test.ts`, which `task-check.ts`
-  ignores.
-- **Contract**: edit the scenario. Say in the file what the old version demanded
-  and why it was wrong.
+  a pure exported function and unit-test it in a file `deno task check` actually
+  runs, NOT `runner_test.ts`, which `task-check.ts` ignores.
+- **Contract**: edit the scenario, saying in the file what the old version
+  demanded and why it was wrong.
 
 Every fix carries, in the file it touches, the measurement that justified it:
-date, number of runs, what the sessions showed.
+date, number of runs, what the sessions showed. Prose in a product file cannot
+hold that, so its guard test holds it instead.
 
 ## Phase 4 — Verify
 
@@ -165,10 +165,13 @@ date, number of runs, what the sessions showed.
 - Host preflight before any sweep: load, free swap, and orphaned runners
   (`ps -Ao pid,etime,command | grep -E "runtests.py|benchmark.ts run"`). Under
   memory pressure `system_health` aborts sessions and every result is noise.
-- Instrument fixes are verified by their unit test AND by the scenario that was
-  misread — the number has to move for the reason claimed. A product fix is
-  verified against the raw sessions too: confirm the agent did the right thing,
-  not merely that the judge said so.
+- An instrument fix is verified by its unit test AND by the scenario it misread;
+  a product fix, against the raw sessions and the sandbox on disk. Either way
+  the number has to move for the reason claimed.
+- Name what the green number covers before reporting it. A rule phrased "if you
+  see X" binds at every stage, but the suite usually holds one, so "3/3" reads
+  as general when it is not — say which stage, and add a scenario for the one
+  that costs most. Missed on 2026-08-21, caught by the user.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.

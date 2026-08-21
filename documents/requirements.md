@@ -684,7 +684,13 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `agents-rules-tdd-cycle` — TDD RED→GREEN→REFACTOR→CHECK
   - [x] `agents-rules-fail-fast` — no stubs, fix source not test, stop on missing config
   - [x] `agents-rules-stop-analysis` — 5-WHY, STOP on unfixable problem
-  - [x] `agents-rules-contradictions` — contradiction detection, ask and stop
+  - [x] `agents-rules-contradictions` — contradiction detection, ask and stop (implementation stage)
+  - [x] `agents-rules-contradictions-planning` — the same contradiction met while
+    planning. The rule is written without reference to a stage, so it needs
+    evidence on more than one; a plan that silently resolves a conflict is the
+    costlier failure, because the choice becomes a document everything
+    downstream implements as if a human had made it. Byte-identical
+    requirements to the scenario above — the stage is the only variable.
   - [x] `agents-rules-functionality-preservation` — run tests before/after refactoring
   - [x] `agents-rules-evidence-claims` — read code before fixing, cite evidence
   - [x] `agents-rules-traceability-placement` — code evidence in code (`// FR-<ID>`), not in SRS; non-code evidence in SRS

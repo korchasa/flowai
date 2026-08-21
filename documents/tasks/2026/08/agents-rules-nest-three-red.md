@@ -194,6 +194,38 @@ Run 2 closed with "Only the author can say which requirement gives way."
 
 `deno task check` after both fixes: 717 passed | 0 failed, 173 passed | 0 failed.
 
+## Follow-up landed: stage independence
+
+Raised by the user after the report: stopping on a contradiction is a standing
+obligation, not something that surfaces at implementation time. Correct, and it
+exposed two things the fix above got wrong about scope.
+
+The rule itself was never stage-bound — it sits at line 9 of the template, above
+every `##` heading, and reads "If you see contradictions in the request or
+context". But two things around it were:
+
+- `Proactive Resolution` — the rule that competed with it and won — sat under
+  `## Planning Rules`, while the session that applied it was implementing, not
+  planning. A rule governing when the agent may ask a human at all is not a
+  planning rule. Moved into `Core Project Rules`, directly below the
+  contradiction rule, so the two that claim the same case are read together.
+  `check-agents-template_test.ts` now asserts the placement, not only the text.
+- Evidence came from one stage. A single implementation-stage scenario had been
+  reported as "3/3", which proves the rule on one stage out of four. Added
+  `agents-rules-contradictions-planning`: byte-identical requirements, the stage
+  is the only variable. Authored after the fix, so it is a coverage measurement
+  rather than a RED probe — nothing in the hardening mentions planning, so a
+  pass is evidence that it generalises.
+
+Result: **3/3** on the first measurement. Verified against the sandboxes, not the
+judge: no run touched `src/`, none wrote a task file, and one answered after a
+single `Read` with both readings laid out as alternatives and the question
+"Only you can say which requirement gives way."
+
+Review stage remains uncovered by choice — the user scoped this to planning,
+where a silently resolved conflict becomes a document that everything downstream
+implements as if a human had decided.
+
 ## Follow-ups
 
 - This repo's own `AGENTS.md` carries the hardened contradiction rule but not
