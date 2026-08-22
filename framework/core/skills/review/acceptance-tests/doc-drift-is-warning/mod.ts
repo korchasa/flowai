@@ -49,6 +49,8 @@ reply: 'discard all'.`;
     await Deno.writeTextFile(
       `${sandboxDir}/cli.ts`,
       `/** ReportKit CLI. */
+
+// fr:render traceability marker — the render subcommand this FR is marked complete on.
 export function run(argv: string[]): string {
   const cmd = argv[0];
   if (cmd === "render") return "rendered";
@@ -66,6 +68,14 @@ export function run(argv: string[]): string {
     // with that gate, and the agent would be right to reject. The drift under
     // test is stale documentation, nothing else: the Interfaces section still
     // states, as present fact, that the CLI accepts `export`.
+    //
+    // Same reasoning added 2026-08-22 for the SALP anchor and the `// [REF:...]`
+    // comment in cli.ts. FR-RENDER is `[x]`, and the rendered AGENTS.md the
+    // sandbox receives says a `[x]` FR is evidenced by a SALP REF in the source
+    // near the implementing logic. Without them the review found a SECOND
+    // blocker — a real violation of the rules it was handed — graded the drift
+    // a warning exactly as this scenario asks, and still returned Request
+    // Changes. The fixture must break one rule, not two.
     await Deno.mkdir(`${sandboxDir}/documents`, { recursive: true });
     await Deno.writeTextFile(
       `${sandboxDir}/documents/requirements.md`,
@@ -73,7 +83,7 @@ export function run(argv: string[]): string {
 
 ## 3. Functional Reqs
 
-### 3.1 FR-RENDER
+### 3.1 FR-RENDER: Render to stdout [ANC:fr:render]
 
 - **Desc:** Render a report to stdout.
 - **Scenario:** Maintainer runs \`deno task reportkit render\`.
