@@ -144,3 +144,45 @@ item `zero_or_near_zero_issues` is unmeasurable — `audit.ts` on that fixture
 reports 8 issues (every page an orphan, none listed in the index), so the
 scenario passes without testing what it claims. Migrating it would test the
 claim and may turn it red; left for a decision.
+
+## Follow-ups resolved (2026-08-22)
+
+All three items above were closed the same day on the user's instruction. Nothing
+in the section above was rewritten — it records what was open at the time.
+
+- The anchor-placement contradiction: the schema now says the anchor sits ON the
+  H1 title line, after the title text, which is what all four page templates
+  show. Fixed in `framework/memex/assets/AGENTS.md` (grammar line, save step 4,
+  ask step 6), in `framework/memex/skills/ask/SKILL.md` (its own example already
+  showed the anchor on the H1 line while the sentence said otherwise), and in
+  SDS §3.4 memex.
+- The `type: source` contradiction: the `save-new` checklist asked for
+  `type: source-summary`, a value the schema has never used. The checklist now
+  asks for `type: source` and names the page kind in prose; `save/SKILL.md`
+  step 6 states the frontmatter value outright.
+- The three wikilink fixtures (`ask/citations`, `ask/honest-gap`, `audit/clean`)
+  were byte-identical, so one was migrated to SALP and copied to the other two
+  (`diff -r` clean). `audit.ts <fixture>/pages` went from 8 issues to
+  `OK: 0 issues` on each — `audit-clean`'s `zero_or_near_zero_issues` item now
+  measures what it claims. `history-of-markdown.md` moved to `type: source`.
+
+Re-measured, three runs each, cache bypassed:
+
+- `audit-clean` — **3/3**. Agents ran all six checks by hand and got zero.
+- `ask-citations` — **3/3**. No item failed in any run.
+- `ask-honest-gap` — **3/3**. No item failed in any run.
+- `save-new` — **3/3**, up from 2/3. One run carried a non-critical
+  `no_fabrication` warning: the agent wrote "blogger and tech writer behind
+  Daring Fireball" and "internet activist" into the pages, neither of which the
+  source says.
+
+`deno task check` after the edits: 723 passed | 0 failed, 173 passed | 0 failed.
+
+Two new observations, neither acted on:
+
+- In one `audit-clean` run the agent reported that no `audit.ts` script was in
+  the sandbox and reproduced its logic by hand. The checklist allows this, so
+  the run is honestly green, but whether `framework/memex/scripts/` reaches the
+  installed skill is worth checking on its own.
+- The `save-new` fabrication warning is real behaviour: the skill says every
+  claim must trace to a `raw/` source, and one run in three does not obey.

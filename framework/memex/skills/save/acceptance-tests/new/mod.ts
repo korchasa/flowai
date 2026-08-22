@@ -48,8 +48,14 @@ export const MemexSaveNewBench = new class extends AcceptanceTestScenario {
     },
     {
       id: "source_summary_page",
+      // Until 2026-08-22 this asked for `type: source-summary`, which the schema
+      // has never used: `assets/AGENTS.md` writes these pages as `type: source`
+      // in the template, in the anchor grammar ("`source` for source-summary
+      // pages") and in step 5 ("Write a `source-summary` page (`type: source`)").
+      // "source-summary" names the KIND of page; `source` is the frontmatter
+      // value. One run of three was marked down for following the schema.
       description:
-        "Is there a memex page with `type: source-summary` frontmatter that summarises the article?",
+        "Is there a memex page summarising the article, with `type: source` frontmatter (the schema's source-summary page kind)?",
       critical: true,
     },
     {

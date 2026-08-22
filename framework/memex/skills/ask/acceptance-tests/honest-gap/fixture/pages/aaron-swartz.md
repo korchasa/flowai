@@ -4,20 +4,20 @@ type: person
 status: active
 tags: [markup-languages, person]
 ---
-# Aaron Swartz
+# Aaron Swartz [ANC:mx-person:aaron-swartz]
 
-Co-designer of atx-style headers in [[markdown]]. Programmer, writer, activist. Co-founder of Reddit.
+Co-designer of atx-style headers in [REF:mx-concept:markdown | Markdown]. Programmer, writer, activist. Co-founder of Reddit.
 
 ## Key Contributions
 
-- Independently designed atx-style headers (`# Heading`) which became part of the [[markdown]] spec.
+- Independently designed atx-style headers (`# Heading`) which became part of the [REF:mx-concept:markdown | Markdown] spec.
 - Helped create RSS 1.0.
 
 ## See Also
 
-- [[markdown]]
-- [[john-gruber]]
+- [REF:mx-concept:markdown]
+- [REF:mx-person:john-gruber]
 
 ## Sources
 
-- [[history-of-markdown]]
+- [REF:mx-source:history-of-markdown]

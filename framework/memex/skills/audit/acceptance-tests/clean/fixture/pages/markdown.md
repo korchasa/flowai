@@ -4,9 +4,9 @@ type: concept
 status: active
 tags: [markup-languages]
 ---
-# Markdown
+# Markdown [ANC:mx-concept:markdown]
 
-A plain-text formatting syntax that converts cleanly to HTML, designed by [[john-gruber]] in 2004 with contributions from [[aaron-swartz]].
+A plain-text formatting syntax that converts cleanly to HTML, designed by [REF:mx-person:john-gruber | John Gruber] in 2004 with contributions from [REF:mx-person:aaron-swartz | Aaron Swartz].
 
 ## Details
 
@@ -14,9 +14,9 @@ The original implementation was a Perl script written by Gruber. Markdown is now
 
 ## See Also
 
-- [[john-gruber]]
-- [[aaron-swartz]]
-- [[history-of-markdown]]
+- [REF:mx-person:john-gruber]
+- [REF:mx-person:aaron-swartz]
+- [REF:mx-source:history-of-markdown]
 
 ## Counter-Arguments and Gaps
 
@@ -24,4 +24,4 @@ The original implementation was a Perl script written by Gruber. Markdown is now
 
 ## Sources
 
-- [[history-of-markdown]]
+- [REF:mx-source:history-of-markdown]

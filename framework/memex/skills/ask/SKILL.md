@@ -73,7 +73,7 @@ tags: [<derived from referenced pages>]
 
 Body: the synthesized answer + a `## Sources` section listing every SALP REF cited.
 
-Place the page's own anchor directly below the H1 title: `# <Question as title> [ANC:mx-answer:<slug>]`.
+Place the page's own anchor ON the H1 title line, after the title text: `# <Question as title> [ANC:mx-answer:<slug>]`.
 
 If an answer file with the same slug already exists, append `-2`, `-3`, etc. — never overwrite past answers.
 

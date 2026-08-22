@@ -4,6 +4,14 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * Ask against a populated memex: agent should read index, open relevant
  * pages, synthesize an answer with SALP REF citations, and file the
  * result to pages/answers/.
+ *
+ * 2026-08-22 — fixture migrated from `[[wikilinks]]` to SALP. Until then the
+ * fixture schema and every page taught the retired dialect while the checklist
+ * and the product schema demanded SALP; `audit.ts <fixture>/pages` reported 8
+ * issues (every page an orphan, none listed in the index), so the fixture was
+ * teaching the agent the wrong grammar. After migration it reports 0 issues.
+ * `history-of-markdown.md` also moved from `type: source-summary` to
+ * `type: source`, the value the product schema uses.
  */
 export const MemexAskCitationsBench = new class extends AcceptanceTestScenario {
   id = "ask-citations";

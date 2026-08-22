@@ -110,7 +110,7 @@ For each existing entity, read the page first, then integrate new information us
 
 ### 6. Write the source-summary page
 
-Always write a `source-summary` page at `<memex-root>/pages/<source-slug>.md` covering the source itself:
+Always write a `source-summary` page (frontmatter `type: source`) at `<memex-root>/pages/<source-slug>.md` covering the source itself:
 - One-paragraph summary.
 - "Key Points" — 3–7 bullet points.
 - "Entities Mentioned" — SALP REFs (`[REF:mx-<type>:<slug>]`) to every entity page touched in step 5.
