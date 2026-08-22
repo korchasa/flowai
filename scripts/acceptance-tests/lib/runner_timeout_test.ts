@@ -9,6 +9,7 @@ import {
   composeTimeoutLogs,
   detectAuthFailure,
   detectHarnessFaultWarning,
+  exitCodeCheckIsCritical,
   renderFileForEvidence,
   shouldInjectExitCodeCheck,
 } from "./runner.ts";
@@ -114,4 +115,26 @@ Deno.test("detectHarnessFaultWarning flags a credits error that arrived mid-sess
 
 Deno.test("detectHarnessFaultWarning stays quiet when the trace is empty — that case throws instead", () => {
   assertEquals(detectHarnessFaultWarning("Usage credits required", 0), null);
+});
+
+/**
+ * A global timeout is the harness stopping the agent, not the agent failing.
+ * `shouldInjectExitCodeCheck` already says so for a routing checklist; this
+ * says it for a behavioural one, where the item stays visible but no longer
+ * decides the verdict on its own. Measured 2026-08-22 on `deep-research-plan`:
+ * every checklist item is about the PLAN, which the agent finished in the first
+ * two minutes, and the run then spent 15 minutes executing the research it
+ * planned and was killed. The plan items are judged on the trace; the clock is
+ * not evidence about them.
+ */
+Deno.test("exitCodeCheckIsCritical: a timeout with a live trace is a warning, not a blocker", () => {
+  assertEquals(exitCodeCheckIsCritical(124, 89), false);
+});
+
+Deno.test("exitCodeCheckIsCritical: a timeout with an empty trace still blocks — nothing was measured", () => {
+  assertEquals(exitCodeCheckIsCritical(124, 0), true);
+});
+
+Deno.test("exitCodeCheckIsCritical: a crash blocks however busy the agent was", () => {
+  assertEquals(exitCodeCheckIsCritical(1, 40), true);
 });

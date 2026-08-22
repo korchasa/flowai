@@ -13,6 +13,7 @@ import {
   validateKindInvariants,
   validatePathResolution,
   validateProgressiveDisclosure,
+  validateShellInterpolation,
   validateSkillFrontmatter,
   validateStructure,
 } from "./check-skills.ts";
@@ -851,5 +852,46 @@ Deno.test("validateScopeField: invalid scope value is rejected", () => {
   assertEquals(
     errors.some((e) => e.criterion === "FR-UNIVERSAL.FRONTMATTER"),
     true,
+  );
+});
+
+// --- validateShellInterpolation ---
+
+/**
+ * Claude Code expands a slash command by running every bang-backtick shell
+ * interpolation it finds in the body — `WIo` in the CLI bundle, matching
+ * /(?<=^|\s)!`([^`]+)`/gm after blanking code spans, which deliberately spares
+ * spans preceded by `!`. A code span therefore does NOT escape the example, and
+ * neither does a fence. Measured 2026-08-21: `engineer-command`'s line
+ * documenting OpenCode template syntax aborted `/engineer-command` before its
+ * first turn — "Shell command permission check failed for pattern
+ * "!`shell command`"" — and the whole scenario scored 0 tool calls.
+ */
+Deno.test("validateShellInterpolation flags a bang-backtick example that Claude Code would execute", () => {
+  const errors = validateShellInterpolation(
+    "engineer-command",
+    "OpenCode supports `$ARGUMENTS`, `` !`shell command` ``, `@filepath`.",
+  );
+  assertEquals(errors.length, 1);
+  assertStringIncludes(errors[0].message, "shell command");
+});
+
+Deno.test("validateShellInterpolation leaves a bang glued to a preceding character alone — the CLI's lookbehind needs whitespace or a line start", () => {
+  assertEquals(
+    validateShellInterpolation(
+      "engineer-command",
+      "shell interpolation (!`git status`) in command templates.",
+    ).length,
+    0,
+  );
+});
+
+Deno.test("validateShellInterpolation does not flag a lone bang in a code span", () => {
+  assertEquals(
+    validateShellInterpolation(
+      "commit",
+      "add a `!` before the colon (e.g., `feat!: change API`).",
+    ).length,
+    0,
   );
 });

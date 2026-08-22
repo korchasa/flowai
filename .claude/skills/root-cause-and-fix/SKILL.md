@@ -10,8 +10,8 @@ description: Autonomous investigate → root-cause → fix → verify loop for t
 Dev-only loop for the flowai repo. A red test is a claim about the world, not a
 fact about the product: the harness may have lost the evidence, the checklist may
 test yesterday's framework, or the scenario may never have supplied what it
-demands. On 2026-08-20 the split was 7 instrument faults to 1 product defect; on
-2026-08-21 a nest of 4 went 1 to 3. Decide the layer first, fix second.
+demands. Measured splits of instrument to product: 7:1 on 2026-08-20, 1:3 on
+2026-08-21, 5:5 on 2026-08-22. Decide the layer first, fix second.
 
 **Autonomy contract**: invoking this skill IS authorization for the whole loop —
 reading sandboxes, running single scenarios, editing the layer the diagnosis
@@ -26,10 +26,10 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 
 1. **Raw session over any rendering.** `judge-evidence.md` and `report.html` are
    the judge's rendering; ground truth is the transcript the CLI wrote for itself
-   plus the sandbox on disk. Read those first. Renderings also reorder: a
-   `report.html` verdict block is NOT the run directory of the same index. And
-   absence in a rendering is not absence in the world — every "the agent never X"
-   claim comes from a tool-call count or a session line, never from a summary.
+   plus the sandbox on disk. Renderings also reorder: a `report.html` verdict
+   block is NOT the run directory of the same index. Absence in a rendering is
+   not absence in the world — every "the agent never X" claim comes from a
+   tool-call count or a session line, never from a summary.
 2. **Guards are signals.** A guard that blocks the run means conditions are
    wrong. Never reach for `--force`, `--no-verify` or an override env var; report
    the blocker instead.
@@ -38,8 +38,7 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
    quiet a red test by editing whichever of the three is easiest to reach.
 4. **Never flip a checklist into its opposite.** Rewriting "must have X" as "must
    NOT have X" trades one red for another and hides that the requirement was
-   conditional. Scope the item to what it tests, say why it does not adjudicate
-   the rest, and record every dead version in the file.
+   conditional. Scope the item to what it tests and record every dead version.
 5. **No test-fitting.** Do not hint the answer in `userQuery`, do not script the
    persona, do not pre-create what the skill should produce. Change a query only
    because it was malformed, and say so in the file.
@@ -57,43 +56,53 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 
 Run this BEFORE anything else. Each signature below was paid for once.
 
-- **Exit 1, empty trace, ~10-20 s.** Look for `OAuth session expired`,
-  `Failed to authenticate`, `Invalid API key`, `Usage credits required`. The CLI
-  never ran the task; remedy is `set -a; . ./.env; set +a` before the sweep.
-  `detectAuthFailure` throws only with zero tool calls — a scenario driving
+- **Exit 1, empty trace, ~10-20 s.** `OAuth session expired`, `Invalid API key`,
+  `Usage credits required`: the CLI never ran the task; source `.env` before the
+  sweep. `detectAuthFailure` throws only at zero tool calls — a scenario driving
   another IDE's CLI surfaces THAT child's auth error, a true observation.
-- **Exit 124 with tool calls present.** A global timeout. On a skill-invocation
-  checklist the routing verdict is already in the trace (`shouldInjectExitCodeCheck`);
-  on a behavioural one, ask whether the work outlives the cap — `deep-research` does.
+- **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
+  warning rather than a blocker when the trace is non-empty. Ask whether the work
+  legitimately outlives the cap — `deep-research` does.
 - **Judge reports a section "not present" in a large file.** Files are elided
-  mid-file above 30 KB (`renderFileForEvidence`); check disk first — this scored
-  `doc_rules_present` missing on two `init` scenarios.
+  mid-file above 30 KB (`renderFileForEvidence`); check disk first.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
   means the model produced the artefact unaided; `blocked` means it stopped for
-  material the query never supplied — a malformed scenario, not a routing miss
-  (four scenarios misdiagnosed on this in one day).
+  material the query never supplied — a malformed scenario, not a routing miss.
 - **Adjacent-negative fails, correct neighbour lives in another pack.** The
   runner mounts `core` plus the scenario's pack, so there was nothing to defer
   to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
-  SKILL.md first. `init` forbids wrapper scripts when the project's runner
+  SKILL.md first: `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
-- **A verdict that changed with no tree change.** Load noise; re-measure before
-  diagnosing. One shape carries a mechanism worth knowing: the ACP loop runs only
-  while the user emulator answers and stops on `<NO_RESPONSE>`, so an interactive
-  agent that closes its turn waiting on background subagents ends the session
-  early. `maintenance-basic` died at 228 s on "waiting on W4" where its siblings
-  ran 950 s, then passed 3/3 on re-measure.
+- **A verdict that changed with no tree change.** Load noise; re-measure. One
+  shape carries a mechanism: the ACP loop runs only while the emulator answers
+  and stops on `<NO_RESPONSE>`, so an interactive agent that closes its turn
+  waiting on background subagents ends the session early (`maintenance-basic`
+  died at 228 s where siblings ran 950 s, then passed 3/3).
 - **The scenario asserts something the sandbox never contained.** The runner
-  commits the fixture before the agent runs, so `git show HEAD:<file>` in the
-  sandbox is the exact input — read it before believing "the agent missed X".
-  Until 2026-08-22 the rendered `AGENTS.md` overwrote a fixture's own instruction
-  file, deleting seven scenarios' premise; and a fixture can speak a retired
-  dialect its `mod.ts` says it left (`audit/defects`, wikilinks the audit script
-  ignores). Run any deterministic checker over the fixture and compare with the
-  defect list the scenario documents — green ones too, whose items can pass
-  without measuring: `audit-clean` passed while `audit.ts` found 8 issues on the
-  fixture its checklist calls clean.
+  commits the fixture first, so `git show HEAD:<file>` in the sandbox is the
+  exact input — read it before believing "the agent missed X". Until 2026-08-22
+  the rendered `AGENTS.md` overwrote a fixture's own instruction file, deleting
+  seven scenarios' premise; a fixture can also speak a retired dialect its
+  `mod.ts` says it left. Run any deterministic checker over it, green scenarios
+  included: `audit-clean` passed while `audit.ts` found 8 issues on the fixture
+  its checklist calls clean.
+- **The fixture breaks a SECOND rule behind the first.** The sandbox runs the
+  project's own checks against the fixture, so it must itself pass `deno fmt
+  --check`, `deno lint` and `deno test`, and ship the `deno.json` from the
+  Benchmark Fixture contract (AGENTS.md). Three of ten scenarios needed two
+  rounds on 2026-08-22: an inline `jsr:@std/assert` raised `no-import-prefix`,
+  a 98-character line failed fmt, and the agent stopped on THAT and never
+  reached the planted defect. Re-measure after every fixture fix — the first
+  blocker is rarely the only one.
+- **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
+  different rootPids.** The guard aimed at the BENCH. `setpgrp_exec.py` calls
+  `setsid()` after the first 500 ms tick under load, so the watchdog caches the
+  bench's own group, counts sibling runs as descendants and SIGKILLs the parent.
+  Only reproducible at `-p >1`; fixed 2026-08-22 by `adoptablePgid`.
+- **A scenario at 2/3 passes the threshold and can still hold a real defect.**
+  Read the failing run before moving on. Two did on 2026-08-22, and both were
+  product defects the other two runs happened to avoid.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent: an unrelated instruction from the same file obeyed in the
   same session (`NO_COLOR=1` settled `agents-rules-*`). Then read the session for
@@ -127,9 +136,9 @@ Read in this order and stop as soon as the cause is unambiguous.
    say. Three runs named the same defective sentence in one round on 2026-08-21,
    after three rounds of guessing had not. The transcript shows what it did; the
    interview shows the words it justified it with, and those are the ones to fix.
-4. If the run dir was pruned, the transcript and the judge's per-item JSON both
+4. If the run dir was pruned, the transcript and the judge's per-item JSON
    survive in `report.html` — parse with python, never grep the raw HTML, and
-   never `Read` a `.jsonl` (one such read reported 104 000 tokens for 44 lines).
+   never `Read` a `.jsonl` (104 000 tokens for 44 lines).
 5. The scenario file: what it asserts, and whether the query supplies what it
    demands. Then the primitive's own text — the atom under `framework/atoms/`,
    never the generated `SKILL.md`.
@@ -140,8 +149,7 @@ Propose 3–7 candidate causes with probabilities summing to ~100, one line of
 reasoning each, and print the Hypothesis Board. For the highest-probability
 untested one, design an experiment with a discrete outcome — state before running
 it what success and failure each prove. Execute, record, re-weight, reprint. With
-several red scenarios in hand, check that each isolates a different hypothesis:
-one measure round then returns one verdict per hypothesis, not a conflated yes.
+several red scenarios in hand, check that each isolates a different hypothesis.
 Terminate at ~80 %, after three experiments that move nothing, or 5 iterations.
 
 Diagnostic edits are reverted from `cp` backups — never with `git checkout --`
@@ -159,8 +167,7 @@ or `git restore`, which return the index rather than what you wrote.
   version held and why it was wrong.
 
 Every fix carries, in the file it touches, the measurement that justified it:
-date, runs, what the sessions showed. Prose in a product file cannot hold that,
-so its guard test holds it instead.
+date, runs, what the sessions showed.
 
 ## Phase 4 — Verify
 
@@ -168,15 +175,15 @@ so its guard test holds it instead.
   shell (they do not persist): `deno task acceptance-tests -f <id> -n 3`. `-f`
   takes ONE substring, last wins; `-p` sets concurrency; the lock forbids
   concurrent runs. A foreground run past the tool's cap is killed mid-flight.
-- Host preflight before any sweep: load, free swap, and orphaned runners
-  (`ps -Ao pid,etime,command | grep -E "runtests.py|benchmark.ts run"`). Under
-  memory pressure `system_health` aborts sessions and every result is noise.
+- Host preflight: load, free swap, orphaned runners (`ps -Ao pid,etime,command |
+  grep -E "runtests.py|benchmark.ts run"`). Under memory pressure `system_health`
+  aborts sessions and every result is noise.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed.
 - Name what the green number covers. A rule phrased "if you see X" binds at
-  every stage, but the suite usually holds one, so "3/3" reads as general when
-  it is not — say which stage, and add a scenario for the one that costs most.
+  every stage but the suite usually holds one, so "3/3" reads as general when it
+  is not.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
@@ -194,23 +201,23 @@ so its guard test holds it instead.
 ## Phase 6 — Amend this skill
 
 This file is the only artefact that carries a lesson into the next session.
-Decide at the end of every run whether it should change, and say which way you
-decided — a silent skip is indistinguishable from a forgotten step.
+Decide at the end of every run whether it should change and say which way — a
+silent skip is indistinguishable from a forgotten step.
 
 **Earns an edit:** a cause Phase 0 would NOT have caught, that can recur (one
-bullet, with the date and what it cost); a rule you broke that cost real work; a
-signature here that proved wrong — correct it in place and keep the retracted
-claim visible; a command, path or flag that changed under you.
+bullet, dated); a rule you broke that cost real work; a signature here that
+proved wrong — correct it in place, keeping the retracted claim visible; a
+command, path or flag that changed under you.
 
 **Does not earn an edit:** a one-off in one environment; a restatement of a rule
-already here; a finding about the PRODUCT rather than about diagnosing it (that
-belongs in the SRS, the SDS or a task file); a run that went well.
+already here; a finding about the PRODUCT rather than about diagnosing it; a run
+that went well.
 
-**Budget**: stay under ~220 lines. When an addition would pass that, compress an
-existing item instead of appending — two bullets describing one failure shape are
-one bullet. Growth without pruning turns the signature list into something nobody
-reads to the end. Commit the amendment with the work that produced it, staged by
-explicit path, and say what was learned rather than that the skill was updated.
+**Budget**: stay under ~240 lines. When an addition would pass that, compress an
+existing item instead of appending — two bullets on one failure shape are one
+bullet. Growth without pruning turns the signature list into something nobody
+reads to the end. Commit the amendment with the work that produced it and say
+what was learned, not that the skill was updated.
 
 ## Verification
 

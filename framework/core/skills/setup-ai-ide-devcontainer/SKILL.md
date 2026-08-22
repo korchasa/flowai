@@ -55,17 +55,17 @@ If MULTIPLE top-level manifests match (e.g. `package.json` AND `go.mod`), ask th
 
 Scan the project for indicators that map to devcontainer features beyond the base stack. Use the indicator→need mapping in [references/features-catalog.md](references/features-catalog.md), then search https://containers.dev/features for matching feature IDs.
 
-1. **Scan** project root and common subdirs for indicator files/patterns (see catalog for full mapping)
+1. **Scan** project root and common subdirs for indicator files/patterns (see catalog for full mapping). Use a listing that shows DOTFILES — `ls -a`, or `find . -maxdepth 2 -not -path '*/.git/*'`. Plain `ls` hides most of the catalog: `.envrc`, `.dockerignore`, `.nvmrc`, `.terraform.lock.hcl` and `flake.nix` are all invisible to it, and a scan that misses them reports "nothing detected" about a project full of indicators.
 2. **Map** indicators to needs (e.g., `pnpm-lock.yaml` → need pnpm, `*.tf` → need Terraform)
 3. **Search** https://containers.dev/features for features matching each identified need. Use latest versions
-4. **Filter** out features already covered by the primary stack's base image (e.g., skip Node feature if Node is primary)
+4. **Filter** out features already covered by the primary stack's base image (e.g., skip Node feature if Node is primary). **The base image is the ONLY thing that removes a need.** Coverage by another detected feature is not a reason to drop one — "docker-compose runs postgres, so Docker-in-Docker covers PostgreSQL" is exactly the wrong move, and the catalog's own example lists PostgreSQL and Docker-in-Docker as separate lines.
 5. **Classify** matches:
    - **auto**: high-confidence matches (secondary runtimes, build tools detected by lockfiles) — add without asking
    - **suggest**: optional/heavy features (databases, Docker-in-Docker, cloud CLIs) — present to user for confirmation
-6. **Present** grouped list to user (see catalog for format). Show what was detected and why (which indicator file triggered each suggestion)
+6. **Present** grouped list to user (see catalog for format). Show what was detected and why (which indicator file triggered each suggestion). **Every catalog mapping that fired gets its own line**, named and attributed to the file that triggered it. Do not merge two needs into one line and do not silently fold one into another; if you think one feature makes another unnecessary, say so ON that feature's own line and let the user decide.
 7. **User confirms** or customizes the list. Confirmed features are merged into the `features` block in step 5 (Generate Configuration)
 
-Skip this step only if user explicitly provided a complete feature list in their request.
+**Step 6 always runs; only step 7 may be skipped.** A request that pre-authorizes the suggestions ("accept all suggested features", or a complete feature list) waives the WAIT, never the PRESENTATION: the grouped list is the record of what was found and which file triggered it, and it is what lets the user notice something was missed. Present it BEFORE writing any file. A summary printed after the files exist is not this step — by then the decision it documents has already been made.
 
 ### Step 3: Detect Existing Configuration
 
@@ -74,7 +74,7 @@ Check if `.devcontainer/` exists:
   1. Read current `devcontainer.json` and display it to the user.
   2. Ask the user to clarify intent: **"update"** (evolve current config — preserve user customizations where possible) OR **"fix"** (something is broken — what is the exact symptom and error?). Do not assume — diagnose first.
   3. After generating the new version (Step 5), show a **diff** (old vs new) to the user.
-  4. **MANDATORY**: Ask for explicit per-file confirmation before overwriting. If the user declines — **abort**, do not proceed to writing files.
+  4. **MANDATORY**: Ask for explicit per-file confirmation before overwriting, and WAIT for the reply. **The request that started this run is not that confirmation, and a project rule about not re-asking inside an authorized plan does not reach this step.** Such rules exempt an action the original authorization did not cover, and overwriting a file the user has not yet seen a diff of is exactly that action — the confirmation happens AFTER the diff, which is why it cannot have been given before. What compliance produces is a user who saw what would be lost before it was lost. If the user declines — **abort**, do not proceed to writing files.
 - **If not exists**: proceed to generation.
 
 ### Step 4: Determine Capabilities
@@ -146,7 +146,7 @@ Generate only when the user chose firewall in Step 4, item 3. See [references/fi
 2. Write `.devcontainer/devcontainer.json`
 3. Write `.devcontainer/Dockerfile` (if custom)
 4. Write `.devcontainer/init-firewall.sh` (if firewall), make executable
-5. Write `.devcontainer/setup-container.sh` (only when at least one of `~/.claude`, `~/.config/opencode`, `/commandhistory` exists as a writable volume; skip entirely otherwise), make executable. The script's **sole** responsibility is a recursive self-healing chown of those volumes so the user's manual `claude login` / `gh auth login` / `opencode auth login` commands can write to them. It does NOT authenticate anything itself. See [references/devcontainer-template.md](references/devcontainer-template.md) § setup-container.sh
+5. Write `.devcontainer/setup-container.sh` (only when at least one of `~/.claude`, `~/.config/opencode`, `/commandhistory` exists as a writable volume; skip entirely otherwise), make executable. The script's **sole** responsibility is a recursive self-healing chown of those volumes so the user's manual `claude login` / `gh auth login` / `opencode auth login` commands can write to them. It does NOT authenticate anything itself. **Read [references/devcontainer-template.md](references/devcontainer-template.md) § setup-container.sh and copy the loop from there before writing this file** — writing it from your own reasoning produces an unconditional `chown -R` and drops the `[ -d "$dir" ] && [ ! -w "$dir" ]` guard that makes it self-healing, which is the whole point of the script.
 
 ### Step 7: Verify
 

@@ -352,3 +352,23 @@ Deno.test("bench codex home sits under ~/.flowai-dev, per run, credentials linke
     await Deno.remove(workDir, { recursive: true });
   }
 });
+
+/**
+ * The bench-home empties `.claude/skills/`, but Claude Code's own BUNDLED
+ * skills live outside `$HOME` (under the per-uid temp dir) and stay reachable,
+ * so the isolation the empty dir promises is only half done. Measured
+ * 2026-08-21 on `engineer-prompts-for-reasoning-basic`: the query names a
+ * reasoning model, the bundled `claude-api` skill triggers on any mention of a
+ * Claude model, and its payload — one 953 KB attachment — ended the session
+ * with "Prompt is too long" before the framework skill produced anything. The
+ * scenario scored 0/6 on an empty deliverable.
+ */
+Deno.test("bench-home disables the CLI's bundled skills — they are outside HOME and would otherwise hijack routing", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    const env = await prepareAcpClaudeHome(join(dir, "sandbox"));
+    assertEquals(env.CLAUDE_CODE_DISABLE_BUNDLED_SKILLS, "1");
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});

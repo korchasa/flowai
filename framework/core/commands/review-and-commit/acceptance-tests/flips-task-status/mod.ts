@@ -10,6 +10,26 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 // `status: in progress` AND all 3 DoD items already `[x]`. Composite agent
 // must inline Phase 1 (Review) and Phase 2 (Commit) without delegating via
 // the Skill tool, and the commit phase flips `status` to `done`.
+//
+// The fixture also ships an SRS and an SDS, and the two source files carry
+// `// [REF:fr:rate-limit]` comments. Added 2026-08-22: without them the Review
+// phase was RIGHT to stop. The task's frontmatter says `implements:
+// FR-RATE-LIMIT`, the rendered AGENTS.md the sandbox receives makes the SRS the
+// source of truth for every FR and asks for a SALP REF in the code near the
+// implementing logic, and neither existed — so the agent returned Request
+// Changes, listing exactly the four documents to write, and Phase 2 never ran.
+// The variable under test is the status flip, so the fixture must satisfy every
+// other rule it is handed.
+//
+// Re-measured 2026-08-22 after that change: still 0/3, and the Review phase was
+// still right. With the documents in place the agent got as far as running the
+// project's own checks, and they failed on the fixture itself — `@std/assert`
+// resolved to nothing because the sandbox had no `deno.json` at all, and
+// `deno fmt --check` rejected a 98-character line in `rate_limit.ts`. So the
+// fixture now ships the `deno.json` from the Benchmark Fixture deno.json
+// Contract (with an `imports` entry for `@std/assert`) and its sources are
+// pre-formatted to what `deno fmt` emits. Keep them that way: any edit to these
+// template literals has to survive `deno fmt --check`.
 export const ReviewAndCommitFlipsTaskStatusBench = new class
   extends AcceptanceTestScenario {
   id = "review-and-commit-flips-task-status";
@@ -35,7 +55,8 @@ export const ReviewAndCommitFlipsTaskStatusBench = new class
   };
 
   override async setup(sandboxPath: string) {
-    const middlewareCode = `interface Bucket {
+    const middlewareCode = `// [REF:fr:rate-limit] — per-key token bucket.
+interface Bucket {
   tokens: number;
   lastRefill: number;
 }
@@ -53,7 +74,10 @@ export function rateLimit(opts: Options) {
     const now = Date.now();
     const bucket = buckets.get(key) ?? { tokens: opts.limit, lastRefill: now };
     const elapsed = now - bucket.lastRefill;
-    bucket.tokens = Math.min(opts.limit, bucket.tokens + (elapsed / opts.windowMs) * opts.limit);
+    bucket.tokens = Math.min(
+      opts.limit,
+      bucket.tokens + (elapsed / opts.windowMs) * opts.limit,
+    );
     bucket.lastRefill = now;
     if (bucket.tokens < 1) {
       return new Response("Too Many Requests", { status: 429 });
@@ -84,7 +108,9 @@ Deno.test("per_route_override", () => {
 });
 `;
 
-    const serverCode = `import { rateLimit } from "./middleware/rate_limit.ts";
+    const serverCode =
+      `// [REF:fr:rate-limit] — the limiter sits ahead of the routes.
+import { rateLimit } from "./middleware/rate_limit.ts";
 
 export function buildServer() {
   const limiter = rateLimit({ limit: 60, windowMs: 60_000 });

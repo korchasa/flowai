@@ -30,11 +30,16 @@ const ISOLATED_HOME_LINKS = [
  * sandbox (NOT inside it — an in-sandbox bench-home shows as `untracked` in
  * `git status` and trips clean-tree scenarios). Returns the env to merge into
  * the spawned wrapper process (`HOME` + the registry's launch env).
+ *
+ * An empty `.claude/skills/` only isolates the USER-level snapshot. Claude
+ * Code's BUNDLED skills are extracted outside `$HOME` and stay reachable, so
+ * they are switched off explicitly — the bench measures the framework's skills,
+ * and a bundled one that wins the routing measures the CLI instead.
  */
 // implements [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION]
 export async function prepareAcpClaudeHome(
   sandboxPath: string,
-): Promise<{ HOME: string }> {
+): Promise<{ HOME: string; CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: string }> {
   const benchHome = join(dirname(sandboxPath), "bench-home");
   await Deno.mkdir(join(benchHome, ".claude", "skills"), { recursive: true });
 
@@ -57,7 +62,7 @@ export async function prepareAcpClaudeHome(
     }
   }
 
-  return { HOME: benchHome };
+  return { HOME: benchHome, CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: "1" };
 }
 
 /**

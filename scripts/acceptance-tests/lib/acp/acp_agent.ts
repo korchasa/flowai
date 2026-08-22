@@ -82,7 +82,12 @@ export class AcpAgent {
   #messages: Message[] = [];
   #log: string[] = [];
   #toolCalls: CapturedToolCall[] = [];
-  #client: { getToolCalls(): CapturedToolCall[] } | null = null;
+  #client:
+    | {
+      getToolCalls(): CapturedToolCall[];
+      getBufferedText(sessionId: string): string;
+    }
+    | null = null;
   readonly #spec: AcpAgentSpec;
 
   constructor(private opts: AcpAgentOptions) {
@@ -274,7 +279,11 @@ export class AcpAgent {
    * misdiagnosed as a routing failure.
    */
   get partialLogs(): string {
-    return this.#log.join("");
+    const pending = this.#client && this.#sessionId
+      ? this.#client.getBufferedText(this.#sessionId)
+      : "";
+    const calls = (this.#client?.getToolCalls() ?? []).map(describeToolCall);
+    return composePartialTrace(this.#log.join(""), pending, calls);
   }
 
   /** Public termination for the runner's global-timeout path. */
@@ -339,6 +348,33 @@ export class AcpAgent {
  * subagent's own 81-line transcript. ACP reports `think` for every Task call,
  * so the field carries no information here and only invites that inference.
  */
+/**
+ * Trace for a turn that never returned.
+ *
+ * The turn loop pushes the assistant's text only after `client.prompt()`
+ * resolves, and renders `[tool-calls]` only in its `finally`. A global timeout
+ * abandons that promise, so neither runs and the flushed log holds just the
+ * prompt header. Measured 2026-08-22 on `deep-research-plan`: the judge was
+ * handed two stderr lines and a timeout marker, failed four items for "no
+ * evidence", while the raw session carried the plan, the temp dir and two
+ * dispatched research agents. This composes what the live client still holds
+ * onto whatever the loop managed to flush.
+ */
+export function composePartialTrace(
+  flushed: string,
+  pendingAssistantText: string,
+  toolCallLines: readonly string[],
+): string {
+  const parts = [flushed];
+  if (pendingAssistantText.trim()) {
+    parts.push(`< ${pendingAssistantText}\n`);
+  }
+  if (toolCallLines.length > 0 && !flushed.includes("[tool-calls]")) {
+    parts.push(`\n[tool-calls] ${toolCallLines.join("\n             ")}\n`);
+  }
+  return parts.join("");
+}
+
 export function describeToolCall(t: CapturedToolCall): string {
   const sub = t.rawInput?.subagent_type;
   if (typeof sub === "string" && sub.length > 0) {

@@ -611,6 +611,7 @@ export async function validateSkill(
   // in user-facing skill bodies.
   if (isFrameworkSkillsDir(skillsDir)) {
     errors.push(...validateIdeNeutrality(dirName, content));
+    errors.push(...validateShellInterpolation(dirName, content));
   }
 
   // [REF:fr:universal.refs | FR-UNIVERSAL.REFS]: Reference depth
@@ -640,6 +641,40 @@ export async function validateSkill(
  * abstracting them to tiers would destroy the example. See SDS §3.17.
  */
 export const IDE_NEUTRAL_EXEMPT = new Set(["ai-ide-runner"]);
+
+/**
+ * A bang-backtick shell interpolation in a distributed body is executed, not
+ * shown.
+ *
+ * Claude Code expands a slash command before the agent ever sees it: `WIo` in
+ * the CLI bundle blanks ordinary code spans, deliberately SPARING any span
+ * preceded by `!` (that is how the feature works inside markdown), then runs
+ * every match of /(?<=^|\s)!`([^`]+)`/gm. Neither a code span nor a fence
+ * escapes an example of the syntax — only breaking the whitespace before the
+ * bang does. Measured 2026-08-21: the line in `engineer-command` documenting
+ * OpenCode's template variables aborted `/engineer-command` before its first
+ * turn with `Shell command permission check failed for pattern`, and the
+ * scenario was scored on an empty trace.
+ */
+export function validateShellInterpolation(
+  dirName: string,
+  content: string,
+): SkillError[] {
+  const errors: SkillError[] = [];
+  const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");
+  for (const m of body.matchAll(/(?<=^|\s)!`([^`\n]+)`/gm)) {
+    errors.push({
+      skill: dirName,
+      criterion: "FR-UNIVERSAL.NO-HOST-EXEC",
+      message:
+        `Body contains a bang-backtick shell interpolation ("!\`${m[1]}\`"). ` +
+        `Claude Code EXECUTES it while expanding the slash command — a code ` +
+        `span does not escape it. Glue the bang to a preceding character ` +
+        `(e.g. "(!\`${m[1]}\`)") or reword.`,
+    });
+  }
+  return errors;
+}
 
 export function validateIdeNeutrality(
   dirName: string,

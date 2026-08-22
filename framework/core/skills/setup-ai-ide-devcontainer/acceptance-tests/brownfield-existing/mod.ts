@@ -57,8 +57,15 @@ When shown diffs of existing files, confirm the overwrite.`;
       critical: true,
     },
     {
+      // Until 2026-08-22 this asked for "valid JSON", and a run was failed for
+      // one `//` comment. The devcontainer format IS JSONC: this skill's own
+      // Verify step asks that the file "parses via a JSONC parser (comments and
+      // trailing commas are allowed)", and every template under references/ is
+      // a ```jsonc fence with comments in it. The agent followed the skill and
+      // was marked down for it.
       id: "valid_json",
-      description: "Is the final devcontainer.json valid JSON?",
+      description:
+        "Does the final devcontainer.json parse as JSONC — the devcontainer format? Comments and trailing commas are allowed and are what this skill's own templates use; a structural syntax error is what fails this item.",
       critical: true,
     },
     {

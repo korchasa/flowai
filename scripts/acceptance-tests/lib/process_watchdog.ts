@@ -44,6 +44,9 @@ export interface WatchdogOptions {
   maxRssBytes?: number; // default 6 GiB; 0 = disable RSS guard
   intervalMs?: number; // default 500
   confirmSamples?: number; // default 2 (consecutive overshoots before killing)
+  /** Ticks to wait for setsid() before giving up on the guard. Default 60
+   *  (30 s at the default interval). */
+  pgidDetachSamples?: number;
   graceMs?: number; // default 1500 (between SIGTERM and SIGKILL)
   onTrip?: (reason: WatchdogTrip) => void;
   /** Programmatic-only no-op. Tests use this to exercise AcpAgent
@@ -80,6 +83,9 @@ const DEFAULTS = {
     1024,
   intervalMs: Number(Deno.env.get("BENCH_WATCHDOG_INTERVAL_MS") ?? "500"),
   confirmSamples: Number(Deno.env.get("BENCH_WATCHDOG_CONFIRM") ?? "2"),
+  pgidDetachSamples: Number(
+    Deno.env.get("BENCH_WATCHDOG_PGID_SAMPLES") ?? "60",
+  ),
   graceMs: 1500,
 };
 
@@ -109,6 +115,33 @@ export async function getPgid(pid: number): Promise<number | null> {
   const out = await runCmd("ps", ["-o", "pgid=", "-p", String(pid)]);
   const n = Number(out.trim());
   return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Decides whether a reported PGID may be adopted as THE agent's group.
+ *
+ * `setpgrp_exec.py` calls `os.setsid()` before exec, so a detached agent
+ * always reports `pgid === rootPid`. Anything else means setsid has not run
+ * yet and the wrapper still sits in the BENCH's own process group — adopting
+ * that value points every guard at the bench itself.
+ *
+ * Measured 2026-08-22 on `review-doc-drift-is-warning -n 3 -p 3`: two of the
+ * three watchdogs cached pgid=95123 for rootPids 95201 and 95208 (one group
+ * cannot be two different leaders' own group). Each then counted the other
+ * runs' processes as its own descendants, crossed the threshold of 5 at 6 and
+ * 7, and `killProcessGroup` SIGKILLed the bench parent. The batch died with
+ * exit 144 and no verdict. Under `-p 1` the same bug is invisible: the bench
+ * group holds too few processes to cross the threshold.
+ *
+ * Returns the PGID to adopt, or `null` to skip this tick and re-resolve.
+ */
+export function adoptablePgid(
+  rootPid: number,
+  reported: number | null,
+): number | null {
+  // Leader already gone: the setsid contract guarantees the group was its own.
+  if (reported === null) return rootPid;
+  return reported === rootPid ? reported : null;
 }
 
 /**
@@ -203,6 +236,7 @@ export function startWatchdog(
   let stopped = false;
   let trip: WatchdogTrip | null = null;
   let forkOvershoots = 0;
+  let pgidWaitTicks = 0;
   let rssOvershoots = 0;
   let pendingTimer: ReturnType<typeof setTimeout> | undefined;
   /** PGID of the agent process group; resolved lazily on the first tick. */
@@ -253,12 +287,26 @@ export function startWatchdog(
     if (stopped) return;
 
     // Resolve PGID lazily — the agent is spawned via setpgrp_exec.py, which
-    // calls setsid() before exec, so PGID == agent's PID. Try `getPgid`
-    // first (covers the case where the wrapper layer changes); if the
-    // leader has already exited (orphan-only group), assume PGID == rootPid
-    // — guaranteed by the setsid contract — and proceed to scan the group.
+    // calls setsid() before exec, so PGID == agent's PID. Until that call
+    // lands the wrapper still reports the BENCH's group, and adopting it
+    // aims the guard at the bench (see `adoptablePgid`). Skip the tick and
+    // re-resolve; give up on the guard rather than scan a foreign group.
     if (agentPgid === null) {
-      agentPgid = (await getPgid(rootPid)) ?? rootPid;
+      agentPgid = adoptablePgid(rootPid, await getPgid(rootPid));
+      if (agentPgid === null) {
+        pgidWaitTicks += 1;
+        if (pgidWaitTicks > cfg.pgidDetachSamples) {
+          console.warn(
+            `[process_watchdog] pid=${rootPid} never left the bench process ` +
+              `group after ${pgidWaitTicks} samples; guard disabled for this ` +
+              `run rather than scanning a group it does not own.`,
+          );
+          stopped = true;
+          return;
+        }
+        pendingTimer = setTimeout(() => void tick(), cfg.intervalMs);
+        return;
+      }
     }
 
     let members: number[] = [];

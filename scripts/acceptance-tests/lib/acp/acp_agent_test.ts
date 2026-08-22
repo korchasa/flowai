@@ -6,6 +6,7 @@
  */
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import {
+  composePartialTrace,
   describeDispatchResult,
   describeToolCall,
   resolveToolCalls,
@@ -97,4 +98,36 @@ Deno.test("resolveToolCalls prefers the run's own snapshot", () => {
 
 Deno.test("resolveToolCalls returns empty when there is nothing anywhere", () => {
   assertEquals(resolveToolCalls([], undefined).length, 0);
+});
+
+/**
+ * A global timeout abandons the in-flight turn: `client.prompt()` never
+ * resolves, so the loop's own `< text` push and the `finally` block's
+ * `[tool-calls]` render never run. Until 2026-08-22 `partialLogs` returned only
+ * what those two had already flushed, which for a turn-1 timeout is the prompt
+ * header and stray stderr. `deep-research-plan` was scored on exactly that:
+ * the judge saw two stderr lines and a timeout marker and failed four items for
+ * "no evidence", while the raw session held the five-direction plan, the
+ * mktemp'd output dir and two dispatched research agents.
+ */
+Deno.test("composePartialTrace carries the interrupted turn's assistant text into the trace", () => {
+  const out = composePartialTrace(
+    "\n[turn 1] > /deep-research WebAssembly on the server\n",
+    "**Plan — 5 research directions** (tmp_dir: /tmp/deep-research-TmL4te)",
+    ["Bash: mktemp -d", "Agent: deep-research-worker"],
+  );
+  assertStringIncludes(out, "Plan — 5 research directions");
+  assertStringIncludes(out, "[tool-calls]");
+  assertStringIncludes(out, "Agent: deep-research-worker");
+});
+
+Deno.test("composePartialTrace does not repeat a tool-call block the loop already flushed", () => {
+  const flushed = "[turn 1] > go\n< done\n\n[tool-calls] Bash: ls\n";
+  const out = composePartialTrace(flushed, "", ["Bash: ls"]);
+  assertEquals(out.split("[tool-calls]").length - 1, 1);
+});
+
+Deno.test("composePartialTrace leaves a completed trace untouched when nothing is in flight", () => {
+  const flushed = "[turn 1] > go\n< done\n";
+  assertEquals(composePartialTrace(flushed, "", []), flushed);
 });

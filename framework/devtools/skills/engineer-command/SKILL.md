@@ -40,7 +40,10 @@ Commands work across multiple IDEs. Before creating a command, determine the cur
 
 > **Note**: Claude Code unifies commands and skills. `.claude/commands/` is the legacy path; `.claude/skills/` (SKILL.md format) is recommended for new commands.
 
-OpenCode supports `$ARGUMENTS`, `$1`-`$N`, `` !`shell command` ``, `@filepath` in command templates.
+OpenCode supports `$ARGUMENTS`, `$1`-`$N`, `@filepath` and bang-backtick shell
+interpolation (!`shell command`) in command templates. Keep that bang glued to the
+preceding character: Claude Code executes any bang-backtick pair preceded by
+whitespace while it expands a slash command, and a code span does not escape it.
 
 ### Detection Strategy
 

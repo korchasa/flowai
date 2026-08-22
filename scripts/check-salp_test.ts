@@ -6,6 +6,8 @@
  *   - Duplicate ANC within a namespace.
  *   - Open namespace set (any grammar-conformant value accepted).
  *   - Surviving legacy grammar (with --enforce-no-legacy).
+ *   - `.ts` scanning boundaries: comments are read, string and
+ *     template-literal bytes are not.
  *
  * Each test builds a temp directory with markdown fixtures, invokes the
  * collector, and asserts the returned `Finding[]`.
@@ -152,5 +154,97 @@ Deno.test("legacy-grammar-not-reported-when-flag-off", async () => {
       enforceNoLegacy: false,
     });
     assertEquals(findings.length, 0);
+  });
+});
+
+Deno.test("ignores-salp-tokens-inside-template-literals", async () => {
+  // Shape borrowed from an acceptance-test scenario: `setup()` writes two
+  // sandbox files out of template literals — a source file whose comment
+  // carries a REF, and an SRS whose heading carries the matching ANC. Both
+  // are cross-references of the SANDBOX project, not of this repo, so the
+  // validator must read NEITHER. Reading only the REF (its line starts with
+  // `//`, so a per-line shape test mistook it for a comment) while dropping
+  // the ANC (its line does not) reported the pair as a dead ref.
+  await withTempDir(async (dir) => {
+    await writeFile(
+      dir,
+      "mod.ts",
+      [
+        "export async function setup(sandbox: string) {",
+        "  await Deno.writeTextFile(",
+        "    `${sandbox}/cli.ts`,",
+        "    `/** CLI. */",
+        "",
+        "// [REF:fr:render] — the render subcommand.",
+        "export function run(argv: string[]): string {",
+        "  throw new Error(\\`unknown: \\${argv[0]}\\`);",
+        "}",
+        "`,",
+        "  );",
+        "  await Deno.writeTextFile(",
+        "    `${sandbox}/documents/requirements.md`,",
+        "    `# SRS",
+        "",
+        "### 3.1 FR-RENDER: Render to stdout [ANC:fr:render]",
+        "`,",
+        "  );",
+        "}",
+      ].join("\n"),
+    );
+    const findings = await collectFindings({
+      rootDir: dir,
+      patterns: ["mod.ts"],
+      enforceNoLegacy: false,
+    });
+    assertEquals(findings, []);
+  });
+});
+
+Deno.test("still-reads-salp-tokens-in-real-ts-comments", async () => {
+  // Regression guard for the scan above: genuine line and block comments in
+  // `.ts` source remain a cross-reference surface.
+  await withTempDir(async (dir) => {
+    await writeFile(
+      dir,
+      "impl.ts",
+      [
+        "/** Implements [REF:fr:render]. */",
+        "export const x = 1;",
+        "// [REF:fr:nope] — no anchor anywhere.",
+      ].join("\n"),
+    );
+    await writeFile(dir, "srs.md", "### FR-RENDER [ANC:fr:render]");
+    const findings = await collectFindings({
+      rootDir: dir,
+      patterns: ["impl.ts", "srs.md"],
+      enforceNoLegacy: false,
+    });
+    const dead = findingsOfKind(findings, "dead-ref");
+    assertEquals(dead.length, 1);
+    assertEquals(dead[0].line, 3);
+    assertEquals(dead[0].message.includes("fr:nope"), true);
+  });
+});
+
+Deno.test("ignores-salp-anchors-in-ts-string-literals", async () => {
+  // An ANC inside a quoted string is data too: it must not satisfy a REF.
+  await withTempDir(async (dir) => {
+    await writeFile(
+      dir,
+      "impl.ts",
+      [
+        'const banner = "[ANC:fr:ghost]";',
+        "// [REF:fr:ghost] — points at a token that exists only in a string.",
+        "export default banner;",
+      ].join("\n"),
+    );
+    const findings = await collectFindings({
+      rootDir: dir,
+      patterns: ["impl.ts"],
+      enforceNoLegacy: false,
+    });
+    const dead = findingsOfKind(findings, "dead-ref");
+    assertEquals(dead.length, 1);
+    assertEquals(dead[0].message.includes("fr:ghost"), true);
   });
 });

@@ -273,6 +273,17 @@ export class AcpClient {
     return [...this.#toolCalls.values()];
   }
 
+  /**
+   * Assistant text accumulated for a turn that has not returned yet.
+   *
+   * `prompt()` only hands the text back when the turn completes, so a run the
+   * global timeout kills leaves everything the agent said unreachable. This
+   * reads the same buffer while the turn is still in flight.
+   */
+  getBufferedText(sessionId: string): string {
+    return (this.#buffers.get(sessionId) ?? []).join("");
+  }
+
   /** Convenience: build a client over a spawned child's stdio. */
   static fromChild(
     child: {

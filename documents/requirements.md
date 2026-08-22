@@ -1390,6 +1390,13 @@ Rules:
   - [x] Frontmatter `model:` keys with abstract tiers (e.g. `model: smart`) are allowed; only the body is scanned.
   - [x] Acceptance tests directory (`framework/*/acceptance-tests/`) and `.claude/skills/` dev resources are exempt (not distributed).
 
+#### FR-UNIVERSAL.NO-HOST-EXEC No Host-Executed Interpolation in Bodies [ANC:fr:universal.no-host-exec]
+
+- **Desc:** A distributed SKILL.md body MUST NOT contain a bang-backtick shell interpolation (`` !`cmd` `` preceded by start-of-line or whitespace). Claude Code expands slash commands before the model sees them and EXECUTES every such match; its span-blanking pass deliberately spares spans preceded by `!`, so neither an inline code span nor a fenced block escapes. A body documenting another IDE's template syntax therefore runs as a shell command on Claude Code, and the session dies before its first turn. Write the syntax with the bang glued to a preceding non-whitespace character, or describe it in words.
+- **Acceptance:**
+  - [x] `scripts/check-skills.ts` (`validateShellInterpolation`) scans `framework/<pack>/{skills,commands}/**/SKILL.md` bodies for `/(?<=^|\s)!`([^`\n]+)`/gm` and fails with criterion tag `FR-UNIVERSAL.NO-HOST-EXEC`. Evidence: `scripts/check-skills_test.ts`.
+  - [x] Measured 2026-08-22: `engineer-command/SKILL.md` carried one, and every run of `engineer-command-create` died with `Shell command permission check failed`. After the fix the scenario passed 3/3.
+
 #### FR-UNIVERSAL.DOC-SCHEMA Documentation Schema Indirection [ANC:fr:universal.doc-schema]
 
 - **Desc:** Distributed plugin primitives MUST resolve project documentation through semantic roles declared by the project-instructions artifact before reading/writing docs: `SRS` (requirements), `SDS` (design), `tasks` (persistent plans), `index` (navigation aggregate). Plugin resources MUST NOT encode concrete default paths or embedded SRS/SDS/task schemas, except `AGENTS*`/`CLAUDE*` templates, acceptance-test fixtures/assertions, and code-comment GFM traceability links to SRS/SDS headings. `pack.yaml` `scaffolds:` MAY keep concrete project-relative artifact paths because the external CLI contract consumes them as display/sync metadata; this exception is metadata-only and not an operational fallback.

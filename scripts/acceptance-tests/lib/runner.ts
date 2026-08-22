@@ -473,6 +473,28 @@ export function detectAuthFailure(
  * actually made tool calls — a negative scenario that scores "skill not
  * invoked" out of an empty trace is an infrastructure failure wearing a pass.
  */
+/**
+ * Is the injected exit-code item a blocker, or only a note?
+ *
+ * The global timeout is the harness's decision to stop the agent, not a verdict
+ * on the work. When the trace shows the agent working, the checklist's own
+ * items already decide whether what they ask for happened — a missing artefact
+ * fails its own item, with or without this one. Keeping the exit code critical
+ * on top of that makes every timed-out behavioural scenario red regardless of
+ * evidence: `deep-research-plan` asks six questions about a plan the agent
+ * produced in its first two minutes, then spent fifteen executing that plan and
+ * was killed, and could not have passed however good the plan was.
+ *
+ * An empty trace is different and stays a blocker: nothing was measured, so a
+ * pass there would be a pass on absence.
+ */
+export function exitCodeCheckIsCritical(
+  code: number,
+  toolCallCount: number,
+): boolean {
+  return !(code === 124 && toolCallCount > 0);
+}
+
 export function shouldInjectExitCodeCheck(
   checklist: readonly { id: string }[],
   code: number,
@@ -820,7 +842,7 @@ async function judgeAndScore(
     checklistToJudge.push({
       id: "exit_code_zero",
       description: "Agent should exit successfully",
-      critical: true,
+      critical: exitCodeCheckIsCritical(code, toolCalls.length),
     });
     checklistResults["exit_code_zero"] = {
       pass: false,

@@ -7,7 +7,11 @@
 
 import { assertEquals, assertGreaterOrEqual } from "@std/assert";
 import { fromFileUrl } from "@std/path";
-import { listProcessGroup, startWatchdog } from "./process_watchdog.ts";
+import {
+  adoptablePgid,
+  listProcessGroup,
+  startWatchdog,
+} from "./process_watchdog.ts";
 
 const SETPGRP_WRAPPER = fromFileUrl(
   new URL("./setpgrp_exec.py", import.meta.url),
@@ -258,4 +262,21 @@ Deno.test("WatchdogOptions.disabled returns a no-op handle (programmatic, test-o
   assertEquals(handle.trip(), null);
   // stop() must be safe to call on the no-op handle.
   handle.stop();
+});
+
+/**
+ * The guard aims at a process group. Adopting a group the agent does not own
+ * turns it from a safety net into the thing that kills the run — measured
+ * 2026-08-22, see `adoptablePgid`'s doc comment.
+ */
+Deno.test("adoptablePgid: a detached agent leads its own group", () => {
+  assertEquals(adoptablePgid(4242, 4242), 4242);
+});
+
+Deno.test("adoptablePgid: the bench's own group is never adopted", () => {
+  assertEquals(adoptablePgid(4242, 95123), null);
+});
+
+Deno.test("adoptablePgid: a vanished leader still owned its group", () => {
+  assertEquals(adoptablePgid(4242, null), 4242);
 });

@@ -50,7 +50,7 @@ reply: 'discard all'.`;
       `${sandboxDir}/cli.ts`,
       `/** ReportKit CLI. */
 
-// fr:render traceability marker — the render subcommand this FR is marked complete on.
+// \`[REF:fr:render]\` — the render subcommand this FR is marked complete on.
 export function run(argv: string[]): string {
   const cmd = argv[0];
   if (cmd === "render") return "rendered";

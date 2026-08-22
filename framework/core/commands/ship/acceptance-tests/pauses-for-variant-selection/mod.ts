@@ -28,9 +28,19 @@ Do not provide further input.`;
 
   checklist = [
     {
+      // Until 2026-08-22 this demanded "at least 2 implementation variants",
+      // which the Plan Phase's own text forbids for this task: it offers one
+      // variant "when the task has an obvious path (e.g., 'create a text
+      // file', 'add a config line') with no meaningful trade-offs", and a trim
+      // helper is that. The run it failed presented `Variant A — full scope`
+      // and said why alternatives did not apply — the exception, applied
+      // correctly. The subject of this scenario is the STOP at the gate; the
+      // variants only have to exist for the user to decline. A scenario that
+      // measures the two-variant rule needs a task with real trade-offs, and
+      // it is not this one.
       id: "variants_presented",
       description:
-        "Did the Plan Phase present at least 2 implementation variants in chat?",
+        "Did the Plan Phase present implementation variant(s) in chat and ask the user to choose? One variant is acceptable when the agent states why alternatives do not apply — this item checks that a choice was offered, not how many options it held.",
       critical: true,
     },
     {
