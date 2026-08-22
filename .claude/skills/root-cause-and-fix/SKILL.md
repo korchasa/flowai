@@ -63,16 +63,15 @@ Run this BEFORE anything else. Each signature below was paid for once.
   `detectAuthFailure` throws only with zero tool calls — a scenario driving
   another IDE's CLI surfaces THAT child's auth error, a true observation.
 - **Exit 124 with tool calls present.** A global timeout. On a skill-invocation
-  checklist the routing verdict is already in the trace and the clock is
-  irrelevant (`shouldInjectExitCodeCheck`); on a behavioural one, ask whether the
-  work outlives the cap — `deep-research` does.
+  checklist the routing verdict is already in the trace (`shouldInjectExitCodeCheck`);
+  on a behavioural one, ask whether the work outlives the cap — `deep-research` does.
 - **Judge reports a section "not present" in a large file.** Files are elided
-  mid-file above 30 KB (`renderFileForEvidence`); check disk first. This scored
+  mid-file above 30 KB (`renderFileForEvidence`); check disk first — this scored
   `doc_rules_present` missing on two `init` scenarios.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
   means the model produced the artefact unaided; `blocked` means it stopped for
-  material the query never supplied — a malformed scenario, not a routing miss.
-  Four scenarios were misdiagnosed on this in one day.
+  material the query never supplied — a malformed scenario, not a routing miss
+  (four scenarios misdiagnosed on this in one day).
 - **Adjacent-negative fails, correct neighbour lives in another pack.** The
   runner mounts `core` plus the scenario's pack, so there was nothing to defer
   to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
@@ -92,7 +91,9 @@ Run this BEFORE anything else. Each signature below was paid for once.
   file, deleting seven scenarios' premise; and a fixture can speak a retired
   dialect its `mod.ts` says it left (`audit/defects`, wikilinks the audit script
   ignores). Run any deterministic checker over the fixture and compare with the
-  defect list the scenario documents.
+  defect list the scenario documents — green ones too, whose items can pass
+  without measuring: `audit-clean` passed while `audit.ts` found 8 issues on the
+  fixture its checklist calls clean.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent: an unrelated instruction from the same file obeyed in the
   same session (`NO_COLOR=1` settled `agents-rules-*`). Then read the session for
@@ -163,17 +164,16 @@ so its guard test holds it instead.
 
 ## Phase 4 — Verify
 
-- Single scenario, cache bypassed: `deno task acceptance-tests -f <id> -n 3`.
-  `-f` takes ONE substring, last wins; `-p` sets concurrency. The lock file
-  forbids concurrent invocations, so several scenarios go one at a time.
-- Always in the background, with `.env` sourced in the same shell — a foreground
-  run past the tool's cap is killed mid-flight and shells do not persist.
+- Single scenario, cache bypassed, in the background, `.env` sourced in the same
+  shell (they do not persist): `deno task acceptance-tests -f <id> -n 3`. `-f`
+  takes ONE substring, last wins; `-p` sets concurrency; the lock forbids
+  concurrent runs. A foreground run past the tool's cap is killed mid-flight.
 - Host preflight before any sweep: load, free swap, and orphaned runners
   (`ps -Ao pid,etime,command | grep -E "runtests.py|benchmark.ts run"`). Under
   memory pressure `system_health` aborts sessions and every result is noise.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
-  a product fix, against the raw sessions and the sandbox on disk. The number
-  has to move for the reason claimed.
+  a product fix, against the raw sessions and the sandbox. The number has to move
+  for the reason claimed.
 - Name what the green number covers. A rule phrased "if you see X" binds at
   every stage, but the suite usually holds one, so "3/3" reads as general when
   it is not — say which stage, and add a scenario for the one that costs most.
