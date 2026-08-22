@@ -25,36 +25,33 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 ## Rules
 
 1. **Raw session over any rendering.** `judge-evidence.md` and `report.html` are
-   the judge's rendering; ground truth is the transcript the sandboxed CLI wrote
-   for itself, plus the sandbox on disk. Read those before forming any hypothesis
-   about what the agent did. Renderings also reorder: a `report.html` verdict
-   block is NOT necessarily the run directory of the same index.
-2. **Absence in a rendering is not absence in the world.** Every "the agent never
-   X" claim must come from a tool-call count or a session line, never from not
-   seeing X in a summary.
-3. **Guards are signals.** A guard that blocks the run means conditions are
+   the judge's rendering; ground truth is the transcript the CLI wrote for itself
+   plus the sandbox on disk. Read those first. Renderings also reorder: a
+   `report.html` verdict block is NOT the run directory of the same index. And
+   absence in a rendering is not absence in the world — every "the agent never X"
+   claim comes from a tool-call count or a session line, never from a summary.
+2. **Guards are signals.** A guard that blocks the run means conditions are
    wrong. Never reach for `--force`, `--no-verify` or an override env var; report
    the blocker instead.
-4. **Fix the layer the cause is in.** Product defect → the primitive. Instrument
+3. **Fix the layer the cause is in.** Product defect → the primitive. Instrument
    defect → `scripts/acceptance-tests/lib/`. Stale contract → the scenario. Never
    quiet a red test by editing whichever of the three is easiest to reach.
-5. **Never flip a checklist into its opposite.** Rewriting "must have X" as "must
+4. **Never flip a checklist into its opposite.** Rewriting "must have X" as "must
    NOT have X" trades one red for another and hides that the requirement was
    conditional. Scope the item to what it tests, say why it does not adjudicate
    the rest, and record every dead version in the file.
-6. **No test-fitting.** Do not hint the answer in `userQuery`, do not script the
+5. **No test-fitting.** Do not hint the answer in `userQuery`, do not script the
    persona, do not pre-create what the skill should produce. Change a query only
    because it was malformed, and say so in the file.
-7. **Correct the record where the wrong claim lives.** A comment that encoded a
+6. **Correct the record where the wrong claim lives.** A comment that encoded a
    wrong diagnosis costs the next reader a whole investigation — rewrite it in
    place with what the evidence shows, and keep the retracted version visible.
-8. **Distinguish variance from regression.** A real defect fails the same way
+7. **Distinguish variance from regression.** A real defect fails the same way
    three runs in a row; one sweep disagreeing with the next on an unchanged tree
    is load noise. Re-measure before diagnosing.
-9. **This file is an output of the loop.** Rules 5 and 7 apply to it as to any
-   scenario or comment: a signature that proves wrong gets corrected in place,
-   and what the loop learns gets written back (Phase 6). A lesson left in chat is
-   lost at the end of the session.
+8. **This file is an output of the loop.** Rules 4 and 6 apply to it too: a
+   signature that proves wrong gets corrected in place, and what the loop learns
+   gets written back (Phase 6). A lesson left in chat is lost.
 
 ## Phase 0 — Instrument or product
 
@@ -62,40 +59,51 @@ Run this BEFORE anything else. Each signature below was paid for once.
 
 - **Exit 1, empty trace, ~10-20 s.** Look for `OAuth session expired`,
   `Failed to authenticate`, `Invalid API key`, `Usage credits required`. The CLI
-  never ran the task. Remedy: `set -a; . ./.env; set +a` before the sweep.
-  `detectAuthFailure` throws on this, but only with zero tool calls — a scenario
-  driving another IDE's CLI surfaces THAT child's auth error, a true observation.
-- **Exit 124 with tool calls present.** A global timeout. On a checklist of only
-  skill-invocation items the routing verdict is already in the trace and the
-  clock is irrelevant (`shouldInjectExitCodeCheck`); on a behavioural one, ask
-  whether the work outlives the cap — `deep-research` does.
-- **Judge reports a section "not present" in a large file.** Files are elided in
-  the middle above 30 KB (`renderFileForEvidence`); check the file on disk first.
-  This scored `doc_rules_present` missing on two `init` scenarios.
+  never ran the task; remedy is `set -a; . ./.env; set +a` before the sweep.
+  `detectAuthFailure` throws only with zero tool calls — a scenario driving
+  another IDE's CLI surfaces THAT child's auth error, a true observation.
+- **Exit 124 with tool calls present.** A global timeout. On a skill-invocation
+  checklist the routing verdict is already in the trace and the clock is
+  irrelevant (`shouldInjectExitCodeCheck`); on a behavioural one, ask whether the
+  work outlives the cap — `deep-research` does.
+- **Judge reports a section "not present" in a large file.** Files are elided
+  mid-file above 30 KB (`renderFileForEvidence`); check disk first. This scored
+  `doc_rules_present` missing on two `init` scenarios.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
-  means the model produced the artefact unaided; `blocked` means it stopped to
-  ask for material the query never supplied — a malformed scenario, not a routing
-  miss. Four scenarios were misdiagnosed on this in one day.
+  means the model produced the artefact unaided; `blocked` means it stopped for
+  material the query never supplied — a malformed scenario, not a routing miss.
+  Four scenarios were misdiagnosed on this in one day.
 - **Adjacent-negative fails, correct neighbour lives in another pack.** The
-  runner mounts `core` plus the scenario's own pack, so the agent had nothing to
-  defer to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
+  runner mounts `core` plus the scenario's pack, so there was nothing to defer
+  to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first. `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
-- **A verdict that changed with no tree change.** Load noise. Re-measure.
+- **A verdict that changed with no tree change.** Load noise; re-measure before
+  diagnosing. One shape carries a mechanism worth knowing: the ACP loop runs only
+  while the user emulator answers and stops on `<NO_RESPONSE>`, so an interactive
+  agent that closes its turn waiting on background subagents ends the session
+  early. `maintenance-basic` died at 228 s on "waiting on W4" where its siblings
+  ran 950 s, then passed 3/3 on re-measure.
+- **The scenario asserts something the sandbox never contained.** The runner
+  commits the fixture before the agent runs, so `git show HEAD:<file>` in the
+  sandbox is the exact input — read it before believing "the agent missed X".
+  Until 2026-08-22 the rendered `AGENTS.md` overwrote a fixture's own instruction
+  file, deleting seven scenarios' premise; and a fixture can speak a retired
+  dialect its `mod.ts` says it left (`audit/defects`, wikilinks the audit script
+  ignores). Run any deterministic checker over the fixture and compare with the
+  defect list the scenario documents.
 - **The rule was in the file and still did not fire.** First prove the text
-  reached the agent: find an unrelated instruction from the same file obeyed in
-  the same session (`NO_COLOR=1` settled it for `agents-rules-*`). Then read the
-  session for the shape. Never mentions the rule → never bound by it; fix with a
-  binding moment, and place it ahead of the decision, because an agent that
-  already has a solution reads the rule for exemptions. Quotes it and overrides
-  it → it lost an argument; say what compliance PRODUCES, and grep for a
-  neighbouring rule claiming the same decision, since the weaker of two always
-  wins (`Proactive Resolution`, then the `Test Rules` accuracy wording — one
-  extra measure round each). Obeys it and reclassifies the case → your own
-  carve-out is the escape; scope it to what the user NAMED. And a rule stated as
-  a consequence is refutable by denying the consequence — forbid the act, not
-  the harm.
+  reached the agent: an unrelated instruction from the same file obeyed in the
+  same session (`NO_COLOR=1` settled `agents-rules-*`). Then read the session for
+  the shape. Never mentions it → never bound; add a binding moment AHEAD of the
+  decision, since an agent holding a solution reads the rule for exemptions.
+  Quotes and overrides it → it lost an argument; say what compliance PRODUCES and
+  grep for a neighbouring rule claiming the case, because the weaker of two wins
+  (`Proactive Resolution`, then the `Test Rules` accuracy wording — one measure
+  round each). Obeys it and reclassifies the case → your own carve-out is the
+  escape; scope it to what the user NAMED. A rule stated as a consequence is
+  refutable by denying the consequence — forbid the act, not the harm.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
@@ -105,12 +113,11 @@ decided it, then continue.
 Read in this order and stop as soon as the cause is unambiguous.
 
 1. The raw session. `<run>/<scenario>/run-N/bench-home` is a SYMLINK into
-   `$TMPDIR/flowai-bench/run-N-<hash>/`, so resolve it with `readlink` first, then
-   `find` the `.claude/projects/<slug>/<uuid>.jsonl` inside it.
-   - Tool histogram:
-     `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
-   - Same filter with `and .name=="Skill"`, piped to `.input`, for skill calls;
-     subagent transcripts sit under `<uuid>/subagents/`.
+   `$TMPDIR/flowai-bench/run-N-<hash>/`; `readlink` it, then `find` the
+   `.claude/projects/<slug>/<uuid>.jsonl` inside. Tool histogram:
+   `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
+   — add `and .name=="Skill"` piped to `.input` for skill calls; subagent
+   transcripts sit under `<uuid>/subagents/`.
 2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the
    agent actually wrote settles claims no transcript reading can.
 3. The failed agent itself, when the diagnosis is about wording. Resume in place
@@ -128,20 +135,16 @@ Read in this order and stop as soon as the cause is unambiguous.
 
 ## Phase 2 — Hypotheses
 
-Propose 3–7 candidate causes with probabilities summing to ~100 and one line of
-reasoning each. Print the Hypothesis Board. Then, for the highest-probability
-untested one, design an experiment with a discrete outcome — state before
-running it what success and failure each prove. Execute, record, re-weight,
-reprint the board. When several red scenarios are in hand, check whether each
-isolates a different hypothesis: one measure round then returns one verdict per
-hypothesis instead of a single conflated yes-or-no.
+Propose 3–7 candidate causes with probabilities summing to ~100, one line of
+reasoning each, and print the Hypothesis Board. For the highest-probability
+untested one, design an experiment with a discrete outcome — state before running
+it what success and failure each prove. Execute, record, re-weight, reprint. With
+several red scenarios in hand, check that each isolates a different hypothesis:
+one measure round then returns one verdict per hypothesis, not a conflated yes.
+Terminate at ~80 %, after three experiments that move nothing, or 5 iterations.
 
-Terminate when one hypothesis passes ~80 %, when three consecutive experiments
-move nothing, or after 5 iterations.
-
-Diagnostic edits are reverted from `cp` backups taken beforehand — never with
-`git checkout --` or `git restore`, which return the index rather than what you
-wrote.
+Diagnostic edits are reverted from `cp` backups — never with `git checkout --`
+or `git restore`, which return the index rather than what you wrote.
 
 ## Phase 3 — Fix
 
@@ -151,17 +154,18 @@ wrote.
 - **Instrument**: edit `scripts/acceptance-tests/lib/`. Extract the decision into
   a pure exported function and unit-test it in a file `deno task check` actually
   runs, NOT `runner_test.ts`, which `task-check.ts` ignores.
-- **Contract**: edit the scenario, saying in the file what the old version
-  demanded and why it was wrong.
+- **Contract**: edit the scenario or its fixture, saying in the file what the old
+  version held and why it was wrong.
 
 Every fix carries, in the file it touches, the measurement that justified it:
-date, number of runs, what the sessions showed. Prose in a product file cannot
-hold that, so its guard test holds it instead.
+date, runs, what the sessions showed. Prose in a product file cannot hold that,
+so its guard test holds it instead.
 
 ## Phase 4 — Verify
 
 - Single scenario, cache bypassed: `deno task acceptance-tests -f <id> -n 3`.
-  `-f` takes ONE substring, last wins on repeats; `-p` sets concurrency.
+  `-f` takes ONE substring, last wins; `-p` sets concurrency. The lock file
+  forbids concurrent invocations, so several scenarios go one at a time.
 - Always in the background, with `.env` sourced in the same shell — a foreground
   run past the tool's cap is killed mid-flight and shells do not persist.
 - Host preflight before any sweep: load, free swap, and orphaned runners
@@ -179,8 +183,9 @@ hold that, so its guard test holds it instead.
 
 ## Phase 5 — Record and commit
 
-- Update the docs the change maps to (AGENTS.md Documentation Map). An
-  instrument change belongs in SDS §3.4; a trigger lesson in FR-ACCEPT.TRIGGER.
+- Update the docs the change maps to (AGENTS.md Documentation Map): an
+  instrument change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When the
+  doc records the behaviour you are changing as deliberate, say so and ask.
 - Check `git diff --cached --stat` in a SEPARATE tool call, then commit by
   explicit paths. The tree is shared with other sessions.
 - The commit message states what was wrong, what the evidence was, and what
@@ -214,11 +219,11 @@ explicit path, and say what was learned rather than that the skill was updated.
 [ ] Raw session read before any claim about what the agent did.
 [ ] Hypothesis Board printed before and after each experiment.
 [ ] Diagnostic edits reverted from copies; worktree clean between experiments.
-[ ] Fix landed in the layer the cause is in, with its measurement recorded in the file.
-[ ] Every fix carries a test in a file `deno task check` runs.
+[ ] Fix landed in the layer the cause is in, with its measurement in the file, and
+    a test in a file `deno task check` runs.
 [ ] Scenario re-measured with `-n 3`; variance separated from regression.
 [ ] `deno task check` green; commit by explicit paths after a separate index check.
-[ ] Report names what is still red and why.
-[ ] Phase 6 decision stated aloud: amended with what was learned, or left alone
-    with the reason.
+[ ] Report names what is still red and why; a documented decision you had to
+    overturn was raised, not resolved quietly.
+[ ] Phase 6 decision stated aloud: amended, or left alone with the reason.
 </verification>
