@@ -29,7 +29,7 @@ After resolution, read `<memex-root>/AGENTS.md` for the schema. All conventions 
 If no memex was found and the user did not pass `--memex`, scaffold one in the current working directory:
 
 1. Create `./pages/`, `./pages/answers/`, `./raw/articles/`, `./raw/attachments/`.
-2. Copy the schema asset to `./AGENTS.md`. The asset ships with this skill at `assets/AGENTS.md` in the framework. If the user already has `AGENTS.md` in this directory, do NOT overwrite — append a "## Memex Schema" section that links to it instead, then create a separate `MEMEX.md` with the schema. Ask the user once which they prefer if both options are unclear.
+2. **Copy the schema asset file. Do not write a schema of your own.** Locate it at `assets/AGENTS.md` under the installed framework directory (e.g. `.claude/assets/AGENTS.md`) and copy the WHOLE file — every byte, both branches below. Destination: `./AGENTS.md`; if this directory already has an `AGENTS.md`, do NOT overwrite it — copy the asset to `./MEMEX.md` instead and append a "## Memex Schema" section to the existing file linking to it. Ask the user once which they prefer if both options are unclear. A schema you compose yourself looks complete and is not: it drops the anchor grammar and the entity templates, so every page written afterwards has a bare H1 with no `[ANC:mx-<type>:<slug>]`, and both the audit script and the `ask` skill resolve pages by that anchor. Measured 2026-08-22 over three `save-new` runs — the asset is 214 lines and none of the three copied it: two wrote their own 57-line schema with zero anchors and produced bare pages, the third reproduced 123 lines of it and produced anchored pages.
 3. Create `./pages/index.md` with the empty-catalog template:
    ```markdown
    # Memex Index

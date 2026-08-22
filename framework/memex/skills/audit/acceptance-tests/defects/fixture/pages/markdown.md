@@ -6,15 +6,15 @@ tags: [markup-languages]
 ---
 # Markdown
 
-A formatting syntax. References a page that does not exist: [[never-created-page]].
+A formatting syntax. References a page that does not exist: [REF:mx-concept:never-created-page].
 
 ## Details
 
-Some details. Links to [[orphan-island]] do exist (file is on disk) but no other page links back here.
+Some details. Links to [REF:mx-concept:orphan-island] do exist (file is on disk) but no other page links back here.
 
 ## See Also
 
-- [[orphan-island]]
+- [REF:mx-concept:orphan-island | Orphan Island]
 
 <!-- NOTE: this concept page deliberately has NO 'Counter-Arguments and Gaps' section -->
 

@@ -17,6 +17,19 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  *  - Missing section appended to markdown.md and orphan-island.md
  *  - INDEX_MISSING entries appended (as SALP rows); INDEX_DEAD row removed
  *  - ORPHAN reported, NOT auto-fixed
+ *
+ * 2026-08-22: the fixture FILES were migrated to SALP. This comment had claimed
+ * "post-SALP" since the migration, but the files still carried `[[wikilinks]]`,
+ * which `scripts/audit.ts` ignores by design — so the planted topology never
+ * existed. `audit.ts <fixture>/pages` on the old files reported no DEAD_LINK and
+ * no INDEX_DEAD at all, listed `markdown.md` as INDEX_MISSING (its index row was
+ * a wikilink) and `orphan-island.md` as an ORPHAN (its one inbound link was a
+ * wikilink). It now reports exactly the nine issues above. The scenario was red
+ * on `index_drift_fixed` in every run: the checklist asks for SALP rows while
+ * the fixture taught the agent to write wikilinks, and the agent followed the
+ * fixture. The fixture's own AGENTS.md said "Internal links: `[[slug]]` only",
+ * contradicting `save/SKILL.md` ("Cross-references use SALP only … wikilinks are
+ * no longer recognised"); it now states the SALP grammar.
  */
 export const MemexAuditDefectsBench = new class extends AcceptanceTestScenario {
   id = "audit-defects";

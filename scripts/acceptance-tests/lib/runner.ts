@@ -171,6 +171,32 @@ async function initTracer(
   return { tracer, traceId };
 }
 
+/**
+ * Build the sandbox's root instruction file from the rendered template plus
+ * whatever instruction file the fixture shipped.
+ *
+ * A fixture that ships its own root `AGENTS.md` / `CLAUDE.md` is stating the
+ * scenario's premise in the only place the agent reads without being told to:
+ * a memex schema, a project's documentation rules, a set of planted
+ * contradictions. Until 2026-08-21 step 1.8 wrote the rendered template over
+ * that file and the premise vanished with no warning — the
+ * `maintenance-instruction-coherence` sandbox held two byte-identical
+ * 23300-byte files and none of the four contradictions the scenario asserts,
+ * so the agent was scored for missing what had been deleted before it ran.
+ *
+ * The template still comes first: it carries the project rules several
+ * scenarios measure directly. The fixture's own text follows it.
+ */
+export function composeSandboxAgentsMd(
+  rendered: string,
+  fixtureContent: string | null,
+): string {
+  const fixture = (fixtureContent ?? "").trim();
+  if (!fixture) return rendered;
+  if (rendered.includes(fixture)) return rendered;
+  return `${rendered.trimEnd()}\n\n---\n\n${fixture}\n`;
+}
+
 /** Copy fixtures + framework + sandbox CLAUDE.md note + AGENTS.md template. */
 async function prepareSandboxFiles(
   sandboxPath: string,
@@ -251,7 +277,25 @@ async function prepareSandboxFiles(
     DEVELOPMENT_COMMANDS: vars.DEVELOPMENT_COMMANDS ?? "",
     COMMAND_SCRIPTS: vars.COMMAND_SCRIPTS ?? "",
   };
-  const rootContent = await renderAgentsMd(templateVars);
+  // The fixture copy at step 1.5 may have placed its own instruction file at
+  // the sandbox root. Read it back before writing, so its content survives
+  // instead of being overwritten (see composeSandboxAgentsMd).
+  let fixtureInstructions: string | null = null;
+  for (const name of ["AGENTS.md", "CLAUDE.md"]) {
+    try {
+      fixtureInstructions = await Deno.readTextFile(join(sandboxPath, name));
+      break;
+    } catch (_) {
+      // Not shipped by this fixture — try the next name.
+    }
+  }
+  if (fixtureInstructions !== null) {
+    console.log("  Fixture ships a root instruction file — merging it in");
+  }
+  const rootContent = composeSandboxAgentsMd(
+    await renderAgentsMd(templateVars),
+    fixtureInstructions,
+  );
   await Deno.writeTextFile(join(sandboxPath, "AGENTS.md"), rootContent);
 
   // Root CLAUDE.md for Claude Code compatibility — a REAL FILE, not a symlink.

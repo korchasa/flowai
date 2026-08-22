@@ -16,4 +16,7 @@ Memex (long-term knowledge bank for AI agents) at this directory. Three operatio
 
 ## Naming
 
-Filenames `lowercase-kebab-case.md`. Internal links: `[[slug]]` only.
+Filenames `lowercase-kebab-case.md`. Cross-references use SALP only:
+`[REF:mx-<type>:<slug>]` (bare) or `[REF:mx-<type>:<slug> | <display>]`
+(with display text). Each page declares its own `[ANC:mx-<type>:<slug>]`
+anchor on the title line. `[[wikilinks]]` are not recognised.
