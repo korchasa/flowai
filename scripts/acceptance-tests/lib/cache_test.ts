@@ -20,6 +20,7 @@ import {
   type CacheEntry,
   cacheFilePath,
   computeCacheKey,
+  computeCacheKeyInputs,
   MAX_REASON_LEN,
   readCache,
   trimResultForCache,
@@ -630,6 +631,99 @@ Deno.test("computeCacheKey: ACP lib version + registry fingerprint enter the key
     const b = await computeCacheKey(base);
     assertEquals(a, b);
   } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+/**
+ * The key must name the file the sweep is actually launched from. Until
+ * 2026-08-22 it named `scripts/task-bench.ts`, renamed away on 2026-05-11;
+ * a missing path contributes nothing, so the entry point sat in no key at all
+ * while the module header claimed it did.
+ */
+Deno.test("cache key inputs include the CLI entry point that runs the sweep", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const inputs = await computeCacheKeyInputs({
+      scenario: await makeFakeScenario(tmp),
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assert(
+      "runner:scripts/task-acceptance-tests.ts" in inputs,
+      `CLI entry point missing from the key. runner: entries seen: ${
+        Object.keys(inputs).filter((k) => k.startsWith("runner:")).join(", ")
+      }`,
+    );
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+/**
+ * The runner walk decides HOW every scenario executes, so it belongs in every
+ * key — but the harness's own unit tests cannot change a single verdict. With
+ * them in the walk, editing `process_watchdog_test.ts` invalidated all 318
+ * slots at once (measured 2026-08-22). 18 of the 50 files under lib/ are tests.
+ */
+Deno.test("cache key inputs exclude the harness's own unit tests", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const inputs = await computeCacheKeyInputs({
+      scenario: await makeFakeScenario(tmp),
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    });
+    const tests = Object.keys(inputs).filter((k) => k.endsWith("_test.ts"));
+    assertEquals(
+      tests,
+      [],
+      `Harness unit tests must not enter the cache key: ${tests.join(", ")}`,
+    );
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+/**
+ * The membership assertions above are static. This one proves the exclusion
+ * holds against a file that does not exist yet — the mirror of the adapters
+ * marker test, which proves a NON-test file still moves the key.
+ */
+Deno.test("adding a *_test.ts under lib/ does NOT change the cache key", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  const markerPath = join(
+    REPO_ROOT,
+    "scripts",
+    "acceptance-tests",
+    "lib",
+    `_cachekey_marker_${crypto.randomUUID().replace(/-/g, "")}_test.ts`,
+  );
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const args = {
+      scenario,
+      ide: "claude",
+      agentModel: "m",
+      runs: 1,
+      ideCliVersion: "",
+    };
+    const baseline = await computeCacheKey(args);
+    // No imports inside — the cross-package drift guard parses every .ts here.
+    await Deno.writeTextFile(markerPath, "// cache-key marker, no imports\n");
+    assertEquals(
+      await computeCacheKey(args),
+      baseline,
+      "A harness unit test cannot change any scenario's verdict, so it must not change the key.",
+    );
+  } finally {
+    try {
+      await Deno.remove(markerPath);
+    } catch (_) { /* already gone */ }
     await Deno.remove(tmp, { recursive: true });
   }
 });

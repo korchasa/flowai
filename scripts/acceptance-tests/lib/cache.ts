@@ -12,10 +12,10 @@
  *
  * Mirrored in SRS (`FR-ACCEPT-CACHE`) and SDS §3.4.1.
  *
- * ## Cache-key algorithm (v1)
+ * ## Cache-key algorithm (v2)
  *
  *   cacheKey = sha256(canonicalJSON({
- *     version:        CACHE_ALGORITHM_VERSION,   // 1 — bump on algo change
+ *     version:        CACHE_ALGORITHM_VERSION,   // 2 — bump on algo change
  *     scenarioId:     scenario.id,
  *     ide:            "claude" | "cursor" | "codex" | "opencode",
  *     ideCliVersion:  "" | stdout of `<cli> --version` (2s probe, empty on failure),
@@ -28,7 +28,8 @@
  *       "primitive:<relpath>":  fileHash(f) for f in primitive-dir, skipping acceptance-tests/,
  *       "pack.yaml":            fileHash(framework/<pack>/pack.yaml),
  *       "agents.template":      fileHash(framework/core/assets/AGENTS.template.md),
- *       "runner:<relpath>":     fileHash(f) for f in scripts/acceptance-tests/lib/** ∪ scripts/task-acceptance-tests.ts,
+ *       "runner:<relpath>":     fileHash(f) for f in scripts/acceptance-tests/lib/**
+ *                               (EXCLUDING *_test.ts) ∪ scripts/task-acceptance-tests.ts,
  *       "config:full":          fileHash(acceptance-tests/config.json),
  *     }),
  *   }))
@@ -52,6 +53,18 @@
  *   the key.
  * - Host environment (OS, node version). Covered indirectly by runner code
  *   hashing + IDE CLI version.
+ * - The harness's own unit tests (`scripts/acceptance-tests/lib/**\/*_test.ts`).
+ *   They cannot change how a scenario executes. Until 2026-08-22 they were
+ *   hashed, so editing one invalidated all 318 slots — 18 of the 50 files under
+ *   lib/ are tests. Two tests in `cache_test.ts` pin both halves: a `_test.ts`
+ *   file must not move the key, a non-test file under `adapters/` must.
+ *
+ * ## v1 → v2
+ *
+ * v2 excludes those unit tests and repairs the CLI entry-point path, which
+ * named `scripts/task-bench.ts` — renamed away on 2026-05-11. A missing path
+ * contributes nothing, so the file the sweep is launched from was in no key at
+ * all while this header claimed it was. Both were found on 2026-08-22.
  */
 
 import { dirname, join, relative } from "@std/path";
@@ -63,7 +76,7 @@ import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 export const CACHE_SCHEMA_VERSION = 1;
 
 /** Cache-key algorithm version. Bump on algorithmic change to invalidate all entries. */
-export const CACHE_ALGORITHM_VERSION = 1;
+export const CACHE_ALGORITHM_VERSION = 2;
 
 /** Judge `reason` strings longer than this are truncated in the cache file. */
 export const MAX_REASON_LEN = 200;
@@ -115,15 +128,21 @@ export interface CacheKeyInputs {
 }
 
 /**
- * Computes the cache key for a scenario run under the specified options.
+ * Builds the `inputs` map that goes into the cache key: `<prefix>:<relpath> →
+ * sha-256 of the file's bytes`, sorted by construction.
+ *
+ * Exported so a test can assert WHICH files are in the key rather than only
+ * that some key changed. Asserting membership directly is what caught the
+ * `scripts/task-bench.ts` path, dead since the 2026-05-11 rename and silently
+ * skipped ever since, so the CLI entry point was in no key at all.
  *
  * Missing input files (absent fixture dir, unknown pack, etc.) are silently
  * skipped so the key stays stable rather than throwing.
  */
-export async function computeCacheKey(
+export async function computeCacheKeyInputs(
   inputs: CacheKeyInputs,
-): Promise<string> {
-  const { scenario, ide, agentModel, runs, ideCliVersion } = inputs;
+): Promise<Record<string, string>> {
+  const { scenario } = inputs;
   const hashInputs: Record<string, string> = {};
 
   // 1. Scenario directory (mod.ts + fixture/)
@@ -158,14 +177,19 @@ export async function computeCacheKey(
     hashInputs,
   );
 
-  // 5. Runner code: scripts/acceptance-tests/lib/** + scripts/task-acceptance-tests.ts.
+  // 5. Runner code: scripts/acceptance-tests/lib/** + the CLI entry point.
+  //    The harness's OWN unit tests are excluded — they decide nothing about
+  //    how a scenario executes, and hashing them made one edit to
+  //    `process_watchdog_test.ts` invalidate all 318 slots (2026-08-22).
   await hashDirectoryInto(
     join("scripts", "acceptance-tests", "lib"),
     "runner",
     hashInputs,
+    [],
+    [/_test\.ts$/],
   );
   await hashFileInto(
-    join("scripts", "task-bench.ts"),
+    join("scripts", "task-acceptance-tests.ts"),
     "runner",
     hashInputs,
   );
@@ -182,6 +206,16 @@ export async function computeCacheKey(
     hashInputs,
   );
 
+  return hashInputs;
+}
+
+/**
+ * Computes the cache key for a scenario run under the specified options.
+ */
+export async function computeCacheKey(
+  inputs: CacheKeyInputs,
+): Promise<string> {
+  const { scenario, ide, agentModel, runs, ideCliVersion } = inputs;
   const payload = canonicalize({
     version: CACHE_ALGORITHM_VERSION,
     scenarioId: scenario.id,
@@ -193,7 +227,7 @@ export async function computeCacheKey(
     // key, so an ACP lib upgrade or a registry edit invalidates stale verdicts.
     acpLibVersion: ACP_LIB_VERSION,
     acpRegistry: acpRegistryFingerprint(),
-    inputs: hashInputs,
+    inputs: await computeCacheKeyInputs(inputs),
   });
 
   return await sha256Hex(payload);
@@ -321,6 +355,7 @@ async function hashDirectoryInto(
   prefix: string,
   out: Record<string, string>,
   skipDirs: string[] = [],
+  skipFiles: RegExp[] = [],
 ): Promise<void> {
   try {
     const stat = await Deno.stat(dir);
@@ -329,9 +364,10 @@ async function hashDirectoryInto(
     return; // Missing directory → contributes nothing.
   }
 
-  const skipPatterns = skipDirs.map((d) =>
-    new RegExp(`(^|/)${escapeRegExp(d)}(/|$)`)
-  );
+  const skipPatterns = [
+    ...skipDirs.map((d) => new RegExp(`(^|/)${escapeRegExp(d)}(/|$)`)),
+    ...skipFiles,
+  ];
 
   const found: { rel: string; abs: string }[] = [];
   for await (
