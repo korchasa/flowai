@@ -47,7 +47,8 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
    place with what the evidence shows, and keep the retracted version visible.
 7. **Distinguish variance from regression.** A real defect fails the same way
    three runs in a row; one sweep disagreeing with the next on an unchanged tree
-   is load noise. Re-measure before diagnosing.
+   is load noise. Re-measure — but name the mechanism before settling on noise,
+   because a flake with a mechanism is a defect that load merely uncovers.
 8. **This file is an output of the loop.** Rules 4 and 6 apply to it too: a
    signature that proves wrong gets corrected in place, and what the loop learns
    gets written back (Phase 6). A lesson left in chat is lost.
@@ -74,27 +75,27 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first: `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
-- **A verdict that changed with no tree change.** Load noise; re-measure.
+- **A verdict that changed with no tree change.** Load noise — then ask what the
+  load EXPOSED, because re-measuring hides a deterministic cause as readily as it
+  clears a false one. On 2026-08-24 the watchdog's rss test had been dismissed as
+  noise for months; the buffer it measured was compressed away by the OS in under
+  a second, and every green re-run was a poll landing inside that window.
 - **The turn ends while a dispatched subagent is still running.** The ACP loop
-  runs only while the emulator answers, so the session ends there: the result is
-  never collected and the final summary never happens (`maintenance-basic` died
-  at 228 s where siblings ran 950 s; `adapt-all` and `review-no-grouping` did the
-  same on 2026-08-23). The cure is in the primitive — "wait for all subagents"
-  has to say that waiting means COLLECTING, and that nothing is presented while
-  one is outstanding.
+  runs only while the emulator answers, so the result is never collected and the
+  final summary never happens (`maintenance-basic` died at 228 s where siblings
+  ran 950 s; two more primitives did the same on 2026-08-23). The cure is in the
+  primitive: "wait for all subagents" has to say that waiting means COLLECTING,
+  and that nothing is presented while one is outstanding.
 - **The scenario asserts something the sandbox never contained.** The runner
-  commits the fixture, so `git show <init-sha>:<file>` in the sandbox is the
-  exact input — read it before believing "the agent missed X". `setup()` runs
-  AFTER that commit, so whatever it plants is an UNCOMMITTED change that lands
-  in the agent's own diff: on 2026-08-23 the judge read an injected
-  Documentation Hierarchy as a line the agent had WRITTEN and failed the item
-  asking whether the agent had READ it. A `setup()` planting pre-existing state
-  must commit it. Until 2026-08-22
-  the rendered `AGENTS.md` overwrote a fixture's own instruction file, deleting
-  seven scenarios' premise; a fixture can also speak a retired dialect its
-  `mod.ts` says it left. Run any deterministic checker over it, green scenarios
-  included: `audit-clean` passed while `audit.ts` found 8 issues on the fixture
-  its checklist calls clean.
+  commits the fixture, so `git show <init-sha>:<file>` is the exact input — read
+  it before believing "the agent missed X". `setup()` runs AFTER that commit, so
+  whatever it plants is an UNCOMMITTED change landing in the agent's own diff: on
+  2026-08-23 the judge read an injected hierarchy as a line the agent had WRITTEN
+  and failed the item asking whether it had READ it. A `setup()` planting
+  pre-existing state must commit it. A fixture can also speak a retired dialect
+  its `mod.ts` says it left, so run any deterministic checker over it, green
+  scenarios included: `audit-clean` passed while `audit.ts` found 8 issues on the
+  fixture its checklist calls clean.
 - **The fixture breaks a SECOND rule behind the first.** It must itself pass
   `deno fmt --check`, `deno lint`, `deno test` and ship the Benchmark Fixture
   `deno.json`. Three of ten scenarios needed two rounds on 2026-08-22 (an inline
@@ -120,15 +121,14 @@ Run this BEFORE anything else. Each signature below was paid for once.
   Read the failing run. Two did on 2026-08-22, both product defects.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent: an unrelated instruction from the same file obeyed in the
-  same session (`NO_COLOR=1` settled `agents-rules-*`). Then read the session for
-  the shape. Never mentions it → never bound; add a binding moment AHEAD of the
-  decision, since an agent holding a solution reads the rule for exemptions.
-  Quotes and overrides it → it lost an argument; say what compliance PRODUCES and
-  grep for a neighbouring rule claiming the case, because the weaker of two wins.
-  Obeys it and reclassifies the case → your own carve-out is the escape; scope it
-  to what the user NAMED. A rule stated as a consequence is refutable by denying
-  the consequence — forbid the act, not the harm, and a disclaimer above a
-  forbidden output does not turn it into a different output.
+  same session. Then read the session for the shape. Never mentions it → never
+  bound; add a binding moment AHEAD of the decision, since an agent holding a
+  solution reads the rule for exemptions. Quotes and overrides it → say what
+  compliance PRODUCES, and grep for a neighbouring rule claiming the case, since
+  the weaker of two wins. Obeys it and reclassifies the case → your own carve-out
+  is the escape; scope it to what the user NAMED. Forbid the act, not the harm: a
+  rule stated as a consequence dies by denying the consequence, and a disclaimer
+  above a forbidden output does not make it a different output.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
