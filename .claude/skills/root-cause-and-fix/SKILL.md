@@ -63,14 +63,14 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
   warning rather than a blocker when the trace is non-empty. Ask whether the work
   legitimately outlives the cap — `deep-research` does.
-- **Judge reports a section "not present" in a large file.** Files are elided
-  mid-file above 30 KB (`renderFileForEvidence`); check disk first.
+- **Judge reports a section "not present" in a large file.** Elided mid-file
+  above 30 KB (`renderFileForEvidence`); check disk first.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
   means the model produced the artefact unaided; `blocked` means it stopped for
   material the query never supplied — a malformed scenario, not a routing miss.
 - **Adjacent-negative fails, correct neighbour lives in another pack.** The
-  runner mounts `core` plus the scenario's pack, so there was nothing to defer
-  to. Set `extraPacks` (FR-ACCEPT.TRIGGER, cross-pack adjacency).
+  runner mounts `core` plus the scenario's pack, so there was nothing to defer to.
+  Set `extraPacks` (FR-ACCEPT.TRIGGER).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first: `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
@@ -95,34 +95,29 @@ Run this BEFORE anything else. Each signature below was paid for once.
   `mod.ts` says it left. Run any deterministic checker over it, green scenarios
   included: `audit-clean` passed while `audit.ts` found 8 issues on the fixture
   its checklist calls clean.
-- **The fixture breaks a SECOND rule behind the first.** The sandbox runs the
-  project's checks against the fixture, so it must pass `deno fmt --check`,
-  `deno lint` and `deno test` and ship the Benchmark Fixture `deno.json`
-  (AGENTS.md). Three of ten scenarios needed two rounds on 2026-08-22 — an
-  inline `jsr:@std/assert`, a 98-character line — with the agent stopping on
-  THAT and never reaching the planted defect. Re-measure after every fixture fix.
+- **The fixture breaks a SECOND rule behind the first.** It must itself pass
+  `deno fmt --check`, `deno lint`, `deno test` and ship the Benchmark Fixture
+  `deno.json`. Three of ten scenarios needed two rounds on 2026-08-22 (an inline
+  `jsr:@std/assert`, a 98-character line): the agent stopped on THAT and never
+  reached the planted defect. Re-measure after every fixture fix.
 - **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
-  rootPids.** The guard aimed at the BENCH: `setpgrp_exec.py` reaches `setsid()`
-  after the first 500 ms tick under load, so the watchdog caches the bench's own
-  group and SIGKILLs the parent. Only at `-p >1`; fixed by `adoptablePgid`.
+  rootPids.** The guard aimed at the BENCH: under load `setpgrp_exec.py` reaches
+  `setsid()` after the first tick, so the watchdog cached the bench's own group.
+  Only at `-p >1`; fixed by `adoptablePgid`.
 - **The agent asked a question and stopped, and the scenario has a persona.**
   `UserEmulator` is built only when `interactive` is true (`runner.ts`), so a
-  `userPersona` without that flag is dead text and the run is single-turn. Such
-  a scenario is green only while the skill skips asking; tighten the skill and
-  it goes red for a reason that is not the skill's.
+  `userPersona` without that flag is dead text. Such a scenario is green only
+  while the skill skips asking; tighten the skill and it goes red for free.
 - **A `mocks` entry does not stand in for the whole pipeline.** `writeMockBin`
-  shadows the binary on `PATH`, so the canned text is what THAT program prints —
-  the next pipe stage's INPUT. A mock holding already-parsed output passes only
-  while the agent skips the documented pipe, and the comment above it may still
-  describe the retired PreToolUse block hook.
-- **Every judge call fails, or a CLI probe hangs into `aborted_streaming`.**
-  Read the agent's own assistant text before blaming the CLI or its flags:
-  `API Error: 529 Overloaded` sits there in plain words, and on 2026-08-24 it
-  cost half an hour of bisecting `--json-schema` across two CLI versions. Wait
-  and re-measure; `grep -l "API Error: 5"` over a sweep's sessions bounds it.
+  shadows the binary on `PATH`, so the canned text is the next pipe stage's
+  INPUT. A mock holding already-parsed output passes only while the agent skips
+  the documented pipe; the comment above it may still describe the retired hook.
+- **Every judge call fails, or a probe hangs into `aborted_streaming`.** Read
+  the agent's own text before blaming the CLI or its flags: `API Error: 529
+  Overloaded` sits there in plain words, and on 2026-08-24 it cost half an hour
+  of bisecting `--json-schema`. `grep -l "API Error: 5"` over a sweep bounds it.
 - **A scenario at 2/3 passes the threshold and can still hold a real defect.**
-  Read the failing run before moving on. Two did on 2026-08-22, and both were
-  product defects the other two runs happened to avoid.
+  Read the failing run. Two did on 2026-08-22, both product defects.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent: an unrelated instruction from the same file obeyed in the
   same session (`NO_COLOR=1` settled `agents-rules-*`). Then read the session for
@@ -186,7 +181,12 @@ or `git restore`, which return the index rather than what you wrote.
   version held and why it was wrong.
 
 Every fix carries, in the file it touches, the measurement that justified it:
-date, runs, what the sessions showed.
+date, runs, what the sessions showed. **Then grep the file for the NEW text —
+the script's exit code is not evidence the edit landed.** On 2026-08-24 one
+`replace` was computed and never applied, so the file carried a comment
+describing a change that was not there and a whole measurement round paid for it.
+A framework rule may not name a project's doc paths either (`FR-UNIVERSAL.DOC-SCHEMA`):
+writing "do not read the default paths" while naming them fails `check-skills`.
 
 ## Phase 4 — Verify
 
@@ -199,7 +199,9 @@ date, runs, what the sessions showed.
   aborts sessions and every result is noise.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
-  for the reason claimed.
+  for the reason claimed. **Re-measure one GREEN sibling of every primitive you
+  edited**: on 2026-08-24 that guard caught a scenario dropping 3/3 → 1/3, and its
+  cause was a fixture that had been wrong all along.
 - Name what the green number covers: a rule phrased "if you see X" binds at every
   stage while the suite usually holds one, so "3/3" reads as general when it is not.
 - `deno task check` before every commit. Its verdict is the final
@@ -231,7 +233,7 @@ command, path or flag that changed under you.
 already here; a finding about the PRODUCT rather than about diagnosing it; a run
 that went well.
 
-**Budget**: stay under ~250 lines (raised from 240 on 2026-08-24, once four dated
+**Budget**: stay under ~255 lines (240 → 250 → 255 on 2026-08-24, as dated
 signatures had to land in one run). When an addition would pass it, compress an
 existing item instead of appending — two bullets on one failure shape are one
 bullet. Commit the amendment with the work that produced it and say what was
