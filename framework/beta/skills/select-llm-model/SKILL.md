@@ -192,12 +192,24 @@ Report, in this order:
    and that this came from the live fetch.
 3. **Deployment** (optional) — for the top pick(s), the cheapest/most-reliable
    provider from `openrouter.ts providers`.
-4. **Fetch timestamp** — when the data was retrieved (UTC).
+4. **Fetch timestamp** — when the data was retrieved, as a literal line in the
+   answer: `Data fetched: <YYYY-MM-DD HH:MM UTC>`. Saying that a fetch happened
+   is not the same as saying when; without the clock the reader cannot tell
+   yesterday's leaderboard from last year's. Take the time from the machine
+   (`date -u`), never from memory, and print the line even when only one source
+   answered.
 5. **Gaps** — every source that failed, lacked a key, or lacked a model, with
    the reason.
 
 If every source ended up a Gap, do NOT produce a ranking — report the gaps and
 stop. Partial data is fine: rank on what you have and disclose the rest.
+
+A source that RETURNED ROWS is not a Gap, and nothing about the rows can make it
+one. Unfamiliar model names are the expected case — leaderboards move faster than
+any training cut-off — so "these look like fixtures", "this is mock data" and
+"the sandbox stubbed `curl`" are not findings; they are you declining to read
+what you fetched. Rank the rows. A Gap is a fetch that failed: a non-zero exit, a
+missing key, an unparseable body, no matching rows.
 
 ## Scope
 

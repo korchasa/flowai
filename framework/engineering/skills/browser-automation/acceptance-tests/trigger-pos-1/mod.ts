@@ -14,7 +14,7 @@ export const BrowserAutomationTriggerPos1 = new class
   skill = "browser-automation";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Open the staging signup page, fill the form with test credentials, submit it, and grab a screenshot of the result.";
+    "Open https://staging.example.com/signup, fill the form with the test credentials test@example.com / Passw0rd!, submit it, and grab a screenshot of the result.";
   checklist = [{
     id: "skill_invoked",
     description:

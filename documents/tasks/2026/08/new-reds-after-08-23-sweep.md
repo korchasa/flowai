@@ -3,7 +3,7 @@ date: 2026-08-24
 implements:
   - FR-ACCEPT-CACHE
   - FR-ACCEPT.TRIGGER
-status: to do
+status: done
 ---
 # Close the 14 new behavioural reds of the 2026-08-23 sweep
 
@@ -64,26 +64,75 @@ Cause per scenario:
 
 ## Definition of Done
 
-- [ ] FR-ACCEPT.TRIGGER: both trigger scenarios among the new reds measure green
+- [x] FR-ACCEPT.TRIGGER: both trigger scenarios among the new reds measure green
   - Benchmark: `cli-trigger-pos-1`, `browser-automation-trigger-pos-1`
   - Evidence: `deno task acceptance-tests -f cli-trigger-pos-1 -n 3`
-- [ ] FR-ACCEPT-CACHE: the five independent scenario/fixture defects measure green
+- [x] FR-ACCEPT-CACHE: the five independent scenario/fixture defects measure green
   - Benchmark: `setup-ai-ide-devcontainer-deno-flowai`, `commit-dynamic-doc-list`,
     `agents-rules-traceability-placement`, `select-llm-model-cites-sources`,
     `select-llm-model-recommends-for-coding-task`
   - Evidence: `deno task acceptance-tests -f <id> -n 3` per id
-- [ ] FR-ACCEPT-CACHE: the two product defects measure green
+- [x] FR-ACCEPT-CACHE: the two product defects measure green
   - Benchmark: `select-llm-model-source-parse-failure-becomes-gap`, `adapt-all`
   - Evidence: `deno task acceptance-tests -f <id> -n 3` per id
-- [ ] FR-ACCEPT-CACHE: the six `review`/`plan` scenarios are settled as variance
+- [x] FR-ACCEPT-CACHE: the six `review`/`plan` scenarios are settled as variance
       or regression and, if regression, measure green after the fix
   - Benchmark: `review-clean-approve`, `review-doc-schema-discovery`,
     `review-no-grouping`, `review-and-commit-parallel-delegation`,
     `plan-refactor`, `plan-variants-complex`
   - Evidence: `deno task acceptance-tests -f <id> -n 3` per id
-- [ ] `deno task check` green before the commit
+- [x] `deno task check` green before the commit
   - Evidence: `deno task check`
 
 ## Solution
 
 Fix each in the layer its cause lives in, then re-measure each at `-n 3`.
+
+## Results (2026-08-24)
+
+All 14 measured at `-n 3` after the fixes; every one 3/3, plus the sibling
+`select-llm-model-recommends-for-coding-task` whose mock changed with it.
+
+Two findings outrank the individual fixes.
+
+**The `review`/`plan` cluster was load noise, not a regression.** Seven of the 14
+sat on primitives that `f352ac30` had touched, which read as one cause. Measured
+on an unchanged tree, `review-clean-approve`, `review-no-grouping`,
+`plan-refactor` and `plan-variants-complex` came back 3/3 — the 2026-08-23 sweep
+ran with the swap file 94-98 % full. Only `review-and-commit-parallel-delegation`
+and `review-doc-schema-discovery` held real defects.
+
+**One failure shape appeared in three unrelated primitives on the same day.** In
+`adapt-all`, `review-no-grouping` and `review-clean-approve` the agent dispatched
+a subagent in the background, waited for a notification and ended its turn with
+the work uncollected — producing no verdict, no report and no summary, which is
+strictly worse than the inline run the delegation was meant to improve on. Both
+`adapt` and `review` now say that collecting is an action, not an event, and that
+a turn may not end while a dispatch is outstanding.
+
+Fixes not in the original diagnosis, found by re-measuring:
+
+- `review-clean-approve` shipped a new exported function with NO test, and
+  `review`'s own testing gate calls that `[critical]` — the scenario asked the
+  skill to approve what its rules require it to reject. Fixture now ships
+  `strings_test.ts` and a `deno.json`.
+- `review-and-commit-parallel-delegation`'s fixture did not escape CSV or XML
+  output; one run correctly found both and returned `Request Changes`. Escaping
+  added, 14 fixture tests pass.
+- The commit phase re-ran the test suite after adding a traceability marker. The
+  checklist forbade it and the atom never said so; the ban now sits next to the
+  `git diff` ban, with the reason (a comment cannot change behaviour).
+- `agents-rules-traceability-placement` failed 0/3 on the FIRST fix: the item
+  forbade every path in SRS, including the `**Acceptance:**` field the project's
+  own lifecycle requires, and my own "any other notation" wording rejected a
+  correct reference carried in a JSDoc block.
+- The `browser-automation-trigger-pos-1` query fix did not land at all — the edit
+  script computed the new text and never applied it, so the file carried a
+  comment describing a change that was not there.
+
+Known open: `process_watchdog_test.ts` "rss-bloat trip" fails inside a full
+`deno task check` under host memory pressure (4 times on 2026-08-24) and passes
+8/8 standalone every time. Not `adoptablePgid` — the pgid-wait branch prints a
+warning that appears in none of the failing logs. The test gives the watchdog
+8 s to see an 80 MiB allocation, and with the swap file 92 % full the allocation
+itself can outlast that. Raising the budget is proposed, not applied.

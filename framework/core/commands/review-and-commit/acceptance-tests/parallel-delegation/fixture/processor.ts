@@ -157,9 +157,9 @@ export class DataProcessor {
 
       case "csv": {
         const fields = Object.keys(this.schema.fields);
-        const header = fields.join(",");
+        const header = fields.map(csvCell).join(",");
         const rows = records.map((r) =>
-          fields.map((f) => String(r[f] ?? "")).join(",")
+          fields.map((f) => csvCell(String(r[f] ?? ""))).join(",")
         );
         return [header, ...rows].join("\n");
       }
@@ -167,7 +167,7 @@ export class DataProcessor {
       case "xml": {
         const items = records.map((r) => {
           const fields = Object.entries(r)
-            .map(([k, v]) => `    <${k}>${String(v)}</${k}>`)
+            .map(([k, v]) => `    <${k}>${xmlText(String(v))}</${k}>`)
             .join("\n");
           return `  <record>\n${fields}\n  </record>`;
         });
@@ -178,4 +178,17 @@ export class DataProcessor {
         throw new Error(`Unsupported format: ${outputFormat}`);
     }
   }
+}
+
+/** Quote a CSV cell when it holds a separator, a quote or a newline (RFC 4180). */
+function csvCell(value: string): string {
+  return /[",\n\r]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+}
+
+/** Escape the three characters that would otherwise break XML character data. */
+function xmlText(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

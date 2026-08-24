@@ -13,27 +13,42 @@ export const CleanApproveBench = new class extends AcceptanceTestScenario {
   };
   interactive = true;
 
+  // The fixture gained `strings_test.ts` and a `deno.json` on 2026-08-24. It
+  // shipped a new exported function with no test at all, and `review`'s own
+  // testing gate calls that a [critical] finding that forbids Approve — so the
+  // scenario asked the skill to approve a change its rules require it to reject,
+  // and only passed on runs that happened to skip the gate. Measured 1/3 with
+  // `Request Changes` naming "zero test coverage for capitalize" in both
+  // failures. Clean now means clean by the reviewer's own standard: the test
+  // ships with the change, and the manifest lets the check command be detected.
   override sandboxState = {
     commits: [{
       message: "Remove strings.ts from tracking",
-      files: ["strings.ts"],
+      files: ["strings.ts", "strings_test.ts"],
     }],
-    untracked: ["strings.ts"],
+    untracked: ["strings.ts", "strings_test.ts"],
     expectedOutcome:
       "Agent reviews untracked strings.ts and approves clean code",
   };
 
   override async setup(sandboxPath: string) {
     // Runner already committed all files (including strings.ts) as "init".
-    // Remove strings.ts from index to make it untracked, keeping the working copy.
-    await runGit(sandboxPath, ["rm", "--cached", "strings.ts"]);
+    // Remove the change set from the index to make it untracked, keeping the
+    // working copies. The test goes with it: a review of the function without
+    // its test is a review of an incomplete change.
+    await runGit(sandboxPath, [
+      "rm",
+      "--cached",
+      "strings.ts",
+      "strings_test.ts",
+    ]);
     await runGit(sandboxPath, [
       "commit",
       "-m",
       "Remove strings.ts from tracking",
     ]);
 
-    // strings.ts is now untracked — the agent should review it
+    // Both files are now untracked — the agent should review them
   }
 
   userQuery = "/review Review the added capitalize function";

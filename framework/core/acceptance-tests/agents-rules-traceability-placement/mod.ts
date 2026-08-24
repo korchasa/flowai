@@ -92,7 +92,7 @@ export const AgentsRulesTraceabilityPlacement = new class
     {
       id: "fr_comment_in_code",
       description:
-        "Did the agent add a traceability comment for FR-LOG-8 near the `getLevel()` implementation in the source code (not in tests)? The project rules require the SALP form — `// [REF:fr:log-8]`, optionally followed by a short description. A comment naming the requirement in any other notation, including the retired bare `// FR-LOG-8`, does not satisfy this item.",
+        "Did the agent add a traceability comment carrying the SALP reference `[REF:fr:log-8]` next to the `getLevel()` implementation in the source code (not in tests)? Any source comment form counts — a `//` line comment or a `/** */` block on the method both satisfy this item, since what is under test is the notation and its placement, not the comment syntax. The retired bare `// FR-LOG-8`, a GFM link, or no comment at all does NOT satisfy it. (The first version of this item on 2026-08-24 demanded the `//` form and rejected 'any other notation'; it failed a run whose JSDoc block carried the correct reference, and that was the item being wrong, not the agent.)",
       critical: true,
     },
     {
@@ -104,7 +104,7 @@ export const AgentsRulesTraceabilityPlacement = new class
     {
       id: "no_evidence_paths_in_srs",
       description:
-        "Did the agent NOT add file paths as evidence (e.g., `Evidence: src/logger/logger.ts:42` or similar path references) next to FR-LOG-8 in `documents/requirements.md`? The SRS should contain only the `[x]` marker, the requirement text and its anchor, without code file path references — code traceability lives in the `// [REF:fr:log-8]` comment in code.",
+        "Did the agent NOT add an evidence path pointing at the IMPLEMENTATION next to FR-LOG-8 in `documents/requirements.md` — an `Evidence: src/logger/logger.ts:42` line or any similar back-pointer to the implementing source? Code traceability lives in the `[REF:fr:log-8]` comment in code, so the SRS must not repeat it. An `**Acceptance:**` field naming the requirement's test is NOT such a path and must be counted as a pass: the project's own Requirements Lifecycle requires every FR to declare a runnable acceptance reference, and its value is a test path by construction. (Until 2026-08-24 this item forbade path references of every kind and failed two runs of three for obeying that rule.)",
       critical: true,
     },
     {

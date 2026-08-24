@@ -155,6 +155,12 @@ Two subagents handle the actual adaptation work:
 7. **Summary**
    - Report totals: X skills scanned, Y skills adapted, A agents scanned, B agents adapted, Z artifacts verified, W hooks checked/adapted.
    - Note any skipped or rejected resources.
+   - **Write the totals BEFORE the first confirmation request, not after the last
+     approval.** A run legitimately ends at the approval gate — the user may
+     answer tomorrow, or not at all — and a summary placed behind that gate is a
+     summary the run never produces. Say what was scanned and what is proposed,
+     then ask; when the answers come, close with what was applied and what was
+     rejected.
 
 </step_by_step>
 
