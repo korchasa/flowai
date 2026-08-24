@@ -1,38 +1,23 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// The acceptance `curl` mock is a PreToolUse *block* hook: it substitutes the
-// whole Bash command's output, so for the canonical pipe
-// `curl … | deno run scripts/benchmarks.ts scores --category diff-edit --stdin`
-// it stands in for the PIPE's result — i.e. the tool's `BenchRow` JSON (tool
-// correctness itself is covered by the deno unit tests next to the scripts).
+// The `curl` mock is a PATH-shadowing stub (`writeMockBin`), so its text is
+// what `curl` ITSELF prints — the parser's INPUT. It must therefore be the
+// Aider leaderboard YAML. The retracted comment that stood here until
+// 2026-08-24 said the mock was "a PreToolUse *block* hook" substituting the
+// whole Bash command's output, and held already-parsed `BenchRow` JSON on that
+// basis; that mechanism was retired with the ACP migration. The scenario stayed
+// green only because the agent read `curl` on its own rather than through the
+// documented `curl … | … --stdin` pipe — the sibling `cites-sources` scenario
+// took the pipe in the sweep of 2026-08-23 and every source became a Gap.
 // Fictional models (Aurora-7 / Borealis-3 / Cypher-X) prove the agent ranked the
 // FETCHED rows, not models recalled from memory.
-const BENCH_JSON = JSON.stringify([
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Aurora-7",
-    score: 88,
-    higherIsBetter: true,
-  },
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Borealis-3",
-    score: 64,
-    higherIsBetter: true,
-  },
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Cypher-X",
-    score: 48,
-    higherIsBetter: true,
-  },
-]);
+const AIDER_YAML = `- model: Aurora-7
+  pass_rate_2: 88.0
+- model: Borealis-3
+  pass_rate_2: 64.0
+- model: Cypher-X
+  pass_rate_2: 48.0
+`;
 
 export const SelectLlmModelRecommendsForCodingTask = new class
   extends AcceptanceTestScenario {
@@ -43,7 +28,7 @@ export const SelectLlmModelRecommendsForCodingTask = new class
   stepTimeoutMs = 300_000;
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
 
-  mocks = { curl: BENCH_JSON };
+  mocks = { curl: AIDER_YAML };
 
   userQuery =
     "Use select-llm-model: which model is best at editing existing code by applying diffs/patches across a repository? Rank a few options.";

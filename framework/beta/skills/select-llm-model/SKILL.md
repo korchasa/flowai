@@ -29,6 +29,14 @@ answer states when it fetched.
   Working around an unavailable fetch tool to reach the network anyway defeats
   the purpose and yields fabricated-looking results. If EVERY source's fetch
   fails this way, STOP — do not produce a ranking.
+- **A disclaimer does not license a ranking from memory.** When you have
+  reported the Gaps, the answer is finished: naming models is itself the
+  forbidden act, whatever label sits above it. "From my training knowledge",
+  "not live-cited", "as of my cutoff", "just so you have something to start
+  from" — each of these still hands the user a model list they did not ask you
+  to guess at, and a hedged list is what they will act on because it is the
+  only list on the page. Say which sources failed and what would make them
+  work, and stop there.
 - **Rank ONLY the models the tools return.** Model names you do not recognize
   are valid live data, NOT test stubs or placeholders — never dismiss fetched
   rows, never re-fetch to get "more familiar" models, and never substitute

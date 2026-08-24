@@ -7,13 +7,20 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 // skill). The description no longer claims that slice either; it now names what
 // the reference actually adds — permission flags, `deno task`, unstable opt-ins
 // and dependency management. This query asks for all three of those at once.
+// Retargeted again on 2026-08-24. The 2026-08-20 query asked for "a `dev` task
+// in deno.json", and that half of it is the literal domain of a different
+// installed skill: `configure-deno-commands` promises to "set up or update the
+// standard command interface in deno.json". The sweep of 2026-08-23 showed the
+// agent load THAT skill instead of `cli` — a description collision, not a
+// routing failure. The query now stays inside what `cli` alone documents:
+// `deno add` for the dependency and the permission flags for the run.
 export const DenoCliTriggerPos1 = new class extends AcceptanceTestScenario {
   id = "cli-trigger-pos-1";
   name = "deno dependency and task wiring";
   skill = "cli";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Add the JSR http package to this Deno project and give me a `dev` task in deno.json that serves src/main.ts with the permissions it needs.";
+    "Add the JSR http package to this Deno project, then run src/main.ts so it can listen on port 8000 and read the ./static folder — what exactly do I type?";
   checklist = [{
     id: "skill_invoked",
     description:

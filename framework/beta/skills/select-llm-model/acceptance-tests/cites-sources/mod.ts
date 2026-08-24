@@ -1,37 +1,24 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Block-mock stands in for the `benchmarks.ts scores` output (BenchRow JSON; see
-// the recommends scenario for the mechanism). It carries only diff-edit rows
-// (category `diff-edit`, source Aider). The query also asks for tool-use, which
-// lives under the `agentic` category (Artificial Analysis) — and these rows have
-// none — so the agent must CITE Aider for diff-edit, report a fetch timestamp,
-// and surface tool-use as an explicit Gap rather than fabricating tool-use scores.
-const PARSER_JSON = JSON.stringify([
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Aurora-7",
-    score: 88,
-    higherIsBetter: true,
-  },
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Borealis-3",
-    score: 64,
-    higherIsBetter: true,
-  },
-  {
-    category: "diff-edit",
-    benchmark: "aider-polyglot",
-    source: "aider",
-    model: "Cypher-X",
-    score: 48,
-    higherIsBetter: true,
-  },
-]);
+// Block-mock for the `curl` PATH stub. It must be the Aider leaderboard YAML —
+// the stub replaces `curl`, so its text is the PARSER'S INPUT, not its output,
+// and `benchmarks.ts` documents the seam as `curl … | … --stdin`. Until
+// 2026-08-24 this mock held already-parsed BenchRow JSON; it scored green only
+// while the agent read `curl` standalone, and in the sweep of 2026-08-23 the
+// agent followed the documented pipeline instead, the Aider parser rejected the
+// JSON, every source became a Gap, and the run produced no scores to cite.
+// The payload carries only diff-edit rows. The query also asks for tool-use,
+// which lives under the `agentic` category (Artificial Analysis) — that parser
+// gets the same YAML and yields nothing — so the agent must CITE Aider for
+// diff-edit, report a fetch timestamp, and surface tool-use as an explicit Gap
+// rather than fabricating tool-use scores.
+const AIDER_YAML = `- model: Aurora-7
+  pass_rate_2: 88.0
+- model: Borealis-3
+  pass_rate_2: 64.0
+- model: Cypher-X
+  pass_rate_2: 48.0
+`;
 
 export const SelectLlmModelCitesSources = new class
   extends AcceptanceTestScenario {
@@ -42,7 +29,7 @@ export const SelectLlmModelCitesSources = new class
   stepTimeoutMs = 300_000;
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
 
-  mocks = { curl: PARSER_JSON };
+  mocks = { curl: AIDER_YAML };
 
   userQuery =
     "Use select-llm-model: which model is best for editing code via diffs AND for tool-use/function-calling dialogues? I want to see where each number comes from.";

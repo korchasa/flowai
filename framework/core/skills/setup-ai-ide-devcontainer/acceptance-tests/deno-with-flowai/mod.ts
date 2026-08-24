@@ -6,6 +6,17 @@ export const SetupDevcontainerDenoWithFlowai = new class
   name = "Deno project with flowai CLI";
   skill = "setup-ai-ide-devcontainer";
   stepTimeoutMs = 420_000;
+  // Interactivity wired on 2026-08-24. This is the only scenario of the six
+  // whose query answers NONE of the Step 4 capability questions, so the skill
+  // must ask and wait — `node-basic` and `deno-with-claude` answer them inline
+  // in the query, `feature-discovery` pre-authorizes with "accept all". The
+  // persona below was authored for exactly those four questions but never ran:
+  // `UserEmulator` is built only when `interactive` is true (runner.ts:518), so
+  // the run was single-turn and the agent's questions went unanswered. It
+  // scored green only while the skill skipped the questions; once step 6/7 was
+  // made mandatory the scenario measured the harness, not the skill.
+  interactive = true;
+  maxSteps = 15;
   agentsTemplateVars = {
     PROJECT_NAME: "DenoFlowaiApp",
     TOOLING_STACK: "- TypeScript\n- Deno",

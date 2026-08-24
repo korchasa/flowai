@@ -26,12 +26,21 @@ const SHARED_AGENTS_VARS = {
 
 /**
  * Tests AGENTS.md traceability placement rule:
- * - Code evidence → `// FR-<ID>` comment in source, NO file paths in SRS.
+ * - Code evidence → a SALP REF comment in source, NO file paths in SRS.
  * - Non-code evidence → placed directly in SRS/SDS.
  *
  * Setup adds a pending requirement FR-LOG-8 (getLevel() method on Logger).
- * Agent must implement it, add FR-LOG-8 traceability comment in code,
- * mark [x] in SRS, and NOT add Evidence: file paths in SRS.
+ * Agent must implement it, add the traceability comment in code, mark [x] in
+ * SRS, and NOT add Evidence: file paths in SRS.
+ *
+ * Retargeted to SALP on 2026-08-24. The checklist demanded a bare `// FR-LOG-8`
+ * comment, but the AGENTS.md template the sandbox renders declares that form
+ * retired and rejected by the validator, and teaches `// [REF:fr:<id>]`
+ * instead. In the sweep of 2026-08-23 the agent wrote
+ * `// [REF:fr:log-8] — returns the current log level` — obeying the rules it
+ * was given — and the item scored it a failure. The template said both things
+ * in different sections; four stale spots were corrected in the same pass, and
+ * the setup now plants the `[ANC:fr:log-8]` anchor the REF points at.
  */
 export const AgentsRulesTraceabilityPlacement = new class
   implements BenchmarkScenario {
@@ -53,7 +62,7 @@ export const AgentsRulesTraceabilityPlacement = new class
       },
     ],
     expectedOutcome:
-      "Agent implements getLevel(), adds // FR-LOG-8 in code, marks [x] in SRS without Evidence: paths",
+      "Agent implements getLevel(), adds // [REF:fr:log-8] in code, marks [x] in SRS without Evidence: paths",
   };
 
   async setup(sandboxPath: string) {
@@ -65,7 +74,7 @@ export const AgentsRulesTraceabilityPlacement = new class
     srs = srs.replace(
       "- [x] **FR-LOG-7**: Sanitize non-serializable objects (Errors, circular references) in YAML logs to prevent crashes",
       "- [x] **FR-LOG-7**: Sanitize non-serializable objects (Errors, circular references) in YAML logs to prevent crashes\n" +
-        "- [ ] **FR-LOG-8**: Logger class must expose a `getLevel(): LogLevel` method returning the current log level",
+        "- [ ] **FR-LOG-8**: Logger class must expose a `getLevel(): LogLevel` method returning the current log level [ANC:fr:log-8]",
     );
     await Deno.writeTextFile(srsPath, srs);
   }
@@ -83,7 +92,7 @@ export const AgentsRulesTraceabilityPlacement = new class
     {
       id: "fr_comment_in_code",
       description:
-        "Did the agent add a `// FR-LOG-8` traceability comment near the `getLevel()` implementation in the source code (not in tests)?",
+        "Did the agent add a traceability comment for FR-LOG-8 near the `getLevel()` implementation in the source code (not in tests)? The project rules require the SALP form — `// [REF:fr:log-8]`, optionally followed by a short description. A comment naming the requirement in any other notation, including the retired bare `// FR-LOG-8`, does not satisfy this item.",
       critical: true,
     },
     {
@@ -95,7 +104,7 @@ export const AgentsRulesTraceabilityPlacement = new class
     {
       id: "no_evidence_paths_in_srs",
       description:
-        "Did the agent NOT add file paths as evidence (e.g., `Evidence: src/logger/logger.ts:42` or similar path references) next to FR-LOG-8 in `documents/requirements.md`? The SRS should contain only the `[x]` marker and the requirement text, without code file path references — code traceability lives in the `// FR-LOG-8` comment in code.",
+        "Did the agent NOT add file paths as evidence (e.g., `Evidence: src/logger/logger.ts:42` or similar path references) next to FR-LOG-8 in `documents/requirements.md`? The SRS should contain only the `[x]` marker, the requirement text and its anchor, without code file path references — code traceability lives in the `// [REF:fr:log-8]` comment in code.",
       critical: true,
     },
     {

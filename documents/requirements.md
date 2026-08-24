@@ -694,7 +694,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
     requirements to the scenario above — the stage is the only variable.
   - [x] `agents-rules-functionality-preservation` — run tests before/after refactoring
   - [x] `agents-rules-evidence-claims` — read code before fixing, cite evidence
-  - [x] `agents-rules-traceability-placement` — code evidence in code (`// FR-<ID>`), not in SRS; non-code evidence in SRS
+  - [x] `agents-rules-traceability-placement` — code evidence in code (a SALP REF, `// [REF:fr:<id>]`), not in SRS; non-code evidence in SRS
   - [x] `agents-rules-forward-motion` — once user authorizes a multi-step plan, agent executes without re-confirming each step
 - **Open (not yet implemented):**
   - [ ] `agents-rules-variant-analysis` — propose variants with pros/cons before coding

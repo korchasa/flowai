@@ -71,7 +71,20 @@ Two subagents handle the actual adaptation work:
      - Working tree SKILL.md (current version)
      - `git show HEAD:<path>/SKILL.md` (previous adapted version, if exists)
      - AGENTS.md for project context
-   - Wait for all subagents to complete.
+   - Wait for all subagents to complete. **Waiting means collecting, not
+     listening.** Many subagent tools dispatch in the background by default and
+     answer with a handle — an agent id plus token counters — instead of the
+     result. When your tool offers a foreground or blocking mode (a
+     `run_in_background: false` parameter or equivalent), set it. If you still
+     get back only a handle, continue that agent by its id and ask it for its
+     result. Sitting idle until a notification arrives is not waiting: the first
+     notification to land is one adapter's, and acting on it leaves the others
+     uncollected.
+   - **Present nothing while an adapter is outstanding.** Do not show a diff, do
+     not ask for confirmation, and do not write the summary until every
+     dispatched adapter has returned. A run that reports one skill and says
+     another is "still running" has ended mid-process — the user is asked to
+     decide on a partial picture, and the summary of step 7 never happens.
    - For each adapted skill, show the full relevant diff: `git diff HEAD -- <skill-path>`.
    - Before asking confirmation, verify the diff actually replaces stale commands with project-specific commands from AGENTS.md. If a selected skill still contains the stale command with no project-specific replacement, rerun the adapter for that skill or fix the proposal before presenting it.
    - Ask user for confirmation per skill.
@@ -89,7 +102,8 @@ Two subagents handle the actual adaptation work:
      - Working tree agent `.md` (current version)
      - `git show HEAD:<path>` (previous adapted version, if exists)
      - AGENTS.md for project context
-   - Wait for all subagents to complete.
+   - Wait for all subagents to complete — collecting each one's result, under the
+     same rule as step 3. Present nothing while an adapter is outstanding.
    - After each subagent completes, verify that the YAML frontmatter is byte-for-byte identical to the saved block. If it changed, restore the saved frontmatter and keep only body changes.
    - Verify the adapted body no longer contains stale commands that conflict with AGENTS.md. If an adapted Go project agent still contains `deno test`, `deno lint`, or `deno fmt` as recommended project commands, rerun or fix that agent before presenting the diff.
    - For each adapted agent, show the diff: `git diff HEAD -- <agent-path>`.

@@ -229,8 +229,8 @@ Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance referen
 Requirements are only real when a machine can verify them. Each phase of the cycle has a concrete, non-skippable binding between FR and acceptance test.
 
 - **Plan** (`plan` / `epic`): a task plan is not accepted without (a) `implements:` frontmatter listing every FR it touches, (b) each DoD item paired with `(FR-ID, test-path-or-benchmark, evidence-command)`. If an FR is new, add its section to SRS with the `**Acceptance:**` field filled in the same pass.
-- **Develop** (TDD): RED = write the acceptance test first, using the path declared in the plan, and confirm it fails. GREEN = minimal code + `// FR-<ID>` comment next to the implementing logic. CHECK = the project's `check` command passes, including the new test.
-- **Review** (`review` / `review-and-commit`): for every FR in scope, verify (a) SRS declares runnable acceptance, (b) the acceptance test exists and passes in the current diff, (c) source files carry `// FR-<ID>` markers. Any gap → `[critical]`, verdict cannot be `Approve`. Review also runs a JiT subset that probes for hidden behavioural regressions via ephemeral pass-on-parent / fail-on-diff tests; surviving catching tests are `[critical]` findings.
+- **Develop** (TDD): RED = write the acceptance test first, using the path declared in the plan, and confirm it fails. GREEN = minimal code + a SALP REF comment (`// [REF:fr:<id>]`) next to the implementing logic. CHECK = the project's `check` command passes, including the new test.
+- **Review** (`review` / `review-and-commit`): for every FR in scope, verify (a) SRS declares runnable acceptance, (b) the acceptance test exists and passes in the current diff, (c) source files carry SALP REF comments (`// [REF:fr:<id>]`) next to the implementing logic. Any gap → `[critical]`, verdict cannot be `Approve`. Review also runs a JiT subset that probes for hidden behavioural regressions via ephemeral pass-on-parent / fail-on-diff tests; surviving catching tests are `[critical]` findings.
 - **Commit** (`commit` / `review-and-commit`): before committing, if the diff adds/modifies FR sections in SRS, each new/modified FR MUST have a filled `**Acceptance:**` field. If it touches implementing code, the paired acceptance test MUST pass. Missing either → block commit.
 
 Scope discipline prevents over-formalization: (1) pure bug fixes reuse an existing FR — add a regression test, no new FR; (2) refactors that preserve behavior cite the FR already covering the behavior; (3) only user-visible or contract-level changes introduce new FRs. The gate applies to new/changed FRs, not to every edit.
@@ -248,7 +248,7 @@ Scope discipline prevents over-formalization: (1) pure bug fixes reuse an existi
 ## TDD Flow
 
 1. **RED**: Write a failing test for new or changed logic, and run it to watch it fail, before the production file is edited. When the change maps to an FR (new or modified), the failing test is the **FR's acceptance test** at the path declared in the plan's DoD; it doubles as the gate for `Requirements Lifecycle`. Pure internal refactors may use narrower unit tests. A request phrased as "add function X to file Y" is still new logic and still starts here — the phrasing names the destination, it does not waive the cycle.
-2. **GREEN**: Write minimal code to pass the test. When implementing an FR, add a `// FR-<ID>` (TS/JS/Go/Rust) or `# FR-<ID>` (YAML/shell/Python) comment next to the implementing logic.
+2. **GREEN**: Write minimal code to pass the test. When implementing an FR, add a SALP REF comment — `// [REF:fr:<id>]` (TS/JS/Go/Rust) or `# [REF:fr:<id>]` (YAML/shell/Python) — next to the implementing logic.
 3. **REFACTOR**: Improve code and tests without changing behavior. Re-run the test.
 4. **CHECK**: Run `fmt`, `lint`, and full test suite. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
 
@@ -300,6 +300,6 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
 
 - **Module level**: each module gets an `AGENTS.md` describing its responsibility and key decisions.
 - **Code level**: JSDoc/GoDoc for classes, methods, and functions. Focus on *why* and *how*, not *what*. Skip trivial comments — they add noise without value.
-- **Requirement traceability**: when code implements a requirement from SRS (`documents/requirements.md`), add a `// FR-<ID>` (TS/JS/Go/Rust) or `# FR-<ID>` (YAML/shell/Python) comment next to the implementing logic. Code references requirements, not the reverse — SRS must not contain file paths. Exceptions: requirements verified by acceptance tests or proven by file existence need no comment.
+- **Requirement traceability**: when code implements a requirement from SRS (`documents/requirements.md`), add a SALP REF comment — `// [REF:fr:<id>]` (TS/JS/Go/Rust) or `# [REF:fr:<id>]` (YAML/shell/Python) — next to the implementing logic. The bare `// FR-<ID>` form is retired and the SALP validator rejects it. Code references requirements, not the reverse — SRS must not contain file paths. Exceptions: requirements verified by acceptance tests or proven by file existence need no comment.
 
 > **Before you start:** read `documents/requirements.md` (SRS) and `documents/design.md` (SDS) if you haven't in this session. They contain project requirements and architecture that inform every task.

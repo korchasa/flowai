@@ -57,9 +57,9 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 Run this BEFORE anything else. Each signature below was paid for once.
 
 - **Exit 1, empty trace, ~10-20 s.** `OAuth session expired`, `Invalid API key`,
-  `Usage credits required`: the CLI never ran the task; source `.env` before the
-  sweep. `detectAuthFailure` throws only at zero tool calls — a scenario driving
-  another IDE's CLI surfaces THAT child's auth error, a true observation.
+  `Usage credits required`: source `.env` before the sweep. `detectAuthFailure`
+  throws only at zero tool calls — a scenario driving another IDE's CLI surfaces
+  THAT child's auth error, a true observation.
 - **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
   warning rather than a blocker when the trace is non-empty. Ask whether the work
   legitimately outlives the cap — `deep-research` does.
@@ -74,32 +74,52 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first: `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
-- **A verdict that changed with no tree change.** Load noise; re-measure. One
-  shape carries a mechanism: the ACP loop runs only while the emulator answers
-  and stops on `<NO_RESPONSE>`, so an interactive agent that closes its turn
-  waiting on background subagents ends the session early (`maintenance-basic`
-  died at 228 s where siblings ran 950 s, then passed 3/3).
+- **A verdict that changed with no tree change.** Load noise; re-measure.
+- **The turn ends while a dispatched subagent is still running.** The ACP loop
+  runs only while the emulator answers, so the session ends there: the result is
+  never collected and the final summary never happens (`maintenance-basic` died
+  at 228 s where siblings ran 950 s; `adapt-all` and `review-no-grouping` did the
+  same on 2026-08-23). The cure is in the primitive — "wait for all subagents"
+  has to say that waiting means COLLECTING, and that nothing is presented while
+  one is outstanding.
 - **The scenario asserts something the sandbox never contained.** The runner
-  commits the fixture first, so `git show HEAD:<file>` in the sandbox is the
-  exact input — read it before believing "the agent missed X". Until 2026-08-22
+  commits the fixture, so `git show <init-sha>:<file>` in the sandbox is the
+  exact input — read it before believing "the agent missed X". `setup()` runs
+  AFTER that commit, so whatever it plants is an UNCOMMITTED change that lands
+  in the agent's own diff: on 2026-08-23 the judge read an injected
+  Documentation Hierarchy as a line the agent had WRITTEN and failed the item
+  asking whether the agent had READ it. A `setup()` planting pre-existing state
+  must commit it. Until 2026-08-22
   the rendered `AGENTS.md` overwrote a fixture's own instruction file, deleting
   seven scenarios' premise; a fixture can also speak a retired dialect its
   `mod.ts` says it left. Run any deterministic checker over it, green scenarios
   included: `audit-clean` passed while `audit.ts` found 8 issues on the fixture
   its checklist calls clean.
 - **The fixture breaks a SECOND rule behind the first.** The sandbox runs the
-  project's own checks against the fixture, so it must itself pass `deno fmt
-  --check`, `deno lint` and `deno test`, and ship the `deno.json` from the
-  Benchmark Fixture contract (AGENTS.md). Three of ten scenarios needed two
-  rounds on 2026-08-22: an inline `jsr:@std/assert` raised `no-import-prefix`,
-  a 98-character line failed fmt, and the agent stopped on THAT and never
-  reached the planted defect. Re-measure after every fixture fix — the first
-  blocker is rarely the only one.
+  project's checks against the fixture, so it must pass `deno fmt --check`,
+  `deno lint` and `deno test` and ship the Benchmark Fixture `deno.json`
+  (AGENTS.md). Three of ten scenarios needed two rounds on 2026-08-22 — an
+  inline `jsr:@std/assert`, a 98-character line — with the agent stopping on
+  THAT and never reaching the planted defect. Re-measure after every fixture fix.
 - **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
-  different rootPids.** The guard aimed at the BENCH. `setpgrp_exec.py` calls
-  `setsid()` after the first 500 ms tick under load, so the watchdog caches the
-  bench's own group, counts sibling runs as descendants and SIGKILLs the parent.
-  Only reproducible at `-p >1`; fixed 2026-08-22 by `adoptablePgid`.
+  rootPids.** The guard aimed at the BENCH: `setpgrp_exec.py` reaches `setsid()`
+  after the first 500 ms tick under load, so the watchdog caches the bench's own
+  group and SIGKILLs the parent. Only at `-p >1`; fixed by `adoptablePgid`.
+- **The agent asked a question and stopped, and the scenario has a persona.**
+  `UserEmulator` is built only when `interactive` is true (`runner.ts`), so a
+  `userPersona` without that flag is dead text and the run is single-turn. Such
+  a scenario is green only while the skill skips asking; tighten the skill and
+  it goes red for a reason that is not the skill's.
+- **A `mocks` entry does not stand in for the whole pipeline.** `writeMockBin`
+  shadows the binary on `PATH`, so the canned text is what THAT program prints —
+  the next pipe stage's INPUT. A mock holding already-parsed output passes only
+  while the agent skips the documented pipe, and the comment above it may still
+  describe the retired PreToolUse block hook.
+- **Every judge call fails, or a CLI probe hangs into `aborted_streaming`.**
+  Read the agent's own assistant text before blaming the CLI or its flags:
+  `API Error: 529 Overloaded` sits there in plain words, and on 2026-08-24 it
+  cost half an hour of bisecting `--json-schema` across two CLI versions. Wait
+  and re-measure; `grep -l "API Error: 5"` over a sweep's sessions bounds it.
 - **A scenario at 2/3 passes the threshold and can still hold a real defect.**
   Read the failing run before moving on. Two did on 2026-08-22, and both were
   product defects the other two runs happened to avoid.
@@ -109,11 +129,11 @@ Run this BEFORE anything else. Each signature below was paid for once.
   the shape. Never mentions it → never bound; add a binding moment AHEAD of the
   decision, since an agent holding a solution reads the rule for exemptions.
   Quotes and overrides it → it lost an argument; say what compliance PRODUCES and
-  grep for a neighbouring rule claiming the case, because the weaker of two wins
-  (`Proactive Resolution`, then the `Test Rules` accuracy wording — one measure
-  round each). Obeys it and reclassifies the case → your own carve-out is the
-  escape; scope it to what the user NAMED. A rule stated as a consequence is
-  refutable by denying the consequence — forbid the act, not the harm.
+  grep for a neighbouring rule claiming the case, because the weaker of two wins.
+  Obeys it and reclassifies the case → your own carve-out is the escape; scope it
+  to what the user NAMED. A rule stated as a consequence is refutable by denying
+  the consequence — forbid the act, not the harm, and a disclaimer above a
+  forbidden output does not turn it into a different output.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
@@ -124,18 +144,17 @@ Read in this order and stop as soon as the cause is unambiguous.
 
 1. The raw session. `<run>/<scenario>/run-N/bench-home` is a SYMLINK into
    `$TMPDIR/flowai-bench/run-N-<hash>/`; `readlink` it, then `find` the
-   `.claude/projects/<slug>/<uuid>.jsonl` inside. Tool histogram:
+   `.claude/projects/<slug>/<uuid>.jsonl` inside. Tool histogram (add
+   `and .name=="Skill"` piped to `.input` for skill calls; subagent transcripts
+   sit under `<uuid>/subagents/`):
    `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
-   — add `and .name=="Skill"` piped to `.input` for skill calls; subagent
-   transcripts sit under `<uuid>/subagents/`.
 2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the
    agent actually wrote settles claims no transcript reading can.
 3. The failed agent itself, when the diagnosis is about wording. Resume in place
    (`cd <sandbox> && HOME=<bench-home> claude -p --resume <uuid> "<question>"`)
-   and ask neutrally which phrase left room and what the rule would have had to
-   say. Three runs named the same defective sentence in one round on 2026-08-21,
-   after three rounds of guessing had not. The transcript shows what it did; the
-   interview shows the words it justified it with, and those are the ones to fix.
+   and ask neutrally which phrase left room. Three runs named the same defective
+   sentence in one round on 2026-08-21, after three rounds of guessing had not:
+   the transcript shows what it did, the interview the words it justified it with.
 4. If the run dir was pruned, the transcript and the judge's per-item JSON
    survive in `report.html` — parse with python, never grep the raw HTML, and
    never `Read` a `.jsonl` (104 000 tokens for 44 lines).
@@ -149,8 +168,8 @@ Propose 3–7 candidate causes with probabilities summing to ~100, one line of
 reasoning each, and print the Hypothesis Board. For the highest-probability
 untested one, design an experiment with a discrete outcome — state before running
 it what success and failure each prove. Execute, record, re-weight, reprint. With
-several red scenarios in hand, check that each isolates a different hypothesis.
-Terminate at ~80 %, after three experiments that move nothing, or 5 iterations.
+several reds in hand, check each isolates a different hypothesis. Terminate at
+~80 %, after three experiments that move nothing, or 5 iterations.
 
 Diagnostic edits are reverted from `cp` backups — never with `git checkout --`
 or `git restore`, which return the index rather than what you wrote.
@@ -158,11 +177,11 @@ or `git restore`, which return the index rather than what you wrote.
 ## Phase 3 — Fix
 
 - **Product**: edit `framework/atoms/<name>.md` (or the skill/agent file), then
-  `deno run -A scripts/generate-skill-composites.ts --write`. Generated
-  `SKILL.md` files are gitignored build artefacts.
+  `deno run -A scripts/generate-skill-composites.ts --write`; the nine generated
+  `SKILL.md` files are gitignored build artefacts (`--list-targets` names them).
 - **Instrument**: edit `scripts/acceptance-tests/lib/`. Extract the decision into
-  a pure exported function and unit-test it in a file `deno task check` actually
-  runs, NOT `runner_test.ts`, which `task-check.ts` ignores.
+  a pure exported function and unit-test it in a file `deno task check` runs, NOT
+  `runner_test.ts`, which `task-check.ts` ignores.
 - **Contract**: edit the scenario or its fixture, saying in the file what the old
   version held and why it was wrong.
 
@@ -181,18 +200,17 @@ date, runs, what the sessions showed.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed.
-- Name what the green number covers. A rule phrased "if you see X" binds at
-  every stage but the suite usually holds one, so "3/3" reads as general when it
-  is not.
+- Name what the green number covers: a rule phrased "if you see X" binds at every
+  stage while the suite usually holds one, so "3/3" reads as general when it is not.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
 
 ## Phase 5 — Record and commit
 
-- Update the docs the change maps to (AGENTS.md Documentation Map): an
-  instrument change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When the
-  doc records the behaviour you are changing as deliberate, say so and ask.
+- Update the docs the change maps to (AGENTS.md Documentation Map): an instrument
+  change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When the doc records
+  the behaviour you are changing as deliberate, say so and ask.
 - Check `git diff --cached --stat` in a SEPARATE tool call, then commit by
   explicit paths. The tree is shared with other sessions.
 - The commit message states what was wrong, what the evidence was, and what
@@ -213,11 +231,11 @@ command, path or flag that changed under you.
 already here; a finding about the PRODUCT rather than about diagnosing it; a run
 that went well.
 
-**Budget**: stay under ~240 lines. When an addition would pass that, compress an
+**Budget**: stay under ~250 lines (raised from 240 on 2026-08-24, once four dated
+signatures had to land in one run). When an addition would pass it, compress an
 existing item instead of appending — two bullets on one failure shape are one
-bullet. Growth without pruning turns the signature list into something nobody
-reads to the end. Commit the amendment with the work that produced it and say
-what was learned, not that the skill was updated.
+bullet. Commit the amendment with the work that produced it and say what was
+learned, not that the skill was updated.
 
 ## Verification
 

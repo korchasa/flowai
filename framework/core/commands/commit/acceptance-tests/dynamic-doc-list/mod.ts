@@ -38,6 +38,26 @@ export const CommitDynamicDocListBench = new class
     );
     await Deno.writeTextFile(agentsPath, content);
 
+    // Commit the injected hierarchy on 2026-08-24. `setup()` runs AFTER the
+    // harness has already made the `init` commit (runner.ts `initSandboxGit`),
+    // so without this the custom hierarchy is an UNCOMMITTED change and lands
+    // inside the very commit the agent is asked to make. In the sweep of
+    // 2026-08-23 the judge saw `+4. **API Reference**` in the agent's own diff
+    // and scored `custom_doc_discovered` as a failure: the line the agent was
+    // supposed to READ looked like a line the agent had WRITTEN.
+    await new Deno.Command("git", {
+      args: [
+        "commit",
+        "-m",
+        "docs: add API Reference to hierarchy",
+        "--",
+        "AGENTS.md",
+      ],
+      cwd: sandboxPath,
+      stdout: "null",
+      stderr: "null",
+    }).output();
+
     // Create api.ts as untracked — contains new API endpoint code.
     const apiCode = `export function getUsers() {
   return [{ id: 1, name: "Alice" }];
