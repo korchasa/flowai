@@ -130,9 +130,39 @@ Fixes not in the original diagnosis, found by re-measuring:
   script computed the new text and never applied it, so the file carried a
   comment describing a change that was not there.
 
-Known open: `process_watchdog_test.ts` "rss-bloat trip" fails inside a full
-`deno task check` under host memory pressure (4 times on 2026-08-24) and passes
-8/8 standalone every time. Not `adoptablePgid` — the pgid-wait branch prints a
-warning that appears in none of the failing logs. The test gives the watchdog
-8 s to see an 80 MiB allocation, and with the swap file 92 % full the allocation
-itself can outlast that. Raising the budget is proposed, not applied.
+Closed since: `process_watchdog_test.ts` "rss-bloat trip". The diagnosis above —
+"the allocation itself can outlast the 8 s budget, raise the budget" — was wrong,
+and a longer wait would have fixed nothing. Polling `ps -o rss` on the real
+bloater at 94 % swap: 90 MB at one second, 3 872 KB from the second second
+onward, flat for the rest of its life. CPython zero-fills the buffer once,
+nothing reads it again, and the memory compressor reclaims the pages; the 10 MiB
+ceiling was unreachable after that first moment. The test passed only when the
+first 200 ms sample landed inside the window, which is exactly what a load flake
+looks like. `scripts/acceptance-tests/lib/rss_bloat.py` now touches every page in
+a loop: RSS holds at ~86 MB, the trip fires in 370-450 ms across five standalone
+runs and inside a full `deno task check`, and the 8 s budget stays as 20x
+headroom (commit `6a182c8e`).
+
+## The 11 infrastructure failures of 2026-08-23, re-measured (2026-08-24)
+
+Ten of the eleven were host pressure and nothing else. Re-run at `-n 1
+--refresh-cache -p 2` with the swap file still 94 % full but ~2.5 GB of effective
+headroom, they all passed:
+
+- Health-abort, 6 of 6 green: `diagnose-benchmark-failure-md-prior-bullets`,
+  `-trigger-pos-1`, `-trigger-false-1`, `engineer-prompts-for-instant-basic`,
+  `-trigger-adj-1`, `-trigger-false-1`.
+- Guard-kill, 4 of 5 green: `engineer-plugin-marketplace-trigger-adj-1`,
+  `-trigger-false-1`, `draw-mermaid-diagrams-trigger-adj-1`,
+  `engineer-ai-ide-plugin-codex-subagents-as-skills`.
+- Three neighbours swept in by the filters passed too:
+  `diagnose-benchmark-failure-trigger-adj-1`,
+  `engineer-prompts-for-instant-trigger-pos-1`,
+  `engineer-plugin-marketplace-trigger-pos-1`.
+
+The eleventh, `diagnose-benchmark-failure-raw-session`, failed 5 items and is NOT
+this task's to fix: the scenario is untracked (`git ls-files` does not list it)
+and belongs to a parallel session writing an "interview the failed agent" step
+into that skill. The failing item is `names_interview_step`, and the skill's
+`SKILL.md` still contains no mention of an interview or `--resume` — a correct
+RED phase for work in progress, not a regression.
