@@ -64,8 +64,8 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
   warning rather than a blocker when the trace is non-empty. Ask whether the work
   legitimately outlives the cap — `deep-research` does.
-- **Judge reports a section "not present" in a large file.** Elided mid-file
-  above 30 KB (`renderFileForEvidence`); check disk first.
+- **Judge reports a section "not present" in a large file.** Elided mid-file above
+  30 KB (`renderFileForEvidence`); check disk first.
 - **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
   means the model produced the artefact unaided; `blocked` means it stopped for
   material the query never supplied — a malformed scenario, not a routing miss.
@@ -75,6 +75,8 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
   SKILL.md first: `init` forbids wrapper scripts when the project's runner
   suffices, while its checklist demanded `scripts/check.ts`.
+- **The red scenario is untracked.** `git ls-files` does not list it: another
+  session's deliberate RED in a shared tree, not your regression. Never fix it.
 - **A verdict that changed with no tree change.** Load noise — then ask what the
   load EXPOSED, because re-measuring hides a deterministic cause as readily as it
   clears a false one. On 2026-08-24 the watchdog's rss test had been dismissed as
@@ -98,9 +100,8 @@ Run this BEFORE anything else. Each signature below was paid for once.
   fixture its checklist calls clean.
 - **The fixture breaks a SECOND rule behind the first.** It must itself pass
   `deno fmt --check`, `deno lint`, `deno test` and ship the Benchmark Fixture
-  `deno.json`. Three of ten scenarios needed two rounds on 2026-08-22 (an inline
-  `jsr:@std/assert`, a 98-character line): the agent stopped on THAT and never
-  reached the planted defect. Re-measure after every fixture fix.
+  `deno.json`. Three of ten scenarios needed two rounds on 2026-08-22 — the agent
+  stopped on THAT and never reached the planted defect.
 - **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
   rootPids.** The guard aimed at the BENCH: under load `setpgrp_exec.py` reaches
   `setsid()` after the first tick, so the watchdog cached the bench's own group.
@@ -147,9 +148,9 @@ Read in this order and stop as soon as the cause is unambiguous.
    agent actually wrote settles claims no transcript reading can.
 3. The failed agent itself, when the diagnosis is about wording. Resume in place
    (`cd <sandbox> && HOME=<bench-home> claude -p --resume <uuid> "<question>"`)
-   and ask neutrally which phrase left room. Three runs named the same defective
-   sentence in one round on 2026-08-21, after three rounds of guessing had not:
-   the transcript shows what it did, the interview the words it justified it with.
+   and ask neutrally which phrase left room. On 2026-08-21 three runs named the
+   same defective sentence in one round, after three rounds of guessing had not:
+   the transcript shows what it did, the interview the words it justified it by.
 4. If the run dir was pruned, the transcript and the judge's per-item JSON
    survive in `report.html` — parse with python, never grep the raw HTML, and
    never `Read` a `.jsonl` (104 000 tokens for 44 lines).
@@ -196,14 +197,14 @@ writing "do not read the default paths" while naming them fails `check-skills`.
   concurrent runs. A foreground run past the tool's cap is killed mid-flight.
 - Host preflight: load, free swap, orphaned runners (`ps -Ao pid,etime,command |
   grep -E "runtests.py|benchmark.ts run"`). Under memory pressure `system_health`
-  aborts sessions and every result is noise.
+  aborts sessions and every result is noise; re-measuring a whole aborted column
+  is cheap, and on 2026-08-24 ten of eleven such failures were green on retry.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed. **Re-measure one GREEN sibling of every primitive you
-  edited**: on 2026-08-24 that guard caught a scenario dropping 3/3 → 1/3, and its
-  cause was a fixture that had been wrong all along.
+  edited** — that guard caught a scenario dropping 3/3 to 1/3 on 2026-08-24.
 - Name what the green number covers: a rule phrased "if you see X" binds at every
-  stage while the suite usually holds one, so "3/3" reads as general when it is not.
+  stage while the suite holds one, so "3/3" reads as general when it is not.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
@@ -211,7 +212,7 @@ writing "do not read the default paths" while naming them fails `check-skills`.
 ## Phase 5 — Record and commit
 
 - Update the docs the change maps to (AGENTS.md Documentation Map): an instrument
-  change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When the doc records
+  change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When a doc records
   the behaviour you are changing as deliberate, say so and ask.
 - Check `git diff --cached --stat` in a SEPARATE tool call, then commit by
   explicit paths. The tree is shared with other sessions.
