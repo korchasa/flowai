@@ -17,6 +17,10 @@ const SETPGRP_WRAPPER = fromFileUrl(
   new URL("./setpgrp_exec.py", import.meta.url),
 );
 
+const RSS_BLOATER = fromFileUrl(
+  new URL("./rss_bloat.py", import.meta.url),
+);
+
 interface SpawnHandle {
   pid: number;
   child: Deno.ChildProcess;
@@ -137,11 +141,13 @@ Deno.test({
     "watchdog: rss-bloat trip kills the entire group (synthetic memory pressure)",
   ignore: Deno.build.os !== "darwin" && Deno.build.os !== "linux",
   async fn() {
-    // Allocate a noticeable buffer in python and sleep — gives the watchdog
-    // a real RSS to measure. 80 MiB is comfortably above the per-test RSS
-    // ceiling we set below (10 MiB) on every reasonable host.
-    const BLOATER =
-      `python3 -c "import time; b=bytearray(80*1024*1024); time.sleep(60)"`;
+    // Hold 80 MiB RESIDENT — comfortably above the 10 MiB ceiling set below.
+    // The helper touches every page in a loop on purpose; the earlier version
+    // allocated the buffer and slept, and on 2026-08-24 that made this test
+    // flaky under memory pressure: macOS compressed the untouched pages away
+    // within a second, RSS settled at 3.8 MB, and the watchdog never tripped.
+    // Waiting longer would not have helped, so the wait below stays at 8 s.
+    const BLOATER = `python3 ${RSS_BLOATER} ${80 * 1024 * 1024} 60`;
     const handle = spawnWrapped(BLOATER);
     try {
       // Wait until the wrapper's setsid() has placed at least one child in
