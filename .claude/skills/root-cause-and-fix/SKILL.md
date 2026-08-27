@@ -84,24 +84,20 @@ Run this BEFORE anything else. Each signature below was paid for once.
   a second, and every green re-run was a poll landing inside that window.
 - **The turn ends while a dispatched subagent is still running.** The ACP loop
   runs only while the emulator answers, so the result is never collected and the
-  final summary never happens (`maintenance-basic` died at 228 s where siblings
-  ran 950 s; two more primitives did the same on 2026-08-23). The cure is in the
-  primitive: "wait for all subagents" has to say that waiting means COLLECTING,
-  and that nothing is presented while one is outstanding.
-- **The scenario asserts something the sandbox never contained.** The runner
-  commits the fixture, so `git show <init-sha>:<file>` is the exact input — read
-  it before believing "the agent missed X". `setup()` runs AFTER that commit, so
-  whatever it plants is an UNCOMMITTED change landing in the agent's own diff: on
-  2026-08-23 the judge read an injected hierarchy as a line the agent had WRITTEN
-  and failed the item asking whether it had READ it. A `setup()` planting
-  pre-existing state must commit it. A fixture can also speak a retired dialect
-  its `mod.ts` says it left, so run any deterministic checker over it, green
-  scenarios included: `audit-clean` passed while `audit.ts` found 8 issues on the
-  fixture its checklist calls clean.
-- **The fixture breaks a SECOND rule behind the first.** It must itself pass
-  `deno fmt --check`, `deno lint`, `deno test` and ship the Benchmark Fixture
-  `deno.json`. Three of ten scenarios needed two rounds on 2026-08-22 — the agent
-  stopped on THAT and never reached the planted defect.
+  summary never happens (`maintenance-basic` died at 228 s where siblings ran
+  950 s). The cure is in the primitive: "wait for all subagents" has to say that
+  waiting means COLLECTING, and that nothing is presented while one is
+  outstanding.
+- **The fixture is not what the scenario thinks it is.** `git show <init-sha>:<file>`
+  in the sandbox is the exact input. `setup()` runs AFTER that commit, so whatever
+  it plants is an UNCOMMITTED change in the agent's own diff: on 2026-08-23 the
+  judge read an injected hierarchy as a line the agent had WRITTEN and failed the
+  item asking whether it had READ it — `setup()` planting pre-existing state must
+  commit it. The fixture must also pass `deno fmt --check`, `deno lint`, `deno test`
+  and ship the Benchmark Fixture `deno.json`, or the agent stops on THAT and never
+  reaches the planted defect (three of ten scenarios, 2026-08-22). Run every
+  deterministic checker over it, green scenarios included: `audit-clean` passed
+  while `audit.ts` found 8 issues on the one its checklist calls clean.
 - **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
   rootPids.** The guard aimed at the BENCH: under load `setpgrp_exec.py` reaches
   `setsid()` after the first tick, so the watchdog cached the bench's own group.
@@ -121,15 +117,14 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **A scenario at 2/3 passes the threshold and can still hold a real defect.**
   Read the failing run. Two did on 2026-08-22, both product defects.
 - **The rule was in the file and still did not fire.** First prove the text
-  reached the agent: an unrelated instruction from the same file obeyed in the
-  same session. Then read the session for the shape. Never mentions it → never
-  bound; add a binding moment AHEAD of the decision, since an agent holding a
-  solution reads the rule for exemptions. Quotes and overrides it → say what
-  compliance PRODUCES, and grep for a neighbouring rule claiming the case, since
-  the weaker of two wins. Obeys it and reclassifies the case → your own carve-out
-  is the escape; scope it to what the user NAMED. Forbid the act, not the harm: a
-  rule stated as a consequence dies by denying the consequence, and a disclaimer
-  above a forbidden output does not make it a different output.
+  reached the agent — a green sibling sharing the artefact does it in one line.
+  Then read the session for the shape. Never mentions it → never bound; bind it
+  AHEAD of the decision, since an agent holding a solution reads a rule for
+  exemptions. Quotes and overrides it → say what compliance PRODUCES, and grep for
+  a neighbouring rule claiming the case, since the weaker of two wins. Reclassifies
+  the case → your own carve-out is the escape; scope it to what the user NAMED.
+  Forbid the act, not the harm: a rule stated as a consequence dies by denying the
+  consequence.
 
 Print the verdict — `INSTRUMENT` or `PRODUCT` — with the evidence line that
 decided it, then continue.
@@ -180,6 +175,14 @@ or `git restore`, which return the index rather than what you wrote.
   `runner_test.ts`, which `task-check.ts` ignores.
 - **Contract**: edit the scenario or its fixture, saying in the file what the old
   version held and why it was wrong.
+
+When the layer is a RULE that did not fire, two shapes decide whether the repair
+holds. Prefer precondition grammar to prohibition — "X is a precondition on Y,
+not a step you may or may not enter" binds where "you are NOT done until X" does
+not; two interviewed agents drew that contrast unprompted on 2026-08-25. And
+elaborate a shared paragraph on ALL its triggers or none: two sentences added
+about a missing VALUE made the same paragraph stop binding for a missing SCRIPT,
+and a green scenario fell to 1/3 for a case I never touched.
 
 Every fix carries, in the file it touches, the measurement that justified it:
 date, runs, what the sessions showed. **Then grep the file for the NEW text —
@@ -234,7 +237,7 @@ command, path or flag that changed under you.
 already here; a finding about the PRODUCT rather than about diagnosing it; a run
 that went well.
 
-**Budget**: stay under ~255 lines (240 → 250 → 255 on 2026-08-24, as dated
+**Budget**: stay under ~260 lines (240 → 250 → 255 → 260 across 2026-08-24/25, as dated
 signatures had to land in one run). When an addition would pass it, compress an
 existing item instead of appending — two bullets on one failure shape are one
 bullet. Commit the amendment with the work that produced it and say what was
