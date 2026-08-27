@@ -122,6 +122,7 @@ export async function copyFrameworkToIdeDir(
   ideConfigDir: string,
   ideName: string = "claude",
   allowedPacks?: string[],
+  userInvokedCommand?: string,
 ) {
   const skipDirs = ["acceptance-tests", "runs", "tmp"];
 
@@ -186,9 +187,22 @@ export async function copyFrameworkToIdeDir(
         // Malformed frontmatter would throw here — let it bubble so the
         // benchmark developer sees the issue loudly instead of silently
         // installing a broken command.
+        //
+        // One command is exempt: the one the scenario itself drives. The flag
+        // says "the model may not DISCOVER this on its own", and a scenario
+        // whose query opens with `/<name>` is the user invoking it by hand —
+        // the case the flag permits. Measured 2026-08-24: with the flag on,
+        // `init-vision-integration` answered "the /init skill has
+        // disable-model-invocation set... please run /init yourself" and did
+        // no work, and the two `init` brownfield scenarios re-implemented the
+        // command by hand. Every OTHER command keeps the flag, so routing
+        // measurements are untouched.
+        const resolved = resolveSkillModel(raw, ideName);
         await Deno.writeTextFile(
           skillMdPath,
-          injectDisableModelInvocation(resolveSkillModel(raw, ideName)),
+          command.name === userInvokedCommand
+            ? resolved
+            : injectDisableModelInvocation(resolved),
         );
       }
     } catch { /* no commands/ in pack */ }

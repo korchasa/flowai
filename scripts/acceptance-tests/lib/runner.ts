@@ -2,6 +2,7 @@ import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { cliChatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
+import { formatJudgeEvidence } from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
@@ -238,6 +239,7 @@ async function prepareSandboxFiles(
       dotCursorPath,
       adapter.ide,
       allowedPacks,
+      scenario.skill,
     );
   } catch (e) {
     // Missing framework dir = fatal precondition; the agent would otherwise
@@ -673,6 +675,19 @@ async function gatherJudgeEvidence(
     diffStr = "(git diff failed)";
   }
 
+  // The agent's own edits, which for any workflow that asks before committing
+  // are never in the diff above. See evidence.ts for the failure this cost.
+  let workingTreeDiffStr = "";
+  try {
+    const wtOut = await runGit(sandboxPath, ["diff", "HEAD"]);
+    workingTreeDiffStr = new TextDecoder().decode(wtOut.stdout);
+  } catch (_) {
+    workingTreeDiffStr = "(git diff HEAD failed)";
+  }
+  if (workingTreeDiffStr.trim() === "") {
+    workingTreeDiffStr = "(no uncommitted changes)";
+  }
+
   const taskFilesContent = await readTaskFiles(sandboxPath);
   const generatedFiles = await collectGeneratedFiles(sandboxPath);
 
@@ -696,29 +711,15 @@ async function gatherJudgeEvidence(
     ? generatedFiles.slice(0, maxFilesLen) + "\n...[TRUNCATED]..."
     : generatedFiles;
 
-  const evidence = `
---- EXPECTED OUTCOME ---
-${scenario.sandboxState.expectedOutcome}
-
---- FINAL GIT STATUS ---
-${statusStr}
-
---- GIT LOG ---
-${logStr}
-
---- GIT DIFF (init..HEAD) ---
-${
-    diffStr.length > 50_000
-      ? diffStr.slice(0, 50_000) + "\n...[DIFF TRUNCATED]..."
-      : diffStr
-  }
-
---- DOCUMENTS/TASKS ---
-${taskFilesContent}
-
---- GENERATED FILES ---
-${truncatedFiles}
-    `;
+  const evidence = formatJudgeEvidence({
+    expectedOutcome: scenario.sandboxState.expectedOutcome,
+    gitStatus: statusStr,
+    gitLog: logStr,
+    committedDiff: diffStr,
+    workingTreeDiff: workingTreeDiffStr,
+    taskFiles: taskFilesContent,
+    generatedFiles: truncatedFiles,
+  });
 
   return { evidence, truncatedLogs, statusStr, logStr };
 }

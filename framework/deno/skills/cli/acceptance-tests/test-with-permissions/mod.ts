@@ -21,9 +21,19 @@ export const DenoCliTestPermsBench = new class extends AcceptanceTestScenario {
       critical: true,
     },
     {
+      // Rescoped 2026-08-25. The first version demanded `deno task test` as the
+      // PREFERRED command, and the sweep of 2026-08-24 failed a run that was
+      // right: this fixture's task is `deno test --allow-read --allow-env`, the
+      // server calls `Deno.openKv()`, so the task as defined cannot run these
+      // tests. The agent offered the raw command and said the task "would need
+      // updating to include --unstable-kv" — which is the diagnosis this
+      // scenario's own name asks for. The item now tests that the agent routes
+      // the command to the task rather than leaving `deno test` as the project's
+      // answer; naming the task's missing flag is part of that, not a failure of
+      // it. Recommending the raw command with no mention of the task still fails.
       id: "suggests_task_test",
       description:
-        'Did the agent suggest using "deno task test" as the preferred way to run tests (since a task is defined)?',
+        'Did the agent treat "deno task test" as where this command belongs — either recommending it directly, or saying the task needs the missing flag added? Answering with a bare `deno test ...` and never mentioning the task fails this item.',
       critical: true,
     },
     {

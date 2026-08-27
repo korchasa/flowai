@@ -64,11 +64,18 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
   warning rather than a blocker when the trace is non-empty. Ask whether the work
   legitimately outlives the cap — `deep-research` does.
-- **Judge reports a section "not present" in a large file.** Elided mid-file above
-  30 KB (`renderFileForEvidence`); check disk first.
-- **Zero tool calls, exit 0.** Ambiguous. Read the turn status: `review_ready`
-  means the model produced the artefact unaided; `blocked` means it stopped for
-  material the query never supplied — a malformed scenario, not a routing miss.
+- **The judge says something is missing or wrong and the disk says otherwise.**
+  It only ever saw the evidence blob, so ask what that blob contained. Two known
+  holes: a file over 30 KB is elided mid-file (`renderFileForEvidence`), and until
+  2026-08-25 the evidence carried only `git diff <init>..HEAD` — so a workflow
+  that stops to ask before committing had its whole product invisible, and the
+  SETUP's own commit read as the agent's last word. That is how
+  `adapt-skills-basic` failed `adapted_to_python` with `poetry run pytest` sitting
+  in the file. Both are fixed; check the disk before believing the judge anyway.
+- **The cache file is not the run.** `acceptance-tests/cache/<pack>/<id>/<ide>.json`
+  holds the last RECORDED verdict, often an older green one, and it contradicts
+  the `report.html` you are diagnosing without saying so. Take per-item verdicts
+  from the run — `✗ <item>` lines in `report.html` — never from the cache.
 - **Adjacent-negative fails, correct neighbour lives in another pack.** The
   runner mounts `core` plus the scenario's pack, so there was nothing to defer to.
   Set `extraPacks` (FR-ACCEPT.TRIGGER).
@@ -92,20 +99,22 @@ Run this BEFORE anything else. Each signature below was paid for once.
   in the sandbox is the exact input. `setup()` runs AFTER that commit, so whatever
   it plants is an UNCOMMITTED change in the agent's own diff: on 2026-08-23 the
   judge read an injected hierarchy as a line the agent had WRITTEN and failed the
-  item asking whether it had READ it — `setup()` planting pre-existing state must
-  commit it. The fixture must also pass `deno fmt --check`, `deno lint`, `deno test`
-  and ship the Benchmark Fixture `deno.json`, or the agent stops on THAT and never
-  reaches the planted defect (three of ten scenarios, 2026-08-22). Run every
-  deterministic checker over it, green scenarios included: `audit-clean` passed
-  while `audit.ts` found 8 issues on the one its checklist calls clean.
-- **Exit 144, no verdict, a `[fork-loop guard]` line naming one pgid for two
-  rootPids.** The guard aimed at the BENCH: under load `setpgrp_exec.py` reaches
-  `setsid()` after the first tick, so the watchdog cached the bench's own group.
-  Only at `-p >1`; fixed by `adoptablePgid`.
-- **The agent asked a question and stopped, and the scenario has a persona.**
-  `UserEmulator` is built only when `interactive` is true (`runner.ts`), so a
-  `userPersona` without that flag is dead text. Such a scenario is green only
-  while the skill skips asking; tighten the skill and it goes red for free.
+  item asking whether it had READ it — planted pre-existing state must be
+  committed. The fixture must also pass every deterministic checker (`deno fmt
+  --check`, `lint`, `test`, the Benchmark Fixture `deno.json`) or the agent stops
+  on THAT and never reaches the planted defect — three of ten scenarios on
+  2026-08-22, and `audit-clean` passed while `audit.ts` found 8 issues in the
+  input its checklist calls clean.
+- **Exit 144, no verdict, a `[fork-loop guard]` line.** The guard aimed at the
+  BENCH (fixed by `adoptablePgid`), or at a legitimate shell pipeline (fixed by
+  raising `maxDescendants` to 16 on 2026-08-25).
+- **The agent stopped instead of working (often zero tool calls, exit 0).** Read
+  the turn status: `review_ready` means it produced the artefact unaided;
+  `blocked` means it stopped for material the query never supplied — a malformed
+  scenario, not a routing miss. If the scenario carries a `userPersona`, check
+  `interactive`: `UserEmulator` is built only when that flag is true
+  (`runner.ts`), so the persona is dead text and the scenario is green only while
+  the skill skips asking.
 - **A `mocks` entry does not stand in for the whole pipeline.** `writeMockBin`
   shadows the binary on `PATH`, so the canned text is the next pipe stage's
   INPUT. A mock holding already-parsed output passes only while the agent skips
@@ -237,10 +246,11 @@ command, path or flag that changed under you.
 already here; a finding about the PRODUCT rather than about diagnosing it; a run
 that went well.
 
-**Budget**: stay under ~260 lines (240 → 250 → 255 → 260 across 2026-08-24/25, as dated
-signatures had to land in one run). When an addition would pass it, compress an
-existing item instead of appending — two bullets on one failure shape are one
-bullet. Commit the amendment with the work that produced it and say what was
+**Budget**: 270 lines, and this is the fifth raise (240 → 250 → 255 → 260 → 270
+across 2026-08-24/25). The ratchet is the failure the budget exists to prevent,
+so the number stops here: the next addition DISPLACES a bullet. Compress first,
+never as a fallback — two bullets on one failure shape are one bullet, and two
+such merges paid for two new signatures on 2026-08-25. Commit the amendment with the work that produced it and say what was
 learned, not that the skill was updated.
 
 ## Verification

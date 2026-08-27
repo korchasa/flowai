@@ -36,7 +36,7 @@ function spawnWrapped(script: string): SpawnHandle {
 }
 
 async function waitFor(
-  pred: () => Promise<boolean>,
+  pred: () => boolean | Promise<boolean>,
   timeoutMs: number,
   pollMs = 50,
 ): Promise<boolean> {
@@ -132,6 +132,49 @@ Deno.test({
       );
     } finally {
       await killGroupSafely(handle.pid);
+    }
+  },
+});
+
+Deno.test({
+  name: "watchdog: the DEFAULT fork threshold tolerates a pipeline-sized group",
+  ignore: Deno.build.os !== "darwin" && Deno.build.os !== "linux",
+  async fn() {
+    // Regression for 2026-08-25: maxDescendants was 5, and a scenario whose
+    // skill documents `curl … | … --stdin` reached 6 members and was killed
+    // with zero output in two consecutive full sweeps. Ten members must
+    // survive the DEFAULT settings — this test passes no maxDescendants, so
+    // it fails if the default is lowered back under a legitimate pipeline.
+    const PIPELINE = `
+      for i in $(seq 1 10); do
+        sleep 30 &
+      done
+      wait
+    `;
+    const handle = spawnWrapped(PIPELINE);
+    try {
+      const pgid = await waitForGroupSize(handle.pid, 10, 4000);
+
+      let trippedCause: string | null = null;
+      const wd = startWatchdog(handle.pid, {
+        intervalMs: 100,
+        graceMs: 100,
+        maxRssBytes: 0, // isolate the fork guard
+        onTrip: (t) => {
+          trippedCause = t.cause;
+        },
+      });
+      // Well past confirmSamples × intervalMs, so a trip would have happened.
+      const tripped = await waitFor(() => trippedCause !== null, 1500);
+      wd.stop();
+
+      assertEquals(tripped, false, `default fork guard killed a group of 10`);
+      assertGreaterOrEqual((await listProcessGroup(pgid)).length, 10);
+    } finally {
+      killGroupSafely(handle.pid);
+      try {
+        await handle.child.status;
+      } catch { /* already reaped */ }
     }
   },
 });

@@ -125,6 +125,30 @@ Deno.test("copyFrameworkToIdeDir resolves abstract model tier in skills", async 
   }
 });
 
+Deno.test("copyFrameworkToIdeDir exempts the command the scenario drives", async () => {
+  const root = await Deno.makeTempDir({ prefix: "copyfw-userinvoked-" });
+  try {
+    const frameworkPath = await buildTestFrameworkTree(root);
+    const ideConfigDir = join(root, ".claude");
+    // Fifth argument: the command this scenario invokes by hand via `/name`.
+    // Regression for 2026-08-24, when `init-vision-integration` refused to do
+    // any work because the flag said the model may not load `/init`.
+    await copyFrameworkToIdeDir(frameworkPath, ideConfigDir, "claude", [
+      "testpack",
+    ], "demo-command");
+
+    const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
+    const content = await Deno.readTextFile(cmdPath);
+    assertEquals(
+      content.includes("disable-model-invocation"),
+      false,
+      "the command under test must stay loadable by the model",
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
 Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands", async () => {
   const root = await Deno.makeTempDir({ prefix: "copyfw-inject-" });
   try {

@@ -26,13 +26,20 @@
 // allowed reparented grandchildren to keep forking after the trip
 // (observed on 2026-05-09 12:12 → forced reboot).
 //
-// Defaults — `maxDescendants=5`, `maxRssBytes=6 GiB`, `intervalMs=500`,
-// `confirmSamples=2` — are tuned tight: a healthy agent run keeps 2-3
-// group members and < 2 GiB resident. The 500 ms × 2 = 1 s reaction
-// window was chosen after a 2026-05-09 12:12 test where intervalMs=2000
-// caught a fork-loop at 35 descendants — late enough that swap had
-// already grown from 2 GiB to 6 GiB. At 500 ms, the same scenario would
-// trip near 10 descendants, before measurable swap pressure. Thresholds are
+// Defaults — `maxDescendants=16`, `maxRssBytes=6 GiB`, `intervalMs=500`,
+// `confirmSamples=2`. The 500 ms × 2 = 1 s reaction window was chosen after
+// a 2026-05-09 12:12 test where intervalMs=2000 caught a fork-loop at 35
+// descendants — late enough that swap had already grown from 2 GiB to 6 GiB.
+//
+// `maxDescendants` was 5 until 2026-08-25, on the claim that "a healthy agent
+// run keeps 2-3 group members". That claim is wrong for any scenario whose
+// skill documents a shell pipeline: `select-llm-model-cites-sources` runs
+// `curl … | … --stdin`, reached 6 members, and was SIGKILLed with zero output
+// in two consecutive full sweeps — the checklist then scored five items
+// against an agent that never ran. 16 sits above every legitimate peak
+// measured so far and still trips well before 35, where the incident above
+// had already cost 4 GiB of swap; memory itself is the RSS guard's job, not
+// this one's, and the two run on the same poll loop. Thresholds are
 // tunable (NOT disable-able) via env: BENCH_MAX_DESCENDANTS, BENCH_MAX_RSS_GB,
 // BENCH_WATCHDOG_INTERVAL_MS, BENCH_WATCHDOG_CONFIRM. There is no env-var
 // escape hatch to skip the watchdog. Tests that exercise AcpAgent's
@@ -40,7 +47,7 @@
 // production callers cannot bypass via environment.
 
 export interface WatchdogOptions {
-  maxDescendants?: number; // default 5
+  maxDescendants?: number; // default 16
   maxRssBytes?: number; // default 6 GiB; 0 = disable RSS guard
   intervalMs?: number; // default 500
   confirmSamples?: number; // default 2 (consecutive overshoots before killing)
@@ -78,7 +85,7 @@ export interface WatchdogHandle {
 }
 
 const DEFAULTS = {
-  maxDescendants: Number(Deno.env.get("BENCH_MAX_DESCENDANTS") ?? "5"),
+  maxDescendants: Number(Deno.env.get("BENCH_MAX_DESCENDANTS") ?? "16"),
   maxRssBytes: Number(Deno.env.get("BENCH_MAX_RSS_GB") ?? "6") * 1024 * 1024 *
     1024,
   intervalMs: Number(Deno.env.get("BENCH_WATCHDOG_INTERVAL_MS") ?? "500"),
