@@ -6,8 +6,14 @@ export const DrawMermaidDiagramsTriggerPos1 = new class
   name = "visualize a sequence of calls";
   skill = "draw-mermaid-diagrams";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
+  // 2026-08-24: the old query — "Sketch out the order of calls between the API
+  // gateway, the auth service, and the database when a user logs in" — never
+  // asked for a diagram. The model answered with a numbered prose list and
+  // closed with "Want me to turn this into a Mermaid sequence diagram?", which
+  // is a correct answer to what was asked. A positive trigger has to name the
+  // skill's deliverable; naming it is not a hint, it is the request.
   userQuery =
-    "Sketch out the order of calls between the API gateway, the auth service, and the database when a user logs in.";
+    "Draw a sequence diagram of what happens between the API gateway, the auth service and the database when a user logs in, so I can paste it into our README.";
   checklist = [{
     id: "skill_invoked",
     description:

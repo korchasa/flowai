@@ -13,8 +13,15 @@ export const DelegateToIdeTriggerPos1 = new class
   name = "delegate a task to another IDE";
   skill = "delegate-to-ide";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
+  // 2026-08-24: the old query ended "and show me its answer", which makes it a
+  // one-shot relay — and this skill's own description sends those to
+  // `ai-ide-runner`. The agent invoked `ai-ide-runner` and was following the
+  // catalog boundary as written, so the scenario was asking for the neighbour.
+  // The query now describes a delegation: work handed over, done elsewhere, in
+  // its own context. (Codex itself answers 401 in the sandbox — no credentials
+  // are mounted — but this checklist only asks which skill was loaded.)
   userQuery =
-    "Have Codex implement a small TypeScript helper that capitalises a string, and show me its answer.";
+    "Delegate this to Codex and let it work on its own: rewrite src/util/slug.ts so it handles unicode, and don't do the edit yourself.";
   checklist = [{
     id: "skill_invoked",
     description:
