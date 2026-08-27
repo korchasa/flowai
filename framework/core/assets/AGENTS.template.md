@@ -166,53 +166,10 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - One file per task or session at a date-hierarchy path: `documents/tasks/<YYYY>/<MM>/<slug>.md` (kebab-case slug, max 40 chars).
 - Examples: `documents/tasks/2026/03/add-dark-mode.md`, `documents/tasks/2026/03/fix-auth-bug.md`.
 - Do not reuse another session's task file — create a new file. Old tasks are persistent canonical records.
-- Use GODS format (see below). Architectural decisions are recorded as regular tasks with weighed alternatives in the body — there is no separate ADR primitive.
+- Use GODS format — this is the project's **accepted task format**, and everything outside this file refers to it by that name rather than by "GODS". This file does NOT carry the format itself: the `write-gods-tasks` skill is its single source, and writing a task file starts by loading that skill. Architectural decisions are recorded as regular tasks with weighed alternatives in the body — there is no separate ADR primitive.
 - Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done | superseded` (required), `implements: [FR-...]` (optional — present for FR-driven tasks, omitted for internal/maintenance), optional `tags`, optional `related_tasks` (markdown links to other task files), optional `migrated_from` for provenance, optional `superseded_by` (required when `status: superseded`).
 - Status auto-derives from `## Definition of Done` checkbox count on every commit for non-superseded tasks (commit workflows handle this — never edit `status` manually mid-flight). `status: superseded` preserves provenance and is excluded from DoD derivation.
 - Directory is **NOT gitignored** — tasks are persistent records. Validated by `scripts/check-task-format.ts` (path regex, status enum, status↔DoD consistency).
-
-### GODS Format
-
-```markdown
----
-implements:
-  - FR-XXX
----
-# [Task Title]
-
-## Goal
-
-[Why? Business value.]
-
-## Overview
-
-### Context
-
-[Full problematics, pain points, operational environment, constraints, tech debt, external URLs, @-refs to relevant files/docs.]
-
-### Current State
-
-[Technical description of existing system/code relevant to task.]
-
-### Constraints
-
-[Hard limits, anti-patterns, requirements (e.g., "Must use Deno", "No external libs").]
-
-## Definition of Done
-
-Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance reference. Items without this tuple are wishes, not contracts.
-
-- [ ] FR-XXX: <observable behavior>
-  - Test: `<path/to/test>::<test_name>` (or `Benchmark: <scenario-id>`)
-  - Evidence: `<command that passes iff the item is done>`
-- [ ] FR-YYY: <observable behavior>
-  - Test: `...`
-  - Evidence: `...`
-
-## Solution
-
-[Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
-```
 
 ### Compressed Style Rules (All Docs)
 
@@ -243,7 +200,7 @@ Scope discipline prevents over-formalization: (1) pure bug fixes reuse an existi
 - **Data-First**: When integrating with external APIs or processes, inspect the actual protocol and data formats before planning — assumptions about data shape are the #1 source of integration bugs.
 - **Architectural Validation**: For complex logic changes, visualize the event sequence (sequence diagram or pseudocode) — it catches race conditions and missing edges that prose descriptions miss.
 - **Variant Analysis**: A format for comparing alternatives of any kind — approaches, designs, tools, libraries, vendors, data models, configurations. Present each candidate as a labeled option with Pros / Cons / Risks / Best-for, then analyze the trade-offs across options (e.g. speed vs. correctness, cost vs. flexibility). One option is acceptable when the path is clear; when it is non-obvious, surface multiple distinct options.
-- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY>/<MM>/<slug>.md` using GODS format — chat-only plans are lost between sessions.
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY>/<MM>/<slug>.md` in the accepted task format, whose template the `write-gods-tasks` skill defines — chat-only plans are lost between sessions.
 
 ## TDD Flow
 

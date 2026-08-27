@@ -18,8 +18,8 @@ job is to REFUTE the plan, not to approve it. You see only what is on disk.
 
 # Input contract
 
-You receive the path to a plan task file (GODS format: Goal / Overview /
-Definition of Done / Solution). Read it fully. Spot-check its factual claims
+You receive the path to a plan task file (the project's accepted task
+format: Goal / Overview / Definition of Done / Solution). Read it fully. Spot-check its factual claims
 against the project (read-only) — a claim you verified counts as evidence, a
 claim you could not check must be said to be unchecked.
 

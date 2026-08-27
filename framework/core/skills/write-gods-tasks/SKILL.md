@@ -31,6 +31,68 @@ between the "client" and the "executor":
 
 ---
 
+### TASK FILE TEMPLATE
+
+Moved here from the project instruction template on 2026-08-27. It used to sit
+in `AGENTS.md`, which every session mounts, so the model already had the format
+and never opened this skill: `write-gods-tasks-trigger-pos-1` scored 0/3 with
+13, 16 and 27 tool calls, the agent writing the file itself each time. This
+file is now the single source, and `AGENTS.md` points here.
+
+Path: resolve the `tasks` role from the project instructions. The template
+default is a date hierarchy — `<YYYY>/<MM>/<slug>.md`, kebab-case slug, max
+40 chars — but the project instructions are authoritative.
+
+```markdown
+---
+implements:
+  - FR-XXX
+---
+# [Task Title]
+
+## Goal
+
+[Why? Business value.]
+
+## Overview
+
+### Context
+
+[Full problematics, pain points, operational environment, constraints, tech debt, external URLs, @-refs to relevant files/docs.]
+
+### Current State
+
+[Technical description of existing system/code relevant to task.]
+
+### Constraints
+
+[Hard limits, anti-patterns, requirements (e.g., "Must use Deno", "No external libs").]
+
+## Definition of Done
+
+Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance reference. Items without this tuple are wishes, not contracts.
+
+- [ ] FR-XXX: <observable behavior>
+  - Test: `<path/to/test>::<test_name>` (or `Benchmark: <scenario-id>`)
+  - Evidence: `<command that passes iff the item is done>`
+- [ ] FR-YYY: <observable behavior>
+  - Test: `...`
+  - Evidence: `...`
+
+## Solution
+
+[Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
+```
+
+Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done |
+superseded` (required), `implements: [FR-...]` (optional — present for FR-driven
+tasks, omitted for internal/maintenance), optional `tags`, optional
+`related_tasks`, optional `migrated_from`, optional `superseded_by` (required
+when `status: superseded`). Never edit `status` by hand mid-flight — commit
+workflows derive it from the `## Definition of Done` checkbox count.
+
+---
+
 ### EXAMPLES OF APPLYING GODS
 
 #### 1. Incidents (Platform team)

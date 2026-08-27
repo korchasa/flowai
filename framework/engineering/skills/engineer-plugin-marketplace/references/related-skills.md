@@ -35,8 +35,8 @@ Prefer these existing skills instead of duplicating their procedures.
   research when official docs are incomplete.
 - [draw-mermaid-diagrams](../../draw-mermaid-diagrams/SKILL.md) — marketplace
   build, sync, install, and trust-flow diagrams.
-- [write-gods-tasks](../../write-gods-tasks/SKILL.md) — task breakdowns with
-  goal, context, constraints, definition of done, and evidence.
+- `write-gods-tasks` (core pack) — the accepted task format: goal, context,
+  constraints, definition of done, and evidence.
 
 ## Local Repository Examples
 

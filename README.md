@@ -257,7 +257,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 
 **Skills:**
 - `implement` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
-- `plan` — task planning; writes persistent GODS tasks at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
+- `plan` — task planning; writes persistent task files at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
 - `epic` — structured feature specification for multi-session features
 - `review` — QA + code review of current changes
 - `reflect` — self-analysis of the current session
@@ -266,6 +266,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `maintenance` — project health audit (16-category scan + interactive resolution)
 - `setup-ai-ide-devcontainer` — AI IDE devcontainer setup
 - `configure-deno-commands` — configure Deno tasks
+- `write-gods-tasks` — the accepted task format (GODS: Goal, Overview, Definition of Done, Solution) and its file template
 
 **Agents:**
 - `console-expert` — complex console tasks and command execution
@@ -287,9 +288,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `diagnose-benchmark-failure` — diagnose a failed flowai benchmark from its run artifacts
 - `write-prd` — Product Requirements Documents
 - `write-dep` — Development Enhancement Proposals
-- `write-gods-tasks` — GODS-format tasks
 - `write-in-informational-style` — informational writing style
-- `manage-github-tickets` — GitHub issue management
 - `browser-automation` — browser automation
 - `analyze-context` — token usage analysis
 - `engineer-ai-ide-plugin` — AI IDE plugin design and packaging

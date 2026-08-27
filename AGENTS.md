@@ -193,7 +193,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Examples: `2026/03/add-dark-mode.md`, `2026/03/fix-auth-bug.md`.
 - `status:` frontmatter is auto-derived from `## Definition of Done` checkbox state by `commit` / `review-and-commit` (all `[x]` → `done`; some → `in progress`; none → `to do`). It MUST match the DoD or `check-task-format` errors — do not hand-maintain it except `superseded`.
 - Do not reuse another session's task file — create a new file. Old tasks provide context but may contain outdated decisions.
-- Use GODS format (see below) for issues and plans.
+- Use GODS format for issues and plans — this is the project's **accepted task format**, and everything outside this file refers to it by that name rather than by "GODS". This file does NOT carry the format itself: the `write-gods-tasks` skill is its single source, and writing a task file starts by loading that skill.
 - `documents/tasks/` is **committed and scanned** (NOT gitignored) — the doc-anchors Stop hook validates SALP tokens in task prose, so illustrative tokens must be escaped. Files accumulate — this is expected.
 - **SALP in prose:** when mentioning a SALP token illustratively (not as a real cross-reference) in any committed Markdown/doc/task prose, wrap it in inline code (`` `[REF:ns:id]` ``) or a fenced block — the doc-anchors hook and `check-salp` ignore code spans but treat bare tokens in prose as live refs (a dangling one blocks turn-end).
 
@@ -205,49 +205,6 @@ When a task creates a new framework primitive, decide the subdir FIRST:
 - **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `fix-tests`, `deep-research`.
 
 Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
-
-### GODS Format
-
-```markdown
----
-implements:
-  - FR-XXX
----
-# [Task Title]
-
-## Goal
-
-[Why? Business value.]
-
-## Overview
-
-### Context
-
-[Full problematics, pain points, operational environment, constraints, tech debt, external URLs, @-refs to relevant files/docs.]
-
-### Current State
-
-[Technical description of existing system/code relevant to task.]
-
-### Constraints
-
-[Hard limits, anti-patterns, requirements (e.g., "Must use Deno", "No external libs").]
-
-## Definition of Done
-
-Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Items without this tuple are wishes, not contracts.
-
-- [ ] FR-XXX: <observable behavior>
-  - Test: `<path/to/test>::<test_name>` (or `Benchmark: <scenario-id>`)
-  - Evidence: `<command that passes iff the item is done>`
-- [ ] FR-YYY: <observable behavior>
-  - Test: `...`
-  - Evidence: `...`
-
-## Solution
-
-[Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
-```
 
 ### Compressed Style Rules (All Docs)
 
@@ -270,7 +227,7 @@ Every DoD item MUST pair with an FR-ID and a runnable acceptance reference. Item
 - **Architectural Validation**: For complex logic changes, visualize the event sequence (sequence diagram or pseudocode) — it catches race conditions and missing edges that prose descriptions miss.
 - **Variant Analysis**: When the path is non-obvious, propose variants with Pros/Cons/Risks per variant and trade-offs across them. Quality over quantity — one well-reasoned variant is fine if the path is clear. When changing a workflow primitive (skill, command, agent) that has existing benchmark coverage, ALWAYS surface ≥2 variants before editing — the "obvious path" heuristic does not apply, since primitives have multiple valid attachment points (start, mid, end, separate phase) and each has different regression risk.
 - **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.
-- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY>/<MM>/<slug>.md` using GODS format — chat-only plans are lost between sessions.
+- **Plan Persistence**: After variant selection, save the detailed plan to `documents/tasks/<YYYY>/<MM>/<slug>.md` in the accepted task format, whose template the `write-gods-tasks` skill defines — chat-only plans are lost between sessions.
 - **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, web) to find the answer autonomously — unnecessary questions slow the workflow and signal lack of initiative.
 
 ## TDD Flow

@@ -65,7 +65,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 **beta (3):** `ai-ide-runner`, `delegate-to-ide` (cross-IDE bridge, see §3.17), `select-llm-model` (see §3.21) — standalone
 
-**core (10):**
+**core (11):**
 
 - `configure-deno-commands` — standalone
 - `epic` — standalone
@@ -77,19 +77,19 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `reflect-by-history` — standalone
 - `review` — generated from atom `review`
 - `setup-ai-ide-devcontainer` — standalone
+- `write-gods-tasks` — standalone; single source of the accepted task format
 
 **deno (2):** `cli`, `deploy` — standalone
 
 **devtools (6):** `engineer-command`, `engineer-hook`, `engineer-rule`,
 `engineer-skill`, `engineer-subagent`, `write-agent-benchmarks` — all standalone
 
-**engineering (18):** `analyze-context`, `browser-automation`, `deep-research`,
+**engineering (16):** `analyze-context`, `browser-automation`, `deep-research`,
 `diagnose-benchmark-failure`, `draw-mermaid-diagrams`,
 `engineer-ai-ide-plugin`, `engineer-plugin-hooks`,
 `engineer-plugin-marketplace`, `engineer-plugin-mcp`,
 `engineer-prompts-for-instant`, `engineer-prompts-for-reasoning`, `fix-tests`,
-`interactive-teaching-materials`,
-`manage-github-tickets`, `write-dep`, `write-gods-tasks`,
+`interactive-teaching-materials`, `write-dep`,
 `write-in-informational-style`, `write-prd` — all standalone
 
 **memex (3):** `ask`, `audit`, `save` — standalone
