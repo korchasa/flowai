@@ -1,6 +1,6 @@
 ---
 date: 2026-08-25
-status: in progress
+status: done
 implements:
   - FR-INIT
 ---
@@ -68,17 +68,16 @@ the agent, so this is a PRODUCT defect in the text, not an instrument fault.
 
 ## Definition of Done
 
-- [ ] FR-INIT: the four reds pass three runs each
+- [x] FR-INIT: the four reds pass three runs each
   - Benchmark: `agents-rules-tdd-cycle`, `agents-rules-functionality-preservation`,
     `agents-rules-fail-fast`, `agents-rules-contradictions-planning`
   - Evidence: `deno task acceptance-tests -f agents-rules -n 3 -p 3`
-  - Partial: 2 of 4 closed (`functionality-preservation` 3/3,
-    `contradictions-planning` 3/3); `tdd-cycle` 2/3, `fail-fast` 1/3.
-- [ ] FR-INIT: the five green siblings stay green in the same run
+  - All four 3/3 in the third round (2026-08-25).
+- [x] FR-INIT: the five green siblings stay green in the same run
   - Benchmark: `agents-rules-contradictions`, `-evidence-claims`, `-forward-motion`,
     `-stop-analysis`, `-traceability-placement`
   - Evidence: same command, same run
-  - Partial: 4 of 5 held 3/3; `stop-analysis` sits at 2/3 — see Results.
+  - All five 3/3 in the same run; 27 of 27 runs green, 0 errors, 0 warnings.
 - [x] Project baseline stays clean
   - Evidence: `deno task check` — 742 + 173 passed, 0 failed, 2026-08-25
 
@@ -153,3 +152,28 @@ Not moved:
 
 Stopping here per the second-failed-attempt rule rather than writing a third
 version of the same paragraph.
+
+## Round three (2026-08-25) — all nine green
+
+The remaining three were one defect, not three. `agents-rules-fail-fast` stayed
+at 1/3 through two wording rounds, and the STOP-ANALYSIS pass found why: the rule
+it needed sat at the end of the `Diagnosing Failures` section, phrased as the
+last step of a failure-diagnosis procedure. The scenario is not a diagnosis — the
+user asks to point a client at a corporate proxy — so the agent never entered
+that section. The same structural shape as the CHECK step, and the same shape the
+loop calls "never mentions it → never bound".
+
+The fix binds the rule to the moment instead of the section. The core rule
+"A missing input is a blocker, not a gap to fill" already existed at the top of
+the template and already triggered on what the CODE needs; it now also triggers
+on what the USER says — "when they say they do not remember, do not know, or do
+not have a value... this rule binds at that sentence, however ordinary the
+request around it looked" — and states that making the value configurable is not
+a way of not needing it. The duplicate paragraph in `Diagnosing Failures` became
+a pointer to it, which also removes the two-copies problem that let round one's
+elaboration of the VALUE case quietly unbind the missing-ARTEFACT case.
+
+Measured over all nine scenarios at `-n 3 -p 3`: 27 of 27 green, 0 errors,
+0 warnings, 67 minutes. `tdd-cycle` and `stop-analysis` came along from 2/3 to
+3/3 in the same run — some of that may be the edge rather than the edit.
+`deno task check`: 742 + 173 passed, 0 failed.
