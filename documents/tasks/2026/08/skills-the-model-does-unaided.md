@@ -88,7 +88,7 @@ exist. Applying it here would close the tests and leave the real question shut.
   - Test: `deno task acceptance-tests -f <skill>-trigger-pos -n 3`
   - Evidence: `deno run -A scripts/check-trigger-coverage.ts` exits 0 and no
     kept skill's positive is red
-- [ ] FR-UNIVERSAL.DISCLOSURE: every skill deleted or merged is gone from its
+- [x] FR-UNIVERSAL.DISCLOSURE: every skill deleted or merged is gone from its
       pack, the README catalog, and any composite that referenced it.
   - Evidence: `deno task check` exits 0 and
     `grep -rn '<deleted-skill>' framework/ README.md documents/` returns nothing
@@ -238,3 +238,29 @@ instrument faults.
   skill was measured.
 
 Both need a re-run once the host has memory free and the harness is committed.
+
+## The collision the move created, and the boundary that settled it
+
+Taking the format out of AGENTS.md handed the word "GODS" to `write-gods-tasks`
+alone, and `plan` lost its own positive: 1/3 on 2026-08-27, the two failed runs
+calling `Skill(write-gods-tasks)` and the passing one `Skill(plan)`. The queries
+overlap for a real reason — a planning request often names the format it wants —
+so the fix belongs in the descriptions, not in the query.
+
+`write-gods-tasks` now says what it is not for: weighing variants and critiquing
+a plan belong to the planning skill, which writes the file itself. That alone
+restored `plan` to 3/3 while the query still said "in GODS format". The query
+then lost those words as well, because naming a format is not what makes a
+request a planning request.
+
+Final numbers, three runs each, cache bypassed:
+
+- `plan-trigger` — 9/9, measured twice: once with the old query, once with the new.
+- `write-gods-tasks-trigger` — 9/9 after the boundary, 9/9 before it.
+- `draw-mermaid-diagrams-trigger` — 9/9.
+- `delegate-to-ide-trigger` — 9/9.
+- `fix-tests-trigger-pos-1` — 0/3, and that is the finding, not a defect to fix.
+
+One decision is still open: `fix-tests` has no reachable positive trigger. Keep
+it with a `noPositiveTrigger` marker, or delete it as `manage-github-tickets`
+was deleted. That is why the second DoD item stays unticked.

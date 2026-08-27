@@ -3,8 +3,16 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 /**
  * Positive trigger: the query asks, in the user's own words, for exactly what
- * this skill produces — a task file under the tasks role, GODS format,
- * variants, DoD.
+ * this skill produces — a task file under the tasks role, with variants and a
+ * DoD.
+ *
+ * It named the format until 2026-08-27 ("in GODS format"), and that was the
+ * wrong thing to measure. Once the format left AGENTS.md and became the sole
+ * subject of `write-gods-tasks`, the word routed there: 1/3, with the two
+ * failed runs calling `Skill(write-gods-tasks)` and the passing one
+ * `Skill(plan)`. Naming the format is not what a planning request is — the
+ * user asks for a plan, `plan` writes the file, and the format comes along
+ * because `plan` uses it. The query now asks only for the plan.
  *
  * The `documents/` tree is created because the premise has to be true for the
  * trigger question to mean anything. Without it the agent explored an empty
@@ -29,7 +37,7 @@ export const PlanTriggerPos1 = new class extends AcceptanceTestScenario {
   }
 
   userQuery =
-    "Before I start coding the new rate limiter, please plan the task properly — write the file under documents/tasks/ in GODS format with variants and DoD.";
+    "Before I start coding the new rate limiter, please plan the task properly — write the file under documents/tasks/ with variants and DoD.";
   checklist = [{
     id: "skill_invoked",
     description:
