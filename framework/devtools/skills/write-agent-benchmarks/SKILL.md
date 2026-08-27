@@ -1,6 +1,6 @@
 ---
 name: write-agent-benchmarks
-description: Create, maintain, and run evidence-based benchmarks for AI agents. Use when setting up testing infrastructure, writing new test scenarios, or evaluating agent performance.
+description: Build and run benchmarks that measure an AI AGENT's behaviour — scenarios, checklists, judged runs. Use when authoring or evaluating agent benchmark scenarios. Not for performance benchmarks of code (deno bench, criterion) or ordinary test suites — those measure a program, not an agent.
 ---
 
 # Universal Agent Benchmarking Skill

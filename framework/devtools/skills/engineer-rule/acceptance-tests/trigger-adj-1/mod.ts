@@ -7,6 +7,10 @@ export const EngineerRuleTriggerAdj1 = new class
   id = "engineer-rule-trigger-adj-1";
   name = "deno code-style scaffold (adjacent)";
   skill = "engineer-rule";
+  // The neighbour this query belongs to lives in another pack, and the runner
+  // mounts only `core` plus the scenario's own. Measured 2026-08-24: without
+  // this the agent had nothing to defer to and loaded `engineer-rule` itself.
+  extraPacks = ["typescript"];
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
     "Set up the standard Deno + TypeScript code-style guidelines in this project so the agent knows our linting and formatting conventions.";
