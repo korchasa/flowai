@@ -1,6 +1,6 @@
 ---
 date: 2026-08-20
-status: in progress
+status: done
 implements: [FR-ACCEPT.TRIGGER, FR-UNIVERSAL.DISCLOSURE]
 tags: [skills, triggers, framework-scope]
 related_tasks: [2026/08/fix-ship-gates-exposed-by-timeout.md]
@@ -82,7 +82,7 @@ exist. Applying it here would close the tests and leave the real question shut.
       procedure the model does not supply unaided.
   - Evidence: `grep -c '^## Verdict' documents/tasks/2026/08/skills-the-model-does-unaided.md`
     returns 5
-- [ ] FR-ACCEPT.TRIGGER: every skill kept has a green positive trigger, or a
+- [x] FR-ACCEPT.TRIGGER: every skill kept has a green positive trigger, or a
       `noPositiveTrigger` marker whose evidence cites a raw session ending
       `review_ready`.
   - Test: `deno task acceptance-tests -f <skill>-trigger-pos -n 3`
@@ -300,3 +300,38 @@ run is the whole suite, not the file you touched. The AGENTS template does not
 carry it — its CHECK step binds inside the TDD cycle, and repairing a red test
 is not that cycle. Deleting the skill therefore means moving that one line into
 the template, not dropping it.
+
+## Decision — fix-tests deleted, its one rule moved into the template
+
+Owner's call on 2026-08-27, on the evidence above. Four of the skill's five
+requirements are native behaviour; the fifth is one line, and it now lives where
+the situation actually reaches it.
+
+The template already said both things twice — "when a test fails, fix the source
+code, not the test" and "run all tests before finishing" — and neither bound.
+Both sit under `TDD Flow`, and the CHECK step that says "the suite is the whole
+project's, never the file you touched" is a step of that cycle. Repairing a test
+that was already red is not a cycle the agent entered, so the section never
+opened. This is the same shape as the `fail-fast` failure earlier in this branch:
+a rule filed under a heading whose entry condition does not match the moment it
+is needed.
+
+So the rule was placed in `Diagnosing Failures`, which does cover a red test, and
+bound to the moment of repair: after applying the fix, the re-run is the whole
+suite, not the test you were repairing — a precondition on calling the repair
+done, not a step inside the TDD cycle. Both the shipped template and this repo's
+own AGENTS.md carry it.
+
+Removed with the skill: `SKILL.md`, five scenarios and their fixtures, the README
+catalog line, the `engineering` entry in SDS (count 16 → 15), the pack
+description in `pack.yaml` and `framework/AGENTS.md`, the relative link from
+`engineer-plugin-marketplace/references/related-skills.md`, and the `implement`
+non-overlap clause in SRS. Six illustrative mentions in SDS, the benchmark
+authoring skill and this repo's AGENTS.md were repointed at skills that still
+exist.
+
+Two adjacent-negative scenarios named `fix-tests` as the skill to defer to —
+`investigate-trigger-adj-1` and `implement-trigger-adj-1`. Neither breaks: both
+checklists ask only that the skill under test stand down, and answering directly
+satisfies that. Their comments now say so, which is also what the measurement
+found: the agent repairs a red test itself.

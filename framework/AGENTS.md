@@ -21,7 +21,7 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 
 - `core` — Base commands (commit, plan, review, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
-- `engineering` — Procedural engineering knowledge (deep-research, fix-tests, etc.).
+- `engineering` — Procedural engineering knowledge (deep-research, write-prd, etc.).
 - `deno` — Deno-specific skills.
 - `typescript` — TypeScript-specific setup skills.
 - `memex` — Memex: long-term knowledge bank for AI agents (three skills: save, ask, audit).

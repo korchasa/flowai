@@ -221,7 +221,7 @@ With N=1, each query carries the full description-match weight for its class —
 
 - **Positive (`trigger-pos-1`):** a natural, short user query that matches the skill's description. **No `/skill-name` prefix** (that bypasses description-matching), no over-specified jargon, no hints at internal mechanics. Pick the phrasing a typical user would write — the least-jargonized form — so the test stresses description match, not exact wording.
 - **Adjacent-negative (`trigger-adj-1`):** a query for which a *different, neighboring* skill is the correct match. Pick the most-likely confusion candidate from the same pack or with overlapping vocabulary. Typical confusion patterns: a "fix this test" skill vs. a "review my diff" skill (overlap on "I broke something"); a single-task planner vs. a multi-phase epic planner (overlap on "plan"); a current-session reflection vs. a historical-sessions reflection (overlap on "reflect").
-- **False-use-negative (`trigger-false-1`):** a query inside the skill's general domain but with the wrong intent. Recommended patterns: surface vocabulary that matches but the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense; a fix-tests skill receiving a "speed up the test runner" perf request); reverse-intent traps (e.g., write *new* tests vs fix *failing* ones). **Do NOT use meta-questions about the skill itself** ("what does X cover?", "how does X work?", "when should I use X?") as false-use — under Claude Code these are legitimately answered by *reading* the skill's `SKILL.md`, so the agent will rightly load it and the judge will record activation. Treat meta-questions as positives or omit them.
+- **False-use-negative (`trigger-false-1`):** a query inside the skill's general domain but with the wrong intent. Recommended patterns: surface vocabulary that matches but the actual ask is something else (e.g., a planning skill receiving "plan" in a non-software-task sense; a bug-diagnosis skill receiving a "speed up the test runner" perf request); reverse-intent traps (e.g., write *new* tests vs fix *failing* ones). **Do NOT use meta-questions about the skill itself** ("what does X cover?", "how does X work?", "when should I use X?") as false-use — under Claude Code these are legitimately answered by *reading* the skill's `SKILL.md`, so the agent will rightly load it and the judge will record activation. Treat meta-questions as positives or omit them.
 
 ### Checklist contract
 
@@ -251,7 +251,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 export const TriggerPos1 = new class extends AcceptanceTestScenario {
   id = "<skill-id>-trigger-pos-1";
-  name = "<short label, e.g. 'natural fix-tests query'>";
+  name = "<short label, e.g. 'natural investigate query'>";
   skill = "<skill-id>";
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery = "<natural user query>";

@@ -1258,7 +1258,7 @@ Rules:
 
 ### FR-ATOM-IMPLEMENT: TDD Implement Atom — `implement` [ANC:fr:atom-implement]
 
-- **Description:** Model-invocable skill that drives the canonical TDD cycle (RED → GREEN → REFACTOR → CHECK, per [AGENTS.md § TDD Flow](../framework/AGENTS.md)) against a written plan's Solution section. Triggers on "implement under TDD per task plan" prompts without overlapping `plan` (planning), `review` (post-implement review), or `fix-tests` (existing-test repair). Source: `framework/atoms/implement.md`. Generated SKILL.md materialized by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts) per FR-SKILL-COMPOSE.
+- **Description:** Model-invocable skill that drives the canonical TDD cycle (RED → GREEN → REFACTOR → CHECK, per [AGENTS.md § TDD Flow](../framework/AGENTS.md)) against a written plan's Solution section. Triggers on "implement under TDD per task plan" prompts without overlapping `plan` (planning) or `review` (post-implement review). Source: `framework/atoms/implement.md`. Generated SKILL.md materialized by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts) per FR-SKILL-COMPOSE.
 - **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
 - **Acceptance verified by acceptance tests:** `implement-tdd-cycle-completes`, `implement-returns-to-red-on-check-failure`, `implement-trigger-pos-1`, `implement-trigger-adj-1`, `implement-trigger-false-1`. (Implementation deviates from the task's "consolidated mixed-1" plan to keep `check-trigger-coverage.ts` happy without an exemption.)
 - **Status:** [x]

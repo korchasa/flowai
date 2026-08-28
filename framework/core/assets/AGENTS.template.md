@@ -235,7 +235,7 @@ The goal is to identify the root cause, not to suppress the symptom. A quick wor
 
 1. Read the relevant code and error output before making any changes.
 2. Apply "5 WHY" analysis to find the root cause.
-3. Root cause is fixable → apply the fix, retry.
+3. Root cause is fixable → apply the fix, then re-run. **The re-run is the whole suite, not the test you were repairing** — this is a precondition on calling the repair done, not a step inside the TDD cycle: a test that was already red when you arrived is not a cycle you entered, so the CHECK step above never binds here. Narrowing the final command to the file you touched is the failure this exists to prevent, and it is the one that happens: the fix is local, so the check is made local too, and nothing you did not think about gets run.
 4. Second fix attempt failed → STOP. Output "STOP-ANALYSIS REPORT" (state, expected, 5-why chain, root cause, hypotheses). Wait for user help.
 
 When the root cause is outside your control (missing API keys/URLs, missing generator scripts, unavailable external services, wrong environment configuration) → this is the blocker rule at the top of this file, not a narrower case of it: STOP immediately and ask the user. Do not guess, do not invent replacements, do not create workarounds. A default value is an invented replacement, and so is a configurable alternative: if you would have to choose the fallback, you are guessing, and restructuring so the input is not needed yet is a workaround rather than a fix. **The test is authorization, not access** — being able to produce the missing thing yourself is not permission to add it. `Proactive Resolution` does not reach here; there is no fact to look up.

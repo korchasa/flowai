@@ -1,8 +1,9 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: fix-tests (repair pre-existing failing tests, no
-// plan involved). `implement` explicitly excludes this case in its
-// description.
+// Repairing pre-existing failing tests, with no plan involved: `implement`
+// explicitly excludes this case in its description. There is no neighbouring
+// skill to defer to — `fix-tests` was deleted on 2026-08-27 — so the passing
+// answer is the agent doing the repair itself without loading `implement`.
 export const ImplementTriggerAdj1 = new class extends AcceptanceTestScenario {
   id = "implement-trigger-adj-1";
   name = "fix existing failing tests (adjacent)";
