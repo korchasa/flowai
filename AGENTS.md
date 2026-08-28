@@ -4,7 +4,7 @@
 - Verify every change by running appropriate tests or scripts — never assume correctness without evidence.
 - Keep the project in a clean state: no errors, warnings, or issues in formatter and linter output. A broken baseline blocks all future work.
 - Follow the TDD flow described below. Skipping it leads to untested code and regressions.
-- Write all documentation in English, compressed style. Brevity preserves context window.
+- Write all documentation in English. Keep it complete and readable — see the Readability Floor below.
 - If you see contradictions in the request or context, raise them explicitly, ask clarifying questions, and stop. Do not guess which interpretation is correct. Do NOT resolve unilaterally even when the resolution seems obvious — "minor" contradictions in numbering, naming, or scope routinely hide intent the user did not state. Noting the contradiction in chat while still proceeding is NOT enough. The cost of asking is one round-trip; the cost of guessing wrong is reverting committed code.
 - **Forward motion after authorization**: once the user has authorized a plan (chosen a variant, agreed to a phase list, or just said "go"), execute it without re-confirming each step. Re-asking is appropriate ONLY when (a) a genuinely irreversible action surfaces that was NOT covered by the original authorization — force push to a shared branch, prod deploy, dropping a database table, sending an external message (Slack, email, PR merge), or any other external side-effect that cannot be undone via git — OR (b) new information surfaces that contradicts the authorized plan (failing precondition, ambiguity discovered mid-flight). "Action looks expensive" or "diff is large" are NOT valid triggers — local code changes are reversible. Test before asking: if the user can only answer "yes" to the question, the question is noise — proceed instead.
 - Code should follow "fail fast, fail clearly" — surface errors immediately with clear messages rather than silently propagating bad state. Unless the user requests otherwise.
@@ -206,15 +206,25 @@ When a task creates a new framework primitive, decide the subdir FIRST:
 
 Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
 
-### Compressed Style Rules (All Docs)
+### Readability Floor (All Docs)
 
 - No changelogs — docs reflect current state, not history.
 - English only (except tasks, which may use the user's language).
-- Summarize by extracting facts and compressing — no loss of information, just fewer words.
-- Every word must carry meaning — no filler, no fluff, no stopwords where a shorter synonym works.
 - Prefer compact formats: lists, tables, YAML, Mermaid diagrams.
-- Abbreviate terms after first use — define once, abbreviate everywhere.
-- Use symbols and numbers to replace words where unambiguous (e.g., `->` instead of "leads to").
+
+## Chat Output Style
+
+Chat replies only — not documents, code, or commit messages. The compact register of
+project documents must not carry over into chat.
+
+Follow plain language (ISO 24495-1) and the W3C COGA note "Making Content Usable"
+(https://www.w3.org/TR/coga-usable/). Use structure — lists, tables, Mermaid diagrams —
+wherever it carries meaning better than prose does.
+
+- Keep sentences under 25 words. Split a sentence that carries two different ideas.
+- Conclusion first: the result opens the paragraph, the reasoning follows.
+- A failure report states what happened and what to do next.
+- Name the concrete edit or command for each problem, not just what the tool wants.
 
 ## Planning Rules
 

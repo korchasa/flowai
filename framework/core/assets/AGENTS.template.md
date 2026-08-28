@@ -5,7 +5,7 @@
 - Verify every change by running appropriate tests or scripts — never assume correctness without evidence.
 - Keep the project in a clean state: no errors, warnings, or issues in formatter and linter output. A broken baseline blocks all future work.
 - Follow the TDD flow described below. Skipping it leads to untested code and regressions. **The failing test is your first edit** — write it before you touch the implementation file, not after. Task size is not an exemption: the cycle is skipped precisely on the changes that look too small to need it, and once the implementation is written nobody goes back to write the test. **This is a precondition on the edit, not a step inside a workflow you may or may not enter.** Before you open an implementation file in order to change it, the failing test for that change already exists. A request that reads as one small familiar action is the case this precondition is for — it is answered by writing the test, not by recognising the action and performing it.
-- Write all documentation in English, compressed style. Brevity preserves context window.
+- Write all documentation in English. Keep it complete and readable — see the Readability Floor below.
 - If you see contradictions in the request or context, raise them explicitly, ask clarifying questions, and stop. Do not guess which interpretation is correct. Do NOT resolve one unilaterally even when the resolution looks obvious — a reading that makes the conflicting requirements compatible is still your reading, not the author's intent. **Noticing the contradiction and proceeding anyway is not compliance.** Naming the conflict in your summary, or inventing a distinction the requirements never draw so that each one holds on its own branch, is the exact failure this rule exists to prevent. A reconciliation you had to construct is evidence of the contradiction, not a refutation of it. **The question is the deliverable** — coming back with the conflict and no code is a complete, correct answer to the request, not a failure to do the work. "Stopping would make the task impossible" is the signature of the situation this rule is for, not an exemption from it: if no single implementation satisfies every requirement at once, that IS the contradiction, and only the author can say which requirement gives way. The rule is not limited to which requirement wins: deciding what a requirement's TERM covers — what counts as a bypass, what counts as construction, which component owns a check — is the same question wearing a different hat, and reading more code never answers it. Nor is validity the test: a reconciliation can be architecturally sound, satisfy every requirement at once, and still be your reading rather than the author's. This is the one case the `Proactive Resolution` rule that follows does not cover — that rule is about facts you can look up, and neither which of two conflicting requirements was meant nor what its terms were meant to cover is in the codebase. The cost of asking is one round-trip; the cost of guessing wrong is reverting committed code.
 - **Proactive Resolution**: Before asking the user, exhaust available resources (codebase, docs, web) to find the answer autonomously — unnecessary questions slow the workflow and signal lack of initiative. This covers questions with a findable answer. It does NOT cover a contradiction between two requirements, nor what a requirement's terms were meant to include: neither is recorded anywhere you can read, so searching harder only produces a more confident guess. That case goes to the contradiction rule above and stops there.
 - **Forward motion after authorization**: once the user has authorized a plan (chosen a variant, agreed to a phase list, or just said "go"), execute it without re-confirming each step. Re-asking is appropriate ONLY when (a) a genuinely irreversible action surfaces that was NOT covered by the original authorization — force push to a shared branch, prod deploy, dropping a database table, sending an external message (Slack, email, PR merge), or any other external side-effect that cannot be undone via git — OR (b) new information surfaces that contradicts the authorized plan (failing precondition, ambiguity discovered mid-flight). "Action looks expensive" or "diff is large" are NOT valid triggers — local code changes are reversible. Test before asking: if the user can only answer "yes" to the question, the question is noise — proceed instead.
@@ -171,15 +171,25 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Status auto-derives from `## Definition of Done` checkbox count on every commit for non-superseded tasks (commit workflows handle this — never edit `status` manually mid-flight). `status: superseded` preserves provenance and is excluded from DoD derivation.
 - Directory is **NOT gitignored** — tasks are persistent records. Validated by `scripts/check-task-format.ts` (path regex, status enum, status↔DoD consistency).
 
-### Compressed Style Rules (All Docs)
+### Readability Floor (All Docs)
 
 - No changelogs — docs reflect current state, not history.
 - English only (except tasks, which may use the user's language).
-- Summarize by extracting facts and compressing — no loss of information, just fewer words.
-- Every word must carry meaning — no filler, no fluff, no stopwords where a shorter synonym works.
 - Prefer compact formats: lists, tables, YAML, Mermaid diagrams.
-- Abbreviate terms after first use — define once, abbreviate everywhere.
-- Use symbols and numbers to replace words where unambiguous (e.g., `→` instead of "leads to").
+
+## Chat Output Style
+
+Chat replies only — not documents, code, or commit messages. The compact register of
+project documents must not carry over into chat.
+
+Follow plain language (ISO 24495-1) and the W3C COGA note "Making Content Usable"
+(https://www.w3.org/TR/coga-usable/). Use structure — lists, tables, Mermaid diagrams —
+wherever it carries meaning better than prose does.
+
+- Keep sentences under 25 words. Split a sentence that carries two different ideas.
+- Conclusion first: the result opens the paragraph, the reasoning follows.
+- A failure report states what happened and what to do next.
+- Name the concrete edit or command for each problem, not just what the tool wants.
 
 ## Requirements Lifecycle (Plan → Develop → Review → Commit)
 

@@ -22,7 +22,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 
 **File Structure**: init produces a single `./AGENTS.md` file containing all sections:
 - Project rules, metadata, vision, architecture, key decisions
-- Documentation rules (SRS/SDS and task formats, compressed style, doc hierarchy)
+- Documentation rules (SRS/SDS and task formats, readability floor, chat output style, doc hierarchy)
 - Development commands (standard interface, detected commands)
 - Planning rules, TDD flow, code documentation rules
 </context>

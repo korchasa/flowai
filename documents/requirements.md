@@ -696,6 +696,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] `agents-rules-evidence-claims` — read code before fixing, cite evidence
   - [x] `agents-rules-traceability-placement` — code evidence in code (a SALP REF, `// [REF:fr:<id>]`), not in SRS; non-code evidence in SRS
   - [x] `agents-rules-forward-motion` — once user authorizes a multi-step plan, agent executes without re-confirming each step
+  - [x] `agents-rules-readability` — chat replies follow the readability floor: result first, sentences under 25 words, failure report names the next step
 - **Open (not yet implemented):**
   - [ ] `agents-rules-variant-analysis` — propose variants with pros/cons before coding
   - [ ] `agents-rules-proactive-resolution` — find answers in codebase, don't ask user
@@ -1341,6 +1342,13 @@ Rules:
 - **Description:** Diff-level review remains available but OPTIONAL (Model B): the `review` / `ship` / `review-and-commit` workflows MUST NOT block on human diff inspection. The agent offers the diff for optional inspection and proceeds on the decision-level verdict; the human MAY inspect any diff but is never forced to as a mandatory barrier. Source: `framework/atoms/review.md`.
 - **Tasks:** [vision-shift-decision-level](tasks/2026/06/vision-shift-decision-level-no-cognitive-debt.md)
 - **Acceptance verified by acceptance tests:** `review-decision-level-verdict` (shared scenario, distinct checklist item — same verdict-not-diff-walk execution path as FR-AI-CODE-REVIEW)
+- **Status:** [x]
+
+### FR-READABILITY: Readability Floor for Docs and Chat [ANC:fr:readability]
+
+- **Description:** The shipped `AGENTS.template.md` states a readability floor drawn from plain language (ISO 24495-1) and the W3C COGA note "Making Content Usable", and it no longer mandates a compressed style. Two blocks with distinct scope: `### Readability Floor (All Docs)` governs documents, `## Chat Output Style` governs chat replies only. The chat block MUST open with its scope sentence — measured on `claude-opus-5`, that block moves mean chat-sentence length from 32.9 to 19.3 words and the share of sentences over 25 words from 53 % to 22 %, while shortening the answer from 798 to 451 output tokens. A bare reference to the two standards is NOT sufficient (28.3 words, 53 % — indistinguishable from no rule); at least one checkable numeric rule is required. `Prefer compact formats: lists, tables, YAML, Mermaid` is retained from the former compressed rules: in a blind audit of a neutral technical article, structure was the reason the compressed rewrite outscored the plain-language rewrite (9/10 vs 8.5/10, 9/10 vs 7/10). No imperative-mood rule is included — it strips the acting subject from descriptive prose. The failure-report rule carries a second sentence ("Name the concrete edit or command for each problem, not just what the tool wants") — without it the agent restates what the tool demands and stops short of the step, which is the one criterion the `agents-rules-readability` scenario fails on the pre-change template. Shipped to users via `framework/core/assets/AGENTS.template.md`; mirrored in this repository's own `AGENTS.md`.
+- **Tasks:** [readability-floor-replaces-compressed](tasks/2026/08/readability-floor-replaces-compressed.md)
+- **Acceptance verified by acceptance tests:** `agents-rules-readability`
 - **Status:** [x]
 
 ### FR-DEVCONTAINER: AI Devcontainer Setup — setup-ai-ide-devcontainer [ANC:fr:devcontainer]
