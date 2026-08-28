@@ -209,8 +209,11 @@ writing "do not read the default paths" while naming them fails `check-skills`.
   concurrent runs. A foreground run past the tool's cap is killed mid-flight.
 - Host preflight: load, free swap, orphaned runners (`ps -Ao pid,etime,command |
   grep -E "runtests.py|benchmark.ts run"`). Under memory pressure `system_health`
-  aborts sessions and every result is noise; re-measuring a whole aborted column
-  is cheap, and on 2026-08-24 ten of eleven such failures were green on retry.
+  aborts sessions and every result is noise; re-measuring an aborted column is
+  cheap — on 2026-08-24 ten of eleven such failures were green on retry.
+- The verdict is the run log's `--- PASS RATES ---` block, not `report.html`.
+  The threshold is 2/3, so `[PASS]` covers a run that failed a critical item,
+  and a section whose verdict JSON you cannot scrape is not a red — read the log.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed. **Re-measure one GREEN sibling of every primitive you
