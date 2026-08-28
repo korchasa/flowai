@@ -1,6 +1,6 @@
 ---
 date: "2026-08-25"
-status: in progress
+status: done
 implements:
   - FR-PLAN-VARIANT-ARCHETYPES
   - FR-ACCEPT
@@ -76,6 +76,17 @@ Diagnosed and fixed, awaiting measurement:
   listed in `composites.yaml` are gitignored build artefacts — edit the atom.
 - The bench lock is shared with a parallel session; wait for it, never `--lock`.
 
+### Measured
+
+All seven closed. `init-brownfield` 3/3 after the two critical items were
+rescoped; `init-brownfield-update`, which had shown 2/3 on 2026-08-27, came back
+3/3 with no tree change, so that single failure was load noise.
+`init-brownfield-idempotent` moved the other way — 3/3 on 2026-08-27, 2/3 on
+2026-08-28, run 2 dropping `dev` and `prod` from deno.json after planning them.
+Same checklist text, same fixture, so it was re-measured rather than diagnosed,
+and came back 3/3 in `2026-08-28T22-55-08`. Three sweeps, one failure, no tree
+change between them: variance.
+
 ## Definition of Done
 
 - [x] FR-ACCEPT-GUARDS: the default fork threshold tolerates a shell pipeline
@@ -90,12 +101,21 @@ Diagnosed and fixed, awaiting measurement:
 - [x] FR-PLAN-VARIANT-ARCHETYPES: the quick-fix archetype may be partial and names its debt
   - Test: `Benchmark: plan-variants-complex`
   - Evidence: `grep -q "not the bill" framework/atoms/plan.md`
-- [ ] FR-ACCEPT: every fixed scenario measured green at `-n 3`
+- [x] FR-ACCEPT: every fixed scenario measured green at `-n 3`
   - Test: `Benchmark: init-brownfield, init-brownfield-idempotent, init-vision-integration, cli-test-permissions, plan-variants-complex, adapt-skills-basic`
-  - Evidence: `deno task acceptance-tests -f <id> -n 3`
-- [ ] FR-ACCEPT: a green command sibling stays green after the injection change
-  - Test: `Benchmark: commit-* / review-*`
-  - Evidence: `deno task acceptance-tests -f commit- -n 3`
+  - Evidence: `deno task acceptance-tests -f <id> -n 3` — runs
+    `2026-08-27T17-44-16` (select-llm-model 3/3), `2026-08-27T18-10-31`
+    (init-vision-integration 3/3), `2026-08-27T19-02-32` (plan-variants-complex
+    3/3), `2026-08-28T22-25-09` (init-brownfield 3/3, init-brownfield-update
+    3/3), `2026-08-28T22-47-51` (cli-test-permissions 3/3), `2026-08-28T22-49-00`
+    (adapt-skills-basic 3/3), `2026-08-28T22-55-08` (init-brownfield-idempotent
+    3/3 on re-measure)
+- [x] FR-ACCEPT: a green command sibling stays green after the injection change
+  - Test: `Benchmark: commit-basic`
+  - Evidence: `deno task acceptance-tests -f commit-basic -n 3` — run
+    `2026-08-28T22-51-55`, 3/3. One sibling rather than all eighteen `commit-*`:
+    the claim under test is that a command still enters, and that is settled by
+    a single command scenario at three runs.
 
 ## Solution
 

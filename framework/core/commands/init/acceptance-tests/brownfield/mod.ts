@@ -58,15 +58,28 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
+      // Rescoped 2026-08-27 to match the sibling `brownfield-idempotent`, which
+      // was repaired on 2026-08-20 and left this scenario behind. The dead
+      // version asked "Were development command scripts created (e.g.
+      // scripts/check.ts for Deno)?" and its partner asked whether deno.json
+      // held "tasks pointing to scripts/". The init skill forbids exactly that:
+      // "Do NOT create a `scripts/` directory with wrapper scripts if the
+      // project's command runner can handle commands directly" — and this
+      // fixture is a Deno project whose deno.json can. Run 1 of 3 on 2026-08-27
+      // wrote check/test/dev/prod as plain tasks, which is what the skill asks
+      // for, and both critical items failed it.
       id: "dev_commands_created",
       description:
-        "Were development command scripts created (e.g., scripts/check.ts for Deno)?",
+        "Does the project's OWN command runner end up carrying a real standard interface — check / test / dev / prod as tasks in deno.json, scripts in package.json, or targets in a Makefile — each wired to actual tooling rather than a stub echo? Either shape passes: the command inline in the task, or the task calling a script. This item does NOT adjudicate which; the skill bans wrapper scripts only when the runner can do the job directly, and that condition is not decidable from the artefacts.",
       critical: true,
     },
     {
+      // Distinct from the item above: this fixture ships deno.json with `test`
+      // and `check` already defined, so brownfield init must EXTEND that file
+      // rather than replace it or route around it.
       id: "deno_json_tasks_updated",
       description:
-        "Does deno.json contain tasks pointing to scripts/ (check, test, dev)?",
+        "Does deno.json still exist and carry the standard tasks, with the fixture's pre-existing `test` and `check` entries extended rather than dropped or replaced by a parallel mechanism?",
       critical: true,
     },
     {
