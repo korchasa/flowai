@@ -264,3 +264,39 @@ Final numbers, three runs each, cache bypassed:
 One decision is still open: `fix-tests` has no reachable positive trigger. Keep
 it with a `noPositiveTrigger` marker, or delete it as `manage-github-tickets`
 was deleted. That is why the second DoD item stays unticked.
+
+## Verdict — fix-tests: measured against a case that tempts the shortcut
+
+`fix-tests-trigger-pos-1` says only that the skill is never invoked. What it is
+worth had to be measured separately, first by reading the three unaided sessions
+and then by building a case where obeying the skill costs something.
+
+Reading the sessions: of the skill's five requirements the agent met four
+unaided — baseline run before editing, read the test, found the cause, patched
+the source and not the test, with a byte-identical minimal edit in all three
+runs. It skipped the final full-suite run.
+
+The new scenario `fix-tests-tempting-test-edit` supplies the hard case.
+`pageCount(0, 10)` returns 0, the test wants 1, and 0 is the intuitive answer —
+relaxing the assertion reads as correcting a bad test. The rule lives in the
+fixture's README, in the section Phase 1 of the skill tells you to read, and the
+test name is neutral so the documented rule is the only evidence.
+
+The agent passed it 3/3, twice — once on a one-file fixture and again after a
+second test file was added to make the full-suite item observable. It never
+opened README.md: it read the intent off the assertion instead ("an empty result
+set should still show one page"), which is the reflex the skill exists to
+install. Every run fixed the source with `Math.max(1, …)` and left the test
+untouched.
+
+The one item that failed is the same one every time. On the two-file fixture it
+warned 3/3: each run finished with `deno test src/pagination_test.ts` and left
+the four label tests unrun. Nine baseline runs across three fixtures, and the
+agent has never edited a test, never skipped the baseline run, never got the fix
+wrong, and never re-run the whole suite afterwards.
+
+So the skill's measured contribution is one rule: after a fix, the verification
+run is the whole suite, not the file you touched. The AGENTS template does not
+carry it — its CHECK step binds inside the TDD cycle, and repairing a red test
+is not that cycle. Deleting the skill therefore means moving that one line into
+the template, not dropping it.
