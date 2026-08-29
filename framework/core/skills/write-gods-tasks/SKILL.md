@@ -81,7 +81,10 @@ Every DoD item MUST pair with (a) an FR-ID and (b) a runnable acceptance referen
 
 ## Solution
 
-[Detailed step-by-step for SELECTED variant only. Filled AFTER user selects variant.]
+[Actionable step-by-step approach. Never left blank — a task file without a
+Solution is not written yet. When a planning workflow weighed variants and the
+user picked one, this covers that variant only; when no variant selection took
+place, it covers the approach you are proposing.]
 ```
 
 Frontmatter: `date` (YYYY-MM-DD; required), `status: to do | in progress | done |
@@ -131,8 +134,9 @@ workflows derive it from the `## Definition of Done` checkbox count.
 
 #### 4. Product Team Requests (Platform team)
 
-- **Goal:** Move the Alpha service to Docker to speed up deployment and simplify
-  support.
+- **Goal:** Cut Alpha's deployment time in half and stop updates from breaking,
+  so releases no longer block the product team. (Docker is the mechanism and
+  belongs in Solution, not here.)
 - **Overview:** Currently, Alpha runs on virtual machines, deployment takes a
   long time and causes errors during updates.
 - **Definition of Done:**
