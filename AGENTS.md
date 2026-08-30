@@ -42,7 +42,8 @@ Keep this file to project rules and tooling; do not restate the vision here
 ## Project tooling Stack
 - TypeScript
 - Deno
-- Python (benchmark fixtures only; no production scripts)
+- Python (benchmark fixtures, plus skill scripts that must run on the user's
+  machine with no toolchain of their own — see `framework/AGENTS.md`)
 
 ## Architecture
 - `framework/<pack>/`: Source of truth for product packs. Each pack has `pack.yaml` + two primitive dirs: `commands/` (user-only workflows) and `skills/` (agent-invocable capabilities). `agents/`, `hooks/`, `scripts/`, `assets/`, `acceptance-tests/` are optional.

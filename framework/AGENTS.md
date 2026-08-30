@@ -29,7 +29,7 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 
 ## Key Decisions
 
-- Scripts in `<pack>/skills/*/scripts/` and `<pack>/commands/*/scripts/` must be standalone-runnable (use `jsr:` specifiers, no import maps).
+- Scripts in `<pack>/skills/*/scripts/` and `<pack>/commands/*/scripts/` must be standalone-runnable: a Deno script uses `jsr:` specifiers and no import maps; a Python script uses the standard library only. Prefer Python for a script a skill step tells the user's agent to run — the framework may not assume Deno is installed there, and a script that reaches for the network to make up for it has already cost a measured run (`draw-mermaid-diagrams`, 2026-08-31: the old validator shelled out to `npx @mermaid-js/mermaid-cli`, the cold download blew a 120 s timeout, and the agent shipped a broken diagram).
 - Skills and commands follow [agentskills.io](https://agentskills.io/home) standard; the `commands/` vs `skills/` directory is the framework-level classifier for user-only vs agent-invocable intent.
 - Agent format is canonical (IDE-agnostic); flowai adds IDE-specific frontmatter during distribution.
 - Scaffolded artifact mapping declared in `pack.yaml` `scaffolds:` field (primitive-name → artifact paths; resolves the same whether the primitive lives under `commands/` or `skills/`).
