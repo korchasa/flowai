@@ -1,6 +1,6 @@
 ---
 name: draw-mermaid-diagrams
-description: Draw and edit Mermaid diagrams in Markdown. Use when the user wants to visualize processes, flows, sequences, or asks for diagrams.
+description: Draw and edit Mermaid diagrams in Markdown. Use when the user wants to visualize processes, flows, sequences, or asks for diagrams. Load it before writing any Mermaid block, including when you already know the syntax — knowing how is the usual reason it gets skipped.
 ---
 
 # Draw Mermaid Diagrams
