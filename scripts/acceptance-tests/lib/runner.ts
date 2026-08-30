@@ -2,7 +2,7 @@ import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { cliChatCompletion, ModelConfig } from "./llm.ts";
 import { evaluateChecklist } from "./judge.ts";
-import { formatJudgeEvidence } from "./evidence.ts";
+import { formatJudgeEvidence, truncateTrace } from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
@@ -694,18 +694,9 @@ async function gatherJudgeEvidence(
   // ACP transcripts are already human-readable — no NDJSON formatting needed.
   const formattedLogs = rawLogs;
 
-  // Truncate large sections to stay within judge model context limits.
-  // Keep start + end of logs (results are usually at the end).
-  const maxLogsLen = 150_000;
-  let truncatedLogs = formattedLogs;
-  if (formattedLogs.length > maxLogsLen) {
-    const half = Math.floor(maxLogsLen / 2);
-    truncatedLogs = formattedLogs.slice(0, half) +
-      "\n...[TRUNCATED " +
-      ((formattedLogs.length - maxLogsLen) / 1024).toFixed(0) +
-      "KB]...\n" +
-      formattedLogs.slice(-half);
-  }
+  // Fit the trace to the judge's context per turn, never by cutting the middle
+  // out of the conversation. See evidence.ts for the failure that cost.
+  const truncatedLogs = truncateTrace(formattedLogs);
   const maxFilesLen = 100_000;
   const truncatedFiles = generatedFiles.length > maxFilesLen
     ? generatedFiles.slice(0, maxFilesLen) + "\n...[TRUNCATED]..."
