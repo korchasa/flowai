@@ -60,71 +60,71 @@ Run this BEFORE anything else. Each signature below was paid for once.
 - **Exit 1, empty trace, ~10-20 s.** `OAuth session expired`, `Invalid API key`,
   `Usage credits required`: source `.env` before the sweep. `detectAuthFailure`
   throws only at zero tool calls — a scenario driving another IDE's CLI surfaces
-  THAT child's auth error, a true observation.
-- **Exit 124 with tool calls present.** A global timeout, and since 2026-08-22 a
-  warning rather than a blocker when the trace is non-empty. Ask whether the work
-  legitimately outlives the cap — `deep-research` does.
+  THAT child's error, a true observation.
+- **Exit 124 with tool calls present.** A global timeout, a warning rather than a
+  blocker when the trace is non-empty. Ask whether the work legitimately outlives
+  the cap — `deep-research` does.
 - **The judge says something is missing or wrong and the disk says otherwise.**
-  It only ever saw the evidence blob, so ask what that blob contained. Two known
-  holes: a file over 30 KB is elided mid-file (`renderFileForEvidence`), and until
-  2026-08-25 the evidence carried only `git diff <init>..HEAD` — so a workflow
-  that stops to ask before committing had its whole product invisible, and the
-  SETUP's own commit read as the agent's last word. That is how
-  `adapt-skills-basic` failed `adapted_to_python` with `poetry run pytest` sitting
-  in the file. Both are fixed; check the disk before believing the judge anyway.
+  It only ever saw the evidence blob, so ask what that blob contained. Three known
+  holes, all now fixed, all worth re-checking: a file over 30 KB elided mid-file
+  (`renderFileForEvidence`); evidence carrying only `git diff <init>..HEAD`, which
+  hid the whole product of a workflow that stops to ask before committing
+  (`adapt-skills-basic` failed with `poetry run pytest` sitting in the file); and
+  the TRACE cut head+tail, which deleted the middle of the conversation. Count the
+  turns before believing any "the agent never did X": `grep -c '^\[turn' judge-evidence.md`
+  against the raw session. On 2026-08-28 the judge saw 5 of 10 turns, none of the
+  four questions the agent actually asked survived, and `maintenance-tooling-relevance`
+  was diagnosed as a product defect for batching fixes it had not batched.
 - **The cache file is not the run.** `acceptance-tests/cache/<pack>/<id>/<ide>.json`
-  holds the last RECORDED verdict, often an older green one, and it contradicts
-  the `report.html` you are diagnosing without saying so. Take per-item verdicts
-  from the run — `✗ <item>` lines in `report.html` — never from the cache.
-- **Adjacent-negative fails, correct neighbour lives in another pack.** The
-  runner mounts `core` plus the scenario's pack, so there was nothing to defer to.
-  Set `extraPacks` (FR-ACCEPT.TRIGGER).
+  holds the last RECORDED verdict, often an older green one, and contradicts the
+  run without saying so. Take per-item verdicts from the run, never the cache.
+- **Adjacent-negative fails, correct neighbour lives in another pack.** The runner
+  mounts `core` plus the scenario's pack, so there was nothing to defer to. Set
+  `extraPacks` (FR-ACCEPT.TRIGGER).
 - **Checklist demands an artefact the primitive's own text forbids.** Read the
-  SKILL.md first: `init` forbids wrapper scripts when the project's runner
-  suffices, while its checklist demanded `scripts/check.ts`.
-- **The red scenario is untracked.** `git ls-files` does not list it: another
-  session's deliberate RED in a shared tree, not your regression. Never fix it.
+  SKILL.md first: `init` forbids wrapper scripts when the project's runner suffices,
+  while its checklist demanded `scripts/check.ts`.
+- **The red scenario is untracked.** `git ls-files` does not list it — another
+  session's deliberate RED, not your regression. Never fix it.
 - **A verdict that changed with no tree change.** Load noise — then ask what the
-  load EXPOSED, because re-measuring hides a deterministic cause as readily as it
-  clears a false one. On 2026-08-24 the watchdog's rss test had been dismissed as
-  noise for months; the buffer it measured was compressed away by the OS in under
-  a second, and every green re-run was a poll landing inside that window.
+  load EXPOSED, since re-measuring hides a deterministic cause as readily as it
+  clears a false one. The watchdog's rss test was dismissed as noise for months:
+  the OS compressed its buffer away in under a second, and every green re-run was
+  a poll landing inside that window.
 - **The turn ends while a dispatched subagent is still running.** The ACP loop
-  runs only while the emulator answers, so the result is never collected and the
-  summary never happens (`maintenance-basic` died at 228 s where siblings ran
-  950 s). The cure is in the primitive: "wait for all subagents" has to say that
-  waiting means COLLECTING, and that nothing is presented while one is
-  outstanding.
+  runs only while the emulator answers, so the result is never collected
+  (`maintenance-basic` died at 228 s where siblings ran 950 s). Cure it in the
+  primitive: "wait for all subagents" must say waiting means COLLECTING, and that
+  nothing is presented while one is outstanding.
 - **The fixture is not what the scenario thinks it is.** `git show <init-sha>:<file>`
-  in the sandbox is the exact input. `setup()` runs AFTER that commit, so whatever
-  it plants is an UNCOMMITTED change in the agent's own diff: on 2026-08-23 the
-  judge read an injected hierarchy as a line the agent had WRITTEN and failed the
-  item asking whether it had READ it — planted pre-existing state must be
-  committed. The fixture must also pass every deterministic checker (`deno fmt
-  --check`, `lint`, `test`, the Benchmark Fixture `deno.json`) or the agent stops
-  on THAT and never reaches the planted defect — three of ten scenarios on
-  2026-08-22, and `audit-clean` passed while `audit.ts` found 8 issues in the
-  input its checklist calls clean.
+  in the sandbox is the exact input. `setup()` runs AFTER that commit, so what it
+  plants is an UNCOMMITTED change in the agent's own diff — the judge read one as
+  a line the agent had WRITTEN and failed the item asking whether it had READ it;
+  planted pre-existing state must be committed. The fixture must also pass every
+  deterministic checker or the agent stops on THAT and never reaches the planted
+  defect (three of ten scenarios on 2026-08-22).
 - **Exit 144, no verdict, a `[fork-loop guard]` line.** The guard aimed at the
   BENCH (fixed by `adoptablePgid`), or at a legitimate shell pipeline (fixed by
   raising `maxDescendants` to 16 on 2026-08-25).
-- **The agent stopped instead of working (often zero tool calls, exit 0).** Read
-  the turn status: `review_ready` means it produced the artefact unaided;
-  `blocked` means it stopped for material the query never supplied — a malformed
-  scenario, not a routing miss. If the scenario carries a `userPersona`, check
-  `interactive`: `UserEmulator` is built only when that flag is true
-  (`runner.ts`), so the persona is dead text and the scenario is green only while
-  the skill skips asking.
+- **Zero tool calls.** At 0.0 s `system_health` refused the spawn and quoted its
+  reason INSIDE the checklist ERROR (`load avg N/CPU > 4/CPU`), reading as a
+  finding about the product; families dispatching subagents (`plan-*`,
+  `ship-task-*`) trip it at `-p 2` and above, so re-measure at `-p 1`. At full
+  duration and exit 0 the agent stopped instead: `review_ready` means it produced
+  the artefact unaided, `blocked` means the query never supplied what it asked
+  for. With a `userPersona`, check `interactive` — `UserEmulator` exists only when
+  that flag is true, so otherwise the persona is dead text.
 - **A `mocks` entry does not stand in for the whole pipeline.** `writeMockBin`
-  shadows the binary on `PATH`, so the canned text is the next pipe stage's
-  INPUT. A mock holding already-parsed output passes only while the agent skips
-  the documented pipe; the comment above it may still describe the retired hook.
-- **Every judge call fails, or a probe hangs into `aborted_streaming`.** Read
-  the agent's own text before blaming the CLI or its flags: `API Error: 529
-  Overloaded` sits there in plain words, and on 2026-08-24 it cost half an hour
-  of bisecting `--json-schema`. `grep -l "API Error: 5"` over a sweep bounds it.
+  shadows the binary on `PATH`, so the canned text is the next pipe stage's INPUT.
+  A mock holding already-parsed output passes only while the agent skips the pipe.
+- **Every judge call fails, or a probe hangs into `aborted_streaming`.** Read the
+  agent's own text before blaming the CLI: `API Error: 529 Overloaded` sits there
+  in plain words. `grep -l "API Error: 5"` over a sweep bounds it.
 - **A scenario at 2/3 passes the threshold and can still hold a real defect.**
-  Read the failing run. Two did on 2026-08-22, both product defects.
+  Read the failing run. A fix that MOVES a red to 2/3 has the same shape: it cured
+  one real cause and uncovered the next. Attempts on two different causes are not
+  two attempts at one, so STOP-ANALYSIS does not fire — but say which cause each
+  attempt addressed, or the count is unauditable.
 - **The rule was in the file and still did not fire.** First prove the text
   reached the agent — a green sibling sharing the artefact does it in one line.
   Then read the session for the shape. Never mentions it → never bound; bind it
@@ -148,16 +148,16 @@ Read in this order and stop as soon as the cause is unambiguous.
    `and .name=="Skill"` piped to `.input` for skill calls; subagent transcripts
    sit under `<uuid>/subagents/`):
    `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
-2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the
-   agent actually wrote settles claims no transcript reading can.
+2. The sandbox on disk (`readlink <run>/<scenario>/run-N/sandbox`) — what the agent
+   wrote settles claims no transcript reading can.
 3. The failed agent itself, when the diagnosis is about wording. Resume in place
    (`cd <sandbox> && HOME=<bench-home> claude -p --resume <uuid> "<question>"`)
-   and ask neutrally which phrase left room. On 2026-08-21 three runs named the
-   same defective sentence in one round, after three rounds of guessing had not:
-   the transcript shows what it did, the interview the words it justified it by.
-4. If the run dir was pruned, the transcript and the judge's per-item JSON
-   survive in `report.html` — parse with python, never grep the raw HTML, and
-   never `Read` a `.jsonl` (104 000 tokens for 44 lines).
+   and ask neutrally which phrase left room — three runs named the same defective
+   sentence in one round where three rounds of guessing had not. The transcript
+   shows what it did, the interview the words it justified it by.
+4. If the run dir was pruned, the transcript and per-item JSON survive in
+   `report.html` — parse with python, never grep raw HTML, and never `Read` a
+   `.jsonl` (104 000 tokens for 44 lines).
 5. The scenario file: what it asserts, and whether the query supplies what it
    demands. Then the primitive's own text — the atom under `framework/atoms/`,
    never the generated `SKILL.md`.
@@ -182,24 +182,22 @@ or `git restore`, which return the index rather than what you wrote.
 - **Instrument**: edit `scripts/acceptance-tests/lib/`. Extract the decision into
   a pure exported function and unit-test it in a file `deno task check` runs, NOT
   `runner_test.ts`, which `task-check.ts` ignores.
-- **Contract**: edit the scenario or its fixture, saying in the file what the old
+- **Contract**: edit the scenario or fixture, saying in the file what the old
   version held and why it was wrong.
 
 When the layer is a RULE that did not fire, two shapes decide whether the repair
 holds. Prefer precondition grammar to prohibition — "X is a precondition on Y,
 not a step you may or may not enter" binds where "you are NOT done until X" does
-not; two interviewed agents drew that contrast unprompted on 2026-08-25. And
-elaborate a shared paragraph on ALL its triggers or none: two sentences added
+not. And elaborate a shared paragraph on ALL its triggers or none: two sentences
 about a missing VALUE made the same paragraph stop binding for a missing SCRIPT,
 and a green scenario fell to 1/3 for a case I never touched.
 
 Every fix carries, in the file it touches, the measurement that justified it:
 date, runs, what the sessions showed. **Then grep the file for the NEW text —
-the script's exit code is not evidence the edit landed.** On 2026-08-24 one
-`replace` was computed and never applied, so the file carried a comment
-describing a change that was not there and a whole measurement round paid for it.
-A framework rule may not name a project's doc paths either (`FR-UNIVERSAL.DOC-SCHEMA`):
-writing "do not read the default paths" while naming them fails `check-skills`.
+the script's exit code is not evidence the edit landed.** One `replace` was
+computed and never applied, and a whole measurement round paid for it. A
+framework rule may not name a project's doc paths either
+(`FR-UNIVERSAL.DOC-SCHEMA`) — that fails `check-skills`.
 
 ## Phase 4 — Verify
 
@@ -208,18 +206,17 @@ writing "do not read the default paths" while naming them fails `check-skills`.
   takes ONE substring, last wins; `-p` sets concurrency; the lock forbids
   concurrent runs. A foreground run past the tool's cap is killed mid-flight.
 - Host preflight: load, free swap, orphaned runners (`ps -Ao pid,etime,command |
-  grep -E "runtests.py|benchmark.ts run"`). Under memory pressure `system_health`
-  aborts sessions and every result is noise; re-measuring an aborted column is
-  cheap — on 2026-08-24 ten of eleven such failures were green on retry.
+  grep -E "runtests.py|benchmark.ts run"`). Under pressure `system_health` aborts
+  sessions and every result is noise; ten of eleven such failures retried green.
 - The verdict is the run log's `--- PASS RATES ---` block, not `report.html`.
   The threshold is 2/3, so `[PASS]` covers a run that failed a critical item,
   and a section whose verdict JSON you cannot scrape is not a red — read the log.
 - An instrument fix is verified by its unit test AND by the scenario it misread;
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed. **Re-measure one GREEN sibling of every primitive you
-  edited** — that guard caught a scenario dropping 3/3 to 1/3 on 2026-08-24.
+  edited** — that guard caught a scenario dropping 3/3 to 1/3.
 - Name what the green number covers: a rule phrased "if you see X" binds at every
-  stage while the suite holds one, so "3/3" reads as general when it is not.
+  stage while the suite holds one, so "3/3" reads general when it is not.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
@@ -227,8 +224,8 @@ writing "do not read the default paths" while naming them fails `check-skills`.
 ## Phase 5 — Record and commit
 
 - Update the docs the change maps to (AGENTS.md Documentation Map): an instrument
-  change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When a doc records
-  the behaviour you are changing as deliberate, say so and ask.
+  change in SDS §3.4, a trigger lesson in FR-ACCEPT.TRIGGER. When a doc calls the
+  behaviour you are changing deliberate, say so and ask.
 - Check `git diff --cached --stat` in a SEPARATE tool call, then commit by
   explicit paths. The tree is shared with other sessions.
 - The commit message states what was wrong, what the evidence was, and what
@@ -249,12 +246,12 @@ command, path or flag that changed under you.
 already here; a finding about the PRODUCT rather than about diagnosing it; a run
 that went well.
 
-**Budget**: 270 lines, and this is the fifth raise (240 → 250 → 255 → 260 → 270
-across 2026-08-24/25). The ratchet is the failure the budget exists to prevent,
-so the number stops here: the next addition DISPLACES a bullet. Compress first,
-never as a fallback — two bullets on one failure shape are one bullet, and two
-such merges paid for two new signatures on 2026-08-25. Commit the amendment with the work that produced it and say what was
-learned, not that the skill was updated.
+**Budget**: 270 lines, raised five times (240 → 270 across 2026-08-24/25) and
+never again. The ratchet is the failure the budget exists to prevent, so the next
+addition DISPLACES a bullet. Compress first, never as a fallback: two bullets on
+one failure shape are one bullet, and on 2026-08-30 that merge paid for three new
+signatures at no net cost. Commit the amendment with the work that produced it
+and say what was learned, not that the skill was updated.
 
 ## Verification
 
