@@ -22,11 +22,19 @@ export const InitBrownfieldIdempotentBench = new class
 
   userQuery = "/init";
 
+  // 2026-08-30: the persona forbade the very act `dev_commands_created` scores.
+  // The dead version said "When shown diffs, decline all changes (say 'no' to
+  // applying diffs)" — but deno.json already exists in the fixture, so wiring
+  // check/dev/prod into it IS a diff, and an agent that took the instruction
+  // literally ("just create any missing documents") failed the item for obeying
+  // the user. The premise of this scenario is that AGENTS.md survives a re-run,
+  // not that nothing may be written at all; the refusal is now scoped to that
+  // one file.
   userPersona =
     `You are a developer running init on a project that already has AGENTS.md.
 When the agent detects existing components, tell it to 'create missing components but preserve existing AGENTS.md'.
-When shown diffs, decline all changes (say 'no' to applying diffs).
-Confirm all other actions like creating missing documents.`;
+When shown a diff to AGENTS.md, decline it — that file stays exactly as it is.
+Approve every other change, including creating the missing documents and adding the missing standard commands (check, dev, prod) to deno.json.`;
 
   checklist = [
     {
