@@ -14,8 +14,8 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * Scenario setup:
  * 1. `.claude/assets/AGENTS.template.md` is committed and unchanged
  *    (no git diff)
- * 2. Project `AGENTS.md` is missing the "Proactive Resolution" planning
- *    rule that IS present in the template
+ * 2. Project `AGENTS.md` is the rendered template with the single
+ *    "Proactive Resolution" bullet removed — nothing else differs
  * 3. No other files changed — clean working tree except for the
  *    intentional artifact drift
  * 4. Agent must compare templates vs artifacts unconditionally
@@ -50,44 +50,40 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
       "Agent compares templates against project artifacts despite clean working tree, finds missing Proactive Resolution rule in AGENTS.md",
   };
 
+  /**
+   * The artifact is the RENDERED template with exactly one rule cut out.
+   *
+   * Until 2026-08-29 this wrote a 25-line hand-made AGENTS.md instead. That
+   * stub was accurate when the template was small; the template has since
+   * grown past 30 KB, so the drift under test stopped being "one missing rule"
+   * and became "most of the file is absent". In the sweep of 2026-08-28 the
+   * agent reported the entire leading `Core Project Rules` block missing — 22
+   * rules, Proactive Resolution among them — which is the correct reading of
+   * that fixture and fails an item asking for one rule by name. Deriving the
+   * artifact from the template keeps the single-rule premise true however far
+   * the template grows.
+   */
   override async setup(sandboxPath: string) {
-    // --- Write AGENTS.md (project artifact) MISSING "Proactive Resolution" ---
-    await Deno.writeTextFile(
-      join(sandboxPath, "AGENTS.md"),
-      [
-        "# MyProject",
-        "",
-        "## Project tooling Stack",
-        "- TypeScript, Deno",
-        "",
-        "## Planning Rules",
-        "",
-        "- **Environment Side-Effects**: Changes to infra/DB/external services → plan MUST include migration/sync/deploy steps.",
-        "- **Verification Steps**: Plan MUST include specific verification commands.",
-        "- **Functionality Preservation**: Refactoring/modifications → run existing tests before/after.",
-        "- **Data-First**: Integration with external APIs/processes → inspect protocol & data formats BEFORE planning.",
-        "- **Architectural Validation**: Complex logic changes → visualize event sequence.",
-        "- **Variant Analysis**: Non-obvious path → propose variants with Pros/Cons/Risks.",
-        "- **User Decision Gate**: Do NOT detail implementation plan until user explicitly selects a variant.",
-        "- **Plan Persistence**: After variant selection, save the detailed plan to documents/tasks/.",
-        "",
-        "## TDD Flow",
-        "",
-        "1. **RED**: Write a failing test.",
-        "2. **GREEN**: Write minimal code to pass the test.",
-        "3. **REFACTOR**: Improve code and tests without changing behavior.",
-        "4. **CHECK**: Run fmt, lint, and full test suite.",
-        "",
-      ].join("\n"),
+    const agentsPath = join(sandboxPath, "AGENTS.md");
+    const rendered = await Deno.readTextFile(agentsPath);
+    const lines = rendered.split("\n");
+    const idx = lines.findIndex((l) =>
+      l.startsWith("- **Proactive Resolution**:")
     );
+    if (idx === -1) {
+      throw new Error(
+        "asset-drift-no-sync: the template no longer carries a line starting " +
+          '"- **Proactive Resolution**:" — the fixture cannot plant its drift. ' +
+          "Point the scenario at whichever rule the template does carry.",
+      );
+    }
+    lines.splice(idx, 1);
+    await Deno.writeTextFile(agentsPath, lines.join("\n"));
 
-    // .claude/assets/ already has templates (from framework copy by runner).
-    // Commit everything — clean working tree.
+    // Commit everything — the working tree must be clean, so the only drift
+    // lives in committed state.
     await runGit(sandboxPath, ["add", "-A"]);
     await runGit(sandboxPath, ["commit", "-m", "Initial sync with all assets"]);
-
-    // Working tree is now CLEAN. No git diff.
-    // But AGENTS.md is missing "Proactive Resolution" from the template.
   }
 
   userQuery =
