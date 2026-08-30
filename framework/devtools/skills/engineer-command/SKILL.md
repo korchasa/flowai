@@ -246,7 +246,7 @@ Follow these steps in order, skipping only if there is a clear reason why they a
 
 ### Step 1: Understanding the Command with Concrete Examples
 
-Skip this step only when the command's usage patterns are already clearly understood. It remains valuable even when working with an existing command.
+Skip this step only when concrete user utterances are already on record — the words someone would actually type to invoke the command. A familiar domain is not that, and neither is a list of capability areas: "starting/stopping services, viewing logs, rebuilding containers, checking health" is a feature spec, while "bring up just the db", "why is my api container restarting?" and "rebuild after I changed the Dockerfile" are examples. The difference decides the `description` field, which is the only thing that makes the command trigger at all — a description written from domain knowledge instead of from validated utterances is the substitution this step exists to prevent. Given a feature spec, either ask what the user would say to trigger the command, or draft the utterances yourself and have them confirmed before moving on. It remains valuable even when working with an existing command.
 
 To create an effective command, clearly understand concrete examples of how the command will be used. This understanding can come from either direct user examples or generated examples that are validated with user feedback.
 
