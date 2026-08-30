@@ -182,12 +182,12 @@ When proposing a fix, classify *where* it belongs:
    - **What happened**: Full story with quoted tool calls/errors. A reader who never saw the transcript must get the complete picture.
    - **Impact**: Measurable cost — tokens/lines wasted, time lost, errors/regressions introduced, downstream effects.
    - **Root cause**: Why the agent made this mistake. What knowledge/rule/context was missing.
-   - **Proposed fix**: (a) **Where** — exact file path + section. (b) **Draft content** — ready-to-paste text. (c) **Why this works** — how it addresses the root cause.
+   - **Proposed fix**: (a) **Where** — exact file path + section. (b) **Draft content** — the literal text to paste and nothing else: the rule sentence, the code comment, the hook body. A sentence ABOUT the change is not draft content — "consider adding a pre-commit hook" names an intention, the hook's own config is the artefact. If you cannot write the artefact, the fix is not ready: report the finding without a Proposed fix rather than putting a suggestion in the draft slot. (c) **Why this works** — how it addresses the root cause.
    - **Recurrence risk**: HIGH/MEDIUM/LOW + specific trigger scenarios + frequency.
 
    **Quality bar**: Remove the title — a reader should still understand what happened, why it matters, and what to do. If any section would make a reader ask "what does this mean?" — expand it.
 
-   **Anti-patterns**: one-line sections (`Impact: 500 lines wasted` — wasted how?); bare step references (`What happened: steps 5-7`); actionless fixes (`Fix: check similar code` — what artifact enforces this?); vague locations (`Where: AGENTS.md` — which section?).
+   **Anti-patterns**: one-line sections (`Impact: 500 lines wasted` — wasted how?); bare step references (`What happened: steps 5-7`); actionless fixes (`Fix: check similar code` — what artifact enforces this?); vague locations (`Where: AGENTS.md` — which section?); drafts that describe the change instead of being it (`Draft: consider adding a hook that runs the suite`, `the existing rule should be more prominent`). The bar is per finding, not per report: one finding carrying a suggestion in its draft slot spoils the section, however complete the other four are.
 
    **Example:**
 
