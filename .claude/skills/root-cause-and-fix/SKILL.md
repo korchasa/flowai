@@ -45,11 +45,7 @@ fix attempt for one failure fails — then emit a STOP-ANALYSIS REPORT.
 6. **Correct the record where the wrong claim lives.** A comment that encoded a
    wrong diagnosis costs the next reader a whole investigation — rewrite it in
    place with what the evidence shows, and keep the retracted version visible.
-7. **Distinguish variance from regression.** A real defect fails the same way
-   three runs in a row; one sweep disagreeing with the next on an unchanged tree
-   is load noise. Re-measure — but name the mechanism before settling on noise,
-   because a flake with a mechanism is a defect that load merely uncovers.
-8. **This file is an output of the loop.** Rules 4 and 6 apply to it too: a
+7. **This file is an output of the loop.** Rules 4 and 6 apply to it too: a
    signature that proves wrong gets corrected in place, and what the loop learns
    gets written back (Phase 6). A lesson left in chat is lost.
 
@@ -86,11 +82,11 @@ Run this BEFORE anything else. Each signature below was paid for once.
   while its checklist demanded `scripts/check.ts`.
 - **The red scenario is untracked.** `git ls-files` does not list it — another
   session's deliberate RED, not your regression. Never fix it.
-- **A verdict that changed with no tree change.** Load noise — then ask what the
-  load EXPOSED, since re-measuring hides a deterministic cause as readily as it
-  clears a false one. The watchdog's rss test was dismissed as noise for months:
-  the OS compressed its buffer away in under a second, and every green re-run was
-  a poll landing inside that window.
+- **A verdict that changed with no tree change.** Load noise — a real defect fails
+  the same way three runs running. Then ask what the load EXPOSED: re-measuring
+  hides a deterministic cause as readily as it clears a false one. The watchdog's
+  rss test was dismissed as noise for months, while every green re-run was a poll
+  landing inside the second before the OS compressed its buffer away.
 - **The turn ends while a dispatched subagent is still running.** The ACP loop
   runs only while the emulator answers, so the result is never collected
   (`maintenance-basic` died at 228 s where siblings ran 950 s). Cure it in the
@@ -215,8 +211,12 @@ framework rule may not name a project's doc paths either
   a product fix, against the raw sessions and the sandbox. The number has to move
   for the reason claimed. **Re-measure one GREEN sibling of every primitive you
   edited** — that guard caught a scenario dropping 3/3 to 1/3.
-- Name what the green number covers: a rule phrased "if you see X" binds at every
-  stage while the suite holds one, so "3/3" reads general when it is not.
+- Name what the green number covers, and build the task to cover it. A rule
+  phrased "if you see X" binds at every stage while the suite holds one, so "3/3"
+  reads general when it is not. An A/B asking whether a primitive still earns its
+  place must exercise EVERY hazard it addresses: a one-hazard task the bare model
+  already handles returned 3/3 against 3/3 on 2026-08-30 and read as "the
+  primitive changes nothing"; a four-hazard task split the arms 0/3 to 3/3.
 - `deno task check` before every commit. Its verdict is the final
   `N passed | M failed` line; the three `=== FAIL deno eval Deno.exit(...)` lines
   are intentional fixtures.
