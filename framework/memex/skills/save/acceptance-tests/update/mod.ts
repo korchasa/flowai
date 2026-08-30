@@ -7,6 +7,16 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  *  - update existing pages with new SALP REFs (backlink audit)
  *  - update pages/index.md
  *  - append log.md
+ *
+ * Fixture migrated to SALP on 2026-08-29. It was the last memex fixture still
+ * telling the agent "Internal links: `[[slug]]` only — never standard markdown
+ * links", while the `save` skill, the schema asset and the ask/audit fixtures
+ * had all moved to `[REF:mx-<type>:<slug>]`. In the sweep of 2026-08-28 the
+ * agent hit that head-on, stopped to ask which format governs — the behaviour
+ * the project instructions require of it — and wrote nothing, so 7 of the 8
+ * items failed on one cause. The fixture's AGENTS.md is now a verbatim copy of
+ * `framework/memex/assets/AGENTS.md`, which is what a memex built by `save`
+ * actually contains, and the seeded pages carry anchors and SALP REFs.
  */
 export const MemexSaveUpdateBench = new class extends AcceptanceTestScenario {
   id = "save-update";

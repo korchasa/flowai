@@ -4,18 +4,18 @@ type: person
 status: active
 tags: [markup-languages, person]
 ---
-# John Gruber
+# John Gruber [ANC:mx-person:john-gruber]
 
-Creator of [[markdown]]. Writer at Daring Fireball.
+Creator of [REF:mx-concept:markdown | Markdown]. Writer at Daring Fireball.
 
 ## Key Contributions
 
-- Designed the [[markdown]] syntax in 2004.
+- Designed the [REF:mx-concept:markdown | Markdown] syntax in 2004.
 - Wrote the original Markdown.pl Perl reference implementation.
 
 ## See Also
 
-- [[markdown]]
+- [REF:mx-concept:markdown]
 
 ## Sources
 

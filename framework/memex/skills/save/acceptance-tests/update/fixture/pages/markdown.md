@@ -4,9 +4,9 @@ type: concept
 status: active
 tags: [markup-languages]
 ---
-# Markdown
+# Markdown [ANC:mx-concept:markdown]
 
-A plain-text formatting syntax that converts to HTML, created by [[john-gruber]] in 2004.
+A plain-text formatting syntax that converts to HTML, created by [REF:mx-person:john-gruber | John Gruber] in 2004.
 
 ## Details
 
@@ -14,7 +14,7 @@ Markdown is widely used on GitHub, Stack Overflow, Reddit, and Obsidian. The ori
 
 ## See Also
 
-- [[john-gruber]]
+- [REF:mx-person:john-gruber]
 
 ## Counter-Arguments and Gaps
 
