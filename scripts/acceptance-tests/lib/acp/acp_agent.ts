@@ -133,7 +133,11 @@ export class AcpAgent {
       getResponse: (messages: Message[]) => Promise<string | null>;
     },
   ): Promise<AcpAgentResult> {
-    // Pre-flight health gate (FR-ACCEPT-GUARDS), no env-var bypass.
+    // Pre-flight health gate (FR-ACCEPT-GUARDS), no env-var bypass. This is
+    // the LAST resort: both callers run `waitForHealthy` before their clock
+    // starts, so arriving here unhealthy means the host turned in the gap.
+    // Refusing here is still right — waiting inside this method would be
+    // eaten by the caller's timeout race and reappear as a 124.
     try {
       const h = await assertHealthy(
         undefined,

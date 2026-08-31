@@ -34,6 +34,10 @@
 import { join, resolve } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
+import {
+  SPAWN_WAIT_TIMEOUT_MS,
+  waitForHealthy,
+} from "@acceptance-tests/system_health.ts";
 import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 import { createAdapter } from "@acceptance-tests/adapters/mod.ts";
 import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
@@ -371,6 +375,19 @@ async function runWithTimeout(
   timeoutMs: number,
   operator?: Operator,
 ): Promise<{ code: number; logs: string }> {
+  // Same reason as the acceptance runner: wait out host pressure BEFORE the
+  // session budget starts, so a transient shortage costs wall-clock instead of
+  // an instance. The gate inside AcpAgent.run() can only refuse.
+  await waitForHealthy(undefined, "benchmark session", {
+    timeoutMs: SPAWN_WAIT_TIMEOUT_MS,
+    onWait: (reason, waitedMs) =>
+      console.log(
+        `  [health] waiting ${
+          (waitedMs / 1000).toFixed(0)
+        } s so far — ${reason}`,
+      ),
+  });
+
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timer = setTimeout(

@@ -13,6 +13,7 @@ import {
   DETERMINISTIC_SKILL_CHECK_IDS,
 } from "./skill_invocation.ts";
 import { UserEmulator } from "./user_emulator.ts";
+import { SPAWN_WAIT_TIMEOUT_MS, waitForHealthy } from "./system_health.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { renderAgentsMd } from "./template.ts";
 import {
@@ -513,6 +514,26 @@ async function runAgentWithTimeout(
   sandboxPath: string,
   options: RunnerOptions,
 ): Promise<AgentRunOutcome> {
+  // Wait out memory or CPU pressure BEFORE the clock starts. The gate inside
+  // AcpAgent.run() can only refuse, and a refusal reaches the judge as an
+  // empty trace it scores as a product failure — four scenarios of the
+  // 2026-08-31 sweep were lost that way. Waiting here costs the sweep minutes
+  // and costs the scenario nothing: `start` and the global timeout below both
+  // begin after the host is fit to spawn.
+  await waitForHealthy(
+    undefined,
+    scenario.skill ? `${scenario.skill}/${scenario.id}` : scenario.id,
+    {
+      timeoutMs: SPAWN_WAIT_TIMEOUT_MS,
+      onWait: (reason, waitedMs) =>
+        console.log(
+          `  [health] waiting ${
+            (waitedMs / 1000).toFixed(0)
+          } s so far — ${reason}`,
+        ),
+    },
+  );
+
   console.log("  Starting agent interaction...");
   const start = performance.now();
   const fullPrompt = scenario.userQuery;
