@@ -36,7 +36,7 @@ export const FlowAdaptAgentsBasicBench = new class
         message: "Initial sync with generic agents",
         files: [
           ".flowai.yaml",
-          ".claude/agents/console-expert.md",
+          ".codex/agents/console-expert.md",
         ],
       },
     ],
@@ -51,8 +51,8 @@ export const FlowAdaptAgentsBasicBench = new class
       'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
     );
 
-    // Create .claude/agents/ with generic (upstream) agent
-    const agentsDir = join(sandboxPath, ".claude", "agents");
+    // Create .codex/agents/ with generic (upstream) agent
+    const agentsDir = join(sandboxPath, ".codex", "agents");
     await Deno.mkdir(agentsDir, { recursive: true });
 
     const genericAgent = `---
@@ -101,7 +101,7 @@ You are a console expert. Execute complex console tasks without modifying code.
     {
       id: "scanned_agents",
       description:
-        "Did the agent scan installed agents in .claude/agents/ to find flowai-* files?",
+        "Did the agent scan installed agents in .codex/agents/ to find flowai-* files?",
       critical: true,
     },
     {

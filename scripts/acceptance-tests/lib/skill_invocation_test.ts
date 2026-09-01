@@ -121,3 +121,53 @@ Deno.test("detectSkillInvocation: substring skill names do not cross-match", () 
     false,
   );
 });
+
+// codex has no Skill tool: codex-acp lists the installed skills in the prompt
+// and the model loads one by reading its SKILL.md from the shell. Captured on
+// 2026-09-01 (epic-trigger-pos-1, gpt-5.6-terra): `kind: "execute"`,
+// `rawInput: { command: "NO_COLOR=1 sed -n '1,240p' <sandbox>/.codex/skills/epic/SKILL.md", cwd }`.
+function codexShellRead(command: string): CapturedToolCall {
+  return {
+    toolCallId: "tc-exec",
+    title: command,
+    kind: "execute",
+    rawInput: { command, cwd: "/sandbox" },
+  };
+}
+
+Deno.test("detectSkillInvocation: codex loads a skill by reading its SKILL.md from the shell", () => {
+  const calls = [
+    codexShellRead(
+      "NO_COLOR=1 sed -n '1,240p' /private/tmp/flowai-bench/run-1/sandbox/.codex/skills/epic/SKILL.md",
+    ),
+  ];
+  assertEquals(detectSkillInvocation(calls, "epic"), true);
+  assertEquals(
+    detectSkillInvocation(
+      [codexShellRead("cat .codex/skills/plan/SKILL.md")],
+      "plan",
+    ),
+    true,
+  );
+});
+
+Deno.test("detectSkillInvocation: a shell read of another skill's SKILL.md is not this skill", () => {
+  const calls = [codexShellRead("cat .codex/skills/plan/SKILL.md")];
+  assertEquals(detectSkillInvocation(calls, "epic"), false);
+  // `epic` inside a longer skill name must not cross-match either.
+  assertEquals(
+    detectSkillInvocation([
+      codexShellRead("cat .codex/skills/epic-review/SKILL.md"),
+    ], "epic"),
+    false,
+  );
+});
+
+Deno.test("detectSkillInvocation: a shell sweep over every skill is discovery, not invocation", () => {
+  const calls = [
+    codexShellRead("cat .codex/skills/*/SKILL.md"),
+    codexShellRead("find .codex/skills -name SKILL.md"),
+    codexShellRead("ls .codex/skills/epic"),
+  ];
+  assertEquals(detectSkillInvocation(calls, "epic"), false);
+});

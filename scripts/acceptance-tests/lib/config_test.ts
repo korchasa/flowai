@@ -64,3 +64,24 @@ Deno.test("loadConfig - should throw error if file not found (fail fast)", async
     "Configuration file not found",
   );
 });
+
+Deno.test("acceptance-tests/config.json: every arm runs on codex — agent and judge alike", async () => {
+  const config = await loadConfig("acceptance-tests/config.json");
+  assertEquals(config.default_ides, ["codex"]);
+  const codexModel = /^(gpt[-.]|o\d|codex)/i;
+  for (const [ide, section] of Object.entries(config.ides)) {
+    assertEquals(
+      codexModel.test(section.judge.model),
+      true,
+      `${ide}: judge model "${section.judge.model}" is not a codex model`,
+    );
+    assertEquals(
+      typeof section.judge.effort,
+      "string",
+      `${ide}: judge needs a pinned reasoning effort`,
+    );
+  }
+  const codex = getIdeConfig(config, "codex");
+  assertEquals(codexModel.test(codex.default_agent_model), true);
+  assertEquals(typeof codex.agent_effort, "string");
+});

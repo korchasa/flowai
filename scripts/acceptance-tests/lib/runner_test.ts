@@ -65,6 +65,7 @@ Deno.test("Runner - Basic Scenario Execution", async () => {
   try {
     const result = await runScenario(scenario, {
       agentModel: AGENT_MODEL,
+      agentEffort: "medium",
       judgeConfig: JUDGE_CONFIG,
       workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
@@ -117,6 +118,7 @@ Deno.test("Runner - Fixture Copying", async () => {
   try {
     await runScenario(scenario, {
       agentModel: AGENT_MODEL,
+      agentEffort: "medium",
       judgeConfig: JUDGE_CONFIG,
       workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
@@ -190,6 +192,7 @@ Deno.test("Runner - Score counts failed items correctly", async () => {
   try {
     const result = await runScenario(scenario, {
       agentModel: AGENT_MODEL,
+      agentEffort: "medium",
       judgeConfig: JUDGE_CONFIG,
       workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,
@@ -255,6 +258,7 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
   try {
     await runScenario(scenario, {
       agentModel: AGENT_MODEL,
+      agentEffort: "medium",
       judgeConfig: JUDGE_CONFIG,
       workDir: scenarioWorkDir,
       judgeClient: judgeClient as unknown as typeof evaluateChecklist,

@@ -18,6 +18,7 @@ import {
   prepareAcpClaudeHome,
   prepareAcpCodexHome,
   prepareBenchCodexHome,
+  prepareCodexJudgeHome,
 } from "./auth.ts";
 
 /** Recursively snapshots a dir as a sorted map of relpath → contents. */
@@ -228,9 +229,9 @@ Deno.test("codex home also carries HOME — the judge stays on Claude", async ()
   Deno.env.set("HOME", fakeHome);
   try {
     const env = await prepareAcpCodexHome(sandboxPath);
-    // The gate/answer judge shells out to `claude -p` even when the agent under
-    // test is codex, so it needs the same isolated Claude bench-home — without
-    // it the developer's ~/.claude/CLAUDE.md leaks into judge replies.
+    // The bench-home doubles as HOME for the codex judge/emulator and as the
+    // isolated Claude home for scenarios that drive `claude` from the sandbox —
+    // without it the developer's ~/.claude/CLAUDE.md leaks into those runs.
     assertEquals(env.HOME, join(workDir, "bench-home"));
     let count = 0;
     for await (
@@ -370,5 +371,30 @@ Deno.test("bench-home disables the CLI's bundled skills — they are outside HOM
     assertEquals(env.CLAUDE_CODE_DISABLE_BUNDLED_SKILLS, "1");
   } finally {
     await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("prepareCodexJudgeHome: the judge gets its own CODEX_HOME beside the agent's", async () => {
+  const realHome = Deno.env.get("HOME");
+  const fakeHome = await Deno.makeTempDir({ prefix: "acp-judge-home-" });
+  await Deno.mkdir(join(fakeHome, ".codex"), { recursive: true });
+  await Deno.writeTextFile(join(fakeHome, ".codex", "auth.json"), "{}");
+  const benchHome = await Deno.makeTempDir({ prefix: "acp-judge-bench-" });
+  Deno.env.set("HOME", fakeHome);
+  try {
+    const judgeHome = await prepareCodexJudgeHome(benchHome);
+    assertEquals(judgeHome, join(benchHome, ".codex-judge"));
+    const auth = await Deno.lstat(join(judgeHome, "auth.json"));
+    assertEquals(auth.isSymlink, true, "only the credentials are linked");
+    let count = 0;
+    for await (const _ of Deno.readDir(join(judgeHome, "skills"))) count++;
+    assertEquals(count, 0, "no user skills reach the judge");
+    // Idempotent: a re-prepare on the same bench-home must not throw.
+    assertEquals(await prepareCodexJudgeHome(benchHome), judgeHome);
+  } finally {
+    if (realHome !== undefined) Deno.env.set("HOME", realHome);
+    else Deno.env.delete("HOME");
+    await Deno.remove(fakeHome, { recursive: true });
+    await Deno.remove(benchHome, { recursive: true });
   }
 });

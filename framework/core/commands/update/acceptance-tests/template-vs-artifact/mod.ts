@@ -7,7 +7,7 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * not just analyzes `git diff` of template files vs their own HEAD.
  *
  * Reproduces a real failure mode: when many skill files change (mostly
- * formatting), the agent runs `git diff` on `.claude/skills/`, sees
+ * formatting), the agent runs `git diff` on `.codex/skills/`, sees
  * "mostly formatting noise", concludes "no migration needed" — without
  * ever reading the actual project artifact (AGENTS.md) to compare.
  *
@@ -40,18 +40,18 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       {
         message: "Initial sync (baseline)",
         files: [
-          ".claude/assets/AGENTS.template.md",
-          ".claude/skills/reflect/SKILL.md",
-          ".claude/skills/review/SKILL.md",
-          ".claude/skills/commit/SKILL.md",
+          ".codex/assets/AGENTS.template.md",
+          ".codex/skills/reflect/SKILL.md",
+          ".codex/skills/review/SKILL.md",
+          ".codex/skills/commit/SKILL.md",
         ],
       },
     ],
     modified: [
-      ".claude/assets/AGENTS.template.md",
-      ".claude/skills/reflect/SKILL.md",
-      ".claude/skills/review/SKILL.md",
-      ".claude/skills/commit/SKILL.md",
+      ".codex/assets/AGENTS.template.md",
+      ".codex/skills/reflect/SKILL.md",
+      ".codex/skills/review/SKILL.md",
+      ".codex/skills/commit/SKILL.md",
     ],
     expectedOutcome:
       "Agent compares templates against project artifacts (not just git diff), finds missing Proactive Resolution rule in AGENTS.md, proposes adding it",
@@ -90,8 +90,8 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     );
 
     // --- Prepare "old" template versions (baseline) ---
-    const skillsBase = join(sandboxPath, ".claude", "skills");
-    const assetsBase = join(sandboxPath, ".claude", "assets");
+    const skillsBase = join(sandboxPath, ".codex", "skills");
+    const assetsBase = join(sandboxPath, ".codex", "assets");
 
     // 1. AGENTS.template.md — remove "Proactive Resolution" + add formatting noise
     const mainTemplatePath = join(
@@ -158,13 +158,13 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     {
       id: "detected_multiple_changes",
       description:
-        "Did the agent notice multiple changed files in `.claude/skills/` but avoid treating them as update work for this command?",
+        "Did the agent notice multiple changed files in `.codex/skills/` but avoid treating them as update work for this command?",
       critical: true,
     },
     {
       id: "did_not_adapt_skills",
       description:
-        "Did the agent avoid adapting or rewriting changed `.claude/skills/*/SKILL.md` files and instead keep focus on project artifacts?",
+        "Did the agent avoid adapting or rewriting changed `.codex/skills/*/SKILL.md` files and instead keep focus on project artifacts?",
       critical: true,
     },
     {

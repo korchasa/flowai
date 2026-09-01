@@ -86,17 +86,17 @@ export const ShipTaskRejectsOnChangesRequested = new class
           // run per changed module, not on every check.
           fmt: {
             exclude: [
-              ".claude/",
+              ".codex/",
               "documents/",
               "acceptance-tests/",
               "AGENTS.md",
               "CLAUDE.md",
             ],
           },
-          lint: { exclude: [".claude/", "documents/", "acceptance-tests/"] },
+          lint: { exclude: [".codex/", "documents/", "acceptance-tests/"] },
           test: {
             exclude: [
-              ".claude/",
+              ".codex/",
               "documents/",
               "acceptance-tests/",
               "contract/",

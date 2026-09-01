@@ -6,13 +6,13 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * Tests that the agent checks project artifacts against templates even when
  * no installed primitive or template file changed in the working tree.
  *
- * Reproduces the real failure: `.claude/assets/` already matches upstream
+ * Reproduces the real failure: `.codex/assets/` already matches upstream
  * templates, but the project artifact (AGENTS.md) has
  * drifted — it's missing framework-originated content. The agent must
  * still compare templates vs artifacts and detect the gap.
  *
  * Scenario setup:
- * 1. `.claude/assets/AGENTS.template.md` is committed and unchanged
+ * 1. `.codex/assets/AGENTS.template.md` is committed and unchanged
  *    (no git diff)
  * 2. Project `AGENTS.md` is the rendered template with the single
  *    "Proactive Resolution" bullet removed — nothing else differs
@@ -41,7 +41,7 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
       {
         message: "Initial sync with all assets",
         files: [
-          ".claude/assets/AGENTS.template.md",
+          ".codex/assets/AGENTS.template.md",
         ],
       },
     ],
@@ -99,7 +99,7 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
     {
       id: "compared_templates_vs_artifacts",
       description:
-        "Despite a clean working tree, did the agent compare `.claude/assets/AGENTS.template.md` against `./AGENTS.md` (e.g., via `git diff --no-index` or reading both files)?",
+        "Despite a clean working tree, did the agent compare `.codex/assets/AGENTS.template.md` against `./AGENTS.md` (e.g., via `git diff --no-index` or reading both files)?",
       critical: true,
     },
     {

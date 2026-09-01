@@ -34,6 +34,7 @@
 import { join, resolve } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
+import { codexAgentEnv } from "@acceptance-tests/agent_env.ts";
 import {
   SPAWN_WAIT_TIMEOUT_MS,
   waitForHealthy,
@@ -146,26 +147,10 @@ export function emulatorEnvFor(
 }
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
- * Deterministic effort + model env for a Codex bench session. Codex reads its
- * reasoning effort and model from `~/.codex/config.toml`, so an un-pinned run
- * would inherit whatever the maintainer's machine happens to set (this host:
- * `model_reasoning_effort = "ultra"`, `model = "gpt-5.6-sol"`) and two arms run
- * days apart could differ by effort alone — the same corruption `effortEnv`
- * prevents for Claude. `CODEX_CONFIG` is the bridge's documented override: a
- * JSON object merged into the Codex session config, which wins over the file.
+ * Deterministic effort + model env for a Codex bench session — the same pin the
+ * acceptance runner applies, so the two harnesses cannot drift apart.
  */
-export function codexAgentEnv(
-  effort: string,
-  model: string,
-): Record<string, string> {
-  return {
-    CODEX_CONFIG: JSON.stringify({
-      model_reasoning_effort: effort,
-      model,
-    }),
-  };
-}
+export { codexAgentEnv };
 
 /**
  * implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
@@ -240,12 +225,12 @@ export function isAuthFailure(logs: string): boolean {
 /**
  * Detect a dead HUMAN EMULATOR — the other half of "never fairly attempted".
  *
- * The emulator is a separate `claude -p` process (`cliChatCompletion`), so its
- * failure never reaches ACP and `isAuthFailure` cannot see it. Measured
- * 2026-07-30: the account's OAuth refresh token was revoked server-side
- * ("OAuth refresh token is no longer valid" in the CLI's own debug log), every
- * emulator call died, and 14 of 15 sessions banked an empty patch as an honest
- * miss. The turn the human was supposed to take never happened — that is not a
+ * The emulator is a separate `codex exec` process (`codexChatCompletion`), so
+ * its failure never reaches ACP and `isAuthFailure` cannot see it. Measured
+ * 2026-07-30, when it still ran on `claude -p`: the account's OAuth refresh
+ * token was revoked server-side ("OAuth refresh token is no longer valid" in
+ * the CLI's own debug log), every emulator call died, and 14 of 15 sessions
+ * banked an empty patch as an honest miss. The turn the human was supposed to take never happened — that is not a
  * measurement, it is a hole.
  *
  * Deliberately keyed on the WRAPPER's exit-code phrasing rather than on the
@@ -256,7 +241,7 @@ export function isAuthFailure(logs: string): boolean {
  * kept as a genuine measurement (`mempalace-1004` shipped 31 KB that way).
  */
 export function isEmulatorOutage(logs: string): boolean {
-  return /Claude CLI failed \(exit \d+\)/.test(logs);
+  return /Codex CLI failed \(exit \d+\)/.test(logs);
 }
 
 /**
@@ -671,7 +656,7 @@ export async function runArm(
   const prediction = toPrediction(data.instanceId, opts.arm, diff);
   // Two ways a session can be un-attempted rather than failed: the AGENT never
   // engaged (ACP auth outage) or the HUMAN never spoke (the emulator's own
-  // `claude -p` died). Both leave the instance pending in the measurement tier
+  // `codex exec` died). Both leave the instance pending in the measurement tier
   // instead of banking an empty patch as a real miss.
   const authFailed = isAuthFailure(result.logs) ||
     isEmulatorOutage(result.logs);

@@ -12,10 +12,18 @@
  * Detection keys on this explicit Skill-tool argument (plus `name`/`skillName`
  * for cross-IDE robustness).
  *
- * A bare read of a skill's `SKILL.md` is deliberately NOT treated as invocation:
- * Explore subagents read `SKILL.md` files while mapping a project, which is not
- * the main agent's invocation decision and produced false positives on
- * `skill_not_invoked` scenarios. Only the explicit Skill-tool call counts.
+ * A bare `fs/read_text_file` of a skill's `SKILL.md` is deliberately NOT
+ * treated as invocation: Explore subagents read `SKILL.md` files while mapping
+ * a project, which is not the main agent's invocation decision and produced
+ * false positives on `skill_not_invoked` scenarios.
+ *
+ * codex has no Skill tool at all: codex-acp lists the installed skills in the
+ * prompt and the model loads one by reading its `SKILL.md` from the shell.
+ * Captured 2026-09-01 (epic-trigger-pos-1, gpt-5.6-terra): `kind: "execute"`,
+ * `rawInput.command` = `sed -n '1,240p' <sandbox>/.codex/skills/epic/SKILL.md`.
+ * So a shell command that names `skills/<skill>/SKILL.md` explicitly counts as
+ * invocation too — the path is delimited on both sides, so neither a glob
+ * sweep over every skill directory nor a longer skill name can cross-match.
  */
 import type { CapturedToolCall } from "./acp/client.ts";
 
@@ -26,9 +34,10 @@ export const DETERMINISTIC_SKILL_CHECK_IDS = new Set([
 ]);
 
 /**
- * rawInput keys that carry the invoked skill's name across IDEs. Deliberately
- * excludes `command` — that is the Bash tool's argument key and would risk a
- * false match; the real Skill tool uses `skill` (claude) / `name`.
+ * rawInput keys that carry the invoked skill's name across IDEs. `command` is
+ * NOT in this list — it is the shell tool's argument and is parsed separately
+ * for an explicit `skills/<name>/SKILL.md` path (see `shellReadsSkill`); the
+ * real Skill tool uses `skill` (claude) / `name`.
  */
 const SKILL_NAME_KEYS = ["skill", "name", "skillName"];
 
@@ -55,6 +64,18 @@ export function detectSkillInvocation(
       const named = rawInput[key];
       if (typeof named === "string" && accepted.has(named)) return true;
     }
+    const command = rawInput.command;
+    if (typeof command === "string" && shellReadsSkill(command, accepted)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** True iff a shell command names `skills/<one of accepted>/SKILL.md`. */
+function shellReadsSkill(command: string, accepted: Set<string>): boolean {
+  for (const m of command.matchAll(/skills\/([^\/\s*'"]+)\/SKILL\.md/g)) {
+    if (accepted.has(m[1])) return true;
   }
   return false;
 }

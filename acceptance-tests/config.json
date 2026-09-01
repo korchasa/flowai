@@ -1,11 +1,18 @@
 {
-  "default_ides": ["claude"],
+  "default_ides": ["codex"],
   "ides": {
-    "cursor": {
-      "agent_models": ["gemini-3-flash"],
-      "default_agent_model": "gemini-3-flash",
+    "codex": {
+      "agent_models": [
+        "gpt-5.6-terra",
+        "gpt-5.6-sol",
+        "gpt-5.4",
+        "gpt-5.3-codex"
+      ],
+      "default_agent_model": "gpt-5.6-terra",
+      "agent_effort": "medium",
       "judge": {
-        "model": "claude-haiku-4-5-20251001",
+        "model": "gpt-5.6-sol",
+        "effort": "medium",
         "temperature": 0
       }
     },
@@ -13,15 +20,17 @@
       "agent_models": ["claude-sonnet-4-6"],
       "default_agent_model": "claude-sonnet-4-6",
       "judge": {
-        "model": "claude-sonnet-4-6",
+        "model": "gpt-5.6-sol",
+        "effort": "medium",
         "temperature": 0
       }
     },
-    "codex": {
-      "agent_models": ["gpt-5.4", "gpt-5.3-codex", "gpt-5.4-mini"],
-      "default_agent_model": "gpt-5.3-codex",
+    "cursor": {
+      "agent_models": ["gemini-3-flash"],
+      "default_agent_model": "gemini-3-flash",
       "judge": {
-        "model": "claude-sonnet-4-6",
+        "model": "gpt-5.6-sol",
+        "effort": "medium",
         "temperature": 0
       }
     }

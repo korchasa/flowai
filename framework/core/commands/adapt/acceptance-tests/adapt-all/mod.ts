@@ -33,8 +33,8 @@ export const FlowAdaptAllBench = new class extends AcceptanceTestScenario {
         message: "Initial sync with generic primitives",
         files: [
           ".flowai.yaml",
-          ".claude/skills/commit/SKILL.md",
-          ".claude/agents/console-expert.md",
+          ".codex/skills/commit/SKILL.md",
+          ".codex/agents/console-expert.md",
           "AGENTS.md",
         ],
       },
@@ -50,8 +50,8 @@ export const FlowAdaptAllBench = new class extends AcceptanceTestScenario {
       'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
     );
 
-    // Create .claude/skills/commit/ with generic (upstream) version
-    const skillDir = join(sandboxPath, ".claude", "skills", "commit");
+    // Create .codex/skills/commit/ with generic (upstream) version
+    const skillDir = join(sandboxPath, ".codex", "skills", "commit");
     await Deno.mkdir(skillDir, { recursive: true });
 
     const genericSkill = `---
@@ -74,8 +74,8 @@ description: Commit workflow
 `;
     await Deno.writeTextFile(join(skillDir, "SKILL.md"), genericSkill);
 
-    // Create .claude/agents/ with generic (upstream) agent
-    const agentsDir = join(sandboxPath, ".claude", "agents");
+    // Create .codex/agents/ with generic (upstream) agent
+    const agentsDir = join(sandboxPath, ".codex", "agents");
     await Deno.mkdir(agentsDir, { recursive: true });
 
     const genericAgent = `---

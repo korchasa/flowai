@@ -3,6 +3,10 @@ import type { LLMMessage, LLMResponse } from "./types.ts";
 export interface ModelConfig {
   model: string;
   temperature: number;
+  /** Codex reasoning effort (`low` … `xhigh`). Pinned per call so a verdict
+   * never inherits the operator's `~/.codex/config.toml`; defaults to
+   * `medium` when a config omits it. */
+  effort?: string;
   jsonSchema?: Record<string, unknown>;
   /** Extra environment for the spawned CLI (e.g. an isolated `HOME` so a
    * programmatic judge does not inherit the developer's personal memory). */
@@ -23,6 +27,8 @@ export interface ModelConfig {
 export interface IdeConfig {
   agent_models: string[];
   default_agent_model: string;
+  /** Reasoning effort for the agent under test (codex only). */
+  agent_effort?: string;
   judge: ModelConfig;
 }
 
@@ -69,7 +75,8 @@ export async function loadConfig(
 }
 
 /**
- * Build the `codex exec` argv for ONE emulator turn.
+ * Build the `codex exec` argv for ONE turn of a programmatic caller — the
+ * benchmark's human emulator, the acceptance-test judge, the user emulator.
  *
  * Pure so the pinning can be unit-tested without spawning a session. Every flag
  * here is deliberate:
@@ -83,6 +90,9 @@ export async function loadConfig(
  * - `--skip-git-repo-check` because it runs from a temp cwd outside any repo.
  * - `--output-last-message` is the clean way to get the final reply; parsing it
  *   out of the event stream would also pick up the agent's intermediate chatter.
+ * - `--output-schema` (only when the caller supplies a schema) makes codex
+ *   validate the final message against a JSON schema, which is how the judge
+ *   gets a per-item verdict object instead of prose to parse.
  * - trailing `-` makes codex read the prompt from stdin, which avoids E2BIG on
  *   a long conversation.
  *
@@ -95,9 +105,13 @@ export function codexExecArgs(opts: {
   model: string;
   effort: string;
   lastMessageFile: string;
+  outputSchemaFile?: string;
 }): string[] {
   return [
     "exec",
+    ...(opts.outputSchemaFile
+      ? ["--output-schema", opts.outputSchemaFile]
+      : []),
     "--model",
     opts.model,
     "-c",
@@ -129,37 +143,61 @@ export function codexPrompt(messages: LLMMessage[]): string {
   return [...system, ...rest].join("\n\n");
 }
 
+/** Default reasoning effort for a programmatic codex turn. */
+export const DEFAULT_CODEX_EFFORT = "medium";
+
 /**
  * Chat completion via the Codex CLI (`codex exec`). No API key — uses the
  * existing CLI auth under `CODEX_HOME`.
  *
- * Exists alongside `cliChatCompletion` rather than replacing it: the benchmark's
- * human emulator moved to codex with the Claude subject arm's retirement
- * (2026-08-09), while the acceptance-test judge still runs on `claude -p`.
+ * The single LLM transport of the harness: the benchmark's human emulator moved
+ * here when the Claude subject arm was retired (2026-08-09), and the
+ * acceptance-test judge and user emulator followed on 2026-09-01, when a
+ * `-p 4` sweep on `claude -p` burned the account's whole subscription window in
+ * five hours (250M cache-read tokens, 583 sessions in a day).
+ *
+ * `config.jsonSchema` turns on `--output-schema`: the reply is then the
+ * validated JSON object itself. `config.cwd` defaults to a fresh temp dir so a
+ * caller that forgets to isolate itself never runs from the repo — codex reads
+ * `AGENTS.md` up the cwd path regardless of `--ignore-user-config`.
  */
 export async function codexChatCompletion(
   messages: LLMMessage[],
   config: {
     model: string;
-    effort: string;
+    effort?: string;
+    jsonSchema?: Record<string, unknown>;
     env?: Record<string, string>;
     cwd?: string;
   },
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
   const lastMessageFile = await Deno.makeTempFile({ prefix: "codex-reply-" });
+  const outputSchemaFile = config.jsonSchema
+    ? await Deno.makeTempFile({ prefix: "codex-schema-", suffix: ".json" })
+    : undefined;
+  const ownCwd = config.cwd
+    ? undefined
+    : await Deno.makeTempDir({ prefix: "codex-cwd-" });
   try {
+    if (outputSchemaFile) {
+      await Deno.writeTextFile(
+        outputSchemaFile,
+        JSON.stringify(config.jsonSchema),
+      );
+    }
     const cmd = new Deno.Command("codex", {
       args: codexExecArgs({
         model: config.model,
-        effort: config.effort,
+        effort: config.effort ?? DEFAULT_CODEX_EFFORT,
         lastMessageFile,
+        outputSchemaFile,
       }),
       stdin: "piped",
       stdout: "piped",
       stderr: "piped",
       env: { ...Deno.env.toObject(), ...(config.env ?? {}) },
-      ...(config.cwd ? { cwd: config.cwd } : {}),
+      cwd: config.cwd ?? ownCwd,
       signal,
     });
     const process = cmd.spawn();
@@ -183,126 +221,10 @@ export async function codexChatCompletion(
     return { content, usage: undefined };
   } finally {
     await Deno.remove(lastMessageFile).catch(() => {});
+    if (outputSchemaFile) await Deno.remove(outputSchemaFile).catch(() => {});
+    if (ownCwd) await Deno.remove(ownCwd, { recursive: true }).catch(() => {});
   }
 }
 
-interface ClaudeCliEvent {
-  type?: string;
-  result?: string;
-  structured_output?: Record<string, unknown>;
-  total_cost_usd?: number;
-  usage?: Record<string, unknown>;
-  message?: {
-    content?: Array<{ type: string; text?: string }>;
-  };
-}
-
-/** Chat completion via Claude CLI (`claude -p`). No API key needed — uses existing CLI auth. */
-export async function cliChatCompletion(
-  messages: LLMMessage[],
-  configOrModel: ModelConfig | string,
-  _temperature?: number,
-  signal?: AbortSignal,
-  /** Path to a file whose content is appended to the system prompt via --append-system-prompt-file. */
-  appendSystemPromptFile?: string,
-): Promise<LLMResponse> {
-  const config: ModelConfig = typeof configOrModel === "string"
-    ? { model: configOrModel, temperature: 0 }
-    : { ...configOrModel };
-
-  const systemMsg = messages.find((m) => m.role === "system")?.content ?? "";
-  const userMsg = messages.filter((m) => m.role !== "system")
-    .map((m) => m.content).join("\n\n");
-
-  const args = [
-    "-p",
-    "--model",
-    config.model,
-    "--output-format",
-    "json",
-    "--no-session-persistence",
-    "--verbose",
-    "--tools",
-    "StructuredOutput",
-    "--strict-mcp-config",
-  ];
-
-  if (systemMsg) {
-    args.push("--system-prompt", systemMsg);
-  }
-
-  if (config.jsonSchema) {
-    args.push("--json-schema", JSON.stringify(config.jsonSchema));
-  }
-
-  if (appendSystemPromptFile) {
-    args.push("--append-system-prompt-file", appendSystemPromptFile);
-  }
-
-  // Pass user message via stdin to avoid E2BIG when trace is large
-  const userMsgBytes = new TextEncoder().encode(userMsg).length;
-  if (userMsgBytes > 100_000) {
-    console.warn(
-      `  [llm] Large stdin payload: ${(userMsgBytes / 1024).toFixed(0)}KB`,
-    );
-  }
-  const cmd = new Deno.Command("claude", {
-    args,
-    stdin: "piped",
-    stdout: "piped",
-    stderr: "piped",
-    env: { ...Deno.env.toObject(), CLAUDECODE: "", ...(config.env ?? {}) },
-    ...(config.cwd ? { cwd: config.cwd } : {}),
-    signal,
-  });
-
-  const process = cmd.spawn();
-  const writer = process.stdin.getWriter();
-  await writer.write(new TextEncoder().encode(userMsg));
-  await writer.close();
-  const output = await process.output();
-  const stdout = new TextDecoder().decode(output.stdout);
-
-  if (!output.success) {
-    const stderr = new TextDecoder().decode(output.stderr);
-    // Extract result event for better diagnostics
-    let resultInfo = "";
-    try {
-      const events = JSON.parse(stdout) as ClaudeCliEvent[];
-      const resultEvt = events.find((e) => e.type === "result");
-      if (resultEvt) {
-        resultInfo = ` result=${JSON.stringify(resultEvt).slice(0, 500)}`;
-      }
-    } catch (_) {
-      resultInfo = ` stdout_len=${stdout.length}`;
-    }
-    throw new Error(
-      `Claude CLI failed (exit ${output.code}): stderr=${
-        stderr || "(empty)"
-      }${resultInfo}`,
-    );
-  }
-
-  const events = JSON.parse(stdout) as ClaudeCliEvent[];
-  const resultEvent = events.find((e) => e.type === "result");
-
-  if (!resultEvent) {
-    throw new Error("Claude CLI: no result event in output");
-  }
-
-  // With --json-schema: structured_output contains validated JSON
-  if (config.jsonSchema && resultEvent.structured_output) {
-    return {
-      content: JSON.stringify(resultEvent.structured_output),
-      usage: undefined,
-    };
-  }
-
-  // Without --json-schema: extract text from last assistant event
-  const assistantEvents = events.filter((e) => e.type === "assistant");
-  const lastAssistant = assistantEvents[assistantEvents.length - 1];
-  const contentBlocks = lastAssistant?.message?.content;
-  const text = contentBlocks?.find((b) => b.type === "text")?.text ?? "";
-
-  return { content: text, usage: undefined };
-}
+/** Shape of an injectable chat-completion client (tests swap in a stub). */
+export type ChatCompletionFn = typeof codexChatCompletion;

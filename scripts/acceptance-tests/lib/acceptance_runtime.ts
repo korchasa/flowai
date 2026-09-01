@@ -8,7 +8,12 @@ import type { Args } from "@std/flags";
 import { ansi } from "../../utils.ts";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { runScenario } from "./runner.ts";
-import { type BenchmarkConfig, getIdeConfig, type ModelConfig } from "./llm.ts";
+import {
+  type BenchmarkConfig,
+  DEFAULT_CODEX_EFFORT,
+  getIdeConfig,
+  type ModelConfig,
+} from "./llm.ts";
 import { type AgentAdapter, createAdapter } from "./adapters/mod.ts";
 import { TraceLogger } from "./trace.ts";
 import {
@@ -20,6 +25,7 @@ import type { CachePrecheck } from "./acceptance_cache_precheck.ts";
 export interface RuntimeSetup {
   adapter: AgentAdapter;
   agentModel: string;
+  agentEffort: string;
   judgeConfig: ModelConfig;
   filter: string | undefined;
   runs: number;
@@ -37,11 +43,13 @@ export function buildRuntimeSetup(
   const adapter = createAdapter(ideName);
   const ideConfig = getIdeConfig(config, ideName);
   const agentModel = args.model || ideConfig.default_agent_model;
+  const agentEffort = ideConfig.agent_effort ?? DEFAULT_CODEX_EFFORT;
   const judgeConfig: ModelConfig = { ...ideConfig.judge };
 
   return {
     adapter,
     agentModel,
+    agentEffort,
     judgeConfig,
     filter: args.filter,
     runs: parseInt(args.runs || "1", 10),
@@ -86,6 +94,9 @@ export function printRunHeader(
   console.log(`Found ${scenarioCount} scenarios.`);
   console.log(`Using IDE: ${setup.adapter.ide}`);
   console.log(`Using agent model: ${setup.agentModel}`);
+  if (setup.adapter.ide === "codex") {
+    console.log(`Using agent effort: ${setup.agentEffort}`);
+  }
   console.log(`Using judge model: ${setup.judgeConfig.model}`);
   console.log(`Runs per scenario: ${setup.runs}`);
   if (setup.parallel > 1) {
@@ -98,6 +109,7 @@ export interface ExecutionContext {
   runDir: string;
   runs: number;
   agentModel: string;
+  agentEffort: string;
   judgeConfig: ModelConfig;
   adapter: AgentAdapter;
   tracer: TraceLogger;
@@ -138,6 +150,7 @@ export function buildExecutionContext(
     runDir,
     runs: setup.runs,
     agentModel: setup.agentModel,
+    agentEffort: setup.agentEffort,
     judgeConfig: setup.judgeConfig,
     adapter: setup.adapter,
     tracer,
@@ -197,6 +210,7 @@ async function executeTask(
   try {
     const result = await runScenario(scenario, {
       agentModel: ctx.agentModel,
+      agentEffort: ctx.agentEffort,
       judgeConfig: ctx.judgeConfig,
       workDir: scenarioWorkDir,
       adapter: ctx.adapter,

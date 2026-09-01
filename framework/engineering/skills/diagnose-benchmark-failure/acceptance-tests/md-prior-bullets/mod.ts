@@ -10,7 +10,7 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  *
  * What the agent should produce:
  *   - read acceptance-tests/runs/latest/<scenario-id>/run-1/judge-evidence.md
- *   - read sandbox/.claude/skills/conduct-qa-session/SKILL.md
+ *   - read sandbox/.codex/skills/conduct-qa-session/SKILL.md
  *   - read framework/engineering/skills/conduct-qa-session/
  *     benchmarks/multi-select-format/mod.ts
  *   - classify the failure as MD-PRIOR-BULLETS (or list it among primary
@@ -38,7 +38,7 @@ export const DiagnoseBenchMdPriorBulletsBench = new class
   override async setup(sandboxDir: string): Promise<void> {
     // Stage the failed-run artifacts and the scenario source file the
     // diagnosing agent must read. The fixture mirrors the real layout:
-    //   acceptance-tests/runs/latest/<scenario-id>/run-1/{judge-evidence.md, sandbox/.claude/skills/...}
+    //   acceptance-tests/runs/latest/<scenario-id>/run-1/{judge-evidence.md, sandbox/.codex/skills/...}
     //   framework/engineering/skills/<primitive>/{SKILL.md, benchmarks/<scenario>/mod.ts}
     const fixture = new URL("./fixture/", import.meta.url).pathname;
     await copy(join(fixture, "benchmarks"), join(sandboxDir, "benchmarks"), {
@@ -59,7 +59,7 @@ export const DiagnoseBenchMdPriorBulletsBench = new class
     {
       id: "read_sandbox_skill",
       description:
-        "Did the agent read the sandbox SKILL.md the failing agent saw, at acceptance-tests/runs/latest/<scenario-id>/run-1/sandbox/.claude/skills/conduct-qa-session/SKILL.md? Look for a Read tool call targeting that path.",
+        "Did the agent read the sandbox SKILL.md the failing agent saw, at acceptance-tests/runs/latest/<scenario-id>/run-1/sandbox/.codex/skills/conduct-qa-session/SKILL.md? Look for a Read tool call targeting that path.",
       critical: true,
     },
     {

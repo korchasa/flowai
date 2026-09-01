@@ -83,10 +83,11 @@ export async function prepareAcpClaudeHome(
  * session. Codex also writes its session rollouts under `CODEX_HOME/sessions/`,
  * which keeps them next to the run for a future cost harvest.
  *
- * Returns `HOME` as well: the benchmark's gate/answer judge shells out to
- * `claude -p` even when the agent under test is Codex, so it still needs the
- * isolated Claude bench-home or the developer's personal `~/.claude` memory
- * leaks into judge replies.
+ * Returns `HOME` as well: the acceptance judge and the user emulator run
+ * `codex exec` with this env, so the same empty `CODEX_HOME` (auth only) keeps
+ * the developer's personal skills and config out of their replies too. The
+ * Claude bench-home under it is kept for scenarios that drive another IDE's
+ * CLI from inside the sandbox.
  */
 // implements [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION]
 export async function prepareAcpCodexHome(
@@ -96,6 +97,29 @@ export async function prepareAcpCodexHome(
   const { HOME } = await prepareAcpClaudeHome(sandboxPath);
 
   const codexHome = join(HOME, ".codex");
+  await populateCodexHome(codexHome);
+
+  return { HOME, CODEX_HOME: codexHome };
+}
+
+/**
+ * A second, equally isolated `CODEX_HOME` for the judge and the user emulator,
+ * next to the agent's: `<bench-home>/.codex-judge`. Sharing the agent's
+ * `CODEX_HOME` put the judge's rollout into the same `sessions/` tree, so the
+ * "raw agent session" of a run was whichever file sorted last — observed
+ * 2026-09-01 on the first codex judge run, where the newest rollout held the
+ * verdict JSON, not the agent's turns.
+ */
+export async function prepareCodexJudgeHome(
+  benchHome: string,
+): Promise<string> {
+  const codexHome = join(benchHome, ".codex-judge");
+  await populateCodexHome(codexHome);
+  return codexHome;
+}
+
+/** Empty `CODEX_HOME` with an empty `skills/` and ONLY the credentials linked. */
+async function populateCodexHome(codexHome: string): Promise<void> {
   await Deno.mkdir(join(codexHome, "skills"), { recursive: true });
 
   const realHome = Deno.env.get("HOME");
@@ -113,8 +137,6 @@ export async function prepareAcpCodexHome(
       }
     }
   }
-
-  return { HOME, CODEX_HOME: codexHome };
 }
 
 /**

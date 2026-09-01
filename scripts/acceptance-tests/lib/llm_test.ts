@@ -1,4 +1,4 @@
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { codexExecArgs, codexPrompt } from "./llm.ts";
 
 Deno.test("codexExecArgs: pins model and reasoning effort on the command line", () => {
@@ -62,4 +62,24 @@ Deno.test("codexPrompt: keeps every non-system turn in order", () => {
   ]);
   assertEquals(p.indexOf("first") < p.indexOf("second"), true);
   assertEquals(p.indexOf("second") < p.indexOf("third"), true);
+});
+
+Deno.test("codexExecArgs: attaches an output schema when the caller needs structured JSON", () => {
+  const args = codexExecArgs({
+    model: "gpt-5.6-sol",
+    effort: "medium",
+    lastMessageFile: "/tmp/reply",
+    outputSchemaFile: "/tmp/schema.json",
+  });
+  const i = args.indexOf("--output-schema");
+  assert(i >= 0, "structured verdicts need --output-schema");
+  assertEquals(args[i + 1], "/tmp/schema.json");
+  // Without a schema the flag must be absent — a free-text emulator turn is
+  // not JSON, and codex would reject the reply against an empty schema.
+  const plain = codexExecArgs({
+    model: "gpt-5.6-sol",
+    effort: "medium",
+    lastMessageFile: "/tmp/reply",
+  });
+  assertEquals(plain.includes("--output-schema"), false);
 });

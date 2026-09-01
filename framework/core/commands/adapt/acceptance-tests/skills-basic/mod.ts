@@ -36,7 +36,7 @@ export const FlowAdaptSkillsBasicBench = new class
         message: "Initial sync with generic skills",
         files: [
           ".flowai.yaml",
-          ".claude/skills/commit/SKILL.md",
+          ".codex/skills/commit/SKILL.md",
         ],
       },
     ],
@@ -51,8 +51,8 @@ export const FlowAdaptSkillsBasicBench = new class
       'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
     );
 
-    // Create .claude/skills/commit/ with generic (upstream) version
-    const skillDir = join(sandboxPath, ".claude", "skills", "commit");
+    // Create .codex/skills/commit/ with generic (upstream) version
+    const skillDir = join(sandboxPath, ".codex", "skills", "commit");
     await Deno.mkdir(skillDir, { recursive: true });
 
     const genericSkill = `---
@@ -93,7 +93,7 @@ description: Commit workflow
     {
       id: "scanned_skills",
       description:
-        "Did the agent scan installed skills in .claude/skills/ to find flowai-* directories?",
+        "Did the agent scan installed skills in .codex/skills/ to find flowai-* directories?",
       critical: true,
     },
     {

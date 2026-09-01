@@ -1,6 +1,8 @@
 import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
-import type { cliChatCompletion, ModelConfig } from "./llm.ts";
+import type { ChatCompletionFn, ModelConfig } from "./llm.ts";
+import { agentLaunchEnv } from "./agent_env.ts";
+import { prepareCodexJudgeHome } from "./acp/auth.ts";
 import { evaluateChecklist } from "./judge.ts";
 import { formatJudgeEvidence, truncateTrace } from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
@@ -23,12 +25,14 @@ import {
 
 export interface RunnerOptions {
   agentModel: string;
+  /** Reasoning effort pinned into the agent's session (codex only). */
+  agentEffort: string;
   judgeConfig: ModelConfig;
   workDir: string;
   adapter: AgentAdapter;
   tracer?: TraceLogger;
   runIndex?: number;
-  llmClient?: typeof cliChatCompletion;
+  llmClient?: ChatCompletionFn;
   judgeClient?: typeof evaluateChecklist;
 }
 
@@ -376,6 +380,8 @@ interface AgentRunOutcome {
   logs: string;
   durationMs: number;
   agent: AcpAgent;
+  /** Judge/emulator config with the run's isolated env attached (codex). */
+  judgeConfig: ModelConfig;
 }
 
 /**
@@ -538,20 +544,35 @@ async function runAgentWithTimeout(
   const start = performance.now();
   const fullPrompt = scenario.userQuery;
 
-  const userEmulator = scenario.interactive && scenario.userPersona
-    ? new UserEmulator({
-      persona: scenario.userPersona,
-      config: options.judgeConfig, // Use judge config for simulated user
-      llmClient: options.llmClient,
-    })
-    : null;
-
-  // Adapter-specific sandbox preparation (e.g. isolated $HOME for Claude
-  // to avoid `~/.claude/skills/` shadowing sandbox skills via the Skill
-  // tool resolution path — FR-ACCEPT-ISOLATION).
+  // Adapter-specific sandbox preparation (isolated $HOME so the developer's
+  // own `~/.claude/skills/` or `~/.codex/skills/` never shadows the sandbox
+  // skills — FR-ACCEPT-ISOLATION).
   const adapterEnv = options.adapter.prepareWorkspace
     ? await options.adapter.prepareWorkspace(sandboxPath)
     : {};
+
+  // The judge and the simulated user run on `codex exec` from a temp cwd. On a
+  // codex run they get their own isolated `CODEX_HOME` beside the agent's
+  // (`<bench-home>/.codex-judge`: auth symlink, empty skills, separate
+  // rollouts); on other IDEs the operator's own `~/.codex` auth is used and
+  // `--ignore-user-config` keeps its config.toml out.
+  const judgeConfig: ModelConfig = options.adapter.ide === "codex"
+    ? {
+      ...options.judgeConfig,
+      env: {
+        ...adapterEnv,
+        CODEX_HOME: await prepareCodexJudgeHome(adapterEnv.HOME),
+      },
+    }
+    : { ...options.judgeConfig };
+
+  const userEmulator = scenario.interactive && scenario.userPersona
+    ? new UserEmulator({
+      persona: scenario.userPersona,
+      config: judgeConfig, // Use judge config for simulated user
+      llmClient: options.llmClient,
+    })
+    : null;
 
   const agent = new AcpAgent({
     ide: options.adapter.ide as AcpIde,
@@ -559,7 +580,12 @@ async function runAgentWithTimeout(
     model: options.agentModel,
     prompt: fullPrompt,
     maxSteps: scenario.maxSteps || 10,
-    env: adapterEnv,
+    env: agentLaunchEnv({
+      ide: options.adapter.ide,
+      model: options.agentModel,
+      effort: options.agentEffort,
+      base: adapterEnv,
+    }),
     mocks: scenario.mocks,
     name: scenario.skill ? `${scenario.skill}/${scenario.id}` : scenario.id,
   });
@@ -619,7 +645,7 @@ async function runAgentWithTimeout(
         `prompt rejected, etc.). Inspect sandbox and agent logs.`,
     );
   }
-  return { ...agentResult, durationMs, agent };
+  return { ...agentResult, durationMs, agent, judgeConfig };
 }
 
 /** Pull session usage (tokens) from the adapter for the given agent. */
@@ -835,7 +861,7 @@ async function judgeAndScore(
         checklistResults[item.id] = {
           pass: invoked,
           reason: invoked
-            ? `Deterministic: skill "${scenario.skill}"${alt} invoked (Skill tool call found in trace).`
+            ? `Deterministic: skill "${scenario.skill}"${alt} invoked (skill load found in trace).`
             : `Deterministic: no tool call invoking skill "${scenario.skill}"${alt} found in trace (${n} tool call(s) observed).`,
         };
       } else { // skill_not_invoked
@@ -904,11 +930,12 @@ export async function runScenario(
     await prepareSandboxFiles(sandboxPath, scenario, adapter);
     const initHash = await initSandboxGit(sandboxPath, scenario, adapter);
 
-    const { code, logs, durationMs, agent } = await runAgentWithTimeout(
-      scenario,
-      sandboxPath,
-      options,
-    );
+    const { code, logs, durationMs, agent, judgeConfig } =
+      await runAgentWithTimeout(
+        scenario,
+        sandboxPath,
+        options,
+      );
 
     const { tokensUsed, tokensDetails } = await collectUsage(agent, adapter);
     await tracer.logExecutionSection();
@@ -933,7 +960,7 @@ export async function runScenario(
         scenario,
         truncatedLogs,
         evidence,
-        options,
+        { ...options, judgeConfig },
         judge,
         code,
         tracer,

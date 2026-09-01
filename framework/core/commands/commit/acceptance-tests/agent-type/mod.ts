@@ -14,14 +14,14 @@ export const CommitAgentTypeBench = new class extends AcceptanceTestScenario {
 
   override sandboxState = {
     commits: [],
-    untracked: [".claude/skills/my-skill/SKILL.md"],
+    untracked: [".codex/skills/my-skill/SKILL.md"],
     expectedOutcome:
       "Agent commits AI config file with 'agent:' type in conventional commit message",
   };
 
   override async setup(sandboxPath: string) {
     // Create an AI agent/skill config file as untracked
-    const skillDir = join(sandboxPath, ".claude", "skills", "my-skill");
+    const skillDir = join(sandboxPath, ".codex", "skills", "my-skill");
     await Deno.mkdir(skillDir, { recursive: true });
     await Deno.writeTextFile(
       join(skillDir, "SKILL.md"),
@@ -44,7 +44,7 @@ export const CommitAgentTypeBench = new class extends AcceptanceTestScenario {
         "rm",
         "--cached",
         "-r",
-        ".claude/skills/my-skill",
+        ".codex/skills/my-skill",
       ]);
       await runGit(sandboxPath, [
         "commit",

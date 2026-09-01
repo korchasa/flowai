@@ -30,8 +30,8 @@ export const FlowUpdatePluginUserScopeBench = new class
         message: "Initial project state",
         files: [
           "AGENTS.md",
-          ".claude/skills/commit/SKILL.md",
-          ".claude/skills/update/assets/AGENTS.template.md",
+          ".codex/skills/commit/SKILL.md",
+          ".codex/skills/update/assets/AGENTS.template.md",
         ],
       },
     ],
@@ -57,7 +57,7 @@ export const FlowUpdatePluginUserScopeBench = new class
 
     const updateSkillDir = join(
       sandboxPath,
-      ".claude",
+      ".codex",
       "skills",
       "update",
     );
@@ -81,7 +81,7 @@ export const FlowUpdatePluginUserScopeBench = new class
 
     const projectLocalPrimitive = join(
       sandboxPath,
-      ".claude",
+      ".codex",
       "skills",
       "commit",
       "SKILL.md",
@@ -131,7 +131,7 @@ export const FlowUpdatePluginUserScopeBench = new class
     {
       id: "did_not_adapt_primitive",
       description:
-        "Did the agent avoid rewriting `.claude/skills/commit/SKILL.md` and instead leave primitive adaptation to `adapt` if needed?",
+        "Did the agent avoid rewriting `.codex/skills/commit/SKILL.md` and instead leave primitive adaptation to `adapt` if needed?",
       critical: true,
     },
     {

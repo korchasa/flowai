@@ -27,7 +27,7 @@ export const PlanSurfaceDegradationBench = new class
   async setup(sandboxPath: string) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
     // Simulate a no-subagent environment: remove installed agent templates.
-    for (const dir of [".claude/agents", ".cursor/agents"]) {
+    for (const dir of [".codex/agents", ".claude/agents", ".cursor/agents"]) {
       try {
         await Deno.remove(join(sandboxPath, dir), { recursive: true });
       } catch (e) {

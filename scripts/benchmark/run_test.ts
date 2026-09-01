@@ -167,7 +167,7 @@ Deno.test("isTransientSetupFailure: transient clone/DNS failures leave pending; 
 });
 
 /**
- * The human emulator runs as a separate `claude -p` process, and its failure is
+ * The human emulator runs as a separate `codex exec` process, and its failure is
  * NOT an ACP error — `isAuthFailure` cannot see it. Measured 2026-07-30: the
  * account's OAuth refresh token was revoked server-side, every emulator call
  * died, and 14 of 15 sessions banked an empty patch as an honest miss. The turn
@@ -177,20 +177,17 @@ Deno.test("isTransientSetupFailure: transient clone/DNS failures leave pending; 
 Deno.test("isEmulatorOutage: a dead human emulator leaves the instance unmeasured, not missed", () => {
   // Verbatim from the 2026-07-30 sessions (the result JSON is truncated in the
   // log, so the auth text itself never reaches us — the wrapper message does).
-  const outage =
-    `[acp-fatal] Error: Claude CLI failed (exit 1): stderr=(empty) ` +
-    `result={"is_error":true,"duration_api_ms":0,"num_turns":1,` +
-    `"stop_reason":"stop_sequence","total_cost_usd":0}`;
+  const outage = `[acp-fatal] Error: Codex CLI failed (exit 1): stderr=(empty)`;
   assert(isEmulatorOutage(outage), "the emulator never spoke — leave pending");
 
   // Any exit code, not just 1: the point is that the CLI died before answering.
-  assert(isEmulatorOutage(`Error: Claude CLI failed (exit 143): killed`));
+  assert(isEmulatorOutage(`Error: Codex CLI failed (exit 143): killed`));
 
   // A session where the emulator answered is a real attempt, whatever else the
   // log holds — including a repo whose own text talks about failing CLIs.
   assertEquals(isEmulatorOutage("normal successful session"), false);
   assertEquals(
-    isEmulatorOutage(`README: "if the Claude CLI failed, retry the command"`),
+    isEmulatorOutage(`README: "if the Codex CLI failed, retry the command"`),
     false,
     "prose without the wrapper's exit-code form is not an outage",
   );

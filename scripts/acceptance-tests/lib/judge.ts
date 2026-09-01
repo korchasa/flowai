@@ -1,24 +1,28 @@
-import { cliChatCompletion, type ModelConfig } from "./llm.ts";
+import { codexChatCompletion, type ModelConfig } from "./llm.ts";
 import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
 import { writeRunFile } from "./utils.ts";
 
+export interface JudgeRequest {
+  messages: LLMMessage[];
+  jsonSchema: Record<string, unknown> & { required: string[] };
+  /** The `<evidence>` block, kept on disk as `judge-evidence.md` for humans. */
+  evidenceContent: string;
+}
+
 /**
- * Uses an LLM judge (via Claude CLI) to evaluate agent performance against a checklist.
- * Evidence is written to `<runDir>/judge-evidence.md` and passed via --append-system-prompt-file
- * to avoid E2BIG / stdin size limits. Returns per-item pass/fail with reasoning.
+ * Build the judge's prompt. Pure so the shape can be unit-tested.
+ *
+ * The evidence rides INSIDE the system message: `codex exec` reads one prompt
+ * from stdin (no E2BIG, no append-file channel), and `codexPrompt` puts system
+ * messages first, so the auditor persona, the evidence and the checklist arrive
+ * in that order.
  */
-export async function evaluateChecklist(
+export function buildJudgeRequest(
   userQuery: string,
   agentLogs: string,
   fileDiffs: string,
   checklist: BenchmarkChecklistItem[],
-  judgeConfig: ModelConfig,
-  runDir: string,
-): Promise<{
-  results: Record<string, { pass: boolean; reason: string }>;
-  messages: LLMMessage[];
-  response: string;
-}> {
+): JudgeRequest {
   const checklistJson = JSON.stringify(
     checklist.map((c) => ({ id: c.id, description: c.description })),
     null,
@@ -36,30 +40,13 @@ export async function evaluateChecklist(
           reason: { type: "string" as const },
         },
         required: ["pass", "reason"],
+        additionalProperties: false,
       }]),
     ),
     required: checklist.map((c) => c.id),
+    additionalProperties: false,
   };
 
-  const systemPrompt = `
-# ROLE
-You are an impartial automated auditor for AI Agent acceptance tests.
-
-# GOAL
-Evaluate the agent's performance by comparing its actions and results against a provided checklist.
-
-# CONTEXT
-You are provided with the user's original query, the agent's execution logs, and the resulting file changes (diffs).
-Your task is to verify if the agent successfully fulfilled the requirements based on the evidence.
-
-# RULES
-1. Base your judgment ONLY on the provided evidence in <evidence>. ALL evidence is appended to this system prompt — do NOT use any tools to search for files or information.
-2. Be strict: a "pass" is true only if the requirement is fully and clearly met.
-3. The 'reason' field for each item must explain WHY it passed or failed based on specific evidence.
-4. Do NOT attempt to read files, browse, or use any tools. Only analyze the text provided.
-`;
-
-  // Write evidence to file — passed via --append-system-prompt-file to avoid E2BIG
   const evidenceContent = `
 <evidence>
   <user_query>
@@ -75,25 +62,71 @@ Your task is to verify if the agent successfully fulfilled the requirements base
   </file_diffs>
 </evidence>
 `;
-  const evidencePath = await writeRunFile(
-    runDir,
-    "judge-evidence.md",
-    evidenceContent,
-  );
 
-  // User message is now short — only checklist + evaluation instruction
+  const systemPrompt = `
+# ROLE
+You are an impartial automated auditor for AI Agent acceptance tests.
+
+# GOAL
+Evaluate the agent's performance by comparing its actions and results against a provided checklist.
+
+# CONTEXT
+You are provided with the user's original query, the agent's execution logs, and the resulting file changes (diffs).
+Your task is to verify if the agent successfully fulfilled the requirements based on the evidence.
+
+# RULES
+1. Base your judgment ONLY on the provided evidence in <evidence> below — do NOT use any tools to search for files or information.
+2. Be strict: a "pass" is true only if the requirement is fully and clearly met.
+3. The 'reason' field for each item must explain WHY it passed or failed based on specific evidence.
+4. Do NOT attempt to read files, browse, run commands, or use any tools. Only analyze the text provided.
+5. Write every 'reason' in English, whatever language the agent or the user wrote in.
+6. Your final message must be ONLY the JSON verdict object — no prose around it.
+${evidenceContent}`;
+
   const userMessage = `
 <checklist_items>
 ${checklistJson}
 </checklist_items>
 
-Evaluate the agent performance against the checklist using the evidence from the system prompt.
+Evaluate the agent performance against the checklist using the evidence above.
 `;
 
-  const messages: LLMMessage[] = [
-    { role: "system", content: systemPrompt },
-    { role: "user", content: userMessage },
-  ];
+  return {
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userMessage },
+    ],
+    jsonSchema,
+    evidenceContent,
+  };
+}
+
+/**
+ * Uses an LLM judge (via the Codex CLI) to evaluate agent performance against a
+ * checklist. The evidence is also written to `<runDir>/judge-evidence.md` so a
+ * failed run can be read without re-rendering the trace. Returns per-item
+ * pass/fail with reasoning.
+ */
+export async function evaluateChecklist(
+  userQuery: string,
+  agentLogs: string,
+  fileDiffs: string,
+  checklist: BenchmarkChecklistItem[],
+  judgeConfig: ModelConfig,
+  runDir: string,
+  llmClient: typeof codexChatCompletion = codexChatCompletion,
+): Promise<{
+  results: Record<string, { pass: boolean; reason: string }>;
+  messages: LLMMessage[];
+  response: string;
+}> {
+  const { messages, jsonSchema, evidenceContent } = buildJudgeRequest(
+    userQuery,
+    agentLogs,
+    fileDiffs,
+    checklist,
+  );
+  await writeRunFile(runDir, "judge-evidence.md", evidenceContent);
 
   const configWithSchema: ModelConfig = {
     ...judgeConfig,
@@ -103,13 +136,7 @@ Evaluate the agent performance against the checklist using the evidence from the
   // Retry once on failure before marking all items as failed
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const response = await cliChatCompletion(
-        messages,
-        configWithSchema,
-        undefined,
-        undefined,
-        evidencePath,
-      );
+      const response = await llmClient(messages, configWithSchema);
 
       return {
         results: JSON.parse(response.content),

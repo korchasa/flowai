@@ -6,10 +6,10 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * Simulates a framework template update where AGENTS.template.md gained a CHECK step.
  *
  * Runner sequence: copy fixtures → copy framework → write AGENTS.md → setup().
- * In setup(), .claude/ already contains the full framework.
+ * In setup(), .codex/ already contains the full framework.
  *
  * Strategy:
- * 1. Read real AGENTS.template.md from .claude/assets/
+ * 1. Read real AGENTS.template.md from .codex/assets/
  * 2. Create an "old" version by stripping the CHECK step
  * 3. Commit everything (old template = baseline)
  * 4. Restore real version → only this template shows as modified in git
@@ -33,10 +33,10 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     commits: [
       {
         message: "Initial sync (baseline)",
-        files: [".claude/assets/AGENTS.template.md"],
+        files: [".codex/assets/AGENTS.template.md"],
       },
     ],
-    modified: [".claude/assets/AGENTS.template.md"],
+    modified: [".codex/assets/AGENTS.template.md"],
     expectedOutcome:
       "Agent detects template change, compares it to AGENTS.md, and proposes adding CHECK step to TDD Flow section",
   };
@@ -64,10 +64,10 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
       ].join("\n"),
     );
 
-    // Runner has already copied framework to .claude/ and written AGENTS.md
+    // Runner has already copied framework to .codex/ and written AGENTS.md
     const templatePath = join(
       sandboxPath,
-      ".claude",
+      ".codex",
       "assets",
       "AGENTS.template.md",
     );
@@ -88,7 +88,7 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     // Restore real (new) version — simulates an updated framework template source.
     await Deno.writeTextFile(templatePath, newContent);
 
-    // Now only .claude/assets/AGENTS.template.md is modified
+    // Now only .codex/assets/AGENTS.template.md is modified
   }
 
   userQuery =
@@ -98,7 +98,7 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     {
       id: "detected_asset_change",
       description:
-        "Did the agent detect or read `.claude/assets/AGENTS.template.md` as the read-only framework template source?",
+        "Did the agent detect or read `.codex/assets/AGENTS.template.md` as the read-only framework template source?",
       critical: true,
     },
     {
