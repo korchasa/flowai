@@ -27,9 +27,6 @@
 - Be precise in wording. Use a scientific approach — accompany highly specialized terms and abbreviations with short hints in parentheses.
 - Deno's `crypto.subtle.digest` rejects `Uint8Array` views backed by `ArrayBufferLike` (TS2345 on `BufferSource`). Pass a fresh `ArrayBuffer` instead: `const buf = new ArrayBuffer(bytes.byteLength); new Uint8Array(buf).set(bytes); await crypto.subtle.digest("SHA-256", buf);`.
 
-## Project Information
-- Project Name: flowai
-
 ## Project Vision
 
 Moved to the SRS constitution — now the single source of truth for the mission,
@@ -38,12 +35,6 @@ principles: `documents/requirements.md`, sections "Constitution — Mission",
 "Constitution — Foundational Failure Modes", and "Constitution — Principles".
 Keep this file to project rules and tooling; do not restate the vision here
 (SPOT). The cognitive-debt definition lives in "Constitution — Mission".
-
-## Project tooling Stack
-- TypeScript
-- Deno
-- Python (benchmark fixtures, plus skill scripts that must run on the user's
-  machine with no toolchain of their own — see `framework/AGENTS.md`)
 
 ## Architecture
 - `framework/<pack>/`: Source of truth for product packs. Each pack has `pack.yaml` + two primitive dirs: `commands/` (user-only workflows) and `skills/` (agent-invocable capabilities). `agents/`, `hooks/`, `scripts/`, `assets/`, `acceptance-tests/` are optional.
@@ -64,12 +55,6 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 
 1. **Framework command**: a user-only primitive under `framework/<pack>/commands/`. Installs into `.{ide}/skills/` alongside skills; the only IDE-visible difference is the injected flag. This is the sense used everywhere in this project's source tree and documentation.
 2. **IDE slash command**: a flat `.md` file under `.{ide}/commands/` (e.g. `.claude/commands/my-cmd.md`). Owned by the user, managed by `flowai user-sync` for cross-IDE propagation. The CLI's `PlanItemType = "command"` refers exclusively to sense (2). Framework commands never land in this directory.
-
-## Key Decisions
-- Use agentskills.io skills as the primary workflow system
-- Store project knowledge in `documents/` using SRS/SDS schema
-- Centralize verification through `deno task check`
-- Dev resources in `.claude/` (skills, agents). Framework resources installed by flowai
 
 ## Documentation Hierarchy
 1. **`AGENTS.md`**: Project constraints and mandatory rules. READ-ONLY reference. Vision/mission moved to the SRS constitution (item 2).
@@ -121,72 +106,7 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - **Deleting an artifact orphans the evidence that cites it**: before removing a run directory, data file, or module, run `grep -rn "<name>" documents/tasks/` and annotate every `Evidence:` line the deletion breaks — say where the evidence moved, or that it was retired on purpose. Task files are permanent records and their `Evidence:` lines are NOT rewritten after the fact, but an orphaned path with no note reads as lost data. Observed 2026-08-04: removing the retired campaign dirs left three live `Evidence:` paths in two task files pointing at nothing, while the verdicts themselves were safe in the committed cells all along.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a benchmark scenario ID (flowai's own idiom, matched by `check-fr-coverage.ts`), a test `path::name`, a verification command, or `manual — <reviewer>`. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Enforced by `plan` (DoD tuple), `review` / `review-and-commit` (FR Coverage Audit — blocking), and `commit` / `review-and-commit` (FR Acceptance Gate on SRS edits).
 
-### SRS Format (`documents/requirements.md`)
-
-- **Requirement numbering**: Exactly 2 levels — `FR-x` and `FR-x.y`. No `FR-x.y.z`.
-  Acceptance criteria under `FR-x.y` are plain bullet items (no FR prefix).
-- **Sub-FR heading & coverage caveat**: sub-FRs use `#### FR-PARENT.SUFFIX` (4 hashes — the dominant form for the 50+ sub-FRs, e.g. `FR-DIST.SYNC`, `FR-AI-CODE-REVIEW.EXISTING-SUITE`). `check-fr-coverage.ts` matches ONLY top-level `### FR-` (regex `/^###\s+FR-/`) and is NOT part of `deno task check`, so no `####` sub-FR is machine-checked by it. Sub-FR acceptance is enforced only at review time (FR Coverage Audit) or by manual anchor grep — a green `deno task check` does not imply a sub-FR was covered.
-
-```markdown
-# SRS
-## 1. Intro
-- **Desc:**
-- **Def/Abbr:**
-## 2. General
-- **Context:**
-- **Assumptions/Constraints:**
-## 3. Functional Reqs
-### 3.1 FR-CMD-EXEC
-- **Desc:**
-- **Scenario:**
-- **Acceptance verified by acceptance tests:** `scenario-id-1`, `scenario-id-2`
-  <!-- or: **Acceptance:** tests/foo_test.ts::test_bar | `deno task check-x` | manual — <reviewer> -->
-- **Status:** [ ] / [x]
----
-
-## 4. Non-Functional
-
-- **Perf/Reliability/Sec/Scale/UX:**
-
-## 5. Interfaces
-
-- **API/Proto/UI:**
-
-## 6. Acceptance
-
-- **Criteria:**
-
-````
-
-**Evidence keyword caveat (`scripts/check-srs-evidence.ts`)**: Any line in SRS containing the literal `Evidence:` plus a path to a `*_test.ts` file is checked unconditionally — the file MUST exist on disk, regardless of whether the parent FR is `[ ]` or `[x]`. For forward-declared `[ ]` FRs whose tests are not yet authored, formulate `**Acceptance:**` as prose (`deno test <path> (to be authored)` or `manual — <reviewer>`) and keep per-step DoD with `Evidence:` lines in the linked task file, NOT in SRS. The validator does NOT distinguish FR status; a stale `[ ]` FR pointing at a future test fails `deno task check` on every run.
-
-### SDS Format (`documents/design.md`)
-```markdown
-# SDS
-## 1. Intro
-- **Purpose:**
-- **Rel to SRS:**
-## 2. Arch
-- **Diagram:**
-- **Subsystems:**
-## 3. Components
-### 3.1 Comp A
-- **Purpose:**
-- **Interfaces:**
-- **Deps:**
-...
-## 4. Data
-- **Entities:**
-- **ERD:**
-- **Migration:**
-## 5. Logic
-- **Algos:**
-- **Rules:**
-## 6. Non-Functional
-- **Scale/Fault/Sec/Logs:**
-## 7. Constraints
-- **Simplified/Deferred:**
-````
+SRS and SDS format rules live in `documents/AGENTS.md`; it loads when working under `documents/`. Framework primitive placement and the acceptance-test infrastructure smoke test live in `framework/AGENTS.md`.
 
 ### Tasks (`documents/tasks/`)
 
@@ -197,15 +117,6 @@ Your memory resets between sessions. Documentation is the only link to past deci
 - Use GODS format for issues and plans — this is the project's **accepted task format**, and everything outside this file refers to it by that name rather than by "GODS". This file does NOT carry the format itself: the `write-gods-tasks` skill is its single source, and writing a task file starts by loading that skill.
 - `documents/tasks/` is **committed and scanned** (NOT gitignored) — the doc-anchors Stop hook validates SALP tokens in task prose, so illustrative tokens must be escaped. Files accumulate — this is expected.
 - **SALP in prose:** when mentioning a SALP token illustratively (not as a real cross-reference) in any committed Markdown/doc/task prose, wrap it in inline code (`` `[REF:ns:id]` ``) or a fenced block — the doc-anchors hook and `check-salp` ignore code spans but treat bare tokens in prose as live refs (a dangling one blocks turn-end).
-
-### Framework primitive placement
-
-When a task creates a new framework primitive, decide the subdir FIRST:
-
-- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/commit`, `/update`, `/review-and-commit`.
-- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `deep-research`, `draw-mermaid-diagrams`.
-
-Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
 
 ### Readability Floor (All Docs)
 
@@ -325,14 +236,6 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
 - **Orphaned benchmark test runners (fork-storm)**: SWE-bench agent sessions run the project's own test suite inside the sandbox (e.g. `python3 tests/runtests.py <label>`), and Django's runner forks a worker pool (10 procs + a `multiprocessing.resource_tracker`). When a session dies or is killed, that pool is orphaned (reparented to PID 1) and keeps burning CPU for HOURS — a single leaked `runtests.py` produced load-per-CPU >7 and tripped `system_health`, silently aborting every subsequent session (incident 2026-07-07: two runners hung >1 day, load hit 113 on 10 CPU). Detect: `ps -Ao pid,etime,command | grep -E "tests/runtests.py|flowai-bench.*multiprocessing" | grep -v grep`. A runner is a legitimate in-flight test only if young (seconds–minutes); anything older than ~10 min with NO active bench session (`ps aux | grep '[b]enchmark.ts run'`) is an orphan — kill it (`kill -9`). Sweep after EVERY benchmark run/batch and before diagnosing any `system_health` abort. A monitor that greps only for the success marker will not see this — the load storm looks like "still running". Match on age, not presence.
 - **Safe deletion in benchmark scripts/cleanup**: `rm -rf "$VAR/..."` with an unset/empty `$VAR` targets `/...`. Before any scripted `rm -rf`, guard every path component: assert the base var is non-empty AND the dir exists (`[ -n "$OUT" ] && [ -d "$OUT" ] || exit 1`), never glob a possibly-empty variable path (`"$OUT"/*.log` becomes `/*.log`), and prefer a dry-run listing (resolve each target with `pwd -P`, confirm it stays under the expected root) before the destructive pass. Recurring near-miss across sessions.
 
-### Responsibility
-
-Build tooling, verification, and acceptance test infrastructure for flowai.
-
-- `scripts/*.ts` — Deno task entry points (check, test, dev, acceptance-tests)
-- `scripts/acceptance-tests/lib/` — Acceptance test framework: adapter layer for IDE CLIs, scenario runner, LLM judge, trace visualization, token usage estimation
-- `scripts/check-*.ts` — Validation scripts for skills and sync integrity
-
 ### Standard Interface
 - `check` — the main command for comprehensive project verification. Runs the following steps in order:
   - code formatting check
@@ -341,12 +244,6 @@ Build tooling, verification, and acceptance test infrastructure for flowai.
   - skill validation
 - `test <path>` — runs a single test file or test suite.
 - `dev` — runs the application in development mode with watch mode enabled.
-
-### Detected Commands
-- `deno task check` (check deno.json)
-- `deno task test` (check deno.json)
-- `deno task dev` (check deno.json)
-- `deno task acceptance-tests` (check deno.json)
 
 ### CLI Test Caveat
 - CLI test suite moved to [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) — run `deno task check` there for the CLI side. This repo's `deno task check` covers framework + scripts only.
@@ -363,23 +260,6 @@ Build tooling, verification, and acceptance test infrastructure for flowai.
 - **Real verdict** comes from the final `N passed | M failed` summary lines, NOT from the presence of `=== FAIL` strings. Always grep for `failed` count, not for `FAIL`.
 - If the agent stops on `=== FAIL deno eval Deno.exit(...)` without checking the summary line, it is a false alarm.
 - `scripts/acceptance-tests/lib/process_watchdog_test.ts` is timing-bound: it waits up to 2000 ms for a process group to collapse, and under host load it fails with `pgid=<N> never reached 1 members within 2000 ms`. That failure does NOT mean the watchdog regressed. Before fixing anything, re-run the single file: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts`. Load noise → a DIFFERENT test of that file fails on the retry, or everything passes. A real defect → the SAME test fails three runs in a row. Observed 2026-08-04: two failures with different test names within one hour, then two clean runs, on a diff that touched no file under `scripts/acceptance-tests/`. One member of that family is no longer noise: the `rss-bloat trip` test was flaky for a real reason and was fixed on 2026-08-24, so a failure there now means the watchdog regressed. Its bloater used to allocate 80 MiB and sleep; macOS compresses untouched pages away within a second, RSS settled at 3.8 MB under 92% swap and the 10 MiB ceiling was never crossed. `scripts/acceptance-tests/lib/rss_bloat.py` now keeps every page hot, and the test trips in ~380 ms instead of burning its whole 8 s budget.
-
-### Acceptance Test Infrastructure Smoke Test
-
-Before writing or modifying a benchmark scenario for a command or skill, run one **existing** scenario for the same primitive to verify infrastructure works:
-
-```sh
-deno task acceptance-tests -f <existing-scenario-id>
-```
-
-If it finishes with 0 agent steps or "Unknown skill" — the acceptance test runner has an infrastructure bug (e.g., `copyFrameworkToIdeDir` not copying the primitive). Fix the runner first; do not write new scenarios on broken infrastructure.
-
-The runner also pre-checks that `scenario.skill` is mounted in the sandbox before spawning the agent and warns on suspiciously short agent output (< 200 chars with exit 0).
-
-- The `acceptance-tests -f` flag accepts ONE substring (last-wins on multiple). To run several scenarios: use a broader substring covering all of them, OR run sequential single-`-f` invocations. Multiple `-f` flags silently keep only the last value.
-- An `acceptance-tests` run reporting "0 errors, 0 scenarios run" with exit 0 is a SETUP FAILURE, not success. Check stderr for "Error running scenario" lines. Common cause: missing `fixture/` directory referenced by the scenario's setup hook.
-- **`0 agent steps` is not an auth failure until you have checked auth in a REAL environment.** `claude auth status` run under `env -i` reports `"loggedIn": false` on a fully authorised machine — the stripped environment cannot reach the credential store. Re-run it with the inherited environment before concluding anything, and read the Keychain entry's `mdat` timestamp (`security find-generic-password -s "Claude Code-credentials"`) to see when the token was last refreshed. Asking the user to log in again on the strength of an `env -i` probe spends a round-trip on a state that was already fine.
-- **user-level skill collision (FR-ACCEPT-ISOLATION)**: Claude Code's Skill tool resolves `~/.claude/skills/<name>/SKILL.md` (user-level) over `<sandbox>/.claude/skills/<name>/SKILL.md` (project-level) on name collision. Without mitigation, every framework-source `SKILL.md` edit silently routes the model to the developer's installed snapshot, and the Acceptance Test TDD RED→GREEN cycle produces no observable change. Mitigation lives in `prepareAcpClaudeHome` (`scripts/acceptance-tests/lib/acp/auth.ts`, wired into the Claude profile's `prepareWorkspace`; the direct `ClaudeAdapter` was retired with the ACP migration): builds `<workDir>/bench-home/` (sibling of the sandbox; placed outside the sandbox cwd so `git status` does not flag it as untracked) with an empty `.claude/skills/` and symlinks back to `~/Library/Keychains` and `~/.local/share/claude` for OAuth/Keychain auth, then exports `HOME=<workDir>/bench-home`. `~/.claude/skills/` is never read or written by the bench. Cursor/Codex/OpenCode have no analogous bug and pass through unchanged.
 
 ### Lint Exclude / Test Ignore Drift
 
@@ -402,9 +282,4 @@ the atom enforces the iteration cap by re-invoking.
 - **Poll interval:** 15 seconds — green builds here run `deno task check` and complete in ~30–60 s; a 60 s poll wastes a full cache window on a build that may already be done.
 - **Wall-clock budget:** 180 seconds (3 minutes) — anything longer is an anomaly (hanging job, queue starvation, runner outage). When the iteration cap (`ceil(budget / poll interval)` = 12) is exhausted without a terminal status, the push atom STOPs with a loud `CI ANOMALY` report (run URL + last-known status) instead of the silent timeout — treat a >3 min build as an incident worth manual investigation.
 
-## Code Documentation
-
-- **Module level**: each module gets an `AGENTS.md` describing its responsibility and key decisions.
-- **Code level**: JSDoc/GoDoc for classes, methods, and functions. Focus on *why* and *how*, not *what*. Skip trivial comments — they add noise without value.
-
-> **Before you start:** read `documents/requirements.md` (SRS) and `documents/design.md` (SDS) if you haven't in this session. They contain project requirements and architecture that inform every task.
+> **Before you start:** find the SRS (`documents/requirements.md`) and SDS (`documents/design.md`) sections that concern the task — grep by FR id, component name, or heading — and read only those. Do not read either file in full as a session preamble: together they are ~16k tokens that then ride along in every later turn. The full documents are the reference to return to, not the warm-up.

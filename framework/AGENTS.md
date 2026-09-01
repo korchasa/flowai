@@ -72,3 +72,29 @@ When an acceptance test scenario invokes `deno task check` (or any project-check
 ```
 
 Without these, the sandbox's `deno fmt --check` and `deno lint` apply to the copied `framework/`-as-`.claude/` tree, which has formatting/lint drift relative to the sandbox project. Symptoms: a happy-path checklist item like `check_gate_enforced` fails with the agent surfacing an fmt diff against files it never touched. Fix-it-once template lives in `framework/core/skills/implement/acceptance-tests/tdd-cycle-completes/fixture/deno.json`.
+
+### Framework primitive placement
+
+When a task creates a new framework primitive, decide the subdir FIRST:
+
+- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/commit`, `/update`, `/review-and-commit`.
+- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `deep-research`, `draw-mermaid-diagrams`.
+
+Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
+
+### Acceptance Test Infrastructure Smoke Test
+
+Before writing or modifying a benchmark scenario for a command or skill, run one **existing** scenario for the same primitive to verify infrastructure works:
+
+```sh
+deno task acceptance-tests -f <existing-scenario-id>
+```
+
+If it finishes with 0 agent steps or "Unknown skill" — the acceptance test runner has an infrastructure bug (e.g., `copyFrameworkToIdeDir` not copying the primitive). Fix the runner first; do not write new scenarios on broken infrastructure.
+
+The runner also pre-checks that `scenario.skill` is mounted in the sandbox before spawning the agent and warns on suspiciously short agent output (< 200 chars with exit 0).
+
+- The `acceptance-tests -f` flag accepts ONE substring (last-wins on multiple). To run several scenarios: use a broader substring covering all of them, OR run sequential single-`-f` invocations. Multiple `-f` flags silently keep only the last value.
+- An `acceptance-tests` run reporting "0 errors, 0 scenarios run" with exit 0 is a SETUP FAILURE, not success. Check stderr for "Error running scenario" lines. Common cause: missing `fixture/` directory referenced by the scenario's setup hook.
+- **`0 agent steps` is not an auth failure until you have checked auth in a REAL environment.** `claude auth status` run under `env -i` reports `"loggedIn": false` on a fully authorised machine — the stripped environment cannot reach the credential store. Re-run it with the inherited environment before concluding anything, and read the Keychain entry's `mdat` timestamp (`security find-generic-password -s "Claude Code-credentials"`) to see when the token was last refreshed. Asking the user to log in again on the strength of an `env -i` probe spends a round-trip on a state that was already fine.
+- **user-level skill collision (FR-ACCEPT-ISOLATION)**: Claude Code's Skill tool resolves `~/.claude/skills/<name>/SKILL.md` (user-level) over `<sandbox>/.claude/skills/<name>/SKILL.md` (project-level) on name collision. Without mitigation, every framework-source `SKILL.md` edit silently routes the model to the developer's installed snapshot, and the Acceptance Test TDD RED→GREEN cycle produces no observable change. Mitigation lives in `prepareAcpClaudeHome` (`scripts/acceptance-tests/lib/acp/auth.ts`, wired into the Claude profile's `prepareWorkspace`; the direct `ClaudeAdapter` was retired with the ACP migration): builds `<workDir>/bench-home/` (sibling of the sandbox; placed outside the sandbox cwd so `git status` does not flag it as untracked) with an empty `.claude/skills/` and symlinks back to `~/Library/Keychains` and `~/.local/share/claude` for OAuth/Keychain auth, then exports `HOME=<workDir>/bench-home`. `~/.claude/skills/` is never read or written by the bench. Cursor/Codex/OpenCode have no analogous bug and pass through unchanged.
