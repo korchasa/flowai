@@ -46,9 +46,13 @@ Deno.test("readMarketplacePluginNames: throws when marketplace declares zero plu
   );
 });
 
-Deno.test("planClaudeActions: every emitted plugin goes to install, disabled stays skipped", () => {
+Deno.test("planClaudeActions: every emitted plugin is installed, previously disabled ones are re-disabled", () => {
   // Fixtures imitate dogfood-namespace state — see Critique #8 in task
   // documents/tasks/2026/05/local-marketplace-namespace.md.
+  // A disabled plugin MUST still be installed: `marketplace remove` drops
+  // both the install and its `enabled: false` key from user settings, so a
+  // plugin left uninstalled is unknown on the next run and comes back
+  // enabled. Reinstall + `plugin disable` is the only durable mute.
   const plan = planClaudeActions(
     ["flowai", "flowai-deno", "flowai-memex", "flowai-typescript"],
     [
@@ -59,10 +63,11 @@ Deno.test("planClaudeActions: every emitted plugin goes to install, disabled sta
   );
   assertEquals(plan.install, [
     "flowai@flowai-plugins-local",
+    "flowai-deno@flowai-plugins-local",
     "flowai-memex@flowai-plugins-local",
     "flowai-typescript@flowai-plugins-local",
   ]);
-  assertEquals(plan.skipped, ["flowai-deno@flowai-plugins-local"]);
+  assertEquals(plan.disable, ["flowai-deno@flowai-plugins-local"]);
 });
 
 Deno.test("planClaudeActions: ignores project-scope and other-marketplace disabled entries", () => {
@@ -77,7 +82,7 @@ Deno.test("planClaudeActions: ignores project-scope and other-marketplace disabl
     ],
   );
   assertEquals(plan.install, ["flowai@flowai-plugins-local"]);
-  assertEquals(plan.skipped, []);
+  assertEquals(plan.disable, []);
 });
 
 Deno.test("planCodexPluginAdds: every emitted plugin is installed to materialize cache", () => {

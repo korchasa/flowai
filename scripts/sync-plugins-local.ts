@@ -232,18 +232,22 @@ type ClaudePluginListEntry = {
 
 export type ClaudeActionPlan = {
   /**
-   * Plugins to (re)install at user scope. After `marketplace remove`,
-   * `claude plugin update` reports the plugin as "not installed" — we
-   * therefore route every plugin the user had enabled (plus brand-new
-   * ones) through `claude plugin install`, which is idempotent.
+   * Every emitted plugin, to (re)install at user scope. After `marketplace
+   * remove`, `claude plugin update` reports the plugin as "not installed" —
+   * we therefore route every plugin through `claude plugin install`, which
+   * is idempotent. Disabled plugins are installed too: see `disable`.
    */
   install: string[];
   /**
-   * Plugins the user previously installed at user scope but explicitly
-   * disabled (`enabled = false`). We do NOT re-enable them — leave the
-   * mute choice intact by not installing.
+   * Plugins the user had installed at user scope but explicitly disabled
+   * (`enabled = false`) before the marketplace was removed. `marketplace
+   * remove` drops the install AND the `enabled: false` key from the user's
+   * settings, so leaving such a plugin uninstalled loses the mute on the
+   * next run (it is then unknown and gets installed enabled). We reinstall
+   * it and run `claude plugin disable` right after, which is the only
+   * state that survives the next re-point.
    */
-  skipped: string[];
+  disable: string[];
 };
 
 function decode(bytes: Uint8Array): string {
@@ -365,9 +369,12 @@ export function readMarketplacePluginNames(marketplaceJson: string): string[] {
  * detaches every plugin from that marketplace, so a subsequent
  * `claude plugin update <id>` reports "Plugin not installed" and aborts.
  * After re-adding the marketplace we therefore call `plugin install` for
- * every plugin the user wants — which is idempotent. The only exception
- * is plugins the user previously DISABLED at user scope: we leave them
- * alone to preserve the mute choice.
+ * every emitted plugin — which is idempotent. Plugins the user previously
+ * DISABLED at user scope are installed as well and then listed in
+ * `disable`, so the caller re-applies the mute with `claude plugin
+ * disable`. Skipping the install instead is not a preservation: the
+ * remove already erased the `enabled: false` key, and an uninstalled
+ * plugin is indistinguishable from a brand-new one on the next run.
  *
  * `installedBeforeRemove` must be captured BEFORE `marketplace remove` —
  * after the remove, the listing has no flowai-plugins entries and the
@@ -384,13 +391,13 @@ export function planClaudeActions(
     if (entry.enabled === false) disabledIds.add(entry.id);
   }
   const install: string[] = [];
-  const skipped: string[] = [];
+  const disable: string[] = [];
   for (const name of emittedNames) {
     const id = `${name}@${marketplace}`;
-    if (disabledIds.has(id)) skipped.push(id);
-    else install.push(id);
+    install.push(id);
+    if (disabledIds.has(id)) disable.push(id);
   }
-  return { install, skipped };
+  return { install, disable };
 }
 
 async function readClaudePluginList(): Promise<ClaudePluginListEntry[]> {
@@ -578,10 +585,11 @@ async function syncClaude(absoluteOutDir: string): Promise<void> {
       "user",
     ]);
   }
-  for (const id of plan.skipped) {
+  for (const id of plan.disable) {
     console.log(
-      `[sync-plugins-local] Skipping disabled Claude Code plugin ${id} (preserved as enabled=false)`,
+      `[sync-plugins-local] Re-disabling Claude Code plugin ${id} (was enabled=false before the re-point)`,
     );
+    await runInherited("claude", ["plugin", "disable", id, "--scope", "user"]);
   }
 }
 
