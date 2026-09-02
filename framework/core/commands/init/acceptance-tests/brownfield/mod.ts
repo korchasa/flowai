@@ -30,7 +30,8 @@ Keep answers brief and affirmative.`;
   checklist = [
     {
       id: "agents_md_created",
-      description: "Was AGENTS.md created?",
+      description:
+        "Was the root AGENTS.md written with what the agent discovered in the project (stack, architecture, commands) and confirmed with the user? The benchmark harness places a generic AGENTS.md in the sandbox BEFORE the agent starts, so the file always pre-exists and shows as modified, never as new — judge whether the agent filled it, not whether it created the file from nothing.",
       critical: true,
     },
     {
@@ -83,9 +84,17 @@ Keep answers brief and affirmative.`;
       critical: true,
     },
     {
+      // The stack has two grounded sources, not one: the fixture (deno.json,
+      // src/, a README that says "Express-like routing") and the user in the
+      // conversation, who states which stack is canonical. On 2026-09-02 the
+      // user said "TypeScript/Express should be the canonical stack", the agent
+      // recorded exactly that, and the judge failed it as invented because no
+      // Express dependency is installed. Recording what the user stated is not
+      // a hallucination; only technologies that neither the project nor the
+      // user ever named count.
       id: "no_hallucinations",
       description:
-        "Does AGENTS.md only document tooling and architecture that actually exists in the project (no invented tools or frameworks)?",
+        "Does AGENTS.md only document tooling and architecture that is grounded either in the project's files or in what the user stated during the conversation? A technology the user named as part of the stack (e.g. Express) is grounded even when no dependency for it is installed yet; an invented tool or framework is one that neither the project files nor the user ever mentioned.",
       critical: true,
     },
     {

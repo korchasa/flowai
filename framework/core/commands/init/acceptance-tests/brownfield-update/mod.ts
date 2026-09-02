@@ -1,11 +1,13 @@
 import { join } from "@std/path";
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 export const InitBrownfieldUpdateBench = new class
   extends AcceptanceTestScenario {
   id = "init-brownfield-update";
   name = "Init Brownfield Project Update with Diff Confirmation";
   skill = "init";
+  interactive = true;
   stepTimeoutMs = 420_000;
   agentsTemplateVars = {
     PROJECT_NAME: "UpdateTestProject",
@@ -16,7 +18,14 @@ export const InitBrownfieldUpdateBench = new class
 
   override async setup(sandboxPath: string) {
     // Overwrite template-generated AGENTS.md with custom content containing markers
-    // that the checklist verifies are preserved after init update
+    // that the checklist verifies are preserved after init update.
+    //
+    // The runner commits the sandbox as `init` BEFORE this hook runs, so the
+    // overwrite must be committed here as well: otherwise the judge's evidence
+    // shows AGENTS.md as an uncommitted change against `init` before the agent
+    // has done anything, and reads it as the agent applying edits without
+    // confirmation (observed 2026-09-02 on codex: both critical items failed
+    // although the agent had only asked for confirmation).
     await Deno.writeTextFile(
       join(sandboxPath, "AGENTS.md"),
       [
@@ -54,6 +63,8 @@ export const InitBrownfieldUpdateBench = new class
         "",
       ].join("\n"),
     );
+    await runGit(sandboxPath, ["add", "-A"]);
+    await runGit(sandboxPath, ["commit", "-m", "Project's own AGENTS.md"]);
   }
 
   userQuery = "/init";

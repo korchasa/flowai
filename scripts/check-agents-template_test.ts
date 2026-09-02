@@ -86,17 +86,31 @@ Deno.test("AGENTS.template.md — explicitly rejects ID-only / slug-style cross-
   );
 });
 
-Deno.test("AGENTS.template.md — declares downstream migration path from GFM to SALP", async () => {
+Deno.test("AGENTS.template.md — does NOT point downstream projects at migrate-to-salp.ts", async () => {
   const content = await readTemplate();
-  // Projects initialised pre-SALP need a documented one-shot conversion.
-  // The template MUST point at `scripts/migrate-to-salp.ts` and call out the
-  // `--write` invocation.
-  assertStringIncludes(content, "migrate-to-salp.ts");
-  const invokesWrite = /migrate-to-salp\.ts[^\n]{0,100}--write/;
+  // `scripts/migrate-to-salp.ts` lives in this repository only: no pack ships
+  // it and framework.tar.gz is built from `framework/` alone, so an
+  // `.claude/scripts/migrate-to-salp.ts` instruction in the template pointed at
+  // a file the install never creates. The template must not name it.
   assert(
-    invokesWrite.test(content),
-    "Template's migration section does not show the `--write` invocation",
+    !content.includes("migrate-to-salp"),
+    "Template references migrate-to-salp.ts, which no pack ships to downstream projects",
   );
+});
+
+Deno.test("AGENTS.template.md — does NOT embed the SRS/SDS format blocks (they live in SRS/SDS.template.md)", async () => {
+  const content = await readTemplate();
+  // Downstream sessions read the SRS and SDS themselves, so the format blocks
+  // duplicated content already in context. `init` reads the structure from
+  // `framework/core/assets/SRS.template.md` and `SDS.template.md` instead.
+  assert(
+    !/^###\s+SRS Format/m.test(content) && !/^###\s+SDS Format/m.test(content),
+    "Template still embeds the SRS/SDS format blocks",
+  );
+  for (const asset of ["SRS.template.md", "SDS.template.md"]) {
+    const stat = await Deno.stat(`framework/core/assets/${asset}`);
+    assert(stat.isFile, `framework/core/assets/${asset} is missing`);
+  }
 });
 
 Deno.test("AGENTS.template.md — does NOT carry the old namespace table (FR/ADR/SDS/NFR)", async () => {

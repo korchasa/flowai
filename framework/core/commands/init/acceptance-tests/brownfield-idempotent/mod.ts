@@ -1,5 +1,6 @@
 import { join } from "@std/path";
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 export const InitBrownfieldIdempotentBench = new class
   extends AcceptanceTestScenario {
@@ -18,6 +19,12 @@ export const InitBrownfieldIdempotentBench = new class
       join(sandboxPath, "AGENTS.md"),
       `# YOU MUST\n- STRICTLY FOLLOW YOUR ROLE.\n---\nCUSTOM CONTENT MARKER\n## Project Information\n- Project Name: CustomProject\n`,
     );
+    // The runner commits the sandbox as `init` BEFORE this hook runs. Commit
+    // the overwrite too, or the judge sees a 204-line AGENTS.md replaced by six
+    // lines in the working tree and blames the agent for not preserving it
+    // (observed 2026-09-02 on codex, with the agent having left the file alone).
+    await runGit(sandboxPath, ["add", "-A"]);
+    await runGit(sandboxPath, ["commit", "-m", "Project's own AGENTS.md"]);
   }
 
   userQuery = "/init";
@@ -34,7 +41,8 @@ export const InitBrownfieldIdempotentBench = new class
     `You are a developer running init on a project that already has AGENTS.md.
 When the agent detects existing components, tell it to 'create missing components but preserve existing AGENTS.md'.
 When shown a diff to AGENTS.md, decline it — that file stays exactly as it is.
-Approve every other change, including creating the missing documents and adding the missing standard commands (check, dev, prod) to deno.json.`;
+Approve every other change, including creating the missing documents and adding the missing standard commands (check, dev, prod) to deno.json.
+When asked for the application entry point (the fixture ships none), say: use src/main.ts and create it. Never ask for placeholder or no-op dev/prod tasks.`;
 
   checklist = [
     {

@@ -8,8 +8,13 @@ export const InitVisionIntegrationBench = new class
   name = "Init Project with Vision Integration (No vision.md)";
   skill = "init";
   stepTimeoutMs = 600_000;
+  // The runner renders a root AGENTS.md from these vars BEFORE the agent
+  // starts. They must agree with interview_data.json below: on 2026-09-02 a
+  // template name of "InitTestProject" against "SuperApp" in the interview
+  // data was a genuine contradiction, the agent stopped to ask which name is
+  // canonical, and this non-interactive scenario ended on that question.
   agentsTemplateVars = {
-    PROJECT_NAME: "InitTestProject",
+    PROJECT_NAME: "SuperApp",
     TOOLING_STACK: "- Deno\n- TypeScript",
   };
 
@@ -36,6 +41,10 @@ export const InitVisionIntegrationBench = new class
       architecture: "Monolith",
       key_decisions: "Use Deno",
       preferences: ["tdd"],
+      // Both booleans are part of the interview schema the skill documents;
+      // leaving them out is a missing input the agent is right to ask about.
+      use_deno_tooling: true,
+      use_devcontainer: false,
     };
 
     await Deno.writeTextFile(
@@ -47,10 +56,23 @@ export const InitVisionIntegrationBench = new class
   userQuery =
     "/init. I have already prepared 'interview_data.json'. Please skip the interview and proceed directly to generating the assets.";
 
+  // The harness places a root AGENTS.md before the agent starts, so the skill's
+  // per-file diff confirmation applies to it and the agent ends its turn on the
+  // question. Without an emulated user that question ends the run with nothing
+  // written (observed 2026-09-02 on codex). The persona only approves.
+  interactive = true;
+  userPersona =
+    `You are a developer who has already filled in interview_data.json and wants the assets generated from it.
+When shown a diff or proposal for AGENTS.md or any other file, approve it (say 'yes').
+When asked for the application entry point (the fixture ships none), say: use src/main.ts and create it.
+When asked about a devcontainer, decline it.
+When asked anything else, confirm the agent's proposal. Keep answers brief.`;
+
   checklist = [
     {
       id: "agents_md_created",
-      description: "Was AGENTS.md created?",
+      description:
+        "Was the root AGENTS.md written with the project's own information from interview_data.json? The benchmark harness places a generic AGENTS.md in the sandbox BEFORE the agent starts, so the file always pre-exists — judge whether the agent filled it from the interview data, not whether it created the file from nothing.",
       critical: true,
     },
     {

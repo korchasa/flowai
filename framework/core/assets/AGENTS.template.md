@@ -45,7 +45,7 @@
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
 4. **Tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md`): Persistent committed plans/notes per task.
 5. **Index** (`documents/index.md`): Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS / NFR). Created on first write, never scaffolded. Task ↔ FR navigation lives inline in SRS as `**Tasks:**` back-pointers, not here.
-7. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
+6. **`README.md`**: Public-facing overview. Installation, usage, quick start. Derived from AGENTS.md + SRS + SDS.
 
 ## Interconnectedness Principle — SALP
 
@@ -65,15 +65,6 @@ Cross-references between any two pieces of project knowledge — doc-to-doc, **a
 
 - **Drift discipline** — removing or renaming an anchor obliges updating every reference to it. Checked mechanically by `scripts/check-salp.ts` (dead-REF / duplicate-ANC / surviving-legacy-grammar) where the project ships such a script.
 
-### Migrating from GFM
-
-If your project was initialised before flowai adopted SALP, run the shipped one-shot migration script ONCE after `flowai sync` pulls the new template:
-
-```sh
-deno run -A .claude/scripts/migrate-to-salp.ts --write
-```
-
-The script converts GFM-form FR links (`[FR-X](path.md#…)`), wikilinks (`[[X]]`), and bare `// FR-X` comments into SALP form in-place. It is idempotent (safe to re-run) and fails fast on any unresolvable target (no silent skips). A first-class `flowai migrate-anchors` CLI verb is planned for a future release; until then, invoke the script directly.
 
 ## Documentation Map
 
@@ -101,65 +92,6 @@ Your memory resets between sessions. Documentation is the only link to past deci
   2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence): Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a test path + test name, a benchmark scenario ID, or a verification command. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Exception: when automation cost exceeds defect cost (pure visual design, external vendor dependency), mark `**Acceptance: manual — <reviewer> — <checklist path>**`. Manual is the exception, not the default.
-
-### SRS Format (`documents/requirements.md`)
-```markdown
-# SRS
-## 1. Intro
-- **Desc:**
-- **Def/Abbr:**
-## 2. General
-- **Context:**
-- **Assumptions/Constraints:**
-## 3. Functional Reqs
-### 3.1 FR-CMD-EXEC
-- **Desc:**
-- **Scenario:**
-- **Acceptance:** <test-path::test-name | benchmark-id | `evidence-command` | `manual — <reviewer>`>
-- **Status:** [ ] / [x]
----
-
-## 4. Non-Functional
-
-- **Perf/Reliability/Sec/Scale/UX:**
-
-## 5. Interfaces
-
-- **API/Proto/UI:**
-
-## 6. Acceptance
-
-- **Criteria:**
-
-````
-
-### SDS Format (`documents/design.md`)
-```markdown
-# SDS
-## 1. Intro
-- **Purpose:**
-- **Rel to SRS:**
-## 2. Arch
-- **Diagram:**
-- **Subsystems:**
-## 3. Components
-### 3.1 Comp A
-- **Purpose:**
-- **Interfaces:**
-- **Deps:**
-...
-## 4. Data
-- **Entities:**
-- **ERD:**
-- **Migration:**
-## 5. Logic
-- **Algos:**
-- **Rules:**
-## 6. Non-Functional
-- **Scale/Fault/Sec/Logs:**
-## 7. Constraints
-- **Simplified/Deferred:**
-````
 
 ### Tasks (`documents/tasks/`)
 
