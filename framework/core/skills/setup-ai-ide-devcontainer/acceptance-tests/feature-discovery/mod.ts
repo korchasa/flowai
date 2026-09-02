@@ -15,6 +15,7 @@ export const SetupDevcontainerFeatureDiscovery = new class
   userQuery =
     "/setup-ai-ide-devcontainer Set up a devcontainer for this Node.js fullstack project with Claude Code. Accept all suggested features.";
 
+  interactive = true;
   userPersona =
     `You are a developer with a Node.js fullstack project that uses PostgreSQL (via Prisma), Redis, Docker Compose, Playwright, AWS SDK, and direnv.
 When asked about AI CLI, choose Claude Code.

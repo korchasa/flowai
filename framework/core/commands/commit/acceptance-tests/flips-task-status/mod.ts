@@ -51,7 +51,10 @@ export function rateLimit(opts: Options) {
     const now = Date.now();
     const bucket = buckets.get(key) ?? { tokens: opts.limit, lastRefill: now };
     const elapsed = now - bucket.lastRefill;
-    bucket.tokens = Math.min(opts.limit, bucket.tokens + (elapsed / opts.windowMs) * opts.limit);
+    bucket.tokens = Math.min(
+      opts.limit,
+      bucket.tokens + (elapsed / opts.windowMs) * opts.limit,
+    );
     bucket.lastRefill = now;
     if (bucket.tokens < 1) {
       return new Response("Too Many Requests", { status: 429 });

@@ -38,7 +38,7 @@ No rate-limit middleware exists.
 - [x] FR-RATE-LIMIT: middleware registered in server pipeline before route handlers.
   - Test: `src/api/server_test.ts::registers_rate_limit`
   - Evidence: `deno test src/api/server_test.ts`
-- [x] FR-RATE-LIMIT: per-route override via decorator metadata.
+- [x] FR-RATE-LIMIT: per-route override — a route builds its own limiter with its own `limit` / `windowMs` options.
   - Test: `src/api/middleware/rate_limit_test.ts::per_route_override`
   - Evidence: `deno test src/api/middleware/rate_limit_test.ts`
 

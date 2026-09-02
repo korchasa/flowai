@@ -8,6 +8,9 @@
   "fmt": {
     "exclude": [
       ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
       "documents/",
       "acceptance-tests/",
       "AGENTS.md",
@@ -15,9 +18,22 @@
     ]
   },
   "lint": {
-    "exclude": [".claude/", "documents/", "acceptance-tests/"]
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
   },
   "test": {
-    "exclude": [".claude/", "acceptance-tests/"]
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "acceptance-tests/"
+    ]
   }
 }

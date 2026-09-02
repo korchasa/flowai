@@ -1,5 +1,5 @@
 {
-  "// lock": "The scenario ends on a clean-tree check, and `deno task check` writes deno.lock in a fixture that ships none — leaving an untracked file the agent is right to refuse to commit and cannot make disappear. A throwaway sandbox needs no lockfile.",
+  "// lock": "The scenario ends on a clean-tree check, and `deno task check` writes deno.lock in a fixture that ships none \u2014 leaving an untracked file the agent is right to refuse to commit and cannot make disappear. A throwaway sandbox needs no lockfile.",
   "lock": false,
   "imports": {
     "@std/assert": "jsr:@std/assert@^1.0.19"
@@ -11,6 +11,9 @@
   "fmt": {
     "exclude": [
       ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
       "documents/",
       "acceptance-tests/",
       "AGENTS.md",
@@ -18,9 +21,22 @@
     ]
   },
   "lint": {
-    "exclude": [".claude/", "documents/", "acceptance-tests/"]
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
   },
   "test": {
-    "exclude": [".claude/", "acceptance-tests/"]
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "acceptance-tests/"
+    ]
   }
 }

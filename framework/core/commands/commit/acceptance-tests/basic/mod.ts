@@ -30,7 +30,7 @@ export const CommitBasicBench = new class extends AcceptanceTestScenario {
   }
 
   userQuery =
-    "/commit I added a sum function in utils.ts. Commit this changes.";
+    "/commit I added an add function in utils.ts. Commit this changes.";
 
   checklist = [
     {
@@ -40,7 +40,7 @@ export const CommitBasicBench = new class extends AcceptanceTestScenario {
     },
     {
       id: "commit_message_match",
-      description: "Does the commit message describe sum function?",
+      description: "Does the commit message describe the add function?",
       critical: false,
     },
     {

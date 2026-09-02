@@ -6,6 +6,7 @@ export const SetupDevcontainerNodeBasic = new class
   name = "Basic Node.js devcontainer setup";
   skill = "setup-ai-ide-devcontainer";
   stepTimeoutMs = 420_000;
+  interactive = true;
   agentsTemplateVars = {
     PROJECT_NAME: "NodeExpressApp",
     TOOLING_STACK: "- TypeScript\n- Node.js\n- Express",

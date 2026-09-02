@@ -65,12 +65,18 @@
     "exclude": [
       "**/*.md",
       ".cursor/",
-      ".claude/"
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/"
     ]
   },
   "lint": {
     "exclude": [
-      ".claude/"
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/"
     ]
   },
   "tasks": {

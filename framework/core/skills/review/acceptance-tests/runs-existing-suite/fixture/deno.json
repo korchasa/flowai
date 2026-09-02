@@ -5,7 +5,33 @@
   "tasks": {
     "check": "deno fmt --check && deno lint"
   },
-  "fmt": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
-  "lint": { "exclude": [".claude/", "documents/", "acceptance-tests/"] },
-  "test": { "exclude": [".claude/", "acceptance-tests/"] }
+  "fmt": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
+  },
+  "test": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "acceptance-tests/"
+    ]
+  }
 }

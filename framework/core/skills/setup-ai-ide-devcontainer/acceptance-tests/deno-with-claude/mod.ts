@@ -19,6 +19,7 @@ export const SetupDevcontainerDenoWithClaude = new class
   userQuery =
     "/setup-ai-ide-devcontainer Set up a devcontainer for this Deno project with full Claude Code integration, global skills mounting, and security hardening.";
 
+  interactive = true;
   userPersona =
     `You are a developer who wants a secure devcontainer for a Deno project with autonomous AI agent support.
 When asked about AI CLI, choose Claude Code.
