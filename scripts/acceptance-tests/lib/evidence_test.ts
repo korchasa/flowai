@@ -166,14 +166,42 @@ Deno.test("collectGeneratedFiles leaves out what the harness installed — the i
   }
 });
 
-Deno.test("collectGeneratedFiles skips the IDE config dir even when the agent wrote into it", async () => {
+Deno.test("collectGeneratedFiles shows what the agent wrote into an IDE config dir — the primitive `engineer` produces IS the product — and hides only the IDE's own runtime state", async () => {
+  // 2026-09-02 sweep: all eight `engineer-*` reds had their SKILL.md / agent
+  // file / hook under `.cursor/` or `.codex/`, the GENERATED FILES section
+  // was empty, and the judge scored "contents absent from evidence". The
+  // installed framework is already kept out by the init commit; a blanket
+  // skip of the IDE dirs hid the deliverable along with it.
   const { root, initHash } = await sandboxWithAgentWork();
   try {
     await write(root, ".codex/skills/init/SKILL.md", "EDITED FRAMEWORK");
+    await write(
+      root,
+      ".cursor/skills/new-skill/SKILL.md",
+      "NEW SKILL BY AGENT",
+    );
     await write(root, ".claude/settings.local.json", "{}");
     const out = await collectGeneratedFiles(root, initHash);
-    assertEquals(out.includes("EDITED FRAMEWORK"), false);
+    assertEquals(out.includes("EDITED FRAMEWORK"), true);
+    assertEquals(out.includes("NEW SKILL BY AGENT"), true);
     assertEquals(out.includes("settings.local.json"), false);
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectGeneratedFiles renders a generated AGENTS.md whole — the template alone is over 30 000 chars, so the old default cap elided the middle of every one", async () => {
+  // 2026-09-02, `init-greenfield` re-measure: AGENTS.md on disk was 30 943
+  // chars with `## Documentation Rules` at line 86; the evidence carried
+  // `[HARNESS ELIDED 943 BYTES FROM THE MIDDLE OF THIS FILE]` across exactly
+  // that heading and the judge scored `doc_rules_present` absent.
+  const { root, initHash } = await sandboxWithAgentWork();
+  try {
+    const body = "## Documentation Rules\n" + "x".repeat(45_000) + "\n## End\n";
+    await write(root, "AGENTS.md", body);
+    const out = await collectGeneratedFiles(root, initHash);
+    assertEquals(out.includes("HARNESS ELIDED"), false);
+    assertEquals(out.includes("## Documentation Rules"), true);
   } finally {
     await Deno.remove(root, { recursive: true });
   }

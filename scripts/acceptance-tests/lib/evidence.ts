@@ -154,8 +154,14 @@ export function renderFileForEvidence(
   ].join("\n");
 }
 
-/** Config dirs of every IDE the runner installs the framework into. */
-const IDE_DIRS = [".claude", ".codex", ".opencode", ".cursor"];
+/**
+ * Files an IDE writes for itself during the run, never the agent's work.
+ * Only these are hidden inside the IDE config dirs: the installed framework
+ * is already excluded by the init commit, and everything else the agent
+ * puts there — a new skill under `.cursor/skills/`, a hook, an agent file —
+ * is the deliverable of `engineer` and has to reach the judge.
+ */
+const IDE_RUNTIME_STATE = [".claude/settings.local.json"];
 
 const TEXT_EXTENSIONS = new Set([
   ".json",
@@ -205,13 +211,19 @@ async function gitLines(cwd: string, args: string[]): Promise<string[]> {
  * was rendered first and the cap fell before `documents/`, so `init-greenfield`
  * failed `srs_sds_structure` with "the evidence does not show the contents"
  * while the SRS on disk matched the template line for line. Selecting by git
- * means no walk order can push the product out of the section; skipping the
- * IDE dirs keeps an agent's stray edit to an installed skill out of it as well.
+ * means no walk order can push the product out of the section. The IDE dirs
+ * are NOT skipped: the same sweep had every `engineer-*` scenario red because
+ * its product — a SKILL.md or agent file under `.cursor/` — was hidden by a
+ * blanket skip and the judge scored "contents absent from evidence".
  */
 export async function collectGeneratedFiles(
   sandboxPath: string,
   initHash: string,
-  maxFileSize = 30_000,
+  // 60 000, not 30 000: the AGENTS.md that `init` generates from the template
+  // is ~31 000 chars, and at the old cap every one of them reached the judge
+  // with its middle elided — `init-greenfield` lost `doc_rules_present` on
+  // 2026-09-02 to a hole cut across the very heading the item asks for.
+  maxFileSize = 60_000,
 ): Promise<string> {
   const paths = new Set<string>([
     ...await gitLines(sandboxPath, [
@@ -236,7 +248,7 @@ export async function collectGeneratedFiles(
   const parts: string[] = [];
   for (const rel of [...paths].sort()) {
     const top = rel.split("/")[0];
-    if (IDE_DIRS.includes(top) || top === "node_modules") continue;
+    if (IDE_RUNTIME_STATE.includes(rel) || top === "node_modules") continue;
     if (!isTextFile(rel)) continue;
     try {
       const content = await Deno.readTextFile(`${sandboxPath}/${rel}`);
