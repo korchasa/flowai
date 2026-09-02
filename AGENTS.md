@@ -20,6 +20,7 @@
 
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
+- `.agents/skills/` and `.codex/agents/` are the codex-side copies of the dev resources in `.claude/skills/` and `.claude/agents/`; `deno task check` neither formats nor lints them. Before committing one, `diff` it against its `.claude/` source and read the TOML by eye: the port of 2026-09-02 had been made by a search-replace that turned every "Claude Code" into "Codex" in three files (`--ide Codex`, `~/.Codex/projects`, `Codex -p --resume`), and nothing in the gate could have caught it.
 - Everything in `framework/` is the framework — the product of this project. Users install it via flowai into their IDE's config dir (`.claude/`). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
 - Any changes to skills or agents must follow Acceptance Test TDD flow (see "Acceptance Test TDD" section below) — untested skill changes lead to regressions that are hard to detect without acceptance tests.
 - This is a universal framework for multiple IDEs (Cursor, Claude Code, OpenCode). Do not use tool names specific to a single IDE — write generically and provide examples for various IDEs. For example, instead of `use todo_write`, use `add to todo list (by todo_write, todowrite, etc.)`.
@@ -251,6 +252,7 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
 
 ### `deno task check` Output Quirks
 
+- **Never let `deno task check` in a scratch worktree see `AUTO_INSTALL_PLUGINS=true`.** The check's `sync-plugins-local` step re-points the user's Claude plugin marketplace at the tree it runs in, and the gitignored `.env` of the main checkout sets that flag; `shouldAutoInstall` (`scripts/sync-plugins-local.ts`) lets the process env override a missing `.env`. A worktree created for a parent baseline or a probe is deleted minutes later, and a marketplace pointed at it is broken for the user's next session. Run `env -u AUTO_INSTALL_PLUGINS deno task check` there, never copy `.env` in, and confirm the log has no `[sync-plugins-local]` line. Observed 2026-09-02 on the review's JiT parent baseline.
 - The output ALWAYS contains three lines:
   ```
   === FAIL deno eval Deno.exit(42) ===
@@ -277,6 +279,7 @@ via `$SHA` and MUST be single-shot (exit 0 = green, 1 = red, 2 = in-progress);
 the atom enforces the iteration cap by re-invoking.
 
 - **Provider:** github-actions
+- **Triggers:** `push` to `main` and `pull_request` targeting `main` only (`.github/workflows/ci.yml`). A feature branch gets a run for its SHA ONLY while a PR to `main` is open; with no PR, `gh run list --commit "$SHA"` stays empty forever and the poll below would end in a false `CI ANOMALY`. Check `gh pr list --head <branch>` first: no PR → report "no CI run: the workflow does not trigger on this branch" and skip the await.
 - **Status command:** `RID=$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId,status,conclusion); echo "$RID" | jq -e '.[0].status == "completed" and .[0].conclusion == "success"' >/dev/null && exit 0; echo "$RID" | jq -e '.[0].status == "completed"' >/dev/null && exit 1; exit 2`
 - **Logs command:** `gh run view --log-failed "$(gh run list --branch "$(git rev-parse --abbrev-ref HEAD)" --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
 - **Run URL command:** `gh run view --json url --jq .url "$(gh run list --commit "$SHA" --limit 1 --json databaseId --jq '.[0].databaseId')"`
