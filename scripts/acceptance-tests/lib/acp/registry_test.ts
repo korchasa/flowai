@@ -15,7 +15,13 @@
  *    external `@agentclientprotocol/codex-acp` bridge.
  */
 import { assert, assertEquals, assertMatch } from "@std/assert";
-import { ACP_AGENTS, ACP_LIB_VERSION, type AcpAgentSpec } from "./registry.ts";
+import {
+  ACP_AGENTS,
+  ACP_LIB_VERSION,
+  type AcpAgentSpec,
+  commandPrefixFor,
+  nativeCommandTurn,
+} from "./registry.ts";
 
 const specs = Object.values(ACP_AGENTS) as AcpAgentSpec[];
 
@@ -74,4 +80,33 @@ Deno.test("ACP_LIB_VERSION tracks the import-map pin", async () => {
     pinned,
     `ACP_LIB_VERSION (${ACP_LIB_VERSION}) must equal the import-map pin (${pinned})`,
   );
+});
+
+Deno.test("commandPrefixFor: codex invokes skills with $, every other IDE with /", () => {
+  assertEquals(commandPrefixFor("codex"), "$");
+  assertEquals(commandPrefixFor("claude"), "/");
+  assertEquals(commandPrefixFor("cursor"), "/");
+  assertEquals(commandPrefixFor("opencode"), "/");
+  for (const spec of specs) {
+    assertEquals(spec.commandPrefix, commandPrefixFor(spec.ide));
+  }
+});
+
+Deno.test("nativeCommandTurn rewrites only the leading slash command to the IDE's prefix", () => {
+  // The codex-acp bridge intercepts `/plan <args>` as its own plan-mode toggle
+  // and answers `Command "/plan" requires no arguments.` — the skill never
+  // runs. `$plan <args>` is the documented codex form and passes through.
+  assertEquals(
+    nativeCommandTurn("/plan Add a hello endpoint. /review later.", "$"),
+    "$plan Add a hello endpoint. /review later.",
+  );
+  assertEquals(nativeCommandTurn("/commit", "$"), "$commit");
+  assertEquals(nativeCommandTurn("/plan\nAdd X", "$"), "$plan\nAdd X");
+  // A slash prefix is the identity: claude's own form stays byte-identical.
+  assertEquals(nativeCommandTurn("/plan Add X", "/"), "/plan Add X");
+  // Prose is never a command, whatever the prefix.
+  assertEquals(nativeCommandTurn("Plan a feature", "$"), "Plan a feature");
+  assertEquals(nativeCommandTurn("  /plan Add X", "$"), "  /plan Add X");
+  assertEquals(nativeCommandTurn("/ not a command", "$"), "/ not a command");
+  assertEquals(nativeCommandTurn("a/b path", "$"), "a/b path");
 });

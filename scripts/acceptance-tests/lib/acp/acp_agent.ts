@@ -26,7 +26,12 @@ import {
 } from "../system_health.ts";
 import { AcpClient, type CapturedToolCall } from "./client.ts";
 import { writeMockBin } from "./mock_bin.ts";
-import { ACP_AGENTS, type AcpAgentSpec, type AcpIde } from "./registry.ts";
+import {
+  ACP_AGENTS,
+  type AcpAgentSpec,
+  type AcpIde,
+  nativeCommandTurn,
+} from "./registry.ts";
 
 const SETPGRP_WRAPPER = fromFileUrl(
   new URL("../setpgrp_exec.py", import.meta.url),
@@ -225,6 +230,10 @@ export class AcpAgent {
       const maxSteps = this.opts.maxSteps ?? 10;
       let nextPrompt: string | null = this.opts.prompt;
       for (let step = 0; step < maxSteps && nextPrompt; step++) {
+        // implements [FR-ACCEPT.ACP](../../../../documents/requirements.md#fr-accept.acp-acp-transport-for-acceptance-test-runner-ancfraccept.acp):
+        // a `/<skill> …` turn is spoken in the IDE's own invocation form — the codex bridge intercepts `/plan` and `/review`
+        // as its own commands, and only `$<skill>` reaches the model.
+        nextPrompt = nativeCommandTurn(nextPrompt, this.#spec.commandPrefix);
         this.#messages.push({ role: "user", content: nextPrompt });
         this.#log.push(`\n[turn ${step + 1}] > ${nextPrompt}\n`);
 

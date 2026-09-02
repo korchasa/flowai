@@ -38,6 +38,54 @@ export interface AcpAgentSpec {
   readonly authMode: AcpAuthMode;
   /** IDE config dir relative to the sandbox (e.g. ".claude"). */
   readonly configDir: string;
+  /**
+   * The character that turns `<name> <args>` into an explicit skill invocation
+   * on this IDE — see {@link commandPrefixFor}.
+   */
+  readonly commandPrefix: CommandPrefix;
+}
+
+/** Skill-invocation prefix: `/` for Claude and the rest, `$` for Codex. */
+export type CommandPrefix = "/" | "$";
+
+/**
+ * implements [FR-BENCH-SWE.IDE](../../../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide),
+ * [FR-ACCEPT.ACP](../../../../documents/requirements.md#fr-accept.acp-acp-transport-for-acceptance-test-runner-ancfraccept.acp):
+ * the skill-invocation prefix is IDE-dependent, and the wrong one silently
+ * disables the skill under test.
+ *
+ * Measured on the codex ACP bridge (2026-07-24, again 2026-09-02 across all 22
+ * `plan` scenarios): `@agentclientprotocol/codex-acp` parses a leading
+ * `/<name>` as one of ITS OWN commands before the model sees the turn.
+ * `/plan <args>` is its plan-mode toggle and is rejected outright —
+ * `Command "/plan" requires no arguments.` — and `/review <args>` runs codex's
+ * built-in review with the text as instructions; in both cases the installed
+ * skill never runs. The documented codex form `$plan <args>` passes the bridge
+ * (a `$`-prefixed name is never a bridge command) and fires the skill
+ * (transcript: "I'm using the `plan` skill because you explicitly requested
+ * `$plan`", then it reads `.codex/skills/plan/SKILL.md`).
+ *
+ * Unknown IDEs keep the historical slash rather than guessing a new syntax.
+ */
+export function commandPrefixFor(ide: string): CommandPrefix {
+  return ide === "codex" ? "$" : "/";
+}
+
+/**
+ * Rewrite a scenario's `/<name> <args…>` turn into the IDE's native
+ * invocation, `<prefix><name> <args…>`. Only a leading slash command is
+ * touched — the name is the run of `[A-Za-z0-9:_-]` right after the slash, the
+ * same token the Claude Agent SDK parses — so prose, indented text and any
+ * later `/word` stay byte-identical. Scenarios keep the cross-IDE slash form
+ * (FR-IDE-SCOPE); the transport adapts it, so an IDE under test is never
+ * measured on a different prompt than the others beyond that one character.
+ */
+export function nativeCommandTurn(
+  prompt: string,
+  prefix: CommandPrefix,
+): string {
+  if (prefix === "/") return prompt;
+  return prompt.replace(/^\/(?=[A-Za-z0-9:_-]+(?:\s|$))/, prefix);
 }
 
 /**
@@ -73,12 +121,14 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     },
     authMode: "subscription",
     configDir: ".claude",
+    commandPrefix: "/",
   },
   cursor: {
     ide: "cursor",
     launch: { command: "cursor-agent", args: ["--acp"] },
     authMode: "native",
     configDir: ".cursor",
+    commandPrefix: "/",
   },
   codex: {
     ide: "codex",
@@ -92,12 +142,14 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     },
     authMode: "subscription",
     configDir: ".codex",
+    commandPrefix: "$",
   },
   opencode: {
     ide: "opencode",
     launch: { command: "opencode", args: ["acp"] },
     authMode: "native",
     configDir: ".opencode",
+    commandPrefix: "/",
   },
 } as const;
 

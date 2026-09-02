@@ -21,6 +21,11 @@
  * scripted turn regardless of conversation content, then null to end the run.
  */
 
+import {
+  type CommandPrefix,
+  commandPrefixFor,
+} from "../acceptance-tests/lib/acp/registry.ts";
+
 /** Shared task framing: repo + issue + no-commit. Arm-specific autonomy/gate
  * wording is added by the per-arm turn builders, NOT here. */
 export function baseTask(repo: string, problemStatement: string): string {
@@ -51,27 +56,12 @@ export function baselineTask(repo: string, problemStatement: string): string {
 }
 
 /**
- * How an IDE spells "invoke this installed skill with arguments".
- * `/` for Claude, `$` for Codex — see {@link commandPrefixFor}.
+ * The skill-invocation prefix is IDE-dependent — `/` for Claude, `$` for
+ * Codex — and lives with the ACP registry, which is the one place that knows
+ * how each IDE is driven. Re-exported so the benchmark turn builders and their
+ * tests keep one import.
  */
-export type CommandPrefix = "/" | "$";
-
-/**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
- * The skill-invocation prefix is IDE-dependent, and the wrong one silently
- * disables the entire flowai arm.
- *
- * Measured on the codex ACP bridge (2026-07-24): a `/plan <args>` turn is
- * rejected outright — `Command "/plan" requires no arguments.` — so the skill
- * never runs and the arm degrades to a bare session. The documented codex form
- * `$plan <args>` fires it (transcript: "I'm using the `plan` skill because you
- * explicitly requested `$plan`", then it reads `.codex/skills/plan/SKILL.md`).
- *
- * Unknown IDEs keep the historical slash rather than guessing a new syntax.
- */
-export function commandPrefixFor(ide: string): CommandPrefix {
-  return ide === "codex" ? "$" : "/";
-}
+export { type CommandPrefix, commandPrefixFor };
 
 /**
  * A command turn MUST be `<prefix><name> <args…>` with a SPACE right after the

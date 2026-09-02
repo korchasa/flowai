@@ -511,6 +511,28 @@ deno task acceptance-tests -p 2
 - Two extra `runner_timeout_test.ts` tests went RED on the missing pattern
   (`typeof null !== "string"`), not on a compile error, before the one-line
   GREEN in `HARNESS_FAULT_PATTERNS`.
+- **Phase 3 step 14, first attempt (2026-09-02T01-07-10), killed at 55/312.**
+  Every `plan-*` scenario was red with `Command "/plan" requires no arguments.`
+  and no codex rollout on disk: the pinned ACP bridge
+  `@agentclientprotocol/codex-acp@1.1.7` intercepts a leading `/<name>` for its
+  own built-ins (`plan`, `review`, `compact`, `goal`, `status`, ...) before codex
+  runs, and advertises installed skills as `$<skill>`. The SWE-bench operator
+  already knew this (`commandPrefixFor(ide)` in `scripts/benchmark/operator.ts`,
+  FR-BENCH-SWE.IDE); the acceptance runner never applied it. Fix: the prefix
+  table now lives on the ACP registry (`commandPrefix` on `AcpAgentSpec`,
+  `scripts/acceptance-tests/lib/acp/registry.ts`), `AcpAgent` rewrites the
+  leading slash command of every turn with `nativeCommandTurn`, and
+  `operator.ts` re-exports the table instead of owning a copy. Scenarios keep
+  the cross-IDE `/<skill>` form. Unit tests in `registry_test.ts`; the `plan-basic`
+  rollout (`acceptance-tests/runs/2026-09-02T01-31-05`) shows the `$plan` turn
+  reading `.codex/skills/plan/SKILL.md` six times. The lib edit invalidates every
+  cache key, so the sweep restarts from scratch (second attempt below).
+- `plan-basic` on codex is still red after the fix, for a different reason: the
+  scenario ships no fixture, its query claims `index.js` exists, and the codex
+  agent stops to ask for the file instead of inventing an Express layout the way
+  the cached claude run did; the codex judge also counts the tasks index
+  `documents/index.md` against `no_code_changes`. Both go to the Phase 3 triage
+  table with the rest of the reds.
 
 ## Follow-ups
 
