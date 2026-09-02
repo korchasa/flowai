@@ -1,6 +1,6 @@
 ---
 date: "2026-09-02"
-status: in progress
+status: done
 implements:
   - FR-ACCEPT
   - FR-INIT
@@ -301,13 +301,23 @@ This confirms and extends what a prior session already recorded in `documents/ta
     … `2026-09-02T06-27-53`). Every other red is named in the FR-ACCEPT
     "Known gaps (2026-09-02)" bullet of the SRS and in
     `documents/tasks/2026/09/sweep-reds-follow-up.md`.
-- [ ] FR-ACCEPT: no uncommitted or unexplained content remains **at the moment
+- [x] FR-ACCEPT: no uncommitted or unexplained content remains **at the moment
       of the merge** — checked after the post-sweep fixes are committed, not only
       after Phase 2 — and the dev-only Markdown skills under `.agents/` are
       formatter-clean.
   - Evidence: on the merge commit, `git status --porcelain` prints nothing AND `deno fmt --check` exits 0
-- [ ] FR-ACCEPT: the gate is green on the merge commit and CI agrees.
+  - Result (2026-09-02): the post-sweep work went in as four commits on the
+    branch (`4106e77c`, group 2, `bfdfa9db`, `66df2a0c`); `git status --porcelain`
+    printed nothing and `acceptance-tests/benchmarks.lock` was gone before the
+    fast-forward. `deno task check` on `66df2a0c` (which runs `deno fmt --check`)
+    exited 0.
+- [x] FR-ACCEPT: the gate is green on the merge commit and CI agrees.
   - Evidence: `deno task check` exits 0, then `gh run list --commit "$(git rev-parse HEAD)" --limit 1 --json status,conclusion` reports `completed` / `success`
+  - Result (2026-09-02): `main` fast-forwarded to `66df2a0c` (233 commits);
+    `deno task check` on it: 783 + 182 passed, 0 failed, EXIT 0. CI run
+    33599685794 on that SHA: `completed` / `success`
+    (https://github.com/korchasa/flowai/actions/runs/33599685794); it cut
+    `chore(release): 0.14.1` (`c86cec7b`).
 
 ## Solution
 
