@@ -112,7 +112,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **plan:** name surface-scout in the dispatch, not any exploration agent ([6577492](https://github.com/korchasa/flowai/commit/6577492a088d8407ea4832c1e8cd7ed69c2f5c8f))
 * **reflect,commit:** let reflect commit its own edits before it ends ([df07c91](https://github.com/korchasa/flowai/commit/df07c91332dfc7d70e23e9c6ecd945a89578ec00))
 * **reflect:** a finding's draft is the artefact, not a sentence about it ([26e66a6](https://github.com/korchasa/flowai/commit/26e66a69ec7b449231ba419492ff65ee49b1019f))
-* remove dead SALP ref [REF:fr:render] from test checklist string ([b65952c](https://github.com/korchasa/flowai/commit/b65952cbf9a8b05276dfe2f0067c3ac27657fee9))
+* remove dead SALP ref `[REF:fr:render]` from test checklist string ([b65952c](https://github.com/korchasa/flowai/commit/b65952cbf9a8b05276dfe2f0067c3ac27657fee9))
 * **review,accept:** make the reviewer clean up the scratch dir it created ([6977477](https://github.com/korchasa/flowai/commit/69774772f4c88a7db45765ff8ce9c7ea79a3b09e))
 * **review,commit:** route JiT-test wording, pin the post-reflect commit type ([75b78f4](https://github.com/korchasa/flowai/commit/75b78f4c743b42b9555f910c5417e6f509b129ad))
 * **review,plan:** count untracked files, scope the FR gate, keep drift non-blocking ([dda1214](https://github.com/korchasa/flowai/commit/dda1214bccf5bad2b8588b68b2d067a0cb9806b2))
