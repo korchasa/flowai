@@ -1,5 +1,6 @@
-import { assertEquals, assertStringIncludes } from "@std/assert";
+import { assertEquals, assertRejects, assertStringIncludes } from "@std/assert";
 import {
+  collectGeneratedFiles,
   formatJudgeEvidence,
   type JudgeEvidenceParts,
   MAX_DIFF_LEN,
@@ -84,4 +85,124 @@ Deno.test("truncateTrace falls back to head+tail when the trace has no turns", (
   const out = truncateTrace(flat, MAX_TRACE_LEN);
   assertStringIncludes(out, "TRUNCATED");
   assertEquals(out.length <= MAX_TRACE_LEN + 200, true);
+});
+
+// --- collectGeneratedFiles -------------------------------------------------
+
+async function git(cwd: string, ...args: string[]): Promise<string> {
+  const out = await new Deno.Command("git", {
+    args,
+    cwd,
+    stdout: "piped",
+    stderr: "piped",
+  }).output();
+  if (!out.success) {
+    throw new Error(
+      `git ${args.join(" ")} failed: ${new TextDecoder().decode(out.stderr)}`,
+    );
+  }
+  return new TextDecoder().decode(out.stdout).trim();
+}
+
+async function write(root: string, rel: string, content: string) {
+  const path = `${root}/${rel}`;
+  await Deno.mkdir(path.slice(0, path.lastIndexOf("/")), { recursive: true });
+  await Deno.writeTextFile(path, content);
+}
+
+/**
+ * A sandbox the way the runner builds one: the installed framework and the
+ * scenario fixture committed as `init`, then the agent's work on top of it —
+ * one file modified, one committed, one left untracked inside an untracked
+ * directory.
+ */
+async function sandboxWithAgentWork(): Promise<
+  { root: string; initHash: string }
+> {
+  const root = await Deno.makeTempDir({ prefix: "evidence-test-" });
+  await git(root, "init", "-q");
+  await git(root, "config", "user.email", "t@t");
+  await git(root, "config", "user.name", "t");
+  await write(root, ".codex/skills/init/SKILL.md", "INSTALLED FRAMEWORK");
+  await write(root, "AGENTS.md", "# original");
+  await write(root, "src/untouched.ts", "UNTOUCHED FIXTURE");
+  await git(root, "add", "-A");
+  await git(root, "commit", "-q", "-m", "init");
+  const initHash = await git(root, "rev-parse", "HEAD");
+
+  await write(root, "AGENTS.md", "# edited by agent");
+  await write(root, "scripts/check.ts", "COMMITTED BY AGENT");
+  await git(root, "add", "scripts/check.ts");
+  await git(root, "commit", "-q", "-m", "agent commit");
+  await write(root, "documents/requirements.md", "# SRS BY AGENT");
+  await write(root, "image.png", "BINARY");
+  return { root, initHash };
+}
+
+Deno.test("collectGeneratedFiles carries every file the agent produced — modified, committed after init, and untracked in a new directory", async () => {
+  const { root, initHash } = await sandboxWithAgentWork();
+  try {
+    const out = await collectGeneratedFiles(root, initHash);
+    assertStringIncludes(out, "--- AGENTS.md ---\n# edited by agent");
+    assertStringIncludes(out, "--- scripts/check.ts ---\nCOMMITTED BY AGENT");
+    assertStringIncludes(
+      out,
+      "--- documents/requirements.md ---\n# SRS BY AGENT",
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectGeneratedFiles leaves out what the harness installed — the init commit is not the agent's product and it is what crowds the product out of the cap", async () => {
+  const { root, initHash } = await sandboxWithAgentWork();
+  try {
+    const out = await collectGeneratedFiles(root, initHash);
+    assertEquals(out.includes("INSTALLED FRAMEWORK"), false);
+    assertEquals(out.includes("UNTOUCHED FIXTURE"), false);
+    assertEquals(out.includes("BINARY"), false);
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectGeneratedFiles skips the IDE config dir even when the agent wrote into it", async () => {
+  const { root, initHash } = await sandboxWithAgentWork();
+  try {
+    await write(root, ".codex/skills/init/SKILL.md", "EDITED FRAMEWORK");
+    await write(root, ".claude/settings.local.json", "{}");
+    const out = await collectGeneratedFiles(root, initHash);
+    assertEquals(out.includes("EDITED FRAMEWORK"), false);
+    assertEquals(out.includes("settings.local.json"), false);
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectGeneratedFiles fails loudly when initHash does not resolve — an empty GENERATED FILES section would read as a behavioural red during triage", async () => {
+  const { root } = await sandboxWithAgentWork();
+  const bogus = "0123456789abcdef0123456789abcdef01234567";
+  try {
+    await assertRejects(
+      () => collectGeneratedFiles(root, bogus),
+      Error,
+      bogus,
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("collectGeneratedFiles fails loudly on a sandbox that is not a git repository", async () => {
+  const root = await Deno.makeTempDir({ prefix: "evidence-test-nogit-" });
+  try {
+    await write(root, "documents/requirements.md", "# SRS BY AGENT");
+    await assertRejects(
+      () => collectGeneratedFiles(root, "HEAD"),
+      Error,
+      "Git command failed",
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
 });

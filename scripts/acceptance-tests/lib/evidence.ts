@@ -6,6 +6,8 @@
  * in `scripts/task-check.ts`, so a test placed there is never run by the gate.
  */
 
+import { runGit } from "./utils.ts";
+
 /** Per-section cap for a diff blob before it is elided at the tail. */
 export const MAX_DIFF_LEN = 50_000;
 
@@ -119,4 +121,129 @@ ${parts.taskFiles}
 --- GENERATED FILES ---
 ${parts.generatedFiles}
     `;
+}
+
+/**
+ * Render one file for the judge, keeping both ends when it does not fit.
+ *
+ * Head-only truncation is how a present section becomes an absent one. The
+ * generated AGENTS.md of an `init` run is ~24 KB against a 10 KB cap, so the
+ * judge saw the file end mid-"Documentation Map" and scored
+ * `doc_rules_present` as missing on both `init-greenfield` and
+ * `init-brownfield` — the section was there, 6 KB further down. The marker says
+ * outright that the gap is the harness's doing, because a judge reading a
+ * truncated file otherwise treats the silence as proof.
+ */
+export function renderFileForEvidence(
+  relPath: string,
+  content: string,
+  maxFileSize: number,
+): string {
+  if (content.length <= maxFileSize) {
+    return `--- ${relPath} ---\n${content}`;
+  }
+  const half = Math.floor(maxFileSize / 2);
+  const dropped = content.length - maxFileSize;
+  return [
+    `--- ${relPath} (${content.length} bytes, middle elided) ---`,
+    content.slice(0, half),
+    `\n...[HARNESS ELIDED ${dropped} BYTES FROM THE MIDDLE OF THIS FILE. ` +
+    `Content missing from this excerpt is NOT evidence that the file lacks ` +
+    `it — say so rather than scoring an item as absent.]...\n`,
+    content.slice(-half),
+  ].join("\n");
+}
+
+/** Config dirs of every IDE the runner installs the framework into. */
+const IDE_DIRS = [".claude", ".codex", ".opencode", ".cursor"];
+
+const TEXT_EXTENSIONS = new Set([
+  ".json",
+  ".jsonc",
+  ".yaml",
+  ".yml",
+  ".toml",
+  ".md",
+  ".ts",
+  ".js",
+  ".sh",
+  ".py",
+  ".go",
+  ".rs",
+  ".txt",
+  ".cfg",
+  ".ini",
+  ".env",
+  ".dockerfile",
+]);
+
+function isTextFile(relPath: string): boolean {
+  const name = relPath.split("/").pop()!;
+  if (name.toLowerCase() === "dockerfile") return true;
+  const ext = name.includes(".")
+    ? "." + name.split(".").pop()!.toLowerCase()
+    : "";
+  return TEXT_EXTENSIONS.has(ext);
+}
+
+async function gitLines(cwd: string, args: string[]): Promise<string[]> {
+  const out = await runGit(cwd, args);
+  return new TextDecoder().decode(out.stdout).split("\n").filter((l) =>
+    l.length > 0
+  );
+}
+
+/**
+ * Collects the text files the AGENT produced, for the judge to read.
+ *
+ * "Produced" is answered by git, not by walking the tree: files committed
+ * after `initHash`, tracked files with uncommitted edits, and untracked files.
+ * Until 2026-09-02 this walked every text file in the sandbox in `readDir`
+ * order and cut the section at 100 000 chars, with a skip list written when
+ * claude was the only IDE. On codex the installed framework sits in `.codex/`
+ * (~578 KB of agents, skills and scripts) and is part of the init commit; it
+ * was rendered first and the cap fell before `documents/`, so `init-greenfield`
+ * failed `srs_sds_structure` with "the evidence does not show the contents"
+ * while the SRS on disk matched the template line for line. Selecting by git
+ * means no walk order can push the product out of the section; skipping the
+ * IDE dirs keeps an agent's stray edit to an installed skill out of it as well.
+ */
+export async function collectGeneratedFiles(
+  sandboxPath: string,
+  initHash: string,
+  maxFileSize = 30_000,
+): Promise<string> {
+  const paths = new Set<string>([
+    ...await gitLines(sandboxPath, [
+      "diff",
+      "--name-only",
+      "--diff-filter=d",
+      `${initHash}..HEAD`,
+    ]),
+    ...await gitLines(sandboxPath, [
+      "diff",
+      "--name-only",
+      "--diff-filter=d",
+      "HEAD",
+    ]),
+    ...await gitLines(sandboxPath, [
+      "ls-files",
+      "--others",
+      "--exclude-standard",
+    ]),
+  ]);
+
+  const parts: string[] = [];
+  for (const rel of [...paths].sort()) {
+    const top = rel.split("/")[0];
+    if (IDE_DIRS.includes(top) || top === "node_modules") continue;
+    if (!isTextFile(rel)) continue;
+    try {
+      const content = await Deno.readTextFile(`${sandboxPath}/${rel}`);
+      parts.push(renderFileForEvidence(rel, content, maxFileSize));
+    } catch (_) {
+      // deleted or unreadable since the listing — nothing to show
+    }
+  }
+  return parts.join("\n");
 }

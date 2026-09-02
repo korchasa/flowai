@@ -4,7 +4,11 @@ import type { ChatCompletionFn, ModelConfig } from "./llm.ts";
 import { agentLaunchEnv } from "./agent_env.ts";
 import { prepareCodexJudgeHome } from "./acp/auth.ts";
 import { evaluateChecklist } from "./judge.ts";
-import { formatJudgeEvidence, truncateTrace } from "./evidence.ts";
+import {
+  collectGeneratedFiles,
+  formatJudgeEvidence,
+  truncateTrace,
+} from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
 import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
@@ -429,6 +433,13 @@ export const HARNESS_FAULT_PATTERNS: readonly string[] = [
   "Failed to authenticate",
   "Invalid API key",
   "Usage credits required",
+  // The account's spend limit, hit mid-sweep on 2026-08-31: 27 sessions died on
+  // `[acp-error] {"acpError":"Internal error: You've hit your org's monthly
+  // spend limit ..."}` before their first tool call and were scored 0, and the
+  // sweep read 135/225 as if the product had failed. The literal is deliberately
+  // narrower than "spend limit", which an agent can write about a budget, and
+  // stops short of the possessive, which is provider wording that may change.
+  "monthly spend limit",
 ];
 
 /**
@@ -736,7 +747,7 @@ async function gatherJudgeEvidence(
   }
 
   const taskFilesContent = await readTaskFiles(sandboxPath);
-  const generatedFiles = await collectGeneratedFiles(sandboxPath);
+  const generatedFiles = await collectGeneratedFiles(sandboxPath, initHash);
 
   // ACP transcripts are already human-readable — no NDJSON formatting needed.
   const formattedLogs = rawLogs;
@@ -996,91 +1007,4 @@ export async function runScenario(
     // Keep sandbox for inspection
     console.log(`  Sandbox available at: ${sandboxPath}\n`);
   }
-}
-
-/**
- * Render one file for the judge, keeping both ends when it does not fit.
- *
- * Head-only truncation is how a present section becomes an absent one. The
- * generated AGENTS.md of an `init` run is ~24 KB against a 10 KB cap, so the
- * judge saw the file end mid-"Documentation Map" and scored
- * `doc_rules_present` as missing on both `init-greenfield` and
- * `init-brownfield` — the section was there, 6 KB further down. The marker says
- * outright that the gap is the harness's doing, because a judge reading a
- * truncated file otherwise treats the silence as proof.
- */
-export function renderFileForEvidence(
-  relPath: string,
-  content: string,
-  maxFileSize: number,
-): string {
-  if (content.length <= maxFileSize) {
-    return `--- ${relPath} ---\n${content}`;
-  }
-  const half = Math.floor(maxFileSize / 2);
-  const dropped = content.length - maxFileSize;
-  return [
-    `--- ${relPath} (${content.length} bytes, middle elided) ---`,
-    content.slice(0, half),
-    `\n...[HARNESS ELIDED ${dropped} BYTES FROM THE MIDDLE OF THIS FILE. ` +
-    `Content missing from this excerpt is NOT evidence that the file lacks ` +
-    `it — say so rather than scoring an item as absent.]...\n`,
-    content.slice(-half),
-  ].join("\n");
-}
-
-/**
- * Recursively collects text file contents from the sandbox for judge inspection.
- * Skips hidden dirs (.claude, .git), binary files, and oversized files.
- */
-async function collectGeneratedFiles(
-  sandboxPath: string,
-  maxFileSize = 30_000,
-): Promise<string> {
-  const parts: string[] = [];
-  const skipDirs = new Set([".claude", ".git", "node_modules"]);
-  const textExtensions = new Set([
-    ".json",
-    ".jsonc",
-    ".yaml",
-    ".yml",
-    ".toml",
-    ".md",
-    ".ts",
-    ".js",
-    ".sh",
-    ".py",
-    ".go",
-    ".rs",
-    ".txt",
-    ".cfg",
-    ".ini",
-    ".env",
-    ".dockerfile",
-  ]);
-
-  async function walk(dir: string, rel: string) {
-    for await (const entry of Deno.readDir(dir)) {
-      const entryRel = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory) {
-        if (skipDirs.has(entry.name)) continue;
-        await walk(join(dir, entry.name), entryRel);
-      } else if (entry.isFile) {
-        const ext = entry.name.includes(".")
-          ? "." + entry.name.split(".").pop()!.toLowerCase()
-          : "";
-        const isDockerfile = entry.name.toLowerCase() === "dockerfile";
-        if (!textExtensions.has(ext) && !isDockerfile) continue;
-        try {
-          const content = await Deno.readTextFile(join(dir, entry.name));
-          parts.push(renderFileForEvidence(entryRel, content, maxFileSize));
-        } catch (_) {
-          // skip unreadable files
-        }
-      }
-    }
-  }
-
-  await walk(sandboxPath, "");
-  return parts.join("\n");
 }

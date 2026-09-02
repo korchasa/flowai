@@ -10,9 +10,9 @@ import {
   detectAuthFailure,
   detectHarnessFaultWarning,
   exitCodeCheckIsCritical,
-  renderFileForEvidence,
   shouldInjectExitCodeCheck,
 } from "./runner.ts";
+import { renderFileForEvidence } from "./evidence.ts";
 
 Deno.test("composeTimeoutLogs keeps the partial trace so a timed-out run stays diagnosable", () => {
   const out = composeTimeoutLogs(
@@ -56,6 +56,25 @@ Deno.test("detectAuthFailure: a child CLI's auth error is not ours", () => {
     ),
     null,
   );
+});
+
+// The 2026-08-31 sweep: 27 sessions died on the account's spend limit before
+// their first tool call and were scored 135/225 as if the agent had answered.
+const SPEND_LIMIT_TRACE =
+  '[acp-error] {"acpError":"Internal error: You\'ve hit your org\'s monthly spend limit. Contact your admin to raise the limit."}';
+
+Deno.test("detectAuthFailure: a spend-limit outage is not a behavioural result", () => {
+  const msg = detectAuthFailure(SPEND_LIMIT_TRACE, 0);
+  assertEquals(typeof msg, "string");
+  assertStringIncludes(msg!, "monthly spend limit");
+});
+
+Deno.test("detectAuthFailure: a child CLI hitting its spend limit is an observation about the sandbox, not a broken bench", () => {
+  const trace = "[tool-calls] Bash: claude -p 'hi'\n" + SPEND_LIMIT_TRACE;
+  assertEquals(detectAuthFailure(trace, 3), null);
+  const warning = detectHarnessFaultWarning(trace, 3);
+  assertEquals(typeof warning, "string");
+  assertStringIncludes(warning!, "monthly spend limit");
 });
 
 Deno.test("shouldInjectExitCodeCheck: a routing scenario survives the global timeout", () => {
