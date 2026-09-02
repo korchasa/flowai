@@ -31,7 +31,7 @@ Run the audit script bundled with this skill:
 deno run --allow-read scripts/audit.ts <memex-root>/pages/
 ```
 
-(The path is relative to the installed skill directory. The exact location depends on the IDE — pass an absolute path if your IDE does not preserve relative working directory.)
+(The path is relative to this skill's installed directory — `<ide-config-dir>/skills/audit/scripts/audit.ts`, e.g. `.codex/skills/audit/scripts/audit.ts` or `.claude/skills/audit/scripts/audit.ts`. Run it from the project root with that path, or pass an absolute path.)
 
 The script parses SALP REFs (`[REF:mx-<type>:<slug>]`). It reports five issue kinds, one per line:
 - `DEAD_LINK: [REF:mx-*:<target>] in <file>` — SALP REF points to a non-existent page.

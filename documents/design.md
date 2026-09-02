@@ -608,8 +608,8 @@ graph TD
 - **Location:** `framework/memex/` containing:
   - `pack.yaml` — manifest.
   - `skills/{save,ask,audit}/SKILL.md` — three agent-invocable skills with descriptions written for model auto-invocation.
-  - `scripts/audit.ts` — standalone deterministic audit (uses `jsr:` imports, no import map). Reports `DEAD_LINK | ORPHAN | MISSING_SECTION | INDEX_MISSING | INDEX_DEAD | MALFORMED_REF` one-per-line. Parses SALP REFs (`[REF:mx-<type>:<slug>]`); the older wikilink grammar is no longer recognised.
-  - `scripts/audit_test.ts` — 8 unit tests covering each issue kind plus the SALP-only parser smoke test and missing-dir error.
+  - `skills/audit/scripts/audit.ts` — standalone deterministic audit bundled with the `audit` skill (uses `jsr:` imports, no import map). Reports `DEAD_LINK | ORPHAN | MISSING_SECTION | INDEX_MISSING | INDEX_DEAD | MALFORMED_REF` one-per-line. Parses SALP REFs (`[REF:mx-<type>:<slug>]`); the older wikilink grammar is no longer recognised.
+  - `skills/audit/scripts/audit_test.ts` — 8 unit tests covering each issue kind plus the SALP-only parser smoke test and missing-dir error.
   - `hooks/status/{hook.yaml,run.ts,run_test.ts}` — `SessionStart` hook that walks up from `cwd` for `AGENTS.md + pages/`, prints `additionalContext` JSON with page / source counts, last-log entry, last-audit date, and a save-nudge once ≥5 raw sources lack any incoming SALP REF (`[REF:mx-source:<slug>]`).
   - `assets/AGENTS.md` — schema asset dropped into the memex root by the `save` skill on first call (defines directory layout, four entity templates with frontmatter, naming conventions, log format, cross-reference rules).
 - **Vocabulary:** Skills are named after their action — **save** (capture a source), **ask** (answer from the memex), **audit** (health check). The data model uses `pages/` for the cross-linked graph (with `pages/answers/` for filed `ask` outputs). Internal cross-references use SALP (`[REF:mx-<type>:<slug>]`) — the legacy wikilink syntax is no longer parsed by the audit script or the skills.

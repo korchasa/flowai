@@ -87,6 +87,7 @@ Every item carries `(FR-ID, Test/Benchmark, Evidence)`. The new FR `FR-DOC-ANCHO
 - [x] **FR-MEMEX — Schema on SALP**: `framework/memex/assets/AGENTS.md` schema declares `[ANC:mx-<concept|person|source|answer>:<slug>]` for page anchors and `[REF:mx-…:<slug> | <display>]` for cross-references. All `[[wikilink]]` and dual-link guidance removed. Backlink audit, naming conventions, entity templates rewritten.
   - Test: `framework/memex/scripts/audit_test.ts::audit-parses-salp-references-only`
   - Evidence: `deno test -A framework/memex/scripts/audit_test.ts`
+    - Note (2026-09-02): the script and its test moved to `framework/memex/skills/audit/scripts/` so the skill's relative `scripts/audit.ts` resolves after installation; the evidence command is now `deno test -A framework/memex/skills/audit/scripts/audit_test.ts`.
 - [x] **FR-MEMEX — Audit parser on SALP**: `framework/memex/scripts/audit.ts` parses SALP REFs; all five preserved issue codes (DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD) reworked for SALP grammar plus the new MALFORMED_REF code per Error Handling. No external deps.
   - Test: `framework/memex/scripts/audit_test.ts` — all 8 cases pass against SALP fixtures (including the new `audit flags malformed SALP references` case)
   - Evidence: `deno test -A framework/memex/scripts/audit_test.ts`

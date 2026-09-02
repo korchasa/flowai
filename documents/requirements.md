@@ -1778,7 +1778,7 @@ Rules:
 - **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
 - **Pack provides:**
   - `framework/memex/skills/memex-{save,ask,audit}/SKILL.md` — three agent-invocable skills.
-  - `framework/memex/scripts/audit.ts` — deterministic Deno audit script (Map-based link graph, frontmatter-aware checks, no external deps).
+  - `framework/memex/skills/audit/scripts/audit.ts` — deterministic Deno audit script, bundled inside the skill so `scripts/audit.ts` resolves relative to the installed skill directory on every IDE (a pack-level `scripts/` dir is not installed by the acceptance runner: `audit-clean` and `audit-defects` were red on codex on 2026-09-02 with `.codex/skills/audit/` holding only `SKILL.md`) (Map-based link graph, frontmatter-aware checks, no external deps).
   - `framework/memex/hooks/status/{hook.yaml,run.ts}` — `SessionStart` hook that walks up from cwd for `AGENTS.md + pages/`, injects memex status (page count, source count, last log entry, last audit date, ≥5 uncompiled-source nudge) as `additionalContext`.
   - `framework/memex/assets/AGENTS.md` — schema asset dropped into the memex root on scaffold.
 - **Inherited primitives:**
@@ -1787,7 +1787,7 @@ Rules:
   - From nvk-llm-wiki: nested `AGENTS.md` as portable schema (vs `CLAUDE.md`), frontmatter-as-data, optional dual-link `[[slug|Name]] ([Name](slug.md))` when the memex is an Obsidian vault, structural-guardian nudge on session start, honest-gaps rule, ask-answer promotion two-step (file then offer promote).
 - **Out of scope (intentionally minimal vs nvk):** multi-memex hub, research / thesis / librarian / projects commands, volatility / freshness scoring, qmd dependency.
 - **Acceptance verified by acceptance tests:** `save-new`, `save-update`, `ask-citations`, `ask-honest-gap`, `audit-clean`, `audit-defects`.
-- **Acceptance verified by tests:** `framework/memex/scripts/audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
+- **Acceptance verified by tests:** `framework/memex/skills/audit/scripts/audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
 - **Status:** [x]
 
 ### FR-DOC-ANCHORS: SALP as Canonical Anchor Mechanism [ANC:fr:doc-anchors]
