@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.2](https://github.com/korchasa/flowai/compare/v0.14.1...v0.14.2) (2026-09-03)
+
+
+### Features
+
+* **core:** add review-commit-push composite command ([473bfa8](https://github.com/korchasa/flowai/commit/473bfa85d19802dda589e247b3865db5a9e1813f))
+
+
+### Documentation
+
+* **changelog:** quote the illustrative SALP token in the 0.14.1 entry ([8a9d0d8](https://github.com/korchasa/flowai/commit/8a9d0d8ea8387b90e9ed36ad124991f6ae3ee43c))
+* **tasks:** close the swe-bench-rescue merge task ([e4b63e0](https://github.com/korchasa/flowai/commit/e4b63e0f63665490614f5240674f6c8d33955921))
+
 ### [0.14.1](https://github.com/korchasa/flowai/compare/v0.14.0...v0.14.1) (2026-09-02)
 
 
