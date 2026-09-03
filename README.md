@@ -249,6 +249,7 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `init` — project initialization (AGENTS.md, docs scaffolding, dev commands)
 - `commit` — streamlined atomic commits (targeted doc sync, inline grouping, auto-invoked reflect)
 - `review-and-commit` — streamlined review + commit (reuses diff across phases)
+- `review-commit-push` — tail-of-cycle composite: review → commit → push → reflect on an already-written uncommitted diff (3 explicit gates; no planning or implementation phase)
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
 - `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)

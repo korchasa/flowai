@@ -96,6 +96,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:scripts | FR-SCRIPTS] — Packs can contain scripts — utility shell/Deno scripts callable by skills via bash. — [ ]
 - [REF:fr:ship | FR-SHIP] — Terminal full-cycle workflow — ship (plan → do → review → commit → push, 4 gates) — [x]
 - [REF:fr:ship-task | FR-SHIP-TASK] — User-invoked composite command that picks up the SDLC AFTER the planning phase. — [x]
+- [REF:fr:review-commit-push | FR-REVIEW-COMMIT-PUSH] — Tail-of-cycle composite: review → commit → push → reflect on an uncommitted diff. — [x]
 - [REF:fr:skill-compose | FR-SKILL-COMPOSE] — Generated composite skill assembly from parametrized atomic step_by_step sources — [x]
 - [REF:fr:source-override | FR-SOURCE-OVERRIDE] — source.ref — branch or tag (clones via git clone --depth 1 --branch). Default URL if source.git absent. — [ ]
 - [REF:fr:universal | FR-UNIVERSAL] — Universal skill & script requirements — [x]
