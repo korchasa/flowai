@@ -429,7 +429,7 @@ framework/              # THE PRODUCT — distributed to users via the flowai CL
   beta/                 #   Opt-in: select-llm-model, doc-anchors hook, cross-IDE delegation
   atoms/ composites/    #   Composite-skill generator sources (not distributed)
 documents/              # Project documentation (SRS, SDS, tasks)
-scripts/                # Deno task scripts + acceptance test infrastructure
+scripts/                # Deno task scripts + acceptance test infrastructure + tasks-overview.py (project-local status script)
 acceptance-tests/       # Acceptance test runs, config, lock, per-scenario result cache (scenarios in framework/<pack>/{commands,skills}/*/acceptance-tests/)
 deno.json               # Imports, tasks, lint/fmt config
 AGENTS.md               # Project rules & agent instructions (vision → SRS constitution)

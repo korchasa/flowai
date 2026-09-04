@@ -41,7 +41,7 @@ Keep this file to project rules and tooling; do not restate the vision here
 - `framework/<pack>/`: Source of truth for product packs. Each pack has `pack.yaml` + two primitive dirs: `commands/` (user-only workflows) and `skills/` (agent-invocable capabilities). `agents/`, `hooks/`, `scripts/`, `assets/`, `acceptance-tests/` are optional.
 - `.claude/skills/`, `.claude/agents/`: Dev-only resources (not distributed). Framework commands + skills install into `.claude/skills/` (commands get `disable-model-invocation: true` injected by the CLI writer).
 - `documents/`: SRS/SDS and supporting documentation
-- `scripts/`: Deno task scripts
+- `scripts/`: Deno task scripts, plus `tasks-overview.py` — this project's own copy of the `tasks-overview` status script (Python 3, stdlib only; see SDS §3.24)
 - **CLI distribution** (external): the `flowai` command-line tool lives in the standalone repo [korchasa/flowai-cli](https://github.com/korchasa/flowai-cli) (JSR: `@korchasa/flowai`). This repo no longer publishes to JSR. Framework content reaches the CLI via a SHA-256-pinned `framework.tar.gz` asset on `framework-v<version>` GitHub releases of this repo (FR-DIST.BUNDLE.PIN, FR-CICD.SPLIT).
 - `.github/workflows/ci.yml`: CI/CD for this (framework) repo — runs `deno task check` and, on `feat:`/`fix:` commits, cuts a `chore(release)` plus a `framework-v<version>` GitHub release with the reproducible tarball.
 
