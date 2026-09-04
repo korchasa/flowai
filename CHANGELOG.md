@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.3](https://github.com/korchasa/flowai/compare/v0.14.2...v0.14.3) (2026-09-04)
+
+
+### Features
+
+* **core:** add tasks-overview skill with project-local status script ([4f211c8](https://github.com/korchasa/flowai/commit/4f211c8986acb78d9b974f05e0f3a34c511fa3f9))
+
+
+### Bug Fixes
+
+* **agents:** raise plan-critic/console-expert maxTurns from 10 to 40 ([6196908](https://github.com/korchasa/flowai/commit/61969084904a6a6c536b6caf19d3fa2acd55ace5))
+
+
+### Agent Changes
+
+* **acceptance-tests:** check setup-written fixture files before the first run ([65a21ce](https://github.com/korchasa/flowai/commit/65a21ce78beeac1e51a2b42576e577c809edc2bf))
+
 ### [0.14.2](https://github.com/korchasa/flowai/compare/v0.14.1...v0.14.2) (2026-09-03)
 
 
