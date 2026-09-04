@@ -1,6 +1,6 @@
 ---
 date: "2026-07-02"
-status: in progress
+status: done
 implements: [FR-PLAN-OUTCOME-COMPLETENESS]
 tags: [plan, benchmark, completeness, dod]
 related_tasks: [2026/06/plan-reco-root-cause-ranking.md, 2026/06/review-run-existing-tests.md]
@@ -35,15 +35,17 @@ Root-cause investigation of 11 failed flowai SWE-bench sessions (see `scripts/be
 - [x] FR-PLAN-OUTCOME-COMPLETENESS (pre-gate half): plan seeds DoD from the request's stated outcomes (verbatim expected values), enumerates the affected surface proactively (undisclosed duplicated site), names dropped outcomes in variant Cons; verified RED→GREEN.
   - Test: `Benchmark: plan-dod-covers-stated-outcomes`
   - Evidence: `deno task acceptance-tests -f plan-dod-covers-stated-outcomes`
-- [ ] FR-PLAN-OUTCOME-COMPLETENESS (post-selection half): after an explicit user scope cut, dropped outcomes are recorded under `## Follow-ups` in the task file and the Step-7 completeness check maps every stated outcome to DoD/Solution/Follow-ups; verified RED→GREEN.
+- [x] FR-PLAN-OUTCOME-COMPLETENESS (post-selection half): after an explicit user scope cut, dropped outcomes are recorded under `## Follow-ups` in the task file and the Step-7 completeness check maps every stated outcome to DoD/Solution/Follow-ups; verified RED→GREEN.
   - Test: `Benchmark: plan-records-dropped-outcomes`
   - Evidence: `deno task acceptance-tests -f plan-records-dropped-outcomes`
+  - Result: PASS 100/100 on claude (`claude-sonnet-4-6`, 2026-08-31) and on codex (`gpt-5.6-terra`, 2026-09-02) — `acceptance-tests/cache/core/plan-records-dropped-outcomes/{claude,codex}.json`.
 - [x] FR-PLAN-OUTCOME-COMPLETENESS: add FR section to SRS with `**Acceptance verified by acceptance tests:**` field; register row in `documents/index.md`; SRS `**Tasks:**` back-pointer.
   - Test: `manual — SRS/index diff in this task's commit`
   - Evidence: `deno task check` (check-salp, check-fr-coverage, check-srs-evidence pass)
-- [ ] No regression across the plan primitive's existing scenarios.
+- [x] No regression across the plan primitive's existing scenarios.
   - Test: full plan sweep
   - Evidence: `deno task acceptance-tests -f plan-` (all scenarios pass or cached-pass)
+  - Result: codex sweep of 2026-09-02 — all 21 `plan-*` scenarios PASS in `acceptance-tests/cache/core/plan-*/codex.json` (20 at 100, `plan-recommends-root-over-symptom` at 80). The three `surface-scout` scenarios listed in the SRS acceptance field are red on codex and tracked in `2026/09/sweep-reds-follow-up.md`.
 
 ## Solution
 
