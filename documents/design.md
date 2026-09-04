@@ -67,7 +67,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 **beta (3):** `ai-ide-runner`, `delegate-to-ide` (cross-IDE bridge, see §3.17), `select-llm-model` (see §3.21) — standalone
 
-**core (11):**
+**core (12):**
 
 - `configure-deno-commands` — standalone
 - `epic` — standalone
@@ -79,6 +79,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - `reflect-by-history` — standalone
 - `review` — generated from atom `review`
 - `setup-ai-ide-devcontainer` — standalone
+- `tasks-overview` — standalone; ships `scripts/tasks_overview.py`, the template of the project-local status script
 - `write-gods-tasks` — standalone; single source of the accepted task format
 
 **deno (2):** `cli`, `deploy` — standalone
@@ -118,7 +119,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 #### Summary
 
 - Commands: 9 (3 atom-generated, 3 composite-generated, 3 standalone) — all in `core`.
-- Skills: 43 (2 atom-generated in `core`, 41 standalone across 7 packs).
+- Skills: 44 (2 atom-generated in `core`, 42 standalone across 7 packs).
 - Agents: 13 (all standalone — 11 in `core`, 1 in `engineering`, 1 in `beta`).
 - Gitignored generated paths: 7 (5 atom targets + 2 composite targets).
 
@@ -735,6 +736,17 @@ graph TD
 - **Deps:** shipped template mapping (`framework/core/pack.yaml`: `AGENTS.template.md → AGENTS.md`); `framework/core/commands/init/SKILL.md` prose that lists what `init` generates.
 - **Scenario design:** `agents-rules-readability` plants two lint violations — an unused local (`no-unused-vars`) and a never-reassigned `let` (`prefer-const`) — in two different files of the shared `agents-rules` fixture, then asks for a chat report and forbids fixing. It runs `deno lint`, not the fixture's `deno task check`: the fixture ships an e2e test whose `fixtures/` directory is absent, so `deno task check` is red before setup and the judge could not separate planted failures from ambient ones. Both violations were chosen for having one unambiguous fix; `no-explicit-any` was tried first and rejected, because the correct replacement type is not knowable from the lint output and the agent rightly refuses to invent one.
 - **Acceptance verified by acceptance tests:** `agents-rules-readability`.
+
+### 3.24 Task Overview — FR-TASK-OVERVIEW (`framework/core/skills/tasks-overview/`) [ANC:sds:3-24]
+
+- **Purpose:** Realize [REF:fr:task-overview | FR-TASK-OVERVIEW] — show the project's non-archived tasks on request without assuming flowai's own task layout. The skill derives the project's convention from AGENTS.md once, materializes it as a project-local script, and every later request runs that script.
+- **Two artefacts:** `SKILL.md` (the derivation workflow) and `scripts/tasks_overview.py` (the template). The template is Python 3 standard library only, per the framework's standalone-script rule; the project copy is `scripts/tasks-overview.py` and differs from the template in exactly one block.
+- **Schema block:** the text between `# --- SCHEMA BEGIN ---` and `# --- SCHEMA END ---` holds `SCHEMA = {...}` with the keys `root`, `pattern`, `ignore`, `status_key`, `missing_status`, `archived_statuses`, `archived_dirs`, `progress_section`. The block sits inside a raw string that the script parses with `ast.literal_eval` rather than executing it, so a typo there is reported as `schema block is not a valid Python dict literal` with exit 2 instead of a Python traceback. There are no display-tuning keys: output shape is fixed, only the reading rules vary.
+- **Scan:** files matching `pattern` under `root`, minus the `ignore` names; a minimal frontmatter reader (`key: value`, inline `[a, b]`, block `- item`, quoted scalars) that warns on stderr with `file:line` for a line it cannot parse and still lists the task; title = first `# ` heading, else the file stem; progress = checked/total of the top-level checkboxes under `progress_section`; a task is archived when its status is in `archived_statuses` or its path is under one of `archived_dirs`.
+- **Output:** groups by status (`in progress`, `to do`, then the rest alphabetically), newest `date` first inside a group, one line `path  [k/n]  title  (date; implements)`, footer `N open, M archived (hidden; use --all)`. `--all` shows the archived groups too. No tasks → `no tasks under <root>`, exit 0. Missing root, malformed schema, unreadable file, unknown argument → message on stderr naming the path, exit 2.
+- **Workflow (`SKILL.md`):** reuse gate (an existing `scripts/tasks-overview.py` is run, never rewritten) → derive the schema from AGENTS.md, project-specific override over the framework default, ask and stop when no location is stated → show the derivation per key with its source sentence → copy the template and replace only the schema block → run and report. The skill never edits a task file.
+- **Unit test:** `scripts/tasks_overview_test.ts` next to the template spawns `python3` on a copy installed into a temp project, the way the skill installs it, so `deno task check` covers the Python.
+- **Acceptance verified by acceptance tests:** `tasks-overview-basic` (fixture with a `docs/todo/<slug>.md` + `state:` convention overriding the framework default), `tasks-overview-reuses-existing-script`, `tasks-overview-trigger-pos-1`, `tasks-overview-trigger-adj-1`, `tasks-overview-trigger-false-1`.
 
 ## 4. Data and Storage
 
