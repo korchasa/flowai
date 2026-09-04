@@ -6,7 +6,7 @@ disallowedTools: Write, Edit
 readonly: true
 mode: subagent
 model: inherit
-maxTurns: 10
+maxTurns: 40
 opencode_tools:
   write: false
   edit: false
