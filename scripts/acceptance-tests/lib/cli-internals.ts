@@ -10,6 +10,7 @@
 //
 // implements [REF:fr:dist.mapping | FR-DIST.MAPPING]
 import { parse, stringify } from "@std/yaml";
+import { stringify as stringifyToml } from "@std/toml";
 
 /**
  * What a tier resolves to. `effort` is meaningful only where the IDE has such a
@@ -274,4 +275,26 @@ export function injectDisableModelInvocation(content: string): string {
   const newFmBody = fmBody + eol + "disable-model-invocation: true";
   const newFrontmatter = `---${eol}${newFmBody}${eol}---`;
   return content.replace(fmRe, newFrontmatter);
+}
+
+/**
+ * Renders a universal agent file as a Codex custom-agent role. Codex reads
+ * roles ONLY from `$CODEX_HOME/agents/<name>.toml` (a project-local
+ * `.codex/agents/` is ignored, and a Markdown agent anywhere is invisible to
+ * `spawn_agent`), and a role without `model` fails at dispatch time with
+ * "could not resolve the child model for service tier validation" — the
+ * session's `CODEX_CONFIG` model does not substitute. Probed 2026-09-04
+ * against codex-cli 0.144.6. Only name, description, the body (as
+ * `developer_instructions`) and the pinned model are emitted; tool lists and
+ * tiers have no Codex counterpart.
+ */
+export function agentToCodexToml(content: string, model: string): string {
+  const { frontmatter, body } = splitFrontmatter(content);
+  const data = parse(frontmatter) as UniversalAgentFrontmatter;
+  return stringifyToml({
+    name: data.name,
+    description: data.description,
+    developer_instructions: body.trim() + "\n",
+    model,
+  });
 }

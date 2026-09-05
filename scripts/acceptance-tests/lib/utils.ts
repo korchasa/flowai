@@ -1,5 +1,6 @@
 import { join } from "@std/path";
 import {
+  agentToCodexToml,
   injectDisableModelInvocation,
   resolveSkillModel,
   transformAgent,
@@ -238,4 +239,45 @@ export async function copyFrameworkToIdeDir(
       }
     } catch { /* no hooks/ in pack */ }
   }
+}
+
+/**
+ * Installs every pack agent as a dispatchable Codex role,
+ * `<codexHome>/agents/<name>.toml` (see `agentToCodexToml`). The IDE-dir copy
+ * above still writes the `.md` form under `<sandbox>/.codex/agents/` for the
+ * evidence collector and for prose that lists that directory, but Codex only
+ * dispatches what sits in `CODEX_HOME`. Returns the installed agent names.
+ */
+export async function installCodexAgents(
+  frameworkPath: string,
+  codexHome: string,
+  model: string,
+  allowedPacks?: string[],
+): Promise<string[]> {
+  const written: string[] = [];
+  for await (const pack of Deno.readDir(frameworkPath)) {
+    if (!pack.isDirectory) continue;
+    if (allowedPacks && !allowedPacks.includes(pack.name)) continue;
+    const agentsDir = join(frameworkPath, pack.name, "agents");
+    let entries: Deno.DirEntry[];
+    try {
+      entries = await Array.fromAsync(Deno.readDir(agentsDir));
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) continue;
+      throw e;
+    }
+    for (const agent of entries) {
+      if (!agent.isFile || !agent.name.endsWith(".md")) continue;
+      const raw = await Deno.readTextFile(join(agentsDir, agent.name));
+      const name = agent.name.slice(0, -".md".length);
+      const destDir = join(codexHome, "agents");
+      await Deno.mkdir(destDir, { recursive: true });
+      await Deno.writeTextFile(
+        join(destDir, `${name}.toml`),
+        agentToCodexToml(raw, model),
+      );
+      written.push(name);
+    }
+  }
+  return written.sort();
 }

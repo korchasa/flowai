@@ -46,3 +46,25 @@ exit 0
   }
   return binDir;
 }
+
+/**
+ * Keeps `binDir` at the head of `PATH` inside the login shells the agent
+ * spawns. Prepending `binDir` to the launch `PATH` is not enough on macOS:
+ * codex runs every command as `zsh -lc`, the system `/etc/zprofile` invokes
+ * `path_helper`, and that rewrites `PATH` with the system directories first —
+ * `/usr/bin/curl` then shadows the stub, and the mock silently never fires
+ * (observed on the 2026-09-02 sweep: both `select-llm-model` scenarios fetched
+ * live data past a mocked `curl`). `~/.zprofile` is sourced AFTER the system
+ * file, so a prepend there is the last word. The bench `HOME` is isolated,
+ * so the file never touches the operator's own profile. `~/.bash_profile`
+ * gets the same line for a bash-shelled host.
+ */
+export async function writeLoginShellPathPrepend(
+  home: string,
+  binDir: string,
+): Promise<void> {
+  const line = `export PATH="${binDir}:$PATH"\n`;
+  for (const name of [".zprofile", ".bash_profile"]) {
+    await Deno.writeTextFile(join(home, name), line, { append: true });
+  }
+}

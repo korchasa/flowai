@@ -10,7 +10,12 @@ import {
   truncateTrace,
 } from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
-import { copyFrameworkToIdeDir, copyRecursive, runGit } from "./utils.ts";
+import {
+  copyFrameworkToIdeDir,
+  copyRecursive,
+  installCodexAgents,
+  runGit,
+} from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
 import type { CapturedToolCall } from "./acp/client.ts";
 import type { AcpIde } from "./acp/registry.ts";
@@ -561,6 +566,21 @@ async function runAgentWithTimeout(
   const adapterEnv = options.adapter.prepareWorkspace
     ? await options.adapter.prepareWorkspace(sandboxPath)
     : {};
+
+  // Codex dispatches only the roles under `CODEX_HOME/agents/*.toml`; the
+  // `.md` agents copied into `<sandbox>/.codex/agents/` are invisible to
+  // `spawn_agent` (every subagent scenario of the 2026-09-02 sweep ran with
+  // zero dispatches for this reason). Install the pack agents there, pinned
+  // to the same model as the parent so the child resolves at spawn time.
+  if (options.adapter.ide === "codex" && adapterEnv.CODEX_HOME) {
+    const installed = await installCodexAgents(
+      join(Deno.cwd(), "framework"),
+      adapterEnv.CODEX_HOME,
+      options.agentModel,
+      resolveAllowedPacks(scenario.pack, scenario.extraPacks),
+    );
+    console.log(`  Codex roles installed: ${installed.join(", ") || "none"}`);
+  }
 
   // The judge and the simulated user run on `codex exec` from a temp cwd. On a
   // codex run they get their own isolated `CODEX_HOME` beside the agent's

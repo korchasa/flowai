@@ -25,7 +25,8 @@ import {
   SystemUnhealthyError,
 } from "../system_health.ts";
 import { AcpClient, type CapturedToolCall } from "./client.ts";
-import { writeMockBin } from "./mock_bin.ts";
+import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
+import { collectCodexAgentTrace } from "./codex_rollout.ts";
 import {
   ACP_AGENTS,
   type AcpAgentSpec,
@@ -183,6 +184,9 @@ export class AcpAgent {
       if (mockBin) {
         const parentPath = this.opts.env?.PATH ?? Deno.env.get("PATH") ?? "";
         env.PATH = `${mockBin}:${parentPath}`;
+        // The launch PATH alone loses to `path_helper` inside the agent's
+        // login shells; the isolated HOME's profile keeps the stub in front.
+        if (env.HOME) await writeLoginShellPathPrepend(env.HOME, mockBin);
       }
     }
 
@@ -272,6 +276,11 @@ export class AcpAgent {
       this.#kill();
       await stderrDone.catch(() => {});
       await child.status.catch(() => {});
+      // The codex bridge never surfaces a subagent's reply or its agent_type as a
+      // session update; both live only in the rollouts (see codex_rollout.ts).
+      if (env.CODEX_HOME) {
+        this.#log.push(await collectCodexAgentTrace(env.CODEX_HOME));
+      }
     }
 
     // A watchdog trip overrides the exit code with the canonical 137 (as the

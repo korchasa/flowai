@@ -1,6 +1,6 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
-import { writeMockBin } from "./mock_bin.ts";
+import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
 
 Deno.test("writeMockBin returns null when there are no mocks", async () => {
   const dir = await Deno.makeTempDir({ prefix: "mockbin-" });
@@ -55,6 +55,33 @@ Deno.test("writeMockBin escapes single quotes in the reason", async () => {
       new TextDecoder().decode(out.stdout),
       "can't reach 'host'",
     );
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});
+
+Deno.test("writeLoginShellPathPrepend keeps the stub ahead of /usr/bin in a zsh login shell", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "mockbin-" });
+  try {
+    const binDir = await writeMockBin(join(dir, "bin"), {
+      curl: "BENCHMOCK-CURL",
+    });
+    assert(binDir, "binDir returned");
+    const home = join(dir, "home");
+    await Deno.mkdir(home);
+    await writeLoginShellPathPrepend(home, binDir);
+    // macOS `/etc/zprofile` runs `path_helper`, which moves the system
+    // directories in front of everything the parent put on PATH — the stub
+    // must still win after that reordering.
+    const out = await new Deno.Command("/bin/zsh", {
+      args: ["-lc", "which curl; curl"],
+      env: { HOME: home, PATH: `${binDir}:/usr/bin:/bin` },
+      stdout: "piped",
+      stderr: "null",
+    }).output();
+    const stdout = new TextDecoder().decode(out.stdout);
+    assertStringIncludes(stdout, join(binDir, "curl"));
+    assertStringIncludes(stdout, "BENCHMOCK-CURL");
   } finally {
     await Deno.remove(dir, { recursive: true });
   }

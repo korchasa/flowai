@@ -1,6 +1,10 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
-import { copyFrameworkToIdeDir, writeRunFile } from "./utils.ts";
+import {
+  copyFrameworkToIdeDir,
+  installCodexAgents,
+  writeRunFile,
+} from "./utils.ts";
 
 Deno.test("writeRunFile writes content and returns path", async () => {
   const dir = await Deno.makeTempDir();
@@ -175,6 +179,60 @@ Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands"
       false,
       "skills must not carry disable-model-invocation flag",
     );
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+// The IDE-dir copy writes agents as `.md`, which codex ignores; a codex run
+// needs each pack agent as `$CODEX_HOME/agents/<name>.toml` to dispatch it.
+Deno.test("installCodexAgents writes one TOML role per pack agent into CODEX_HOME", async () => {
+  const root = await Deno.makeTempDir({ prefix: "codex-agents-" });
+  try {
+    const frameworkPath = await buildTestFrameworkTree(root);
+    const agentsDir = join(frameworkPath, "testpack", "agents");
+    await Deno.mkdir(agentsDir, { recursive: true });
+    await Deno.writeTextFile(
+      join(agentsDir, "demo-agent.md"),
+      "---\nname: demo-agent\ndescription: Demo agent.\nmodel: smart\n---\n\nDo the demo.\n",
+    );
+    const codexHome = join(root, "home", ".codex");
+    const written = await installCodexAgents(
+      frameworkPath,
+      codexHome,
+      "gpt-5.6-sol",
+      ["testpack"],
+    );
+    assertEquals(written, ["demo-agent"]);
+    const toml = await Deno.readTextFile(
+      join(codexHome, "agents", "demo-agent.toml"),
+    );
+    assertStringIncludes(toml, 'name = "demo-agent"');
+    assertStringIncludes(toml, 'model = "gpt-5.6-sol"');
+    assertStringIncludes(toml, "Do the demo.");
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("installCodexAgents skips packs outside the allowed list", async () => {
+  const root = await Deno.makeTempDir({ prefix: "codex-agents-" });
+  try {
+    const frameworkPath = await buildTestFrameworkTree(root);
+    const agentsDir = join(frameworkPath, "testpack", "agents");
+    await Deno.mkdir(agentsDir, { recursive: true });
+    await Deno.writeTextFile(
+      join(agentsDir, "demo-agent.md"),
+      "---\nname: demo-agent\ndescription: Demo agent.\n---\n\nDo the demo.\n",
+    );
+    const codexHome = join(root, "home", ".codex");
+    const written = await installCodexAgents(
+      frameworkPath,
+      codexHome,
+      "gpt-5.6-sol",
+      ["core"],
+    );
+    assertEquals(written, []);
   } finally {
     await Deno.remove(root, { recursive: true });
   }

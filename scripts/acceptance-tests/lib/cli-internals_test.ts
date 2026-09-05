@@ -1,5 +1,10 @@
 import { assertEquals, assertStringIncludes } from "@std/assert";
-import { resolveSkillModel, transformAgent } from "./cli-internals.ts";
+import {
+  agentToCodexToml,
+  resolveSkillModel,
+  transformAgent,
+} from "./cli-internals.ts";
+import { parse as parseToml } from "@std/toml";
 
 Deno.test("resolveSkillModel resolves abstract tier to concrete model (claude)", () => {
   const src = "---\nname: x\ndescription: d\nmodel: cheap\n---\n\n# Body\n";
@@ -97,4 +102,22 @@ Deno.test("transformAgent honours both user override forms", () => {
   });
   assertStringIncludes(pair, "model: haiku");
   assertStringIncludes(pair, "effort: low");
+});
+
+// Codex reads custom agents ONLY from `$CODEX_HOME/agents/<name>.toml`, and a
+// role without `model` fails at spawn time ("could not resolve the child
+// model"). The TOML must carry all four keys and survive a multi-line body.
+Deno.test("agentToCodexToml emits name, description, developer_instructions and model", () => {
+  const src =
+    "---\nname: scout\ndescription: Read-only \"scout\".\ntools: Read, Grep\nmodel: smart\n---\n\n# Scout\n\nLine one with 'quotes'.\nLine two.\n";
+  const toml = agentToCodexToml(src, "gpt-5.6-sol");
+  const data = parseToml(toml) as Record<string, string>;
+  assertEquals(data.name, "scout");
+  assertEquals(data.description, 'Read-only "scout".');
+  assertEquals(data.model, "gpt-5.6-sol");
+  assertStringIncludes(
+    data.developer_instructions,
+    "# Scout\n\nLine one with 'quotes'.\nLine two.",
+  );
+  assertEquals("tools" in data, false);
 });
