@@ -355,7 +355,7 @@ Deno.test("checkGitignoreParity: real .gitignore lists every manifest target", a
   );
 });
 
-Deno.test("validateCompositeCanon: rejects body missing 'No delegation' rule", () => {
+Deno.test("validateCompositeCanon: rejects body missing 'No skill re-entry' rule", () => {
   const fm = {
     description:
       "Self-contained — execute the inlined steps directly. Foo bar.",
@@ -372,14 +372,14 @@ Deno.test("validateCompositeCanon: rejects body missing 'No delegation' rule", (
   } catch (e) {
     assertStringIncludes(
       e instanceof Error ? e.message : String(e),
-      "**No delegation**",
+      "**No skill re-entry**",
     );
   }
 });
 
 Deno.test("validateCompositeCanon: rejects description missing 'Self-contained' phrase", () => {
   const fm = { description: "Some composite that does X without the marker." };
-  const body = "<rules>**No delegation** rule.</rules>";
+  const body = "<rules>**No skill re-entry** rule.</rules>";
   const manifest: Manifest = {
     schema_version: 1,
     atoms: {},

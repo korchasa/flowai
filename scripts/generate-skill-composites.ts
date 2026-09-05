@@ -550,7 +550,7 @@ function extractStepByStepBlock(body: string, source: string): string {
 /**
  * Composite canon — machine-enforced replacement for the rules previously
  * documented in framework/AGENTS.md § Composite Skill Authoring:
- *   1. **No delegation** rule present in <rules>.
+ *   1. **No skill re-entry** rule present in <rules>.
  *   2. Description contains "Self-contained — execute the inlined steps directly".
  *   3. Description does NOT name source skills as explicit invocations.
  *   4. Every verdict gate has both Approve and Reject branches (heuristic:
@@ -583,9 +583,9 @@ export function validateCompositeCanon(
       );
     }
   }
-  if (!body.includes("**No delegation**")) {
+  if (!body.includes("**No skill re-entry**")) {
     throw new Error(
-      `[generate-skill-composites] composite '${id}' (${target}): body MUST contain the **No delegation** rule in <rules>`,
+      `[generate-skill-composites] composite '${id}' (${target}): body MUST contain the **No skill re-entry** rule in <rules>`,
     );
   }
   // Verdict gate completeness: any block containing "Verdict Gate" OR

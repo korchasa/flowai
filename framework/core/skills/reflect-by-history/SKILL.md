@@ -162,6 +162,8 @@ When proposing a fix, classify *where* it belongs:
 
    **Quality bar**: If you remove the title, a reader should still understand what happened, why it matters, and what to do about it. If any section would make a reader ask "what does this mean?" or "why?" — expand it.
 
+   **Per-action completion gate (check before presenting)**: walk every corrective action on its own and reject it unless it carries ALL of: a per-session narrative (task, actions, what went wrong — for each session listed); a quantified Impact (steps, time, errors, and the total); an exact destination (`Where`); and complete paste-ready draft content. Do not infer one action's compliance from another's: the action that matches the example above tends to get the full treatment while the rest slide into a date list, a generic risk, and a fix described in prose (observed 2026-09-05 — one action out of three met the bar). When the evidence cannot support a field, say so in that field instead of generalising.
+
    **Anti-patterns (avoid):**
    - One-line sections: `Impact: 4-6 wasted steps` — doing what? With what consequence?
    - Bare session references: `Evidence: sessions 2026-03-15, 2026-03-20` — describe what happened in each session.

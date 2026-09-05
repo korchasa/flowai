@@ -35,7 +35,7 @@ ship is the terminal composite of the SDLC: by the time the agent exits, work ei
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: All five phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any plan, implement, review, commit, or push skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
+1. **No skill re-entry**: All five phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any plan, implement, review, commit, or push skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases. This forbids re-entering a phase through a skill, NOT the worker dispatch a phase prescribes: the Review Phase's Parallel Delegation subagents (e.g. `console-expert` via Task / Agent / `spawn_agent`) MUST still be dispatched exactly as that step says — the rule is about skills, not agents.
 2. **Six Phases, Strict Order**: Execute Plan fully, then Implement, then Review, then Commit, then Push, then Reflect. Never interleave; never skip a gate.
 3. **Plan → Implement Gate**: User MUST select a variant. Decline / abort → STOP.
 4. **Implement → Review Gate**: project check MUST exit 0 AND `git status` MUST be non-empty. Otherwise STOP.

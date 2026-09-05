@@ -33,7 +33,7 @@ ship-task is the SDLC continuation composite: by the time the agent exits, work 
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: All four phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any implement, review, commit, or push skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
+1. **No skill re-entry**: All four phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any implement, review, commit, or push skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases. This forbids re-entering a phase through a skill, NOT the worker dispatch a phase prescribes: the Review Phase's Parallel Delegation subagents (e.g. `console-expert` via Task / Agent / `spawn_agent`) MUST still be dispatched exactly as that step says — the rule is about skills, not agents.
 2. **Task file is mandatory input**: The user MUST provide either a path to the task file or an unambiguous identifier resolvable through the `tasks` role in AGENTS.md. If neither is provided, ask once and STOP. If the resolved file does not exist or its `## Solution` section is empty, STOP with a clear message — this composite does not plan.
 3. **Five Phases, Strict Order**: Execute Implement fully, then Review, then Commit, then Push, then Reflect. Never interleave; never skip a gate.
 4. **Implement → Review Gate**: project check MUST exit 0 AND `git status` MUST be non-empty. Otherwise STOP.

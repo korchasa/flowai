@@ -30,7 +30,7 @@ review-commit-push is `review-and-commit` extended to the remote: by the time th
 ## Rules & Constraints
 
 <rules>
-1. **No delegation**: All four phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any review, commit, push or reflect skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases.
+1. **No skill re-entry**: All four phases are FULLY INLINED below. Execute the steps directly. Do NOT invoke any review, commit, push or reflect skill via the Skill tool — they would re-enter without the composite's gate logic and the workflow would silently exit between phases. This forbids re-entering a phase through a skill, NOT the worker dispatch a phase prescribes: the Review Phase's Parallel Delegation subagents (e.g. `console-expert` via Task / Agent / `spawn_agent`) MUST still be dispatched exactly as that step says — the rule is about skills, not agents.
 2. **A diff is mandatory input**: The working tree MUST hold uncommitted changes (staged or unstaged) at the start. An empty diff → report "nothing to review" and STOP. This composite neither plans nor implements; do not ask for a task file and do not write code beyond what the Review Phase's own probes require.
 3. **Four Phases, Strict Order**: Execute Review fully, then Commit, then Push, then Reflect. Never interleave; never skip a gate.
 4. **Verdict Gate**: only Approve proceeds to Commit. Request Changes / Needs Discussion / crash → STOP. Phase output is reported regardless.

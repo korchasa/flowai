@@ -50,8 +50,14 @@ Per-host invocation syntax:
   `subagent_type=worker`.
 - **OpenCode**: use the `@worker <task prompt>` mention
   syntax.
-- **Cursor / Codex** (no native subagent dispatch): subagent invocation is
-  unavailable on these hosts. Surface this limitation clearly to the user
+- **Codex**: use the `spawn_agent` tool with `agent_type="worker"` and
+  `fork_turns="none"` (a full-history fork cannot carry an agent type),
+  then collect the reply with `wait_agent`. The role is dispatchable only
+  when `worker.toml` sits under the Codex home
+  (`ls "${CODEX_HOME:-$HOME/.codex}/agents/"`); an empty listing means the
+  role is not installed — say so, do not run the child CLI inline.
+- **Cursor** (no native subagent dispatch): subagent invocation is
+  unavailable on this host. Surface this limitation clearly to the user
   and route them to `ai-ide-runner` for one-shot relay. Do NOT
   silently fall back to running the child CLI inline — that would defeat
   the context-isolation point that motivates this skill.

@@ -32,7 +32,7 @@ Two subagents handle the actual adaptation work:
 1. **Reuse subagents**: Delegate skill adaptation to `skill-adapter`, agent adaptation to `agent-adapter`. Never duplicate their logic.
 2. **Per-file confirmation**: Show diffs and ask user before accepting each adapted resource. Never silently overwrite.
 3. **Parallel execution**: Launch one subagent per resource — all in parallel for each resource type.
-4. **Cross-IDE**: Detect and work with any installed IDE config dir (`.claude/`, `.cursor/`, `.opencode/`).
+4. **Cross-IDE**: Detect and work with any installed IDE config dir (`.claude/`, `.cursor/`, `.opencode/`, `.codex/`).
 5. **Mandatory tracking**: Use a task management tool (e.g., todo write) to track execution steps.
 6. **No auto-commit**: Adaptation changes are staged but not committed. User decides when to commit.
 7. **Project-local only**: Operate only on IDE config dirs inside the current project. Never edit plugin cache files or user-level dirs such as `~/.claude/skills`, `~/.codex/skills`, or marketplace plugin caches.
@@ -43,7 +43,7 @@ Two subagents handle the actual adaptation work:
 <step_by_step>
 
 1. **Detect IDE config directories**
-   - Scan project root for `.claude/`, `.cursor/`, `.opencode/`.
+   - Scan project root for `.claude/`, `.cursor/`, `.opencode/`, `.codex/`.
    - Use all detected dirs for subsequent operations.
    - Ignore global/user-level IDE dirs and plugin cache locations.
    - If none found, inform user that no project-local primitives are installed and stop.
@@ -159,8 +159,8 @@ Two subagents handle the actual adaptation work:
      approval.** A run legitimately ends at the approval gate — the user may
      answer tomorrow, or not at all — and a summary placed behind that gate is a
      summary the run never produces. Say what was scanned and what is proposed,
-     then ask; when the answers come, close with what was applied and what was
-     rejected.
+     then ask; when the answers come, close with the same totals — per kind,
+     how many were applied and how many rejected — not just a list of files.
 
 </step_by_step>
 
