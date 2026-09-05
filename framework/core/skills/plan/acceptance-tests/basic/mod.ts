@@ -10,8 +10,11 @@ export const PlanBasicBench = new class extends AcceptanceTestScenario {
     TOOLING_STACK: "- Node.js\n- Express",
   };
   interactive = true;
+  // The persona answers questions and nothing more: on the 2026-09-02 sweep
+  // it volunteered "now implement it", and the plan run ended in a question
+  // about scope the planner is not allowed to take on.
   userPersona =
-    "A pragmatic developer who prefers the simplest approach. When asked to choose a variant, pick variant A (or the first/simplest one). Keep answers short.";
+    "A pragmatic developer who prefers the simplest approach. Answer ONLY what the agent asks, in one short sentence. When asked to choose a variant, pick variant A (or the first/simplest one). Never ask the agent to implement, run, or extend anything — the plan is the whole deliverable; if the agent says it is done, reply 'Thanks, that is all.' If the agent asks whether to initialize or create project documents, reply 'Do not create or initialize any documents; note it in the plan instead.'";
 
   userQuery =
     "/plan Plan a new feature to add a 'hello world' endpoint. The project is a simple Node.js Express server. The server file is index.js. No other constraints.";

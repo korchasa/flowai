@@ -44,11 +44,14 @@ export const FlowAdaptSkillsBasicBench = new class
       "Agent adapts commit skill: replaces deno test/lint with poetry run pytest/ruff, shows diff, asks confirmation",
   };
 
+  interactive = true;
+  userPersona =
+    "The project maintainer who ran /adapt. When the agent shows an adapted diff and asks whether to accept it, reply 'yes, apply it'. Approve every proposed adaptation; answer any other question with the simplest option in one short sentence. Never ask for extra work.";
   override async setup(sandboxPath: string) {
     // Create .flowai.yaml
     await Deno.writeTextFile(
       join(sandboxPath, ".flowai.yaml"),
-      'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
+      'version: "1.1"\nides:\n  - codex\npacks:\n  - core\n',
     );
 
     // Create .codex/skills/commit/ with generic (upstream) version

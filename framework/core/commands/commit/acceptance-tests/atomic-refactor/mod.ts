@@ -25,13 +25,15 @@ export const CommitAtomicRefactorBench = new class
     // File 1: Refactor
     await Deno.writeTextFile(
       join(sandboxPath, "math.ts"),
-      "export const add = (a, b) => a + b; // Renamed from sum",
+      // Typed and newline-terminated: implicit-any parameters made the agent
+      // ask for types instead of committing (sweep of 2026-09-02).
+      "export const add = (a: number, b: number): number => a + b; // Renamed from sum\n",
     );
 
     // File 2: New Feature
     await Deno.writeTextFile(
       join(sandboxPath, "utils.ts"),
-      "export const log = (msg) => console.log(msg);",
+      "export const log = (msg: string): void => console.log(msg);\n",
     );
   }
 

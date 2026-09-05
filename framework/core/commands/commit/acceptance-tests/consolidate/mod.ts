@@ -40,7 +40,13 @@ export const CommitConsolidateBench = new class extends AcceptanceTestScenario {
     await Deno.writeTextFile(
       join(sandboxPath, "math.test.ts"),
       [
-        'import { assertEquals } from "jsr:@std/assert";',
+        // No `jsr:` import: it fails the sandbox's `deno lint`
+        // (no-import-prefix) and the run stops on the fixture, not the skill.
+        "function assertEquals(actual: unknown, expected: unknown): void {",
+        "  if (actual !== expected) {",
+        "    throw new Error(`Expected ${String(expected)}, got ${String(actual)}`);",
+        "  }",
+        "}",
         'import { add, multiply } from "./math.ts";',
         "",
         'Deno.test("add returns sum of two numbers", () => {',

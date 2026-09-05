@@ -43,11 +43,14 @@ export const FlowAdaptAllBench = new class extends AcceptanceTestScenario {
       "Agent adapts both skill and agent to Go-specific commands (go test, golangci-lint), verifies AGENTS.md artifact, produces summary",
   };
 
+  interactive = true;
+  userPersona =
+    "The project maintainer who ran /adapt. When the agent shows an adapted diff and asks whether to accept it, reply 'yes, apply it'. Approve every proposed adaptation; answer any other question with the simplest option in one short sentence. Never ask for extra work.";
   override async setup(sandboxPath: string) {
     // Create .flowai.yaml
     await Deno.writeTextFile(
       join(sandboxPath, ".flowai.yaml"),
-      'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
+      'version: "1.1"\nides:\n  - codex\npacks:\n  - core\n',
     );
 
     // Create .codex/skills/commit/ with generic (upstream) version
@@ -167,7 +170,7 @@ You are a console expert. Execute complex console tasks without modifying code.
     {
       id: "produced_summary",
       description:
-        "Did the agent produce a final summary reporting how many skills, agents, and assets were processed?",
+        "Did the agent report totals — how many skills, agents, and assets/artifacts were scanned and how many adapted? The skill writes these totals BEFORE the first confirmation request (so they survive an unanswered gate) and closes with what was applied; totals given at either point satisfy this item.",
       critical: true,
     },
     {

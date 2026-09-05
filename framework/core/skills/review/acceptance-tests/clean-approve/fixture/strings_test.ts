@@ -16,3 +16,7 @@ Deno.test("capitalize: returns the empty string unchanged", () => {
 Deno.test("capitalize: keeps the rest of the string untouched", () => {
   assertEquals(capitalize("hELLO wORLD"), "HELLO wORLD");
 });
+
+Deno.test("capitalize: treats an astral-plane letter as one character", () => {
+  assertEquals(capitalize("𐐨bc"), "𐐀bc");
+});

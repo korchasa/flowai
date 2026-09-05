@@ -1,3 +1,5 @@
-/** Capitalize the first letter of a string. */
-export const capitalize = (s: string): string =>
-  s.length === 0 ? s : s[0].toUpperCase() + s.slice(1);
+/** Capitalize the first letter of a string (the first Unicode code point, not the first UTF-16 code unit). */
+export const capitalize = (s: string): string => {
+  const [first = "", ...rest] = s;
+  return first.toUpperCase() + rest.join("");
+};

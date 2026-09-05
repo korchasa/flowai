@@ -21,6 +21,11 @@ export const MemexSaveNewBench = new class extends AcceptanceTestScenario {
   };
 
   userQuery = "/save source.md — please add this article to my memex";
+  // The skill may ask once whether the schema goes into an existing AGENTS.md
+  // or a separate MEMEX.md; without a user the turn ended on that question.
+  interactive = true;
+  userPersona =
+    "The memex owner. If the agent asks where to put the memex schema, choose a separate MEMEX.md and leave AGENTS.md untouched. Answer any other question with the simplest option in one short sentence; never ask for extra work.";
 
   checklist = [
     {

@@ -1,4 +1,21 @@
-import { assertEquals, assertThrows } from "jsr:@std/assert";
+// Assertions are local on purpose: a `jsr:` import trips the sandbox's
+// `deno lint` (no-import-prefix), and the review would then stop on the
+// fixture instead of on the primitive under test.
+function assertEquals(actual: unknown, expected: unknown): void {
+  if (actual !== expected) {
+    throw new Error(`Expected ${String(expected)}, got ${String(actual)}`);
+  }
+}
+
+function assertThrows(fn: () => unknown): void {
+  let threw = false;
+  try {
+    fn();
+  } catch {
+    threw = true;
+  }
+  if (!threw) throw new Error("Expected function to throw");
+}
 import { DataProcessor } from "./processor.ts";
 import type { Schema } from "./processor.ts";
 
@@ -105,4 +122,23 @@ Deno.test("format: unsupported format throws", () => {
   assertThrows(() =>
     processor.format([], "yaml" as Parameters<typeof processor.format>[1])
   );
+});
+
+Deno.test("validate: rejects a non-ISO date string", () => {
+  const result = processor.validate({
+    name: "Alice",
+    age: 30,
+    joined: "December 17, 1995",
+  });
+  assertEquals(result.valid, false);
+  assertEquals(result.errors[0].field, "joined");
+});
+
+Deno.test("validate: accepts an ISO date string", () => {
+  const result = processor.validate({
+    name: "Alice",
+    age: 30,
+    joined: "2026-01-31",
+  });
+  assertEquals(result.valid, true);
 });

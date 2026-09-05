@@ -33,6 +33,15 @@ export interface ValidationError {
 
 export type OutputFormat = "json" | "csv" | "xml";
 
+/** ISO 8601 calendar date or date-time (`2026-01-31`, `2026-01-31T10:00:00Z`); `new Date()` alone also accepts `"December 17, 1995"`. */
+const ISO_DATE =
+  /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
+
+export function isIsoDate(value: unknown): value is string {
+  return typeof value === "string" && ISO_DATE.test(value) &&
+    !Number.isNaN(new Date(value).getTime());
+}
+
 export class DataProcessor {
   private schema: Schema;
   private strict: boolean;
@@ -57,13 +66,25 @@ export class DataProcessor {
         continue;
       }
 
-      if (typeof value !== def.type && def.type !== "date") {
-        errors.push({
-          field,
-          message: `Expected ${def.type}, got ${typeof value}`,
-          value,
-        });
-        continue;
+      if (def.type === "date") {
+        if (!isIsoDate(value)) {
+          errors.push({
+            field,
+            message: `Expected an ISO date string, got ${String(value)}`,
+            value,
+          });
+          continue;
+        }
+      } else {
+        const actual: string = typeof value;
+        if (actual !== def.type) {
+          errors.push({
+            field,
+            message: `Expected ${def.type}, got ${actual}`,
+            value,
+          });
+          continue;
+        }
       }
 
       if (def.type === "number" && typeof value === "number") {
@@ -127,7 +148,15 @@ export class DataProcessor {
           if (def.type === "string" && typeof value === "string") {
             transformed[field] = value.trim();
           } else if (def.type === "date" && typeof value === "string") {
-            transformed[field] = new Date(value).toISOString();
+            // Validated before formatting: `new Date("nope").toISOString()`
+            // throws RangeError, and a reviewer that spots it is right to
+            // refuse the diff. This scenario measures parallel delegation and
+            // phase-2 reuse, so the fixture must not carry a real defect.
+            const parsed = new Date(value);
+            if (!isIsoDate(value) || Number.isNaN(parsed.getTime())) {
+              throw new Error(`invalid date in field ${field}: ${value}`);
+            }
+            transformed[field] = parsed.toISOString();
           } else {
             transformed[field] = value;
           }
@@ -149,9 +178,9 @@ export class DataProcessor {
 
       case "csv": {
         const fields = Object.keys(this.schema.fields);
-        const header = fields.join(",");
+        const header = fields.map(csvCell).join(",");
         const rows = records.map((r) =>
-          fields.map((f) => String(r[f] ?? "")).join(",")
+          fields.map((f) => csvCell(String(r[f] ?? ""))).join(",")
         );
         return [header, ...rows].join("\n");
       }
@@ -159,7 +188,7 @@ export class DataProcessor {
       case "xml": {
         const items = records.map((r) => {
           const fields = Object.entries(r)
-            .map(([k, v]) => `    <${k}>${String(v)}</${k}>`)
+            .map(([k, v]) => `    <${k}>${xmlText(String(v))}</${k}>`)
             .join("\n");
           return `  <record>\n${fields}\n  </record>`;
         });
@@ -170,4 +199,17 @@ export class DataProcessor {
         throw new Error(`Unsupported format: ${outputFormat}`);
     }
   }
+}
+
+/** Quote a CSV cell when it holds a separator, a quote or a newline (RFC 4180). */
+function csvCell(value: string): string {
+  return /[",\n\r]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+}
+
+/** Escape the three characters that would otherwise break XML character data. */
+function xmlText(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

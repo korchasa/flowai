@@ -33,6 +33,15 @@ export interface ValidationError {
 
 export type OutputFormat = "json" | "csv" | "xml";
 
+/** ISO 8601 calendar date or date-time (`2026-01-31`, `2026-01-31T10:00:00Z`); `new Date()` alone also accepts `"December 17, 1995"`. */
+const ISO_DATE =
+  /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
+
+export function isIsoDate(value: unknown): value is string {
+  return typeof value === "string" && ISO_DATE.test(value) &&
+    !Number.isNaN(new Date(value).getTime());
+}
+
 export class DataProcessor {
   private schema: Schema;
   private strict: boolean;
@@ -57,13 +66,25 @@ export class DataProcessor {
         continue;
       }
 
-      if (typeof value !== def.type && def.type !== "date") {
-        errors.push({
-          field,
-          message: `Expected ${def.type}, got ${typeof value}`,
-          value,
-        });
-        continue;
+      if (def.type === "date") {
+        if (!isIsoDate(value)) {
+          errors.push({
+            field,
+            message: `Expected an ISO date string, got ${String(value)}`,
+            value,
+          });
+          continue;
+        }
+      } else {
+        const actual: string = typeof value;
+        if (actual !== def.type) {
+          errors.push({
+            field,
+            message: `Expected ${def.type}, got ${actual}`,
+            value,
+          });
+          continue;
+        }
       }
 
       if (def.type === "number" && typeof value === "number") {
@@ -132,7 +153,7 @@ export class DataProcessor {
             // refuse the diff. This scenario measures parallel delegation and
             // phase-2 reuse, so the fixture must not carry a real defect.
             const parsed = new Date(value);
-            if (Number.isNaN(parsed.getTime())) {
+            if (!isIsoDate(value) || Number.isNaN(parsed.getTime())) {
               throw new Error(`invalid date in field ${field}: ${value}`);
             }
             transformed[field] = parsed.toISOString();

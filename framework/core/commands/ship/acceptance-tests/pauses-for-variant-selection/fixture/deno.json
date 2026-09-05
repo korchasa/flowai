@@ -1,0 +1,36 @@
+{
+  "tasks": {
+    "check": "deno fmt --check && deno lint && deno test -A"
+  },
+  "fmt": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/",
+      "AGENTS.md",
+      "CLAUDE.md"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
+  },
+  "test": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "acceptance-tests/"
+    ]
+  }
+}

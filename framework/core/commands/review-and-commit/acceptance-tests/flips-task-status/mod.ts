@@ -66,9 +66,9 @@ interface Options {
   windowMs: number;
 }
 
-const buckets = new Map<string, Bucket>();
-
 export function rateLimit(opts: Options) {
+  // One bucket map per limiter: routes with their own limits share no state.
+  const buckets = new Map<string, Bucket>();
   return (req: Request): Response | null => {
     const key = req.headers.get("X-API-Key") ?? "anon";
     const now = Date.now();
@@ -101,10 +101,15 @@ Deno.test("enforces_bucket", () => {
 });
 
 Deno.test("per_route_override", () => {
-  const mw = rateLimit({ limit: 1, windowMs: 60_000 });
-  const req = new Request("http://x/", { headers: { "X-API-Key": "k2" } });
-  assertEquals(mw(req), null);
-  assertEquals(mw(req)?.status, 429);
+  const strict = rateLimit({ limit: 1, windowMs: 60_000 });
+  const lenient = rateLimit({ limit: 2, windowMs: 60_000 });
+  const req = new Request("http://x/", { headers: { "X-API-Key": "k1" } });
+  assertEquals(strict(req), null);
+  assertEquals(strict(req)?.status, 429);
+  // Exhausting the strict route must leave the lenient route's bucket alone.
+  assertEquals(lenient(req), null);
+  assertEquals(lenient(req), null);
+  assertEquals(lenient(req)?.status, 429);
 });
 `;
 

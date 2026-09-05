@@ -82,7 +82,11 @@ export const AiIdeRunnerDefaultNativeIdeBench = new class
     {
       id: "disclosed_ide_and_model",
       description:
-        "Did the final response explicitly name BOTH the chosen IDE (Claude Code) and the resolved model ID?",
+        // The skill's own contract is "tell the user which model was actually
+        // used"; an alias such as `sonnet` passed to `--model` IS that model.
+        // The strict re-measure of 2026-09-05 failed a correct run for not
+        // expanding the alias into a full model id nobody had asked for.
+        "Did the final response explicitly name BOTH the chosen IDE (Claude Code) and the model it passed to the CLI? An alias (e.g. `sonnet`) counts when that is what `--model` received; a full model id is not required.",
       critical: true,
     },
   ];
