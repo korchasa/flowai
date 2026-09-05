@@ -60,7 +60,7 @@ Deno.test("writeMockBin escapes single quotes in the reason", async () => {
   }
 });
 
-Deno.test("writeLoginShellPathPrepend keeps the stub ahead of /usr/bin in a zsh login shell", async () => {
+Deno.test("writeLoginShellPathPrepend keeps the stub ahead of /usr/bin in every login shell present", async () => {
   const dir = await Deno.makeTempDir({ prefix: "mockbin-" });
   try {
     const binDir = await writeMockBin(join(dir, "bin"), {
@@ -72,16 +72,30 @@ Deno.test("writeLoginShellPathPrepend keeps the stub ahead of /usr/bin in a zsh 
     await writeLoginShellPathPrepend(home, binDir);
     // macOS `/etc/zprofile` runs `path_helper`, which moves the system
     // directories in front of everything the parent put on PATH — the stub
-    // must still win after that reordering.
-    const out = await new Deno.Command("/bin/zsh", {
-      args: ["-lc", "which curl; curl"],
-      env: { HOME: home, PATH: `${binDir}:/usr/bin:/bin` },
-      stdout: "piped",
-      stderr: "null",
-    }).output();
-    const stdout = new TextDecoder().decode(out.stdout);
-    assertStringIncludes(stdout, join(binDir, "curl"));
-    assertStringIncludes(stdout, "BENCHMOCK-CURL");
+    // must still win after that reordering. The function writes a profile
+    // for zsh AND bash; exercise whichever of the two the host has (Linux
+    // CI runners ship no `/bin/zsh`), and fail loudly when it has neither.
+    const shells: string[] = [];
+    for (const shell of ["/bin/zsh", "/bin/bash"]) {
+      try {
+        await Deno.stat(shell);
+        shells.push(shell);
+      } catch (e) {
+        if (!(e instanceof Deno.errors.NotFound)) throw e;
+      }
+    }
+    assert(shells.length > 0, "neither /bin/zsh nor /bin/bash is installed");
+    for (const shell of shells) {
+      const out = await new Deno.Command(shell, {
+        args: ["-lc", "which curl; curl"],
+        env: { HOME: home, PATH: `${binDir}:/usr/bin:/bin` },
+        stdout: "piped",
+        stderr: "null",
+      }).output();
+      const stdout = new TextDecoder().decode(out.stdout);
+      assertStringIncludes(stdout, join(binDir, "curl"), shell);
+      assertStringIncludes(stdout, "BENCHMOCK-CURL", shell);
+    }
   } finally {
     await Deno.remove(dir, { recursive: true });
   }
