@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.4](https://github.com/korchasa/flowai/compare/v0.14.3...v0.14.4) (2026-09-05)
+
+
+### Bug Fixes
+
+* **acceptance-tests:** make codex subagent runs visible and mockable ([ebcf1e5](https://github.com/korchasa/flowai/commit/ebcf1e5656667541501fd3817debf724c0e8485c))
+* **core:** teach the primitives the codex form of subagent dispatch ([a079e4c](https://github.com/korchasa/flowai/commit/a079e4c2299e381cc14030b6412cd632917dc91e))
+
+
+### Chores
+
+* **scripts:** add the project-local tasks-overview status script ([c3f6dbd](https://github.com/korchasa/flowai/commit/c3f6dbd937a0d57469ab52d5e3e7f3c6195e0337))
+
+
+### Documentation
+
+* **agents:** record three lessons from the tasks-overview ship ([1bc0f48](https://github.com/korchasa/flowai/commit/1bc0f48cdaac6989041619b14138f311546d93bc))
+* **tasks:** close plan-outcome-completeness on the 2026-09-02 codex sweep ([e2ec146](https://github.com/korchasa/flowai/commit/e2ec1462ad5b8c1fbb5b844e1f40f3dfb34ffbed))
+* **tasks:** close sweep-reds-follow-up with the 2026-09-05 verdicts ([0f7bb69](https://github.com/korchasa/flowai/commit/0f7bb69cbbba485fece4ffdc0c0864105ab978b8))
+
+
+### Tests
+
+* **acceptance-tests:** exercise the login-shell PATH prepend on whichever shell the host has ([7318380](https://github.com/korchasa/flowai/commit/7318380fd41ce16678cbbf3e2c5512c40a0bc4e1))
+* **acceptance-tests:** repair the scenarios and fixtures left red by the codex sweep ([f04b836](https://github.com/korchasa/flowai/commit/f04b836fb11d81d0fd6ab8a2d8ceaf184bfd54a8))
+
 ### [0.14.3](https://github.com/korchasa/flowai/compare/v0.14.2...v0.14.3) (2026-09-04)
 
 
