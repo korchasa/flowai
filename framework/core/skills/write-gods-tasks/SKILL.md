@@ -1,6 +1,6 @@
 ---
 name: write-gods-tasks
-description: Supplies the accepted task format — GODS, meaning Goal, Overview, Definition of Done, Solution. Use when the user asks what that format is, or to write up already-decided work in it. NOT for planning before coding — use the planning skill.
+description: Supplies the accepted task format GODS (Goal, Overview, Definition of Done, Solution). Use when the user asks what that format is, or to write up decided work in it. NOT for planning before coding — weighing variants belongs to the planning skill.
 ---
 
 ## HOW TO WRITE TASKS USING GODS FRAMEWORK

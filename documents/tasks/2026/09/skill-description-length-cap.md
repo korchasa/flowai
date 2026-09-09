@@ -1,6 +1,6 @@
 ---
 date: 2026-09-01
-status: in progress
+status: done
 implements:
   - FR-DESC-QUALITY
 tags: [skills, context-budget, check-skills]
@@ -164,9 +164,9 @@ Disposition per surface item (union of the scout's list and the planner's own en
 - [x] FR-DESC-QUALITY: `engineer-skill` no longer describes a two-cap world — its `SKILL.md` names the limits and which one binds first, and its authoring rubric item matches the enforced cap.
   - Test: manual — korchasa
   - Evidence: `grep -n "250" framework/devtools/skills/engineer-skill/SKILL.md` returns both the two-cap blockquote and the rubric checklist item
-- [ ] FR-DESC-QUALITY: each shortened skill keeps its three trigger scenarios green.
+- [x] FR-DESC-QUALITY: each shortened skill keeps its three trigger scenarios green.
   - Test: `Benchmark: <skill>-trigger-pos-1`, `<skill>-trigger-adj-1`, `<skill>-trigger-false-1` for each of the 35 shortened skills
-  - Evidence: `deno task acceptance-tests -f trigger-` — handed to the user, see Follow-ups
+  - Evidence: full sweep `deno task acceptance-tests -f trigger-` run 2026-09-09 on the user's authorisation — 129 scenarios, 125 passed, 2 served from cache, 2 failed (`cli-trigger-adj-1`, `write-gods-tasks-trigger-adj-1`). Both were adjacent-request scenarios that the shortening had made over-trigger: `write-gods-tasks` had lost the phrase that sends variant-weighing to the planning skill, and `cli` had kept the broad "any Deno command" wording with only a short exclusion tail. Both descriptions were rewritten inside the 250-character cap and the six scenarios of the two skills re-run — all green (`cli-trigger-{pos,adj,false}-1`, `write-gods-tasks-trigger-{pos,adj,false}-1`), then `deno task check` green (795 passed | 0 failed, 187 passed | 0 failed, exit 0)
 
 ## Solution
 
@@ -195,7 +195,7 @@ Selected variant (user, 2026-09-09): a separate `validateDescriptionLength` vali
 
 ## Follow-ups
 
-- The trigger sweep for the 35 shortened skills (105 scenario runs) is deferred to the user as the CHECK phase: `deno task acceptance-tests -f trigger-`. Until it runs, the last DoD item stays `[ ]`, and nothing is pushed or released.
+- The trigger sweep ran on 2026-09-09 after the user authorised it; the two regressions it found are recorded in the last DoD item. Nothing is pushed or released — the user's decision for this session, so the shortened descriptions reach no user until a later push.
 - A per-pack listing budget gate (variant C, considered and not chosen on 2026-09-09) stays unbuilt, and the per-entry cap does not substitute for it. Measured after the cap: `core` + `engineering` still comes to ≈2 191 est. tokens against a ≈2 000-token budget, and all packs together to ≈3 250. If truncation is observed in practice, that gate is the next step.
 - `FRONTMATTER_MAX_TOKENS = 100` is left in place but can no longer fire (max ≈70 est. tokens under the new cap). Either retire it or re-derive it the next time the budget cap moves.
 - The 2026-09-01 entry count of 63 in the Context section does not reproduce (53 today). Not investigated; the current numbers are re-measured and labelled.
