@@ -1,6 +1,6 @@
 ---
 name: diagnose-benchmark-failure
-description: Use when a flowai benchmark fails and you need the cause from run artifacts before editing. Reads judge-evidence.md, the sandbox SKILL.md, and scenario mod.ts; classifies the failure against a known taxonomy; produces an evidence-grounded report (no fixes). Do NOT trigger for passing benchmarks or generic skill iteration.
+description: Use when a flowai benchmark fails and you need the cause from run artifacts before editing. Reads judge-evidence.md, the raw agent transcript, the sandbox SKILL.md, and scenario mod.ts; classifies the failure against a known taxonomy; produces an evidence-grounded report (no fixes). Do NOT trigger for passing benchmarks or generic skill iteration.
 argument-hint: scenario-id (e.g. plan-interactive)
 effort: medium
 ---
@@ -10,27 +10,39 @@ effort: medium
 ## Why this skill exists
 
 When a benchmark fails, the natural reflex is to edit the SKILL.md and re-run.
-That is guessing. The run artifacts (`judge-evidence.md`, sandbox SKILL.md, the
-scenario `mod.ts`) contain the actual chain of cause and effect: what the agent
-saw, what it emitted, what the judge measured. This skill enforces an
-evidence-first diagnosis so each iteration moves on facts, not hopes.
+That is guessing. The run artifacts (`judge-evidence.md`, the raw agent
+transcript, sandbox SKILL.md, the scenario `mod.ts`) contain the actual chain
+of cause and effect: what the agent saw, what it did, what it emitted, what the
+judge measured. This skill enforces an evidence-first diagnosis so each
+iteration moves on facts, not hopes.
 
 ## Rules
 
 <rules>
-1. **Evidence before hypothesis**: you MUST read `judge-evidence.md`, the sandbox
-   `SKILL.md`, and the scenario `mod.ts` BEFORE you state any cause or propose
-   any fix. If you propose a cause without quoting from these files, the
-   diagnosis is invalid.
+1. **Evidence before hypothesis**: you MUST read `judge-evidence.md`, the raw
+   agent transcript (the `.jsonl` the sandboxed CLI wrote for itself), the
+   sandbox `SKILL.md`, and the scenario `mod.ts` BEFORE you state any cause or
+   propose any fix. If you propose a cause without quoting from these files,
+   the diagnosis is invalid.
 2. **No fixes**: this skill produces a *report*. It MUST NOT edit any
    `SKILL.md`, `mod.ts`, or other source file. Edits happen in the next
    step, owned by whoever called this skill.
 3. **Quote, don't paraphrase**: every claim in the report must cite a quoted
-   line (or line-range) from one of the three evidence sources, plus the
-   file path.
+   line (or line-range) from one of the four evidence sources, plus the
+   file path. A transcript citation is a quoted `.jsonl` line or a tool-call
+   count produced by the command in step 3.
 4. **Fail closed**: if any required artifact is missing (no run dir, no
-   `judge-evidence.md`), STOP and report the gap; do not proceed with partial
-   data.
+   `judge-evidence.md`, no transcript under `bench-home/`), STOP and report
+   the gap — for the transcript, name both paths you searched; do not proceed
+   with partial data.
+5. **The transcript beats the judge's rendering**: `judge-evidence.md` is the
+   judge's summary of the session; the `.jsonl` is the ground truth. Where the
+   two disagree, the transcript wins. A claim the failing agent made about its
+   own environment ("no subagent tool here", "parallel execution is
+   unavailable", "the file does not exist") is a hypothesis to test against
+   the tool-call histogram, never a finding: a tool the transcript shows
+   invoked was available, whatever the agent said afterwards. "Cannot" and
+   "did not" are different failures with different fixes.
 </rules>
 
 ## Inputs
@@ -46,26 +58,52 @@ evidence-first diagnosis so each iteration moves on facts, not hopes.
    - Default path: `acceptance-tests/runs/latest/<scenario-id>/run-1/`.
    - If `latest` is missing, list `acceptance-tests/runs/` and pick the most
      recently modified directory containing `<scenario-id>`.
-   - Required files inside: `judge-evidence.md`, `sandbox/`. If either is
-     missing → fail closed (rule 4).
+   - Required inside: `judge-evidence.md`, `sandbox/`, `bench-home/`. If any
+     is missing → fail closed (rule 4).
 
 2. **Read `judge-evidence.md` end to end**
    - Identify the three sections: `<user_query>`, `<agent_logs>`, `<file_diffs>`.
    - From `<agent_logs>`, extract the **last assistant turn** that the user
      would have seen. This is the agent's actual emitted output.
    - From `<user_query>`, copy the verbatim query the agent received.
-   - Note any tool calls the agent made (`## Tool: <name>`) — especially
-     `Skill`, `Read`, `Bash`, `TodoWrite`. The presence/absence of specific
-     tool calls is itself evidence.
+   - Note any tool calls the rendering shows (`## Tool: <name>`) — especially
+     `Skill`, `Read`, `Bash`, `TodoWrite`. Treat this list as provisional:
+     the rendering can omit calls, and step 3 replaces it with the count from
+     the transcript.
 
-3. **Read the scenario `mod.ts`**
-   - Path: `framework/<pack>/{skills,commands,agents}/<primitive>/benchmarks/<scenario>/mod.ts`.
-     Find via `find framework -path "*/benchmarks/<scenario>/mod.ts"`.
+3. **Read the raw agent transcript**
+   - It sits under `<run-dir>/bench-home/`, in the layout of the IDE the run
+     used:
+     - codex: `bench-home/.codex/sessions/<YYYY>/<MM>/<DD>/rollout-<ts>-<uuid>.jsonl`
+       (the judge's own rollouts sit apart under `bench-home/.codex-judge/`;
+       do not read those).
+     - claude: `bench-home/.claude/projects/<slug>/<uuid>.jsonl`.
+     Find it via `find <run-dir>/bench-home -name '*.jsonl' -not -path '*judge*'`.
+     Missing on both paths → fail closed (rule 4), naming both paths.
+   - Print the tool-call histogram BEFORE forming any hypothesis:
+     - codex: `jq -r 'select(.type=="response_item") | .payload | select(.type=="function_call" or .type=="custom_tool_call") | .name' <file> | sort | uniq -c | sort -rn`
+       (arguments are in `.payload.arguments` / `.payload.input`; the agent's
+       own text is in `response_item` lines of type `message` with role
+       `assistant`, its reasoning in lines of type `reasoning`).
+     - claude: `jq -r 'select(.message.content|type=="array") | .message.content[] | select(.type=="tool_use") | .name' <file> | sort | uniq -c | sort -rn`
+       (the agent's own text and thinking are `assistant` lines whose content
+       blocks are of type `text` / `thinking`).
+   - Copy the histogram into the report verbatim. Then locate the decisive
+     call — the invocation, or the absence of one, that the failing checklist
+     item is about — and quote the agent's own text or reasoning around it:
+     that is where the agent explains its choice to itself, and that is what
+     the judge's rendering never shows.
+   - Cross-check every capability claim in `<agent_logs>` against the
+     histogram (rule 5). Record each as "claimed X; transcript shows Y".
+
+4. **Read the scenario `mod.ts`**
+   - Path: `framework/<pack>/{skills,commands,agents}/<primitive>/acceptance-tests/<scenario>/mod.ts`.
+     Find via `find framework -path "*/acceptance-tests/<scenario>/mod.ts"`.
    - Extract: `userQuery`, `userPersona`, `checklist[]` (with `id`,
      `description`, `critical`).
    - Also extract: `interactive`, any `setup()` body, `agentsTemplateVars`.
 
-4. **Read the sandbox `SKILL.md` — BOTH copies, side by side**
+5. **Read the sandbox `SKILL.md` — BOTH copies, side by side**
 
    There are two different `SKILL.md` files for the same primitive, in two
    different locations. You MUST read both and compare them. Confusing them
@@ -73,7 +111,8 @@ evidence-first diagnosis so each iteration moves on facts, not hopes.
 
    - **(a) The failing-agent's view** (inside the run dir):
      `<run-dir>/sandbox/.claude/skills/<primitive>/SKILL.md`
-     (Cursor sandbox uses `.cursor/skills/`; OpenCode uses `.opencode/skills/`.)
+     (codex sandbox uses `.codex/skills/`; Cursor `.cursor/skills/`; OpenCode
+     `.opencode/skills/`.)
      This is the static snapshot the failing agent read. Read this first.
 
    - **(b) The current framework source**:
@@ -93,7 +132,7 @@ evidence-first diagnosis so each iteration moves on facts, not hopes.
    The classification depends on what (a) said vs. what the agent actually
    emitted in `<agent_logs>` — not on what (b) currently says.
 
-5. **Re-derive the verdict**
+6. **Re-derive the verdict**
    - The judge verdict (which checklist items failed and why) is in the
      bench stdout, not in `judge-evidence.md`. If you don't have it, re-run
      the scenario with `--no-cache` and capture stdout. Otherwise, check
@@ -101,12 +140,38 @@ evidence-first diagnosis so each iteration moves on facts, not hopes.
      step 2 and judge yourself before continuing — this catches LLM-judge
      calibration drift.
 
-6. **Match symptoms to the failure-mode taxonomy** (next section). Pick the
+7. **Match symptoms to the failure-mode taxonomy** (next section). Pick the
    most likely mode based on the quoted evidence. If two modes fit equally,
    list both; do not collapse them.
 
-7. **Write the diagnostic report** (template below). Every claim cites a
-   quoted line from step 2/3/4.
+8. **Decide whether an interview is the next evidence step**
+   - The transcript shows what the agent DID; only the agent can say which
+     words it justified the act with, and those are the words a fix would
+     edit. So when the fix-direction you are about to propose is a change to
+     the primitive's wording (a sentence to add, tighten, or remove in
+     `SKILL.md` / the agent file), the report MUST name resuming the failed
+     session and asking it why as the next evidence step, before any edit —
+     and give the command for the run's IDE:
+     - codex: `cd "$(readlink <run-dir>/sandbox)" && CODEX_HOME="$(readlink <run-dir>/bench-home)/.codex" codex exec resume <uuid> "<question>"`
+       (`<uuid>` is the tail of the rollout filename; open the question with
+       "Do not invoke any skill; answer from memory").
+     - claude: `cd "$(readlink <run-dir>/sandbox)" && HOME="$(readlink <run-dir>/bench-home)" claude -p --resume <uuid> "<question>"`
+       (`<uuid>` is the `.jsonl` filename without its extension; source the
+       project's `.env` first).
+     `readlink` is for the runner's symlinked run dirs; on a plain directory
+     use the path itself. The sandbox outlives the run, so the session can be
+     resumed in place.
+   - Draft the question neutrally: describe the situation without accusing;
+     ask what made the chosen path better than the alternative, which phrase
+     in the rule left room for it, and what the rule would have had to say.
+     Say it is to be asked of EVERY failed run of the scenario — agreement
+     across runs is what separates a defect in the text from one agent's
+     rationalisation.
+   - When the fix-direction is not a wording change (a runner defect, a stale
+     sandbox, a missing pack), say so and skip the interview.
+
+9. **Write the diagnostic report** (template below). Every claim cites a
+   quoted line from step 2/3/4/5.
 
 </step_by_step>
 
@@ -183,6 +248,20 @@ listed.
   - Fix-direction: rewrite the persona to be neutral. The scenario's
     benchmark value is now suspect — review the checklist items too.
 
+- **CAPABILITY-CLAIMED-UNAVAILABLE**
+  - Symptom: the agent's own prose in `<agent_logs>` says a tool or capability
+    was missing ("no subagent tool", "parallel execution unavailable") and the
+    work was done another way; the transcript histogram shows that tool
+    invoked (or installed under the sandbox) in the same session.
+  - Cause: the agent abandoned the approach — a worker's partial output looked
+    slower to reconcile than redoing it, or the first call returned something
+    awkward — and explained the retreat as an environment limit, licensed by a
+    clause in the primitive such as "if X is unavailable, proceed with Y".
+  - Fix-direction: interview the failed runs first (step 8); then close the
+    clause that licensed the fallback so "unavailable" means "the tool is not
+    in the tool list", not "the first attempt was inconvenient". Do NOT fix
+    the harness: the capability was there.
+
 - **CROSS-PACK-REFERENCE-MISSING**
   - Symptom: SKILL.md text references another skill by name, but that skill
     is not in the sandbox. Agent reads the reference, can't act on it.
@@ -206,8 +285,13 @@ citation.
 
 ## Evidence collected (paths)
 - judge-evidence.md — <bytes>, <line count>
+- raw transcript — <path>; tool-call histogram:
+  <paste the histogram verbatim>
 - sandbox SKILL.md — <path>, <bytes>
 - scenario mod.ts — <path>
+
+## Judge's rendering vs transcript
+- <each capability or "I did X" claim from <agent_logs>: "claimed …; transcript shows …" with the decisive line quoted> (<transcript path>:<line>)
 
 ## Agent's last assistant turn (verbatim, ≤30 lines)
 ```
@@ -226,12 +310,13 @@ citation.
 
 ## Failure-mode classification
 - Primary: <TAXONOMY-CODE>
-- Why this code: <one-sentence reason citing two of the three evidence sources>
+- Why this code: <one-sentence reason citing two of the four evidence sources, the transcript among them when a capability claim is involved>
 - Alternatives ruled out: <code(s) considered + the evidence that rules them out>
 
 ## Proposed next iteration
 - <one-sentence fix-direction action, drawn from the taxonomy fix-direction column>
 - Files to edit: <paths>
+- Interview: <"required — wording change" + the resume command with this run's uuid + the question, to be asked of every failed run | "not needed — <reason>">
 - Anti-actions (do NOT try): <bullets, each with the prior failure that disqualified it if applicable>
 
 ## Confidence

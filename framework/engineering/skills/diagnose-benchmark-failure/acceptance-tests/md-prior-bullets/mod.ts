@@ -1,6 +1,7 @@
 import { join } from "@std/path";
 import { copy } from "@std/fs";
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * Scenario: a real failed run is pre-staged in the sandbox. The agent must
@@ -10,9 +11,10 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  *
  * What the agent should produce:
  *   - read acceptance-tests/runs/latest/<scenario-id>/run-1/judge-evidence.md
- *   - read sandbox/.codex/skills/conduct-qa-session/SKILL.md
+ *   - read the raw codex rollout under run-1/bench-home/.codex/sessions/
+ *   - read sandbox/.claude/skills/conduct-qa-session/SKILL.md
  *   - read framework/engineering/skills/conduct-qa-session/
- *     benchmarks/multi-select-format/mod.ts
+ *     acceptance-tests/multi-select-format/mod.ts
  *   - classify the failure as MD-PRIOR-BULLETS (or list it among primary
  *     candidates with the right reasoning)
  *   - quote evidence in the report
@@ -38,15 +40,27 @@ export const DiagnoseBenchMdPriorBulletsBench = new class
   override async setup(sandboxDir: string): Promise<void> {
     // Stage the failed-run artifacts and the scenario source file the
     // diagnosing agent must read. The fixture mirrors the real layout:
-    //   acceptance-tests/runs/latest/<scenario-id>/run-1/{judge-evidence.md, sandbox/.codex/skills/...}
-    //   framework/engineering/skills/<primitive>/{SKILL.md, benchmarks/<scenario>/mod.ts}
+    //   acceptance-tests/runs/latest -> <run>/, with <scenario-id>/run-1/
+    //     {judge-evidence.md, bench-home/.codex/sessions/.../rollout-*.jsonl,
+    //      sandbox/.claude/skills/...}
+    //   framework/engineering/skills/<primitive>/{SKILL.md, acceptance-tests/<scenario>/mod.ts}
     const fixture = new URL("./fixture/", import.meta.url).pathname;
-    await copy(join(fixture, "benchmarks"), join(sandboxDir, "benchmarks"), {
-      overwrite: true,
-    });
+    await copy(
+      join(fixture, "acceptance-tests"),
+      join(sandboxDir, "acceptance-tests"),
+      { overwrite: true },
+    );
     await copy(join(fixture, "framework"), join(sandboxDir, "framework"), {
       overwrite: true,
     });
+    await Deno.symlink(
+      "2026-04-29T23-49-13",
+      join(sandboxDir, "acceptance-tests", "runs", "latest"),
+    );
+    // The runner's init commit precedes setup(), so without a commit of our
+    // own the staged run reads as the agent's edits under `no_files_edited`.
+    await runGit(sandboxDir, ["add", "-A"]);
+    await runGit(sandboxDir, ["commit", "-m", "Stage the failed run"]);
   }
 
   checklist = [
@@ -59,13 +73,13 @@ export const DiagnoseBenchMdPriorBulletsBench = new class
     {
       id: "read_sandbox_skill",
       description:
-        "Did the agent read the sandbox SKILL.md the failing agent saw, at acceptance-tests/runs/latest/<scenario-id>/run-1/sandbox/.codex/skills/conduct-qa-session/SKILL.md? Look for a Read tool call targeting that path.",
+        "Did the agent read the sandbox SKILL.md the failing agent saw, at acceptance-tests/runs/latest/<scenario-id>/run-1/sandbox/.claude/skills/conduct-qa-session/SKILL.md? Look for a Read tool call (or bash cat) targeting that path.",
       critical: true,
     },
     {
       id: "read_scenario_mod",
       description:
-        "Did the agent read the scenario file framework/engineering/skills/conduct-qa-session/benchmarks/multi-select-format/mod.ts to recover the checklist contract?",
+        "Did the agent read the scenario file framework/engineering/skills/conduct-qa-session/acceptance-tests/multi-select-format/mod.ts to recover the checklist contract?",
       critical: true,
     },
     {

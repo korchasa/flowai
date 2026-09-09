@@ -1,6 +1,7 @@
 import { join } from "@std/path";
 import { copy } from "@std/fs";
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * Scenario: the judge's rendering and the raw transcript disagree, and only the
@@ -49,9 +50,8 @@ export const DiagnoseBenchRawSessionBench = new class
     "/diagnose-benchmark-failure orchestrate-work-parallel-delegation";
 
   override async setup(sandboxDir: string): Promise<void> {
-    // Mirrors the real layout: a timestamped run dir with no `latest` symlink,
-    // so the skill's documented fallback (list runs, pick the most recent one
-    // containing the scenario id) is what has to find it.
+    // Mirrors the real layout: a timestamped run dir plus the `latest`
+    // symlink the runner maintains, pointing at that run.
     const fixture = new URL("./fixture/", import.meta.url).pathname;
     await copy(
       join(fixture, "acceptance-tests"),
@@ -61,6 +61,14 @@ export const DiagnoseBenchRawSessionBench = new class
     await copy(join(fixture, "framework"), join(sandboxDir, "framework"), {
       overwrite: true,
     });
+    await Deno.symlink(
+      "2026-08-10T09-12-33",
+      join(sandboxDir, "acceptance-tests", "runs", "latest"),
+    );
+    // The runner's init commit precedes setup(), so without a commit of our
+    // own the staged run reads as the agent's edits under `no_files_edited`.
+    await runGit(sandboxDir, ["add", "-A"]);
+    await runGit(sandboxDir, ["commit", "-m", "Stage the failed run"]);
   }
 
   checklist = [
@@ -91,7 +99,7 @@ export const DiagnoseBenchRawSessionBench = new class
     {
       id: "names_interview_step",
       description:
-        "Since the proposed fix is a change to the SKILL.md wording, does the report name resuming that failed run's own session and asking the agent why, as a next evidence step? A described procedure counts; a concrete `--resume` command counts; a vague 'gather more evidence' does not.",
+        "Since the proposed fix is a change to the SKILL.md wording, does the report name resuming that failed run's own session and asking the agent why, as a next evidence step, AND give the command that resumes it (a `codex exec resume …` or `claude -p --resume …` invocation, or the IDE's equivalent)? A described procedure without a command does not count; a vague 'gather more evidence' does not count.",
       critical: true,
     },
     {
