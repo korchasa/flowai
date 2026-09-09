@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.6](https://github.com/korchasa/flowai/compare/v0.14.5...v0.14.6) (2026-09-09)
+
+
+### Features
+
+* **diagnose-benchmark-failure:** read the raw session and name the interview step ([9821f94](https://github.com/korchasa/flowai/commit/9821f94d4d9595291083b4fd125f0e58a856c63f))
+
+
+### Tests
+
+* **plan:** let plan-basic accept the documentation index the skill must write ([4fa8657](https://github.com/korchasa/flowai/commit/4fa86574eb53f84961fee25967b3739d34a5daab))
+
 ### [0.14.5](https://github.com/korchasa/flowai/compare/v0.14.4...v0.14.5) (2026-09-06)
 
 
