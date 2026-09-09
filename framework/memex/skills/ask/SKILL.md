@@ -1,6 +1,6 @@
 ---
 name: ask
-description: Use when the user asks a question to be answered from the project's memex (long-term knowledge bank for AI agents) rather than training data or the live web. Reads the index, opens relevant pages, follows one SALP-REF hop, synthesises a cited answer, files it back. Do NOT trigger on source-code or live-session questions.
+description: Use when the user asks a question to be answered from the project's memex (long-term knowledge bank for AI agents) rather than training data or the live web. Reads the index, follows one SALP-REF hop, files a cited answer back. Not for source code.
 argument-hint: <question>
 ---
 

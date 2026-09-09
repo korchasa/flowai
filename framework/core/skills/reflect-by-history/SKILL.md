@@ -1,6 +1,6 @@
 ---
 name: reflect-by-history
-description: Use when the user asks to review PAST sessions (not the current one), find recurring patterns across multiple sessions, or improve project primitives (rules, skills, hooks, docs) based on historical IDE transcripts. Do NOT trigger on current-session self-review — use reflect instead.
+description: Use when the user asks to review PAST sessions, find recurring patterns across sessions, or improve project primitives (rules, skills, hooks, docs) from historical IDE transcripts. Do NOT trigger on current-session self-review — use reflect instead.
 ---
 
 # Task: Reflect on Previous Session History

@@ -1,6 +1,6 @@
 ---
 name: engineer-ai-ide-plugin
-description: Design and build complete AI-IDE plugins that bundle multiple components (skills, MCP tools, hooks) with packaging, manifests, marketplaces, and per-IDE validation. Use when the user wants to create, design, or package a multi-component AI-IDE plugin. Not for authoring a single standalone skill (use the skill-authoring skill instead).
+description: Design and build complete AI-IDE plugins bundling skills, MCP tools and hooks with packaging, manifests, marketplaces and per-IDE validation. Use when the user wants to create, design or package a multi-component plugin. Not for a standalone skill.
 ---
 
 # AI IDE Plugin Engineer

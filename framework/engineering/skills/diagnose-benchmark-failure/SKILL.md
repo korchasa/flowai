@@ -1,6 +1,6 @@
 ---
 name: diagnose-benchmark-failure
-description: Use when a flowai benchmark fails and you need the cause from run artifacts before editing. Reads judge-evidence.md, the raw agent transcript, the sandbox SKILL.md, and scenario mod.ts; classifies the failure against a known taxonomy; produces an evidence-grounded report (no fixes). Do NOT trigger for passing benchmarks or generic skill iteration.
+description: Use when a flowai benchmark fails and you need the cause from run artifacts before editing. Reads judge-evidence.md, the raw agent transcript, the sandbox SKILL.md and scenario mod.ts, classifies the failure, and reports evidence without fixing.
 argument-hint: scenario-id (e.g. plan-interactive)
 effort: medium
 ---

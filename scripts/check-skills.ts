@@ -19,6 +19,7 @@ import { walk } from "@std/fs";
 import { join, relative } from "@std/path";
 import { isComposite } from "./lib/composite-list.ts";
 import {
+  DESCRIPTION_MAX_CHARS,
   FRONTMATTER_MAX_TOKENS,
   SKILL_MAX_LINES,
   SKILL_MAX_TOKENS,
@@ -187,6 +188,37 @@ export function validateDescriptionWhenTrigger(
       'description missing a WHEN-trigger phrase (e.g. "Use when …"); a ' +
       "skills/ description must state when to invoke the skill, not just what " +
       "it does (see engineer-skill WHAT+WHEN rule).",
+  }];
+}
+
+/**
+ * FR-DESC-QUALITY: the IDE renders one listing line per installed primitive on
+ * every turn, so an over-long `description` is truncated and the skill stops
+ * being routable. Unlike the WHEN-trigger gate above, this covers `commands/`
+ * too — a command occupies the same listing line even though the model never
+ * auto-discovers it.
+ *
+ * Independent of FR-UNIVERSAL.DISCLOSURE's FRONTMATTER_MAX_TOKENS: that one is
+ * the agentskills.io spec ceiling over name+description, this one is the IDE
+ * listing budget over the description alone. This cap is the stricter of the
+ * two and always trips first.
+ */
+export function validateDescriptionLength(
+  dirName: string,
+  _kind: SkillKind,
+  frontmatter: Record<string, unknown>,
+): SkillError[] {
+  const desc = typeof frontmatter.description === "string"
+    ? frontmatter.description
+    : "";
+  if (desc.length <= DESCRIPTION_MAX_CHARS) return [];
+  return [{
+    skill: dirName,
+    criterion: "FR-DESC-QUALITY",
+    message:
+      `description is ${desc.length} characters (limit: ${DESCRIPTION_MAX_CHARS}) — ` +
+      "the IDE skill listing truncates past that and description-based routing " +
+      "degrades; cut redundancy and enumeration tails, not capabilities.",
   }];
 }
 
@@ -592,6 +624,15 @@ export async function validateSkill(
     // a WHEN-trigger phrase so the model classifier can discover them.
     errors.push(
       ...validateDescriptionWhenTrigger(
+        dirName,
+        kind,
+        fm.data as Record<string, unknown>,
+      ),
+    );
+    // [REF:fr:desc-quality | FR-DESC-QUALITY]: descriptions of both kinds must
+    // fit the IDE skill-listing budget.
+    errors.push(
+      ...validateDescriptionLength(
         dirName,
         kind,
         fm.data as Record<string, unknown>,

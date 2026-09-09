@@ -1,6 +1,6 @@
 ---
 name: setup-agent-code-style-deno
-description: Use when the user asks to add Deno/TypeScript code-style rules to AGENTS.md, or during initial Deno project setup when code-style guidelines need to be established. Do NOT trigger for non-Deno TypeScript projects (use setup-agent-code-style-strict), or for runtime-agnostic style advice.
+description: Use when the user asks to add Deno/TypeScript code-style rules to AGENTS.md, or during initial Deno project setup. Do NOT trigger for non-Deno TypeScript projects (use setup-agent-code-style-strict), or for runtime-agnostic style advice.
 ---
 
 ## Purpose

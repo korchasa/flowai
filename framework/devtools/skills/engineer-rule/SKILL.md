@@ -1,6 +1,6 @@
 ---
 name: engineer-rule
-description: Guide for creating persistent AI rules (coding standards, project conventions, file-specific patterns). Use when users want to create a rule, add coding standards, set up project conventions, configure file-specific patterns, or ask about rules placement. Works across IDEs (Cursor, Claude Code, OpenCode).
+description: Guide for creating persistent AI rules — coding standards, project conventions, file-specific patterns. Use when users want to create a rule, set up conventions, or ask where rules go. Works across IDEs (Cursor, Claude Code, OpenCode).
 license: Based on https://github.com/anthropics/skills
 ---
 

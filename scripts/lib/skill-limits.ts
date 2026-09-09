@@ -2,7 +2,8 @@
  * Single source of truth for skill / composite SKILL.md size limits.
  *
  * Consumers (keep this list current when adding new ones):
- *   - scripts/check-skills.ts — FR-UNIVERSAL.DISCLOSURE validator.
+ *   - scripts/check-skills.ts — FR-UNIVERSAL.DISCLOSURE and FR-DESC-QUALITY
+ *     validators.
  *   - scripts/generate-skill-composites.ts — atom and composite canon
  *     validators.
  *   - scripts/check-skills_test.ts — boundary tests.
@@ -26,7 +27,17 @@
  *     mechanically dictated by inlined atom sources; standalone skills are
  *     not exempt and must stay under this cap.
  *   - 100 frontmatter tokens (catalog metadata = name + description):
- *     agentskills.io cap on what is loaded at session start.
+ *     agentskills.io cap on what is loaded at session start. NOTE: while
+ *     DESCRIPTION_MAX_CHARS stands, this cap can no longer be reached — a
+ *     conforming skill tops out around 70 tokens — so it states the spec
+ *     ceiling rather than gating anything. Re-derive it if the description
+ *     cap moves.
+ *   - 250 description characters: the IDE skill listing shows one line per
+ *     installed skill on every turn, and Claude Code budgets that listing at
+ *     ~1% of the context window with a 250 char/skill cap
+ *     (documents/ides-difference.md). Past that the entry is truncated and
+ *     description-based routing degrades. This is a per-ENTRY ceiling: it does
+ *     not by itself keep a multi-pack listing inside the total budget.
  */
 
 /** Max lines of a rendered composite or standalone SKILL.md. */
@@ -37,3 +48,5 @@ export const ATOM_MAX_LINES = 1000;
 export const SKILL_MAX_TOKENS = 10000;
 /** Max tokens (chars/4) of frontmatter catalog metadata (name + description). */
 export const FRONTMATTER_MAX_TOKENS = 100;
+/** Max characters of a single `description`, per the IDE skill-listing budget. */
+export const DESCRIPTION_MAX_CHARS = 250;

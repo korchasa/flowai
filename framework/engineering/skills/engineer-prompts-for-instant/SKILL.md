@@ -1,6 +1,6 @@
 ---
 name: engineer-prompts-for-instant
-description: Write or fix a prompt for a fast/cheap model (Gemini Flash, GPT-4o Mini, Haiku) so its output is stable and parseable. Use for any request to draft, tune or debug such a prompt — producing it IS the work, even when you could write one unaided. Not for reasoning models (use engineer-prompts-for-reasoning), model choice, or prompting a person.
+description: Write or fix a prompt for a fast/cheap model (Gemini Flash, GPT-4o Mini, Haiku) so its output is stable and parseable. Use for any request to draft, tune or debug such a prompt. Not for reasoning models (use engineer-prompts-for-reasoning).
 ---
 
 # HOW TO WRITE PROMPTS FOR INSTANT MODELS

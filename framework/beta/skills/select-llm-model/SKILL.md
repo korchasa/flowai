@@ -1,6 +1,6 @@
 ---
 name: select-llm-model
-description: Recommend which LLM model to use for a task. Use when asked "which model / best LLM for X", "pick a model for this task", or for a model shortlist ranked by live leaderboard evidence (coding, reasoning, agentic, tool-use, price, speed). Live-fetches public leaderboards and ranks models with per-axis rationale and citations.
+description: Recommend which LLM to use for a task. Use when asked which model or best LLM for X, to pick a model, or for a shortlist ranked on live leaderboard evidence (coding, reasoning, agentic, tool-use, price, speed). Fetches leaderboards and cites them.
 ---
 
 # Select LLM Model

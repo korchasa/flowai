@@ -7,6 +7,7 @@ import {
   inferKind,
   isFrameworkSkillsDir,
   validateAllSkills,
+  validateDescriptionLength,
   validateDescriptionWhenTrigger,
   validateDocumentationSchemaIndirection,
   validateIdeNeutrality,
@@ -18,7 +19,11 @@ import {
   validateStructure,
 } from "./check-skills.ts";
 import { parseFrontmatter } from "./resource-types.ts";
-import { SKILL_MAX_LINES, SKILL_MAX_TOKENS } from "./lib/skill-limits.ts";
+import {
+  DESCRIPTION_MAX_CHARS,
+  SKILL_MAX_LINES,
+  SKILL_MAX_TOKENS,
+} from "./lib/skill-limits.ts";
 
 // --- parseFrontmatter ---
 
@@ -651,12 +656,15 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
   // criterion surfaces through the production aggregation path (validateAllSkills).
   const root = await Deno.makeTempDir();
   try {
-    // Violation 1 — FR-PACKS.CMD-INVARIANT: a command carrying the injected-only flag.
+    // Violations 1 & 4 — FR-PACKS.CMD-INVARIANT (a command carrying the
+    // injected-only flag) plus FR-DESC-QUALITY's length cap, which unlike the
+    // WHEN-trigger gate covers commands too.
     const cmd = `${root}/framework/testpack/commands/bad-cmd`;
     await Deno.mkdir(cmd, { recursive: true });
+    const overCap = "x".repeat(DESCRIPTION_MAX_CHARS + 1);
     await Deno.writeTextFile(
       `${cmd}/SKILL.md`,
-      `---\nname: bad-cmd\ndescription: Does a thing.\ndisable-model-invocation: true\n---\n\n# Body\n`,
+      `---\nname: bad-cmd\ndescription: ${overCap}\ndisable-model-invocation: true\n---\n\n# Body\n`,
     );
 
     // Violations 2 & 3 — FR-DESC-QUALITY (no WHEN phrase) + FR-UNIVERSAL.IDE-NEUTRAL
@@ -679,10 +687,24 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
       true,
       "kind-invariant check must fire on a framework command",
     );
+    // Both description checks emit FR-DESC-QUALITY, so a criterion-level
+    // assertion cannot tell them apart — it stays green with either check
+    // deleted from validateSkill. Assert on the message text instead.
+    const descErrors = errors.filter((e) => e.criterion === "FR-DESC-QUALITY");
     assertEquals(
-      criteria.has("FR-DESC-QUALITY"),
+      descErrors.some((e) =>
+        e.skill === "bad-skill" && e.message.includes("WHEN-trigger")
+      ),
       true,
       "WHEN-trigger gate must fire on a framework skill",
+    );
+    assertEquals(
+      descErrors.some((e) =>
+        e.skill === "bad-cmd" &&
+        e.message.includes(`limit: ${DESCRIPTION_MAX_CHARS}`)
+      ),
+      true,
+      "description length cap must fire on a framework command",
     );
     assertEquals(
       criteria.has("FR-UNIVERSAL.IDE-NEUTRAL"),
@@ -748,6 +770,37 @@ Deno.test("FR-DESC-QUALITY: descriptionHasWhenTrigger recognizes allowlist phras
     );
   }
   assertEquals(descriptionHasWhenTrigger("Does things efficiently."), false);
+});
+
+// --- validateDescriptionLength (FR-DESC-QUALITY) ---
+
+Deno.test("FR-DESC-QUALITY: description over DESCRIPTION_MAX_CHARS is an error", () => {
+  const desc = "u".repeat(DESCRIPTION_MAX_CHARS + 1);
+  const errors = validateDescriptionLength("my-skill", "skill", {
+    name: "my-skill",
+    description: desc,
+  });
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-DESC-QUALITY");
+  assertStringIncludes(errors[0].message, `${DESCRIPTION_MAX_CHARS + 1}`);
+  assertStringIncludes(errors[0].message, `limit: ${DESCRIPTION_MAX_CHARS}`);
+});
+
+Deno.test("FR-DESC-QUALITY: description exactly at DESCRIPTION_MAX_CHARS passes", () => {
+  const errors = validateDescriptionLength("my-skill", "skill", {
+    name: "my-skill",
+    description: "u".repeat(DESCRIPTION_MAX_CHARS),
+  });
+  assertEquals(errors, []);
+});
+
+Deno.test("FR-DESC-QUALITY: the length cap covers commands too", () => {
+  const errors = validateDescriptionLength("my-command", "command", {
+    name: "my-command",
+    description: "u".repeat(DESCRIPTION_MAX_CHARS + 1),
+  });
+  assertEquals(errors.length, 1);
+  assertEquals(errors[0].criterion, "FR-DESC-QUALITY");
 });
 
 // --- validateIdeNeutrality (FR-UNIVERSAL.IDE-NEUTRAL) ---

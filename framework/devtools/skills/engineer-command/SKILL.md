@@ -1,6 +1,6 @@
 ---
 name: engineer-command
-description: Guide for creating effective flowai commands. This skill should be used when users want to create a new command (or update an existing command) that extends flowai's capabilities with specialized knowledge, workflows, or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
+description: Guide for creating effective flowai commands. Use when users want to create a new command, or update an existing one, that extends flowai with specialized knowledge, workflows or tool integrations. Works across IDEs (Cursor, Claude Code, OpenCode).
 license: Based on https://github.com/anthropics/skills
 ---
 

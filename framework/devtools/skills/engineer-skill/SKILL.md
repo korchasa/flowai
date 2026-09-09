@@ -1,6 +1,6 @@
 ---
 name: engineer-skill
-description: Guide for creating agent-invocable Agent Skills (SKILL.md packages auto-discovered by description). Use when users want to create or author a skill (SKILL.md), or ask about skill structure or format. Not for user-invoked slash commands (a separate command-authoring concern). Works across IDEs.
+description: Guide for creating agent-invocable Agent Skills (SKILL.md packages auto-discovered by description). Use when users want to create or author a skill, or ask about skill structure or format. Not for user-invoked slash commands. Works across IDEs.
 license: Based on https://github.com/anthropics/skills
 ---
 
@@ -302,14 +302,14 @@ deno run -A scripts/validate_skill.ts <path/to/skill-directory>
 
 `validate_skill.ts` is the portable per-skill FLOOR. It rejects a missing, oversized, or angle-bracketed description AND a description with no WHEN-trigger phrase (e.g. "Use when …"). If it fails, FIX the description and re-run — never proceed while it is red.
 
-> **Two validators, two roles.** `validate_skill.ts` (bundled here) is the portable floor that runs on ONE skill anywhere. Inside the flowai repo, `scripts/check-skills.ts` is the repo-wide gate wired into `deno task check`: it adds the catalog budget (name+description <100 tokens, ~400 chars — stricter than the floor's 1024-char description limit) and applies the same WHEN-trigger requirement to every `skills/` primitive. A description can pass the floor yet fail the repo gate on the token budget, so when authoring inside flowai satisfy BOTH.
+> **Two validators, two roles.** `validate_skill.ts` (bundled here) is the portable floor that runs on ONE skill anywhere: it caps the description at the 1024-character agentskills.io limit. Inside the flowai repo, `scripts/check-skills.ts` is the repo-wide gate wired into `deno task check`, and it is far stricter. Three limits sit on one field there, and the tightest one binds: a 250-character cap on the description alone (the IDE skill-listing budget, applied to commands as well as skills), a 100-token cap on name+description (the agentskills.io catalog ceiling, which the 250-character cap now keeps out of reach), and the 1024-character spec limit above both. The repo gate also applies the same WHEN-trigger requirement to every `skills/` primitive. A description can pass the portable floor and still fail the repo gate on length, so when authoring inside flowai satisfy BOTH.
 
 Description self-review rubric (BLOCKING — a "no" on any line means rewrite before finishing):
 - [ ] WHAT — names the concrete capability (not the lazy "Helps with X" / "How to X")?
 - [ ] WHEN — carries an explicit trigger phrase ("Use when …", "when the user …")?
 - [ ] Specific — trigger terms a user would actually say, not a vague domain label?
 - [ ] Third person — "Processes …", not "I can help you …"?
-- [ ] Within budget — name+description ≲ 75 tokens (~300 chars) for headroom?
+- [ ] Within budget — description at most 250 characters (the enforced cap inside flowai)?
 
 Checklist:
 - [ ] `validate_skill.ts` exits 0 (line count, description present + WHAT + WHEN, no angle brackets)

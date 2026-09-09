@@ -1,6 +1,6 @@
 ---
 name: save
-description: Use when the user provides a source (URL, file path, or free text) to save into the project's memex — a long-term knowledge bank for AI agents. Stores the raw source, extracts entities into cross-linked pages, runs a backlink audit, and updates the index and activity log. Do NOT trigger on casual reads; only when the intent is to persist a source into the memex.
+description: Use when the user gives a source (URL, file, or text) to save into the project's memex — a long-term knowledge bank for AI agents. Stores the raw source, extracts cross-linked entity pages, audits backlinks, updates the index. Not for casual reads.
 argument-hint: <path|url|text>
 ---
 

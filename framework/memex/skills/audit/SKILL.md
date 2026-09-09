@@ -1,6 +1,6 @@
 ---
 name: audit
-description: Use when the user asks to audit a memex (long-term knowledge bank for AI agents) for orphans, dead SALP REFs, missing sections, contradictions, or index drift. Runs a deterministic structural check, layers LLM-judgement findings, optionally auto-fixes trivial issues with `--fix`. Do NOT trigger on general code linting.
+description: Use when the user asks to audit a memex (long-term knowledge bank for AI agents) for orphans, dead SALP REFs, missing sections, contradictions or index drift. Runs a structural check, layers LLM-judgement findings, auto-fixes trivia with `--fix`.
 argument-hint: "[--fix]"
 ---
 

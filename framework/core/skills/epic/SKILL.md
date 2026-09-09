@@ -1,6 +1,6 @@
 ---
 name: epic
-description: Use when the user asks to plan a LARGE feature that spans multiple sessions or phases — produces an epic under the `tasks` role from AGENTS.md with dependency-ordered phases, atomic tasks, and per-phase status tracking. Use plan for single-session tasks. Do NOT trigger on generic planning, roadmap, or brainstorming requests.
+description: Use when the user asks to plan a LARGE feature spanning multiple sessions or phases — produces an epic under the `tasks` role with dependency-ordered phases, atomic tasks and per-phase status. Use plan for single-session tasks, not for roadmaps.
 argument-hint: feature name or description
 effort: high
 ---

@@ -1,6 +1,6 @@
 ---
 name: cli
-description: Run Deno from the command line with the right flags — permissions for run/test, `deno task` over raw commands, unstable-feature opt-ins, and dependencies via `deno add`/`outdated`/`remove`. Use when wiring or running any Deno command — these flags are not guessable. Not for Deno Deploy (use deploy) or npm/package.json projects.
+description: Run Deno from the command line with the right flags — run/test permissions, `deno task` over raw commands, unstable opt-ins, deps via `deno add`/`outdated`/`remove`. Use when wiring or running any Deno command. Not for Deno Deploy (use deploy).
 ---
 
 # Deno CLI

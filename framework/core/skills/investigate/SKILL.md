@@ -1,6 +1,6 @@
 ---
 name: investigate
-description: Use when the user asks to diagnose a bug, find the root cause of a failing behavior, or run a controlled hypothesis-by-hypothesis investigation with experiments and evidence. Produces a diagnostic report with a recommended fix (but does not apply the fix). Do NOT trigger on "fix this bug" when the cause is obvious, or on simple error-message lookups.
+description: Use when the user asks to diagnose a bug, find the root cause of a failing behavior, or run a hypothesis-by-hypothesis investigation with experiments and evidence. Produces a diagnostic report with a recommended fix, but does not apply the fix.
 argument-hint: issue description or error message
 effort: high
 ---

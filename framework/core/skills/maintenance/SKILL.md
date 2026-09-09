@@ -1,6 +1,6 @@
 ---
 name: maintenance
-description: Use when the user asks for a project health audit, maintenance sweep, or multi-category lead-engineer scan followed by interactive issue-by-issue resolution with user approval. Do NOT trigger on routine lint/test runs, single-file cleanups, or standard "check project" requests.
+description: Use when the user asks for a project health audit, a maintenance sweep, or a multi-category lead-engineer scan followed by interactive issue-by-issue resolution. Not for routine lint/test runs, single-file cleanups, or plain check-project requests.
 ---
 
 # Task: Project Maintenance & Health Audit

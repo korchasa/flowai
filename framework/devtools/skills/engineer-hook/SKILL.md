@@ -1,6 +1,6 @@
 ---
 name: engineer-hook
-description: "Creation and configuration of event hooks/plugins to manage agent behavior, command filtering, auditing, and automation. Works across IDEs (Cursor, Claude Code, OpenCode). Use when you need to: (1) Create a new hook (e.g., for formatting or security checks), (2) Configure hooks/plugins, (3) Implement logic for blocking or modifying agent actions via scripts."
+description: "Create and configure event hooks/plugins that manage agent behavior — command filtering, auditing, automation, script-based blocking of actions. Use when you need to create or configure a hook. Works across IDEs (Cursor, Claude Code, OpenCode)."
 ---
 
 # Hook / Plugin Creator

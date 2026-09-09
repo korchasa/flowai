@@ -1,6 +1,6 @@
 ---
 name: tasks-overview
-description: Show the current state of the project's tasks, hiding archived ones, by deriving the project's own task layout from AGENTS.md and generating a small project-local status script. Use when the user asks which tasks are open, in progress, or how far along the work is.
+description: Show the current state of the project's tasks, hiding archived ones, deriving the task layout from AGENTS.md and generating a project-local status script. Use when the user asks which tasks are open or in progress, or how far the work has got.
 ---
 
 # Tasks Overview
