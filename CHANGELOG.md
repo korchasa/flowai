@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.7](https://github.com/korchasa/flowai/compare/v0.14.6...v0.14.7) (2026-09-12)
+
+
+### Features
+
+* **check-skills:** cap skill and command descriptions at 250 characters ([d8e1a58](https://github.com/korchasa/flowai/commit/d8e1a588b3fd3ad9bd52fd052c861f43205054d8))
+
+
+### Bug Fixes
+
+* **skills:** restore trigger discriminators cut from two descriptions ([216998f](https://github.com/korchasa/flowai/commit/216998fbf6a52209b0b2cd57f65336dc19811b86))
+
+
+### Chores
+
+* **project-status:** add the dev-only status report skill and script ([6509043](https://github.com/korchasa/flowai/commit/6509043b737c6bdb1dc9461d9ff4a29748d80eb4))
+
+
+### Documentation
+
+* **agents:** separate test systems and retire the CLI references ([6cbddb7](https://github.com/korchasa/flowai/commit/6cbddb720aa49bf970717d524d5b4149f488cae3))
+* **tasks:** plan the retirement of the archived flowai CLI from docs and CI ([e9b6ff6](https://github.com/korchasa/flowai/commit/e9b6ff6e5ce7985a5e9f610f6bd8681d57a87fea))
+
 ### [0.14.6](https://github.com/korchasa/flowai/compare/v0.14.5...v0.14.6) (2026-09-09)
 
 
