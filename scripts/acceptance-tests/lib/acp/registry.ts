@@ -7,11 +7,11 @@
  * / setupMocks) with a connection + a launch spec — onboarding a new IDE becomes
  * adding a row, not writing a class.
  *
- * `command`/`args` are spawned by `AcpAgent` under the same
- * `setpgrp_exec.py` process-group wrapping + watchdog (FR-ACCEPT-GUARDS), so a
- * wrapper child (`npx claude-code-acp`) and its descendants stay inside the
- * killed group.
+ * The resolved command is spawned by `AcpAgent` under the same
+ * `setpgrp_exec.py` process-group wrapping + watchdog (FR-ACCEPT-GUARDS), so the
+ * bridge and its descendants stay inside the killed group.
  */
+import type { AcpLaunch } from "./bridge_store.ts";
 
 /**
  * Pinned version of the official ACP client library. Kept in lock-step with the
@@ -28,13 +28,12 @@ export type AcpAuthMode = "subscription" | "api-key" | "native";
 
 export interface AcpAgentSpec {
   readonly ide: AcpIde;
-  /** Process launch spec for the ACP server (data, not logic). */
-  readonly launch: {
-    readonly command: string;
-    readonly args: readonly string[];
-    /** Extra env merged over the isolated launch env (e.g. unset CLAUDECODE). */
-    readonly env?: Readonly<Record<string, string>>;
-  };
+  /**
+   * Process launch spec for the ACP server (data, not logic). An `npm` launch
+   * is resolved through the local bridge store (FR-ACCEPT.BRIDGE-LOCAL); a
+   * `binary` launch names a command already on PATH.
+   */
+  readonly launch: AcpLaunch;
   readonly authMode: AcpAuthMode;
   /** IDE config dir relative to the sandbox (e.g. ".claude"). */
   readonly configDir: string;
@@ -113,8 +112,10 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   claude: {
     ide: "claude",
     launch: {
-      command: "npx",
-      args: ["-y", "@agentclientprotocol/claude-agent-acp@0.68.0"],
+      kind: "npm",
+      package: "@agentclientprotocol/claude-agent-acp",
+      version: "0.68.0",
+      bin: "claude-agent-acp",
       // Allow spawning claude inside a claude session (unset the marker the
       // outer Claude Code session exports).
       env: { CLAUDECODE: "" },
@@ -125,7 +126,7 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   },
   cursor: {
     ide: "cursor",
-    launch: { command: "cursor-agent", args: ["--acp"] },
+    launch: { kind: "binary", command: "cursor-agent", args: ["--acp"] },
     authMode: "native",
     configDir: ".cursor",
     commandPrefix: "/",
@@ -133,8 +134,10 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   codex: {
     ide: "codex",
     launch: {
-      command: "npx",
-      args: ["-y", "@agentclientprotocol/codex-acp@1.1.7"],
+      kind: "npm",
+      package: "@agentclientprotocol/codex-acp",
+      version: "1.1.7",
+      bin: "codex-acp",
       // Start in full-access agent mode: the bridge's default mode may be
       // read-only, which would let a bench session "finish" having written
       // nothing and score as an honest miss (FR-BENCH-SWE.IDE).
@@ -146,7 +149,7 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   },
   opencode: {
     ide: "opencode",
-    launch: { command: "opencode", args: ["acp"] },
+    launch: { kind: "binary", command: "opencode", args: ["acp"] },
     authMode: "native",
     configDir: ".opencode",
     commandPrefix: "/",

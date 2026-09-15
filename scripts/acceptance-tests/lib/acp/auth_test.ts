@@ -19,6 +19,7 @@ import {
   prepareAcpCodexHome,
   prepareBenchCodexHome,
   prepareCodexJudgeHome,
+  runCodexJudgeHome,
 } from "./auth.ts";
 
 /** Recursively snapshots a dir as a sorted map of relpath → contents. */
@@ -374,27 +375,64 @@ Deno.test("bench-home disables the CLI's bundled skills — they are outside HOM
   }
 });
 
-Deno.test("prepareCodexJudgeHome: the judge gets its own CODEX_HOME beside the agent's", async () => {
+Deno.test("prepareCodexJudgeHome: the judge gets an empty CODEX_HOME of its own", async () => {
   const realHome = Deno.env.get("HOME");
   const fakeHome = await Deno.makeTempDir({ prefix: "acp-judge-home-" });
   await Deno.mkdir(join(fakeHome, ".codex"), { recursive: true });
   await Deno.writeTextFile(join(fakeHome, ".codex", "auth.json"), "{}");
-  const benchHome = await Deno.makeTempDir({ prefix: "acp-judge-bench-" });
+  const root = await Deno.makeTempDir({ prefix: "acp-judge-root-" });
   Deno.env.set("HOME", fakeHome);
   try {
-    const judgeHome = await prepareCodexJudgeHome(benchHome);
-    assertEquals(judgeHome, join(benchHome, ".codex-judge"));
-    const auth = await Deno.lstat(join(judgeHome, "auth.json"));
+    const judge = await prepareCodexJudgeHome(root);
+    assertEquals(judge.HOME, root);
+    assertEquals(judge.CODEX_HOME, join(root, ".codex-judge"));
+    const auth = await Deno.lstat(join(judge.CODEX_HOME, "auth.json"));
     assertEquals(auth.isSymlink, true, "only the credentials are linked");
     let count = 0;
-    for await (const _ of Deno.readDir(join(judgeHome, "skills"))) count++;
+    for await (const _ of Deno.readDir(join(judge.CODEX_HOME, "skills"))) {
+      count++;
+    }
     assertEquals(count, 0, "no user skills reach the judge");
-    // Idempotent: a re-prepare on the same bench-home must not throw.
-    assertEquals(await prepareCodexJudgeHome(benchHome), judgeHome);
+    // Idempotent: a re-prepare on the same root must not throw.
+    assertEquals(
+      (await prepareCodexJudgeHome(root)).CODEX_HOME,
+      judge.CODEX_HOME,
+    );
   } finally {
     if (realHome !== undefined) Deno.env.set("HOME", realHome);
     else Deno.env.delete("HOME");
     await Deno.remove(fakeHome, { recursive: true });
-    await Deno.remove(benchHome, { recursive: true });
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+// implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]:
+// ONE judge home per run. A second home means a second app-server child and a
+// second cold first turn, which is the cost the clause removes.
+Deno.test("runCodexJudgeHome: every scenario of a run gets the same home", async () => {
+  const first = await runCodexJudgeHome();
+  const second = await runCodexJudgeHome();
+  assertEquals(second, first);
+
+  const home = Deno.env.get("HOME");
+  assert(
+    !home || !first.HOME.startsWith(home + "/"),
+    `the judge home must not sit under $HOME (got ${first.HOME})`,
+  );
+  const stat = await Deno.stat(join(first.CODEX_HOME, "skills"));
+  assertEquals(stat.isDirectory, true);
+});
+
+// implements [FR-ACCEPT.BRIDGE-LOCAL](../../../../documents/requirements.md#fr-accept.bridge-local-acp-bridges-are-installed-once-and-launched-directly-ancfraccept.bridge-local):
+// the nonessential-traffic switch is part of the
+// launch env, not an operator convenience — without it `session/new` spends
+// ~850 ms on autoupdate/telemetry/model-discovery the bench never measures.
+Deno.test("prepareAcpClaudeHome disables nonessential Claude traffic", async () => {
+  const dir = await Deno.makeTempDir({ prefix: "acp-auth-traffic-" });
+  try {
+    const env = await prepareAcpClaudeHome(join(dir, "sandbox"));
+    assertEquals(env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC, "1");
+  } finally {
+    await Deno.remove(dir, { recursive: true });
   }
 });

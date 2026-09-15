@@ -1,4 +1,5 @@
 import type { LLMMessage, LLMResponse } from "./types.ts";
+import { type AppServerProcess, AppServerSession } from "./appserver_client.ts";
 
 export interface ModelConfig {
   model: string;
@@ -75,61 +76,7 @@ export async function loadConfig(
 }
 
 /**
- * Build the `codex exec` argv for ONE turn of a programmatic caller — the
- * benchmark's human emulator, the acceptance-test judge, the user emulator.
- *
- * Pure so the pinning can be unit-tested without spawning a session. Every flag
- * here is deliberate:
- * - `--model` + `-c model_reasoning_effort` pin the campaign's operating point;
- *   `~/.codex/config.toml` sets both globally on a developer machine, and an
- *   un-pinned emulator would take its effort from whoever launched the run.
- * - `--ignore-user-config` keeps that file out entirely (auth still resolves
- *   through `CODEX_HOME`).
- * - `--sandbox read-only` — the emulator plays the human in a conversation and
- *   has no business editing the workspace. Structural, not a promise in a prompt.
- * - `--skip-git-repo-check` because it runs from a temp cwd outside any repo.
- * - `--output-last-message` is the clean way to get the final reply; parsing it
- *   out of the event stream would also pick up the agent's intermediate chatter.
- * - `--output-schema` (only when the caller supplies a schema) makes codex
- *   validate the final message against a JSON schema, which is how the judge
- *   gets a per-item verdict object instead of prose to parse.
- * - trailing `-` makes codex read the prompt from stdin, which avoids E2BIG on
- *   a long conversation.
- *
- * Session files are deliberately NOT suppressed (`--ephemeral` is absent): the
- * rollout lands under the emulator's OWN `CODEX_HOME` (FR-BENCH-SWE.ISOLATION —
- * separate from the agent under test) and its tokens are harvested into the
- * arm's overhead, matching how the gate emulator was always accounted.
- */
-export function codexExecArgs(opts: {
-  model: string;
-  effort: string;
-  lastMessageFile: string;
-  outputSchemaFile?: string;
-}): string[] {
-  return [
-    "exec",
-    ...(opts.outputSchemaFile
-      ? ["--output-schema", opts.outputSchemaFile]
-      : []),
-    "--model",
-    opts.model,
-    "-c",
-    `model_reasoning_effort="${opts.effort}"`,
-    "--ignore-user-config",
-    "--sandbox",
-    "read-only",
-    "--skip-git-repo-check",
-    "--color",
-    "never",
-    "--output-last-message",
-    opts.lastMessageFile,
-    "-",
-  ];
-}
-
-/**
- * Fold a chat-shaped message list into the single prompt `codex exec` accepts.
+ * Fold a chat-shaped message list into the single prompt a codex turn accepts.
  * There is no separate system channel, so the persona leads the text or it is
  * lost; the remaining turns keep their order and are labelled by role.
  */
@@ -146,9 +93,116 @@ export function codexPrompt(messages: LLMMessage[]): string {
 /** Default reasoning effort for a programmatic codex turn. */
 export const DEFAULT_CODEX_EFFORT = "medium";
 
+/** Options a programmatic codex caller pins per call. */
+export interface CodexCallConfig {
+  model: string;
+  effort?: string;
+  jsonSchema?: Record<string, unknown>;
+  /** Extra env for the child (the caller's own isolated `CODEX_HOME`). */
+  env?: Record<string, string>;
+  /**
+   * Working directory for the thread. Defaults to a temp dir owned by the
+   * session — codex reads `AGENTS.md` up the cwd path regardless of any flag,
+   * and a caller that forgets to isolate itself must never run from the repo.
+   */
+  cwd?: string;
+  /** Test seam: supply the child process instead of spawning `codex`. */
+  spawn?: () => AppServerProcess;
+}
+
 /**
- * Chat completion via the Codex CLI (`codex exec`). No API key — uses the
- * existing CLI auth under `CODEX_HOME`.
+ * Cache key for one app-server child. Model, effort, cwd and env all change
+ * what a turn means, so each combination gets its own session; two callers with
+ * different isolated `CODEX_HOME`s never share one child.
+ */
+export function codexSessionKey(config: CodexCallConfig): string {
+  return JSON.stringify([
+    config.model,
+    config.effort ?? DEFAULT_CODEX_EFFORT,
+    config.cwd ?? null,
+    config.env ?? null,
+  ]);
+}
+
+interface CachedSession {
+  session: AppServerSession;
+  ownCwd?: string;
+}
+
+const sessions = new Map<string, Promise<CachedSession>>();
+
+async function openSession(config: CodexCallConfig): Promise<CachedSession> {
+  const ownCwd = config.cwd
+    ? undefined
+    : await Deno.makeTempDir({ prefix: "codex-cwd-" });
+  const session = new AppServerSession({
+    model: config.model,
+    effort: config.effort ?? DEFAULT_CODEX_EFFORT,
+    cwd: config.cwd ?? ownCwd!,
+    env: config.env,
+    ...(config.spawn ? { spawn: config.spawn } : {}),
+  });
+  try {
+    await session.ready();
+  } catch (e) {
+    session.close();
+    if (ownCwd) await Deno.remove(ownCwd, { recursive: true }).catch(() => {});
+    throw e;
+  }
+  return { session, ownCwd };
+}
+
+function acquire(config: CodexCallConfig): Promise<CachedSession> {
+  const key = codexSessionKey(config);
+  const existing = sessions.get(key);
+  if (existing) return existing;
+  // A session that fails to open leaves no entry behind: the next call opens a
+  // fresh one instead of inheriting the broken child.
+  const opening = openSession(config).catch((e) => {
+    sessions.delete(key);
+    throw e;
+  });
+  sessions.set(key, opening);
+  return opening;
+}
+
+/**
+ * Open the caller's app-server session ahead of time
+ * (FR-ACCEPT.JUDGE-APPSERVER). Call it when the agent run STARTS: the handshake
+ * and `thread/start` then overlap a scenario that runs ~50 s instead of sitting
+ * in front of the judge's prompt.
+ *
+ * A prewarm that fails is reported and swallowed — the session degrades to
+ * being opened at call time, never to a wrong verdict.
+ */
+export async function prewarmCodexSession(
+  config: CodexCallConfig,
+): Promise<void> {
+  try {
+    await acquire(config);
+  } catch (e) {
+    console.warn(
+      `[llm] codex app-server prewarm failed, falling back to at-call start: ${
+        e instanceof Error ? e.message : String(e)
+      }`,
+    );
+  }
+}
+
+/** Close every cached session. Call at the end of a run. */
+export function closeCodexSessions(): void {
+  for (const [key, pending] of sessions) {
+    sessions.delete(key);
+    pending.then(({ session, ownCwd }) => {
+      session.close();
+      if (ownCwd) return Deno.remove(ownCwd, { recursive: true });
+    }).catch(() => {});
+  }
+}
+
+/**
+ * Chat completion over the Codex app-server. No API key — uses the existing CLI
+ * auth under `CODEX_HOME`.
  *
  * The single LLM transport of the harness: the benchmark's human emulator moved
  * here when the Claude subject arm was retired (2026-08-09), and the
@@ -156,74 +210,26 @@ export const DEFAULT_CODEX_EFFORT = "medium";
  * `-p 4` sweep on `claude -p` burned the account's whole subscription window in
  * five hours (250M cache-read tokens, 583 sessions in a day).
  *
- * `config.jsonSchema` turns on `--output-schema`: the reply is then the
- * validated JSON object itself. `config.cwd` defaults to a fresh temp dir so a
- * caller that forgets to isolate itself never runs from the repo — codex reads
- * `AGENTS.md` up the cwd path regardless of `--ignore-user-config`.
+ * It ran on `codex exec` until 2026-09-15. `exec` fuses session and turn, so
+ * every call paid the full warmup before reading its prompt — 4.2-4.9 s on a
+ * trivial judge-shaped turn. The app-server splits them; with the session
+ * prewarmed the same turn takes 2.4-3.4 s from prompt to answer.
+ *
+ * `config.jsonSchema` is forwarded as the turn's `outputSchema`: the reply is
+ * then the validated JSON object itself.
  */
 export async function codexChatCompletion(
   messages: LLMMessage[],
-  config: {
-    model: string;
-    effort?: string;
-    jsonSchema?: Record<string, unknown>;
-    env?: Record<string, string>;
-    cwd?: string;
-  },
+  config: CodexCallConfig,
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
-  const lastMessageFile = await Deno.makeTempFile({ prefix: "codex-reply-" });
-  const outputSchemaFile = config.jsonSchema
-    ? await Deno.makeTempFile({ prefix: "codex-schema-", suffix: ".json" })
-    : undefined;
-  const ownCwd = config.cwd
-    ? undefined
-    : await Deno.makeTempDir({ prefix: "codex-cwd-" });
-  try {
-    if (outputSchemaFile) {
-      await Deno.writeTextFile(
-        outputSchemaFile,
-        JSON.stringify(config.jsonSchema),
-      );
-    }
-    const cmd = new Deno.Command("codex", {
-      args: codexExecArgs({
-        model: config.model,
-        effort: config.effort ?? DEFAULT_CODEX_EFFORT,
-        lastMessageFile,
-        outputSchemaFile,
-      }),
-      stdin: "piped",
-      stdout: "piped",
-      stderr: "piped",
-      env: { ...Deno.env.toObject(), ...(config.env ?? {}) },
-      cwd: config.cwd ?? ownCwd,
-      signal,
-    });
-    const process = cmd.spawn();
-    const writer = process.stdin.getWriter();
-    await writer.write(new TextEncoder().encode(codexPrompt(messages)));
-    await writer.close();
-    const output = await process.output();
-
-    if (!output.success) {
-      const stderr = new TextDecoder().decode(output.stderr);
-      throw new Error(
-        `Codex CLI failed (exit ${output.code}): stderr=${stderr || "(empty)"}`,
-      );
-    }
-    const content = (await Deno.readTextFile(lastMessageFile)).trim();
-    if (content === "") {
-      // A blank human turn leaves the engineer with no instruction — the
-      // benchmark treats that as a dead emulator, never as silence to guess at.
-      throw new Error("Codex CLI: empty final message");
-    }
-    return { content, usage: undefined };
-  } finally {
-    await Deno.remove(lastMessageFile).catch(() => {});
-    if (outputSchemaFile) await Deno.remove(outputSchemaFile).catch(() => {});
-    if (ownCwd) await Deno.remove(ownCwd, { recursive: true }).catch(() => {});
-  }
+  const { session } = await acquire(config);
+  const content = await session.run(
+    codexPrompt(messages),
+    config.jsonSchema,
+    signal,
+  );
+  return { content, usage: undefined };
 }
 
 /** Shape of an injectable chat-completion client (tests swap in a stub). */

@@ -12,10 +12,10 @@ export interface JudgeRequest {
 /**
  * Build the judge's prompt. Pure so the shape can be unit-tested.
  *
- * The evidence rides INSIDE the system message: `codex exec` reads one prompt
- * from stdin (no E2BIG, no append-file channel), and `codexPrompt` puts system
- * messages first, so the auditor persona, the evidence and the checklist arrive
- * in that order.
+ * The evidence rides INSIDE the system message: a codex turn takes one text
+ * input over the app-server's stdio (no E2BIG, no append-file channel), and
+ * `codexPrompt` puts system messages first, so the auditor persona, the
+ * evidence and the checklist arrive in that order.
  */
 export function buildJudgeRequest(
   userQuery: string,

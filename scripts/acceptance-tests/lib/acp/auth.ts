@@ -35,11 +35,21 @@ const ISOLATED_HOME_LINKS = [
  * Code's BUNDLED skills are extracted outside `$HOME` and stay reachable, so
  * they are switched off explicitly — the bench measures the framework's skills,
  * and a bundled one that wins the routing measures the CLI instead.
+ *
+ * `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` switches off the autoupdater, the
+ * bug command, error reporting, telemetry and the gateway's model-discovery
+ * refresh in one flag (FR-ACCEPT.BRIDGE-LOCAL). Measured 2026-09-15: it takes
+ * `session/new` from ~850 ms to ~260 ms. Nothing the bench scores depends on
+ * that traffic.
  */
 // implements [REF:fr:accept-isolation | FR-ACCEPT-ISOLATION]
 export async function prepareAcpClaudeHome(
   sandboxPath: string,
-): Promise<{ HOME: string; CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: string }> {
+): Promise<{
+  HOME: string;
+  CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: string;
+  CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: string;
+}> {
   const benchHome = join(dirname(sandboxPath), "bench-home");
   await Deno.mkdir(join(benchHome, ".claude", "skills"), { recursive: true });
 
@@ -62,7 +72,12 @@ export async function prepareAcpClaudeHome(
     }
   }
 
-  return { HOME: benchHome, CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: "1" };
+  return {
+    HOME: benchHome,
+    CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: "1",
+    // implements [REF:fr:accept.bridge-local | FR-ACCEPT.BRIDGE-LOCAL]
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
+  };
 }
 
 /**
@@ -84,7 +99,7 @@ export async function prepareAcpClaudeHome(
  * which keeps them next to the run for a future cost harvest.
  *
  * Returns `HOME` as well: the acceptance judge and the user emulator run
- * `codex exec` with this env, so the same empty `CODEX_HOME` (auth only) keeps
+ * a codex app-server with this env, so the same empty `CODEX_HOME` (auth only) keeps
  * the developer's personal skills and config out of their replies too. The
  * Claude bench-home under it is kept for scenarios that drive another IDE's
  * CLI from inside the sandbox.
@@ -102,20 +117,50 @@ export async function prepareAcpCodexHome(
   return { HOME, CODEX_HOME: codexHome };
 }
 
+/** An isolated home for the judge and the user emulator. */
+export interface CodexJudgeHome {
+  readonly HOME: string;
+  readonly CODEX_HOME: string;
+}
+
 /**
- * A second, equally isolated `CODEX_HOME` for the judge and the user emulator,
- * next to the agent's: `<bench-home>/.codex-judge`. Sharing the agent's
- * `CODEX_HOME` put the judge's rollout into the same `sessions/` tree, so the
- * "raw agent session" of a run was whichever file sorted last — observed
- * 2026-09-01 on the first codex judge run, where the newest rollout held the
- * verdict JSON, not the agent's turns.
+ * Build a judge home under `root`: an empty `CODEX_HOME` holding nothing but
+ * the auth symlink, so the judge inherits no user config and no user skills.
+ *
+ * It used to live at `<bench-home>/.codex-judge`, beside the agent's
+ * `CODEX_HOME`, because sharing the agent's put the judge's rollout into the
+ * same `sessions/` tree and the "raw agent session" of a run became whichever
+ * file sorted last (observed 2026-09-01, where the newest rollout held the
+ * verdict JSON rather than the agent's turns). That reason lapsed when the
+ * transport moved to the app-server with `ephemeral: true`, which writes no
+ * rollout at all — verified on run 2026-09-15T14-18-56, where every scenario
+ * held 0 files under the judge's `sessions/` and 1 agent rollout.
  */
+// implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]
 export async function prepareCodexJudgeHome(
-  benchHome: string,
-): Promise<string> {
-  const codexHome = join(benchHome, ".codex-judge");
+  root: string,
+): Promise<CodexJudgeHome> {
+  const codexHome = join(root, ".codex-judge");
   await populateCodexHome(codexHome);
-  return codexHome;
+  return { HOME: root, CODEX_HOME: codexHome };
+}
+
+let judgeHomeOnce: Promise<CodexJudgeHome> | undefined;
+
+/**
+ * The run's single judge home, created on first use.
+ *
+ * ONE home per run, not one per scenario (user decision 2026-09-15): the
+ * app-server child is keyed by the judge's env, so a per-scenario home hands
+ * every scenario a cold child and its ~2.4 s first-turn warmup. It lives in a
+ * temp dir outside `$HOME` for the same reason the agent sandboxes do — an
+ * ancestor `AGENTS.md` loads regardless of `HOME`.
+ */
+// implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]
+export function runCodexJudgeHome(): Promise<CodexJudgeHome> {
+  judgeHomeOnce ??= Deno.makeTempDir({ prefix: "flowai-judge-home-" })
+    .then(prepareCodexJudgeHome);
+  return judgeHomeOnce;
 }
 
 /** Empty `CODEX_HOME` with an empty `skills/` and ONLY the credentials linked. */

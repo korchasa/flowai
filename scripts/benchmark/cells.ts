@@ -375,16 +375,13 @@ export function taskRecordFromRun(o: RunOutcome): TaskRecord {
 
 /**
  * ACP bridge version pinned for an IDE, or null when the IDE speaks ACP itself.
- * Read from the registry's launch args, so a bridge bump cannot slip into a
+ * Read from the registry's launch spec, so a bridge bump cannot slip into a
  * cell unnoticed.
  */
 export function bridgeVersionFor(ide: string): string | null {
   const spec = ACP_AGENTS[ide as keyof typeof ACP_AGENTS];
-  for (const arg of spec?.launch.args ?? []) {
-    const m = arg.match(/@[^@\s]+\/[^@\s]+@(\d+\.\d+\.\d+)/);
-    if (m) return m[1];
-  }
-  return null;
+  if (spec?.launch.kind !== "npm") return null;
+  return spec.launch.version;
 }
 
 /**

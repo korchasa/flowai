@@ -1,8 +1,9 @@
 import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { ChatCompletionFn, ModelConfig } from "./llm.ts";
+import { prewarmCodexSession } from "./llm.ts";
 import { agentLaunchEnv } from "./agent_env.ts";
-import { prepareCodexJudgeHome } from "./acp/auth.ts";
+import { type CodexJudgeHome, runCodexJudgeHome } from "./acp/auth.ts";
 import { evaluateChecklist } from "./judge.ts";
 import {
   collectGeneratedFiles,
@@ -384,6 +385,30 @@ async function initSandboxGit(
   return initHash;
 }
 
+/**
+ * Build the judge / user-emulator config for one scenario.
+ *
+ * implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]: the
+ * env is the RUN's judge home and nothing else. It deliberately does not
+ * spread the scenario's `adapterEnv` — `codexSessionKey` hashes the env, so a
+ * per-scenario `HOME` in there hands every scenario its own app-server child
+ * and its own cold first turn. The judge needs none of it: its `CODEX_HOME`
+ * carries the auth and its `cwd` is a temp dir the client makes itself.
+ *
+ * Pure so the sharing invariant can be asserted without a live run.
+ */
+export function buildJudgeConfig(
+  ide: string,
+  base: ModelConfig,
+  judgeHome: CodexJudgeHome,
+): ModelConfig {
+  if (ide !== "codex") return { ...base };
+  return {
+    ...base,
+    env: { HOME: judgeHome.HOME, CODEX_HOME: judgeHome.CODEX_HOME },
+  };
+}
+
 interface AgentRunOutcome {
   code: number;
   logs: string;
@@ -582,20 +607,17 @@ async function runAgentWithTimeout(
     console.log(`  Codex roles installed: ${installed.join(", ") || "none"}`);
   }
 
-  // The judge and the simulated user run on `codex exec` from a temp cwd. On a
-  // codex run they get their own isolated `CODEX_HOME` beside the agent's
-  // (`<bench-home>/.codex-judge`: auth symlink, empty skills, separate
-  // rollouts); on other IDEs the operator's own `~/.codex` auth is used and
-  // `--ignore-user-config` keeps its config.toml out.
-  const judgeConfig: ModelConfig = options.adapter.ide === "codex"
-    ? {
-      ...options.judgeConfig,
-      env: {
-        ...adapterEnv,
-        CODEX_HOME: await prepareCodexJudgeHome(adapterEnv.HOME),
-      },
-    }
-    : { ...options.judgeConfig };
+  // The judge and the simulated user run on a codex app-server from a temp cwd
+  // (FR-ACCEPT.JUDGE-APPSERVER). On a codex run they share ONE isolated
+  // `CODEX_HOME` for the whole run (auth symlink, empty skills), so one
+  // app-server child serves every scenario; on other IDEs the operator's own
+  // `~/.codex` auth is used and `--ignore-user-config` keeps its config.toml
+  // out.
+  const judgeConfig = buildJudgeConfig(
+    options.adapter.ide,
+    options.judgeConfig,
+    await runCodexJudgeHome(),
+  );
 
   const userEmulator = scenario.interactive && scenario.userPersona
     ? new UserEmulator({
@@ -622,6 +644,18 @@ async function runAgentWithTimeout(
   });
 
   // Global scenario timeout (default 15 min)
+  // implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]:
+  // open the judge's app-server session now, not when the verdict is due. The
+  // ~2 s handshake + thread/start then overlaps a scenario that runs ~50 s.
+  // Deliberately not awaited, and a failure only logs — the session degrades to
+  // being opened at call time.
+  prewarmCodexSession({
+    model: judgeConfig.model,
+    effort: judgeConfig.effort,
+    env: judgeConfig.env,
+    cwd: judgeConfig.cwd,
+  });
+
   const totalTimeout = scenario.totalTimeoutMs ?? 900_000;
   let agentResult: { code: number; logs: string };
   let globalTimeoutId: ReturnType<typeof setTimeout> | undefined;

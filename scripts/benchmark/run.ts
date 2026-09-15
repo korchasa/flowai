@@ -128,7 +128,7 @@ export function effortEnv(effort: string): Record<string, string> {
 
 /**
  * implements [FR-BENCH-SWE.ISOLATION]: the environment for the human emulator's
- * `codex exec`.
+ * codex app-server child.
  *
  * The emulator SHARES the agent's session store (user decision 2026-08-09 — one
  * bench home under `~/.flowai-dev`, checked afterwards by `peek_audit.ts`
@@ -225,7 +225,7 @@ export function isAuthFailure(logs: string): boolean {
 /**
  * Detect a dead HUMAN EMULATOR — the other half of "never fairly attempted".
  *
- * The emulator is a separate `codex exec` process (`codexChatCompletion`), so
+ * The emulator is a separate codex app-server process (`codexChatCompletion`), so
  * its failure never reaches ACP and `isAuthFailure` cannot see it. Measured
  * 2026-07-30, when it still ran on `claude -p`: the account's OAuth refresh
  * token was revoked server-side ("OAuth refresh token is no longer valid" in
@@ -656,7 +656,7 @@ export async function runArm(
   const prediction = toPrediction(data.instanceId, opts.arm, diff);
   // Two ways a session can be un-attempted rather than failed: the AGENT never
   // engaged (ACP auth outage) or the HUMAN never spoke (the emulator's own
-  // `codex exec` died). Both leave the instance pending in the measurement tier
+  // app-server child died). Both leave the instance pending in the measurement tier
   // instead of banking an empty patch as a real miss.
   const authFailed = isAuthFailure(result.logs) ||
     isEmulatorOutage(result.logs);

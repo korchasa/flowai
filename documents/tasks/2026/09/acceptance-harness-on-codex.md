@@ -45,6 +45,7 @@ The sweep of 2026-08-31 (`-p 4`, 226 sessions) hit the Claude subscription windo
   - Evidence: `deno test -A scripts/acceptance-tests/lib/agent_env_test.ts scripts/benchmark/run_test.ts`
 - [x] FR-ACCEPT: the judge runs from its own `CODEX_HOME` beside the agent's so rollouts do not mix.
   - Test: `scripts/acceptance-tests/lib/acp/auth_test.ts::prepareCodexJudgeHome: the judge gets its own CODEX_HOME beside the agent's`
+    (renamed 2026-09-15 to `::prepareCodexJudgeHome: the judge gets an empty CODEX_HOME of its own` when FR-ACCEPT.JUDGE-APPSERVER made the judge home per-run instead of per-scenario; the test still covers this criterion)
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/auth_test.ts`
 - [x] FR-ACCEPT.TRIGGER: a codex shell read of `skills/<skill>/SKILL.md` counts as invocation; globs and longer names do not.
   - Test: `scripts/acceptance-tests/lib/skill_invocation_test.ts::detectSkillInvocation: codex loads a skill by reading its SKILL.md from the shell`

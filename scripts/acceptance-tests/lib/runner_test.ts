@@ -6,11 +6,11 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import { load } from "@std/dotenv";
-import { runScenario } from "./runner.ts";
+import { buildJudgeConfig, runScenario } from "./runner.ts";
 import type { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
 import type { evaluateChecklist } from "./judge.ts";
-import { getIdeConfig, loadConfig } from "./llm.ts";
+import { codexSessionKey, getIdeConfig, loadConfig } from "./llm.ts";
 import { createAdapter } from "./adapters/mod.ts";
 
 // Load environment variables from .env file
@@ -274,4 +274,40 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
   } finally {
     await Deno.remove(tempDir, { recursive: true });
   }
+});
+
+// implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]:
+// the judge's app-server child is keyed by its env, so a judge env that
+// carries anything per-scenario gives every scenario its own child and its
+// own first-turn warmup — the cost this clause exists to remove. The
+// signature is half the guarantee (no scenario state reaches here); this
+// holds the other half.
+Deno.test("the judge env is the run home and nothing else", () => {
+  const base = { model: "gpt-5.6-sol", temperature: 0, effort: "medium" };
+  const judgeHome = {
+    HOME: "/tmp/flowai-judge-home-x",
+    CODEX_HOME: "/tmp/flowai-judge-home-x/.codex-judge",
+  };
+
+  const config = buildJudgeConfig("codex", base, judgeHome);
+
+  assertEquals(
+    Object.entries(config.env ?? {}).sort(),
+    [["CODEX_HOME", judgeHome.CODEX_HOME], ["HOME", judgeHome.HOME]],
+  );
+  // The key that decides how many app-server children a sweep spawns.
+  assertEquals(
+    codexSessionKey(config),
+    codexSessionKey(buildJudgeConfig("codex", base, judgeHome)),
+  );
+});
+
+Deno.test("a non-codex judge keeps its config untouched", () => {
+  const base = { model: "sonnet", temperature: 0 };
+  const config = buildJudgeConfig("claude", base, {
+    HOME: "/tmp/flowai-judge-home-x",
+    CODEX_HOME: "/tmp/flowai-judge-home-x/.codex-judge",
+  });
+  assertEquals(config.env, undefined);
+  assertEquals(config.model, "sonnet");
 });

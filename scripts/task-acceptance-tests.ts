@@ -18,7 +18,7 @@
  * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
  */
 import { join } from "@std/path";
-import { loadConfig } from "./acceptance-tests/lib/llm.ts";
+import { closeCodexSessions, loadConfig } from "./acceptance-tests/lib/llm.ts";
 import {
   acquireBenchmarkLock,
   parseAndValidateArgs,
@@ -107,6 +107,12 @@ async function main() {
   if (setup.runs > 1) {
     printPassRates(ctx.results, scenariosToRun, setup.runs);
   }
+
+  // implements [FR-ACCEPT.JUDGE-APPSERVER](../documents/requirements.md#fr-accept.judge-appserver-judge-and-emulators-run-on-a-prewarmed-codex-app-server-ancfraccept.judge-appserver):
+  // the judge's app-server children outlive the
+  // scenarios that opened them; close them before the report or the process
+  // never exits.
+  closeCodexSessions();
 
   await updateLatestSymlink(runDir);
   finalizeRun(

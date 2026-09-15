@@ -24,6 +24,7 @@ import {
   describeHealth,
   SystemUnhealthyError,
 } from "../system_health.ts";
+import { resolveBridgeCommand } from "./bridge_store.ts";
 import { AcpClient, type CapturedToolCall } from "./client.ts";
 import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
 import { collectCodexAgentTrace } from "./codex_rollout.ts";
@@ -160,11 +161,15 @@ export class AcpAgent {
       throw e;
     }
 
+    // implements [FR-ACCEPT.BRIDGE-LOCAL](../../../../documents/requirements.md#fr-accept.bridge-local-acp-bridges-are-installed-once-and-launched-directly-ancfraccept.bridge-local):
+    // npm bridges come from the local store, never from `npx`. A missing
+    // pinned version throws here, before the spawn.
+    const launch = resolveBridgeCommand(this.#spec.launch);
     const wrap = !this.opts.disableWatchdog;
-    const command = wrap ? "python3" : this.#spec.launch.command;
+    const command = wrap ? "python3" : launch.command;
     const args = wrap
-      ? [SETPGRP_WRAPPER, this.#spec.launch.command, ...this.#spec.launch.args]
-      : [...this.#spec.launch.args];
+      ? [SETPGRP_WRAPPER, launch.command, ...launch.args]
+      : [...launch.args];
 
     const env: Record<string, string> = {
       ...this.#spec.launch.env,

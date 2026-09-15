@@ -1,46 +1,12 @@
 import { assert, assertEquals, assertStringIncludes } from "@std/assert";
-import { codexExecArgs, codexPrompt } from "./llm.ts";
-
-Deno.test("codexExecArgs: pins model and reasoning effort on the command line", () => {
-  // The bench CODEX_HOME holds auth only, but a stray ~/.codex/config.toml on
-  // any other host sets model + effort globally. Both must come from the
-  // campaign, never from whoever's machine launched it.
-  const args = codexExecArgs({
-    model: "gpt-5.6-sol",
-    effort: "medium",
-    lastMessageFile: "/tmp/out.txt",
-  });
-  assertEquals(args[0], "exec");
-  const i = args.indexOf("--model");
-  assertEquals(args[i + 1], "gpt-5.6-sol");
-  assertStringIncludes(args.join(" "), 'model_reasoning_effort="medium"');
-  assertStringIncludes(args.join(" "), "--ignore-user-config");
-});
-
-Deno.test("codexExecArgs: the emulator may not touch the workspace", () => {
-  // It plays the human in a conversation; it has no business editing files,
-  // and a read-only sandbox makes that structural rather than a promise.
-  const args = codexExecArgs({
-    model: "gpt-5.6-sol",
-    effort: "medium",
-    lastMessageFile: "/tmp/out.txt",
-  });
-  const s = args.join(" ");
-  assertStringIncludes(s, "--sandbox read-only");
-  assertStringIncludes(s, "--skip-git-repo-check");
-});
-
-Deno.test("codexExecArgs: routes the final reply to a file and reads the prompt from stdin", () => {
-  const args = codexExecArgs({
-    model: "m",
-    effort: "medium",
-    lastMessageFile: "/tmp/reply.txt",
-  });
-  const i = args.indexOf("--output-last-message");
-  assertEquals(args[i + 1], "/tmp/reply.txt");
-  // `-` is codex's "prompt arrives on stdin" marker and MUST come last.
-  assertEquals(args[args.length - 1], "-");
-});
+import {
+  closeCodexSessions,
+  codexChatCompletion,
+  codexPrompt,
+  codexSessionKey,
+  prewarmCodexSession,
+} from "./llm.ts";
+import { fakeAppServer } from "./testing/fake_appserver.ts";
 
 Deno.test("codexPrompt: folds the system message ahead of the conversation", () => {
   // `codex exec` takes ONE prompt — there is no separate system channel, so the
@@ -64,22 +30,95 @@ Deno.test("codexPrompt: keeps every non-system turn in order", () => {
   assertEquals(p.indexOf("second") < p.indexOf("third"), true);
 });
 
-Deno.test("codexExecArgs: attaches an output schema when the caller needs structured JSON", () => {
-  const args = codexExecArgs({
-    model: "gpt-5.6-sol",
-    effort: "medium",
-    lastMessageFile: "/tmp/reply",
-    outputSchemaFile: "/tmp/schema.json",
-  });
-  const i = args.indexOf("--output-schema");
-  assert(i >= 0, "structured verdicts need --output-schema");
-  assertEquals(args[i + 1], "/tmp/schema.json");
-  // Without a schema the flag must be absent — a free-text emulator turn is
-  // not JSON, and codex would reject the reply against an empty schema.
-  const plain = codexExecArgs({
-    model: "gpt-5.6-sol",
-    effort: "medium",
-    lastMessageFile: "/tmp/reply",
-  });
-  assertEquals(plain.includes("--output-schema"), false);
+// --- app-server transport (FR-ACCEPT.JUDGE-APPSERVER) ---
+
+Deno.test("codexSessionKey separates callers that must not share a session", () => {
+  const base = { model: "m", effort: "medium", env: { CODEX_HOME: "/a" } };
+  assertEquals(codexSessionKey(base), codexSessionKey({ ...base }));
+  assert(codexSessionKey(base) !== codexSessionKey({ ...base, effort: "low" }));
+  assert(codexSessionKey(base) !== codexSessionKey({ ...base, model: "n" }));
+  assert(
+    codexSessionKey(base) !==
+      codexSessionKey({ ...base, env: { CODEX_HOME: "/b" } }),
+    "two isolated CODEX_HOMEs must not share one app-server child",
+  );
+});
+
+Deno.test("codexChatCompletion answers over the app-server transport", async () => {
+  const fake = fakeAppServer();
+  try {
+    const res = await codexChatCompletion(
+      [{ role: "user", content: "ping" }],
+      { model: "m", effort: "medium", spawn: () => fake.process },
+    );
+    assertEquals(res.content, "echo:[user]\nping");
+    const methods = fake.seen.map((m) => m.method);
+    assert(methods.includes("turn/start"), "the turn must run over turn/start");
+  } finally {
+    closeCodexSessions();
+  }
+});
+
+Deno.test("a prewarmed session serves the call that follows it", async () => {
+  let spawns = 0;
+  const fake = fakeAppServer();
+  const spawn = () => {
+    spawns += 1;
+    return fake.process;
+  };
+  try {
+    await prewarmCodexSession({ model: "m", effort: "medium", spawn });
+    assertEquals(
+      spawns,
+      1,
+      "prewarm must open the session ahead of the prompt",
+    );
+    await codexChatCompletion([{ role: "user", content: "ping" }], {
+      model: "m",
+      effort: "medium",
+      spawn,
+    });
+    assertEquals(spawns, 1, "the call must reuse the prewarmed session");
+  } finally {
+    closeCodexSessions();
+  }
+});
+
+Deno.test("a failed prewarm degrades to opening the session at call time", async () => {
+  let spawns = 0;
+  const spawn = () => {
+    spawns += 1;
+    return spawns === 1
+      ? fakeAppServer({ failHandshake: true }).process
+      : fakeAppServer().process;
+  };
+  try {
+    await prewarmCodexSession({ model: "m", effort: "medium", spawn });
+    const res = await codexChatCompletion([{ role: "user", content: "ping" }], {
+      model: "m",
+      effort: "medium",
+      spawn,
+    });
+    assertEquals(res.content, "echo:[user]\nping");
+    assertEquals(spawns, 2, "the broken session must not be reused");
+  } finally {
+    closeCodexSessions();
+  }
+});
+
+Deno.test("codexChatCompletion refuses an empty reply", async () => {
+  const fake = fakeAppServer({ status: "failed", errorMessage: "usage limit" });
+  let message = "";
+  try {
+    await codexChatCompletion([{ role: "user", content: "ping" }], {
+      model: "m",
+      effort: "medium",
+      spawn: () => fake.process,
+    });
+  } catch (e) {
+    message = (e as Error).message;
+  } finally {
+    closeCodexSessions();
+  }
+  assertStringIncludes(message, "usage limit");
 });

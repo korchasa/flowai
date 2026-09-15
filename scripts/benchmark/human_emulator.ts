@@ -329,7 +329,7 @@ export interface EmulatorConfig {
 }
 
 /**
- * Production emulator over `codex exec` (existing CLI auth, no API key). It ran
+ * Production emulator over the codex app-server (existing CLI auth, no API key). It ran
  * on `claude -p` until 2026-08-09, when the Claude subject arm was retired.
  *
  * Isolation is two-fold, both mandatory (verified empirically 2026-07-04):

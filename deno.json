@@ -23,6 +23,7 @@
     "test": "deno run -A scripts/task-test.ts",
     "dev": "deno run -A scripts/task-dev.ts",
     "acceptance-tests": "deno run -A scripts/task-acceptance-tests.ts",
+    "acp-bridges": "deno run -A scripts/task-acp-bridges.ts",
     "benchmark": "deno run -A scripts/benchmark.ts",
     "build-plugins-only": "deno run -A scripts/build-plugins.ts",
     "build-plugins": "deno run -A scripts/build-plugins.ts && deno run -A scripts/validate-plugins.ts",

@@ -27,27 +27,27 @@ const specs = Object.values(ACP_AGENTS) as AcpAgentSpec[];
 
 Deno.test("every npm-bridged ACP spec pins an exact version", () => {
   for (const spec of specs) {
-    if (spec.launch.command !== "npx") continue;
-    const pkg = spec.launch.args.find((a) => a.startsWith("@"));
-    assert(pkg, `${spec.ide}: npx launch names no package`);
+    if (spec.launch.kind !== "npm") continue;
     assertMatch(
-      pkg,
-      /@\d+\.\d+\.\d+$/,
-      `${spec.ide}: bridge "${pkg}" must pin an exact version so the ` +
-        `acceptance-test cache key invalidates on upgrade`,
+      spec.launch.version,
+      /^\d+\.\d+\.\d+$/,
+      `${spec.ide}: bridge "${spec.launch.package}" must pin an exact ` +
+        `version so the acceptance-test cache key invalidates on upgrade`,
     );
   }
 });
 
 Deno.test("codex reaches ACP through the bridge, never a codex subcommand", () => {
   const codex = ACP_AGENTS.codex;
-  assert(
-    codex.launch.command !== "codex",
+  assertEquals(
+    codex.launch.kind,
+    "npm",
     "codex-cli has no `acp` subcommand (verified on 0.144.6): launching the " +
       "codex binary directly starts the interactive TUI with the args as a prompt",
   );
   assert(
-    codex.launch.args.some((a) => a.includes("codex-acp")),
+    codex.launch.kind === "npm" &&
+      codex.launch.package === "@agentclientprotocol/codex-acp",
     "codex must launch the @agentclientprotocol/codex-acp bridge",
   );
 });
