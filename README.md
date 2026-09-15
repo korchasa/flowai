@@ -286,7 +286,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 **Skills:**
 - `deep-research` — multi-source web research with sub-agents
 - `draw-mermaid-diagrams` — Mermaid diagrams
-- `diagnose-benchmark-failure` — diagnose a failed flowai benchmark from its run artifacts
+- `diagnose-benchmark-failure` — diagnose a failed judged scenario from its run artifacts
 - `write-prd` — Product Requirements Documents
 - `write-dep` — Development Enhancement Proposals
 - `write-in-informational-style` — informational writing style

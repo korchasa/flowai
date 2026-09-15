@@ -1,0 +1,6 @@
+Verdict: FAILED (2 failed checks)
+  [pass] work_split_identified — three independent items named.
+  [fail] parallel_delegation — the agent said no subagent tool exists here and
+         did all three items itself.
+  [fail] worker_results_merged — nothing to merge, nothing was delegated.
+  [pass] no_scope_creep — only the three named areas were touched.
