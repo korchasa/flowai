@@ -67,12 +67,6 @@ export function addTokens(
   };
 }
 
-/** True when nothing was spent — used to keep empty arms out of the report. */
-export function isEmptyTokens(t: TokenBreakdown): boolean {
-  return t.total === 0 && t.freshInput === 0 && t.cachedInput === 0 &&
-    t.output === 0;
-}
-
 /**
  * `TokenUsageBreakdown` of the codex app-server protocol (v2), as
  * `thread/tokenUsage/updated` carries it. It has no cache-write counterpart.
