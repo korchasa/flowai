@@ -105,6 +105,15 @@ export class AcpAgent {
     return this.#sessionId;
   }
 
+  /**
+   * The environment the agent was launched with — the only handle on where it
+   * wrote its own files. Token accounting reads `CODEX_HOME` from it
+   * (FR-ACCEPT.TOKEN-USAGE).
+   */
+  getEnv(): Record<string, string> {
+    return this.opts.env ?? {};
+  }
+
   getMessages(): Message[] {
     return this.#messages;
   }

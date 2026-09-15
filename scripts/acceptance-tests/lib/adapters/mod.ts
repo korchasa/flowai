@@ -3,6 +3,7 @@ export type { AgentAdapter, ParsedAgentOutput } from "./types.ts";
 import type { AgentAdapter } from "./types.ts";
 import { prepareAcpClaudeHome, prepareAcpCodexHome } from "../acp/auth.ts";
 import { ACP_AGENTS, ACP_LIB_VERSION, type AcpIde } from "../acp/registry.ts";
+import { collectCodexUsage } from "../acp/codex_usage.ts";
 
 export const SUPPORTED_IDES = Object.keys(ACP_AGENTS) as AcpIde[];
 export type SupportedIde = AcpIde;
@@ -32,8 +33,15 @@ export function createAdapter(ide: string): AgentAdapter {
       : spec.ide === "codex"
       ? (sandboxPath: string) => prepareAcpCodexHome(sandboxPath)
       : undefined,
-    // ACP token usage is not yet surfaced by the wrapper — best-effort null.
-    calculateUsage: () => Promise.resolve(null),
+    // The ACP transport surfaces no usage of its own, so the counts are read
+    // back from what the agent wrote (FR-ACCEPT.TOKEN-USAGE). Codex keeps them
+    // in its rollouts; the other IDEs have no equivalent file yet.
+    calculateUsage: spec.ide === "codex"
+      ? (env: Record<string, string>) =>
+        env.CODEX_HOME
+          ? collectCodexUsage(env.CODEX_HOME)
+          : Promise.resolve(null)
+      : () => Promise.resolve(null),
     // The pinned ACP lib version stands in for the per-IDE CLI version.
     cliVersion: () => Promise.resolve(ACP_LIB_VERSION),
   };

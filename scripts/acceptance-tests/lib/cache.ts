@@ -70,6 +70,7 @@
 import { dirname, join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
+import type { RunTokenUsage } from "./token_usage.ts";
 import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
 /** Cache file payload schema. Bump when the on-disk shape changes. */
@@ -100,6 +101,12 @@ export interface CachedResult {
   warningsCount: number;
   durationMs: number;
   tokensUsed: number;
+  /**
+   * The same spend split by arm and token type (FR-ACCEPT.TOKEN-USAGE).
+   * Optional on purpose: entries written before the split carry none, and an
+   * absent breakdown must stay readable rather than force a schema bump.
+   */
+  tokensDetails?: RunTokenUsage;
   totalCost: number;
   toolCallsCount: number;
   model: string;
@@ -299,6 +306,7 @@ export function trimResultForCache(r: BenchmarkResult): CachedResult {
     warningsCount: r.warningsCount,
     durationMs: r.durationMs,
     tokensUsed: r.tokensUsed,
+    ...(r.tokensDetails ? { tokensDetails: r.tokensDetails } : {}),
     totalCost: r.totalCost,
     toolCallsCount: r.toolCallsCount,
     model: r.model,
@@ -319,6 +327,9 @@ export function resultFromCache(
     warningsCount: entry.result.warningsCount,
     durationMs: entry.result.durationMs,
     tokensUsed: entry.result.tokensUsed,
+    ...(entry.result.tokensDetails
+      ? { tokensDetails: entry.result.tokensDetails }
+      : {}),
     totalCost: entry.result.totalCost,
     toolCallsCount: entry.result.toolCallsCount,
     model: entry.result.model,

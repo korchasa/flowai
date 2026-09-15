@@ -1,6 +1,7 @@
 import { codexChatCompletion, type ModelConfig } from "./llm.ts";
 import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
 import { writeRunFile } from "./utils.ts";
+import { EMPTY_TOKENS, type TokenBreakdown } from "./token_usage.ts";
 
 export interface JudgeRequest {
   messages: LLMMessage[];
@@ -119,6 +120,12 @@ export async function evaluateChecklist(
   results: Record<string, { pass: boolean; reason: string }>;
   messages: LLMMessage[];
   response: string;
+  /**
+   * What the verdict cost (FR-ACCEPT.TOKEN-USAGE). A turn that threw reports
+   * zero: the transport surfaces no counts on a failure, and a guessed number
+   * would be indistinguishable from a measured one.
+   */
+  usage: TokenBreakdown;
 }> {
   const { messages, jsonSchema, evidenceContent } = buildJudgeRequest(
     userQuery,
@@ -142,6 +149,7 @@ export async function evaluateChecklist(
         results: JSON.parse(response.content),
         messages,
         response: response.content,
+        usage: response.usage ?? EMPTY_TOKENS,
       };
     } catch (error) {
       if (attempt === 0) {
@@ -162,6 +170,7 @@ export async function evaluateChecklist(
         results: fallback,
         messages,
         response: "ERROR: Judge failed after 2 attempts",
+        usage: EMPTY_TOKENS,
       };
     }
   }

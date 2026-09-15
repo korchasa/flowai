@@ -10,6 +10,7 @@ import { buildJudgeConfig, runScenario } from "./runner.ts";
 import type { BenchmarkScenario } from "./types.ts";
 import { createTempDir } from "./utils.ts";
 import type { evaluateChecklist } from "./judge.ts";
+import { EMPTY_TOKENS } from "./token_usage.ts";
 import { codexSessionKey, getIdeConfig, loadConfig } from "./llm.ts";
 import { createAdapter } from "./adapters/mod.ts";
 
@@ -58,6 +59,7 @@ Deno.test("Runner - Basic Scenario Execution", async () => {
       },
       messages: [],
       response: "Judge response",
+      usage: EMPTY_TOKENS,
     });
   };
 
@@ -111,6 +113,7 @@ Deno.test("Runner - Fixture Copying", async () => {
       results: {},
       messages: [],
       response: "ok",
+      usage: EMPTY_TOKENS,
     });
   };
 
@@ -185,6 +188,7 @@ Deno.test("Runner - Score counts failed items correctly", async () => {
       },
       messages: [],
       response: "ok",
+      usage: EMPTY_TOKENS,
     });
   };
 
@@ -251,6 +255,7 @@ Deno.test("Runner - Evidence includes expectedOutcome and git diff", async () =>
       results: { check1: { pass: true, reason: "ok" } },
       messages: [],
       response: "ok",
+      usage: EMPTY_TOKENS,
     });
   };
 

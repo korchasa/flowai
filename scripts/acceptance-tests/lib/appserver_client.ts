@@ -16,6 +16,10 @@
  *   initialize → initialized (notification) → thread/start → turn/start
  *     … item/completed streams each finished item, turn/completed ends the turn.
  *
+ * `thread/tokenUsage/updated` reports what the thread has spent so far
+ * (FR-ACCEPT.TOKEN-USAGE). It is the only route to the judge's token counts:
+ * its threads are `ephemeral`, so it writes no rollout to read them back from.
+ *
  * The answer comes from `item/completed` where `item.type === "agentMessage"`.
  * `turn/completed` reports only the status: its `items` array arrives EMPTY
  * with `itemsView: "notLoaded"` (verified against codex-cli 0.144.6), so a
@@ -26,6 +30,11 @@
  * all times, so the ~1.5-2 s `thread/start` is paid in the background rather
  * than in front of the prompt.
  */
+import {
+  EMPTY_TOKENS,
+  type TokenBreakdown,
+  tokensFromAppServer,
+} from "./token_usage.ts";
 
 /** The child process seam — real `codex app-server`, or a fake in tests. */
 export interface AppServerProcess {
@@ -54,6 +63,12 @@ export interface AppServerConfig {
 export interface ThreadItem {
   readonly type: string;
   readonly text?: string;
+}
+
+/** One turn's answer together with what it cost (FR-ACCEPT.TOKEN-USAGE). */
+export interface TurnResult {
+  readonly text: string;
+  readonly usage: TokenBreakdown;
 }
 
 /** The `turn` payload of a `turn/completed` notification. */
@@ -166,7 +181,11 @@ export class AppServerSession {
   /** Live turns, keyed by thread id — one child can run several at once. */
   readonly #turns = new Map<
     string,
-    { items: ThreadItem[]; resolve: (turn: CompletedTurn) => void }
+    {
+      items: ThreadItem[];
+      usage: TokenBreakdown;
+      resolve: (turn: CompletedTurn) => void;
+    }
   >();
   readonly #ready: Promise<void>;
   #spareThread: Promise<string>;
@@ -190,15 +209,17 @@ export class AppServerSession {
   }
 
   /**
-   * Run one turn on a thread of its own and return the final agent message.
-   * Concurrent calls are fine: each gets its own thread, and the protocol
-   * frames carry the thread id that routes them back.
+   * Run one turn on a thread of its own and return the final agent message
+   * together with what the turn cost. Concurrent calls are fine: each gets its
+   * own thread, and the protocol frames carry the thread id that routes them
+   * back — including the token counts, which is why the usage of a turn can be
+   * attributed to its caller rather than drained from a shared counter.
    */
   run(
     prompt: string,
     outputSchema?: Record<string, unknown>,
     signal?: AbortSignal,
-  ): Promise<string> {
+  ): Promise<TurnResult> {
     return this.#runTurn(prompt, outputSchema, signal);
   }
 
@@ -215,7 +236,7 @@ export class AppServerSession {
     prompt: string,
     outputSchema: Record<string, unknown> | undefined,
     signal: AbortSignal | undefined,
-  ): Promise<string> {
+  ): Promise<TurnResult> {
     // Claim the spare thread and open the next one SYNCHRONOUSLY, before the
     // first await: two concurrent callers that both read `#spareThread` after
     // awaiting would run their turns on the same thread and cross their
@@ -231,6 +252,7 @@ export class AppServerSession {
 
     const state = {
       items: [] as ThreadItem[],
+      usage: EMPTY_TOKENS,
       resolve: (_: CompletedTurn) => {},
     };
     const completed = new Promise<CompletedTurn>((resolve, reject) => {
@@ -257,7 +279,10 @@ export class AppServerSession {
         completed,
         request.then(() => completed),
       ]);
-      return finalAgentMessage(turn, state.items);
+      return {
+        text: finalAgentMessage(turn, state.items),
+        usage: state.usage,
+      };
     } finally {
       this.#turns.delete(threadId);
     }
@@ -340,6 +365,23 @@ export class AppServerSession {
         ? this.#turns.get(params.threadId)
         : undefined;
       if (turn && params?.item) turn.items.push(params.item);
+      return;
+    }
+    // What the turn cost (FR-ACCEPT.TOKEN-USAGE). `tokenUsage.total` is
+    // cumulative over the THREAD, and a thread here runs exactly one turn, so
+    // the latest frame is that turn's bill. Frames arrive before
+    // `turn/completed`, which is what makes the value readable by the caller.
+    if (message.method === "thread/tokenUsage/updated") {
+      const params = message.params as
+        | { threadId?: string; tokenUsage?: { total?: unknown } }
+        | undefined;
+      const turn = params?.threadId
+        ? this.#turns.get(params.threadId)
+        : undefined;
+      const total = params?.tokenUsage?.total;
+      if (turn && total && typeof total === "object") {
+        turn.usage = tokensFromAppServer(total as Record<string, never>);
+      }
       return;
     }
     if (message.method === "turn/completed") {

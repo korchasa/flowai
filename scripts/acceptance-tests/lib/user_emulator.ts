@@ -4,6 +4,7 @@ import {
   type ModelConfig,
 } from "./llm.ts";
 import type { LLMMessage } from "./types.ts";
+import { addTokens, EMPTY_TOKENS, type TokenBreakdown } from "./token_usage.ts";
 
 export interface UserEmulatorOptions {
   persona: string;
@@ -16,11 +17,21 @@ export class UserEmulator {
   private persona: string;
   private config: ModelConfig;
   private llm: ChatCompletionFn;
+  #usage: TokenBreakdown = EMPTY_TOKENS;
 
   constructor(options: UserEmulatorOptions) {
     this.persona = options.persona;
     this.config = options.config;
     this.llm = options.llmClient || codexChatCompletion;
+  }
+
+  /**
+   * What every answer so far has cost (FR-ACCEPT.TOKEN-USAGE). The emulator
+   * speaks once per agent question, so an interactive scenario pays for it
+   * several times and the runner reports the sum next to the judge.
+   */
+  getUsage(): TokenBreakdown {
+    return this.#usage;
   }
 
   /**
@@ -54,6 +65,7 @@ If NO — reply with exactly: <NO_RESPONSE>`,
     ];
 
     const response = await this.llm(llmMessages, this.config);
+    if (response.usage) this.#usage = addTokens(this.#usage, response.usage);
     if (!response.content) {
       return null;
     }

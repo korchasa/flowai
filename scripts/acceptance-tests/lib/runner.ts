@@ -25,6 +25,13 @@ import {
   DETERMINISTIC_SKILL_CHECK_IDS,
 } from "./skill_invocation.ts";
 import { UserEmulator } from "./user_emulator.ts";
+import {
+  addTokens,
+  EMPTY_TOKENS,
+  formatTokens,
+  summarizeRunUsage,
+  type TokenBreakdown,
+} from "./token_usage.ts";
 import { SPAWN_WAIT_TIMEOUT_MS, waitForHealthy } from "./system_health.ts";
 import type { AgentAdapter } from "./adapters/types.ts";
 import { renderAgentsMd } from "./template.ts";
@@ -416,6 +423,12 @@ interface AgentRunOutcome {
   agent: AcpAgent;
   /** Judge/emulator config with the run's isolated env attached (codex). */
   judgeConfig: ModelConfig;
+  /**
+   * The simulated user, when the scenario is interactive. It answers over the
+   * same app-server as the judge, so its tokens join the judge arm
+   * (FR-ACCEPT.TOKEN-USAGE).
+   */
+  userEmulator: UserEmulator | null;
 }
 
 /**
@@ -710,30 +723,22 @@ async function runAgentWithTimeout(
         `prompt rejected, etc.). Inspect sandbox and agent logs.`,
     );
   }
-  return { ...agentResult, durationMs, agent, judgeConfig };
+  return { ...agentResult, durationMs, agent, judgeConfig, userEmulator };
 }
 
-/** Pull session usage (tokens) from the adapter for the given agent. */
-async function collectUsage(
+/**
+ * What the agent under test spent (FR-ACCEPT.TOKEN-USAGE).
+ *
+ * The counts come from the files the agent wrote under its own launch
+ * environment, so the adapter is handed that environment rather than a session
+ * id: one codex run leaves one rollout per session, and a scenario that spawns
+ * subagents leaves several. `null` means the arm was not measured.
+ */
+function collectAgentUsage(
   agent: AcpAgent,
   adapter: AgentAdapter,
-): Promise<
-  { tokensUsed: number; tokensDetails?: BenchmarkResult["tokensDetails"] }
-> {
-  const sessionId = agent.getSessionId();
-  if (!sessionId) return { tokensUsed: 0 };
-  const usage = await adapter.calculateUsage(sessionId);
-  if (!usage) return { tokensUsed: 0 };
-  const tokensDetails: BenchmarkResult["tokensDetails"] = {
-    input: usage.tokens.input,
-    output: usage.tokens.output,
-    cacheRead: usage.tokens.cacheRead,
-    cacheWrite: usage.tokens.cacheWrite,
-  };
-  console.log(
-    `  Usage: ${usage.tokens.total} tokens (Input: ${tokensDetails.input}, Output: ${tokensDetails.output}, Cache Read: ${tokensDetails.cacheRead}, Cache Write: ${tokensDetails.cacheWrite})`,
-  );
-  return { tokensUsed: usage.tokens.total, tokensDetails };
+): Promise<TokenBreakdown | null> {
+  return adapter.calculateUsage(agent.getEnv());
 }
 
 /** Read all .md files under documents/tasks/, falling back to legacy task.md. */
@@ -858,6 +863,8 @@ interface JudgeOutcome {
   errorsCount: number;
   warningsCount: number;
   checklistResults: Record<string, { pass: boolean; reason: string }>;
+  /** What the verdict itself cost (FR-ACCEPT.TOKEN-USAGE). */
+  usage: TokenBreakdown;
 }
 
 /**
@@ -901,7 +908,12 @@ async function judgeAndScore(
       options.judgeConfig,
       options.workDir,
     )
-    : { results: {}, messages: [], response: "(no judge-graded items)" };
+    : {
+      results: {},
+      messages: [],
+      response: "(no judge-graded items)",
+      usage: EMPTY_TOKENS,
+    };
   const checklistResults = { ...judgeOutput.results };
 
   // Deterministic skill-invocation verdicts from the trace.
@@ -963,7 +975,13 @@ async function judgeAndScore(
     checklistToJudge,
     checklistResults,
   );
-  return { score, errorsCount, warningsCount, checklistResults };
+  return {
+    score,
+    errorsCount,
+    warningsCount,
+    checklistResults,
+    usage: judgeOutput.usage,
+  };
 }
 
 /**
@@ -995,14 +1013,14 @@ export async function runScenario(
     await prepareSandboxFiles(sandboxPath, scenario, adapter);
     const initHash = await initSandboxGit(sandboxPath, scenario, adapter);
 
-    const { code, logs, durationMs, agent, judgeConfig } =
+    const { code, logs, durationMs, agent, judgeConfig, userEmulator } =
       await runAgentWithTimeout(
         scenario,
         sandboxPath,
         options,
       );
 
-    const { tokensUsed, tokensDetails } = await collectUsage(agent, adapter);
+    const agentUsage = await collectAgentUsage(agent, adapter);
     await tracer.logExecutionSection();
     await tracer.logLLMInteraction(
       traceId,
@@ -1020,7 +1038,7 @@ export async function runScenario(
       );
     await tracer.logEvidence(traceId, statusStr, logStr);
 
-    const { score, errorsCount, warningsCount, checklistResults } =
+    const { score, errorsCount, warningsCount, checklistResults, usage } =
       await judgeAndScore(
         scenario,
         truncatedLogs,
@@ -1032,6 +1050,28 @@ export async function runScenario(
         traceId,
         agent.getToolCalls(),
       );
+
+    // The judge arm carries the user emulator too: both speak to codex over
+    // the app-server, and both are the harness talking, not the product.
+    const judgeUsage = addTokens(
+      usage,
+      userEmulator?.getUsage() ?? EMPTY_TOKENS,
+    );
+    const { tokensUsed, tokensDetails } = summarizeRunUsage(
+      agentUsage,
+      judgeUsage,
+    );
+    console.log(
+      `  Tokens (agent): ${
+        agentUsage ? formatTokens(agentUsage) : "not measured"
+      }`,
+    );
+    console.log(`  Tokens (judge): ${formatTokens(judgeUsage)}`);
+    console.log(
+      `  Tokens (total): ${
+        tokensDetails ? formatTokens(tokensDetails.total) : "not measured"
+      }`,
+    );
 
     const result: BenchmarkResult & { evidence: string } = {
       scenarioId: scenario.id,

@@ -1,4 +1,4 @@
-import type { SessionUsage } from "../usage.ts";
+import type { TokenBreakdown } from "../token_usage.ts";
 
 /**
  * Data-only IDE profile consumed by the runner under the ACP transport
@@ -23,8 +23,16 @@ export interface AgentAdapter {
    */
   prepareWorkspace?(sandboxPath: string): Promise<Record<string, string>>;
 
-  /** Token usage for a session (best-effort; may return null). */
-  calculateUsage(sessionId: string): Promise<SessionUsage | null>;
+  /**
+   * What the agent spent, split by token type (FR-ACCEPT.TOKEN-USAGE).
+   *
+   * Takes the launch environment rather than a session id, because the counts
+   * live in the files the agent wrote under its own isolated home: for codex
+   * that is every rollout under `CODEX_HOME/sessions/`, subagents included.
+   *
+   * `null` means "not measured" and is NOT the same claim as a measured zero.
+   */
+  calculateUsage(env: Record<string, string>): Promise<TokenBreakdown | null>;
 
   /**
    * Version string folded into the benchmark cache-key so a transport/agent

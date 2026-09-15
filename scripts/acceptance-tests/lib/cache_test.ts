@@ -23,6 +23,7 @@ import {
   computeCacheKeyInputs,
   MAX_REASON_LEN,
   readCache,
+  resultFromCache,
   trimResultForCache,
   writeCache,
 } from "./cache.ts";
@@ -726,4 +727,83 @@ Deno.test("adding a *_test.ts under lib/ does NOT change the cache key", async (
     } catch (_) { /* already gone */ }
     await Deno.remove(tmp, { recursive: true });
   }
+});
+
+Deno.test("cache: the token split survives a round trip through the cache", () => {
+  const tokensDetails = {
+    agent: {
+      freshInput: 100,
+      cachedInput: 900,
+      cacheWrite: 7,
+      output: 20,
+      reasoning: 10,
+      total: 1037,
+    },
+    judge: {
+      freshInput: 5,
+      cachedInput: 1,
+      cacheWrite: 0,
+      output: 2,
+      reasoning: 1,
+      total: 9,
+    },
+    total: {
+      freshInput: 105,
+      cachedInput: 901,
+      cacheWrite: 7,
+      output: 22,
+      reasoning: 11,
+      total: 1046,
+    },
+  };
+  const r = {
+    scenarioId: "s",
+    success: true,
+    score: 100,
+    errorsCount: 0,
+    warningsCount: 0,
+    durationMs: 0,
+    tokensUsed: 1046,
+    tokensDetails,
+    totalCost: 0,
+    toolCallsCount: 0,
+    model: "m",
+    checklistResults: {},
+    logs: "logs",
+  } as BenchmarkResult;
+  const trimmed = trimResultForCache(r);
+  assertEquals(trimmed.tokensDetails, tokensDetails);
+
+  const entry: CacheEntry = {
+    schema: CACHE_SCHEMA_VERSION,
+    key: "k",
+    scenarioId: "s",
+    ide: "codex",
+    agentModel: "m",
+    recordedAt: "2026-09-15T00:00:00.000Z",
+    result: trimmed,
+  };
+  const restored = resultFromCache(
+    { id: "s" } as unknown as BenchmarkScenario,
+    entry,
+  );
+  assertEquals(restored.tokensDetails, tokensDetails);
+});
+
+Deno.test("cache: an entry written before the split carries no breakdown", () => {
+  const r = {
+    scenarioId: "s",
+    success: true,
+    score: 100,
+    errorsCount: 0,
+    warningsCount: 0,
+    durationMs: 0,
+    tokensUsed: 0,
+    totalCost: 0,
+    toolCallsCount: 0,
+    model: "m",
+    checklistResults: {},
+    logs: "logs",
+  } as BenchmarkResult;
+  assertEquals(trimResultForCache(r).tokensDetails, undefined);
 });

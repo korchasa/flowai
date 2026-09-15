@@ -41,6 +41,7 @@ import {
   printDetailedErrors,
   printPassRates,
   printSummaryTable,
+  printTokenCost,
 } from "./acceptance-tests/lib/acceptance_report.ts";
 
 // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
@@ -104,6 +105,7 @@ async function main() {
 
   printDetailedErrors(ctx.results, allScenarios);
   printSummaryTable(ctx.results, ctx.totals.totalCostAll);
+  printTokenCost(ctx.results);
   if (setup.runs > 1) {
     printPassRates(ctx.results, scenariosToRun, setup.runs);
   }

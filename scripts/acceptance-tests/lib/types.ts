@@ -1,3 +1,5 @@
+import type { RunTokenUsage, TokenBreakdown } from "./token_usage.ts";
+
 export interface BenchmarkChecklistItem {
   id: string;
   description: string;
@@ -270,13 +272,14 @@ export interface BenchmarkResult {
   errorsCount: number; // Number of critical failures
   warningsCount: number; // Number of non-critical failures
   durationMs: number;
+  /** Total tokens over every arm — the scalar the trace and the cache carry. */
   tokensUsed: number;
-  tokensDetails?: {
-    input: number;
-    output: number;
-    cacheRead: number;
-    cacheWrite: number;
-  };
+  /**
+   * The same spend split by arm and by token type (FR-ACCEPT.TOKEN-USAGE). An
+   * arm is absent when it could not be measured, which is NOT the same claim as
+   * a measured zero.
+   */
+  tokensDetails?: RunTokenUsage;
   totalCost: number;
   toolCallsCount: number;
   model: string;
@@ -292,10 +295,9 @@ export interface LLMMessage {
 
 export interface LLMResponse {
   content: string;
-  usage?: {
-    prompt_tokens: number;
-    completion_tokens: number;
-    total_tokens: number;
-    cost?: number;
-  };
+  /**
+   * What the call cost, split by token type (FR-ACCEPT.TOKEN-USAGE). Absent
+   * from a stub client; present on every real codex turn.
+   */
+  usage?: TokenBreakdown;
 }

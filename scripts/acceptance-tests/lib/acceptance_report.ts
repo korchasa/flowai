@@ -6,6 +6,44 @@
 import { join } from "@std/path";
 import { ansi } from "../../utils.ts";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
+import {
+  addTokens,
+  EMPTY_TOKENS,
+  formatTokens,
+  type TokenBreakdown,
+} from "./token_usage.ts";
+
+/**
+ * One line per arm, each naming all five token cost types
+ * (FR-ACCEPT.TOKEN-USAGE). Empty when no run in the sweep measured anything —
+ * the sweep then says nothing rather than reporting a zero it did not observe.
+ */
+export function tokenCostLines(results: BenchmarkResult[]): string[] {
+  let agent: TokenBreakdown | null = null;
+  let judge: TokenBreakdown | null = null;
+  let total: TokenBreakdown | null = null;
+  for (const r of results) {
+    const d = r.tokensDetails;
+    if (!d) continue;
+    if (d.agent) agent = addTokens(agent ?? EMPTY_TOKENS, d.agent);
+    if (d.judge) judge = addTokens(judge ?? EMPTY_TOKENS, d.judge);
+    total = addTokens(total ?? EMPTY_TOKENS, d.total);
+  }
+  if (!total) return [];
+  const lines: string[] = [];
+  if (agent) lines.push(`agent  ${formatTokens(agent)}`);
+  if (judge) lines.push(`judge  ${formatTokens(judge)}`);
+  lines.push(`total  ${formatTokens(total)}`);
+  return lines;
+}
+
+/** Print the per-arm token cost block, when the sweep measured anything. */
+export function printTokenCost(results: BenchmarkResult[]): void {
+  const lines = tokenCostLines(results);
+  if (lines.length === 0) return;
+  console.log("\n--- TOKENS BY COST TYPE ---");
+  for (const line of lines) console.log(line);
+}
 
 /** Print the trailing detailed errors & warnings block. */
 export function printDetailedErrors(

@@ -126,7 +126,7 @@ Deno.test("AppServerSession returns the turn's final agent message", async () =>
     spawn: () => fake.process,
   });
   try {
-    assertEquals(await session.run("ping"), "echo:ping");
+    assertEquals((await session.run("ping")).text, "echo:ping");
   } finally {
     session.close();
   }
@@ -191,8 +191,54 @@ Deno.test("AppServerSession keeps two overlapping turns apart", async () => {
       session.run("alpha"),
       session.run("beta"),
     ]);
-    assertEquals(a, "echo:alpha");
-    assertEquals(b, "echo:beta");
+    assertEquals(a.text, "echo:alpha");
+    assertEquals(b.text, "echo:beta");
+  } finally {
+    session.close();
+  }
+});
+
+Deno.test("AppServerSession reports what the turn cost, cache and reasoning split out", async () => {
+  // Real frame: `inputTokens` already includes `cachedInputTokens`, and
+  // `outputTokens` already includes `reasoningOutputTokens`.
+  const fake = fakeAppServer({
+    tokenUsage: {
+      inputTokens: 1000,
+      cachedInputTokens: 900,
+      outputTokens: 50,
+      reasoningOutputTokens: 20,
+      totalTokens: 1050,
+    },
+  });
+  const session = new AppServerSession({
+    model: "m",
+    effort: "medium",
+    cwd: "/tmp/x",
+    spawn: () => fake.process,
+  });
+  try {
+    const { usage } = await session.run("ping");
+    assertEquals(usage.freshInput, 100);
+    assertEquals(usage.cachedInput, 900);
+    assertEquals(usage.output, 30);
+    assertEquals(usage.reasoning, 20);
+    assertEquals(usage.total, 1050);
+  } finally {
+    session.close();
+  }
+});
+
+Deno.test("AppServerSession reports zeros when the server sends no usage frame", async () => {
+  const fake = fakeAppServer();
+  const session = new AppServerSession({
+    model: "m",
+    effort: "medium",
+    cwd: "/tmp/x",
+    spawn: () => fake.process,
+  });
+  try {
+    const { usage } = await session.run("ping");
+    assertEquals(usage.total, 0);
   } finally {
     session.close();
   }

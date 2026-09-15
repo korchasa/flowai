@@ -17,6 +17,18 @@ export interface FakeAppServerOptions {
   failHandshake?: boolean;
   /** Hold the answer this long, so overlapping turns are really in flight. */
   turnDelayMs?: number;
+  /**
+   * Report this `TokenUsageBreakdown` as the thread's cumulative total before
+   * the turn ends (FR-ACCEPT.TOKEN-USAGE). Omit to send no usage frame at all,
+   * which is how an older app-server behaves.
+   */
+  tokenUsage?: {
+    inputTokens: number;
+    cachedInputTokens: number;
+    outputTokens: number;
+    reasoningOutputTokens: number;
+    totalTokens: number;
+  };
 }
 
 export interface FakeAppServer {
@@ -56,6 +68,23 @@ export function fakeAppServer(opts: FakeAppServerOptions = {}): FakeAppServer {
           item: {
             type: "agentMessage",
             text: `echo:${params.input[0].text}`,
+          },
+        },
+      });
+    }
+    if (opts.tokenUsage) {
+      // Real codex sends this before the turn ends, and reports the thread's
+      // cumulative total next to the last turn's.
+      await send({
+        jsonrpc: "2.0",
+        method: "thread/tokenUsage/updated",
+        params: {
+          threadId: params.threadId,
+          turnId: `turn-${params.threadId}`,
+          tokenUsage: {
+            last: opts.tokenUsage,
+            total: opts.tokenUsage,
+            modelContextWindow: 258400,
           },
         },
       });

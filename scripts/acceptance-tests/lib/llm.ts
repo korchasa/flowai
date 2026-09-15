@@ -224,12 +224,12 @@ export async function codexChatCompletion(
   signal?: AbortSignal,
 ): Promise<LLMResponse> {
   const { session } = await acquire(config);
-  const content = await session.run(
+  const { text, usage } = await session.run(
     codexPrompt(messages),
     config.jsonSchema,
     signal,
   );
-  return { content, usage: undefined };
+  return { content: text, usage };
 }
 
 /** Shape of an injectable chat-completion client (tests swap in a stub). */

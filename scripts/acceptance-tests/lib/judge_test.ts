@@ -1,5 +1,6 @@
 import { assert, assertEquals } from "@std/assert";
-import { buildJudgeRequest } from "./judge.ts";
+import { buildJudgeRequest, evaluateChecklist } from "./judge.ts";
+import type { codexChatCompletion } from "./llm.ts";
 
 const checklist = [
   { id: "a1", description: "did X", critical: true },
@@ -49,4 +50,58 @@ Deno.test("buildJudgeRequest: reasons are demanded in English so verdicts read t
   const req = buildJudgeRequest("q", "logs", "diffs", checklist);
   const system = req.messages.find((m) => m.role === "system")!;
   assert(/in English/i.test(system.content));
+});
+
+Deno.test("evaluateChecklist: the judge reports what its own turn cost", async () => {
+  const runDir = await Deno.makeTempDir({ prefix: "judge-usage-" });
+  try {
+    const client = () =>
+      Promise.resolve({
+        content: JSON.stringify({
+          a1: { pass: true, reason: "ok" },
+          b2: { pass: true, reason: "ok" },
+        }),
+        usage: {
+          freshInput: 11,
+          cachedInput: 22,
+          cacheWrite: 0,
+          output: 3,
+          reasoning: 1,
+          total: 37,
+        },
+      });
+    const out = await evaluateChecklist(
+      "q",
+      "logs",
+      "diffs",
+      checklist,
+      { model: "m", temperature: 0 },
+      runDir,
+      client as unknown as typeof codexChatCompletion,
+    );
+    assertEquals(out.usage.total, 37);
+    assertEquals(out.usage.cachedInput, 22);
+  } finally {
+    await Deno.remove(runDir, { recursive: true });
+  }
+});
+
+Deno.test("evaluateChecklist: a judge that never answered reports zero, not a guess", async () => {
+  const runDir = await Deno.makeTempDir({ prefix: "judge-usage-" });
+  try {
+    const client = () => Promise.reject(new Error("boom"));
+    const out = await evaluateChecklist(
+      "q",
+      "logs",
+      "diffs",
+      checklist,
+      { model: "m", temperature: 0 },
+      runDir,
+      client as unknown as typeof codexChatCompletion,
+    );
+    assertEquals(out.usage.total, 0);
+    assertEquals(out.results.a1.pass, false);
+  } finally {
+    await Deno.remove(runDir, { recursive: true });
+  }
 });
