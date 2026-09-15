@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.8](https://github.com/korchasa/flowai/compare/v0.14.7...v0.14.8) (2026-09-15)
+
+
+### Features
+
+* **acceptance-tests:** report token usage split by cost type ([7317ec2](https://github.com/korchasa/flowai/commit/7317ec23ce5aaf4082ef87ba10ed76e7df9d7a51))
+* **skills:** make every question answerable on its own ([37c7a94](https://github.com/korchasa/flowai/commit/37c7a94cf6699d5aef1c19e31dc68b62d47da8f3))
+
+
+### Bug Fixes
+
+* **skills:** make diagnose-benchmark-failure harness-agnostic ([f3da680](https://github.com/korchasa/flowai/commit/f3da680007539b0c94cd7e810a2b39096048888d))
+
+
+### Performance Improvements
+
+* **acceptance-tests:** install ACP bridges once, judge over app-server ([50b06c9](https://github.com/korchasa/flowai/commit/50b06c9ee654a65487f53d56827bfb20286ea9d3))
+
+
+### Documentation
+
+* **benchmarks:** flowai frozen-15 cell on f8e33db899f4, 15/45 vs baseline 5/45 ([f7616fe](https://github.com/korchasa/flowai/commit/f7616fe3f81ad423c2fd78e0a19fcde5f46cba14))
+
 ### [0.14.7](https://github.com/korchasa/flowai/compare/v0.14.6...v0.14.7) (2026-09-12)
 
 
