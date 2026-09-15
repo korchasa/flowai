@@ -30,6 +30,12 @@ export const MaintenanceBasicBench = new class extends AcceptanceTestScenario {
       critical: true,
     },
     {
+      id: "proceed_question_self_contained",
+      description:
+        "Is the 'how to proceed' question answerable WITHOUT scrolling back to the findings list above it? It must restate, inside the question itself, how many findings were found (a total, and ideally the per-severity or per-category breakdown) alongside the reply options. FAIL if the question only says 'how would you like to proceed?' / 'which findings should I fix?' and leaves the reader to count the list above.",
+      critical: true,
+    },
+    {
       id: "todo_found",
       description: "Did the findings identify the TODO in src/main.ts?",
       critical: true,

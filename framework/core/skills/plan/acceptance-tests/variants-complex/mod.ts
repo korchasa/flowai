@@ -45,6 +45,18 @@ export const PlanVariantsComplexBench = new class
       critical: true,
     },
     {
+      id: "variants_are_options_of_one_question",
+      description:
+        "Were the variants presented AS THE LABELLED OPTIONS OF ONE NUMBERED QUESTION (e.g. a numbered question whose options are tagged A. / B. / C. or 1) / 2) / 3)), rather than as standalone sections (`### Variant 1`, `## Option A`, bold headers) followed later by a separate 'which variant do you prefer?' prompt? FAIL if the same variants are described once in their own blocks and then listed again in the question — each variant must be described exactly ONCE, inside the question's own option list.",
+      critical: true,
+    },
+    {
+      id: "selection_question_self_contained",
+      description:
+        "Is the selection question answerable from the question and its options ALONE, without scrolling back to earlier text? It must name what is being decided (which authentication approach to build) in its own words. FAIL if it refers back to material the reader has not been shown inside the question itself — phrasings like 'which of the above', 'which variant do you prefer?' with no restatement, 'the options I listed', or a bare 'Your choice?'.",
+      critical: true,
+    },
+    {
       id: "tradeoffs_discussed",
       description:
         "Did the agent give Pros/Cons/Risks per variant AND analyze trade-offs ACROSS the variants (e.g. speed vs correctness vs longevity)?",

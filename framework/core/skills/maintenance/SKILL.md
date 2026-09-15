@@ -53,10 +53,13 @@ Categories checked (full sub-check detail is embedded in the 5 self-contained `m
 
 ## Question Format (FR-UNIVERSAL.QA-FORMAT)
 
-For the per-finding **Apply / Skip / Edit** verdict in Step 6 (Interactive Resolution Loop):
+Binds on EVERY question you ask — the "how to proceed" prompt in Step 5 and the per-finding **Apply / Skip / Edit** verdict in Step 6 alike:
 
-- The question MUST be a numbered list item (`1.`, `2.`, …) — not a heading, bold-only line, or paragraph.
-- The post-summary "how to proceed" prompt in Step 5 is exempt: it follows a long rich-content findings list and falls under the "rich-content alternatives" exemption in `FR-UNIVERSAL.QA-FORMAT`.
+- **Numbered** — each question is a numbered list item (`1.`, `2.`, …), not a heading, a bold-only line, or a paragraph.
+- **Self-contained** — the question is answerable from itself and its options alone. Name what is being decided and what the answer changes, inside the question. "Which of the above?", a bare "Your choice?", and "Which variant do you prefer?" with nothing restated are defects: they send the reader back up the transcript to reconstruct the question.
+- **`agent's choice`** — on a multi-select where the user delegates with `agent's choice` (or its language equivalent), pick the subset yourself, justify the pick in one line, and proceed without re-asking for confirmation.
+
+The findings list stays ABOVE the Step 5 question: it is a report the answer filters, not a set of alternatives, so it is not the question's options. The self-containment rule then carries the weight — the question restates the counts it refers to.
 
 ## Instructions
 
@@ -113,7 +116,7 @@ Collect findings into an internal list. Each: category, site, problem, proposed 
     - One representative finding per category (all 16), in the same shape, lives in [references/example-findings.md](references/example-findings.md). The full per-category rubric for choosing the tier lives in [references/severity-rubric.md](references/severity-rubric.md).
 
 5. **Ask User How to Proceed**
-    - Ask which findings to resolve (this prompt is exempt from FR-UNIVERSAL.QA-FORMAT — see scope). Accepted reply modes:
+    - Ask which findings to resolve. **Repeat the counts inside the question itself** — the total and the per-severity breakdown — even though the `Total:` line of the report above already states them. The repetition is deliberate, not redundancy to be optimised away: the question has to be answerable on its own, and a reader who skimmed past the list must not scroll back to learn how many findings there are. Writing the counts once in a `Total:` line and then asking a bare "Which findings should I resolve?" is exactly the defect this rule exists to prevent. Shape it like "Which of the 12 findings should I fix — 2 Critical, 3 High, 5 Medium, 2 Low?". Accepted reply modes:
       - **numbers** (e.g. `1, 3, 4`) — only those findings
       - **category name** (e.g. `Hygiene`) — that category
       - **severity name** (`critical`, `high`, `medium`, `low` — case-insensitive) — that tier

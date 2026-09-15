@@ -64,6 +64,12 @@ export const EpicBasicBench = new class extends AcceptanceTestScenario {
       critical: true,
     },
     {
+      id: "phase_approval_question_self_contained",
+      description:
+        "After presenting the phase breakdown, did the agent ask an EXPLICIT NUMBERED question (a `1.` list item) that is answerable on its own — it names the epic being approved and states the reply options (e.g. approve as-is / change the split)? FAIL if the agent merely presented the phases and stopped, or asked a bare 'Approve?' / 'Ready to proceed?' / 'Does this look right?' with no restatement of what is being approved and no reply options.",
+      critical: true,
+    },
+    {
       id: "critique_offered",
       description:
         "Did the agent offer to critique the epic after detailing phases?",
