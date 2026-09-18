@@ -21,7 +21,7 @@ You receive:
 # Context
 
 - The project's AGENTS.md (available via CLAUDE.md symlink) describes the tech stack, conventions, and tooling.
-- The working tree contains the **new upstream version** of the skill (written by `flowai sync`).
+- The working tree contains the **new upstream version** of the skill (written by the plugin install, or copied from `dist/claude-plugins`).
 - Git HEAD contains the **previous version** — which may include project-specific adaptations from the last update.
 
 # Workflow

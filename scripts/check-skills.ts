@@ -91,10 +91,10 @@ export function isFrameworkSkillsDir(skillsDir: string): boolean {
  * Enforces per-kind invariants that the framework split relies on:
  *
  * - Under `commands/`: the source SKILL.md must NOT carry
- *   `disable-model-invocation`. The writer injects the flag at sync time
- *   (see `injectDisableModelInvocation` in flowai-cli); having it in
- *   source means either a stale migration artifact or an author trying to
- *   hand-maintain the flag despite directory-based classification.
+ *   `disable-model-invocation`. The plugin builder injects the flag at build
+ *   time (see `scripts/build-plugins.ts`); having it in source means either a
+ *   stale migration artifact or an author trying to hand-maintain the flag
+ *   despite directory-based classification.
  *
  * - Under `skills/`: the source SKILL.md must NOT carry
  *   `disable-model-invocation` at all. Skills are agent-invocable by
@@ -648,8 +648,8 @@ export async function validateSkill(
 
   // [REF:fr:universal.ide-neutral | FR-UNIVERSAL.IDE-NEUTRAL]: framework skills/commands/agents must not name
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
-  // Model IDs belong in the CLI's `DEFAULT_MODEL_MAPS` (in flowai-cli), not
-  // in user-facing skill bodies.
+  // A model ID belongs in whatever per-IDE mapping the host resolves at run
+  // time, not in user-facing skill bodies.
   if (isFrameworkSkillsDir(skillsDir)) {
     errors.push(...validateIdeNeutrality(dirName, content));
     errors.push(...validateShellInterpolation(dirName, content));

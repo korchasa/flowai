@@ -128,10 +128,11 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         args: ["run", "-A", "scripts/check-pack-refs.ts"],
       },
       // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
-      // bundle-leakage gate: builds framework.tar locally with the same
-      // --exclude flags as CI, unpacks it, fails on any generator input
-      // (framework/atoms, framework/composites, manifest, or legacy source)
-      // leaking into user IDE configs.
+      // leakage gate: walks the rendered marketplace tree that the
+      // build-plugins prerequisite above just wrote, and fails on any
+      // generator input (atoms/, composites/, manifest, or legacy source)
+      // that reached it. This is the tree the release job pushes downstream,
+      // so the gate reads the real shipping artefact.
       {
         cmd: "deno",
         args: ["run", "-A", "scripts/check-pack-refs.ts", "--leakage"],

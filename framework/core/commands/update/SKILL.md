@@ -33,7 +33,7 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
 ## Rules & Constraints
 
 <rules>
-1. **No CLI lifecycle.** Do not run `flowai update`, `flowai sync`, `flowai migrate`, or parse sync output.
+1. **No installer lifecycle.** Do not run an installer or a sync tool, and do not parse its output; this command edits project-owned files only.
 2. **Project writes only.** Modify only current-project artifacts (`AGENTS.md`, `CLAUDE.md`, scaffolded docs/config). Never write plugin cache files, user-level skill directories, or installed primitive files.
 3. **Read-only sources.** Read templates/assets wherever installed, including plugin/user-level locations, but treat those files as immutable.
 4. **Preserve user content.** Update framework-originated sections only. Keep project-specific sections and local conventions unless the user explicitly approves a change.
@@ -144,7 +144,7 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
 ## Verification
 
 <verification>
-[ ] Did not run `flowai update`, `flowai sync`, `flowai migrate`, or any flowai CLI lifecycle command.
+[ ] Did not run an installer or a sync tool of any kind.
 [ ] Located a read-only framework template source or stopped with a clear install/update instruction.
 [ ] Read actual project `AGENTS.md` and compared template content against the artifact, not only template git history.
 [ ] Proposed only project-owned artifact changes.

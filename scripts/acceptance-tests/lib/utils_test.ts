@@ -164,9 +164,9 @@ Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands"
 
     // Commands MUST have `disable-model-invocation: true` injected in their
     // frontmatter by the writer — it's the IDE signal that makes them
-    // user-only (not agent-auto-invocable). This mirrors production CLI
-    // behavior in flowai-cli/src/sync.ts::injectDisableModelInvocation
-    // (mirrored locally in cli-internals.ts).
+    // user-only (not agent-auto-invocable). This mirrors the shipped
+    // behaviour of `scripts/build-plugins.ts`, reimplemented for the harness
+    // in cli-internals.ts::injectDisableModelInvocation.
     const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
     const content = await Deno.readTextFile(cmdPath);
     assertStringIncludes(content, "disable-model-invocation: true");

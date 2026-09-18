@@ -17,7 +17,7 @@ flowai may install generic framework primitives into the project with default ex
 
 Plugin-installed and user-level primitives are read-only for this command. If flowai is installed through an IDE plugin or a global/user config directory, do not rewrite those files. Report that no project-local primitives are available unless the user asks to create a local copy.
 
-The AGENTS template (`AGENTS.template.md`) is a read-only framework source whose location depends on install mode: a skill-local plugin asset (`.{ide}/skills/adapt/assets/AGENTS.template.md`) for plugin/user installs, a project-local copy (`.{ide}/assets/AGENTS.template.md`) for CLI `flowai sync`, or a user-level copy. Read it wherever found; never edit it.
+The AGENTS template (`AGENTS.template.md`) is a read-only framework source whose location depends on install mode: a skill-local plugin asset (`.{ide}/skills/adapt/assets/AGENTS.template.md`) for plugin/user installs, a project-local copy (`.{ide}/assets/AGENTS.template.md`) written by a build-and-copy install, or a user-level copy. Read it wherever found; never edit it.
 
 Adaptation state is tracked through git history — no extra metadata fields needed. The working tree contains the current version; `git show HEAD:<path>` provides the previous adapted version for 3-way merge.
 
@@ -123,7 +123,7 @@ Two subagents handle the actual adaptation work:
        - `.opencode/skills/adapt/assets/AGENTS.template.md`
        - `.codex/skills/adapt/assets/AGENTS.template.md`
        - namespace-stripped plugin paths such as `*/skills/adapt/assets/AGENTS.template.md` when visible in the project.
-     - Project-local asset copy (CLI `flowai sync` layout):
+     - Project-local asset copy (build-and-copy install layout):
        - `.claude/assets/AGENTS.template.md`
        - `.cursor/assets/AGENTS.template.md`
        - `.opencode/assets/AGENTS.template.md`

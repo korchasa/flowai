@@ -6,7 +6,7 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * Tests plugin/user-level first semantics for update.
  *
  * Most users are expected to receive flowai through native plugins or
- * user-level installs, not project-local `flowai sync`. The command must treat
+ * user-level installs, not a project-local copy. The command must treat
  * non-project framework sources as read-only and update only project-owned
  * artifacts.
  */
@@ -36,7 +36,7 @@ export const FlowUpdatePluginUserScopeBench = new class
       },
     ],
     expectedOutcome:
-      "Agent treats plugin/user-level framework source as read-only, proposes AGENTS.md update, and does not run flowai sync or rewrite installed primitive files",
+      "Agent treats plugin/user-level framework source as read-only, proposes AGENTS.md update, and does not run an installer or rewrite installed primitive files",
   };
 
   override async setup(sandboxPath: string) {
@@ -113,7 +113,7 @@ export const FlowUpdatePluginUserScopeBench = new class
     {
       id: "did_not_run_flowai_cli",
       description:
-        "Did the agent avoid running `flowai update`, `flowai sync`, or any flowai CLI lifecycle command?",
+        "Did the agent avoid running an installer or a sync tool of any kind?",
       critical: true,
     },
     {

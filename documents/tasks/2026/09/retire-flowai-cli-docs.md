@@ -1,6 +1,6 @@
 ---
 date: "2026-09-12"
-status: to do
+status: in progress
 implements:
   - FR-DIST
   - FR-DIST.MARKETPLACE
@@ -142,36 +142,41 @@ Dispositions (union of the planner's list and the scout's):
 
 ## Definition of Done
 
-- [ ] FR-DIST: `README.md` describes only the marketplace channel; Cursor and OpenCode users get the build-and-copy instruction; no section names `flowai-cli`, `jsr:@korchasa/flowai`, `flowai sync|update|loop|migrate`, or `framework.tar.gz`.
+- [x] FR-DIST: `README.md` describes only the marketplace channel; Cursor and OpenCode users get the build-and-copy instruction; no section names `flowai-cli`, `jsr:@korchasa/flowai`, `flowai sync|update|loop|migrate`, or `framework.tar.gz`.
   - Test: `manual — korchasa` (prose; the grep gate below is the automation)
-  - Evidence: `! grep -n -E 'flowai-cli|@korchasa/flowai|flowai (sync|update|loop|migrate|user-sync)|framework\.tar' README.md`
-- [ ] FR-DIST: the SRS FR-DIST section describes the marketplace and keeps two live sub-clauses, `FR-DIST.MARKETPLACE` and `FR-DIST.MAPPING`, plus two one-paragraph retired stubs, `FR-DIST.BUNDLE` and `FR-DIST.GLOBAL` (historic task files implement them and `check-traceability` requires the headings); every other CLI-only sub-clause and FR-LOOP are gone; no `[x]` criterion cites the archived repo.
+  - Evidence: `! grep -n -E 'flowai-cli|@korchasa/flowai[^-]|flowai (sync|update|loop|migrate|user-sync)|framework\.tar' README.md` — the `[^-]` keeps the live sibling repo `@korchasa/flowai-workflow` (README.md:10) out of the gate.
+- [x] FR-DIST: the SRS FR-DIST section describes the marketplace and keeps two live sub-clauses, `FR-DIST.MARKETPLACE` and `FR-DIST.MAPPING`, plus two one-paragraph retired stubs, `FR-DIST.BUNDLE` and `FR-DIST.GLOBAL` (historic task files implement them and `check-traceability` requires the headings); every other CLI-only sub-clause and FR-LOOP are gone; no `[x]` criterion cites the archived repo.
   - Test: `scripts/check-salp.ts` (anchors) + `scripts/check-traceability.ts` (task `implements:`) + `manual — korchasa` (content)
-  - Evidence: `grep -c '^#### FR-DIST\.' documents/requirements.md | grep -qx 4 && ! grep -n -E 'flowai-cli|FR-LOOP|FR-DIST\.(SYNC|CONFIG|FILTER|SYMLINKS|DETECT|UPDATE|BUNDLE\.PIN|USER-SYNC|MIGRATE|CODEX-AGENTS|CLEAN-PREFIX|CODEX-HOOKS)' documents/requirements.md && grep -c 'Status:\*\* retired' documents/requirements.md | grep -qx 2`
-- [ ] FR-DIST: the SRS no longer presents `flowai loop` (former FR-LOOP) as a live requirement; the section and its `documents/index.md` row are gone.
+  - Evidence: `grep -c '^#### FR-DIST\.' documents/requirements.md | grep -qx 4 && ! grep -n -E 'flowai-cli\]|flowai-cli\)|FR-LOOP|FR-DIST\.(SYNC|CONFIG|FILTER|SYMLINKS|DETECT|UPDATE|BUNDLE\.PIN|USER-SYNC|MIGRATE|CODEX-AGENTS|CLEAN-PREFIX|CODEX-HOOKS)' documents/requirements.md && grep -c 'Status:\*\* retired' documents/requirements.md | grep -qx 2`
+- [x] FR-DIST: the SRS no longer presents `flowai loop` (former FR-LOOP) as a live requirement; the section and its `documents/index.md` row are gone.
   - Test: `scripts/check-salp.ts`
   - Evidence: `! grep -n -E 'FR-LOOP|fr:loop' documents/requirements.md documents/index.md`
 - [ ] FR-CICD: the release job builds no `framework.tar.gz` and creates no `framework-v<version>` release in this repo; its comments name no CLI; the `v<version>` release is unchanged; the downstream push to `flowai-plugins` keeps its `framework-v<version>` tag scheme with the version sourced from the `create-release` step; the push to `main` that carries the change is green.
   - Test: `.github/workflows/ci.yml` run on the pushed commit (CI Status command from AGENTS.md §CI/CD)
   - Evidence: `! grep -n -E 'flowai-cli|framework\.tar|framework-tarball|BUNDLE\.PIN|CICD\.SPLIT|Create Framework Release' .github/workflows/ci.yml && grep -q 'TAG: framework-v${{ steps.create-release.outputs.version }}' .github/workflows/ci.yml && gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion' | grep -qx success`
-- [ ] FR-ADAPT: FR-ADAPT prose, `framework/core/commands/adapt/SKILL.md`, `framework/core/commands/update/SKILL.md`, `framework/core/agents/skill-adapter.md` and `agent-adapter.md` name the plugin layout, not `flowai sync`; `scripts/acceptance-tests/lib/cli-internals.ts` header describes the transform as this repo's own.
+- [x] FR-ADAPT: FR-ADAPT prose, `framework/core/commands/adapt/SKILL.md`, `framework/core/commands/update/SKILL.md`, `framework/core/agents/skill-adapter.md` and `agent-adapter.md` name the plugin layout, not `flowai sync`; `scripts/acceptance-tests/lib/cli-internals.ts` header describes the transform as this repo's own.
   - Benchmark: `adapt-*` and `update-*` existing scenarios (no behaviour change — wording only; the sweep is the regression gate)
   - Evidence: `! grep -rn -E 'flowai (sync|update|migrate)|flowai-cli' framework/core/commands/adapt framework/core/commands/update framework/core/agents/skill-adapter.md framework/core/agents/agent-adapter.md scripts/acceptance-tests/lib/cli-internals.ts`
 - [ ] FR-DIST: the `setup-ai-ide-devcontainer` skill installs flowai through the plugin marketplace (Claude Code / Codex containers) and never emits `jsr:@korchasa/flowai`; the renamed scenario proves it.
   - Benchmark: `setup-ai-ide-devcontainer-deno-flowai-plugins` (renamed from `setup-ai-ide-devcontainer-deno-flowai`, RED first)
-  - Evidence: `deno task acceptance-tests -f setup-ai-ide-devcontainer-deno-flowai-plugins && ! grep -rn '@korchasa/flowai' framework/core/skills/setup-ai-ide-devcontainer --include='*.md'`
-- [ ] FR-DIST: SDS §3.5 describes `scripts/build-plugins.ts` as the distribution implementation, §3.4 heading names `acceptance-tests/`, and no SDS line names `flowai-cli`.
+  - Evidence: `deno task acceptance-tests -f setup-ai-ide-devcontainer-deno-flowai-plugins && ! grep -rnE 'deno install[^\n]*jsr:@korchasa/flowai' framework/core/skills/setup-ai-ide-devcontainer --include='*.md' && [ "$(grep -rh 'jsr:@korchasa/flowai' framework/core/skills/setup-ai-ide-devcontainer --include='*.md' | grep -vcE 'Never|Do NOT')" = 0 ]`
+    - The gate forbids the install COMMAND, not the string (decision taken during implementation, 2026-09-17). The original blanket `! grep -rn '@korchasa/flowai'` also forbade the two sentences that STATE the prohibition, so the only way to satisfy it was to delete the skill's own guard. A check that cannot pass while the requirement holds is not a gate; it forces either a false `[x]` or damage to the primitive.
+    - The second half counts the mentions that are not prohibitions and requires 0, so a plain mention cannot slip back in under the first half's radar.
+- [x] FR-DIST: SDS §3.5 describes `scripts/build-plugins.ts` as the distribution implementation, §3.4 heading names `acceptance-tests/`, and no SDS line names `flowai-cli`.
   - Test: `manual — korchasa`
-  - Evidence: `! grep -n -E 'flowai-cli|benchmarks/' documents/design.md`
-- [ ] FR-DIST: `documents/spec-skill-versioning.md` is rewritten against `scripts/build-plugins.ts` and the marketplace update flow; no `cli/src` path or `flowai sync` remains.
+  - Evidence: `grep -qE '^### 3\.5 .*build-plugins\.ts' documents/design.md && grep -qE '^### 3\.4 .*acceptance-tests/' documents/design.md && ! grep -n 'flowai-cli' documents/design.md`
+    - Each of the item's three clauses is asserted directly (decision taken during implementation, 2026-09-17). The original `! grep -n -E 'flowai-cli|benchmarks/'` also forbade `documents/benchmarks/`, the live SWE-rebench report directory described by SDS §3.22, so it could never pass; and it left the `acceptance-tests/` clause mechanised only by the absence of the old name.
+- [x] FR-DIST: `documents/spec-skill-versioning.md` is rewritten against `scripts/build-plugins.ts` and the marketplace update flow; no `cli/src` path or `flowai sync` remains.
   - Test: `manual — korchasa`
   - Evidence: `! grep -n -E 'cli/src|flowai sync' documents/spec-skill-versioning.md`
-- [ ] FR-DIST: `documents/index.md` holds no row for a removed FR, every `[REF:fr:…]` in the repo resolves, and `deno task check` is green.
+- [x] FR-DIST: `documents/index.md` holds no row for a removed FR, every `[REF:fr:…]` in the repo resolves, and `deno task check` is green.
   - Test: `scripts/check-salp.ts`, `scripts/check-traceability.ts` (both inside `deno task check`)
   - Evidence: `env -u AUTO_INSTALL_PLUGINS deno task check > "$SCRATCH/check.log" 2>&1; grep -E '[0-9]+ passed \| [0-9]+ failed' "$SCRATCH/check.log"` shows `0 failed`
-- [ ] FR-DIST: `AGENTS.md` and `documents/AGENTS.md` name only FRs that exist in the SRS (`FR-ADAPT-INSTRUCTIONS`, `FR-DIST.BUNDLE.PIN` and the `FR-DIST.SYNC` example gone); the Distribution bullet names neither the tarball nor a `framework-v` release of this repo; the Documentation Map no longer says `FR-DIST.*` describes the archived CLI.
+- [x] FR-DIST: `AGENTS.md` and `documents/AGENTS.md` name only FRs that exist in the SRS (`FR-ADAPT-INSTRUCTIONS`, `FR-DIST.BUNDLE.PIN` and the `FR-DIST.SYNC` example gone); the Distribution bullet names neither the tarball nor a `framework-v` release of this repo; the Documentation Map no longer says `FR-DIST.*` describes the archived CLI.
   - Test: `manual — korchasa`
-  - Evidence: `for id in $(grep -oh -E 'FR-[A-Z0-9]+(\.[A-Z0-9]+(-[A-Z0-9]+)*)*' AGENTS.md documents/AGENTS.md | sort -u); do grep -q -E "^#+ $id( |$)" documents/requirements.md || echo "MISSING $id"; done` prints nothing (the pattern stops before `*`, so glob-style ids such as `FR-DIST.*` and `FR-HOOK-*` yield their prefix and MUST be checked by eye — expected prefixes: `FR-DIST`, `FR-HOOK`), and `! grep -n -E 'describe the archived|framework-v' AGENTS.md`
+  - Evidence: `for id in $(grep -oh -E 'FR-[A-Z0-9]+(-[A-Z0-9]+)*(\.[A-Z0-9]+(-[A-Z0-9]+)*)*' AGENTS.md documents/AGENTS.md | sort -u); do grep -q -E "^#+ ${id}[:[:space:]]" documents/requirements.md || echo "MISSING $id"; done` prints only the three lines below, and `! grep -n -E 'describe the archived|framework-v' AGENTS.md`
+    - The id pattern now accepts a hyphen inside the top-level segment (`FR-ADAPT-INSTRUCTIONS` used to be truncated to `FR-ADAPT`), and the heading pattern accepts the colon that top-level FR headings carry (`### FR-DIST: …`), which the old `( |$)` rejected. `${id}` is braced because zsh reads `$id[` as an array subscript.
+    - Three residues are expected and benign: `FR-HOOK` (the prefix of the glob `FR-HOOK-*` in AGENTS.md), `FR-PARENT.SUFFIX` and `FR-X` (format placeholders in `documents/AGENTS.md`). None of the three is a claim that such an FR exists.
 
 ## Solution
 
@@ -186,7 +191,7 @@ Order matters: the SRS edit comes first (workflow: SRS → SDS → implement), t
 3. `FR-DIST.MARKETPLACE` (line 913): drop the sentence that positions the CLI as the alternative channel; add the Cursor / OpenCode contract: `deno task build-plugins`, copy `dist/claude-plugins/plugins/<pack>/skills/*` into `.claude/skills/` (both IDEs read that directory — `documents/ides-difference.md:176,178`). `FR-DIST.MAPPING` (line 1077): reword any `flowai sync` / CLI phrasing to `build-plugins`.
 4. `FR-CICD` (line 1680): remove the `FR-CICD.SPLIT` criterion (line 1690); if a sibling criterion cites the `framework-v` release, reword it to the `v<version>` release + `flowai-plugins` push.
 5. `FR-ADAPT` (lines 1490-1525): replace "installed by `flowai sync`" phrasing with "installed from the plugin marketplace or copied from `dist/claude-plugins`".
-6. Grep gate: `grep -n -E 'flowai-cli|@korchasa/flowai|flowai (sync|update|loop|migrate)' documents/requirements.md` → empty.
+6. Grep gate: `grep -n -E 'flowai-cli\]|flowai-cli\)|@korchasa/flowai|flowai (sync|update|loop|migrate)' documents/requirements.md` → empty. The `flowai-cli` alternative is anchored to a closing `]` or `)` on purpose: this task's own slug is `retire-flowai-cli-docs`, and step 1 puts it into four `**Tasks:**` lines, so a bare `flowai-cli` alternative can never be empty. The anchored form still catches every Markdown link and parenthetical naming the archived repository.
 
 ### Phase 2 — index and SDS
 
@@ -213,7 +218,15 @@ Order matters: the SRS edit comes first (workflow: SRS → SDS → implement), t
 ### Phase 6 — CI
 
 17. `.github/workflows/ci.yml`: delete steps `Build framework tarball` (96-134), `Verify framework tarball contains no generator-input leaks` (136-140; the same gate already runs inside `deno task check` via `check-pack-refs.ts --leakage`, `scripts/task-check.ts:137`), `Create Framework Release` (150-172) with their comments. The downstream sync step reads `steps.framework-tarball.outputs.framework_version` at line 194 (`TAG: framework-v…`, then `git commit -m "release: ${TAG}"`, `git tag -f`, `git push --force-with-lease` at 209-214) — deleting the tarball step without this edit breaks the `flowai-plugins` push. Change that one line to `TAG: framework-v${{ steps.create-release.outputs.version }}`; the downstream tag scheme stays as it is (`flowai-plugins` already carries `framework-v0.14.x` tags, and renaming them is a visible change to another repo, out of scope). After the edit `grep -n framework-tarball .github/workflows/ci.yml` → empty. Local validation: `deno run -A scripts/check-salp.ts` (the deleted comments carried `[REF:fr:dist.bundle.pin]`), then a YAML parse `yq '.jobs.release.steps[].name' .github/workflows/ci.yml`.
-18. `scripts/check-pack-refs.ts --leakage` stays: it still proves the rendered tree carries no generator inputs; its doc comment (lines 2-14, 201, 232) is reworded from "tarball shipped to the CLI" to "distribution tree". No logic change.
+18. `scripts/check-pack-refs.ts --leakage` is **retargeted** (decision taken during implementation, 2026-09-17). The original step planned a comment reword only, but deleting the CI tar step left the gate self-referential: it built a probe archive with `TAR_EXCLUDES` and then checked that those same excludes had worked, so it could never fail. The gate now walks the rendered marketplace tree `dist/claude-plugins` — the artefact the release job actually pushes downstream — with the same `LEAKED_FILENAMES` / `LEAKED_DIRNAMES` list. `buildAndUnpackTarball`, `TAR_EXCLUDES` and the `--tarball` flag are gone; `--dist <path>` replaces them, and a missing tree is an error rather than a pass. `scripts/task-check.ts` already runs `build-plugins` as a prerequisite, so the tree is on disk when the gate runs. SDS §3.1.1 (bundle-leakage gate paragraph) and the comment in `scripts/task-check.ts` are updated to match.
+
+18a. The sweep of step 12 is **widened to code comments** (decision taken during
+    implementation, 2026-09-18). Five comments still explained a live rule in terms of
+    the archived repo, so the rule itself read as stale: `scripts/check-skills.ts` (the
+    `disable-model-invocation` injector and the model-ID mapping), `scripts/check-agents-template_test.ts`
+    (the deleted `framework.tar.gz`), `scripts/acceptance-tests/lib/utils.ts` and its test
+    (`cli/src/sync.ts`). Each now names the live implementation — `scripts/build-plugins.ts`
+    or the rendered marketplace tree. Comment text only; no behaviour changes.
 
 ### Phase 7 — verification and hand-off
 

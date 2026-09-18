@@ -4,72 +4,94 @@
 |---------|---------------------|
 | Status  | Ready               |
 | Created | 2026-03-27          |
-| Updated | 2026-03-27          |
+| Updated | 2026-09-16          |
 
 ## Goal
 
-Enable skill authors to declare semver versions in SKILL.md frontmatter and allow
-users to pin version constraints in `.flowai.yaml`, preventing unintended breaking
-upgrades during `flowai sync`. Provides a clear contract between framework authors
-and framework users about change magnitude.
+Let a skill author declare a semver version in SKILL.md frontmatter, carry that
+version through the plugin build into the rendered marketplace, and give users a
+version signal when their IDE updates an installed plugin. The version is the
+contract between framework authors and framework users about the magnitude of a
+change.
 
 ## Overview
 
-Currently, `flowai sync` replaces installed skills whenever content differs from the
-bundle (conflict detection is byte-for-byte). There is no semantic versioning at the
-skill level — users cannot distinguish a typo fix from a breaking behavioural change.
-Pack-level `version` in `pack.yaml` exists but is not wired into sync logic.
+Every plugin in `dist/claude-plugins/` is stamped today with ONE version — the
+repository version read from `deno.json` `.version` and injected into every
+`plugin.json` and every marketplace entry (`scripts/build-plugins.ts`, transform
+pass (f), `readUpstreamVersion`). A typo fix in one skill and a breaking rewrite
+of another therefore ship under the same number, and nothing in the rendered
+tree says which skill actually moved.
 
-This feature adds skill-level semver (`version: "1.2.3"` in SKILL.md frontmatter),
-a version constraint syntax in `.flowai.yaml` (`skills.versions`), and version-aware
-sync logic that skips updates when the installed version satisfies the user's
-constraint.
+Update itself is no longer the framework's job: the IDE owns it. A Claude Code
+or Codex user runs `/plugin update`, and the IDE replaces the installed plugin
+with the marketplace copy. A Cursor or OpenCode user re-runs
+`deno task build-plugins` and re-copies `dist/claude-plugins/plugins/<pack>/skills/*`
+into `.claude/skills/`. Neither path can pin, diff or skip a single skill, and
+neither path reads any per-skill metadata.
+
+This spec adds skill-level semver (`version: "1.2.3"` in SKILL.md frontmatter),
+carries it into the rendered plugin so the metadata survives the build, and
+surfaces it in `scripts/validate-plugins.ts`. A monotonic-version gate is
+PROPOSED as a future phase, not implemented here — no such check exists today
+(`grep -n monoton scripts/validate-plugins.ts` is empty).
 
 ## Non-Goals
 
-- No remote registry or historical version fetching — version comes from the bundled
-  snapshot only (current CLI version).
-- No per-agent versioning in this spec (only skills).
-- No automatic version bump tooling (authors bump manually following convention).
-- No UI/TUI changes beyond CLI text output.
-- No migration of existing installed skills to populate version metadata retroactively.
-- No version constraint on pack level (only skill level).
-- No `.flowai.yaml` config version bump — `skills.versions` is additive and optional,
-  fully backwards-compatible with v1/v1.1 configs.
+- No pinning and no version constraints. The framework does not install
+  anything, so there is no install-time place to enforce a constraint; the IDE's
+  own `/plugin update` decides what is replaced.
+- No remote registry and no historical version fetching — the version comes from
+  the rendered tree only.
+- No per-agent versioning (skills and commands only).
+- No automatic bump tooling; authors bump by hand, following the convention
+  below.
+- No change to the plugin-level version. `plugin.json` `version` stays the
+  repository version from `deno.json`, because the IDE keys the installed plugin
+  on it.
+- No retroactive version metadata for already-installed copies.
 
 ## Architecture & Boundaries
 
 ### Always (agent autonomy)
 
-- Read any file in `framework/`, `cli/src/`, `cli/src/**/*_test.ts`.
-- Write `framework/*/{skills,commands}/*/SKILL.md` to add/update `version:` frontmatter field.
-- Write `cli/src/frontmatter.ts`, `cli/src/types.ts`, `cli/src/config.ts`,
-  `cli/src/plan.ts`, `cli/src/sync.ts`, `cli/src/cli.ts`, test files.
+- Read any file in `framework/`, `scripts/`, and their `*_test.ts` neighbours.
+- Write `framework/*/{skills,commands}/*/SKILL.md` to add or update the
+  `version:` frontmatter field.
+- Write `scripts/resource-types.ts`, `scripts/build-plugins.ts`,
+  `scripts/validate-plugins.ts` and their test files.
 - Run `deno task check` to verify.
 
 ### Ask First
 
-- Any change to `.flowai.yaml` schema that breaks v1/v1.1 backwards compatibility.
-- Adding a Deno third-party semver library (prefer `@std/semver` from Deno std).
-- Changing bump convention rules after they are documented.
+- Any change to the shape of `plugin.json` or `marketplace.json` beyond an
+  additive `metadata` object — both are read by Claude Code and Codex, and a
+  rejected manifest breaks installation for every user.
+- Adding a third-party semver library (prefer `@std/semver` from Deno std).
+- Changing the bump convention after it is documented.
 
 ### Never
 
-- Delete or rename existing frontmatter fields in SKILL.md.
-- Introduce a remote fetch path for historical skill versions.
-- Skip or bypass `deno task check` verification.
-- Modify `cli/src/bundled.json` directly (it is generated).
+- Delete or rename an existing frontmatter field in SKILL.md.
+- Hand-edit anything under `dist/claude-plugins/` — it is generated.
+- Hand-edit a SKILL.md listed as a target in `framework/composites.yaml`; it is
+  a generator build artefact (FR-SKILL-COMPOSE). Edit the atom or the composite
+  source instead.
+- Skip `deno task check`.
 
 ## Definition of Done
 
-- [ ] All 38 SKILL.md files have a valid semver `version:` field in frontmatter.
-- [ ] `parseFrontmatter()` correctly extracts `version` from SKILL.md content.
-- [ ] `.flowai.yaml` `skills.versions` map is parsed and validated.
-- [ ] `computePlan` skips update when installed version satisfies constraint.
-- [ ] `computePlan` marks action as `"update"` when installed version is below constraint min or above constraint max.
-- [ ] `renderSyncOutput` displays `1.2.0 → 2.0.0` for updated skills and `pinned at 1.x` for skipped-by-constraint skills.
-- [ ] Unit tests pass for frontmatter parsing and version-aware plan logic.
-- [ ] Benchmark scenario for version-aware sync passes.
+- [ ] Every `framework/*/{skills,commands}/*/SKILL.md` carries a valid semver
+      `version:` field, and `SkillFrontmatterSchema` accepts it.
+- [ ] `scripts/build-plugins.ts` copies each skill's `version` into the rendered
+      plugin's `metadata.skills` map without changing `plugin.json` `version`.
+- [ ] `scripts/validate-plugins.ts` rejects a rendered tree whose skill version
+      is absent or is not semver.
+- [ ] `validate-plugins` output lists each skill with its version.
+- [ ] Unit tests cover frontmatter parsing, the build's metadata emission and the
+      validator's rejection paths.
+- [ ] One acceptance scenario proves an agent adds a well-formed `version:` to a
+      SKILL.md that lacks one.
 - [ ] `deno task check` exits 0 with no errors or warnings.
 
 ---
@@ -80,239 +102,231 @@ constraint.
 
 ### Goal
 
-Add `version: "X.Y.Z"` semver field to every SKILL.md frontmatter. Establish and
-document the version bump convention. This is the data foundation all later phases
-depend on.
+Add a `version: "X.Y.Z"` semver field to every SKILL.md frontmatter, and teach
+the frontmatter schema to accept it. Establish and document the bump convention.
+This is the data foundation every later phase depends on.
 
 ### Scope
 
-- All 38 `framework/*/{skills,commands}/*/SKILL.md` files
-- `documents/design.md` (version convention documentation)
+- All `framework/*/{skills,commands}/*/SKILL.md` files
+- `scripts/resource-types.ts` (the schema)
+- `documents/design.md` (the bump convention)
 
 ### Tasks
 
-1. Establish initial version assignment: all existing skills start at `1.0.0` (they
-   are stable and in production use).
-2. Add `version: "1.0.0"` to the YAML frontmatter block of every SKILL.md. With 38
-   files, prefer a bulk approach: a short Deno script or targeted multi-file edit
-   rather than editing each file individually.
-3. Document version bump convention in `documents/design.md`:
-   - PATCH (`1.0.x`): typos, clarifications, wording improvements — no behaviour change.
-   - MINOR (`1.x.0`): new capabilities, new optional steps — backwards-compatible.
+1. Extend `SkillFrontmatterSchema` in `scripts/resource-types.ts` with
+   `version: z.string().regex(/^\d+\.\d+\.\d+$/).optional()`. The schema is
+   `.strict()`, so WITHOUT this step every added `version:` line fails
+   `deno task check` with `unrecognized_keys` — do this before touching any
+   SKILL.md.
+2. Assign the initial version: every existing skill starts at `1.0.0`; they are
+   stable and in production use.
+3. Add `version: "1.0.0"` to the frontmatter of every SKILL.md. Prefer a bulk
+   pass (a short Deno script) over per-file edits. Skip the generated composite
+   targets listed in `framework/composites.yaml` — edit
+   `framework/atoms/<name>.md` / `framework/composites/<name>.md` instead and
+   regenerate with `deno run -A scripts/generate-skill-composites.ts --write`.
+4. Document the bump convention in `documents/design.md`:
+   - PATCH (`1.0.x`): typos, clarifications, wording — no behaviour change.
+   - MINOR (`1.x.0`): new capabilities or new optional steps — backwards
+     compatible.
    - MAJOR (`x.0.0`): breaking workflow changes, removed steps, changed outputs.
-4. Verify all SKILL.md files have valid frontmatter by grep: `grep -L "^version:" framework/*/{skills,commands}/*/SKILL.md` must return empty.
 
 ### Verification
 
-- [ ] `grep -rL "^version:" framework/*/{skills,commands}/*/SKILL.md` returns no files.
-- [ ] Every `version:` value matches semver pattern `^\d+\.\d+\.\d+$`.
+- [ ] `grep -rL '^version:' framework/*/skills/*/SKILL.md framework/*/commands/*/SKILL.md` returns no files.
+- [ ] Every `version:` value matches `^\d+\.\d+\.\d+$`.
+- [ ] `deno task check` exits 0 (the schema accepts the new field).
 
 ### Notes
 
-- Frontmatter block is delimited by `---` lines. Parser in Phase 2 must handle
-  multi-line YAML values (existing fields use `description: >-` block syntax).
-- Use Deno std `@std/yaml` for parsing (already a dependency in cli/src).
+- The frontmatter block is delimited by `---` lines and is parsed with
+  `@std/yaml`; existing fields already use block syntax (`description: >-`), so
+  the parser handles multi-line values.
+- The per-skill version is independent of `deno.json` `.version`. The two never
+  have to agree.
 
 ---
 
-## Phase 2: CLI Type System — Frontmatter Parsing and Config Extension
+## Phase 2: Carry the Version Through the Plugin Build
 
 **Status:** not-started | **Prerequisites:** Phase 1
 
 ### Goal
 
-Parse `version` from SKILL.md frontmatter in the CLI, add `SkillFrontmatter`
-interface, and extend `FlowConfig` with `skills.versions` version constraint map.
+Make the rendered marketplace carry each skill's version, so a consumer of
+`dist/claude-plugins/` can tell which skill moved between two releases.
 
 ### Scope
 
-- `cli/src/frontmatter.ts` (new file)
-- `cli/src/types.ts`
-- `cli/src/config.ts`
+- `scripts/build-plugins.ts`
+- `scripts/build-plugins_test.ts`
 
 ### Tasks
 
-1. Create `cli/src/frontmatter.ts`:
-   - Export `interface SkillFrontmatter { name: string; version: string; description: string; disableModelInvocation?: boolean; }`.
-   - Export `parseFrontmatter(content: string): SkillFrontmatter` — extracts and parses the leading `---...---` YAML block; throws on missing `name`; returns `version: "0.0.0"` if field absent (backward compat with unversioned skills).
-2. Extend `FlowConfig` in `cli/src/types.ts`:
-   - Add `skills.versions?: Record<string, string>` (skill-name → semver range string, e.g. `"^1.0.0"`, `">=1.2.0 <2.0.0"`).
-3. Update `parseConfigData` in `cli/src/config.ts`:
-   - Parse `skills.versions` from YAML (optional, default `{}`).
-   - Validate: each value must be a non-empty string (further semver validation in Phase 3).
-4. Update `saveConfig` in `cli/src/config.ts` to serialize `skills.versions` when present.
-5. Write unit tests in `cli/src/frontmatter_test.ts`:
-   - Parse valid frontmatter with all fields.
-   - Parse frontmatter without `version` → returns `"0.0.0"`.
-   - Throw on missing `---` block.
-   - Throw on missing `name` field.
+1. In the skill-emit pass (transform pass (b)), read the parsed frontmatter's
+   `version` alongside `name` and `description`. A skill without one contributes
+   nothing rather than a sentinel — absence and `0.0.0` are different claims.
+2. Collect the pairs per pack and emit them into the plugin manifest as
+   `metadata: { skills: { "<stripped-skill-name>": "<version>" } }`, additively.
+   `plugin.json` `version` KEEPS the repository version from
+   `readUpstreamVersion` — the IDE keys the installed plugin on it, and
+   changing it would make every skill bump look like a plugin bump.
+3. Emit the same map into the Codex manifest, so both IDEs read one shape.
+4. Strip `version:` from the rendered SKILL.md frontmatter only if it turns out
+   an IDE rejects the unknown key; verify against the installed copy before
+   deciding, and record the verdict here.
+5. Tests in `scripts/build-plugins_test.ts`:
+   - A pack with two versioned skills renders both entries in `metadata.skills`.
+   - A skill with no `version` is absent from the map, and the build does not
+     fail.
+   - `plugin.json` `version` still equals the injected repository version.
 
 ### Verification
 
-- [ ] `deno test cli/src/frontmatter_test.ts` passes.
-- [ ] `FlowConfig` type includes `skills.versions`.
-- [ ] `parseConfigData` handles missing `skills.versions` gracefully (no throw).
+- [ ] `deno test -A scripts/build-plugins_test.ts` passes.
+- [ ] `deno task build-plugins` then
+      `jq '.metadata.skills' dist/claude-plugins/plugins/flowai/.claude-plugin/plugin.json`
+      prints the map.
 - [ ] `deno task check` exits 0.
 
 ### Notes
 
-- Semver range parsing deferred to Phase 3 (use `@std/semver` from Deno std).
-- `disableModelInvocation` maps to YAML key `disable-model-invocation` (kebab-case).
-- Do not break existing config parsing — `skills.versions` is optional.
+- The build already injects a version (pass (f)); this phase adds a second,
+  finer-grained one and must not disturb the first.
+- `scripts/validate-plugins.ts` parses both manifests with Zod. Extend its
+  schema in the same phase or the build's own output fails validation.
 
 ---
 
-## Phase 3: Version-Aware Plan Computation
+## Phase 3: Update Flow — Delegated to the IDE
 
 **Status:** not-started | **Prerequisites:** Phase 2
 
 ### Goal
 
-Modify `computePlan` to compare installed skill version against upstream version and
-user version constraints, producing correct plan actions without overwriting pinned
-skills.
+State the update contract and record what this repository does NOT do, so no
+later session reinvents an installer.
 
 ### Scope
 
-- `cli/src/plan.ts`
-- `cli/src/sync.ts`
-- `cli/src/types.ts` (extend `PlanItem` with version fields)
+- `README.md` (§Updating)
+- `documents/design.md` (§3.5 / §3.5.1)
 
 ### Tasks
 
-1. Check `deno.json` imports — if `@std/semver` is absent, add via
-   `deno add jsr:@std/semver`.
-2. Add `fromVersion?: string` and `toVersion?: string` to `PlanItem` in
-   `cli/src/types.ts`.
-3. Add `pinnedBy?: string` (constraint string) to `PlanItem` to mark constraint-skipped items.
-4. Change `computePlan` signature to accept optional `versionConstraints: Record<string, string>` parameter.
-5. In `computePlan`, for each upstream skill file where `path.endsWith("SKILL.md")`
-   (other files in the skill directory are content-diffed as before):
-   - Parse upstream `version` via `parseFrontmatter`.
-   - If local file exists: parse installed `version` via `parseFrontmatter`.
-   - If constraint exists for skill name:
-     - Use `@std/semver` `satisfies(installedVersion, constraint)` to check.
-     - If installed satisfies constraint → set `action = "ok"`, populate `pinnedBy`.
-     - If installed does not satisfy → proceed with normal content diff logic (`"conflict"` or `"update"`).
-   - If no constraint: preserve existing content-diff logic unchanged.
-   - Populate `fromVersion` (installed) and `toVersion` (upstream) on item.
-6. Pass `config.skills.versions` through `sync()` → `computePlan()` call chain in
-   `cli/src/sync.ts` (update `readPackSkillFiles` call site).
-7. Write/extend unit tests in `cli/src/plan_test.ts`:
-   - Installed `1.0.0`, upstream `1.1.0`, constraint `"^1.0.0"` → action `"ok"` (satisfies).
-   - Installed `1.0.0`, upstream `2.0.0`, constraint `"^1.0.0"` → action `"ok"` (satisfies).
-   - Installed `1.0.0`, upstream `2.0.0`, no constraint → action `"conflict"` (content changed).
-   - Installed `0.9.0`, upstream `1.0.0`, constraint `">=1.0.0"` → action `"conflict"`.
+1. Document the two update paths:
+   - Claude Code and Codex: `/plugin update` replaces the installed plugin from
+     the marketplace. The IDE decides; the framework supplies the tree.
+   - Cursor and OpenCode: re-run `deno task build-plugins` and re-copy
+     `dist/claude-plugins/plugins/<pack>/skills/*` into `.claude/skills/`.
+2. State that neither path can pin or skip a single skill, and that the
+   per-skill version is informational — a reader's signal, not an installer's
+   input.
+3. **Proposed, not implemented here:** a monotonic-version gate in
+   `scripts/validate-plugins.ts` that compares each skill's version against the
+   version in the previously published marketplace and fails the build when a
+   version moves backwards or when a changed skill did not bump. No such check
+   exists today; adding it needs a source for the previous versions (the
+   downstream repo's rendered tree, fetched in CI) and belongs in its own task.
 
 ### Verification
 
-- [ ] `deno test cli/src/plan_test.ts` passes (all version-aware cases).
-- [ ] `deno task check` exits 0.
-- [ ] `deno test cli/src/plan_test.ts` covers all four version-constraint cases listed in Task 7.
+- [ ] README §Updating names both paths and no installer command.
+- [ ] `! grep -n -E 'flowai (sync|update)' README.md documents/design.md`.
 
 ### Notes
 
-- `@std/semver` is part of Deno standard library. Add via `deno add jsr:@std/semver`
-  if not already in `deno.json`. Check existing imports first.
-- Only `SKILL.md` files carry version metadata. Other skill files (scripts,
-  acceptance tests) are compared by content as before.
-- `computePlan` receives upstream files as `UpstreamFile[]` — the `SKILL.md` file
-  path is identifiable by `path.endsWith("SKILL.md")`.
-- The constraint is keyed by skill directory name (e.g., `flowai-commit`), which is
-  already available as `extractName(path, "skill")`.
+- This phase writes no code. It exists so the absent installer is a recorded
+  decision rather than a gap someone fills by accident.
 
 ---
 
-## Phase 4: CLI Output and UX
+## Phase 4: Validator Output
 
-**Status:** not-started | **Prerequisites:** Phase 3
+**Status:** not-started | **Prerequisites:** Phase 2
 
 ### Goal
 
-Surface version information in `flowai sync` output: show `1.0.0 → 2.0.0` for
-updated skills and `pinned at ^1.x` for constraint-skipped skills.
+Surface the per-skill versions where the build is already checked, so a bad or
+missing version fails before the tree is pushed downstream.
 
 ### Scope
 
-- `cli/src/types.ts` (extend `ResourceAction`)
-- `cli/src/sync.ts` (`extractResourceActions`)
-- `cli/src/cli.ts` (`renderSyncOutput`)
+- `scripts/validate-plugins.ts`
+- `scripts/validate-plugins_test.ts`
 
 ### Tasks
 
-1. Extend `ResourceAction` in `cli/src/types.ts`:
-   - Add `fromVersion?: string`, `toVersion?: string`, `pinnedBy?: string`.
-2. Update `extractResourceActions` in `cli/src/sync.ts`:
-   - Aggregate `fromVersion`/`toVersion`/`pinnedBy` from `PlanItem` (take from
-     SKILL.md item when multiple files exist per skill).
-3. Update `renderSyncOutput` in `cli/src/cli.ts`:
-   - For updated skills: append `(${fromVersion} → ${toVersion})` to skill name in
-     output when both versions present.
-   - Add a new `SKILLS PINNED` section for skills where `action === "ok"` due to
-     constraint: list them as `skill-name (pinned at ${pinnedBy}, current: ${fromVersion})`.
-   - Do not show version info for skills without `version` in frontmatter (`"0.0.0"`).
-4. Update `cli/src/cli.ts` unit test if `renderSyncOutput` is directly tested.
+1. Extend the manifest schema with the optional
+   `metadata.skills: Record<string, Semver>` object. `Semver` already exists in
+   the file and carries the message
+   "version must be semver MAJOR.MINOR.PATCH (optionally with -pre / +build)".
+2. Cross-check the map against the rendered tree: every directory under
+   `plugins/<plugin>/skills/` has an entry, and every entry has a directory.
+   A mismatch is an error naming both sides.
+3. Print one line per plugin listing its skills with versions, so the CI log
+   records what was published.
+4. Tests: a tree with a skill missing from the map fails; a map entry with no
+   directory fails; a well-formed tree passes and its output names every skill.
 
 ### Verification
 
+- [ ] `deno test -A scripts/validate-plugins_test.ts` passes.
+- [ ] `deno task build-plugins && deno run -A scripts/validate-plugins.ts dist/claude-plugins`
+      exits 0 and prints the versions.
 - [ ] `deno task check` exits 0.
-- [ ] `deno test cli/src/cli_test.ts` (or equivalent): `renderSyncOutput` with a
-  pinned skill produces output containing `"pinned at"` and the constraint string.
-- [ ] `deno test cli/src/cli_test.ts`: `renderSyncOutput` with an updated versioned
-  skill produces output matching `\d+\.\d+\.\d+ → \d+\.\d+\.\d+`.
 
 ### Notes
 
-- Keep output concise — version info is supplementary, not primary signal.
-- `"0.0.0"` is the sentinel for "no version declared" — suppress version display for
-  these to avoid confusing users with unversioned legacy skills.
+- Keep the output compact; the version list is supplementary to the validator's
+  existing findings.
 
 ---
 
-## Phase 5: Tests and Benchmarks
+## Phase 5: Tests and Acceptance Coverage
 
 **Status:** not-started | **Prerequisites:** Phases 1–4
 
 ### Goal
 
-Full test coverage for the new frontmatter parsing and version-aware sync, plus a
-benchmark scenario proving correct agent behaviour when a skill has a version
-constraint.
+Close the loop: unit coverage for the schema, the build and the validator, plus
+one acceptance scenario proving an agent authors the field correctly.
 
 ### Scope
 
-- `cli/src/frontmatter_test.ts` (finalize, may already exist from Phase 2)
-- `cli/src/plan_test.ts` (finalize, may already exist from Phase 3)
-- `framework/devtools/skills/flowai-engineer-subagent/acceptance-tests/skill-versioning/mod.ts` (new benchmark)
+- `scripts/resource-types_test.ts`
+- `scripts/build-plugins_test.ts`
+- `scripts/validate-plugins_test.ts`
+- One new acceptance scenario under the skill-authoring primitive
 
 ### Tasks
 
-1. Run `deno test` — fix any failing tests before proceeding.
-2. Confirm coverage for these edge cases (add tests if missing):
-   - Frontmatter with no `version` field → `parseFrontmatter` returns `"0.0.0"`.
-   - Constraint that is an invalid semver range → parse-time error.
-   - Skills with no constraint: content-diff logic unchanged end-to-end.
-3. Create acceptance test scenario `framework/devtools/skills/flowai-engineer-skill/acceptance-tests/skill-versioning/mod.ts`
-   (host: `flowai-engineer-skill` — closest skill for SKILL.md authoring tasks):
-   - Scenario: user asks to add `version: "1.0.0"` to a SKILL.md that lacks it.
-   - Checklist items:
-     - Agent adds `version: "1.0.0"` to the YAML frontmatter block.
-     - No other frontmatter fields are modified.
-     - Version value matches semver pattern `^\d+\.\d+\.\d+$`.
-4. Verify benchmark host path: `ls framework/devtools/skills/flowai-engineer-skill/`
-   must exist; adjust path if structure differs.
-5. Run acceptance test: `deno task acceptance-tests skill-versioning` — must pass.
-6. Run `deno task check` — must exit 0 with no errors or warnings.
+1. Run `deno task check` and fix every failure before proceeding.
+2. Confirm coverage for the edge cases:
+   - Frontmatter with no `version` → accepted, absent from `metadata.skills`.
+   - Frontmatter with a non-semver `version` → schema rejection naming the file.
+   - A rendered tree whose map and directories disagree → validator error.
+3. Author the acceptance scenario under the skill-authoring primitive's own
+   `acceptance-tests/` directory (resolve the host with
+   `ls framework/devtools/skills/`; the scenario lives beside the primitive it
+   tests, per the Acceptance Test TDD flow in AGENTS.md):
+   - Query: the user asks to add `version: "1.0.0"` to a SKILL.md that lacks it.
+   - Checklist: the agent adds the field inside the frontmatter block; no other
+     frontmatter field is modified; the value matches `^\d+\.\d+\.\d+$`.
+4. RED first — run the scenario before the SKILL.md changes and confirm it
+   fails. Then GREEN, then re-run the single scenario.
+5. Hand the full sweep for the affected primitive to the user:
+   `deno task acceptance-tests -f <primitive-id>`.
 
 ### Verification
 
-- [ ] `deno test` exits 0 (all tests pass).
-- [ ] Benchmark `skill-versioning` passes.
 - [ ] `deno task check` exits 0.
+- [ ] The new scenario passes:
+      `deno task acceptance-tests -f <scenario-id>`.
 
 ### Notes
 
-- Benchmark scenarios live co-located with skills, discovered via `walk()` in
-  `scripts/task-acceptance-tests.ts`. Check `acceptance-tests/CLAUDE.md` for scenario file format.
-- Benchmark host `flowai-engineer-skill` is for SKILL.md authoring — it is the
-  closest match. If absent, fall back to `flowai-engineer-subagent`.
+- Acceptance scenarios are co-located with the primitive and discovered by
+  `scripts/task-acceptance-tests.ts`; `framework/AGENTS.md` carries the file
+  format.

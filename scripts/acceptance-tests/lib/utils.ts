@@ -162,8 +162,8 @@ export async function copyFrameworkToIdeDir(
 
     // Copy commands: framework/<pack>/commands/<name>/ → dest/skills/<name>/
     // Commands install into the SAME target dir as skills, but their SKILL.md
-    // must carry `disable-model-invocation: true`. Mirrors production sync
-    // (cli/src/sync.ts::readPackCommandFiles + injectDisableModelInvocation).
+    // must carry `disable-model-invocation: true`. Mirrors what
+    // `scripts/build-plugins.ts` does for the rendered marketplace tree.
     const commandsDir = join(packDir, "commands");
     try {
       for await (const command of Deno.readDir(commandsDir)) {

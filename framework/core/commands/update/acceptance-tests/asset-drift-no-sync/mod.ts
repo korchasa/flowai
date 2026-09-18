@@ -93,7 +93,7 @@ export const FlowUpdateAssetDriftNoSyncBench = new class
     {
       id: "did_not_run_cli_lifecycle",
       description:
-        "Did the agent avoid running `flowai update`, `flowai sync`, or another flowai CLI lifecycle command?",
+        "Did the agent avoid running an installer or a sync tool of any kind?",
       critical: true,
     },
     {

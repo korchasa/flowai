@@ -1,12 +1,11 @@
-// Inlined mirror of two helpers from korchasa/flowai-cli@^0.13 needed by
-// the acceptance-test harness to reproduce the same frontmatter
-// transformation the published CLI applies during sync. Kept here so the
-// monorepo has no compile-time dependency on the external CLI repo.
+// The two cross-IDE frontmatter helpers the acceptance-test harness needs to
+// install a framework agent the way a real IDE sees it. They started life as a
+// mirror of an external installer; that installer is archived, so this file is
+// the only implementation and there is no upstream to drift from.
 //
-// If you change agent-transform behaviour, change it FIRST in
-// flowai-cli/src/transform.ts (and resource_reader.ts), then mirror the
-// edits here. Drift between the two will silently desynchronise the
-// acceptance harness from the real CLI output.
+// The contract these helpers answer to is FR-DIST.MAPPING. Change the mapping
+// here and in `scripts/build-plugins.ts` together — the build renders what
+// users install, and this file renders what the harness tests.
 //
 // implements [REF:fr:dist.mapping | FR-DIST.MAPPING]
 import { parse, stringify } from "@std/yaml";
@@ -215,7 +214,7 @@ function isTierName(value: string): boolean {
  *
  * Without this, an abstract tier like `model: cheap` reaches the IDE CLI raw
  * and the agent crashes with `model 'cheap' not found` the moment the skill is
- * invoked. Mirror of the published flowai-cli skill-sync tier resolution.
+ * invoked. This repository owns the tier resolution; FR-DIST.MAPPING is the contract.
  *
  * implements [REF:fr:dist.mapping | FR-DIST.MAPPING]
  */

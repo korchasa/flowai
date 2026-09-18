@@ -89,9 +89,9 @@ Deno.test("AGENTS.template.md — explicitly rejects ID-only / slug-style cross-
 Deno.test("AGENTS.template.md — does NOT point downstream projects at migrate-to-salp.ts", async () => {
   const content = await readTemplate();
   // `scripts/migrate-to-salp.ts` lives in this repository only: no pack ships
-  // it and framework.tar.gz is built from `framework/` alone, so an
-  // `.claude/scripts/migrate-to-salp.ts` instruction in the template pointed at
-  // a file the install never creates. The template must not name it.
+  // it and the rendered marketplace tree is built from `framework/` alone, so
+  // an `.claude/scripts/migrate-to-salp.ts` instruction in the template pointed
+  // at a file the install never creates. The template must not name it.
   assert(
     !content.includes("migrate-to-salp"),
     "Template references migrate-to-salp.ts, which no pack ships to downstream projects",

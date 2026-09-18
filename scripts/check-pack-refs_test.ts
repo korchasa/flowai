@@ -1,11 +1,13 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects, assertThrows } from "@std/assert";
 import { join } from "@std/path";
 import {
-  checkCiExcludes,
+  DEFAULT_DIST_DIR,
   findCrossPackRefs,
+  findDistLeaks,
   findLeakedFiles,
   LEAKED_DIRNAMES,
   LEAKED_FILENAMES,
+  parseDistArg,
 } from "./check-pack-refs.ts";
 
 const primitiveMap = new Map([
@@ -245,8 +247,71 @@ Deno.test("leakage: LEAKED_DIRNAMES list is stable", () => {
   assertEquals([...LEAKED_DIRNAMES], ["atoms", "composites"]);
 });
 
-Deno.test("leakage: checkCiExcludes passes on the real .github/workflows/ci.yml", async () => {
-  // After Commit 1 wires --exclude into ci.yml, this MUST return [].
-  const missing = await checkCiExcludes(".github/workflows/ci.yml");
-  assertEquals(missing, []);
+// --- Leakage gate over the rendered marketplace tree ---
+
+Deno.test("leakage: dist gate reports a generator input left in the tree", async () => {
+  await withTempTree(
+    {
+      "plugins/flowai/skills/commit/SKILL.md": "ok",
+      "plugins/flowai/skills/_atom.md": "leak",
+    },
+    async (root) => {
+      assertEquals(await findDistLeaks(root), [
+        "plugins/flowai/skills/_atom.md",
+      ]);
+    },
+  );
+});
+
+Deno.test("leakage: dist gate passes on a rendered tree with no inputs", async () => {
+  await withTempTree(
+    {
+      "plugins/flowai/skills/commit/SKILL.md": "ok",
+      ".claude-plugin/marketplace.json": "{}",
+    },
+    async (root) => {
+      assertEquals(await findDistLeaks(root), []);
+    },
+  );
+});
+
+Deno.test("leakage: dist gate errors when the tree was never built", async () => {
+  const root = await Deno.makeTempDir({ prefix: "flowai-dist-missing-" });
+  await Deno.remove(root);
+  await assertRejects(
+    () => findDistLeaks(root),
+    Error,
+    "run `deno task build-plugins` first",
+  );
+});
+
+Deno.test("leakage: default dist dir matches the build-plugins output path", () => {
+  assertEquals(DEFAULT_DIST_DIR, "dist/claude-plugins");
+});
+
+Deno.test("leakage: no --dist flag selects the default tree", () => {
+  assertEquals(parseDistArg(["--leakage"]), DEFAULT_DIST_DIR);
+});
+
+Deno.test("leakage: --dist takes the path that follows it", () => {
+  assertEquals(
+    parseDistArg(["--leakage", "--dist", "build/tree"]),
+    "build/tree",
+  );
+});
+
+Deno.test("leakage: a bare --dist is an error, not a silent default", () => {
+  assertThrows(
+    () => parseDistArg(["--leakage", "--dist"]),
+    Error,
+    "--dist needs a path",
+  );
+});
+
+Deno.test("leakage: --dist does not swallow the next flag as its path", () => {
+  assertThrows(
+    () => parseDistArg(["--dist", "--leakage"]),
+    Error,
+    "--dist needs a path",
+  );
 });
