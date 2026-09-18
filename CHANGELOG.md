@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.9](https://github.com/korchasa/flowai/compare/v0.14.8...v0.14.9) (2026-09-15)
+
+
+### Documentation
+
+* **agents:** record the two blind spots this session walked into ([9248ca7](https://github.com/korchasa/flowai/commit/9248ca7aa2469e588b3632521bbc880240098492))
+
+
+### Code Refactoring
+
+* **acceptance-tests:** drop the dead helper and a false evidence ref ([6b2d40e](https://github.com/korchasa/flowai/commit/6b2d40e6c7c8de07f5d82e7cd50fd1d0280be50b))
+
 ### [0.14.8](https://github.com/korchasa/flowai/compare/v0.14.7...v0.14.8) (2026-09-15)
 
 
