@@ -241,18 +241,20 @@ Include only the directories that actually exist — drop `$HOME/.claude` from t
 // setup-container.sh, so there is no ordering dependency between entries.
 // CLI installers (claude.ai/install.sh, opencode.ai/install) only write
 // to ~/.local/bin/ — they do not race with `setup` on the config volumes.
+// flowai is a PLUGIN of the AI CLI, so its two commands are chained onto
+// the CLI's own entry: a sibling entry would run in parallel and find no
+// `claude` on PATH.
 "postCreateCommand": {
   "deps": "{{dependency_install_command}}",
   "setup": ".devcontainer/setup-container.sh",
-  "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash",
-  "opencode-cli": "curl -fsSL https://opencode.ai/install | bash",
-  "flowai-cli": "deno install -g -A -f jsr:@korchasa/flowai"
+  "claude-cli": "curl -fsSL https://claude.ai/install.sh | bash && ~/.local/bin/claude plugin marketplace add korchasa/flowai-plugins && ~/.local/bin/claude plugin install flowai@flowai-plugins",
+  "opencode-cli": "curl -fsSL https://opencode.ai/install | bash"
 }
 ```
 
 > All prohibitions (`initializeCommand`, auth `remoteEnv`, `secrets`) are defined once in SKILL.md § Auth Policy. If a project genuinely needs a non-auth env var (e.g. `NODE_ENV=development`), add a minimal `remoteEnv` block containing only that.
 
-**NOTE**: flowai needs no mounts or volumes — it reads `.flowai.yaml` from the project workspace. For non-Deno stacks, add `ghcr.io/devcontainers-extra/features/deno:latest` to the features block.
+**NOTE**: flowai needs no mounts or volumes of its own — the plugin lives in the AI CLI's plugin cache, under that CLI's existing config volume. Do NOT install `jsr:@korchasa/flowai`; that CLI is archived. On Codex the chained pair is `codex plugin marketplace add korchasa/flowai-plugins && codex plugin add flowai@flowai-plugins`. Only the Cursor / OpenCode build-and-copy path needs `ghcr.io/devcontainers-extra/features/deno:latest` in the features block.
 
 ### Manual auth workflow
 

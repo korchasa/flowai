@@ -1,9 +1,9 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-export const SetupDevcontainerDenoWithFlowai = new class
+export const SetupDevcontainerDenoWithFlowaiPlugins = new class
   extends AcceptanceTestScenario {
-  id = "setup-ai-ide-devcontainer-deno-flowai";
-  name = "Deno project with flowai CLI";
+  id = "setup-ai-ide-devcontainer-deno-flowai-plugins";
+  name = "Deno project with the flowai plugin";
   skill = "setup-ai-ide-devcontainer";
   stepTimeoutMs = 420_000;
   // Interactivity wired on 2026-08-24. This is the only scenario of the six
@@ -23,11 +23,11 @@ export const SetupDevcontainerDenoWithFlowai = new class
   };
 
   userQuery =
-    "/setup-ai-ide-devcontainer Set up a devcontainer for this Deno project with flowai CLI integration.";
+    "/setup-ai-ide-devcontainer Set up a devcontainer for this Deno project with flowai installed from its plugin marketplace.";
 
   userPersona =
-    `You are a developer who wants a devcontainer for a Deno project with the flowai CLI installed.
-When asked about AI CLI tools, choose flowai (only).
+    `You are a developer who wants a devcontainer for a Deno project with Claude Code and the flowai plugin installed.
+When asked about AI CLI tools, choose Claude Code with the flowai plugin.
 When asked about host AI config visibility, decline.
 When asked about security hardening/firewall, decline.
 When asked about custom Dockerfile, decline.
@@ -44,7 +44,7 @@ Confirm any file creation prompts.`;
     {
       id: "deno_support",
       description:
-        "Does the config include Deno support (either a Deno-aware base image like `mcr.microsoft.com/devcontainers/base:ubuntu` + the `ghcr.io/devcontainers-extra/features/deno:latest` feature, OR a `denoland/deno:*` base image)? flowai requires Deno at runtime.",
+        "Does the config include Deno support (either a Deno-aware base image like `mcr.microsoft.com/devcontainers/base:ubuntu` + the `ghcr.io/devcontainers-extra/features/deno:latest` feature, OR a `denoland/deno:*` base image)? The project in the fixture is a Deno project, so the container must be able to run Deno.",
       critical: true,
     },
     {
@@ -55,13 +55,19 @@ Confirm any file creation prompts.`;
     {
       id: "flowai_install_in_post_create",
       description:
-        "Does `postCreateCommand` include `deno install -g -A -f jsr:@korchasa/flowai` (or an equivalent `deno install` of the flowai JSR specifier)?",
+        "Does `postCreateCommand` install flowai from its plugin marketplace — `claude plugin marketplace add korchasa/flowai-plugins` followed by `claude plugin install flowai@flowai-plugins`? The Codex equivalent (`codex plugin marketplace add korchasa/flowai-plugins` + `codex plugin add flowai@flowai-plugins`) is accepted instead.",
+      critical: true,
+    },
+    {
+      id: "no_jsr_install",
+      description:
+        "Is the string `jsr:@korchasa/flowai` absent from every generated file? That JSR package is an archived CLI and must never be installed.",
       critical: true,
     },
     {
       id: "no_flowai_config_volume",
       description:
-        "Is there NO named volume or bind mount specifically for flowai config (e.g. no `~/.config/flowai` or `~/.flowai` mounts)? flowai reads `.flowai.yaml` from the project workspace root and needs no persistent state outside the workspace.",
+        "Is there NO named volume or bind mount for a flowai config file (e.g. no `~/.config/flowai` or `~/.flowai` mounts)? The plugin install keeps no state outside the IDE's own plugin cache.",
       critical: true,
     },
 
@@ -77,7 +83,7 @@ Confirm any file creation prompts.`;
     {
       id: "stable_volume_names_if_any",
       description:
-        "IF the generated config uses any Docker named volumes (e.g. for bash history), do they use stable names derived from `${localWorkspaceFolderBasename}` (NOT `${devcontainerId}` which rehashes on every edit)? If no named volumes are generated (flowai-only minimal setup), this check is vacuously satisfied.",
+        "IF the generated config uses any Docker named volumes (e.g. for bash history), do they use stable names derived from `${localWorkspaceFolderBasename}` (NOT `${devcontainerId}` which rehashes on every edit)? If no named volumes are generated, this check is vacuously satisfied.",
       critical: false,
     },
 

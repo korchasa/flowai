@@ -85,7 +85,7 @@ Ask the user (skip items already answered in prior context):
    - Claude Code — install via `postCreateCommand` script (`curl claude.ai/install.sh`) + writable named volume for `~/.claude`
    - OpenCode — install via registry feature (`ghcr.io/jsburckhardt/devcontainer-features/opencode:1`, preferred) or `curl opencode.ai/install` in `postCreateCommand` + writable named volume for `~/.config/opencode`
    - Cursor CLI, Gemini CLI — via registry features
-   - flowai — via `deno install` in `postCreateCommand` (requires Deno runtime; auto-added as feature for non-Deno stacks)
+   - flowai — a plugin of the AI CLI, not a separate binary. On Claude Code and Codex, chain `plugin marketplace add korchasa/flowai-plugins` and `plugin install flowai@flowai-plugins` onto that CLI's own install entry, so the plugin commands run after the CLI exists. Cursor and OpenCode have no plugin marketplace: clone `korchasa/flowai`, run `deno task build-plugins`, and copy the rendered skills into `.claude/skills/` — that path needs a Deno runtime, the marketplace path does not.
    - Multiple — installs and configures all selected (each with its own writable named volume)
    - None — skip AI CLI setup
 2. **Host AI config visibility**: "Mount host AI config directories into the container read-only, so the agent can read session history, projects, skills, and CLI history from the host? (local dev only; does NOT forward OAuth auth)"
@@ -190,7 +190,7 @@ If **OpenCode** was selected:
 > **SSH vs HTTPS**: `gh auth login` does not affect SSH remotes. If the repo was cloned as `git@github.com:...`, SSH operations depend on VS Code / Cursor's SSH agent forwarding. If forwarding is unavailable: either `git remote set-url origin https://github.com/<owner>/<repo>.git` and re-run `gh auth login`, or configure SSH keys in the container manually.
 
 If **flowai** was selected:
-> `flowai` is installed globally via Deno. Run `flowai sync` in the container terminal to sync skills/agents. `.flowai.yaml` is read from the project workspace root.
+> flowai is a plugin of the AI CLI you chose, so there is nothing to sync. Confirm it with `claude plugin list` (or `codex plugin list`) in the container terminal; its commands appear as `/flowai:*`. Update it later with `claude plugin update flowai@flowai-plugins` (or `codex plugin marketplace upgrade flowai-plugins` followed by `codex plugin add flowai@flowai-plugins`). On Cursor and OpenCode the skills were copied into `.claude/skills/` when the container was built — re-run the build-and-copy step to update them.
 
 ---
 
@@ -279,9 +279,12 @@ Installation preference is **per-tool** — see each subsection below. Rule of t
 
 ### flowai
 
-- **Install**: `deno install -g -A -f jsr:@korchasa/flowai` in `postCreateCommand`. Requires Deno; for non-Deno stacks add `ghcr.io/devcontainers-extra/features/deno:latest` to features.
-- **Persistence**: none needed — reads `.flowai.yaml` from the project workspace.
-- **Extension**: none (CLI-only).
+- **Install (Claude Code)**: append `&& claude plugin marketplace add korchasa/flowai-plugins && claude plugin install flowai@flowai-plugins` to the `claude-cli` entry of `postCreateCommand`. The two plugin commands need the CLI on `PATH`, so they MUST be chained onto that entry and never run as a sibling entry — object-form entries run in parallel.
+- **Install (Codex)**: the same shape with `codex plugin marketplace add korchasa/flowai-plugins && codex plugin add flowai@flowai-plugins`.
+- **Install (Cursor, OpenCode)**: no plugin marketplace exists for either. Clone `korchasa/flowai`, run `deno task build-plugins`, and copy `dist/claude-plugins/plugins/flowai/skills/*` into `.claude/skills/`. This is the one path that needs a Deno runtime in the container.
+- **Persistence**: none needed — the plugin lives in the AI CLI's own plugin cache, which already sits on that CLI's config volume.
+- **Extension**: none.
+- **Never** install `jsr:@korchasa/flowai`. That CLI is archived and receives no framework updates.
 
 ### Codespaces caveat (all AI CLIs)
 

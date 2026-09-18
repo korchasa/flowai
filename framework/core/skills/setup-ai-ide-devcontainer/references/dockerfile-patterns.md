@@ -73,10 +73,13 @@ RUN curl -fsSL https://opencode.ai/install | bash
 ```
 
 ### flowai
+flowai is a plugin of the AI CLI, so it installs in the same layer as that CLI — never on its own.
 ```dockerfile
-# flowai CLI (requires Deno installed in earlier layer)
-RUN deno install -g -A -f jsr:@korchasa/flowai
+# flowai plugin (requires the Claude Code CLI from the layer above)
+RUN claude plugin marketplace add korchasa/flowai-plugins \
+ && claude plugin install flowai@flowai-plugins
 ```
+On Codex use `codex plugin marketplace add korchasa/flowai-plugins && codex plugin add flowai@flowai-plugins`. Cursor and OpenCode have no marketplace: clone `korchasa/flowai`, run `deno task build-plugins`, and copy `dist/claude-plugins/plugins/flowai/skills/*` into `.claude/skills/`.
 
 ## Firewall Support (append when security hardening enabled)
 
