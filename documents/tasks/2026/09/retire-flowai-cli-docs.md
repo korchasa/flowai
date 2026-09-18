@@ -151,9 +151,13 @@ Dispositions (union of the planner's list and the scout's):
 - [x] FR-DIST: the SRS no longer presents `flowai loop` (former FR-LOOP) as a live requirement; the section and its `documents/index.md` row are gone.
   - Test: `scripts/check-salp.ts`
   - Evidence: `! grep -n -E 'FR-LOOP|fr:loop' documents/requirements.md documents/index.md`
-- [ ] FR-CICD: the release job builds no `framework.tar.gz` and creates no `framework-v<version>` release in this repo; its comments name no CLI; the `v<version>` release is unchanged; the downstream push to `flowai-plugins` keeps its `framework-v<version>` tag scheme with the version sourced from the `create-release` step; the push to `main` that carries the change is green.
+- [x] FR-CICD: the release job builds no `framework.tar.gz` and creates no `framework-v<version>` release in this repo; its comments name no CLI; the `v<version>` release is unchanged; the downstream push to `flowai-plugins` keeps its `framework-v<version>` tag scheme with the version sourced from the `create-release` step; the push to `main` that carries the change is green.
   - Test: `.github/workflows/ci.yml` run on the pushed commit (CI Status command from AGENTS.md §CI/CD)
-  - Evidence: `! grep -n -E 'flowai-cli|framework\.tar|framework-tarball|BUNDLE\.PIN|CICD\.SPLIT|Create Framework Release' .github/workflows/ci.yml && grep -q 'TAG: framework-v${{ steps.create-release.outputs.version }}' .github/workflows/ci.yml && gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion' | grep -qx success`
+  - Evidence: `! grep -n -E 'flowai-cli|framework\.tar|framework-tarball|BUNDLE\.PIN|CICD\.SPLIT|Create Framework Release' .github/workflows/ci.yml && grep -qF 'TAG: framework-v${{ steps.create-release.outputs.version }}' .github/workflows/ci.yml && gh run list --branch main --limit 1 --json conclusion --jq '.[0].conclusion' | grep -qx success`
+    - The tag clause needs `-F` (decision taken during implementation, 2026-09-18). The
+      searched string carries GitHub Actions' `${{ … }}`, and grep reads `{{` as an interval
+      quantifier, so the regex form never matched the line it was written for and reported the
+      clause as unmet while `ci.yml:121` held it verbatim.
 - [x] FR-ADAPT: FR-ADAPT prose, `framework/core/commands/adapt/SKILL.md`, `framework/core/commands/update/SKILL.md`, `framework/core/agents/skill-adapter.md` and `agent-adapter.md` name the plugin layout, not `flowai sync`; `scripts/acceptance-tests/lib/cli-internals.ts` header describes the transform as this repo's own.
   - Benchmark: `adapt-*` and `update-*` existing scenarios (no behaviour change — wording only; the sweep is the regression gate)
   - Evidence: `! grep -rn -E 'flowai (sync|update|migrate)|flowai-cli' framework/core/commands/adapt framework/core/commands/update framework/core/agents/skill-adapter.md framework/core/agents/agent-adapter.md scripts/acceptance-tests/lib/cli-internals.ts`
