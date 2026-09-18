@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.10](https://github.com/korchasa/flowai/compare/v0.14.9...v0.14.10) (2026-09-18)
+
+
+### Bug Fixes
+
+* **setup-ai-ide-devcontainer:** install flowai from the plugin marketplace ([7e7858e](https://github.com/korchasa/flowai/commit/7e7858e2ea62ef50e7c808fea12935b3bc7b9acd))
+
+
+### Documentation
+
+* **dist:** retire the archived flowai CLI from the SRS, SDS and CI ([1348ef0](https://github.com/korchasa/flowai/commit/1348ef0562aad993b04d483f6053c036013c8e49))
+* **readme:** describe the plugin marketplace as the only channel ([f7cc736](https://github.com/korchasa/flowai/commit/f7cc736bbadc7e7859c8ba10bf9346dced9126fc))
+
 ### [0.14.9](https://github.com/korchasa/flowai/compare/v0.14.8...v0.14.9) (2026-09-15)
 
 
