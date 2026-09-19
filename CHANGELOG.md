@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.11](https://github.com/korchasa/flowai/compare/v0.14.10...v0.14.11) (2026-09-19)
+
+
+### Features
+
+* **core:** give every variant property its own labelled line ([f769426](https://github.com/korchasa/flowai/commit/f769426c1c12388de7f1fcce77e028370a28660e))
+
+
+### Documentation
+
+* **agents:** require DoD evidence commands to be satisfiable ([4d0185b](https://github.com/korchasa/flowai/commit/4d0185b7b306bbab601135d0e6387d2254c2d6ff))
+* **tasks:** close the CI criterion for the flowai-cli retirement ([7a8ce09](https://github.com/korchasa/flowai/commit/7a8ce09310882bd789e75e0231aa3372c0bc310d))
+
 ### [0.14.10](https://github.com/korchasa/flowai/compare/v0.14.9...v0.14.10) (2026-09-18)
 
 
