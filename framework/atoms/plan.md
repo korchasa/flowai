@@ -65,7 +65,20 @@ Binds on EVERY question you ask — the clarifying questions in Step 2 and the v
 - **Numbered** — each question is a numbered list item (`1.`, `2.`, …), not a heading, a bold-only line, or a paragraph.
 - **Self-contained** — the question is answerable from itself and its options alone. Name what is being decided and what the answer changes, inside the question. "Which of the above?", a bare "Your choice?", and "Which variant do you prefer?" with nothing restated are defects: they send the reader back up the transcript to reconstruct the question.
 - **`agent's choice`** — on a multi-select where the user delegates with `agent's choice` (or its language equivalent), pick the subset yourself, justify the pick in one line, and proceed without re-asking for confirmation.
-- **Options carry their own analysis, inside the question** — when the choices are mutually exclusive alternatives, they ARE the question's labelled options, and each option's Pros / Cons / Risks / Best For sits nested under that option. Do NOT also present the same alternatives as standalone blocks before the question: one description, in one place. Two copies of a variant drift, and the reader pays for both.
+- **Options carry their own analysis, inside the question** — when the choices are mutually exclusive alternatives, they ARE the question's labelled options, and each option's Pros / Cons / Risks / Best For sits under that option. Do NOT also present the same alternatives as standalone blocks before the question: one description, in one place. Two copies of a variant drift, and the reader pays for both.
+- **Each property gets its own labelled line** — under an option, write `**Pros:**`, `**Cons:**`, `**Risks:**` and `**Best for:**` as four separate lines or bullets, each opening with its own bold label:
+
+  ```markdown
+  **A. <option title>**
+
+  - **Pros:** …
+  - **Cons:** …
+  - **Risks:** …
+  - **Best for:** …
+  ```
+
+  An option written as a paragraph that mentions all four inside running prose is a defect, and so is a one-line option that folds them behind commas, semicolons or dashes. The reader compares options property by property; merged prose makes them reconstruct the comparison sentence by sentence, and a property that is simply missing becomes invisible.
+- **Every option set in the reply obeys this, not just the first** — a reply usually opens more than one choice: the main one, then a failure policy, a key to count on, a rollout order. Each of those is an option set and carries the same four labelled lines per option, plus its own trade-offs. The defect in practice is a correctly laid-out first question followed by bare one-line options further down.
 
 ## Instructions
 
@@ -98,7 +111,7 @@ Binds on EVERY question you ask — the clarifying questions in Step 2 and the v
      - **Architecturally-correct** — correct design within the task's current constraints/scope (not merely the fastest).
      - **Best long-term** — strategic; optimizes maintainability over the horizon, may exceed current scope (refactor/investment).
    - If two archetypes collapse into the same option for a given task, state that explicitly and still surface a distinct third — never silently drop below the three without noting the collapse.
-   - **Present the whole set as ONE numbered question, and nothing else.** Each variant is a labelled option of that question (`A.`, `B.`, `C.`, …); the option's own **Pros**, **Cons**, **Risks** and **Best For** are nested under it. There is no separate variant write-up anywhere before the question — no `### Variant N` sections, no bolded option headers followed later by a bare "which do you prefer?". Describing a variant twice is the defect this rule exists to prevent: the copies drift, and the reader reads the same thing twice to answer once.
+   - **Present the whole set as ONE numbered question, and nothing else.** Each variant is a labelled option of that question (`A.`, `B.`, `C.`, …); the option's own **Pros**, **Cons**, **Risks** and **Best For** sit under it, each on its own labelled line, in the layout the Question Format block above prescribes — never merged into one paragraph, and never folded into a single line. There is no separate variant write-up anywhere before the question — no `### Variant N` sections, no bolded option headers followed later by a bare "which do you prefer?". Describing a variant twice is the defect this rule exists to prevent: the copies drift, and the reader reads the same thing twice to answer once.
    - The question's own text states what is being decided and what the answer changes, so it is answerable from itself and its options alone, without scrolling back up the transcript. A bare "Which variant do you prefer?" with nothing restated is a defect.
    - Across all variants, analyze **Trade-offs**: security vs complexity, performance vs maintainability, cost vs features. These belong directly under the option list, inside the same question — they compare the options and are not an option themselves.
    - **The variant list includes the root helper**: when the report names the function or module where the wrong value originates (a shared helper that returns `undefined` for an input class), one variant MUST fix THAT helper — return the correct value for the input it mishandles — even when a team note discourages touching shared code. The note is an input to the ranking below, not a filter on the list: a plan that offers only consumer-side patches has already decided the question the user is asked to decide. (2026-09-06: `plan-recommends-root-over-symptom` offered three DB-side variants and none touched `getTimezoneName()`.)
