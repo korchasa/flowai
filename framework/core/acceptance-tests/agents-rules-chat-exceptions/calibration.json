@@ -25,5 +25,14 @@
       "english_artifact": true,
       "identifier_and_meaning": true
     }
+  },
+  {
+    "id": "defective-identifier-meaning",
+    "agentLogs": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — в настройке повторов выбран режим «адаптивный», а он пока не поддерживается. Поставьте вместо него «фиксированный»: тогда доставка будет повторяться каждые 30 секунд.",
+    "expected": {
+      "russian_prose": true,
+      "english_artifact": true,
+      "identifier_and_meaning": false
+    }
   }
 ]
