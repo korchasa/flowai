@@ -16,6 +16,7 @@ This folder is a saved collection of the investigation, working hypotheses, fail
 - [Experiment index](claude-language-fix-evidence/experiment-index.json)
 - [Permission ablation on candidate 5](claude-language-fix-evidence/attempt-16-source.json) and its [template](claude-language-fix-evidence/attempt-16-permission-ablation-template.txt)
 - [End-to-end Sonnet model control](claude-language-fix-evidence/model-control-sonnet-source.json)
+- [Source-language control on a German fixture](claude-language-fix-evidence/source-language-control-german.json) and its [judge calibration](claude-language-fix-evidence/source-language-control-german-calibration.json)
 - [Restored product state and final checks](claude-language-fix-evidence/final-state.json)
 - [Initial calibration](claude-language-evidence/final-calibration.json)
 - [Haiku editor observations](claude-language-fix-evidence/editor-isolated/observations.json)
@@ -25,7 +26,8 @@ This folder is a saved collection of the investigation, working hypotheses, fail
 - [Acceptance scenarios, fixtures, calibration driver, and configuration snapshot](acceptance-scenarios.zip)
 - [Available original session transcripts and missing-file inventory](session-inventory.json)
 - [Source locations and SHA-256 integrity manifest](manifest.json)
-- [Calibration sets as they stood during the investigation](acceptance-tests/) — a historical snapshot. The live set in `framework/core/acceptance-tests/agents-rules-chat-*/calibration.json` has moved on: `agents-rules-chat-source` now also carries the `defective-redundant-gloss` control added after this investigation closed.
+- [Calibration sets as they stood during the investigation](acceptance-tests/) — a historical snapshot. The live set in `framework/core/acceptance-tests/agents-rules-chat-*/calibration.json` has moved on: `agents-rules-chat-source` gained a gloss-only control after this investigation closed, and on 2026-09-20 that control changed sides — the gloss stopped counting as a defect, so the sample now expects a pass and is named `clear-redundant-gloss`.
+- [The German source-language control, frozen with its fixture and checklist](acceptance-tests/agents-rules-chat-source-german/README.md) — removed from the live suite after Control 3 ran, and scored under the pre-2026-09-20 criterion.
 
 The two evidence directories preserve captured files byte-for-byte and sit beside the documents that cite them, so every relative path inside this folder resolves. Historical commands and absolute run paths inside evidence remain unchanged. The manifest and session inventory map originals to saved copies, and their `source` fields keep the original investigation paths on purpose. The second-brain article preserves its original text; two of its links point into that vault and do not resolve inside this repository.
 
@@ -33,8 +35,8 @@ The requirement this investigation informed was split in two on 2026-09-20, afte
 the collection was saved: `FR-READABILITY.LANGUAGE` now covers chat language
 integrity alone, and the new `FR-READABILITY.READER-CONTEXT` covers explanations
 that a reader who has not seen the session can follow. The documents below still
-describe the two defects under the single earlier clause. Two controls run after
-that split are recorded in [post-closure controls](post-closure-controls.md);
+describe the two defects under the single earlier clause. Three controls run
+after that split are recorded in [post-closure controls](post-closure-controls.md);
 their run directories are local and gitignored, so the verdicts and transcripts
 they cite are saved as JSON beside the other evidence.
 
