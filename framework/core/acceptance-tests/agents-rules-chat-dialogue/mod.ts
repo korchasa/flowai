@@ -1,7 +1,9 @@
 import { join } from "@std/path";
 import type { BenchmarkScenario } from "@acceptance-tests/types.ts";
 
-// FR-READABILITY.LANGUAGE: current-instruction acceptance, not an instruction fix.
+// FR-READABILITY.LANGUAGE: the `russian_prose` item scores language integrity.
+// FR-READABILITY.READER-CONTEXT: the meaning items score reader comprehension.
+// One run measures both requirements; attribute a failure to the failing item.
 // 2026-09-20: do not confuse optional omitted detail with reader-context drift.
 export const scenario: BenchmarkScenario = {
   ...{

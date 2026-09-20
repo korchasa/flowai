@@ -1,5 +1,7 @@
 /**
- * Explicit, paid judge calibration for FR-READABILITY.LANGUAGE.
+ * Explicit, paid judge calibration for FR-READABILITY.LANGUAGE and
+ * FR-READABILITY.READER-CONTEXT: the fixed replies exercise the language item
+ * and the meaning items of the same checklists.
  * This file is deliberately not named *_test.ts: regular checks must not call models.
  * Run from the repository root:
  * deno test -A <this-file> -- <output-directory>

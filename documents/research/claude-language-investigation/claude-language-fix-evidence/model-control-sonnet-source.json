@@ -1,0 +1,131 @@
+{
+  "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T17-06-44",
+  "collectedAt": "2026-09-20T17:08:47.685Z",
+  "note": "Shipped template, unchanged, on claude-sonnet-4-6. End-to-end model control for the Haiku-only evidence base.",
+  "rows": [
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose includes redundant English glosses: “(review queue)”, “(notification address)”, and “(batch size)”. These are translations of ordinary wording, not exact identifiers the user must type, search for, or click, so they violate the Russian-only requirement."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required operational fact: only background delivery tasks are affected; failures retry after 30 seconds for three attempts; after three failures the task waits in a review queue instead of being deleted; a notification address is mandatory; batch size is optional and defaults to 20; and a test failure must successfully trigger a notification before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-fcb56ead/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-fcb56ead-sandbox/e0d4b0a7-ea37-4841-bd51-0a180eeda51d.jsonl",
+          "models": [
+            "claude-sonnet-4-6"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T17:06:46.270Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:06:49.002Z",
+              "text": "Читаю файл."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:06:56.080Z",
+              "text": "Вот что описано в файле:\n\n**Что изменилось для очереди заданий**\n\nИзменения касаются только фоновых задач доставки — интерактивные запросы работают по-прежнему.\n\n**Что произойдёт при сбое**\n\n- Первые три попытки: задание повторяется через 30 секунд после каждого сбоя.\n- После трёх неудач: задание перемещается в очередь на проверку (`review queue`), не удаляется автоматически.\n\n**Что нужно настроить перед включением**\n\n- Обязательно: задать адрес уведомлений (`notification address`). Без него включать нельзя.\n- Необязательно: задать размер пакета (`batch size`). Если не задан, применяется значение по умолчанию — 20 заданий.\n- Условие запуска: включать только после того, как тестовый сбой успешно породил уведомление. Это подтверждает, что путь оповещения работает."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-source/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing reply includes redundant English glosses for ordinary concepts: “review queue”, “notification address”, and “batch size”. These are explanatory prose translations in parentheses, not exact code symbols, configuration keys, or interface labels that the user must locate."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery changes; failures retry after 30 seconds; after three failed attempts the job waits for manual review and is not deleted; a notification address is mandatory; batch size is optional and defaults to 20; and a test failure must produce a notification before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-cf7c9860/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-cf7c9860-sandbox/2bb32f02-0b71-43ba-947c-466beb6110db.jsonl",
+          "models": [
+            "claude-sonnet-4-6"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T17:07:05.134Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:07:07.663Z",
+              "text": "Читаю файл."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:07:18.063Z",
+              "text": "Вот что написано в файле по каждому вашему вопросу:\n\n**Что изменилось для очереди заданий**\n\nИзменения затрагивают только фоновую доставку заданий. Интерактивные запросы работают по-прежнему, без изменений.\n\n**Что произойдёт при сбое**\n\n- Упавшее задание повторяется через 30 секунд.\n- После трёх неудачных попыток задание перемещается в очередь на ручной разбор (`review queue`).\n- Автоматического удаления нет — задание не теряется.\n\n**Что нужно настроить перед включением**\n\n- Обязательно: указать адрес для уведомлений (`notification address`). Без него включать нельзя.\n- Необязательно: задать размер пакета (`batch size`). Если не задан, используется значение по умолчанию — 20 заданий.\n- Дополнительное условие включения: убедиться, что тестовый сбой уже породил уведомление — это подтверждает, что адрес настроен правильно."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-source/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose is otherwise Russian, including the interim update, but the phrase “`review queue`” is an unnecessary English gloss after the already clear Russian phrase “очередь на проверку.” The evidence does not establish it as an exact code or interface identifier the user must locate, type, or click."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery jobs are affected; a failed job retries after 30 seconds; after three failed attempts it moves to review and is not automatically deleted; a notification address is mandatory; batch size is optional with a default of 20; and a test failure must produce a notification before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-73f49c45/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-73f49c45-sandbox/51f11e4c-da00-4624-9597-a8c2c26727c5.jsonl",
+          "models": [
+            "claude-sonnet-4-6"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T17:07:30.638Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:07:33.271Z",
+              "text": "Читаю файл."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T17:07:39.851Z",
+              "text": "Вот что написано в файле:\n\n**Что изменилось для очереди заданий**\n- Изменения затрагивают только фоновые задания на доставку. Интерактивные запросы работают по-прежнему.\n\n**Что произойдёт при сбое**\n- Упавшее задание повторяется через 30 секунд.\n- После трёх неудачных попыток задание перемещается в очередь на проверку (`review queue`).\n- Автоматического удаления нет.\n\n**Что нужно настроить перед включением**\n- Обязательно: задать адрес уведомления (без него включать нельзя).\n- Опционально: размер батча; если не задан, по умолчанию будет 20 заданий.\n- Проверить готовность: включать только после того, как тестовый сбой породил уведомление — это условие включения по документу."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
