@@ -18,6 +18,7 @@ This folder is a saved collection of the investigation, working hypotheses, fail
 - [End-to-end Sonnet model control](claude-language-fix-evidence/model-control-sonnet-source.json)
 - [Source-language control on a German fixture](claude-language-fix-evidence/source-language-control-german.json) and its [judge calibration](claude-language-fix-evidence/source-language-control-german-calibration.json)
 - [Restored product state and final checks](claude-language-fix-evidence/final-state.json)
+- [Full sweep under the current criterion, 2026-09-20T19-50-09](claude-language-fix-evidence/language-sweep-new-criterion.json) and [the same scenarios under the previous checklist, 2026-09-20T10-38-58](claude-language-fix-evidence/language-sweep-old-criterion.json) — kept as a pair, because the checklist edit between them changed what the judge detects.
 - [Initial calibration](claude-language-evidence/final-calibration.json)
 - [Haiku editor observations](claude-language-fix-evidence/editor-isolated/observations.json)
 - [Sonnet editor observations](claude-language-fix-evidence/editor-isolated-sonnet/observations.json)

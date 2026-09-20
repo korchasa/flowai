@@ -1,0 +1,764 @@
+{
+  "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T19-50-09",
+  "collectedAt": "2026-09-20T19:58:23.082Z",
+  "note": "Full chat-language acceptance sweep on the shipped template (sha256 5634038f9c...), run 2026-09-20T19-50-09 after the redundant gloss stopped counting as a defect. Six scenarios, three sessions each, -i claude --no-cache. Verdicts plus the complete agent transcripts.",
+  "rows": [
+    {
+      "key": "agents-rules-chat-code/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The Latin-script spans `trimOldest`, `foldHistory`, `maxChars`, and `keepRecent` are exact code identifiers used to locate the relevant functions and settings, while “N” is a conventional symbolic count rather than English prose."
+        },
+        "strategy_meaning": {
+          "pass": true,
+          "reason": "The response clearly explains both behaviors: one method removes messages from the beginning until the character limit is met, while the other generates a summary of older messages and retains the latest messages unchanged. It recommends summarization to preserve early agreements and explicitly states that it costs one additional model call per session."
+        },
+        "settings_meaning": {
+          "pass": true,
+          "reason": "The response explains that the default value 12000 is the maximum character budget for conversation history and that the default value 6 is the number of most recent messages retained by summarization. Both controls are described with their units and operational roles."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-4592537e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-4592537e-sandbox/ad3ba99a-50be-49dd-a660-74670a42a0cf.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:51:21.199Z",
+              "text": "Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:51:35.290Z",
+              "text": "В файле два механизма управления объёмом истории:\n\n## Способы освобождения места\n\n**1. `trimOldest()`** — грубо удаляет старые сообщения\n- Стирает сообщения с начала по одному, пока общий объём не потеснится ниже лимита\n- Без доп. затрат на модель\n- Теряет контекст безвозвратно\n\n**2. `foldHistory()`** — сжимает историю в краткое резюме\n- Генерирует краткое резюме всех старых сообщений (одна обработка моделью)\n- Сохраняет резюме + последние N сообщений в полном виде\n- Дороже на одно обращение к модели, но сохраняет контекст\n\n## Управляющие настройки\n\n```\ndefaults = {\n  maxChars: 12000     // лимит символов на историю\n  keepRecent: 6       // сколько последних сообщений хранить в foldHistory\n}\n```\n\n## Выбор для сохранения договорённостей\n\n**Нужна `foldHistory()`.**\n\nПотому что договорённости из начала разговора попадут в резюме старых сообщений, и это резюме останется в контексте. `trimOldest()` просто удалит их — никакого восстановления.\n\nСтоимость: +1 вызов модели за сеанс, но договорённости не потеряются."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-code/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose, including interim updates and headings, is in Russian. The Latin-script spans are exact code identifiers such as `history.ts`, `trimOldest`, `foldHistory`, `maxChars`, `keepRecent`, and `makeSummary`, which are allowed locator identifiers."
+        },
+        "strategy_meaning": {
+          "pass": true,
+          "reason": "The response explains both behaviors: one strategy removes the oldest messages until the character limit is met, while the other summarizes older messages and keeps the latest messages unchanged. It recommends summarization to preserve early agreements and explicitly states that this costs one additional model call."
+        },
+        "settings_meaning": {
+          "pass": true,
+          "reason": "The response explains that `maxChars` limits the history by number of characters and defaults to 12000, and that `keepRecent` controls how many recent messages remain unsummarized and defaults to 6. Both controls include their roles, units, and default values."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-6b417f84/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-6b417f84-sandbox/09dc88fa-2c47-4d09-8c63-be069ad1b416.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:51:44.775Z",
+              "text": "Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:51:46.709Z",
+              "text": "Найду файл history.ts."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:51:55.338Z",
+              "text": "Файл содержит две стратегии для управления историей разговора:\n\n## **trimOldest** — простой способ\n- **Что делает**: удаляет самые старые сообщения, пока история не уложится в лимит по числу символов\n- **Настройка**: `maxChars` (по умолчанию 12000 символов)\n- **Цена**: бесплатно — никаких доп. вызовов модели\n- **Проблема**: **теряет договорённости из начала** — удалены целиком\n\n## **foldHistory** — сохраняющий способ\n- **Что делает**: создаёт сжатое резюме старых сообщений, добавляет его в историю, потом приклеивает последние N сообщений свежими\n- **Настройки**:\n  - `keepRecent` (по умолчанию 6) — сколько свежих сообщений оставить без сжатия\n  - `makeSummary` — функция, которая генерирует резюме старых сообщений (её вы пишете)\n- **Цена**: 1 доп. вызов модели на генерацию резюме\n- **Результат**: старые соглашения сохраняются в резюме, новые вещи остаются полными\n\n## Если важно сохранить договорённости\n\nВыбирайте **`foldHistory`**. \n\nОбычно договорённости — это:\n- \"используй русский в чате, английский в коде\" — в резюме это останется\n- \"тестов в этом файле нет, не трогай\" — попадёт в сжатое описание старых сообщений\n- \"берись за задачу X перед Y\" — будет в резюме наряду с остальным контекстом\n\n`trimOldest` для этого не подходит — просто выбросит первые сообщения вместе со всеми договорённостями."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-code/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing updates and the final explanation are in Russian. The Latin-script spans `trimOldest()`, `foldHistory()`, `makeSummary()`, `maxChars`, and `keepRecent` are exact code identifiers used to locate the relevant functions and settings, so they fall under the identifier exception."
+        },
+        "strategy_meaning": {
+          "pass": true,
+          "reason": "The response clearly explains that one strategy deletes the oldest messages until the remaining history fits the character budget, while the other replaces older messages with a generated summary and keeps the latest messages unchanged. It recommends summarization when early agreements matter and explicitly notes the additional model call and its time and cost implications."
+        },
+        "settings_meaning": {
+          "pass": true,
+          "reason": "The response explains `maxChars` as the character limit governing how much retained history fits, gives its default as 12000, and explains `keepRecent` as the number of latest messages preserved in full during summarization, with a default of 6."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-ddd9245a/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-ddd9245a-sandbox/ec4a1f1a-646d-469a-bd39-805be3f6372e.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:52:02.994Z",
+              "text": "Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:52:04.946Z",
+              "text": "Ищу файл history.ts в проекте."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:52:15.156Z",
+              "text": "В файле два способа освобождения памяти разговора:\n\n## `trimOldest()` — срезать историю\nУдаляет самые старые сообщения до тех пор, пока всё остальное вписывается в лимит символов (`maxChars`, по умолчанию 12000).\n\n- **Плюс**: просто, никаких вызовов модели\n- **Минус**: полностью теряются старые договорённости\n\n## `foldHistory()` — сжать в резюме\nБерёт самые старые сообщения, пропускает их через `makeSummary()` (модель генерирует резюме), и возвращает:\n1. Одно сообщение с резюме\n2. N самых свежих сообщений целиком (`keepRecent`, по умолчанию 6)\n\n- **Плюс**: договорённости из начала **сохраняются в резюме**, модель понимает контекст\n- **Минус**: один доп. вызов модели (стоит времени и денег)\n\n## Настройки, на которые влияет логика\n- `maxChars` — общий лимит символов для `trimOldest()`\n- `keepRecent` — сколько **последних сообщений** оставить в полном виде при `foldHistory()` (остальное → резюме)\n\n## Если важно сохранить договорённости\n**Выбирай `foldHistory()`** — это единственный способ, который не теряет информацию. Модель прочитает резюме и поймет, что вы договорились, даже если исходные сообщения уже удалены из памяти.\n\n`trimOldest()` для этого не подходит — он просто стирает старые сообщения, и договорённости из них пропадают."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-dialogue/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose contains ordinary English words used in place of Russian wording: “случайные timeout” in turn 1 and “случайный endpoint” in turn 2. These are explanatory prose, not exact configuration keys, product names, quoted evidence, or necessary interface identifiers."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "The logs show an assistant choice question in turn 1, an actual second user message selecting retries before manual review and requesting a handover, and a subsequent assistant handover addressed to the colleague."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection handover is understandable without the earlier turn: it says failed delivery is retried at 30-second intervals for a maximum of three attempts, persistent failure proceeds to the manual-review queue, alertEmail must be set before activation, and verification uses an unavailable destination while checking the review queue and the notification."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-8844f5e2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-8844f5e2-sandbox/387d5e22-b6a9-4ed6-8f57-527faea4dcd3.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:55:22.450Z",
+              "text": "Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:55:24.202Z",
+              "text": "Сейчас прочитаю delivery.md и предложу варианты."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:55:32.591Z",
+              "text": "Прочитал **delivery.md**. В файле описаны два способа обработки неудачной доставки:\n\n**RetryThenReview** — повторяет доставку (30 сек между попытками, максимум 3) и только потом отправляет в очередь человеку. Минусы: задержка в обнаружении стойких сбоев. Плюсы: меньше работы для людей.\n\n**ReviewImmediately** — отправляет в очередь сразу после первого сбоя, без повторов. Минусы: больше товаров в очереди проверки. Плюсы: люди видят проблему немедленно.\n\n**Мой вопрос:**\n\nКак часто у вас бывают временные сбои в целевых системах доставки (случайные timeout или краткие перебои, которые проходят сами за минуту-две)?\n\n- Если часто — лучше **RetryThenReview** (не будет ложных тревог)\n- Если редко — лучше **ReviewImmediately** (быстрее узнаёте о реальных проблемах)"
+            },
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:55:35.777Z",
+              "text": "Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:55:41.666Z",
+              "text": "**Сообщение коллеге:**\n\n---\n\nПривет! Включаем режим повторных попыток доставки (**RetryThenReview**) для обработки сбоев. Вот что нужно знать:\n\n**Что это дает:**\nЕсли доставка не удастся, система автоматически повторит попытку — не будет сразу отправлять в очередь для ручной проверки.\n\n**Параметры конфигурации:**\n- `deliveryMode` = `RetryThenReview`\n- `retryDelaySeconds` = `30` (интервал между повторами)\n- `maxAttempts` = `3` (максимум попыток доставки)\n- `alertEmail` = *установить адрес* (на него придут уведомления о стойких сбоях, которые не прошли все три попытки)\n\n⚠️ **Важно:** перед включением доставки обязательно установить `alertEmail` — без него уведомления не будут работать.\n\n**Как проверить:**\n1. Отправить задачу доставки на заведомо недоступный адрес (например, случайный endpoint)\n2. Проверить:\n   - Произошли ли 3 повторные попытки с интервалом 30 сек (смотреть логи)\n   - Попала ли задача в очередь ручной проверки (через админ-панель)\n   - Пришло ли уведомление на `alertEmail`\n\nЕсли все три пункта прошли — всё работает правильно.\n\n---"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-dialogue/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose is mostly Russian, but the handover uses the ordinary English word “endpoint” in “поменяй endpoint на некорректный” and “верни endpoint обратно.” In these sentences it stands in place of the Russian wording “адрес назначения” and is not presented as an exact configuration key or user-interface label."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "Turn 1 contains an assistant choice question, turn 2 contains the user's explicit selection of retries before manual review and request for a colleague-facing handover, and the assistant then provides that handover."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection response is understandable independently: it says failed delivery is retried after 30 seconds, allows three attempts in total, then sends the job to manual review; it states that the notification email recipient must be configured before activation; and it instructs the colleague to test with an unavailable destination and verify both the review queue and the email notification."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-cbbe4615/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-cbbe4615-sandbox/7168ef7b-8b5f-43b3-b081-dfdee09bf477.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:55:59.863Z",
+              "text": "Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:56:09.686Z",
+              "text": "Я прочитал файл. Там описаны два подхода:\n\n**RetryThenReview** — повторить доставку до 3 раз с интервалом 30 секунд, потом передать на ручную проверку. Минусирует ручную работу, но задерживает реакцию на постоянные сбои.\n\n**ReviewImmediately** — отправить на проверку сразу при первой ошибке, без повторов. Люди видят проблему быстро, но может быть шум от временных сбоев.\n\n---\n\n**Мой вопрос:**\n\nКак часто у вас возникают **кратковременные сбои доставки** (например, сеть упала на 10–20 секунд), которые сами восстанавливаются? Это влияет на выбор — если часто, RetryThenReview снизит шум, если редко, ReviewImmediately даст быструю видимость."
+            },
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:56:13.737Z",
+              "text": "Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:56:21.595Z",
+              "text": "Включаем режим **RetryThenReview** для обработки неудачной доставки. Вот что нужно сделать:\n\n**Параметры конфигурации:**\n- `deliveryMode` → `RetryThenReview`\n- `retryDelaySeconds` → `30` (пауза перед каждой повторной попыткой)\n- `maxAttempts` → `3` (попытаем три раза, потом на ручную проверку)\n- `alertEmail` → укажи адрес получателя уведомлений об ошибках (это обязательно перед включением)\n\n**Как это работает:**\n1. Доставка упала → ждём 30 секунд\n2. Пытаемся снова (максимум три раза всего)\n3. Если не прошло — задача попадает в очередь для ручной проверки и приходит письмо на alertEmail\n\n**Проверка результата:**\n1. Отправь тестовую задачу доставки на заведомо недоступный адрес (например, поменяй endpoint на некорректный)\n2. Дождись — доставка должна повторяться 30+30+30 секунд\n3. Проверь:\n   - В **очереди проверки** появилась задача (это означает, что три попытки исчерпаны)\n   - На **alertEmail** пришло письмо об ошибке\n4. После проверки верни endpoint обратно\n\nЭто гарантирует, что временные сбои (на 10–20 секунд) не создадут шум, а постоянные проблемы попадут в очередь без задержки."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-dialogue/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose contains ordinary English wording in place of Russian, including “потом на review,” “больше review-работы,” “Переводим delivery,” “human review,” “недоступный endpoint,” and “review queue.” These are explanatory prose rather than exact identifiers the reader must type or locate."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "The logs show an assistant choice question in turn 1, a real subsequent user message selecting retries before manual review and requesting a handover in turn 2, followed by the assistant’s handover message."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection handover is understandable independently: it says delivery is retried three times at 30-second intervals, then sent for human review; it states that the email recipient must be configured before activation; and it instructs the colleague to test with an unavailable destination and check the review queue and email notification."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-c789f4c2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-c789f4c2-sandbox/3cfd7df6-8f0f-4237-a57c-1c0a52c75582.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:56:37.116Z",
+              "text": "Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:56:40.115Z",
+              "text": "Дам мне прочитать delivery.md."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:56:49.447Z",
+              "text": "Я прочитал delivery.md. Есть два способа обработки неудачной доставки:\n\n- **RetryThenReview** — три попытки с перерывом 30 сек, потом на review. Меньше работы для человека, но отсроченный отчёт об устойчивых сбоях.\n\n- **ReviewImmediately** — на review со второй же попытки. Быстрая видимость проблем, но больше review-работы при кратких перебоях сервиса.\n\n**Вопрос:** предпочитаешь ли ты выявлять постоянные ошибки с задержкой и беречь время оператора, или видеть любую ошибку немедленно, даже если это создаёт шум от временных сбоев?"
+            },
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:56:54.591Z",
+              "text": "Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:57:02.901Z",
+              "text": "Вот письмо коллеге:\n\n---\n\n**Тема: Включаем RetryThenReview для обработки ошибок доставки**\n\nПривет,\n\nПереводим delivery на стратегию с автоматическими повторными попытками перед ручной проверкой.\n\n**Что это даёт:**\nПри ошибке доставки система будет пытаться 3 раза с интервалом 30 секунд, а потом отправит задачу в очередь на human review. Это даст нам буфер от кратких сбоев сервиса и снизит объём срочных алертов.\n\n**Что выставляем в конфиге:**\n```\ndeliveryMode: RetryThenReview\nretryDelaySeconds: 30\nmaxAttempts: 3\nalertEmail: [твой-email]\n```\n\nВажно: `alertEmail` обязателен. Если его не установить перед включением, доставка не будет работать. Выбери почту, на которую хочешь получать уведомления о задачах на review.\n\n**Как проверить:**\n1. Выстави конфиг с одним из параметров, указывающим на недоступный endpoint (например, localhost:1 или временно заблокированный IP)\n2. Отправь тестовую задачу доставки\n3. Проверь, что:\n   - Попыток было ровно 3 (поищи в логах с интервалом ~30 сек)\n   - После третьей неудачи задача попала в review queue\n   - На `alertEmail` пришло уведомление об этой задаче\n\nВопросы — пиши.\n\n---"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-exceptions/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing heading \"Support Request (English)\" is ordinary English meta-prose outside the requested support-request artifact. In particular, the label \"(English)\" could have been written in Russian; headings and explanatory framing are not covered by the artifact exemption."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains a clearly identifiable English support request, preserves the exact error text \"Unsupported value for retry_mode\" and the exact setting key \"retry_mode\", and asks whether adaptive retries are planned without claiming a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation states that the current \"adaptive\" value is unsupported, explains that \"fixed\" repeats delivery every 30 seconds, and identifies changing retry_mode to \"fixed\" as the suitable repair. It also correctly describes \"off\" as disabling repeats and invents no release history or promise."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3d66916d/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-3d66916d-sandbox/818520c6-6fd2-442c-a47b-b493e7098c2b.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:50:11.176Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:50:19.720Z",
+              "text": "## Support Request (English)\n\n---\n\n**Subject:** Unsupported value for retry_mode — RelayDesk deployment\n\n**Message:**\n\nHello,\n\nWe are experiencing an error in our RelayDesk deployment:\n\n> \"Unsupported value for retry_mode\"\n\nOur current configuration for the `retry_mode` setting is `\"adaptive\"`. However, the documentation indicates that only `\"off\"` and `\"fixed\"` are supported values. Our deployment requires automatic repeated delivery after temporary failures, so we need to switch to `\"fixed\"` mode to restore service.\n\nBefore making this change, we would like to inquire: **Are adaptive retries planned for RelayDesk in the near future?** No specific timeline has been announced, but we want to avoid redundant configuration changes if this capability is under active development.\n\nThank you for your guidance.\n\n---\n\n## Объяснение (Русский)\n\n**Причина проблемы:**\n\nВ файле конфигурации задано значение `\"adaptive\"` для параметра `retry_mode`. Однако RelayDesk поддерживает только два режима:\n- `\"off\"` — без повторных попыток\n- `\"fixed\"` — повторная доставка каждые 30 секунд\n\nЗначение `\"adaptive\"` не входит в список поддерживаемых, поэтому система выбросила ошибку.\n\n**Исправление:**\n\nНужно изменить конфигурацию: установить `retry_mode: \"fixed\"`. Это обеспечит автоматическую переотправку при временных сбоях, что требует ваше развёртывание. При этом имеет смысл уточнить в поддержке, планируется ли добавление режима `\"adaptive\"` в будущих версиях."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-exceptions/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The English support-request body is exempt, but the user-facing heading “Support Request (English)” is ordinary English labeling outside the artifact itself. It could have been written in Russian, so the requirement that all non-exempt user-facing prose be Russian is not fully met."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains a clearly identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and key “retry_mode,” and asks whether adaptive retries are planned. It asks for a timeline but does not invent or promise any release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly states that the current value “adaptive” is unsupported, preserves the exact key “retry_mode” and replacement value “fixed,” and explains that “fixed” retries every 30 seconds and satisfies the deployment requirement. It also accurately describes “off” as providing no automatic repeats and invents no release history or promise."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-ef3e090d/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-ef3e090d-sandbox/15d06d31-9520-4739-92ab-5c9ae4852f09.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:50:33.893Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:50:44.455Z",
+              "text": "## Support Request (English)\n\n---\n\n**Subject:** Configuration Error: Unsupported value for retry_mode\n\nWe are experiencing a deployment failure related to the `retry_mode` configuration setting. The system returns the error message:\n\n**\"Unsupported value for retry_mode\"**\n\nOur current configuration specifies `retry_mode: \"adaptive\"`, but this value is not supported. According to the documentation, the valid options are:\n- `\"off\"` (no automatic repeats)\n- `\"fixed\"` (repeat every 30 seconds)\n\nOur deployment requires automatic repeated delivery after temporary failures, so we will switch to `\"fixed\"` for now.\n\n**Question for your team:** Are adaptive retries (`retry_mode: \"adaptive\"`) planned for future releases? If so, what is the expected timeline?\n\n---\n\n## Объяснение (Русский)\n\n**Причина ошибки:**\nВ конфигурации RelayDesk установлено значение `retry_mode: \"adaptive\"`, но система поддерживает только два режима: `\"off\"` (никаких повторов) и `\"fixed\"` (повтор каждые 30 секунд). Значение `\"adaptive\"` не реализовано в текущей версии продукта.\n\n**Исправление:**\nНужно изменить конфигурацию с `retry_mode: \"adaptive\"` на `retry_mode: \"fixed\"`. Это обеспечит автоматические повторные попытки доставки каждые 30 секунд при временных сбоях, что отвечает требованиям вашего развёртывания."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-exceptions/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The heading contains the ordinary English label “(English)”. It is explanatory prose around the exempt English artifact, not part of the requested support-request text, and should have been written in Russian as “на английском”."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes a clearly identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and the exact key “retry_mode”, and asks whether adaptive retries are planned without claiming a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly states that the current “adaptive” value is unsupported, preserves the exact key “retry_mode” and value “fixed”, and explains that “fixed” repeats delivery every 30 seconds and is the appropriate repair. It also correctly describes “off” as providing no automatic repeats."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-4924a2fe/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-4924a2fe-sandbox/19469895-7e05-40f8-9830-bba9efe48c58.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:50:57.375Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:50:59.281Z",
+              "text": "Прочитаю incident.md:"
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:51:06.119Z",
+              "text": "## 📧 Текст обращения в поддержку (English)\n\n---\n\n**Subject:** Configuration Error: Unsupported retry_mode Value in RelayDesk\n\nDear Support Team,\n\nWe are experiencing an error in our RelayDesk deployment:\n\n**Error message:** \"Unsupported value for retry_mode\"\n\n**Configuration key:** retry_mode\n\n**Current value:** \"adaptive\"\n\nOur deployment requires automatic repeated delivery after temporary failures. We understand the supported values for this configuration are \"off\" (no automatic repeats) and \"fixed\" (repeat every 30 seconds). We are planning to switch the configuration to \"fixed\" as a workaround.\n\nHowever, before making this change, we would like to inquire: **Is support for adaptive retries planned for future releases?** If so, what is the expected timeline?\n\nThank you for your assistance.\n\n---\n\n## 🔍 Объяснение причины и исправления (Русский)\n\n**Причина проблемы:**\nВ конфигурации RelayDesk установлено значение `retry_mode: \"adaptive\"`, но это значение не поддерживается текущей версией приложения. Система ожидает только два валидных значения: `\"off\"` (повторов не будет) или `\"fixed\"` (повтор каждые 30 секунд).\n\n**Исправление:**\nНужно изменить значение конфигурации `retry_mode` с `\"adaptive\"` на `\"fixed\"`. Это позволит системе автоматически повторять отправку при временных сбоях с интервалом в 30 секунд.\n\n**Дополнительно:**\nСтоит узнать у поддержки RelayDesk, планируется ли добавление поддержки адаптивных повторов (режима `\"adaptive\"`) в будущих версиях. На данный момент о сроках реализации этой функции не объявлено."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-interface/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. English spans such as “Topic Scoped,” “Scope,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact interface labels used to tell the reader what to select or click, so they fall under the UI-identifier exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explicitly says to choose “Topic Scoped” because it grants access only to one project, and it instructs the reader to select the intended project in the Topic field."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set Expires At to the date and time exactly one week away and explains that access will then end automatically. It also states that Revoke disables the current key immediately and completely, while correctly distinguishing rotation as issuing a new key and retaining the old key for the Grace Window rather than extending the current key’s one-week lifetime."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-dae6794f/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-dae6794f-sandbox/406c1973-a34a-4b3b-a0c4-2da68d1103c1.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:52:25.781Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:52:34.143Z",
+              "text": "На основе access-panel.md для подрядчика на неделю нужно:\n\n**Режим:**\n- Выбрать **Topic Scoped** — это даст доступ только к одному проекту, а не ко всем\n\n**Что заполнить:**\n- **Scope**: Topic Scoped\n- **Topic**: выбрать нужный проект из меню\n- **Expires At**: указать дату/время ровно через неделю (точное время конца недели) — это гарантирует автоматическое отключение доступа\n\nGrace Window не менять (остаётся 0), он нужен при ротации ключей, а не для первоначального доступа.\n\n**Как отозвать:**\nПосле истечения недели доступ отключится сам. Если нужно отозвать раньше:\n- Нажать **Revoke** — текущий ключ отключится сразу и полностью\n- Никакого подтверждения не будет, замены не происходит\n\nRotate здесь не подходит — это выдаёт новый ключ, сохраняя старый на Grace Window часов. Нужен именно Revoke для полного отключения."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-interface/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans are exact interface labels or identifiers used to help the reader locate controls, such as “Topic Scoped,” “Scope,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate,” so they fall under the stated exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains that “Topic Scoped” limits access to one selected project and explicitly instructs the reader to choose the intended project. Its brief discussion of “Team Scoped” characterizes it as broader and does not clearly contradict team-wide access."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set “Expires At” to a date and time one week away and explains that “Revoke” disables the current key immediately. It also correctly distinguishes “Grace Window” and rotation as governing how long the old key remains usable after replacement, without inventing a replacement key during revocation."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-b1a13d9b/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-b1a13d9b-sandbox/8ee1132b-6c03-4b6b-9dd1-a866f91e2735.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:52:44.687Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:52:53.077Z",
+              "text": "Вот что нужно сделать для доступа подрядчика на неделю:\n\n**Режим:**\nВыбери **Topic Scoped** — он дает доступ только к одному выбранному проекту. Team Scoped был бы слишком широким (весь проект и все будущие), это не подходит.\n\n**Что заполнить:**\n- **Scope** → `Topic Scoped`\n- **Topic** → выбери нужный проект из списка\n- **Expires At** → установи дату и время через неделю (абсолютная дата истечения)\n- **Grace Window** → оставь `0` (дополнительные часы для старого ключа после смены — здесь не нужно)\n\n**Как отозвать доступ:**\nНажми кнопку **Revoke** — текущий ключ отключится немедленно, без подтверждений и замен. Если позже нужен новый ключ для того же подрядчика, используй **Rotate** (создаст новый, старый будет работать ещё Grace Window часов).\n\nАвтоматического отзыва после истечения срока не будет — доступ протухнет по времени в `Expires At`, но если нужно отозвать раньше, жми Revoke вручную."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-interface/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The Latin-script spans such as “Topic Scoped,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact interface labels used to help the reader locate the relevant controls, while “access-panel.md” is a filename."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains that “Topic Scoped” limits access to one project and explicitly instructs the reader to select the intended project in the Topic field. Its brief contrast with access to everything in the team is consistent with team-wide scope."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set Expires At to an absolute date and time one week away and states that access will stop automatically then. It also explains that Revoke disables the current key immediately without creating a replacement. The optional Grace Window and Rotate discussion correctly ties the grace period to the old key remaining usable after a new key is issued."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-763dff85/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-763dff85-sandbox/7654c661-6656-4d2d-bb9e-3ee8ffb01223.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read",
+            "Bash"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:53:08.486Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:53:19.076Z",
+              "text": "На основе access-panel.md — вот что нужно сделать:\n\n**Режим:** выбери **Topic Scoped** — это даст доступ только к одному проекту (вместо доступа ко всему, что есть в команде).\n\n**Что заполнить:**\n- **Topic** — выбери нужный проект из списка\n- **Expires At** — установи дату и время истечения через неделю от сегодня (абсолютная дата/время, не относительный период). По истечении ключ перестанет работать автоматически.\n- **Grace Window** — оставь пустым (по умолчанию 0). Это нужно только если планируешь ротировать ключ и хочешь дать старому ещё часы жизни.\n\n**Как отозвать доступ:**\nНажми **Revoke** — ключ отключится сразу. Никакого подтверждения не будет, замены не будет — просто перестанет работать.\n\nЕсли вместо сразу отозвать захочешь выпустить новый ключ (оставив старый на какое-то время), используй **Rotate** — старый останется жить ещё столько часов, сколько указано в Grace Window (по умолчанию 0, то есть сразу отключится)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-jargon/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose, including headings, is in Russian. The response contains no ordinary English wording standing in place of Russian."
+        },
+        "reader_meaning": {
+          "pass": true,
+          "reason": "The response clearly states that the current reference export covers two warehouses while the new version covers three; Maria must prepare reference data for all three; Ilya must resend the records left unacknowledged after the connection failure and obtain receipt confirmation; activation may proceed only when accepted-record counts match for each warehouse and no unacknowledged records remain. The internal labels «Опора» and «Хвост» are accompanied by concrete explanations."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-9fb501a9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-9fb501a9-sandbox/5480e8f1-642f-4e0a-8909-199ac0c8d442.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:53:30.867Z",
+              "text": "Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:53:40.389Z",
+              "text": "## Блокировка\n\n**Что мешает включить выгрузку:**\n\nНовая версия включает 3 склада, но текущая контрольная выгрузка («Опора») содержит только данные по 2 складам. Если сравнивать новую версию со старой, невозможно понять, потеряны ли записи третьего склада — контроль неполный.\n\nКроме того, есть записи, которые не отправились из-за разрыва соединения («Хвост»). Их нельзя удалять до подтверждения приёма, иначе потеряются данные.\n\n---\n\n## Кто что делает\n\n**Мария:**  \nПодготавливает новую контрольную выгрузку для трёх складов.\n\n**Илья:**  \nПовторно отправляет оставшиеся записи (из «Хвоста») и получает подтверждение приёма от системы.\n\n---\n\n## Условие продолжения\n\nВключение новой версии разрешено **только когда все три условия выполнены одновременно:**\n\n1. Количество принятых записей совпадает с контрольной выгрузкой **по каждому из трёх складов** отдельно\n2. **Неподтверждённых записей не осталось** (весь «Хвост» получил подтверждение)\n3. Мария завершила новую контрольную выгрузку\n\nБез этого — риск потери данных."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-jargon/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose, including the heading and list labels, is in Russian. The response contains no ordinary English words or phrases standing in place of Russian wording."
+        },
+        "reader_meaning": {
+          "pass": true,
+          "reason": "The response clearly states that the old reference export covers only two warehouses while the new version includes three; Maria must prepare a new reference export for all three warehouses; Ilya must resend the unacknowledged records and obtain receipt confirmation; and activation is allowed only when accepted-record counts match the reference export for each warehouse and no unacknowledged records remain. The internal labels «опора» and «хвост» are accompanied by concrete explanations."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-d7f8bcc8/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-d7f8bcc8-sandbox/a2e896da-4023-4913-a172-ad789e7ac26f.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:53:50.485Z",
+              "text": "Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:54:01.702Z",
+              "text": "## Блокировка выгрузки: три условия\n\n**Что мешает включить:**\n\n1. **Неполная контрольная выгрузка** — старая \"опора\" содержит только 2 склада. При добавлении третьего склада нет эталона для проверки его записей, поэтому невозможно обнаружить потери данных.\n\n2. **Неподтверждённые записи** — есть \"хвост\" (записи, не отправленные из-за обрыва соединения). Их нельзя считать доставленными и удалять, пока не получено подтверждение приёма.\n\n**Кто что делает:**\n\n- **Мария** — готовит новую контрольную выгрузку для всех трёх складов (заменит старую \"опору\")\n- **Илья** — повторно отправляет оставшиеся записи (хвост) и добивается подтверждения их приёма\n\n**Условия включения (оба должны выполниться):**\n\n1. Количество принятых записей совпало с новой контрольной выгрузкой по **каждому из трёх складов**\n2. Все записи подтверждены — \"хвост\" пуст\n\nТолько когда обе галочки стоят, новую версию выгрузки можно включить."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-jargon/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose, including headings and list items, is in Russian. The quoted local labels «Опора» and «хвост» are accompanied by concrete Russian explanations, and no ordinary English wording appears."
+        },
+        "reader_meaning": {
+          "pass": true,
+          "reason": "The response clearly states that the new export includes three warehouses while the existing reference export covers only two; Maria must prepare a reference export covering all three; Ilya must resend the records missed after the connection interruption and obtain receipt confirmations; activation requires per-warehouse count matches and no unacknowledged records."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-1365220b/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-1365220b-sandbox/c02009e0-dfb6-4e2d-a704-9d577051cd61.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:54:09.262Z",
+              "text": "Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:54:16.996Z",
+              "text": "## Что мешает включить выгрузку\n\nНовая версия выгрузки содержит третий склад (помимо двух действующих), но **старая контрольная выгрузка (\"Опора\") учитывает только два склада**. Это делает невозможным проверить, совпадает ли количество отправленных записей по третьему складу — нет с чем сравнить.\n\n## Кто должен что сделать\n\n- **Мария** — подготовить новую контрольную выгрузку, в которую войдут все три склада.\n- **Илья** — повторно отправить \"хвост\" (записи, которые не отправились из-за разрыва соединения) и получить подтверждение приёма от получателя.\n\n## При каком условии можно включить\n\nОдновременно должны выполниться три условия:\n\n1. Количество принятых записей совпадёт с новой контрольной выгрузкой **по каждому из трёх складов** (сейчас совпадает только по двум).\n2. Все отправленные записи получат подтверждение приёма.\n3. **Не останется неподтверждённых записей**.\n\nВключение заблокировано, пока Мария не готова с новой \"Опорой\", а Илья не получит подтверждение по всем записям из \"хвоста\"."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans “Background delivery jobs” and “review queue” are narrow parenthetical source-language glosses placed immediately after their Russian equivalents, so they fall under the stated exception rather than replacing Russian wording."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery jobs are affected; a failed job retries after 30 seconds; after three failed attempts it moves to a review queue and is not automatically deleted; a notification address is mandatory; batch size is optional and defaults to 20 jobs; and the feature may be enabled only after a test failure produces a notification."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-1937efb9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-1937efb9-sandbox/005115ad-ed58-4572-8efb-4dfc9a1b95ae.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:54:24.872Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:54:33.169Z",
+              "text": "## Очередь заданий\n\n**Что изменилось:**\n- Затрагиваются только фоновые задания доставки (`Background delivery jobs`). Интерактивные запросы работают как прежде.\n\n**При сбое:**\n- Задание повторяется через 30 секунд\n- После трёх неудачных попыток оно перемещается в очередь рецензирования (`review queue`)\n- Автоматического удаления нет — задание сохраняется для разбора\n\n**Что настроить перед включением:**\n- **Обязательно**: адрес уведомлений — оператор должен его установить\n- **Опционально**: размер батча — если не указан, используется 20 заданий\n\n**Ограничение на включение:**\nФункцию разрешено включать только после того, как тестовый сбой произведёт уведомление. Это подтверждает, что система оповещений работает. Новый режим снижает потерю заданий, но повторные попытки увеличивают время доставки."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-source/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans “background,” “review queue,” “notification address,” “batch size,” and “Rollout gate” appear only as parenthetical source-language glosses immediately following understandable Russian equivalents, which the checklist explicitly allows."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background jobs are affected while interactive requests are unchanged; failures retry after 30 seconds; after three failed attempts the job moves to a review queue and is not automatically deleted; a notification address is mandatory; batch size is optional with a default of 20; and a test failure must successfully generate a notification before enabling the feature."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-1c15f2f2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-1c15f2f2-sandbox/9d087bd6-d409-4614-8eaf-f93780fc07c8.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:54:43.410Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:54:52.177Z",
+              "text": "## Изменения в очереди заданий\n\n**Затрагиваемая область:**\n- Только фоновые (background) задания переводятся на новый режим\n- Интерактивные запросы остаются без изменений\n\n## Поведение при сбое\n\n- Задание автоматически повторяется через **30 секунд**\n- После **трёх неудачных попыток** задание перемещается в очередь для проверки (review queue)\n- Автоматическое удаление заданий **не предусмотрено** — они остаются в системе\n\n## Обязательная настройка перед включением\n\n1. **Адрес для уведомлений** (notification address) — обязательное поле; без него нельзя включать фичу\n2. **Размер пакета** (batch size) — опционально; если не указан, используется значение по умолчанию 20 заданий\n\n**Важное условие включения (Rollout gate):**\nВключить фичу только после того, как тестовый сбой успешно произведёт уведомление. Это подтвердит, что система мониторинга работает. Новый режим уменьшает потерю заданий, но повторные попытки доставки могут увеличить время обработки."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "agents-rules-chat-source/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose is mostly Russian, and parenthetical phrases such as “background delivery jobs” and “interactive requests” qualify as allowed source-language glosses of adjacent Russian wording. However, the heading “Ещё один момент — rollout gate” uses the ordinary English phrase “rollout gate” as a standalone prose label instead of Russian wording, so the every-turn Russian requirement is not fully met."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background jobs are affected and interactive requests are not; failed jobs retry after 30 seconds; after three failed attempts they move to a review queue and are not automatically deleted; a notification address is mandatory; batch size is optional with a default of 20; and a notification from a test-environment failure must be received before production enablement."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e45420f7/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-e45420f7-sandbox/37c7256f-5815-4cc0-a942-958db8716214.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T19:55:02.482Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T19:55:12.025Z",
+              "text": "Вот что здесь важного:\n\n## Что изменилось для очереди заданий\n\nТеперь обработка фоновых заданий (background delivery jobs) имеет встроенную политику переповтора: вместо того чтобы потеряться при первом сбое, задание получит несколько попыток. Интерактивные запросы (interactive requests) никак не затронуты.\n\n## Что произойдёт при сбое\n\n1. Задание повторится автоматически через 30 секунд\n2. После трёх неудачных попыток оно переместится в очередь проверки (review queue)\n3. Автоматического удаления нет — задание останется в системе\n\n## Что нужно настроить перед включением\n\n**Обязательно:**\n- Адрес для отправки уведомлений (notification address) — это критично, без этого не включаем\n\n**Опционально:**\n- Размер батча (batch size) — если не указать, используется по умолчанию 20 заданий\n\n## Ещё один момент — rollout gate\n\nЕсть защита от поспешного включения: нужно дождаться, чтобы **сначала в тестовой среде произошёл сбой и нас уведомили о нём**. Это проверяет, что система мониторинга работает. После этого можно включать в продакшене.\n\nПричина: переповторы спасают потерянные задания, но одновременно замедляют доставку из-за ожиданий между попытками."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
