@@ -1,0 +1,67 @@
+{
+  "versions": {
+    "bundled_claude": "2.1.232 (Claude Code)",
+    "agent_sdk": "0.3.232",
+    "acp_bridge": "0.68.0"
+  },
+  "markers": {
+    "original": "MESSAGE_DISPLAY_ORIGINAL_PROBE",
+    "edited": "MESSAGE_DISPLAY_EDITED_PROBE"
+  },
+  "safeguards": {
+    "real_model_called": false,
+    "external_network_blocked": true,
+    "real_credentials_used": false,
+    "health_and_watchdog_enabled": true,
+    "request_headers_and_bodies_saved": false
+  },
+  "observations": {
+    "direct": {
+      "exit_code": 0,
+      "visible_markers": [
+        "MESSAGE_DISPLAY_EDITED_PROBE"
+      ],
+      "result_markers": [
+        "MESSAGE_DISPLAY_EDITED_PROBE"
+      ],
+      "transcript_assistant_markers": [
+        "MESSAGE_DISPLAY_ORIGINAL_PROBE"
+      ],
+      "hook_calls": [
+        {
+          "is_message_display": true,
+          "index_zero": true,
+          "final": true,
+          "original_seen": true
+        }
+      ],
+      "direct_partial_events_emitted": false,
+      "synthetic_message_requests": 1,
+      "resource_guard_tripped": false,
+      "error_output_present": false
+    },
+    "acp": {
+      "exit_code": 0,
+      "visible_markers": [
+        "MESSAGE_DISPLAY_ORIGINAL_PROBE",
+        "MESSAGE_DISPLAY_EDITED_PROBE"
+      ],
+      "result_markers": [],
+      "transcript_assistant_markers": [
+        "MESSAGE_DISPLAY_ORIGINAL_PROBE"
+      ],
+      "hook_calls": [
+        {
+          "is_message_display": true,
+          "index_zero": true,
+          "final": true,
+          "original_seen": true
+        }
+      ],
+      "direct_partial_events_emitted": false,
+      "synthetic_message_requests": 1,
+      "resource_guard_tripped": false,
+      "error_output_present": false
+    }
+  }
+}

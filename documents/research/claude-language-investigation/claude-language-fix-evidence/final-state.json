@@ -1,0 +1,17 @@
+{
+  "branch": "codex/claude-language-fix",
+  "templateRestoredToSavedBaseline": true,
+  "templateSha256": "c2e5c61f3c05fc5d63b3ad50da56f56871108a15c35eb8ebb2fd8168d98431b3",
+  "frozenScenarioFiles": 18,
+  "changedScenarioFiles": [],
+  "experimentalAgentRemovedFromProduct": true,
+  "acceptedFix": false,
+  "installed": false,
+  "committed": false,
+  "finalChecks": {
+    "git diff --check": "passed",
+    "deno run -A scripts/check-task-format.ts": "passed; no warnings",
+    "frozen scenario hashes": "18/18 unchanged",
+    "full ordinary checks": "not rerun; historical result and independent blocker documented"
+  }
+}

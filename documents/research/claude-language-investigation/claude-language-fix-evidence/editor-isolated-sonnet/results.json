@@ -1,0 +1,101 @@
+{
+  "kind": "isolated-Sonnet-editor-comparison-not-acceptance",
+  "editorCalls": 2,
+  "judgeCalls": 0,
+  "results": [
+    {
+      "id": "source-1",
+      "editorModel": [
+        "claude-sonnet-4-6"
+      ],
+      "modelUsage": {
+        "claude-sonnet-4-6": {
+          "inputTokens": 1019,
+          "outputTokens": 2117,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.034811999999999996,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 1835,
+          "canonicalModel": "claude-sonnet-4-6",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "editorCostUsd": 0.034811999999999996,
+      "editorUsage": {
+        "input_tokens": 1019,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 2117,
+        "output_tokens_details": {
+          "thinking_tokens": 1835
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "protectedArtifactUnchanged": null,
+      "exactDraftUnchanged": false,
+      "remainingGlosses": []
+    },
+    {
+      "id": "exceptions-clear",
+      "editorModel": [
+        "claude-sonnet-4-6"
+      ],
+      "modelUsage": {
+        "claude-sonnet-4-6": {
+          "inputTokens": 906,
+          "outputTokens": 140,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0,
+          "webSearchRequests": 0,
+          "costUSD": 0.004817999999999999,
+          "contextWindow": 200000,
+          "maxOutputTokens": 32000,
+          "thinkingTokens": 0,
+          "canonicalModel": "claude-sonnet-4-6",
+          "provider": "firstParty",
+          "costBasis": "list"
+        }
+      },
+      "editorCostUsd": 0.004817999999999999,
+      "editorUsage": {
+        "input_tokens": 906,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 140,
+        "output_tokens_details": {
+          "thinking_tokens": 0
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "protectedArtifactUnchanged": true,
+      "exactDraftUnchanged": true,
+      "remainingGlosses": []
+    }
+  ]
+}

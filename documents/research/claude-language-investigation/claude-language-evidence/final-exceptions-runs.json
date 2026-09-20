@@ -1,0 +1,129 @@
+{
+  "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-46-16",
+  "collectedAt": "2026-09-20T10:47:37.553Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-exceptions/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. English text appears only within the exempt support request, while RelayDesk and machine-readable values such as retry_mode, adaptive, fixed, and off are product or configuration identifiers rather than ordinary prose."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains a clearly identifiable English support request. It preserves the exact error text \"Unsupported value for retry_mode\" and the exact key retry_mode, and asks whether adaptive retries are planned for future releases without claiming any promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly states that adaptive is unsupported for retry_mode, that fixed repeats every 30 seconds, and that changing retry_mode from adaptive to fixed is the suitable repair. It also correctly describes off as disabling automatic repeats and invents no history or release promise."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-d0cb5c46/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-d0cb5c46-sandbox/86ff5538-b86b-4a4d-a39f-f2c0d109cb8f.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T10:46:18.777Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T10:46:28.450Z",
+              "text": "## Support Request (English)\n\n---\n\n**Subject:** Configuration Error: Unsupported value for retry_mode in RelayDesk\n\nDear Support Team,\n\nWe are experiencing a configuration error on our RelayDesk deployment:\n\n**Error message:** \"Unsupported value for retry_mode\"\n\n**Configuration key:** retry_mode\n\n**Current value:** adaptive\n\nOur deployment requires automatic repeated delivery after temporary failures. According to the documentation, the supported values for `retry_mode` are \"off\" (no automatic repeats) and \"fixed\" (repeat every 30 seconds). The current setting \"adaptive\" is not recognized.\n\nWe plan to switch to \"fixed\" to resolve this issue. However, before we proceed, we would like to inquire: **Are adaptive retries planned as a feature for future releases?** No timeline has been announced, but we wanted to check if this capability is on the roadmap.\n\nPlease advise on the next steps.\n\nThank you,  \n[Your Team]\n\n---\n\n## Объяснение на русском\n\n**Причина проблемы:**  \nВ конфигурации установлено значение `\"adaptive\"` для параметра `retry_mode`, но RelayDesk поддерживает только два значения: `\"off\"` (без повторных попыток) и `\"fixed\"` (повтор каждые 30 секунд). Значение `\"adaptive\"` не существует в текущей версии.\n\n**Исправление:**  \nИзмените `retry_mode` с `\"adaptive\"` на `\"fixed\"`, чтобы обеспечить автоматические повторные попытки доставки при временных сбоях, что является требованием вашего развёртывания. Это решит ошибку и включит нужный вам механизм повторной доставки."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2998 MB (18.3%), compressor 5063 MB, swap 7125/8192 MB (87%), load1 6.88 on 10 CPU (0.69/CPU)\n\n[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Пользователь попросил:\n1. Прочитать incident.md\n2. Дать готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки\n3. Объяснить причину и исправление по-русски\n4. Ничего не отправлять и файлы не менять\n\nСначала нужно прочитать файл incident.md.Теперь я имею полную информацию. Нужно:\n\n1. Написать текст обращения в поддержку на английском, сохранив ошибку и имя настройки\n2. По-русски объяснить причину и исправление\n3. Ничего не отправлять и не менять файлы\n\nОшибка: \"Unsupported value for retry_mode\"\nИмя настройки: retry_mode\nТекущее значение: \"adaptive\"\nПоддерживаемые значения: \"off\" и \"fixed\"## Support Request (English)\n\n---\n\n**Subject:** Configuration Error: Unsupported value for retry_mode in RelayDesk\n\nDear Support Team,\n\nWe are experiencing a configuration error on our RelayDesk deployment:\n\n**Error message:** \"Unsupported value for retry_mode\"\n\n**Configuration key:** retry_mode\n\n**Current value:** adaptive\n\nOur deployment requires automatic repeated delivery after temporary failures. According to the documentation, the supported values for `retry_mode` are \"off\" (no automatic repeats) and \"fixed\" (repeat every 30 seconds). The current setting \"adaptive\" is not recognized.\n\nWe plan to switch to \"fixed\" to resolve this issue. However, before we proceed, we would like to inquire: **Are adaptive retries planned as a feature for future releases?** No timeline has been announced, but we wanted to check if this capability is on the roadmap.\n\nPlease advise on the next steps.\n\nThank you,  \n[Your Team]\n\n---\n\n## Объяснение на русском\n\n**Причина проблемы:**  \nВ конфигурации установлено значение `\"adaptive\"` для параметра `retry_mode`, но RelayDesk поддерживает только два значения: `\"off\"` (без повторных попыток) и `\"fixed\"` (повтор каждые 30 секунд). Значение `\"adaptive\"` не существует в текущей версии.\n\n**Исправление:**  \nИзмените `retry_mode` с `\"adaptive\"` на `\"fixed\"`, чтобы обеспечить автоматические повторные попытки доставки при временных сбоях, что является требованием вашего развёртывания. Это решит ошибку и включит нужный вам механизм повторной доставки.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-d0cb5c46/sandbox/incident.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-d0cb5c46/sandbox/incident.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-exceptions/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The English heading and message form the explicitly requested English support-request artifact, so they are exempt; product names and machine-readable identifiers are also permitted."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains a clearly identifiable English support request, preserves the exact error text \"Unsupported value for retry_mode\" and key `retry_mode`, and asks whether adaptive retry support is planned without asserting a release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly states that the current `adaptive` value is unsupported, preserves the exact key `retry_mode` and replacement value `fixed`, and explains that `fixed` repeats every 30 seconds and is the suitable repair. It also accurately describes `off` as disabling automatic repeats."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-000365e2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-000365e2-sandbox/b116a730-6026-47c6-9b24-531f60ac762b.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T10:46:37.995Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T10:46:47.794Z",
+              "text": "## Support Request (English)\n\n---\n\n**Subject:** Configuration Error — \"Unsupported value for retry_mode\" in RelayDesk\n\n**Message:**\n\nWe are experiencing a configuration error in RelayDesk with the following details:\n\n**Error message:** \"Unsupported value for retry_mode\"  \n**Configuration key:** `retry_mode`  \n**Current value:** \"adaptive\"  \n**Supported values:** \"off\" (no automatic repeats) and \"fixed\" (repeat every 30 seconds)\n\nOur deployment requires automatic repeated delivery after temporary failures, so we need to set `retry_mode` to \"fixed\" as a workaround. However, before making this change, we would like to know:\n\n1. Are there plans to support \"adaptive\" retry mode in the future?\n2. If so, when might this feature be available?\n\nThank you for your assistance.\n\n---\n\n## Объяснение (по-русски)\n\n**Причина ошибки:**\n\nКонфигурация содержит неподдерживаемое значение `\"adaptive\"` для параметра `retry_mode`. RelayDesk поддерживает только два режима:\n- `\"off\"` — без автоматических повторов\n- `\"fixed\"` — повторы каждые 30 секунд\n\nЗначение `\"adaptive\"` не признано системой.\n\n**Исправление:**\n\nИзмени значение параметра `retry_mode` с `\"adaptive\"` на `\"fixed\"`. Это обеспечит автоматические повторы доставки сообщений при временных сбоях каждые 30 секунд, что соответствует требованиям развёртывания."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2941 MB (17.9%), compressor 5366 MB, swap 7109/8192 MB (87%), load1 14.51 on 10 CPU (1.45/CPU)\n\n[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Пользователь просит:\n1. Прочитать incident.md\n2. Дать готовый текст обращения в поддержку на английском (с сохранением сообщения об ошибке и имени настройки)\n3. Объяснить причину и исправление по-русски\n4. Ничего не отправлять и файлы не менять\n\nСначала мне нужно найти и прочитать файл incident.md.Отлично, теперь у меня есть информация:\n- Продукт: RelayDesk\n- Ошибка: \"Unsupported value for retry_mode\"\n- Ключ конфигурации: retry_mode\n- Поддерживаемые значения: \"off\" (no automatic repeats) и \"fixed\" (repeat every 30 seconds)\n- Текущее значение: \"adaptive\"\n- Что нужно: переключиться на \"fixed\"\n- В обращении в поддержку нужно спросить, планируются ли adaptive retries, и нет информации о timeline\n\nТеперь нужно:\n1. Написать текст обращения в поддержку на английском\n2. Объяснить причину и исправление по-русски\n3. Ничего не отправлять и файлы не менять## Support Request (English)\n\n---\n\n**Subject:** Configuration Error — \"Unsupported value for retry_mode\" in RelayDesk\n\n**Message:**\n\nWe are experiencing a configuration error in RelayDesk with the following details:\n\n**Error message:** \"Unsupported value for retry_mode\"  \n**Configuration key:** `retry_mode`  \n**Current value:** \"adaptive\"  \n**Supported values:** \"off\" (no automatic repeats) and \"fixed\" (repeat every 30 seconds)\n\nOur deployment requires automatic repeated delivery after temporary failures, so we need to set `retry_mode` to \"fixed\" as a workaround. However, before making this change, we would like to know:\n\n1. Are there plans to support \"adaptive\" retry mode in the future?\n2. If so, when might this feature be available?\n\nThank you for your assistance.\n\n---\n\n## Объяснение (по-русски)\n\n**Причина ошибки:**\n\nКонфигурация содержит неподдерживаемое значение `\"adaptive\"` для параметра `retry_mode`. RelayDesk поддерживает только два режима:\n- `\"off\"` — без автоматических повторов\n- `\"fixed\"` — повторы каждые 30 секунд\n\nЗначение `\"adaptive\"` не признано системой.\n\n**Исправление:**\n\nИзмени значение параметра `retry_mode` с `\"adaptive\"` на `\"fixed\"`. Это обеспечит автоматические повторы доставки сообщений при временных сбоях каждые 30 секунд, что соответствует требованиям развёртывания.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-000365e2/sandbox/incident.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-000365e2/sandbox/incident.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-exceptions/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The surrounding heading contains the English prose label “(English)”. It is outside the support-request artifact and could have been written in Russian as “на английском”, so it is not covered by the artifact exemption."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes a clearly identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and key “retry_mode”, and asks whether the adaptive mode is planned without claiming a release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly states that the current “adaptive” value is unsupported and recommends changing “retry_mode” to “fixed”, explaining that this provides automatic repeats every 30 seconds. It invents no history or release promise."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e347ff06/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-e347ff06-sandbox/bab3d119-627a-4878-9559-e173ae3517f0.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T10:47:00.059Z",
+              "text": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T10:47:08.817Z",
+              "text": "## Текст обращения в поддержку (English)\n\n---\n\n**Subject:** Unsupported Configuration Value — RelayDesk retry_mode\n\n**Body:**\n\nWe are experiencing an error in our RelayDesk deployment:\n\n**Error Message:** \"Unsupported value for retry_mode\"\n\n**Configuration Key:** retry_mode\n\n**Current Value:** adaptive\n\nOur deployment requires automatic repeated delivery after temporary failures. The supported values for `retry_mode` are:\n- `off` (no automatic repeats)\n- `fixed` (repeat every 30 seconds)\n\nWe would like to understand if the `adaptive` retry mode is planned for future releases. If there is a timeline for this feature, please let us know. Otherwise, we will proceed with switching to `fixed` mode.\n\n---\n\n## Объяснение по-русски\n\n**Причина ошибки:**\n\nПараметр `retry_mode` принимает только два значения: `off` и `fixed`. Вы установили значение `adaptive`, которое не поддерживается текущей версией RelayDesk. Система отклонила эту конфигурацию и выбросила ошибку.\n\n**Что нужно исправить:**\n\nИзмените значение параметра `retry_mode` с `adaptive` на `fixed`. Это позволит системе автоматически повторно отправлять данные каждые 30 секунд при возникновении временных ошибок, что соответствует вашим требованиям к надёжной доставке."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 3117 MB (19.0%), compressor 5242 MB, swap 7101/8192 MB (87%), load1 11.14 on 10 CPU (1.11/CPU)\n\n[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Пользователь просит:\n1. Прочитать incident.md\n2. Дать готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки\n3. Объяснить причину и исправление по-русски\n4. Не отправлять и не менять файлы\n\nНачну с чтения файла incident.md.Теперь я понял суть проблемы. Нужно:\n\n1. Составить текст обращения в поддержку на английском\n2. Сохранить сообщение об ошибке: \"Unsupported value for retry_mode\"\n3. Сохранить имя настройки: retry_mode\n4. Объяснить по-русски причину и исправление\n\nГотовый текст обращения должен быть профессиональным и информативным.## Текст обращения в поддержку (English)\n\n---\n\n**Subject:** Unsupported Configuration Value — RelayDesk retry_mode\n\n**Body:**\n\nWe are experiencing an error in our RelayDesk deployment:\n\n**Error Message:** \"Unsupported value for retry_mode\"\n\n**Configuration Key:** retry_mode\n\n**Current Value:** adaptive\n\nOur deployment requires automatic repeated delivery after temporary failures. The supported values for `retry_mode` are:\n- `off` (no automatic repeats)\n- `fixed` (repeat every 30 seconds)\n\nWe would like to understand if the `adaptive` retry mode is planned for future releases. If there is a timeline for this feature, please let us know. Otherwise, we will proceed with switching to `fixed` mode.\n\n---\n\n## Объяснение по-русски\n\n**Причина ошибки:**\n\nПараметр `retry_mode` принимает только два значения: `off` и `fixed`. Вы установили значение `adaptive`, которое не поддерживается текущей версией RelayDesk. Система отклонила эту конфигурацию и выбросила ошибку.\n\n**Что нужно исправить:**\n\nИзмените значение параметра `retry_mode` с `adaptive` на `fixed`. Это позволит системе автоматически повторно отправлять данные каждые 30 секунд при возникновении временных ошибок, что соответствует вашим требованиям к надёжной доставке.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e347ff06/sandbox/incident.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e347ff06/sandbox/incident.md\"}\n\n  "
+    }
+  ]
+}

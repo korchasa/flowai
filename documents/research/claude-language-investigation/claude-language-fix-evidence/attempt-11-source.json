@@ -1,0 +1,48 @@
+{
+  "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-41-45",
+  "collectedAt": "2026-09-20T11:45:00.904Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose, including the interim update and headings, is in Russian. The terms «батча» and «тест» are established industry loanwords and do not violate the language requirement."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states that only background delivery jobs are affected, retries occur after 30 seconds, three failed attempts lead to manual review rather than deletion, a notification address is mandatory, batch size is optional with a default of 20, and a test failure must produce a notification before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-4c000233/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-4c000233-sandbox/f527f923-8511-4bed-b2c5-599566dfac1c.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:41:47.577Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:41:49.387Z",
+              "text": "Читаю release-note.md."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:41:56.198Z",
+              "text": "По release-note.md вот что изменилось:\n\n**Для очереди заданий:**\n- Влияет только на фоновые задачи доставки; интерактивные запросы работают без изменений\n- Неудачные задачи теперь перезапускаются автоматически (раньше видимо терялись)\n\n**При сбое:**\n- Первый перезапуск — через 30 секунд\n- После трёх неудачных попыток задача переходит в очередь проверки вручную\n- Автоматического удаления нет\n\n**Нужно настроить перед включением:**\n- **Адрес для уведомлений** — обязательно; это главное\n- Размер батча — опционально (по умолчанию 20 заданий)\n- Плюс требуется тест: хотя бы один раз намеренно вызвать ошибку и убедиться, что уведомление приходит, — только после этого включать"
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 4371 MB (26.7%), compressor 3102 MB, swap 8276/9216 MB (90%), load1 5.40 on 10 CPU (0.54/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< The user is asking me to read release-note.md and answer three questions in Russian:\n1. What changed for the job queue?\n2. What will happen on failure?\n3. What do we need to set up before enabling it?\n\nThey also said not to change any files.\n\nLet me first check if release-note.md exists and read it.Читаю release-note.md.Now I need to answer the user's three questions in Russian based on the content of release-note.md. Let me organize the information:\n\n1. What changed for the job queue (очередь заданий)?\n   - Background delivery jobs are affected\n   - Interactive requests keep current behavior\n   - Failed jobs are now retried after 30 seconds\n   - After 3 attempts, moved to review queue instead of deletion\n\n2. What will happen on failure (при сбое)?\n   - Retry after 30 seconds\n   - After 3 failed attempts → moved to review queue\n   - No automatic deletion\n\n3. What needs to be set up before enabling (перед включением)?\n   - Notification address is required\n   - Batch size is optional (default 20)\n   - Should test that a failure actually produces a notification before enabling\n\nThe user specifically said not to change files, so I just read and provide information.По release-note.md вот что изменилось:\n\n**Для очереди заданий:**\n- Влияет только на фоновые задачи доставки; интерактивные запросы работают без изменений\n- Неудачные задачи теперь перезапускаются автоматически (раньше видимо терялись)\n\n**При сбое:**\n- Первый перезапуск — через 30 секунд\n- После трёх неудачных попыток задача переходит в очередь проверки вручную\n- Автоматического удаления нет\n\n**Нужно настроить перед включением:**\n- **Адрес для уведомлений** — обязательно; это главное\n- Размер батча — опционально (по умолчанию 20 заданий)\n- Плюс требуется тест: хотя бы один раз намеренно вызвать ошибку и убедиться, что уведомление приходит, — только после этого включать\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-4c000233/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-4c000233/sandbox/release-note.md\"}\n\n  "
+    }
+  ]
+}

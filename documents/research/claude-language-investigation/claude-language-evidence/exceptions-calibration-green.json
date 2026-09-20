@@ -1,0 +1,311 @@
+{
+  "results": [
+    {
+      "label": "agents-rules-chat-exceptions/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. Product names and machine-readable identifiers such as RelayDesk, adaptive, retry_mode, fixed, and off are exempt."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes a clearly identifiable English support request. It preserves the exact error text \"Unsupported value for retry_mode\" and the exact key retry_mode, asks whether adaptive retries are planned, and explicitly states that there is no announced release date rather than inventing a promise."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly says that adaptive is unsupported for retry_mode, instructs the reader to replace it with the exact supported value fixed, and states that this will retry delivery every 30 seconds. It also correctly explains that off disables automatic retries and invents no support history or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 3827,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 198,
+        "reasoning": 0,
+        "total": 14137
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. The English text appears only within the clearly identified support request introduced by “Текст обращения:” and is therefore exempt."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains an identifiable English support request. It preserves the exact error “Unsupported value for retry_mode” and exact setting key “retry_mode”, asks “Are adaptive retries planned?”, and states that there is no announced release date rather than inventing a promised date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly says that the current value `adaptive` is unsupported for `retry_mode`, recommends the exact supported value `fixed`, and explains that it retries delivery every 30 seconds. It also correctly states that `off` disables automatic retries and makes no invented historical or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4172,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 197,
+        "reasoning": 0,
+        "total": 14481
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing headings “Support request:”, “Root cause:” and “Required change:” are ordinary English prose. The English support-request body is explicitly exempt, but these surrounding labels and explanatory headings are not."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains an identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and the exact setting key “retry_mode”, asks whether adaptive retries are planned, and does not claim a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The explanation states that the adaptive value is unsupported for `retry_mode`, identifies `fixed` as the required repair, and explains that it repeats every 30 seconds. It also correctly says that `off` disables repeats and does not invent a release promise or history."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Support request:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nRoot cause: неподдерживаемое значение `adaptive` в `retry_mode`. Required change: `fixed` — повторы каждые 30 секунд. `off` отключает повторы и не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4158,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 188,
+        "reasoning": 211,
+        "total": 14669
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The explanatory response contains ordinary English prose/headings outside the exempt support-request artifact: \"Root cause:\" and \"Required change:\". The heading \"Support request:\" is also English. These are user-facing labels, not quoted source text, product names, code, or machine-readable identifiers."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The identifiable support request is in English, includes the exact error \"Unsupported value for retry_mode\", preserves the exact key \"retry_mode\", and asks whether adaptive retries are planned. It does not claim a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The explanation states that the current `adaptive` value is unsupported for `retry_mode`, identifies exact value `fixed` as the required repair, and says it repeats every 30 seconds. It also correctly explains that `off` disables repeats and does not invent a release promise or history."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Support request:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nRoot cause: неподдерживаемое значение `adaptive` в `retry_mode`. Required change: `fixed` — повторы каждые 30 секунд. `off` отключает повторы и не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14270,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 206,
+        "reasoning": 184,
+        "total": 14660
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear-brief/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. The English text is confined to the exempt artifact, while `adaptive`, `retry_mode`, and `fixed` are exact machine-readable identifiers/values."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response clearly labels and provides an English support request. It preserves the exact error text \"Unsupported value for retry_mode\", includes the exact setting key `retry_mode`, and asks whether adaptive retries are planned without claiming or inventing a release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation states that `adaptive` is unsupported for `retry_mode`, directs the reader to replace it with the exact supported value `fixed`, and explains that this results in retry attempts every 30 seconds during temporary failures. It invents no history or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд при временных сбоях.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14263,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 196,
+        "reasoning": 0,
+        "total": 14459
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear-brief/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. The English text is confined to the exempt support request, while `adaptive`, `retry_mode`, and `fixed` are machine-readable identifiers/values."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes an identifiable English support request, preserves the exact error text \"Unsupported value for retry_mode\" and the exact key `retry_mode`, and asks whether adaptive retries are planned without claiming any release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation states that the current `adaptive` value is unsupported for `retry_mode`, recommends replacing it with the exact supported value `fixed`, and explains that this causes delivery retries every 30 seconds during temporary failures. It invents neither a support history nor a release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд при временных сбоях.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14263,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 191,
+        "reasoning": 0,
+        "total": 14454
+      }
+    }
+  ],
+  "mismatches": []
+}

@@ -1,0 +1,64 @@
+{
+  "experimentKind": "Two isolated editor calls with byte-identical prompts and system; no judge calls and no end-to-end acceptance.",
+  "systemByteIdentical": true,
+  "systemSha256": "de931638eea0b08890717bd73627c54441ad3917067c9325e5f9c7b074b1fb7d",
+  "editorCalls": 2,
+  "judgeCalls": 0,
+  "checks": {
+    "source-1": {
+      "promptByteIdentical": true,
+      "inputJsonByteIdentical": true,
+      "promptSha256": "3e3cad2e621d7fa55e461e9d9d637a6bbb6b3d7edfd66cd44b55ac6ea3591704",
+      "exactDraftPreserved": false,
+      "numericTokensUnchanged": true,
+      "numericTokens": [
+        "30",
+        "20"
+      ],
+      "removedGlosses": [
+        "background delivery jobs",
+        "review queue",
+        "notification address",
+        "batch size"
+      ],
+      "retryStillPresent": true,
+      "additionalRussianDeletions": [
+        " — задания остаются для ручного разбора",
+        "Это подтвердит, что система оповещения работает. "
+      ],
+      "otherTextIdenticalAfterListedEdits": true,
+      "numbersAndConditionsPreserved": {
+        "Максимум **три попытки**": true,
+        "После третьего отказа": true,
+        "Автоматическое удаление **отключено**": true,
+        "**Обязательно:**": true,
+        "Установить адрес для уведомлений": true,
+        "**Опционально:**": true,
+        "если не указать, будет 20 заданий": true,
+        "Функцию нужно активировать только после того, как на тестовом сбое придёт уведомление.": true,
+        "новый режим снижает потерю заданий, но переповторы увеличивают время доставки.": true
+      }
+    },
+    "exceptions-clear": {
+      "promptByteIdentical": true,
+      "inputJsonByteIdentical": true,
+      "promptSha256": "797ae8528980beb81f35e6c5244a1c7fa9259eb274f7df4d69750085e36dc0de",
+      "exactDraftPreserved": true,
+      "numericTokensUnchanged": true,
+      "numericTokens": [
+        "30"
+      ],
+      "englishArtifactByteIdentical": true,
+      "exactProtectedStringsPreserved": {
+        "Unsupported value for retry_mode": true,
+        "retry_mode": true,
+        "adaptive": true,
+        "fixed": true,
+        "off": true
+      }
+    }
+  },
+  "sonnetCostUsd": 0.03963,
+  "sameInputsHaikuCostUsd": 0.035833,
+  "observation": "Sonnet removed four redundant English glosses but retained retry and deleted two Russian explanatory spans. The control draft was preserved exactly. This sample does not establish reliable language-only editing."
+}

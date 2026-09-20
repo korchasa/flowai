@@ -1,0 +1,18 @@
+
+<evidence>
+  <user_query>
+  Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.
+  </user_query>
+
+  <agent_logs>
+  [turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.
+< Текст обращения:
+> Hello RelayDesk support. We received "Unsupported value for retry_mode" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.
+
+Причина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.
+  </agent_logs>
+
+  <file_diffs>
+  No files were changed.
+  </file_diffs>
+</evidence>

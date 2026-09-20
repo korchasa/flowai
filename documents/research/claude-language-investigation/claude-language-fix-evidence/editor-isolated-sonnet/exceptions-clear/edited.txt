@@ -1,0 +1,4 @@
+Текст обращения:
+> Hello RelayDesk support. We received "Unsupported value for retry_mode" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.
+
+Причина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.

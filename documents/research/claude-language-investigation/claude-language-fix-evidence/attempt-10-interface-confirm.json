@@ -1,0 +1,135 @@
+{
+  "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-38-44",
+  "collectedAt": "2026-09-20T11:41:45.290Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-interface/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. English spans such as “Topic Scoped,” “Team Scoped,” “Scope,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact interface labels used to help the reader locate controls, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains that “Topic Scoped” limits access to one project and explicitly instructs the reader to select the intended project. Its description of “Team Scoped” as granting access to all team projects is consistent with team-wide access."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set “Expires At” to an absolute date and time exactly one week away and states that “Revoke” disables the current key immediately. It also correctly distinguishes “Grace Window” as the period during which an old key remains usable after rotation, rather than as the current key’s lifetime."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-89be886e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-89be886e-sandbox/ff599091-bf35-47d5-9cd8-f6ee57eb0783.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:38:46.607Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:38:55.692Z",
+              "text": "На основе access-panel.md вот что нужно сделать:\n\n**Выбрать режим:**\n- **Topic Scoped** — это правильный режим, когда нужен доступ только к одному проекту. (Team Scoped даст доступ ко всем проектам в команде, в том числе будущим.)\n\n**Заполнить:**\n1. **Scope** → Topic Scoped\n2. **Topic** → выбрать конкретный проект подрядчика\n3. **Expires At** → установить дату/время ровно через неделю (абсолютная дата, не относительная)\n4. **Grace Window** → оставить 0 (по умолчанию) — это время, в течение которого старый ключ остаётся рабочим после ротации, а не срок действия текущего\n\n**Отозвать доступ:**\nНажать **Revoke** — ключ отключится немедленно, повторных подтверждений не требуется. \n\nВместо Revoke есть ещё Rotate (если просто обновить ключ), но для полного запрета доступа именно Revoke."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2264 MB (13.8%), compressor 6617 MB, swap 8125/9216 MB (88%), load1 4.01 on 10 CPU (0.40/CPU)\n\n[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< The user is asking in Russian about reading an access-panel.md description. They need to:\n1. Give a contractor access to one project for a week\n2. Know which mode to choose\n3. Know what to fill in\n4. Know how to revoke access later\n5. They note not to change files\n\nLet me first read the access-panel.md file to understand what it contains.Now I understand the access panel. The user wants to give a contractor access to one project for a week. Let me break down what they need to do:\n\n1. **Which mode to choose**: \"Topic Scoped\" - because they need access to ONE project only\n2. **What to fill in**:\n   - Scope: Topic Scoped\n   - Topic: select the specific project they want to give access to\n   - Expires At: set to one week from now (absolute date/time)\n   - Grace Window: can leave as default (0) or set as needed\n3. **How to revoke access**: Use the \"Revoke\" button to disable the key immediately\n\nThe user specifically said \"Файлы не меняй\" (don't change files), so I should just provide the information without editing anything.На основе access-panel.md вот что нужно сделать:\n\n**Выбрать режим:**\n- **Topic Scoped** — это правильный режим, когда нужен доступ только к одному проекту. (Team Scoped даст доступ ко всем проектам в команде, в том числе будущим.)\n\n**Заполнить:**\n1. **Scope** → Topic Scoped\n2. **Topic** → выбрать конкретный проект подрядчика\n3. **Expires At** → установить дату/время ровно через неделю (абсолютная дата, не относительная)\n4. **Grace Window** → оставить 0 (по умолчанию) — это время, в течение которого старый ключ остаётся рабочим после ротации, а не срок действия текущего\n\n**Отозвать доступ:**\nНажать **Revoke** — ключ отключится немедленно, повторных подтверждений не требуется. \n\nВместо Revoke есть ещё Rotate (если просто обновить ключ), но для полного запрета доступа именно Revoke.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-89be886e/sandbox/access-panel.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-89be886e/sandbox/access-panel.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-interface/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans are exact interface labels such as “Scope,” “Topic Scoped,” “Expires At,” “Grace Window,” and “Revoke,” used to help the reader locate controls."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains that “Topic Scoped” limits access to one project rather than the whole team and instructs the reader to select the intended project in the Topic field."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "The answer correctly says to set expiry one week ahead and that revocation immediately disables the current key without creating a replacement. However, because it discusses Grace Window, it needed to explain that this field controls how long an old key remains usable after replacement; describing it only as an unnecessary “transition period” does not clearly convey that required meaning."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-748b5a0b/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-748b5a0b-sandbox/cb87089f-f71a-4222-bfb3-e234b9f3e62a.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:39:05.466Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:39:17.350Z",
+              "text": "## Для временного доступа подрядчика на неделю:\n\n**Выбрать режим:**\n- **Scope** → `Topic Scoped` (доступ только к одному проекту, а не ко всей команде)\n\n**Заполнить:**\n- **Topic** → выбрать нужный проект\n- **Expires At** → установить дату на неделю вперёд (например, 27 сентября 2026 в текущее время). После этой даты ключ перестанет работать\n- **Grace Window** → оставить 0 часов (нет необходимости давать период переходности)\n\n**Потом отозвать:**\n- Нажать **Revoke** — это немедленно отключит текущий ключ, без автоматической замены и второго подтверждения\n\nЗаметь: Expires At сработает автоматически, но если нужно отозвать раньше (например, подрядчик сделал свою часть быстрее), жми Revoke."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2554 MB (15.6%), compressor 6252 MB, swap 8455/9216 MB (92%), load1 4.95 on 10 CPU (0.49/CPU)\n\n[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Пользователь просит прочитать файл access-panel.md и объяснить:\n1. Как дать подрядчику доступ на неделю к одному проекту\n2. Какой режим выбрать\n3. Что заполнить\n4. Как потом отозвать доступ\n\nСначала нужно найти и прочитать файл access-panel.md.Отлично, теперь я могу ответить на вопрос пользователя. Давайте разберёмся:\n\n1. Пользователь хочет дать доступ подрядчику (контрактору) на одну неделю к ОДНОМУ проекту\n2. Какой режим выбрать? - Topic Scoped (так как нужен доступ к одному проекту)\n3. Что заполнить:\n   - Scope: Topic Scoped\n   - Topic: выбрать нужный проект\n   - Expires At: установить дату/время на неделю вперёд\n   - Grace Window: 0 часов (по умолчанию)\n4. Как отозвать? - Нажать Revoke (отключит ключ немедленно)\n\nОтвет на русском, как просил пользователь.## Для временного доступа подрядчика на неделю:\n\n**Выбрать режим:**\n- **Scope** → `Topic Scoped` (доступ только к одному проекту, а не ко всей команде)\n\n**Заполнить:**\n- **Topic** → выбрать нужный проект\n- **Expires At** → установить дату на неделю вперёд (например, 27 сентября 2026 в текущее время). После этой даты ключ перестанет работать\n- **Grace Window** → оставить 0 часов (нет необходимости давать период переходности)\n\n**Потом отозвать:**\n- Нажать **Revoke** — это немедленно отключит текущий ключ, без автоматической замены и второго подтверждения\n\nЗаметь: Expires At сработает автоматически, но если нужно отозвать раньше (например, подрядчик сделал свою часть быстрее), жми Revoke.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-748b5a0b/sandbox/access-panel.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-748b5a0b/sandbox/access-panel.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-interface/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. English spans such as “Topic Scoped,” “Team Scoped,” “Expires At,” “Grace Window,” “Rotate,” and “Revoke” are presented as exact interface labels needed to locate the controls, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The answer correctly says that “Topic Scoped” limits access to one project and instructs the reader to select the intended project. However, it also describes “Team Scoped” as opening “весь проект и будущие проекты,” which does not accurately convey team-wide access to all current projects and is materially inconsistent with the required meaning."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set “Expires At” to a date and time seven days away and explains that “Revoke” disables the current key immediately. It also correctly distinguishes “Grace Window” and rotation as governing how long the old key remains usable after replacement, rather than extending the one-week access period."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-b3df0157/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-b3df0157-sandbox/e8cae966-c286-43c3-814e-7a4085b0300e.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:39:29.901Z",
+              "text": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:39:31.769Z",
+              "text": "Прочитаю файл."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:39:41.066Z",
+              "text": "На основе описания в файле:\n\n## Режим\nВыбери **Topic Scoped** — это дает доступ только к одному проекту (в отличие от Team Scoped, который открывает весь проект и будущие проекты).\n\n## Что заполнить\n1. **Topic field** — выбери нужный проект (появляется только для Topic Scoped)\n2. **Expires At** — установи дату/время через неделю (например, текущая дата + 7 дней). Это абсолютная дата истечения доступа\n3. **Grace Window** — оставь по умолчанию (0 часов). Это только для `Rotate` и определяет, сколько часов старый ключ остается рабочим после его смены\n\n## Как отозвать доступ\nПосле нажми **Revoke** — это отключит текущий ключ сразу и без дополнительных подтверждений. Никаких промежуточных шагов не требуется.\n\n**Совет:** если через неделю нужно будет что-то исправить до истечения, используй `Rotate` (выпустит новый ключ, старый останется рабочим), а не `Revoke` (отключит полностью)."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2273 MB (13.9%), compressor 6529 MB, swap 8334/9216 MB (90%), load1 9.91 on 10 CPU (0.99/CPU)\n\n[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Пользователь просит мне прочитать файл access-panel.md и ответить на вопросы на русском языке о том, как дать подрядчику доступ к одному проекту на неделю. Он говорит, что файлы менять не нужно.\n\nДавайте сначала найдем и прочитаем файл access-panel.md.Прочитаю файл.Отлично, файл найден. Теперь прочитаю его.Отлично, я прочитал файл access-panel.md. Теперь я могу ответить на вопросы пользователя:\n\n1. Какой режим выбрать?\n2. Что заполнить?\n3. Как потом отозвать доступ?\n\nИз файла следует:\n- Нужно выбрать \"Topic Scoped\" (только один проект)\n- \"Team Scoped\" даст доступ ко всем проектам, что не требуется\n- Topic field - выбрать нужный проект\n- Expires At - установить дату/время истечения (через неделю)\n- Grace Window - оставить по умолчанию (0) или настроить\n- Для отзыва доступа - использовать кнопку \"Revoke\" (отключает ключ сразу)На основе описания в файле:\n\n## Режим\nВыбери **Topic Scoped** — это дает доступ только к одному проекту (в отличие от Team Scoped, который открывает весь проект и будущие проекты).\n\n## Что заполнить\n1. **Topic field** — выбери нужный проект (появляется только для Topic Scoped)\n2. **Expires At** — установи дату/время через неделю (например, текущая дата + 7 дней). Это абсолютная дата истечения доступа\n3. **Grace Window** — оставь по умолчанию (0 часов). Это только для `Rotate` и определяет, сколько часов старый ключ остается рабочим после его смены\n\n## Как отозвать доступ\nПосле нажми **Revoke** — это отключит текущий ключ сразу и без дополнительных подтверждений. Никаких промежуточных шагов не требуется.\n\n**Совет:** если через неделю нужно будет что-то исправить до истечения, используй `Rotate` (выпустит новый ключ, старый останется рабочим), а не `Revoke` (отключит полностью).\n\n[tool-calls] find . -name \"access-panel.md\" -type f [kind=execute]: {\"command\":\"find . -name \\\"access-panel.md\\\" -type f\"}\n             Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-b3df0157/sandbox/access-panel.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-b3df0157/sandbox/access-panel.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    }
+  ]
+}

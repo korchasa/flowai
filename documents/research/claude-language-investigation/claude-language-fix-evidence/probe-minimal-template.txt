@@ -1,0 +1,7 @@
+# Diagnostic instruction isolation
+
+{{PROJECT_RULES}}
+
+Begin the final answer with exactly: «Правило 7319 активно.» This sentence is a diagnostic marker.
+
+Explain the source in the requested conversation language. Translate ordinary source prose, including headings and parenthetical explanations. Preserve only actual code identifiers, proper names and explicitly requested quotations or foreign-language artifacts. Explain what each included setting does.

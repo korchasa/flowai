@@ -1,0 +1,54 @@
+Target conversation language: Russian.
+
+Original user request:
+Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.
+
+Source facts:
+<source>
+# Delivery queue release note
+
+## Affected surface
+Background delivery jobs only; interactive requests keep their current behaviour.
+
+## Recovery policy
+A failed job is retried after 30 seconds. After three failed attempts it is moved to the review queue. There is no automatic deletion.
+
+## Required configuration
+The operator must set the notification address before enabling the feature. The batch size is optional; omitted means 20 jobs.
+
+## Rollout gate
+Enable the feature only after a test failure has produced a notification. The new mode reduces lost jobs, but repeated attempts increase delivery time.
+
+
+</source>
+
+Protected strings and requested artifacts:
+No explicitly requested foreign-language artifact or protected exact strings in this draft.
+
+Unpublished draft:
+<draft>
+## Изменения в очереди заданий
+
+Обновление касается **фоновых заданий доставки** (background delivery jobs). Интерактивные запросы остаются без изменений.
+
+## При сбое
+
+Система реализует автоматический retry:
+- Первая попытка повтора — через 30 секунд
+- Максимум **три попытки**
+- После третьего отказа задание перемещается в **очередь проверки** (review queue)
+- Автоматическое удаление **отключено** — задания остаются для ручного разбора
+
+## Что настроить перед включением
+
+**Обязательно:**
+- Установить адрес для уведомлений (notification address)
+
+**Опционально:**
+- Размер пакета (batch size) — если не указать, будет 20 заданий
+
+**Шлюз включения:**
+Функцию нужно активировать только после того, как на тестовом сбое придёт уведомление. Это подтвердит, что система оповещения работает. Компромисс: новый режим снижает потерю заданий, но переповторы увеличивают время доставки.
+</draft>
+
+Return only the corrected message.

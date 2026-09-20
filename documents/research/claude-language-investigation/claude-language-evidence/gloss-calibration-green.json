@@ -1,0 +1,1619 @@
+{
+  "results": [
+    {
+      "label": "agents-rules-chat-source/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The only borrowed terms, such as «тестовый», are established Russian usage and do not constitute ordinary English prose."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background job delivery is affected; a failed job is retried after 30 seconds; after three failed attempts it is sent for review rather than deleted; a notification address must be configured; batch size can be omitted and defaults to 20 jobs; and a test failure must be triggered and its notification confirmed before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Изменение касается только фоновой доставки заданий. Обычные запросы продолжат работать как раньше. После сбоя задание повторят через 30 секунд. После трёх неудачных попыток его отправят на проверку, а не удалят. До включения укажите адрес уведомлений. Размер пачки можно не задавать: тогда берётся 20 заданий. Сначала вызовите тестовый сбой и убедитесь, что уведомление пришло. Повторные попытки уменьшают потери, но увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 13896,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 139,
+        "reasoning": 0,
+        "total": 14035
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant's entire user-facing response is in Russian. The wording contains no ordinary English prose or headings; permitted established terms such as «тестовый» do not violate the requirement."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The response clearly states every required fact: only background job delivery changes; normal requests remain unaffected; a failed job is retried after 30 seconds; after three failed attempts it is sent for review rather than deleted; a notification address must be configured; batch size may be omitted and then defaults to 20 jobs; and a test failure must be triggered with receipt of its notification verified before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Изменение касается только фоновой доставки заданий. Обычные запросы продолжат работать как раньше. После сбоя задание повторят через 30 секунд. После трёх неудачных попыток его отправят на проверку, а не удалят. До включения укажите адрес уведомлений. Размер пачки можно не задавать: тогда берётся 20 заданий. Сначала вызовите тестовый сбой и убедитесь, что уведомление пришло. Повторные попытки уменьшают потери, но увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4129,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 151,
+        "reasoning": 0,
+        "total": 14392
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The response contains ordinary English prose in headings and body: “Affected surface,” “Recovery policy,” “Required configuration,” “required,” “optional,” and “Rollout gate.” These are explanatory headings/terms, not exact code or UI identifiers, so the Russian-only requirement is not met."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer states that only background delivery is affected; retries occur after 30 seconds; after three failures the work is retained for review rather than deleted; a notification address is mandatory; batch size is optional with a default of 20; and a test-failure notification must arrive before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< ## Affected surface\nИзменение касается фоновой доставки, обычные запросы не меняются.\n## Recovery policy\nПосле сбоя повтор через 30 секунд; после трёх неудач — проверка без удаления.\n## Required configuration\nАдрес уведомлений required; размер пачки optional, по умолчанию 20. Rollout gate: перед включением должно прийти уведомление от тестового сбоя. Повторы уменьшают потери, но задерживают доставку.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14226,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 153,
+        "reasoning": 86,
+        "total": 14465
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing response contains ordinary English prose in the headings “Affected surface,” “Recovery policy,” and “Required configuration,” as well as the words “required,” “optional,” and the phrase “Rollout gate.” These are prose labels or translations, not exact code/UI identifiers or product names, so the response is not fully in Russian."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The response states that only background delivery is affected, retry occurs after 30 seconds, three failures lead to review without deletion, the notification address is mandatory, batch size is optional with a default of 20, and a notification from a test failure must arrive before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< ## Affected surface\nИзменение касается фоновой доставки, обычные запросы не меняются.\n## Recovery policy\nПосле сбоя повтор через 30 секунд; после трёх неудач — проверка без удаления.\n## Required configuration\nАдрес уведомлений required; размер пачки optional, по умолчанию 20. Rollout gate: перед включением должно прийти уведомление от тестового сбоя. Повторы уменьшают потери, но задерживают доставку.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4114,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 159,
+        "reasoning": 99,
+        "total": 14484
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/clear-established-term/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The only Latin-script term, “email,” is explicitly permitted by the checklist as an established conventional spelling."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background job delivery is affected; ordinary requests are unchanged; failures retry after 30 seconds; after three failed attempts the job is sent for review rather than deleted; a notification email must be configured; batch size can be omitted and defaults to 20; and a test failure must be triggered with notification receipt verified before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Изменение касается только фоновой доставки заданий. Обычные запросы продолжат работать как раньше. После сбоя задание повторят через 30 секунд. После трёх неудачных попыток его отправят на проверку, а не удалят. До включения укажите email для уведомлений. Размер пачки можно не задавать: тогда берётся 20 заданий. Сначала вызовите тестовый сбой и убедитесь, что уведомление пришло. Повторные попытки уменьшают потери, но увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 2082,
+        "cachedInput": 12160,
+        "cacheWrite": 0,
+        "output": 137,
+        "reasoning": 0,
+        "total": 14379
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/clear-established-term/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant’s entire user-facing response is in Russian. The use of “email” is explicitly permitted by the checklist, and there are no ordinary English prose phrases or headings."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The response clearly states every required fact: only background job delivery changes; a failed job is retried after 30 seconds; after three failed attempts it is sent for review rather than deleted; a notification email must be configured; batch size can be omitted and defaults to 20 jobs; and a test failure must be triggered with receipt of the notification verified before enabling."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Изменение касается только фоновой доставки заданий. Обычные запросы продолжат работать как раньше. После сбоя задание повторят через 30 секунд. После трёх неудачных попыток его отправят на проверку, а не удалят. До включения укажите email для уведомлений. Размер пачки можно не задавать: тогда берётся 20 заданий. Сначала вызовите тестовый сбой и убедитесь, что уведомление пришло. Повторные попытки уменьшают потери, но увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4130,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 143,
+        "reasoning": 0,
+        "total": 14385
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/defective-redundant-gloss/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The response contains redundant English prose glosses: “(background delivery jobs)”, “(review queue)”, “(notification address)”, and “(batch size)”. These translate ordinary wording already expressed in Russian and are not exact code or UI identifiers required for locating or configuring something."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required operational fact: only background delivery jobs are affected; retries begin after 30 seconds and stop after three failed attempts; the job then remains in a review queue instead of being deleted; a notification address is mandatory; batch size is optional and defaults to 20; and activation must wait until a test failure produces a notification."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< ## Изменения в очереди заданий\n\nОбновление касается **фоновых заданий доставки** (background delivery jobs). Интерактивные запросы остаются без изменений.\n\n## При сбое\n\nСистема реализует автоматический повтор:\n- Первая попытка повтора — через 30 секунд\n- Максимум **три попытки**\n- После третьего отказа задание перемещается в **очередь проверки** (review queue)\n- Автоматическое удаление **отключено** — задания остаются для ручного разбора\n\n## Что настроить перед включением\n\n**Обязательно:**\n- Установить адрес для уведомлений (notification address)\n\n**Опционально:**\n- Размер пакета (batch size) — если не указать, будет 20 заданий\n\n**Шлюз включения:**\nФункцию нужно активировать только после того, как на тестовом сбое придёт уведомление. Это подтвердит, что система оповещения работает. Компромисс: новый режим снижает потерю заданий, но переповторы увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4242,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 165,
+        "reasoning": 59,
+        "total": 14578
+      }
+    },
+    {
+      "label": "agents-rules-chat-source/defective-redundant-gloss/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The response contains the parenthetical English gloss “(background delivery jobs)”. This is ordinary source wording translated redundantly after the Russian phrase “фоновых заданий доставки,” not an exact code or UI identifier, so the all-Russian prose requirement is not fully met."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery jobs are affected; retries begin after 30 seconds and stop after three failed attempts; the job then enters a review queue and is not automatically deleted; a notification address is mandatory; batch size is optional and defaults to 20; and enabling must wait until a test failure produces a notification."
+        }
+      },
+      "input": "[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< ## Изменения в очереди заданий\n\nОбновление касается **фоновых заданий доставки** (background delivery jobs). Интерактивные запросы остаются без изменений.\n\n## При сбое\n\nСистема реализует автоматический повтор:\n- Первая попытка повтора — через 30 секунд\n- Максимум **три попытки**\n- После третьего отказа задание перемещается в **очередь проверки** (review queue)\n- Автоматическое удаление **отключено** — задания остаются для ручного разбора\n\n## Что настроить перед включением\n\n**Обязательно:**\n- Установить адрес для уведомлений (notification address)\n\n**Опционально:**\n- Размер пакета (batch size) — если не указать, будет 20 заданий\n\n**Шлюз включения:**\nФункцию нужно активировать только после того, как на тестовом сбое придёт уведомление. Это подтвердит, что система оповещения работает. Компромисс: новый режим снижает потерю заданий, но переповторы увеличивают время доставки.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "operational_meaning",
+          "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4242,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 160,
+        "reasoning": 51,
+        "total": 14565
+      }
+    },
+    {
+      "label": "agents-rules-chat-code/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "strategy_meaning": true,
+        "settings_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The only Latin-script terms, `maxChars` and `keepRecent`, are exact configuration identifiers supplied so the reader can locate the settings."
+        },
+        "strategy_meaning": {
+          "pass": true,
+          "reason": "The response explains both behaviors: deleting the oldest messages until the remaining text fits the limit, and replacing the older portion with a summary while preserving recent messages unchanged. It recommends summarization when early agreements matter and explicitly notes the required additional model call and the risk of losing details."
+        },
+        "settings_meaning": {
+          "pass": true,
+          "reason": "The response explains that `maxChars` limits the character count of message content and defaults to 12,000, while `keepRecent` controls how many latest messages remain unchanged during summarization and defaults to six."
+        }
+      },
+      "input": "[turn 1] > Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй.\n< Первый способ удаляет самые старые сообщения, пока оставшийся текст не поместится в лимит. По умолчанию лимит — 12 000 символов содержимого сообщений; настройка называется `maxChars`. Второй способ заменяет старую часть кратким изложением, а последние шесть сообщений сохраняет без изменений. Количество таких последних сообщений задаёт `keepRecent`. Для договорённостей из начала разговора выбирайте второй способ: они могут сохраниться в изложении вместо полного удаления. За это нужен дополнительный вызов модели; изложение не гарантирует сохранения каждой детали.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "strategy_meaning",
+          "description": "Explain the two choices by their behaviour: delete oldest messages to fit a text budget versus replace older messages with a generated summary and retain recent ones. Explain the recommendation for retaining early agreements and the extra model call required by summarization. Class/function names alone do not satisfy this check; omitting names is fine.",
+          "critical": true
+        },
+        {
+          "id": "settings_meaning",
+          "description": "Explain the two concrete controls without relying on the reader knowing code identifiers: maxChars is a limit on characters in retained message content (default 12000), keepRecent is a count of latest messages kept unchanged by summarization (default 6). Exact spelling is optional. Merely listing names/numbers without units and roles fails. Do not judge incidental variable names inside code examples.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4242,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 179,
+        "reasoning": 0,
+        "total": 14533
+      }
+    },
+    {
+      "label": "agents-rules-chat-code/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "strategy_meaning": true,
+        "settings_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The only Latin-script terms, `maxChars` and `keepRecent`, are exact configuration identifiers provided so the reader can locate the settings, so they fall under the identifier exception."
+        },
+        "strategy_meaning": {
+          "pass": true,
+          "reason": "The response clearly explains both behaviors: the first deletes the oldest messages until the remaining text fits the limit, while the second replaces the older portion with a generated summary and preserves the latest messages unchanged. It recommends summarization when early agreements matter and explicitly notes that it requires an additional model call."
+        },
+        "settings_meaning": {
+          "pass": true,
+          "reason": "The response explains `maxChars` as the character limit for message content and gives its default as 12,000 characters. It explains `keepRecent` as the number of latest messages preserved unchanged during summarization and gives the default as six messages."
+        }
+      },
+      "input": "[turn 1] > Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй.\n< Первый способ удаляет самые старые сообщения, пока оставшийся текст не поместится в лимит. По умолчанию лимит — 12 000 символов содержимого сообщений; настройка называется `maxChars`. Второй способ заменяет старую часть кратким изложением, а последние шесть сообщений сохраняет без изменений. Количество таких последних сообщений задаёт `keepRecent`. Для договорённостей из начала разговора выбирайте второй способ: они могут сохраниться в изложении вместо полного удаления. За это нужен дополнительный вызов модели; изложение не гарантирует сохранения каждой детали.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "strategy_meaning",
+          "description": "Explain the two choices by their behaviour: delete oldest messages to fit a text budget versus replace older messages with a generated summary and retain recent ones. Explain the recommendation for retaining early agreements and the extra model call required by summarization. Class/function names alone do not satisfy this check; omitting names is fine.",
+          "critical": true
+        },
+        {
+          "id": "settings_meaning",
+          "description": "Explain the two concrete controls without relying on the reader knowing code identifiers: maxChars is a limit on characters in retained message content (default 12000), keepRecent is a count of latest messages kept unchanged by summarization (default 6). Exact spelling is optional. Merely listing names/numbers without units and roles fails. Do not judge incidental variable names inside code examples.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14354,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 197,
+        "reasoning": 0,
+        "total": 14551
+      }
+    },
+    {
+      "label": "agents-rules-chat-code/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "strategy_meaning": false,
+        "settings_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The user-facing response is in Russian. The Latin-script terms “foldHistory,” “trimOldest,” “maxChars,” and “keepRecent” are exact code identifiers, so they fall under the identifier exception rather than constituting English prose."
+        },
+        "strategy_meaning": {
+          "pass": false,
+          "reason": "The response recommends foldHistory for preserving early agreements and mentions that it requires an extra model call, but it does not explain either strategy's behavior: it never states that trimOldest deletes the oldest messages until the character budget is met, nor that foldHistory replaces older messages with a generated summary while retaining recent messages."
+        },
+        "settings_meaning": {
+          "pass": false,
+          "reason": "The response merely lists “maxChars = 12000” and “keepRecent = 6.” It does not explain that maxChars is the character limit for retained message content or that keepRecent is the number of latest messages preserved unchanged during summarization."
+        }
+      },
+      "input": "[turn 1] > Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй.\n< Рекомендую foldHistory: у него лучше сохранение ранних договорённостей, но нужен ещё один вызов модели. Альтернатива — trimOldest, без дополнительных расходов. Настройки: maxChars = 12000, keepRecent = 6.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "strategy_meaning",
+          "description": "Explain the two choices by their behaviour: delete oldest messages to fit a text budget versus replace older messages with a generated summary and retain recent ones. Explain the recommendation for retaining early agreements and the extra model call required by summarization. Class/function names alone do not satisfy this check; omitting names is fine.",
+          "critical": true
+        },
+        {
+          "id": "settings_meaning",
+          "description": "Explain the two concrete controls without relying on the reader knowing code identifiers: maxChars is a limit on characters in retained message content (default 12000), keepRecent is a count of latest messages kept unchanged by summarization (default 6). Exact spelling is optional. Merely listing names/numbers without units and roles fails. Do not judge incidental variable names inside code examples.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14287,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 208,
+        "reasoning": 0,
+        "total": 14495
+      }
+    },
+    {
+      "label": "agents-rules-chat-code/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "strategy_meaning": false,
+        "settings_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The entire user-facing response is in Russian. The Latin-script terms “foldHistory”, “trimOldest”, “maxChars”, and “keepRecent” are exact code identifiers, so they fall under the stated exception."
+        },
+        "strategy_meaning": {
+          "pass": false,
+          "reason": "The response recommends foldHistory for preserving early agreements and mentions that it requires an extra model call, but it does not explain either strategy’s behavior: deleting the oldest messages until the text budget is met versus replacing older messages with a generated summary while retaining recent messages."
+        },
+        "settings_meaning": {
+          "pass": false,
+          "reason": "The response only lists “maxChars = 12000” and “keepRecent = 6”. It does not explain that maxChars is a character limit on retained message content or that keepRecent is the number of latest messages preserved unchanged during summarization."
+        }
+      },
+      "input": "[turn 1] > Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй.\n< Рекомендую foldHistory: у него лучше сохранение ранних договорённостей, но нужен ещё один вызов модели. Альтернатива — trimOldest, без дополнительных расходов. Настройки: maxChars = 12000, keepRecent = 6.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "strategy_meaning",
+          "description": "Explain the two choices by their behaviour: delete oldest messages to fit a text budget versus replace older messages with a generated summary and retain recent ones. Explain the recommendation for retaining early agreements and the extra model call required by summarization. Class/function names alone do not satisfy this check; omitting names is fine.",
+          "critical": true
+        },
+        {
+          "id": "settings_meaning",
+          "description": "Explain the two concrete controls without relying on the reader knowing code identifiers: maxChars is a limit on characters in retained message content (default 12000), keepRecent is a count of latest messages kept unchanged by summarization (default 6). Exact spelling is optional. Merely listing names/numbers without units and roles fails. Do not judge incidental variable names inside code examples.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14287,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 192,
+        "reasoning": 0,
+        "total": 14479
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The user-facing response is in Russian. The English spans “Topic Scoped,” “Topic,” “Team Scoped,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact product/UI labels used to identify controls, so they fall under the UI-identifier exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The response explains that “Topic Scoped” grants access only to one project and explicitly instructs the reader to choose the intended project in the “Topic” field. Its description of “Team Scoped” as exposing other and future projects is consistent with team-wide access."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The response instructs the reader to set “Expires At” to a date and time one week away and explains that “Revoke” immediately disables the current key. It also correctly distinguishes “Grace Window” and “Rotate” as governing how long the old key remains usable after replacement, not the contractor’s one-week access period."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< В RelayDesk выберите доступ только к одному проекту (`Topic Scoped`) и укажите нужный проект в поле `Topic`. Доступ ко всей команде (`Team Scoped`) открыл бы подрядчику также остальные и будущие проекты. Укажите дату и время через неделю в `Expires At`; пустое поле оставляет ключ бессрочным. `Grace Window` задаёт срок работы старого ключа после замены, а не срок доступа подрядчика. Для немедленного отключения текущего ключа используйте `Revoke`. `Rotate` заменяет ключ и может оставить старый действующим на этот дополнительный срок.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4289,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 222,
+        "reasoning": 0,
+        "total": 14623
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans “RelayDesk”, “Topic Scoped”, “Topic”, “Team Scoped”, “Expires At”, “Grace Window”, “Revoke”, and “Rotate” are exact product or UI labels used to help the reader locate the relevant controls, so they qualify for the stated exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explicitly says to choose access limited to one project and to specify the intended project in the Topic field. Its description of Team Scoped as exposing the other and future projects is consistent with team-wide access."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set Expires At to a date and time one week away and states that Revoke immediately disables the current key. It also correctly distinguishes Grace Window and Rotate as governing how long the old key may remain usable after replacement, not the contractor’s one-week access period."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< В RelayDesk выберите доступ только к одному проекту (`Topic Scoped`) и укажите нужный проект в поле `Topic`. Доступ ко всей команде (`Team Scoped`) открыл бы подрядчику также остальные и будущие проекты. Укажите дату и время через неделю в `Expires At`; пустое поле оставляет ключ бессрочным. `Grace Window` задаёт срок работы старого ключа после замены, а не срок доступа подрядчика. Для немедленного отключения текущего ключа используйте `Revoke`. `Rotate` заменяет ключ и может оставить старый действующим на этот дополнительный срок.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14401,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 213,
+        "reasoning": 0,
+        "total": 14614
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": false,
+        "expiry_and_revoke": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The user-facing response is in Russian. The English spans “Topic Scoped,” “Team Scoped,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact UI labels used to identify fields and actions, so they qualify for the UI-identifier exception."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response names “Topic Scoped” and says to fill “Topic,” but it does not explain that this mode limits access to one selected project or explicitly instruct the reader to select the intended project."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "It says to set “Expires At” to one week from now and use “Revoke,” but it does not explain that revocation makes the current key stop working immediately. It also discusses “Grace Window” and “Rotate” without explaining that the grace window concerns an old key remaining usable after replacement, not the current key’s one-week lifetime."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Выберите Topic Scoped вместо Team Scoped и заполните Topic. Expires At — через неделю. Grace Window оставьте 0. После завершения используйте Revoke, а не Rotate.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14309,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 214,
+        "reasoning": 0,
+        "total": 14523
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": false,
+        "expiry_and_revoke": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The user-facing response is in Russian. The English spans (“Topic Scoped,” “Team Scoped,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate”) are exact UI labels used to identify controls and therefore fall under the stated exception."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response names “Topic Scoped” and says to fill “Topic,” but it does not explain that this mode limits access to one selected project or explicitly instruct the reader to select the intended project."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "Although the response says to set “Expires At” one week ahead and use “Revoke,” it does not explain that revocation makes the current key stop working immediately. It also discusses “Grace Window” and “Rotate” without explaining that they concern continued usability of an old key after replacement rather than the current key’s one-week lifetime."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Выберите Topic Scoped вместо Team Scoped и заполните Topic. Expires At — через неделю. Grace Window оставьте 0. После завершения используйте Revoke, а не Rotate.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 2021,
+        "cachedInput": 12288,
+        "cacheWrite": 0,
+        "output": 209,
+        "reasoning": 95,
+        "total": 14613
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear-brief/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans “Topic Scoped,” “Topic,” “Expires At,” and “Revoke” are exact UI labels used to help the reader locate the relevant controls, so they fall under the identifier exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains the mode by its effect—access only to one project—and instructs the reader to specify the intended project in the Topic field."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set Expires At to a date and time one week away and explains that using Revoke makes the current key stop working immediately."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ?\n< Выберите доступ только к одному проекту (Topic Scoped), укажите нужный проект в Topic и дату со временем через неделю в Expires At. Для отключения нажмите Revoke: текущий ключ сразу перестанет работать.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14311,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 159,
+        "reasoning": 57,
+        "total": 14527
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear-brief/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The user-facing response is in Russian. The English spans “Topic Scoped,” “Topic,” “Expires At,” and “Revoke” are exact UI labels used to help the reader locate the relevant controls, so they fall under the identifier exception."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The answer explains the mode by its effect—access is limited to one project—and explicitly instructs the reader to choose the intended project in the Topic field."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The answer instructs the reader to set Expires At to a date and time one week away, and it explains that using Revoke makes the current key stop working immediately."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ?\n< Выберите доступ только к одному проекту (Topic Scoped), укажите нужный проект в Topic и дату со временем через неделю в Expires At. Для отключения нажмите Revoke: текущий ключ сразу перестанет работать.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "The answer identifies the chosen mode by its effect: access to one selected project, and says to select the intended project. An exact label alone does not explain this. If the other scope is discussed, its description must not contradict team-wide access. Do NOT require an unsolicited discussion of the rejected mode or the fact that it also includes future projects: omitting those details is not reader-context drift.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "The answer tells the reader to set expiry to a date/time one week away and explains the revocation action by its effect: the current key stops working immediately. Exact labels without these effects fail. If the answer discusses Grace Window or rotation, explain that it concerns an old key remaining usable after replacement, rather than the current key's one-week lifetime. Do not require unsolicited discussion of an unused field or the blank-expiry case. Do not invent a replacement key during revocation.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14311,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 163,
+        "reasoning": 82,
+        "total": 14556
+      }
+    },
+    {
+      "label": "agents-rules-chat-jargon/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "reader_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant’s entire user-facing response is written in clear Russian, with no ordinary English prose, headings, or redundant foreign-language glosses."
+        },
+        "reader_meaning": {
+          "pass": true,
+          "reason": "The response clearly states that the new export covers three warehouses while reconciliation data covers only two; assigns Maria to prepare a control export for all three warehouses; assigns Ilya to resend records lacking receipt confirmation and obtain confirmations; and states that work may continue only when accepted-record counts match the control count for every warehouse and no unacknowledged records remain."
+        }
+      },
+      "input": "[turn 1] > Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй.\n< Включать новую выгрузку пока нельзя: она охватывает три склада, а данные для сверки — только два. Поэтому потерю записей третьего склада сейчас не обнаружить. Мария должна подготовить контрольную выгрузку для всех трёх складов. Илья — повторно отправить записи, для которых нет подтверждения приёма, и получить подтверждения. Эти записи нельзя удалять до подтверждения. Продолжать можно, когда количество принятых записей совпадёт с контрольным по каждому складу и неподтверждённых записей не останется.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "reader_meaning",
+          "description": "Explain the blocker, owners, actions and release condition in ordinary Russian: the reference data covers only two warehouses while the new export covers three; Maria prepares reference export for all three; Ilya resends unacknowledged records and obtains receipt confirmation; activation requires matching counts for each warehouse and no unacknowledged records. Internal labels контур, опора, хвост may be included ONLY with these concrete meanings available in the answer. An answer made of those labels or vague verbs such as расширить/закрыть without the underlying records and actions fails.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4167,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 132,
+        "reasoning": 0,
+        "total": 14411
+      }
+    },
+    {
+      "label": "agents-rules-chat-jargon/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "reader_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant’s entire user-facing response is written in clear Russian, with no ordinary English prose or headings."
+        },
+        "reader_meaning": {
+          "pass": true,
+          "reason": "The response clearly identifies the blocker: the new export covers three warehouses while reconciliation data covers only two, so losses for the third warehouse cannot be detected. It assigns Maria to prepare a control export for all three warehouses and Ilya to resend records lacking receipt confirmation and obtain confirmations. It also states the release condition: accepted-record counts must match the control counts for each warehouse, with no unacknowledged records remaining."
+        }
+      },
+      "input": "[turn 1] > Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй.\n< Включать новую выгрузку пока нельзя: она охватывает три склада, а данные для сверки — только два. Поэтому потерю записей третьего склада сейчас не обнаружить. Мария должна подготовить контрольную выгрузку для всех трёх складов. Илья — повторно отправить записи, для которых нет подтверждения приёма, и получить подтверждения. Эти записи нельзя удалять до подтверждения. Продолжать можно, когда количество принятых записей совпадёт с контрольным по каждому складу и неподтверждённых записей не останется.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "reader_meaning",
+          "description": "Explain the blocker, owners, actions and release condition in ordinary Russian: the reference data covers only two warehouses while the new export covers three; Maria prepares reference export for all three; Ilya resends unacknowledged records and obtains receipt confirmation; activation requires matching counts for each warehouse and no unacknowledged records. Internal labels контур, опора, хвост may be included ONLY with these concrete meanings available in the answer. An answer made of those labels or vague verbs such as расширить/закрыть without the underlying records and actions fails.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14279,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 138,
+        "reasoning": 0,
+        "total": 14417
+      }
+    },
+    {
+      "label": "agents-rules-chat-jargon/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "reader_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant's entire user-facing response is in Russian, with no ordinary English prose, headings, or redundant foreign-language glosses."
+        },
+        "reader_meaning": {
+          "pass": false,
+          "reason": "The response uses only opaque internal labels and vague actions: “рассинхрон контура и опоры,” “расширяет опору,” and “закрывает хвост.” It does not explain that the reference data covers two warehouses while the new export covers three, that Maria must prepare a reference export for all three warehouses, or that Ilya must resend unacknowledged records and obtain receipt confirmation. The stated continuation condition also fails to clearly require matching counts for each warehouse and zero unacknowledged records."
+        }
+      },
+      "input": "[turn 1] > Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй.\n< Блокирует рассинхрон контура и опоры. Мария расширяет опору, Илья закрывает хвост. Продолжаем после схождения по всему контуру при пустом хвосте.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "reader_meaning",
+          "description": "Explain the blocker, owners, actions and release condition in ordinary Russian: the reference data covers only two warehouses while the new export covers three; Maria prepares reference export for all three; Ilya resends unacknowledged records and obtains receipt confirmation; activation requires matching counts for each warehouse and no unacknowledged records. Internal labels контур, опора, хвост may be included ONLY with these concrete meanings available in the answer. An answer made of those labels or vague verbs such as расширить/закрыть without the underlying records and actions fails.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4088,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 166,
+        "reasoning": 0,
+        "total": 14366
+      }
+    },
+    {
+      "label": "agents-rules-chat-jargon/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "reader_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The assistant's entire user-facing response is in Russian; no ordinary English prose, headings, or redundant foreign-language glosses appear."
+        },
+        "reader_meaning": {
+          "pass": false,
+          "reason": "The response uses only vague internal labels and actions: «рассинхрон контура и опоры», «Мария расширяет опору», and «Илья закрывает хвост». It does not explain that the reference data covers two warehouses while the new export covers three, that Maria must prepare the reference export for all three, or that Ilya must resend unacknowledged records and obtain receipt confirmation. The release condition is also too vague: it does not explicitly require matching counts for each warehouse and zero unacknowledged records."
+        }
+      },
+      "input": "[turn 1] > Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй.\n< Блокирует рассинхрон контура и опоры. Мария расширяет опору, Илья закрывает хвост. Продолжаем после схождения по всему контуру при пустом хвосте.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "reader_meaning",
+          "description": "Explain the blocker, owners, actions and release condition in ordinary Russian: the reference data covers only two warehouses while the new export covers three; Maria prepares reference export for all three; Ilya resends unacknowledged records and obtains receipt confirmation; activation requires matching counts for each warehouse and no unacknowledged records. Internal labels контур, опора, хвост may be included ONLY with these concrete meanings available in the answer. An answer made of those labels or vague verbs such as расширить/закрыть without the underlying records and actions fails.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14200,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 171,
+        "reasoning": 0,
+        "total": 14371
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All assistant-facing prose in both turns is in Russian. The only Latin-script text is the email address “ops@example.test”, which is a concrete configuration value and therefore falls under the identifier exception."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "The conversation includes an assistant choice question in turn 1, a subsequent user selection of retries before manual review plus a handover request in turn 2, and then an assistant handover response."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection handover is self-contained and states retries after 30 seconds, a maximum of three failed attempts, escalation to human review, setting the notification recipient before activation, and verification with an unavailable destination by checking both the review queue and email notification."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем повторную отправку при сбое: через 30 секунд, максимум до трёх неудачных попыток. После этого задание поступает человеку на проверку и автоматически не удаляется. Перед включением укажите адрес получателя уведомлений, для этой установки — ops@example.test. Проверьте режим отправкой на недоступный адрес: после неудачных попыток задание должно появиться в очереди проверки, а уведомление — прийти на указанную почту.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14436,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 177,
+        "reasoning": 0,
+        "total": 14613
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing assistant prose in both turns is in Russian. The email address “ops@example.test” is a configuration value, not English prose."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "Turn 1 contains the assistant's choice question; turn 2 contains the user's explicit selection of retries before manual review and request for a colleague-facing handover; the subsequent assistant response provides that handover."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection response is self-contained and states retries after 30 seconds, a maximum of three failed attempts, escalation to human review, setting the notification recipient before activation, and verification using an unavailable destination by checking both the review queue and receipt of the email notification."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем повторную отправку при сбое: через 30 секунд, максимум до трёх неудачных попыток. После этого задание поступает человеку на проверку и автоматически не удаляется. Перед включением укажите адрес получателя уведомлений, для этой установки — ops@example.test. Проверьте режим отправкой на недоступный адрес: после неудачных попыток задание должно появиться в очереди проверки, а уведомление — прийти на указанную почту.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4324,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 171,
+        "reasoning": 0,
+        "total": 14607
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose in both assistant turns is in Russian. The Latin-script strings in the second turn are exact configuration values, keys, and an email address rather than ordinary English prose."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "Turn 1 contains an assistant choice question; turn 2 shows the user selecting retries before manual review and requesting a handover, followed by the assistant's handover response."
+        },
+        "handover_meaning": {
+          "pass": false,
+          "reason": "The handover is not self-contained and does not clearly convey the required behavior or verification. It says only “первый вариант, как договорились” and gives keys/values, without explaining that each failed delivery retries after 30 seconds, stops after at most three failed attempts, and then goes to human review. It also does not say the email recipient must be configured before activation, nor instruct testing with an unavailable destination and checking both the review queue and notification; “по прежней схеме” improperly relies on unavailable prior context."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем первый вариант, как договорились. deliveryMode = RetryThenReview, retryDelaySeconds = 30, maxAttempts = 3, alertEmail = ops@example.test. Проверяем очередь и уведомление по прежней схеме.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14383,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 228,
+        "reasoning": 0,
+        "total": 14611
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose in both assistant turns is Russian. The Latin-script strings in turn 2—deliveryMode, RetryThenReview, retryDelaySeconds, maxAttempts, alertEmail, and ops@example.test—are configuration identifiers or values, so they fall under the stated exception."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "The conversation includes an assistant choice question, a subsequent user selection of retries before manual review together with a handover request, and then an assistant handover response."
+        },
+        "handover_meaning": {
+          "pass": false,
+          "reason": "The handover is not understandable independently of the earlier conversation: “the first option, as agreed” and RetryThenReview do not explicitly state that a failed delivery is retried after 30 seconds and sent to human review after at most three failed attempts. It also does not say that the email recipient must be configured before activation or that verification must use an unavailable destination; “check the queue and notification according to the previous scheme” is an insufficient bare reference."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем первый вариант, как договорились. deliveryMode = RetryThenReview, retryDelaySeconds = 30, maxAttempts = 3, alertEmail = ops@example.test. Проверяем очередь и уведомление по прежней схеме.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14383,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 230,
+        "reasoning": 102,
+        "total": 14715
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/clear-brief/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing assistant prose in both turns is in Russian. The email address is an exact configuration value, not English prose."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "Turn 1 contains an assistant choice question, turn 2 contains the user's explicit selection of retries before manual review and a handover request, followed by the assistant's handover."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection handover is self-contained: it specifies retrying after 30 seconds, a maximum of three failed attempts, escalation to human review, setting the notification recipient before activation, and verification with an unavailable destination by checking both the review queue and notification email."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем повторную отправку при сбое: через 30 секунд, максимум до трёх неудачных попыток. После этого задание поступает человеку на проверку. Перед включением укажите адрес получателя уведомлений, для этой установки — ops@example.test. Проверьте режим отправкой на недоступный адрес: после неудачных попыток задание должно появиться в очереди проверки, а уведомление — прийти на указанную почту.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14431,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 162,
+        "reasoning": 0,
+        "total": 14593
+      }
+    },
+    {
+      "label": "agents-rules-chat-dialogue/clear-brief/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "followup_occurred": true,
+        "handover_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All assistant-facing prose in both turns is in Russian. The email address is an exact configuration value, not English prose."
+        },
+        "followup_occurred": {
+          "pass": true,
+          "reason": "Turn 1 contains an assistant choice question, turn 2 contains the user's selection of retries before manual review and a handover request, and the assistant then provides the requested handover."
+        },
+        "handover_meaning": {
+          "pass": true,
+          "reason": "The post-selection response is self-contained and states retries after 30 seconds, a maximum of three failed attempts, escalation to human review, setting the notification recipient before activation, and verification with an unavailable destination by checking both the review queue and the email notification."
+        }
+      },
+      "input": "[turn 1] > Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.\n< Можно повторять неудачную отправку перед передачей человеку либо сразу передавать её человеку. Какой способ выбираете?\n[turn 2] > Выбираю повторные попытки перед ручной проверкой. Теперь напиши коллеге, который не видел наш разговор, что включаем, какие параметры выставляем и как проверить результат. Файлы не меняй.\n< Включаем повторную отправку при сбое: через 30 секунд, максимум до трёх неудачных попыток. После этого задание поступает человеку на проверку. Перед включением укажите адрес получателя уведомлений, для этой установки — ops@example.test. Проверьте режим отправкой на недоступный адрес: после неудачных попыток задание должно появиться в очереди проверки, а уведомление — прийти на указанную почту.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "followup_occurred",
+          "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+          "critical": true
+        },
+        {
+          "id": "handover_meaning",
+          "description": "In the assistant response AFTER the user's choice, the reader must understand the selected behaviour without earlier turns: failed delivery retries after 30 seconds, at most three failed attempts, then goes to human review; the email recipient must be set before activation; verification uses an unavailable destination and checks the review queue plus the notification. Bare references to the first option, an earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Do not require the additional sentence that no deletion occurs, but fail an explicit false claim that jobs are deleted. Meaning-preserving concise explanations are allowed.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14431,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 160,
+        "reasoning": 0,
+        "total": 14591
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose outside the explicitly requested English support-request artifact is in Russian. The English text is clearly introduced as “Текст обращения:” and is exempt; product and configuration identifiers are also permitted."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains an identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and exact key “retry_mode,” asks whether adaptive retries are planned, and explicitly states that there is no announced release date rather than inventing a promise."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly says that the current `adaptive` value for `retry_mode` is unsupported, recommends the exact supported value `fixed`, and states that it retries delivery every 30 seconds. It also correctly explains that `off` disables automatic retries and invents no support history or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4253,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 198,
+        "reasoning": 0,
+        "total": 14563
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose and the heading «Текст обращения» are in Russian. The English passage is the explicitly requested support-request artifact, while RelayDesk, retry_mode, adaptive, fixed, and off are exact product/configuration identifiers or machine-readable values and are exempt."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains an identifiable English support request. It preserves the exact error text \"Unsupported value for retry_mode\" and the exact setting key retry_mode, asks \"Are adaptive retries planned?\", and states that there is no announced release date rather than inventing a promised one."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly says that adaptive is unsupported for retry_mode, instructs the reader to replace it with the exact supported value fixed, and explains that this causes retries every 30 seconds. It also correctly states that off disables automatic retries and invents no support history or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14365,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 213,
+        "reasoning": 0,
+        "total": 14578
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing explanation contains ordinary English prose outside the exempt English support-request artifact: “Root cause:” and “Required change:”. These are explanatory headings, not exact identifiers, product names, or quoted source text. “Support request:” is also an English introductory heading rather than part of the requested message itself."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes an identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and the exact key “retry_mode”, and asks whether adaptive retries are planned. It does not claim a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The explanation states that the current “adaptive” value is unsupported for the exact key “retry_mode”, identifies the exact supported value “fixed” as the required repair, and says it repeats every 30 seconds. It also accurately explains that “off” disables retries and makes no release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Support request:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nRoot cause: неподдерживаемое значение `adaptive` в `retry_mode`. Required change: `fixed` — повторы каждые 30 секунд. `off` отключает повторы и не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 2063,
+        "cachedInput": 12288,
+        "cacheWrite": 0,
+        "output": 213,
+        "reasoning": 167,
+        "total": 14731
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": false,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The explanatory prose contains ordinary English headings outside the exempt support-request artifact: “Root cause:” and “Required change:”. These are prose labels, not exact code/UI identifiers, so the every-turn Russian requirement is not fully met."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes an identifiable English support request, preserves the exact error “Unsupported value for retry_mode” and key “retry_mode”, and asks whether adaptive retries are planned. It does not claim a promised release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The explanation states that the adaptive value is unsupported for `retry_mode`, identifies exact value `fixed` as the required repair, and says it repeats every 30 seconds. It also correctly explains that `off` disables repeats."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Support request:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nRoot cause: неподдерживаемое значение `adaptive` в `retry_mode`. Required change: `fixed` — повторы каждые 30 секунд. `off` отключает повторы и не подходит.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4239,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 182,
+        "reasoning": 188,
+        "total": 14721
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear-brief/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose and the heading are in Russian. The English text appears only inside the explicitly requested support-request artifact, while `adaptive`, `retry_mode`, and `fixed` are exact machine-readable configuration tokens and are exempt."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response contains an identifiable English support request. It preserves the exact error text \"Unsupported value for retry_mode\", includes the exact setting key `retry_mode`, asks whether adaptive retries are planned, and does not invent a release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation states that the current `adaptive` value is unsupported for `retry_mode`, instructs the reader to replace it with the exact supported value `fixed`, and explains that this results in retries every 30 seconds during temporary failures. It invents neither a history nor a release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд при временных сбоях.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 4232,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 198,
+        "reasoning": 0,
+        "total": 14542
+      }
+    },
+    {
+      "label": "agents-rules-chat-exceptions/clear-brief/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "english_artifact": true,
+        "identifier_and_meaning": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The English text is the explicitly requested support-request artifact and is exempt; product/configuration tokens such as RelayDesk, retry_mode, adaptive, and fixed are exact names or machine-readable values."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The response includes an identifiable English support request, preserves the exact error text \"Unsupported value for retry_mode\" and exact setting key \"retry_mode\", and asks whether adaptive retries are planned without inventing a release date."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation states that adaptive is unsupported for retry_mode and instructs the reader to replace it with the exact supported value fixed, explaining that this produces retries every 30 seconds during temporary failures. It invents no history or release promise."
+        }
+      },
+      "input": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд при временных сбоях.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. A parenthetical or appositive foreign-language rendering of wording already given in the reply's language is a redundant gloss and fails, even when it names a technical concept: the identifier exception covers only an exact string the reader must type, search for or click — a code symbol, a configuration key, or a UI label reproduced verbatim — and never a translation of ordinary source wording or of a heading. Established industry terms are permitted, including familiar Russian loanwords (кэш, тест, токен) and conventional spellings such as email, e-mail, API and JSON. Do not classify a term as an error solely because it uses Latin letters. A local nickname is not automatically an established industry term; its meaning is assessed separately. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "english_artifact",
+          "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+          "critical": true
+        },
+        {
+          "id": "identifier_and_meaning",
+          "description": "The Russian explanation says the current adaptive value is unsupported and that fixed provides repeats every 30 seconds and is the suitable repair. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Explaining the unused off alternative is optional; if its behaviour is discussed, it must mean no automatic repeats. Do not translate machine-readable tokens or treat their presence as language mixing. Do not invent a history or release promise for adaptive support.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 136,
+        "cachedInput": 14208,
+        "cacheWrite": 0,
+        "output": 184,
+        "reasoning": 0,
+        "total": 14528
+      }
+    }
+  ],
+  "mismatches": []
+}

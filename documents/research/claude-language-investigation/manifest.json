@@ -1,0 +1,1819 @@
+{
+  "createdAt": "2026-09-20T12:09:06.115436+00:00",
+  "repository": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai",
+  "branch": "codex/claude-language-fix",
+  "head": "82eba4e961ca22edf52a9f1e5b3ce8f89c9af117",
+  "files": [
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/research/claude-chat-language.md",
+      "savedAs": "claude-chat-language.md",
+      "sourceSha256": "37cf88fda7e6858cf371ad972eadf907f60f87564d95df68454b371f427c3d58",
+      "savedSha256": "37cf88fda7e6858cf371ad972eadf907f60f87564d95df68454b371f427c3d58",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/research/claude-language-failure-analysis.md",
+      "savedAs": "claude-language-failure-analysis.md",
+      "sourceSha256": "417b7c1b105e5ecf1b3a0a48be18f71ae6665edbc5d326a8393a71648adc8032",
+      "savedSha256": "afb6038d67e4ac27c2772c72f814cca60f48c80350519a1ab741136128526158",
+      "rewrittenLinks": true
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-acceptance.md",
+      "savedAs": "claude-language-acceptance.md",
+      "sourceSha256": "489b48e8dd0d8a86c486e6285a4134d1e04ecb4e186574640389aa65e95e8c6a",
+      "savedSha256": "489b48e8dd0d8a86c486e6285a4134d1e04ecb4e186574640389aa65e95e8c6a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/fix-claude-chat-language.md",
+      "savedAs": "fix-claude-chat-language.md",
+      "sourceSha256": "dfceda58f57b3ef8a01b2eb522d3c1d049922202ea97392846b08b1573cf3509",
+      "savedSha256": "dfceda58f57b3ef8a01b2eb522d3c1d049922202ea97392846b08b1573cf3509",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/second-brain/knowledge/AI/concepts/language-drift.md",
+      "savedAs": "language-drift.md",
+      "sourceSha256": "7399d090ae30eef070675b780feb066ec5f1182bd97a5cd9134c600f596d95ce",
+      "savedSha256": "7399d090ae30eef070675b780feb066ec5f1182bd97a5cd9134c600f596d95ce",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/exceptions-calibration-green.json",
+      "savedAs": "claude-language-evidence/exceptions-calibration-green.json",
+      "sourceSha256": "64b627979f850d366283891a64f59f9d99e60c8cddeb806e1f4c99d0acc34192",
+      "savedSha256": "64b627979f850d366283891a64f59f9d99e60c8cddeb806e1f4c99d0acc34192",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/exceptions-calibration-red.json",
+      "savedAs": "claude-language-evidence/exceptions-calibration-red.json",
+      "sourceSha256": "8d065a8289380d3a73adcc0925cb990dc2912f73185e5583081b17590a3a5a89",
+      "savedSha256": "8d065a8289380d3a73adcc0925cb990dc2912f73185e5583081b17590a3a5a89",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/final-calibration.json",
+      "savedAs": "claude-language-evidence/final-calibration.json",
+      "sourceSha256": "ab40400570475262c64cf494bda0bdb43f56dcce00031865f3f2015c44333764",
+      "savedSha256": "ab40400570475262c64cf494bda0bdb43f56dcce00031865f3f2015c44333764",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/final-exceptions-runs.json",
+      "savedAs": "claude-language-evidence/final-exceptions-runs.json",
+      "sourceSha256": "182db0830f9456d2859c981406b060152979dcd13169809c921573323aa18f07",
+      "savedSha256": "182db0830f9456d2859c981406b060152979dcd13169809c921573323aa18f07",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/initial-calibration.json",
+      "savedAs": "claude-language-evidence/initial-calibration.json",
+      "sourceSha256": "c63336b0b764a121cbc125a025e3996fd5354f0f14c4e67ff880b828b619b67d",
+      "savedSha256": "c63336b0b764a121cbc125a025e3996fd5354f0f14c4e67ff880b828b619b67d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/initial-claude-runs.json",
+      "savedAs": "claude-language-evidence/initial-claude-runs.json",
+      "sourceSha256": "f09c9ebfc1ad80cc3b6d1c043325925f39e91f808af856ce74c34cf600103cd2",
+      "savedSha256": "f09c9ebfc1ad80cc3b6d1c043325925f39e91f808af856ce74c34cf600103cd2",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/initial-rubrics.json",
+      "savedAs": "claude-language-evidence/initial-rubrics.json",
+      "sourceSha256": "b5b1f86a0b2c1b955d0e0c1d7151ce7713df2e0b5e79d0b556681771b928d82b",
+      "savedSha256": "b5b1f86a0b2c1b955d0e0c1d7151ce7713df2e0b5e79d0b556681771b928d82b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/interface-calibration-red.json",
+      "savedAs": "claude-language-evidence/interface-calibration-red.json",
+      "sourceSha256": "b936d9ecb8d2f89eee6496834cd982647e47a320c5bd5d987d4831184b7104e4",
+      "savedSha256": "b936d9ecb8d2f89eee6496834cd982647e47a320c5bd5d987d4831184b7104e4",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/refined-claude-runs.json",
+      "savedAs": "claude-language-evidence/refined-claude-runs.json",
+      "sourceSha256": "fe154620f5f921fdfb96b5ddf5b4f018509a8087338098872c6d1a6e1c3aff7a",
+      "savedSha256": "fe154620f5f921fdfb96b5ddf5b4f018509a8087338098872c6d1a6e1c3aff7a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-evidence/refined-inputs.json",
+      "savedAs": "claude-language-evidence/refined-inputs.json",
+      "sourceSha256": "be2976a33f74fa69c8d87c3cef98e8577ecc9f72d9f7c7309b04eccf1e62c02e",
+      "savedSha256": "be2976a33f74fa69c8d87c3cef98e8577ecc9f72d9f7c7309b04eccf1e62c02e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-1-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-1-source.json",
+      "sourceSha256": "b86c55c5b33baf388f8aa14f02caa6f7a9c6c33055d49ee563f12fb52e0c291b",
+      "savedSha256": "b86c55c5b33baf388f8aa14f02caa6f7a9c6c33055d49ee563f12fb52e0c291b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-1-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-1-template.txt",
+      "sourceSha256": "09e3b6323825dfb53c8cd40a788ecbe37900a30eb49bc1ac6811e640c0c8709e",
+      "savedSha256": "09e3b6323825dfb53c8cd40a788ecbe37900a30eb49bc1ac6811e640c0c8709e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-10-interface-confirm.json",
+      "savedAs": "claude-language-fix-evidence/attempt-10-interface-confirm.json",
+      "sourceSha256": "8c78b398e53345c8b14cb4237cc66399a87735218efa0119a4b489497cd650d5",
+      "savedSha256": "8c78b398e53345c8b14cb4237cc66399a87735218efa0119a4b489497cd650d5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-10-interface-screen.json",
+      "savedAs": "claude-language-fix-evidence/attempt-10-interface-screen.json",
+      "sourceSha256": "4b730eb47ad4c713f8440b5967b4394cd1af06fb5a400ee35b3d08be15100042",
+      "savedSha256": "4b730eb47ad4c713f8440b5967b4394cd1af06fb5a400ee35b3d08be15100042",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-10-meaning-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-10-meaning-template.txt",
+      "sourceSha256": "ab6ed4ee4f118ef213f1b48f826c14b1ff9580cc6e36011422bc79223d551e7a",
+      "savedSha256": "ab6ed4ee4f118ef213f1b48f826c14b1ff9580cc6e36011422bc79223d551e7a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-11-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-11-source.json",
+      "sourceSha256": "82e2809fc049138f65f19cc65a1f7f1989bcba8884415904712e1342b0011b11",
+      "savedSha256": "82e2809fc049138f65f19cc65a1f7f1989bcba8884415904712e1342b0011b11",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-11-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-11-template.txt",
+      "sourceSha256": "6b61c725876d468cb1053847ac6aad89a50c41845ac165df446d8b7ab497f1b9",
+      "savedSha256": "6b61c725876d468cb1053847ac6aad89a50c41845ac165df446d8b7ab497f1b9",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-12-native-language-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-12-native-language-template.txt",
+      "sourceSha256": "3be18dc788173f4014ba2bb98bb56fbcd6ab2e5b74ebcb26432d2798bc7d126c",
+      "savedSha256": "3be18dc788173f4014ba2bb98bb56fbcd6ab2e5b74ebcb26432d2798bc7d126c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-12-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-12-source.json",
+      "sourceSha256": "a9b3a8d649803b7555d06bc5c3fbc7c31838223066db1f78de09b02793e32c86",
+      "savedSha256": "a9b3a8d649803b7555d06bc5c3fbc7c31838223066db1f78de09b02793e32c86",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-13-reader-language-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-13-reader-language-template.txt",
+      "sourceSha256": "e8b4c73565a5937c08ab84719cc9df4de407c08e4cb0f422eb53227277ca5ba6",
+      "savedSha256": "e8b4c73565a5937c08ab84719cc9df4de407c08e4cb0f422eb53227277ca5ba6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-13-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-13-source.json",
+      "sourceSha256": "a870fba9c6c605051af4752ebb84c8895cea84d41c9baa5f7a41ef02232cd65a",
+      "savedSha256": "a870fba9c6c605051af4752ebb84c8895cea84d41c9baa5f7a41ef02232cd65a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-14-grounded-exceptions-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-14-grounded-exceptions-template.txt",
+      "sourceSha256": "afbfcfb8ef51adfb702202758a7c32a68e097f2370e077542d222f409fbd8c39",
+      "savedSha256": "afbfcfb8ef51adfb702202758a7c32a68e097f2370e077542d222f409fbd8c39",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-14-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-14-source.json",
+      "sourceSha256": "7040b68f469fc5403dd4695c9924d5e1bdaa3032a4ed7f90555472982ec691b7",
+      "savedSha256": "7040b68f469fc5403dd4695c9924d5e1bdaa3032a4ed7f90555472982ec691b7",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-15-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-15-source.json",
+      "sourceSha256": "552c77d5e7b8cbc72407e258af1dfcac6b05cfb176259d7e4511da4de353c894",
+      "savedSha256": "552c77d5e7b8cbc72407e258af1dfcac6b05cfb176259d7e4511da4de353c894",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-15-span-scan-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-15-span-scan-template.txt",
+      "sourceSha256": "3de8dbbacfc60b3ab2a82a965ed2a739f0d25f25c2263e5f5974713882c2e7ad",
+      "savedSha256": "3de8dbbacfc60b3ab2a82a965ed2a739f0d25f25c2263e5f5974713882c2e7ad",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-2-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-2-source.json",
+      "sourceSha256": "2ee936b1457dff51278be72ef3601dbbc84dc6a8e4eb75cac17c6378ef14fdcb",
+      "savedSha256": "2ee936b1457dff51278be72ef3601dbbc84dc6a8e4eb75cac17c6378ef14fdcb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-2-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-2-template.txt",
+      "sourceSha256": "8029ce48718967b93a6b2ca71b37c005ca76540fb24848b8ddeb72ee2694add3",
+      "savedSha256": "8029ce48718967b93a6b2ca71b37c005ca76540fb24848b8ddeb72ee2694add3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-3-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-3-source.json",
+      "sourceSha256": "553d456b8b35cbc73bb01d2be0b5ad16941afb46ab9af8ba6094920e3f52e7d3",
+      "savedSha256": "553d456b8b35cbc73bb01d2be0b5ad16941afb46ab9af8ba6094920e3f52e7d3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-3-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-3-template.txt",
+      "sourceSha256": "e4be33e1fc27da4cb05e2cda83f1016ade1c3f3339dcfe37ac4e19a4d6f05da5",
+      "savedSha256": "e4be33e1fc27da4cb05e2cda83f1016ade1c3f3339dcfe37ac4e19a4d6f05da5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-4-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-4-source.json",
+      "sourceSha256": "67a5584fa88e2a454cee3521d6197d9c2330b06764b0dc05a1288174e21265e4",
+      "savedSha256": "67a5584fa88e2a454cee3521d6197d9c2330b06764b0dc05a1288174e21265e4",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-4-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-4-template.txt",
+      "sourceSha256": "c8cb3eea94cff8c7baf173e67c507b81f2e9fe6ddb662fd447842e86ae33e736",
+      "savedSha256": "c8cb3eea94cff8c7baf173e67c507b81f2e9fe6ddb662fd447842e86ae33e736",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-5-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-5-source.json",
+      "sourceSha256": "c09eea5bd2f22be5c615409d932aee12316da833b1bc2074f095a03f51ec6a6c",
+      "savedSha256": "c09eea5bd2f22be5c615409d932aee12316da833b1bc2074f095a03f51ec6a6c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-5-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-5-template.txt",
+      "sourceSha256": "895a0de6cee10c4fde9ae96b7f8f5e387856c06fa89f3ed1e0060f5e0d115d93",
+      "savedSha256": "895a0de6cee10c4fde9ae96b7f8f5e387856c06fa89f3ed1e0060f5e0d115d93",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-6-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-6-source.json",
+      "sourceSha256": "6decb0e07270e1238a54de762222708cbb262ab9588892f7ab76a5664b4602dc",
+      "savedSha256": "6decb0e07270e1238a54de762222708cbb262ab9588892f7ab76a5664b4602dc",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-6-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-6-template.txt",
+      "sourceSha256": "92a54c66edac2d58183153d2fcc00e108afc35ed44e9b403fd79154c0a619963",
+      "savedSha256": "92a54c66edac2d58183153d2fcc00e108afc35ed44e9b403fd79154c0a619963",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-7-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-7-source.json",
+      "sourceSha256": "4324936d29dbc9210afe6440376cd01456b59daf49bfee7ab2296f6ef3c7b941",
+      "savedSha256": "4324936d29dbc9210afe6440376cd01456b59daf49bfee7ab2296f6ef3c7b941",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-7-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-7-template.txt",
+      "sourceSha256": "5d73741ea201b7b42d3824903115e6682aa1de3d4f1c59e50ef85f177df2ee2c",
+      "savedSha256": "5d73741ea201b7b42d3824903115e6682aa1de3d4f1c59e50ef85f177df2ee2c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-8-confirm.json",
+      "savedAs": "claude-language-fix-evidence/attempt-8-confirm.json",
+      "sourceSha256": "aa2dedb00f3eb4bac6925608103202e4951792969b8a7f661e84490b0633321c",
+      "savedSha256": "aa2dedb00f3eb4bac6925608103202e4951792969b8a7f661e84490b0633321c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-8-screen.json",
+      "savedAs": "claude-language-fix-evidence/attempt-8-screen.json",
+      "sourceSha256": "f7edc66756c8af1e62d9db1c346b28a0e6dc329c478eb0ed029e6a9a28e65e92",
+      "savedSha256": "f7edc66756c8af1e62d9db1c346b28a0e6dc329c478eb0ed029e6a9a28e65e92",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-8-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-8-template.txt",
+      "sourceSha256": "095860f76549a420a63839813642bd7fadce8f8f9e0d8a4bde7128911c84957e",
+      "savedSha256": "095860f76549a420a63839813642bd7fadce8f8f9e0d8a4bde7128911c84957e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-9-agent.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-9-agent.txt",
+      "sourceSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "savedSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-9-source.json",
+      "savedAs": "claude-language-fix-evidence/attempt-9-source.json",
+      "sourceSha256": "df2c2c1bab58e2551eab7989573450ea6e57660bb6c5307ccfe5b3494566ef2c",
+      "savedSha256": "df2c2c1bab58e2551eab7989573450ea6e57660bb6c5307ccfe5b3494566ef2c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/attempt-9-template.txt",
+      "savedAs": "claude-language-fix-evidence/attempt-9-template.txt",
+      "sourceSha256": "bfcdff66bae18474d53d0c4d7ffd35634fac74ddf0b4d35a8d8709622849087e",
+      "savedSha256": "bfcdff66bae18474d53d0c4d7ffd35634fac74ddf0b4d35a8d8709622849087e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/agent-source.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/agent-source.txt",
+      "sourceSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "savedSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/claude-raw.json",
+      "sourceSha256": "eb5d4d1950c36e678977fca8099f0759f5a6c082c2c6c6aa31dc69b5027dee7f",
+      "savedSha256": "eb5d4d1950c36e678977fca8099f0759f5a6c082c2c6c6aa31dc69b5027dee7f",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/edited.txt",
+      "sourceSha256": "b99681c6d96fcb333c186f100de4fb79f1bc236281cad68cac1543a2e60e7341",
+      "savedSha256": "b99681c6d96fcb333c186f100de4fb79f1bc236281cad68cac1543a2e60e7341",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/health-editor.json",
+      "sourceSha256": "2a1be1ed958496ef27fe377c01b76257f089d1a8c9dc46bdb6ad2f15ab1b654a",
+      "savedSha256": "2a1be1ed958496ef27fe377c01b76257f089d1a8c9dc46bdb6ad2f15ab1b654a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/health-judge.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/health-judge.json",
+      "sourceSha256": "022a78ae3205336ff9f4291ecdaa17c8de7f63efb5e564a8fa9cc7c5d64a242b",
+      "savedSha256": "022a78ae3205336ff9f4291ecdaa17c8de7f63efb5e564a8fa9cc7c5d64a242b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/input.json",
+      "sourceSha256": "4a2be3777739c979f2052b49952c9ca914e70e8027ab8131374068a35a4ad090",
+      "savedSha256": "4a2be3777739c979f2052b49952c9ca914e70e8027ab8131374068a35a4ad090",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/invocation.json",
+      "sourceSha256": "0a70975f2389241cb20436bd2bf7175865baa82b5acf8b53fcf0465f0df18128",
+      "savedSha256": "0a70975f2389241cb20436bd2bf7175865baa82b5acf8b53fcf0465f0df18128",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/judge-evidence.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/judge-evidence.txt",
+      "sourceSha256": "20f836d708b26a434998c65513eebf477bb776d9d7e55144a80d7b495cc471f6",
+      "savedSha256": "20f836d708b26a434998c65513eebf477bb776d9d7e55144a80d7b495cc471f6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/judge-result.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/judge-result.json",
+      "sourceSha256": "81ee8d705a0d539d42a7ac4d8380dfb6df84c132ff7929e859f17a1c2c179a58",
+      "savedSha256": "81ee8d705a0d539d42a7ac4d8380dfb6df84c132ff7929e859f17a1c2c179a58",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/exceptions-clear/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/exceptions-clear/prompt.txt",
+      "sourceSha256": "797ae8528980beb81f35e6c5244a1c7fa9259eb274f7df4d69750085e36dc0de",
+      "savedSha256": "797ae8528980beb81f35e6c5244a1c7fa9259eb274f7df4d69750085e36dc0de",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/observations.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/observations.json",
+      "sourceSha256": "0a41989246a1a6a46051dd9d1c7e5d88c5594a513a7feec2b94bd86588384aca",
+      "savedSha256": "0a41989246a1a6a46051dd9d1c7e5d88c5594a513a7feec2b94bd86588384aca",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/results.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/results.json",
+      "sourceSha256": "e0bc06ebcc463dbb1862289386b91f80b0ccbc17b95be6aba1a63a7d8183400e",
+      "savedSha256": "e0bc06ebcc463dbb1862289386b91f80b0ccbc17b95be6aba1a63a7d8183400e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/claude-raw.json",
+      "sourceSha256": "3eeaf87ee6b1f9bdcc352acc92b04d2d7ed14ffafba29698b597290a52871c55",
+      "savedSha256": "3eeaf87ee6b1f9bdcc352acc92b04d2d7ed14ffafba29698b597290a52871c55",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/edited.txt",
+      "sourceSha256": "9b34aca43efd530d463b8446885f567d75027c35108f3b9def9125e17353dfab",
+      "savedSha256": "9b34aca43efd530d463b8446885f567d75027c35108f3b9def9125e17353dfab",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/health-editor.json",
+      "sourceSha256": "6eb8b61abb29fe10561031674b47a55121b7609b8fdd24722b2ff4de8a40096f",
+      "savedSha256": "6eb8b61abb29fe10561031674b47a55121b7609b8fdd24722b2ff4de8a40096f",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/health-judge.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/health-judge.json",
+      "sourceSha256": "a0c28e00ae310059fdabf35a1def6d1f2e51a8c7a3f0194acd4975a90e7c7173",
+      "savedSha256": "a0c28e00ae310059fdabf35a1def6d1f2e51a8c7a3f0194acd4975a90e7c7173",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/input.json",
+      "sourceSha256": "15b94b8a611417b789e9e2d519308468f343148bbd72e27494def6be6f3a4a23",
+      "savedSha256": "15b94b8a611417b789e9e2d519308468f343148bbd72e27494def6be6f3a4a23",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/invocation.json",
+      "sourceSha256": "d0d80bff924ba9e19ac2ca972e0621b0d4469820077d40858dff338e72fd2ace",
+      "savedSha256": "d0d80bff924ba9e19ac2ca972e0621b0d4469820077d40858dff338e72fd2ace",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/judge-evidence.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/judge-evidence.txt",
+      "sourceSha256": "c93ba90360ee37595f470a8d791bae950229a96c949f15684298f341e51059c3",
+      "savedSha256": "c93ba90360ee37595f470a8d791bae950229a96c949f15684298f341e51059c3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/judge-result.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/judge-result.json",
+      "sourceSha256": "836cfbc8d23e2323b82091d2543f049a2c93e26dbdb9deb4b238f37255ec5a29",
+      "savedSha256": "836cfbc8d23e2323b82091d2543f049a2c93e26dbdb9deb4b238f37255ec5a29",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-1/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-1/prompt.txt",
+      "sourceSha256": "3e3cad2e621d7fa55e461e9d9d637a6bbb6b3d7edfd66cd44b55ac6ea3591704",
+      "savedSha256": "3e3cad2e621d7fa55e461e9d9d637a6bbb6b3d7edfd66cd44b55ac6ea3591704",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/claude-raw.json",
+      "sourceSha256": "68f855bd299f9ab3fae477a82c5df14fe4f92924a3e2f6001b09fdb68cd677bd",
+      "savedSha256": "68f855bd299f9ab3fae477a82c5df14fe4f92924a3e2f6001b09fdb68cd677bd",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/edited.txt",
+      "sourceSha256": "b80b1192c716f52426c192268cf1a0428a41fd9d9dde6b1b77b8153394bc2773",
+      "savedSha256": "b80b1192c716f52426c192268cf1a0428a41fd9d9dde6b1b77b8153394bc2773",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/health-editor.json",
+      "sourceSha256": "2d152ca9d66048909b14541183a9b4636aa1ec395799127db1db2cbfab07a93b",
+      "savedSha256": "2d152ca9d66048909b14541183a9b4636aa1ec395799127db1db2cbfab07a93b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/health-judge.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/health-judge.json",
+      "sourceSha256": "63f29c6cd07df1ea91eaa32047477f25b8f05338d72d8c390cb1454d761fbdde",
+      "savedSha256": "63f29c6cd07df1ea91eaa32047477f25b8f05338d72d8c390cb1454d761fbdde",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/input.json",
+      "sourceSha256": "52e61857592759ce6e0f9e5ca30312ccc8fe612a35ff84810d936ebdc8168928",
+      "savedSha256": "52e61857592759ce6e0f9e5ca30312ccc8fe612a35ff84810d936ebdc8168928",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/invocation.json",
+      "sourceSha256": "46c45fe7d9374c40d853c934a84da2b4c94804a07fb6c4b77915e3ef54064ab5",
+      "savedSha256": "46c45fe7d9374c40d853c934a84da2b4c94804a07fb6c4b77915e3ef54064ab5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/judge-evidence.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/judge-evidence.txt",
+      "sourceSha256": "e23e265ccc1848327d961e2e0f83f943141d6b0421aea6d516297d049abadce5",
+      "savedSha256": "e23e265ccc1848327d961e2e0f83f943141d6b0421aea6d516297d049abadce5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/judge-result.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/judge-result.json",
+      "sourceSha256": "92ece7e743dcd189be95b066c3916043bc1efd67bfbd3cb8f223faf3b09bcd52",
+      "savedSha256": "92ece7e743dcd189be95b066c3916043bc1efd67bfbd3cb8f223faf3b09bcd52",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-2/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-2/prompt.txt",
+      "sourceSha256": "8a78e10854e482de40396ca2df1885e54f3586d38319d6346f17b86f2fb3b17d",
+      "savedSha256": "8a78e10854e482de40396ca2df1885e54f3586d38319d6346f17b86f2fb3b17d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/claude-raw.json",
+      "sourceSha256": "b1707dceac9f4f469eb2864e887285df87f9aebddd9ffc0bb8d2725c5a2a0c57",
+      "savedSha256": "b1707dceac9f4f469eb2864e887285df87f9aebddd9ffc0bb8d2725c5a2a0c57",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/edited.txt",
+      "sourceSha256": "20b4f5cc2185cb0d04a8e95ded48a1e3fb246ae1697f5d01a682484848d08dd6",
+      "savedSha256": "20b4f5cc2185cb0d04a8e95ded48a1e3fb246ae1697f5d01a682484848d08dd6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/health-editor.json",
+      "sourceSha256": "ef5bbd691ac622d1d96dc13276ce67a9caa60bff3c4ed0f878cd041fdc1b8e31",
+      "savedSha256": "ef5bbd691ac622d1d96dc13276ce67a9caa60bff3c4ed0f878cd041fdc1b8e31",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/health-judge.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/health-judge.json",
+      "sourceSha256": "e5dcb1d8a573cd99e95bc21d36f3d77079ad32a475406036f6219fef8f408996",
+      "savedSha256": "e5dcb1d8a573cd99e95bc21d36f3d77079ad32a475406036f6219fef8f408996",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/input.json",
+      "sourceSha256": "09137cf563118bfd110134d03bdbddfa995708f7be6d869d52228177fc7fe532",
+      "savedSha256": "09137cf563118bfd110134d03bdbddfa995708f7be6d869d52228177fc7fe532",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/invocation.json",
+      "sourceSha256": "bdbd1de6ee4852c32f3d50506fa3b3b72c8411f38bd034711b9a835f681f2634",
+      "savedSha256": "bdbd1de6ee4852c32f3d50506fa3b3b72c8411f38bd034711b9a835f681f2634",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/judge-evidence.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/judge-evidence.txt",
+      "sourceSha256": "932947b9756e1ce6890c6f9da437c75c6a7d093b7df7853330e95cb56b37293e",
+      "savedSha256": "932947b9756e1ce6890c6f9da437c75c6a7d093b7df7853330e95cb56b37293e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/judge-result.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/judge-result.json",
+      "sourceSha256": "8c8a0415d952e01a28e85fd275d2e3fda796f7bf4af5bff7d9f49cc98ee9fe28",
+      "savedSha256": "8c8a0415d952e01a28e85fd275d2e3fda796f7bf4af5bff7d9f49cc98ee9fe28",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/source-3/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/source-3/prompt.txt",
+      "sourceSha256": "9d33040d7902df791c395798397e0919e6d64db664fa21f1949aac48c5f94372",
+      "savedSha256": "9d33040d7902df791c395798397e0919e6d64db664fa21f1949aac48c5f94372",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated/system-prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated/system-prompt.txt",
+      "sourceSha256": "de931638eea0b08890717bd73627c54441ad3917067c9325e5f9c7b074b1fb7d",
+      "savedSha256": "de931638eea0b08890717bd73627c54441ad3917067c9325e5f9c7b074b1fb7d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/agent-source.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/agent-source.txt",
+      "sourceSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "savedSha256": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/claude-raw.json",
+      "sourceSha256": "34d42bc1a56f879c1059d4637112b30e681ba93677f536ee4954e64320f3dfd3",
+      "savedSha256": "34d42bc1a56f879c1059d4637112b30e681ba93677f536ee4954e64320f3dfd3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/edited.txt",
+      "sourceSha256": "b99681c6d96fcb333c186f100de4fb79f1bc236281cad68cac1543a2e60e7341",
+      "savedSha256": "b99681c6d96fcb333c186f100de4fb79f1bc236281cad68cac1543a2e60e7341",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/health-editor.json",
+      "sourceSha256": "dccbe649d86b5f6fdbc3a00de569c353f1731b29cb895bbaa4b447a87ef546e8",
+      "savedSha256": "dccbe649d86b5f6fdbc3a00de569c353f1731b29cb895bbaa4b447a87ef546e8",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/input.json",
+      "sourceSha256": "4a2be3777739c979f2052b49952c9ca914e70e8027ab8131374068a35a4ad090",
+      "savedSha256": "4a2be3777739c979f2052b49952c9ca914e70e8027ab8131374068a35a4ad090",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/invocation.json",
+      "sourceSha256": "f758fab68f5e46054a4d15b859da0293f5ccdc89116851b207e08867f8dffb0b",
+      "savedSha256": "f758fab68f5e46054a4d15b859da0293f5ccdc89116851b207e08867f8dffb0b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/exceptions-clear/prompt.txt",
+      "sourceSha256": "797ae8528980beb81f35e6c5244a1c7fa9259eb274f7df4d69750085e36dc0de",
+      "savedSha256": "797ae8528980beb81f35e6c5244a1c7fa9259eb274f7df4d69750085e36dc0de",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/observations.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/observations.json",
+      "sourceSha256": "698218e760d30cbb192b689cf4d4833cad5fb6ffe3e6f83be532c0b279b581c2",
+      "savedSha256": "698218e760d30cbb192b689cf4d4833cad5fb6ffe3e6f83be532c0b279b581c2",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/results.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/results.json",
+      "sourceSha256": "7ab173c729a833510030ea1188a39268ee9d50492da267936e2ab9a831079fb8",
+      "savedSha256": "7ab173c729a833510030ea1188a39268ee9d50492da267936e2ab9a831079fb8",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/claude-raw.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/claude-raw.json",
+      "sourceSha256": "47db5d43cfd06f8b62d6a7afa6bcbbac0fa36d35a84877b698b71edee84da953",
+      "savedSha256": "47db5d43cfd06f8b62d6a7afa6bcbbac0fa36d35a84877b698b71edee84da953",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/claude-stderr.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/claude-stderr.txt",
+      "sourceSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "savedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/edited.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/edited.txt",
+      "sourceSha256": "e629c04d8386400ff08dc3eb28a82fe50d5eea01714405933a6cae877b1fba5b",
+      "savedSha256": "e629c04d8386400ff08dc3eb28a82fe50d5eea01714405933a6cae877b1fba5b",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/health-editor.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/health-editor.json",
+      "sourceSha256": "df64a4fdeced270421fcef33c935e3a25a13ac4b08c4d7081eacb8146b08a86f",
+      "savedSha256": "df64a4fdeced270421fcef33c935e3a25a13ac4b08c4d7081eacb8146b08a86f",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/input.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/input.json",
+      "sourceSha256": "15b94b8a611417b789e9e2d519308468f343148bbd72e27494def6be6f3a4a23",
+      "savedSha256": "15b94b8a611417b789e9e2d519308468f343148bbd72e27494def6be6f3a4a23",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/invocation.json",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/invocation.json",
+      "sourceSha256": "27bbbb1a171a6d1dcbaa956785bb108c4dccf36c9c4c3b5ad14140f6309b1845",
+      "savedSha256": "27bbbb1a171a6d1dcbaa956785bb108c4dccf36c9c4c3b5ad14140f6309b1845",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/source-1/prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/source-1/prompt.txt",
+      "sourceSha256": "3e3cad2e621d7fa55e461e9d9d637a6bbb6b3d7edfd66cd44b55ac6ea3591704",
+      "savedSha256": "3e3cad2e621d7fa55e461e9d9d637a6bbb6b3d7edfd66cd44b55ac6ea3591704",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/editor-isolated-sonnet/system-prompt.txt",
+      "savedAs": "claude-language-fix-evidence/editor-isolated-sonnet/system-prompt.txt",
+      "sourceSha256": "de931638eea0b08890717bd73627c54441ad3917067c9325e5f9c7b074b1fb7d",
+      "savedSha256": "de931638eea0b08890717bd73627c54441ad3917067c9325e5f9c7b074b1fb7d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/evidence/message-display-probe/result.json",
+      "savedAs": "claude-language-fix-evidence/evidence/message-display-probe/result.json",
+      "sourceSha256": "7f994f06ed93c77182bf7772fbf6b94388c89da39ad844e3c2c4d147d6b579c6",
+      "savedSha256": "7f994f06ed93c77182bf7772fbf6b94388c89da39ad844e3c2c4d147d6b579c6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/evidence/request-capture.json",
+      "savedAs": "claude-language-fix-evidence/evidence/request-capture.json",
+      "sourceSha256": "943dab4718d71f163cc4703ab9489d9f03bc0ce9f2c8221653bbf95e62611177",
+      "savedSha256": "943dab4718d71f163cc4703ab9489d9f03bc0ce9f2c8221653bbf95e62611177",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/evidence-relocations.json",
+      "savedAs": "claude-language-fix-evidence/evidence-relocations.json",
+      "sourceSha256": "44676d00ccb1c87d72cf770d000ef20be6a2ef3db83ba06a1650fa0c30af7deb",
+      "savedSha256": "44676d00ccb1c87d72cf770d000ef20be6a2ef3db83ba06a1650fa0c30af7deb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/experiment-index.json",
+      "savedAs": "claude-language-fix-evidence/experiment-index.json",
+      "sourceSha256": "cfe23831332a3a16568072e96af7f8bd3a419f2159b59edacfce0b1bb3a2378f",
+      "savedSha256": "cfe23831332a3a16568072e96af7f8bd3a419f2159b59edacfce0b1bb3a2378f",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/final-state.json",
+      "savedAs": "claude-language-fix-evidence/final-state.json",
+      "sourceSha256": "0b3a053f898f83c9f551261cb556f72c513a3a6cb515212777b177dcbc13a9f7",
+      "savedSha256": "0b3a053f898f83c9f551261cb556f72c513a3a6cb515212777b177dcbc13a9f7",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/inputs.json",
+      "savedAs": "claude-language-fix-evidence/inputs.json",
+      "sourceSha256": "22c70b1a382f43a5fd6964383674276c0e30ed2f4f060013df1390ec643ff2a5",
+      "savedSha256": "22c70b1a382f43a5fd6964383674276c0e30ed2f4f060013df1390ec643ff2a5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/interview-attempt-1-run-2.json",
+      "savedAs": "claude-language-fix-evidence/interview-attempt-1-run-2.json",
+      "sourceSha256": "4f484aba79283a25c8a8f9badde1f43c6b6236b48f8b6f569290e41c2d923fe5",
+      "savedSha256": "4f484aba79283a25c8a8f9badde1f43c6b6236b48f8b6f569290e41c2d923fe5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/interview-attempt-1-run-3.json",
+      "savedAs": "claude-language-fix-evidence/interview-attempt-1-run-3.json",
+      "sourceSha256": "a1b886aa32a741cb8a3f2527f58e3df02b644e12fb3d084cef4c6ec223dcd7ec",
+      "savedSha256": "a1b886aa32a741cb8a3f2527f58e3df02b644e12fb3d084cef4c6ec223dcd7ec",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/interview-attempt-1.json",
+      "savedAs": "claude-language-fix-evidence/interview-attempt-1.json",
+      "sourceSha256": "bce5786e507261b683c71d7788af3142bd9f32b91980c29e1ffe57a78c282f8c",
+      "savedSha256": "bce5786e507261b683c71d7788af3142bd9f32b91980c29e1ffe57a78c282f8c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/probe-minimal-template.txt",
+      "savedAs": "claude-language-fix-evidence/probe-minimal-template.txt",
+      "sourceSha256": "d0c68d089c57c85125bf5aff8b8df10fd50e66515a7021d7fb92f1681eee0053",
+      "savedSha256": "d0c68d089c57c85125bf5aff8b8df10fd50e66515a7021d7fb92f1681eee0053",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/probe-minimal.json",
+      "savedAs": "claude-language-fix-evidence/probe-minimal.json",
+      "sourceSha256": "d73e7ab671b3f2432be11b1a9b29525b6a39db01c4bff109b25843bbabafd10a",
+      "savedSha256": "d73e7ab671b3f2432be11b1a9b29525b6a39db01c4bff109b25843bbabafd10a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/documents/tasks/2026/09/claude-language-fix-evidence/worktree-baseline-template.txt",
+      "savedAs": "claude-language-fix-evidence/worktree-baseline-template.txt",
+      "sourceSha256": "c2e5c61f3c05fc5d63b3ad50da56f56871108a15c35eb8ebb2fd8168d98431b3",
+      "savedSha256": "c2e5c61f3c05fc5d63b3ad50da56f56871108a15c35eb8ebb2fd8168d98431b3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-code/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-code/calibration.json",
+      "sourceSha256": "1d413e76f0265c6ba00f7b352d1ec79be625250a6b2a457d79372038f11b8c03",
+      "savedSha256": "1d413e76f0265c6ba00f7b352d1ec79be625250a6b2a457d79372038f11b8c03",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-dialogue/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-dialogue/calibration.json",
+      "sourceSha256": "9f9718623d6a575f4db59b760c9a5ceb6fbf5ba8f8f1439e5f0601f2ac8609c9",
+      "savedSha256": "9f9718623d6a575f4db59b760c9a5ceb6fbf5ba8f8f1439e5f0601f2ac8609c9",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-exceptions/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-exceptions/calibration.json",
+      "sourceSha256": "5f6b891d080a0bcc8e2e4892bb1d7e10b058b9d0a342773a552faad632729511",
+      "savedSha256": "5f6b891d080a0bcc8e2e4892bb1d7e10b058b9d0a342773a552faad632729511",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-interface/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-interface/calibration.json",
+      "sourceSha256": "11aae6c815e837809e90e5e9a846fb98443829473f89e00baa1fb566138f35e0",
+      "savedSha256": "11aae6c815e837809e90e5e9a846fb98443829473f89e00baa1fb566138f35e0",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-jargon/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-jargon/calibration.json",
+      "sourceSha256": "209b3e91f73ef840b7ac47982ed1ae3cdf1b2b0e129eea4467b610df33fd8de5",
+      "savedSha256": "209b3e91f73ef840b7ac47982ed1ae3cdf1b2b0e129eea4467b610df33fd8de5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/framework/core/acceptance-tests/agents-rules-chat-source/calibration.json",
+      "savedAs": "acceptance-tests/agents-rules-chat-source/calibration.json",
+      "sourceSha256": "338c9cfb688bf771f706204c52ba3e53fa2d444bc6fa59bd036328e5a5a2ea28",
+      "savedSha256": "338c9cfb688bf771f706204c52ba3e53fa2d444bc6fa59bd036328e5a5a2ea28",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-035ce04d/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-035ce04d-sandbox/9bacdaae-5106-409f-bc82-e9fde2ad7d3a.jsonl",
+      "savedAs": "raw-sessions/83de6333ac42-9bacdaae-5106-409f-bc82-e9fde2ad7d3a.jsonl",
+      "sourceSha256": "3132dbf8142a39b870292721c2c0078385e27ba77f386df688522385a5e2d19e",
+      "savedSha256": "3132dbf8142a39b870292721c2c0078385e27ba77f386df688522385a5e2d19e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-10aba089/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-10aba089-sandbox/ae6f73a6-d12d-47ee-9d9d-79f5e0a3e530.jsonl",
+      "savedAs": "raw-sessions/788b6c27b6ee-ae6f73a6-d12d-47ee-9d9d-79f5e0a3e530.jsonl",
+      "sourceSha256": "f217c92d7069b60d7c668205c1f4129eb9060d8cbf98ec593bc45e1fa76a92ac",
+      "savedSha256": "f217c92d7069b60d7c668205c1f4129eb9060d8cbf98ec593bc45e1fa76a92ac",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-149a24f0/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-149a24f0-sandbox/e37a16cd-a690-45fd-9630-293ba1f35bbb.jsonl",
+      "savedAs": "raw-sessions/6bd67c8d8148-e37a16cd-a690-45fd-9630-293ba1f35bbb.jsonl",
+      "sourceSha256": "16e60b5ef7905e8cd465a7d67119c6b77c713c09a1258af2e41452b4049de720",
+      "savedSha256": "16e60b5ef7905e8cd465a7d67119c6b77c713c09a1258af2e41452b4049de720",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-1891f8a8/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-1891f8a8-sandbox/9bd7d9c7-e3a6-4c0c-8b60-2fe7786cb672.jsonl",
+      "savedAs": "raw-sessions/400689559ed4-9bd7d9c7-e3a6-4c0c-8b60-2fe7786cb672.jsonl",
+      "sourceSha256": "08161e99c9ab441c17b8f041e97065b3611224397d36a72c180cae7f23748662",
+      "savedSha256": "08161e99c9ab441c17b8f041e97065b3611224397d36a72c180cae7f23748662",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-2c842421/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-2c842421-sandbox/1bccd5c3-a4a5-43c5-8eb9-5cd8b9bfd222.jsonl",
+      "savedAs": "raw-sessions/500a2b6bd99f-1bccd5c3-a4a5-43c5-8eb9-5cd8b9bfd222.jsonl",
+      "sourceSha256": "db99519c4c29c9afb4ad8a45c26133065753fd04b95a1a449d158f8582bb14cd",
+      "savedSha256": "db99519c4c29c9afb4ad8a45c26133065753fd04b95a1a449d158f8582bb14cd",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3d1354ef/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-3d1354ef-sandbox/7f27a938-42b3-49e7-ba4f-8635397a367f.jsonl",
+      "savedAs": "raw-sessions/a8fee36dd913-7f27a938-42b3-49e7-ba4f-8635397a367f.jsonl",
+      "sourceSha256": "2b6a3edf510c06c3674b07a679e65ee838c59743337e717b6415afa31526c82e",
+      "savedSha256": "2b6a3edf510c06c3674b07a679e65ee838c59743337e717b6415afa31526c82e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3e07c23e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-3e07c23e-sandbox/5d448896-0270-445d-988e-db2418fdd95b.jsonl",
+      "savedAs": "raw-sessions/dcec90c9c5cf-5d448896-0270-445d-988e-db2418fdd95b.jsonl",
+      "sourceSha256": "e5ffedb26d7310f06290f28461c8397abcd75b907667f9a57dae2e0fdf17e47c",
+      "savedSha256": "e5ffedb26d7310f06290f28461c8397abcd75b907667f9a57dae2e0fdf17e47c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3ef758d3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-3ef758d3-sandbox/33e75f71-23f5-4e05-a536-b14464c8d622.jsonl",
+      "savedAs": "raw-sessions/d6a852680e25-33e75f71-23f5-4e05-a536-b14464c8d622.jsonl",
+      "sourceSha256": "46bec371cb1639399a19b54928508d849d13e39d4f8629a5b24a5f45a3307162",
+      "savedSha256": "46bec371cb1639399a19b54928508d849d13e39d4f8629a5b24a5f45a3307162",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-48afc07e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-48afc07e-sandbox/2d0b7857-7272-4be4-a723-e02e9f8e42f4.jsonl",
+      "savedAs": "raw-sessions/d5954e68ce7d-2d0b7857-7272-4be4-a723-e02e9f8e42f4.jsonl",
+      "sourceSha256": "cebc6b3d2bcd6993e1f262317221b871f32e2a4370518f56b208da74d67db1ef",
+      "savedSha256": "cebc6b3d2bcd6993e1f262317221b871f32e2a4370518f56b208da74d67db1ef",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-4c000233/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-4c000233-sandbox/f527f923-8511-4bed-b2c5-599566dfac1c.jsonl",
+      "savedAs": "raw-sessions/01c75b16d23e-f527f923-8511-4bed-b2c5-599566dfac1c.jsonl",
+      "sourceSha256": "e9c54560d9a005383742f195271570318fd11acc29907894917ab6ac3c193f53",
+      "savedSha256": "e9c54560d9a005383742f195271570318fd11acc29907894917ab6ac3c193f53",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-508807cd/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-508807cd-sandbox/887f226d-d9f7-4b89-a586-c1664d62b26b.jsonl",
+      "savedAs": "raw-sessions/ffd345be22ae-887f226d-d9f7-4b89-a586-c1664d62b26b.jsonl",
+      "sourceSha256": "89e6e10b836b74e43d48368e1953d9b874c3b6f402ed23c596d15c10526191f3",
+      "savedSha256": "89e6e10b836b74e43d48368e1953d9b874c3b6f402ed23c596d15c10526191f3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-5f0e8c47/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-5f0e8c47-sandbox/3a93762f-2a7c-4636-9808-562a27dd0008.jsonl",
+      "savedAs": "raw-sessions/1c007ec65597-3a93762f-2a7c-4636-9808-562a27dd0008.jsonl",
+      "sourceSha256": "96130426d316054b36976e3bb5eb1177ebcc229fee33598c962bb708476c0d0e",
+      "savedSha256": "96130426d316054b36976e3bb5eb1177ebcc229fee33598c962bb708476c0d0e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-7204b9c9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-7204b9c9-sandbox/76277deb-fdb5-453d-b31d-d3bd82c51f19.jsonl",
+      "savedAs": "raw-sessions/6d145d3b1041-76277deb-fdb5-453d-b31d-d3bd82c51f19.jsonl",
+      "sourceSha256": "b9494422e1709c98bebd2fbbfbb1d5f72b499f67472ef49da015012605b325eb",
+      "savedSha256": "b9494422e1709c98bebd2fbbfbb1d5f72b499f67472ef49da015012605b325eb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-770f696b/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-770f696b-sandbox/35add637-12cd-42b8-99d7-ced94d840a09.jsonl",
+      "savedAs": "raw-sessions/0b661c6aec66-35add637-12cd-42b8-99d7-ced94d840a09.jsonl",
+      "sourceSha256": "ead07b26adb6126be57d314fb23f4a82b2de41d17a40dee89b29b27c34793f84",
+      "savedSha256": "ead07b26adb6126be57d314fb23f4a82b2de41d17a40dee89b29b27c34793f84",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-777fb2b7/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-777fb2b7-sandbox/c1412754-584c-46e5-8a97-6e1d7f1df616.jsonl",
+      "savedAs": "raw-sessions/2b6642d165e8-c1412754-584c-46e5-8a97-6e1d7f1df616.jsonl",
+      "sourceSha256": "760ef2ff05ccb4e40845f6f3d2c113027d331dca3ea0eef69034e646ca91bdff",
+      "savedSha256": "760ef2ff05ccb4e40845f6f3d2c113027d331dca3ea0eef69034e646ca91bdff",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-84456d3d/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-84456d3d-sandbox/54afb8aa-4cf4-4d50-87cd-f180f4d27f53.jsonl",
+      "savedAs": "raw-sessions/d1ec5d056e73-54afb8aa-4cf4-4d50-87cd-f180f4d27f53.jsonl",
+      "sourceSha256": "ca09dd44739db7a0d00e35b6b971c6eb5fa62fcc9da0f8d87ee9bfb8f8a91fe1",
+      "savedSha256": "ca09dd44739db7a0d00e35b6b971c6eb5fa62fcc9da0f8d87ee9bfb8f8a91fe1",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-89be886e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-89be886e-sandbox/ff599091-bf35-47d5-9cd8-f6ee57eb0783.jsonl",
+      "savedAs": "raw-sessions/39040017b39c-ff599091-bf35-47d5-9cd8-f6ee57eb0783.jsonl",
+      "sourceSha256": "f8473a87f32447bbd2f1991efd50c68922d20c74172ccf1680664af0606c3dfe",
+      "savedSha256": "f8473a87f32447bbd2f1991efd50c68922d20c74172ccf1680664af0606c3dfe",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-8c6b8ad8/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-8c6b8ad8-sandbox/c7494764-ede8-4b9e-8fbd-74e248a61acc.jsonl",
+      "savedAs": "raw-sessions/f5e83891a62e-c7494764-ede8-4b9e-8fbd-74e248a61acc.jsonl",
+      "sourceSha256": "48c09859e2c2c3ec1082c6f876672c6c2aacdd6110eba0de5275705eadad9331",
+      "savedSha256": "48c09859e2c2c3ec1082c6f876672c6c2aacdd6110eba0de5275705eadad9331",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-8cb3eed5/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-8cb3eed5-sandbox/87ac9bea-b418-4d35-b18b-377f4533dd41.jsonl",
+      "savedAs": "raw-sessions/524e4e515ece-87ac9bea-b418-4d35-b18b-377f4533dd41.jsonl",
+      "sourceSha256": "6d228d2f0c068bcccb8b055984724ca74e3797372a85f8611801d36e3185a1c5",
+      "savedSha256": "6d228d2f0c068bcccb8b055984724ca74e3797372a85f8611801d36e3185a1c5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-94106fa3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-94106fa3-sandbox/7f6854b1-aa13-44e4-ab27-c826bd5cb54f.jsonl",
+      "savedAs": "raw-sessions/3a333a881c87-7f6854b1-aa13-44e4-ab27-c826bd5cb54f.jsonl",
+      "sourceSha256": "2cb224384430959e325296ae41a15d82f351aec816d7f824b1a2a73c90f25346",
+      "savedSha256": "2cb224384430959e325296ae41a15d82f351aec816d7f824b1a2a73c90f25346",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-ad1cf8d9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-ad1cf8d9-sandbox/6c084239-4582-4941-96ae-2b0b5804c74c.jsonl",
+      "savedAs": "raw-sessions/331db859c61b-6c084239-4582-4941-96ae-2b0b5804c74c.jsonl",
+      "sourceSha256": "ad475e64f80352f1e07062500ed8f4b1f506c1ba382e408b1837ba36d37b3eb1",
+      "savedSha256": "ad475e64f80352f1e07062500ed8f4b1f506c1ba382e408b1837ba36d37b3eb1",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-b35814f0/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-b35814f0-sandbox/0fee6e1a-5a4a-46f7-8a45-382836d64ac1.jsonl",
+      "savedAs": "raw-sessions/e73b0c671230-0fee6e1a-5a4a-46f7-8a45-382836d64ac1.jsonl",
+      "sourceSha256": "2df6f06d6486345a4a90e64d618bf14cb7ad783111f3980ca27b5823e85bc714",
+      "savedSha256": "2df6f06d6486345a4a90e64d618bf14cb7ad783111f3980ca27b5823e85bc714",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-b43c00b0/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-b43c00b0-sandbox/d0d9bd1a-d6c6-423e-a48a-6f5e47900673.jsonl",
+      "savedAs": "raw-sessions/0cf9040c5ab0-d0d9bd1a-d6c6-423e-a48a-6f5e47900673.jsonl",
+      "sourceSha256": "d951a3e8cdc733663b4398844e1453c671a0f9e869e5d48bd492d6e3a339eb59",
+      "savedSha256": "d951a3e8cdc733663b4398844e1453c671a0f9e869e5d48bd492d6e3a339eb59",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-bb6431bc/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-bb6431bc-sandbox/88a2dc91-c740-4135-9f06-75b9422a4456.jsonl",
+      "savedAs": "raw-sessions/964a3503b7dd-88a2dc91-c740-4135-9f06-75b9422a4456.jsonl",
+      "sourceSha256": "0eb6ed18aa813c5376e53d371f41ccc6ad874fd6b84d5d6f54aa256a8637d38d",
+      "savedSha256": "0eb6ed18aa813c5376e53d371f41ccc6ad874fd6b84d5d6f54aa256a8637d38d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-c7582b0c/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-c7582b0c-sandbox/a57e1ef7-bce6-407c-865e-5a334180c2de.jsonl",
+      "savedAs": "raw-sessions/d9471ad86e1a-a57e1ef7-bce6-407c-865e-5a334180c2de.jsonl",
+      "sourceSha256": "8cd45806b34f17b066b65b7c58fb5ca540b120bb662ba989235ac81815757ab2",
+      "savedSha256": "8cd45806b34f17b066b65b7c58fb5ca540b120bb662ba989235ac81815757ab2",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-c9c285c3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-c9c285c3-sandbox/d6516792-6aa2-449f-a5f1-c7050ead5286.jsonl",
+      "savedAs": "raw-sessions/1bd83a915f02-d6516792-6aa2-449f-a5f1-c7050ead5286.jsonl",
+      "sourceSha256": "77254e4adf51c0a83f308df7be84d627b0fb6d72c3ee194354301633c98ee79a",
+      "savedSha256": "77254e4adf51c0a83f308df7be84d627b0fb6d72c3ee194354301633c98ee79a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-d0cb5c46/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-d0cb5c46-sandbox/86ff5538-b86b-4a4d-a39f-f2c0d109cb8f.jsonl",
+      "savedAs": "raw-sessions/e9c6ad45d67a-86ff5538-b86b-4a4d-a39f-f2c0d109cb8f.jsonl",
+      "sourceSha256": "31c75235e6c39bbc6a66ba36f9fecb74d9a81af5dffefdd4bfb47bd1f290c1cb",
+      "savedSha256": "31c75235e6c39bbc6a66ba36f9fecb74d9a81af5dffefdd4bfb47bd1f290c1cb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-e650bc93/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-e650bc93-sandbox/3b96ece3-b9c4-42e9-aaa4-417df07b3272.jsonl",
+      "savedAs": "raw-sessions/6e16b6fa3bb5-3b96ece3-b9c4-42e9-aaa4-417df07b3272.jsonl",
+      "sourceSha256": "a6ae42f210af6358bfdcda6111b175bfd85cb50812f31e9da02e3f88db3b50bf",
+      "savedSha256": "a6ae42f210af6358bfdcda6111b175bfd85cb50812f31e9da02e3f88db3b50bf",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-f165868e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-f165868e-sandbox/6bbbcc16-faec-4125-98a5-ecfca9491fa6.jsonl",
+      "savedAs": "raw-sessions/03e3a6729b3c-6bbbcc16-faec-4125-98a5-ecfca9491fa6.jsonl",
+      "sourceSha256": "9bb74639a6179abe4be859fd1bafd51837ed89d8c3012f45d64997b72f03f317",
+      "savedSha256": "9bb74639a6179abe4be859fd1bafd51837ed89d8c3012f45d64997b72f03f317",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-f2a80230/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-f2a80230-sandbox/436d5815-e4ba-4039-a4bc-57d971464e66.jsonl",
+      "savedAs": "raw-sessions/74817915b305-436d5815-e4ba-4039-a4bc-57d971464e66.jsonl",
+      "sourceSha256": "1d93ca766f85097234f8970d108d5e12d78533cfe6820d01efab81e0bab7c3eb",
+      "savedSha256": "1d93ca766f85097234f8970d108d5e12d78533cfe6820d01efab81e0bab7c3eb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-f7ce7e18/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-f7ce7e18-sandbox/d61b0cda-7285-4335-aca9-939785edf6fe.jsonl",
+      "savedAs": "raw-sessions/c2550b3fe4c4-d61b0cda-7285-4335-aca9-939785edf6fe.jsonl",
+      "sourceSha256": "afb038e2d42caccfdaddf696066a9801bcc96e8f1671ba322d8cfd323c602deb",
+      "savedSha256": "afb038e2d42caccfdaddf696066a9801bcc96e8f1671ba322d8cfd323c602deb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-000365e2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-000365e2-sandbox/b116a730-6026-47c6-9b24-531f60ac762b.jsonl",
+      "savedAs": "raw-sessions/9a4fa00aee3c-b116a730-6026-47c6-9b24-531f60ac762b.jsonl",
+      "sourceSha256": "e05de5f00a18508da72480199227f647004beea39a559e2bc59c979e93df01b6",
+      "savedSha256": "e05de5f00a18508da72480199227f647004beea39a559e2bc59c979e93df01b6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-0f7f3154/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-0f7f3154-sandbox/002ba7ca-01a9-4a0d-805e-7c22a6bfedbb.jsonl",
+      "savedAs": "raw-sessions/87bbf5e48d49-002ba7ca-01a9-4a0d-805e-7c22a6bfedbb.jsonl",
+      "sourceSha256": "e726c64ff8598af6402f04e693b20f3ce00a45f63d4cb83ec530548aeb4229e4",
+      "savedSha256": "e726c64ff8598af6402f04e693b20f3ce00a45f63d4cb83ec530548aeb4229e4",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-178523ad/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-178523ad-sandbox/a5d94cd3-bb48-40ac-a332-ef1178c00aa7.jsonl",
+      "savedAs": "raw-sessions/cf406c2b253e-a5d94cd3-bb48-40ac-a332-ef1178c00aa7.jsonl",
+      "sourceSha256": "078b4ec20824bbf348db91b54f0838c4909fc0b425882ce6d9e62be78b8f716a",
+      "savedSha256": "078b4ec20824bbf348db91b54f0838c4909fc0b425882ce6d9e62be78b8f716a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-2f0f65dd/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-2f0f65dd-sandbox/26242b26-0e00-4b9f-8997-d6346fbd1251.jsonl",
+      "savedAs": "raw-sessions/d44983131391-26242b26-0e00-4b9f-8997-d6346fbd1251.jsonl",
+      "sourceSha256": "e7a5f4ac6e1667a8209fccb6e69dd3782f1860b304ead76b748baf63de0e85b0",
+      "savedSha256": "e7a5f4ac6e1667a8209fccb6e69dd3782f1860b304ead76b748baf63de0e85b0",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-3eeaa0c9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-3eeaa0c9-sandbox/5b066e02-7e38-465c-a069-0e56f58ae2e6.jsonl",
+      "savedAs": "raw-sessions/ce47b3042bfe-5b066e02-7e38-465c-a069-0e56f58ae2e6.jsonl",
+      "sourceSha256": "87b4c8b598b9fc58d5e212e42c29034cfb409f568886e3442e6f91cfc1482fbb",
+      "savedSha256": "87b4c8b598b9fc58d5e212e42c29034cfb409f568886e3442e6f91cfc1482fbb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-3f8fd6ff/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-3f8fd6ff-sandbox/bb5c89f3-3357-4a5e-bc8b-f1c4a2638107.jsonl",
+      "savedAs": "raw-sessions/66196508ff0e-bb5c89f3-3357-4a5e-bc8b-f1c4a2638107.jsonl",
+      "sourceSha256": "b9adb5476cd7cd89d128e1c8cd5886973cf1e66a3b8d5347279dadfdd0055c25",
+      "savedSha256": "b9adb5476cd7cd89d128e1c8cd5886973cf1e66a3b8d5347279dadfdd0055c25",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-4490c9d6/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-4490c9d6-sandbox/18817cd3-8819-463a-adc4-e56a1a2fe6f2.jsonl",
+      "savedAs": "raw-sessions/4ad075e979b7-18817cd3-8819-463a-adc4-e56a1a2fe6f2.jsonl",
+      "sourceSha256": "ea0a56923ab028ab1a9d6f6365c4b2e170f444b8c03b87adbb11e131bda6c567",
+      "savedSha256": "ea0a56923ab028ab1a9d6f6365c4b2e170f444b8c03b87adbb11e131bda6c567",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-4d4d36a7/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-4d4d36a7-sandbox/f1afb07c-1fb1-48db-8ff3-d0014451d36c.jsonl",
+      "savedAs": "raw-sessions/fd08d86a6f35-f1afb07c-1fb1-48db-8ff3-d0014451d36c.jsonl",
+      "sourceSha256": "0a885235b43eaeedf172fc6146775fd34f0d1f4777ff1e9192eee0df853ae7e0",
+      "savedSha256": "0a885235b43eaeedf172fc6146775fd34f0d1f4777ff1e9192eee0df853ae7e0",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-65bfe9d2/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-65bfe9d2-sandbox/3619689d-9b23-40ed-85a4-63ab6fafda3a.jsonl",
+      "savedAs": "raw-sessions/3a5d92c7de8a-3619689d-9b23-40ed-85a4-63ab6fafda3a.jsonl",
+      "sourceSha256": "8048f60ef88854e446946f81d439b680c34e20b620ca3a3bd3832d50a0378238",
+      "savedSha256": "8048f60ef88854e446946f81d439b680c34e20b620ca3a3bd3832d50a0378238",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-696b0c0e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-696b0c0e-sandbox/5adc74ce-1609-49ed-b13d-16eb76a84863.jsonl",
+      "savedAs": "raw-sessions/f07484102ddd-5adc74ce-1609-49ed-b13d-16eb76a84863.jsonl",
+      "sourceSha256": "4ca832f48068b8cb4a1ad07844c344b35e0e66ccf7c76943bbef0b499d3cf7c8",
+      "savedSha256": "4ca832f48068b8cb4a1ad07844c344b35e0e66ccf7c76943bbef0b499d3cf7c8",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-748b5a0b/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-748b5a0b-sandbox/cb87089f-f71a-4222-bfb3-e234b9f3e62a.jsonl",
+      "savedAs": "raw-sessions/24c09c19021f-cb87089f-f71a-4222-bfb3-e234b9f3e62a.jsonl",
+      "sourceSha256": "8a2a6b5a02add220d2dfb76f89d02d886485f969ff455afaf0fcadaa70e74024",
+      "savedSha256": "8a2a6b5a02add220d2dfb76f89d02d886485f969ff455afaf0fcadaa70e74024",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-84ee9b77/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-84ee9b77-sandbox/1b402b5c-12d9-4d32-9141-f257de22f680.jsonl",
+      "savedAs": "raw-sessions/31dbd47d0b9a-1b402b5c-12d9-4d32-9141-f257de22f680.jsonl",
+      "sourceSha256": "4a336b5c23f6f4b83424c7654df2e87d5db1c79b270d40353954b61b9ea215f8",
+      "savedSha256": "4a336b5c23f6f4b83424c7654df2e87d5db1c79b270d40353954b61b9ea215f8",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-8b35b9f7/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-8b35b9f7-sandbox/3c0a243f-4593-4659-8e1c-77718ccdc35d.jsonl",
+      "savedAs": "raw-sessions/6664805da240-3c0a243f-4593-4659-8e1c-77718ccdc35d.jsonl",
+      "sourceSha256": "91315ad3f93a673255c984c3b900aa120222e3d9fb81ce3798bc4a810f17633d",
+      "savedSha256": "91315ad3f93a673255c984c3b900aa120222e3d9fb81ce3798bc4a810f17633d",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-901fbf8f/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-901fbf8f-sandbox/078035e2-fd46-4433-8071-26198aee5c44.jsonl",
+      "savedAs": "raw-sessions/24a1d479e25b-078035e2-fd46-4433-8071-26198aee5c44.jsonl",
+      "sourceSha256": "34dce26c93247cfeed15125c351ef61e3d4bfe10cf122f86fc5ab64db69bc0c9",
+      "savedSha256": "34dce26c93247cfeed15125c351ef61e3d4bfe10cf122f86fc5ab64db69bc0c9",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-a330c7bb/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-a330c7bb-sandbox/81f67d0e-1b4b-46a4-89bf-2547fc744ffb.jsonl",
+      "savedAs": "raw-sessions/2c08d3166984-81f67d0e-1b4b-46a4-89bf-2547fc744ffb.jsonl",
+      "sourceSha256": "01f30eb7507eebc59e1dac02d58958b2f83c989fc4761c6f8df51af0d2bc771e",
+      "savedSha256": "01f30eb7507eebc59e1dac02d58958b2f83c989fc4761c6f8df51af0d2bc771e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-a4336ede/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-a4336ede-sandbox/eb1eda35-e857-46e1-aaf3-1190649ae200.jsonl",
+      "savedAs": "raw-sessions/1f66b2859032-eb1eda35-e857-46e1-aaf3-1190649ae200.jsonl",
+      "sourceSha256": "0a894afb417483d00b71f8c1f73f26279c1b01c4bf5321ca7a2d386e52d79457",
+      "savedSha256": "0a894afb417483d00b71f8c1f73f26279c1b01c4bf5321ca7a2d386e52d79457",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-ba065cdb/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-ba065cdb-sandbox/db9ef3ea-019f-47fc-a232-c58fcf260c85.jsonl",
+      "savedAs": "raw-sessions/5b7f7e870b77-db9ef3ea-019f-47fc-a232-c58fcf260c85.jsonl",
+      "sourceSha256": "34f3a8985882c3a07abdeeef8132aa0c9e9d6e9294f69d971d5c66791054dbfa",
+      "savedSha256": "34f3a8985882c3a07abdeeef8132aa0c9e9d6e9294f69d971d5c66791054dbfa",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-bec6f476/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-bec6f476-sandbox/cf476473-c2dc-45cb-9bd7-b9baaa7a63cf.jsonl",
+      "savedAs": "raw-sessions/2abc64981be4-cf476473-c2dc-45cb-9bd7-b9baaa7a63cf.jsonl",
+      "sourceSha256": "5ad5b5877bd917b57d61c9bd9dcae2428ee98e6c654a14461c48129d327e87c6",
+      "savedSha256": "5ad5b5877bd917b57d61c9bd9dcae2428ee98e6c654a14461c48129d327e87c6",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-c1eaa483/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-c1eaa483-sandbox/8b2b774d-2a2c-4cb0-a0f3-fe3dbf812441.jsonl",
+      "savedAs": "raw-sessions/b2edc1114b69-8b2b774d-2a2c-4cb0-a0f3-fe3dbf812441.jsonl",
+      "sourceSha256": "ec0273c5a74ed76d91dd528ac5f43bc2bb4f68ac7fc902c5d365a76cd99ea3bb",
+      "savedSha256": "ec0273c5a74ed76d91dd528ac5f43bc2bb4f68ac7fc902c5d365a76cd99ea3bb",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-e51af7e3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-e51af7e3-sandbox/894c1bae-6ea9-4f72-ba6d-930e9cc906e6.jsonl",
+      "savedAs": "raw-sessions/8449b89ac92e-894c1bae-6ea9-4f72-ba6d-930e9cc906e6.jsonl",
+      "sourceSha256": "dc8abb604dc8a565606365499e0fa4693cd65438b0e8122f0b5bd4da432cb0c8",
+      "savedSha256": "dc8abb604dc8a565606365499e0fa4693cd65438b0e8122f0b5bd4da432cb0c8",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-00924bae/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-00924bae-sandbox/70249ff9-597e-4cac-8f1f-96b313c86443.jsonl",
+      "savedAs": "raw-sessions/9968c4681388-70249ff9-597e-4cac-8f1f-96b313c86443.jsonl",
+      "sourceSha256": "dc6b4b0ed9349011b3660eef700d4e8cdc7c12e1b7a15c760e2f7461bc2fed52",
+      "savedSha256": "dc6b4b0ed9349011b3660eef700d4e8cdc7c12e1b7a15c760e2f7461bc2fed52",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-064530dc/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-064530dc-sandbox/1d54bd05-3cb0-422a-93d1-6fc164a1790a.jsonl",
+      "savedAs": "raw-sessions/9ec1abd2ce79-1d54bd05-3cb0-422a-93d1-6fc164a1790a.jsonl",
+      "sourceSha256": "bb8f3101fe7f4abf4d3ff6090631ef5b97081a75c63fd6758284ff32bf50d1e9",
+      "savedSha256": "bb8f3101fe7f4abf4d3ff6090631ef5b97081a75c63fd6758284ff32bf50d1e9",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-0768b08c/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-0768b08c-sandbox/0db4447c-2ec3-4993-92ac-31948949260e.jsonl",
+      "savedAs": "raw-sessions/9a99f5275a23-0db4447c-2ec3-4993-92ac-31948949260e.jsonl",
+      "sourceSha256": "7471b6d20574fbd42a3de568849333ddc22979c48433b65e504f21dd13bc5ada",
+      "savedSha256": "7471b6d20574fbd42a3de568849333ddc22979c48433b65e504f21dd13bc5ada",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-21a558ef/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-21a558ef-sandbox/ddf70fda-e0e9-4ccf-9d9d-1abce87951c4.jsonl",
+      "savedAs": "raw-sessions/3742a2cfe909-ddf70fda-e0e9-4ccf-9d9d-1abce87951c4.jsonl",
+      "sourceSha256": "617d102e50da1914c4521add03a49b388a9642208a9e65ae150eaa4b23f81657",
+      "savedSha256": "617d102e50da1914c4521add03a49b388a9642208a9e65ae150eaa4b23f81657",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-248256bd/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-248256bd-sandbox/f49c9007-04d9-4ecb-8f6d-157401f4b5cd.jsonl",
+      "savedAs": "raw-sessions/8489ef53946f-f49c9007-04d9-4ecb-8f6d-157401f4b5cd.jsonl",
+      "sourceSha256": "9a0f777b80efe150494c92704eeab88312926be7bc1c79223067a08f3534faaf",
+      "savedSha256": "9a0f777b80efe150494c92704eeab88312926be7bc1c79223067a08f3534faaf",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-2870d3e9/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-2870d3e9-sandbox/9eca3aab-f0e1-40b7-8d32-facce3147e12.jsonl",
+      "savedAs": "raw-sessions/2ae55562a1b4-9eca3aab-f0e1-40b7-8d32-facce3147e12.jsonl",
+      "sourceSha256": "ee668793b65287792a722daf23ba59331febb6e6219eeef9394b84d32aab3afd",
+      "savedSha256": "ee668793b65287792a722daf23ba59331febb6e6219eeef9394b84d32aab3afd",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-2984577e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-2984577e-sandbox/179745c4-3fe5-4b2d-b990-2f70dde2b393.jsonl",
+      "savedAs": "raw-sessions/bdefd6df1396-179745c4-3fe5-4b2d-b990-2f70dde2b393.jsonl",
+      "sourceSha256": "d4c51a90799aa4eae2fec1b4ce44e5761994d7f1e3df752a10d633242b537dc7",
+      "savedSha256": "d4c51a90799aa4eae2fec1b4ce44e5761994d7f1e3df752a10d633242b537dc7",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-3d6332aa/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-3d6332aa-sandbox/ebd63c55-048e-4f9f-8fde-babc52bbab4f.jsonl",
+      "savedAs": "raw-sessions/deaf27b090c8-ebd63c55-048e-4f9f-8fde-babc52bbab4f.jsonl",
+      "sourceSha256": "778f957aca245f87a1b8b585ac316a793caa7a3290b05715d925a2a88e9f3ecf",
+      "savedSha256": "778f957aca245f87a1b8b585ac316a793caa7a3290b05715d925a2a88e9f3ecf",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-4da874a8/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-4da874a8-sandbox/24bb787b-c451-4a73-9b34-8bed6c28d769.jsonl",
+      "savedAs": "raw-sessions/6c9f59200ae6-24bb787b-c451-4a73-9b34-8bed6c28d769.jsonl",
+      "sourceSha256": "c2b188ebeef3d47a08e48130ddf24fca1eccdd81e5f90d50cbe93acd60371cb5",
+      "savedSha256": "c2b188ebeef3d47a08e48130ddf24fca1eccdd81e5f90d50cbe93acd60371cb5",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-58263ff4/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-58263ff4-sandbox/b0fd298a-c542-4bbc-a008-b11a45c19311.jsonl",
+      "savedAs": "raw-sessions/d31b23a832a8-b0fd298a-c542-4bbc-a008-b11a45c19311.jsonl",
+      "sourceSha256": "4185354523ba3aeb15e4f24cf26a401502e363cfdb60bf870d363060980ac5f3",
+      "savedSha256": "4185354523ba3aeb15e4f24cf26a401502e363cfdb60bf870d363060980ac5f3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-86f6a4c6/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-86f6a4c6-sandbox/e6060bdf-cea6-4528-abce-40d50db7a369.jsonl",
+      "savedAs": "raw-sessions/bd641b371b5c-e6060bdf-cea6-4528-abce-40d50db7a369.jsonl",
+      "sourceSha256": "2a3a1791521dddaa8b9c6f66b655f46d32d3b67cc49f1037bc6f0e40556bfc4a",
+      "savedSha256": "2a3a1791521dddaa8b9c6f66b655f46d32d3b67cc49f1037bc6f0e40556bfc4a",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-88b71acd/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-88b71acd-sandbox/bc6dbe86-d109-4521-b17b-2f94ade230ef.jsonl",
+      "savedAs": "raw-sessions/476ac4cd34c7-bc6dbe86-d109-4521-b17b-2f94ade230ef.jsonl",
+      "sourceSha256": "6f4b3a6e436b93d958adabf5c0a31c958159659a289b6066d1347c043c14aa37",
+      "savedSha256": "6f4b3a6e436b93d958adabf5c0a31c958159659a289b6066d1347c043c14aa37",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-97e4c0c7/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-97e4c0c7-sandbox/ab0f3578-1d57-46cd-8a7a-b7bd5672d258.jsonl",
+      "savedAs": "raw-sessions/46a5215270da-ab0f3578-1d57-46cd-8a7a-b7bd5672d258.jsonl",
+      "sourceSha256": "6345d3cff8eab63a83e5e744ce8fa8859a771857d23e05600ba3c532aed8093c",
+      "savedSha256": "6345d3cff8eab63a83e5e744ce8fa8859a771857d23e05600ba3c532aed8093c",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-a7564d98/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-a7564d98-sandbox/6ceccede-ca90-4384-ab70-6c6aa6b606d9.jsonl",
+      "savedAs": "raw-sessions/41b2876a1a9a-6ceccede-ca90-4384-ab70-6c6aa6b606d9.jsonl",
+      "sourceSha256": "2d9c2c419d9331bbf994663fd0a21815f825008e72e6a7bc8af0d77e450f770e",
+      "savedSha256": "2d9c2c419d9331bbf994663fd0a21815f825008e72e6a7bc8af0d77e450f770e",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-a8fad25e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-a8fad25e-sandbox/038d2eda-0b0f-493a-87b5-209e1cea7748.jsonl",
+      "savedAs": "raw-sessions/acc9d896e1f6-038d2eda-0b0f-493a-87b5-209e1cea7748.jsonl",
+      "sourceSha256": "f46c703682407d3a279e345bbb6bf8472b2315fc2f0178c0e284b25e9b407ed3",
+      "savedSha256": "f46c703682407d3a279e345bbb6bf8472b2315fc2f0178c0e284b25e9b407ed3",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-b3df0157/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-b3df0157-sandbox/e8cae966-c286-43c3-814e-7a4085b0300e.jsonl",
+      "savedAs": "raw-sessions/a9f0cfe4645e-e8cae966-c286-43c3-814e-7a4085b0300e.jsonl",
+      "sourceSha256": "5a5dd5ec4d8111346a6ca2c74fa19ac22a8e209002add94df0a261429d89ea58",
+      "savedSha256": "5a5dd5ec4d8111346a6ca2c74fa19ac22a8e209002add94df0a261429d89ea58",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-c75a0a08/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-c75a0a08-sandbox/bf4dfaa5-11be-4ee2-bb12-fa5399053ee3.jsonl",
+      "savedAs": "raw-sessions/775bab7ef5de-bf4dfaa5-11be-4ee2-bb12-fa5399053ee3.jsonl",
+      "sourceSha256": "6a23c90f041d6dce4b182546546257188d086b5ae7ffaaac49f98e5363313ae1",
+      "savedSha256": "6a23c90f041d6dce4b182546546257188d086b5ae7ffaaac49f98e5363313ae1",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-c8a35416/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-c8a35416-sandbox/c2bd7828-00c3-4923-a4a4-e1587042f2a8.jsonl",
+      "savedAs": "raw-sessions/96e06ab44919-c2bd7828-00c3-4923-a4a4-e1587042f2a8.jsonl",
+      "sourceSha256": "edbd6efe88e8ba75be87e559c64da4d265e0993ed539a060071ad7fc069e9522",
+      "savedSha256": "edbd6efe88e8ba75be87e559c64da4d265e0993ed539a060071ad7fc069e9522",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e347ff06/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-e347ff06-sandbox/bab3d119-627a-4878-9559-e173ae3517f0.jsonl",
+      "savedAs": "raw-sessions/45552e23f2fb-bab3d119-627a-4878-9559-e173ae3517f0.jsonl",
+      "sourceSha256": "6e974f126bae7d76880003b9ab198ce0a2526f0703fada73bd13a39d971d3c66",
+      "savedSha256": "6e974f126bae7d76880003b9ab198ce0a2526f0703fada73bd13a39d971d3c66",
+      "rewrittenLinks": false
+    },
+    {
+      "source": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-e4de688c/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-e4de688c-sandbox/4f70eb6c-f96f-4cf6-95a2-69a5c0954fc4.jsonl",
+      "savedAs": "raw-sessions/6bd8aa0b7b7c-4f70eb6c-f96f-4cf6-95a2-69a5c0954fc4.jsonl",
+      "sourceSha256": "53cd1e01e87e0ccb2201bc0213416df0fd9e01a0b02071e3cdd800a21c50e65b",
+      "savedSha256": "53cd1e01e87e0ccb2201bc0213416df0fd9e01a0b02071e3cdd800a21c50e65b",
+      "rewrittenLinks": false
+    }
+  ],
+  "scenarioArchive": {
+    "file": "acceptance-scenarios.zip",
+    "sha256": "84e9a4bfe653bf41b3a6811320fe9242224e319995c7acc4356a5891ca9bbd5d",
+    "members": [
+      {
+        "path": "acceptance-tests/config.json",
+        "sha256": "a3e84ecc6c950968744465ebcf14f9a639fdf7021e56d59c214aa3adba8c327c"
+      },
+      {
+        "path": "deno.json",
+        "sha256": "61e517835df3e05e8d867031c588b3178c0b28bcfea068fc34107d5753517820"
+      },
+      {
+        "path": "deno.lock",
+        "sha256": "3ff8b6e695027b6f5734e0464dc0f0236431894d0155c330fcb0c9ab3224ee95"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/.cursorignore",
+        "sha256": "0f895ddc46d3048ec001b474a7d89b67f184163234fdf2f6a81672163dcae941"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/.eslintrc.cjs",
+        "sha256": "9c9e000680c27ccfff95391dae31ee4f4da570dbebdda0a58b18545c06693dd3"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/.gitignore",
+        "sha256": "ff0cc556ce3e3842999df9e365ce3833c407bfe416e4026ab83eb324069d368f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/.npmrc",
+        "sha256": "e1f1f4fe1c60abe3e26b3b5af37ea981d3df1b476e2169321299a6ed669b4364"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/.versionrc.json",
+        "sha256": "27681ad1a60056493badb15dbba1c896cf7d2c4d4703fb11d93a9fc374119927"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/CHANGELOG.md",
+        "sha256": "38de167279685e439d4a8b5e02601bf19652169b48e5cf65a74213494f6de149"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/README.md",
+        "sha256": "b01e74f64ab74b432204020701138240638168c0efb422bf46a22efdeff362b3"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/deno.json",
+        "sha256": "1d2b7e9b611ddf0dfcf8e66834ca65ea1d5cefa24f589d8e4882358efcd4788d"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/documents/design.md",
+        "sha256": "834aadb5acdd898b09f42f141c9c54b9c91a70eab0077d597567dcb151053567"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/documents/requirements.md",
+        "sha256": "f2b28349351f759b3fa84c2a11da04ab4417b004c1e5b0906a5a34b94df391ff"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/documents/vision.md",
+        "sha256": "a5f4013c0117fb2a4d534f4c2bec814a68e696042dce4a03e58a190b873418f8"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/hooks/pre-commit",
+        "sha256": "e305079c6c1bc5ae9dbd5e5c0b9417c8b249416e02fb42fd26a20fc259e55616"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/mod.ts",
+        "sha256": "b2f3b78dab98624310b973c09008b0448c7d352b60505f6a5db3d2ecebe5abb0"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/scripts/task-build.ts",
+        "sha256": "7990776ee85f1cb2f32a98fe5ac183c504292328fd9258ee4475be5a7bf9b8a9"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/scripts/task-check.ts",
+        "sha256": "32068640baa77aeee1bd805b489711f97f6ec9136ecf2911749506899d7fb31f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/scripts/task-release.ts",
+        "sha256": "9901d6576da9ddf9c2c0b72127f28552d8bb7cddcd6a6117178d3ecfd84c6ff6"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/scripts/task-test.ts",
+        "sha256": "a2371e6f09eb201485fed2de1400c4a2b712209fd303828d40ecc874b1defa01"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/scripts/utils.ts",
+        "sha256": "08753d466b35197b35d552d5163e5674ed2cfe10fa2b50a8e90b8649408a0e3e"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/skills/ai-skel-ts-usage/SKILL.md",
+        "sha256": "9c68acd18a55c9298567f40b98bae59a47842146d04e2b1168fb7931a6dc393b"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/skills/ai-skel-ts-usage/references/reference-core.md",
+        "sha256": "2d68d8151a8f9d5dad1cf1ce38d4b235dfe69f2e1a6141bcc6301893c7695db9"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/skills/ai-skel-ts-usage/references/reference-fetchers.md",
+        "sha256": "1ecc9121018b0c45c0963e45073063e90f0b0a759c550ab0a4ac66691740ad85"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/skills/ai-skel-ts-usage/references/reference-observability.md",
+        "sha256": "beebcc196208c4e0bd5996156848d67a69721a107f1c3498b510914851da7a55"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/skills/ai-skel-ts-usage/references/reference-session.md",
+        "sha256": "0e8c71790602e300a5ac9c8294885ef81dcf490dc2ee091953a4cca5075b3a2c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/agent/agent.run.test.ts",
+        "sha256": "d564b9f30c663eceae19625d4edfdde666348e5ec6f3975d08c4441095183ac6"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/agent/agent.streaming.test.ts",
+        "sha256": "7e57c502b50cceccd8e651248ad044a76f66981fd3031d8ada1574d7e94e95e5"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/agent/agent.test.ts",
+        "sha256": "de28867a424981e9238355d44895fa9f4108853a0d3ed4eb96543644c615c2c4"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/agent/agent.ts",
+        "sha256": "16a48584de6726c0363ab12a10206c4098d2dfe16d6f83156738d2f6482daefd"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/agent/example.ts",
+        "sha256": "7811a59fb83bfed5a79b0cd55077ab28bdf23de2b7a28106304f7ddd21e8bf42"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/cost-tracker/cost-tracker.test.ts",
+        "sha256": "c6b81e80cc59b4210b3847544d7f57b991f11bdf617436726c5ed4ec78b3c969"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/cost-tracker/cost-tracker.ts",
+        "sha256": "d5a728a41db56082d5df94773b95a31fd08ca692c43108bedc6351a005f36f80"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/brave-fetcher/brave-search.test.ts",
+        "sha256": "b6b93e3ccea98bde9cf76102f594f3f58feadf0a58297dbf4981f683233661a8"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/brave-fetcher/brave-search.ts",
+        "sha256": "26ffdc3262d501c1a43788d3aaa7c353ce4d037f2042c4501a0a1658c37fbc5d"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/brave-fetcher/client.ts",
+        "sha256": "6833534ac5fc684909cd0fdcbdf4272c051821b84f5472c5a2b8ebbc0c2f0a6f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/brave-fetcher/example.ts",
+        "sha256": "7085867bfea1346422c8aa9aa4eb5f7f72798ff6dc68ffaec66989a1a50e7720"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/brave-fetcher/types.ts",
+        "sha256": "c2b1b78ec3f939c927218e2e6d539f9d7dcc6f2f68821e24d4a7cf7303eedf47"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/README.md",
+        "sha256": "1d125525897c96e7befbb2c2ae43da2cb8ce99ce373998d62babce9e6709f0b1"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/client.ts",
+        "sha256": "46ca0506e5f6c959e16880edb7336f3faf7e1b9a3c5ae68c4686c70105b02cb8"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/example.ts",
+        "sha256": "16b375b9ca4fc6188a6aed7884cca1ee510ddf9f8ba43f0ce1270f057851574f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/jina-scraper.test.ts",
+        "sha256": "af0a2507d1669632d16453f32951a5df0182b32cdf0f76bc314dd0ad24218c7d"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/jina-scraper.ts",
+        "sha256": "d0419d473376aec61cc23e612cf4314d79ff210494bee59599aaff9f2757d02b"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/jina-fetcher/types.ts",
+        "sha256": "33e5fccbd30d2e94b8f658819ad492f4aa3d47ed9c12fe380e7df08f128495e5"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/downloader.ts",
+        "sha256": "6424fa793de0c5234939ee5d4bbe021ceddc39f05619e67206b2741a8e4af69c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/extractor.test.ts",
+        "sha256": "5ee0215ce3443a6a08103d48357e78c2931f1fb415e5ea4e37782ff4bf456fc6"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/extractor.ts",
+        "sha256": "d07c4e727eab0c490f0af13e4d898232b1c2a49224588c4369b52fd5756d7237"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/fetch-content.e2e.test.ts",
+        "sha256": "7a960883a00ad57b7791f44f9e8eaa611ba41b2e92ed4bc2ca71b22047fa7f83"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/fetch-content.test.ts",
+        "sha256": "4c92009647b8f53442d528f90b6ab3b57446b1fec88d28db3b2d28448f2af13a"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/fetch-content.ts",
+        "sha256": "14a2e12b96d20f0d70d88320f3a3e17d4d14dfad442d8c9091f4865b88f4954c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/sanitizer.test.ts",
+        "sha256": "9531cd0632880c2c8234880b66829a264f1d118a771bccb31e8c73d6f93b4a49"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/local-fetcher/sanitizer.ts",
+        "sha256": "fe042f34a47c3e263e7b8a0afedab8f52e2a6191f3657a22bb2f2ba14f5764d1"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/fetchers/types.ts",
+        "sha256": "7ad2f39d8d85b007e0a5bd5dd3b0474f5ef5c4c2bcb036a695f7589e8195032a"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/factory.test.ts",
+        "sha256": "33ae778dfe573e3e5859602250a9144eb2f29b48aeda7e9a7d004d673c7c370c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/factory.ts",
+        "sha256": "39c2d3179d7eeace27f9e76594196dc516e37d512a09cb03bed8cc229d8fab55"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.abort-crash.test.ts",
+        "sha256": "d2e5dd68cc818ebad34ef413d41adab839f6697db3becb19ce7af65a0c7f9afd"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.acceptance.test.ts",
+        "sha256": "9ad0712c8bfd44c1c1fd60807da2a1a41e3dea1716af104ef8cba855d03c6666"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.cost-on-retry.test.ts",
+        "sha256": "b01e5742046636170aa162d28e10745df2ee8cf8f85324d5f9f2340bdd336bb2"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.debug-logging.test.ts",
+        "sha256": "9a8d19d0ff4072d7a42f7e041ec70d2553d20d47efa287eb637b039a4a17f919"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.integration.test.ts",
+        "sha256": "7bc691d7bc897ea2bd6dbcb748639fb5a7b7319270b9d0f61dc345ba07e2663e"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.max-validation-retries.test.ts",
+        "sha256": "102a0d58ba210a4482d6e27847ff7911929ecc653802926d733690a572a11670"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.raw-response.test.ts",
+        "sha256": "957880578d123f766bfd50a3aaba9794724cefe3e8478d101a06c313a7816dd6"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.refactor.test.ts",
+        "sha256": "8595a54db0c13ed5e93393a8717f152ed0c22ff58d669e3fa54c05766acc6ddc"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.streaming.acceptance.test.ts",
+        "sha256": "b662b28e5c62cbf8f31e0c415db6538b8ba4aa33512d72050b65abdb64cc317c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.streaming.test.ts",
+        "sha256": "5db925f3d60948b26feb1fa3aa7a63d1182ca5650efdf19603e9343a99706351"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.test.ts",
+        "sha256": "110f94067d7ff26c61e7295e974eb2ab737121bf7da2405d5892f7aeebddcb67"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.timeout.test.ts",
+        "sha256": "ccb96c94ca1ea0e508ce9e24165a87ed43be80776e8f6ca0873ca4b658fb86e9"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.tools.test.ts",
+        "sha256": "52a545716bf18f6aac0c901a3892812b3340bf130fa80dc64365aca3eef6845b"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm/llm.ts",
+        "sha256": "5d5371d3dad934894b850e484dd403fdf325154e0f473fd43197fbb2c7efcb0a"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm-session-compactor/compactor.test.ts",
+        "sha256": "ceeab527b0ef485de9aa2ba696a7141c1c74f5529115916af569a6e88dc0ccd5"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm-session-compactor/compactor.ts",
+        "sha256": "3d0ef2d84d7cc889053cfda9f70675492d099423a4828c165fcff37c0b356155"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm-session-compactor/summary-generator.test.ts",
+        "sha256": "fbdede1ebf234b88bd179122cbdb78983b88c646be0f19cbdded71cdece465fd"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/llm-session-compactor/summary-generator.ts",
+        "sha256": "aa5c11465adccc9ff2ea4eaf74532c8463c80d9c601a51f2644959087723aefd"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/logger/logger.test.ts",
+        "sha256": "62cdab1731d0c03a31ed391f2aaf858c5f8bdee8f1e5beef8ff22719e3c8f95c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/logger/logger.ts",
+        "sha256": "96138bce3bb71aba7d7d1dfa88428abf2825b6667f11a9fb6706f4c040e49b19"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/mcp/client.ts",
+        "sha256": "4e7d8e015a6bffe1d8617d208668b4f3c54d2ecdaac16107e7d6388cfa567f4c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/openrouter/openrouter.acceptance.test.ts",
+        "sha256": "0fec1f9fd83b4e43b1c3092bc57ad390e1f47e3313848c80bc2f3bef3c655300"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/openrouter/openrouter.test.ts",
+        "sha256": "755aa49a13f6a25c73c769d4636006a5cd258158dd81f1f9c88358abfcf7edce"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/openrouter/openrouter.ts",
+        "sha256": "0fbc647c50238fb44bfb912e0a524eb2e20eab30aebb899eea1e23131c5309bf"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/run-context/run-context.test.ts",
+        "sha256": "c0146f48f899a60e13fe3e4b05bc9f6bc50fcb8ebbb1ab6137bfb9f1cf0e5e5b"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/src/run-context/run-context.ts",
+        "sha256": "abca8396f4809d6fe55fbab271e428451638e6adcec0819c7bfc19b0bb6e6722"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules/fixture/tsconfig.json",
+        "sha256": "e6896697cc1b61442731edae6864ebbf2a3322c9a3de456e6323c0c8ae11074b"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-calibration/README.md",
+        "sha256": "ea5723b07ecda5dcdc6aa70be6a49cc9f7ef28a4cdd8487b47adf2c398d506f9"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-calibration/calibrate.ts",
+        "sha256": "4c83e76fdec90f66f5403b6ffb0d01065e9423e9a20f6c11d563266d0b4a6672"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-code/calibration.json",
+        "sha256": "1d413e76f0265c6ba00f7b352d1ec79be625250a6b2a457d79372038f11b8c03"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-code/fixture/history.ts",
+        "sha256": "8fa4e09cb34ab5cf3265a468d365479e4ca8c12539ca017d5a06c0d02f99df67"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-code/mod.ts",
+        "sha256": "e959cc295562ab988f3f9e18c0f2778e1970ec07b6b349a03ae7647e9cd7c41f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-dialogue/calibration.json",
+        "sha256": "9f9718623d6a575f4db59b760c9a5ceb6fbf5ba8f8f1439e5f0601f2ac8609c9"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-dialogue/fixture/delivery.md",
+        "sha256": "4142cce1e3592b9893927b2b55cb52e68d8f425f0a668b8eeb58b6fb48d7acf7"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-dialogue/mod.ts",
+        "sha256": "1c4890d16481b6ce5665c4fd5f7f79f1e620ce474dbffa07e6ec7b2910d6dbd6"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-exceptions/calibration.json",
+        "sha256": "5f6b891d080a0bcc8e2e4892bb1d7e10b058b9d0a342773a552faad632729511"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-exceptions/fixture/incident.md",
+        "sha256": "a33e81a88f92dac6400a8af21e14d3541717f5ab4509934d6f87dd841b1a5e75"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-exceptions/mod.ts",
+        "sha256": "e784eee517e08eaf37486fd16bf301bc3ba15a1fd8a250a91f573d409472b56c"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-interface/calibration.json",
+        "sha256": "11aae6c815e837809e90e5e9a846fb98443829473f89e00baa1fb566138f35e0"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-interface/fixture/access-panel.md",
+        "sha256": "b8a544b8c5db7db80eef3832ebcf524a8c2651f1477f6c8d4fa29115c76cc090"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-interface/mod.ts",
+        "sha256": "c7a7930f8600e0fb4696b047f58b823635247b86d702a55f4f6d115fcf844311"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-jargon/calibration.json",
+        "sha256": "209b3e91f73ef840b7ac47982ed1ae3cdf1b2b0e129eea4467b610df33fd8de5"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-jargon/fixture/handover.md",
+        "sha256": "eed2ae9ef74c75ea68dfb779961af0b4b2a3e6385dbc781161b1c635b2b6f491"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-jargon/mod.ts",
+        "sha256": "6081e51587e04629b2bb4148ed605a9ce4c0ec95090296fa37f6cc824041186a"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-source/calibration.json",
+        "sha256": "338c9cfb688bf771f706204c52ba3e53fa2d444bc6fa59bd036328e5a5a2ea28"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-source/fixture/release-note.md",
+        "sha256": "0befcc4959a4b3ea1abecba25a52351b48d0b40ceca9e3e33f32f7766e68df0f"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-chat-source/mod.ts",
+        "sha256": "29768d27c1f7fab30d9551e55f1089141ebdddf27ec4e51b831f15de33bc4d10"
+      },
+      {
+        "path": "framework/core/acceptance-tests/agents-rules-reader-context/mod.ts",
+        "sha256": "c31b596fb40727c48d0e7d4f733bc50538a698191f343c93490c35a38573bfdb"
+      }
+    ]
+  }
+}

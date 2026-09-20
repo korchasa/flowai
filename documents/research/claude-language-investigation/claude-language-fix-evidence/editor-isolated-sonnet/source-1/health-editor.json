@@ -1,0 +1,13 @@
+{
+  "totalRamBytes": 17179869184,
+  "availableBytes": 3916840960,
+  "availablePct": 22.799015045166016,
+  "compressorBytes": 4207181824,
+  "swapUsedBytes": 8459649024,
+  "swapTotalBytes": 9663676416,
+  "swapPct": 87.54069010416666,
+  "load1": 3.9,
+  "cpuCount": 10,
+  "pageSize": 16384,
+  "platform": "darwin"
+}

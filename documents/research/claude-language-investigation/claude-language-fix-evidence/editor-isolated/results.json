@@ -1,0 +1,203 @@
+{
+  "kind": "isolated-editor-experiment-not-end-to-end-acceptance",
+  "editorCalls": 4,
+  "judgeCalls": 4,
+  "results": [
+    {
+      "id": "source-1",
+      "origin": "agents-rules-chat-source/run-1",
+      "editorModel": [
+        "claude-haiku-4-5"
+      ],
+      "editorCostUsd": 0.026428,
+      "editorUsage": {
+        "input_tokens": 1048,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 5076,
+        "output_tokens_details": {
+          "thinking_tokens": 4745
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "judgeUsage": {
+        "freshInput": 3645,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 157,
+        "reasoning": 0,
+        "total": 13914
+      },
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The parenthetical English phrase “background delivery jobs” is an explanatory technical term rather than an English heading or ordinary English prose, and the rest of the terminology is rendered naturally in Russian."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer includes every required operational fact: only background delivery jobs are affected and interactive requests are unchanged; retries begin after 30 seconds and stop after three failed attempts; the job then moves to a review queue and is not automatically deleted; a notification address is mandatory; batch size is optional with a default of 20; and enablement must wait until a test failure produces a notification."
+        }
+      },
+      "protectedArtifactUnchanged": null
+    },
+    {
+      "id": "source-2",
+      "origin": "agents-rules-chat-source/run-2",
+      "editorModel": [
+        "claude-haiku-4-5"
+      ],
+      "editorCostUsd": 0.028644,
+      "editorUsage": {
+        "input_tokens": 979,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 5533,
+        "output_tokens_details": {
+          "thinking_tokens": 5271
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "judgeUsage": {
+        "freshInput": 3911,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 139,
+        "reasoning": 0,
+        "total": 14162
+      },
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The only borrowed terms, such as «тестовый», are established Russian industry usage and do not constitute ordinary English prose."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states that the change applies to background delivery jobs while interactive requests remain unchanged; failed jobs retry after 30 seconds and move to a review queue after three failed attempts without automatic deletion; a notification address is mandatory; batch size is optional with a default of 20; and the feature must be enabled only after a test failure generates a notification."
+        }
+      },
+      "protectedArtifactUnchanged": null
+    },
+    {
+      "id": "source-3",
+      "origin": "agents-rules-chat-source/run-3",
+      "editorModel": [
+        "claude-haiku-4-5"
+      ],
+      "editorCostUsd": 0.030123999999999998,
+      "editorUsage": {
+        "input_tokens": 1024,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 5820,
+        "output_tokens_details": {
+          "thinking_tokens": 5551
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "judgeUsage": {
+        "freshInput": 3915,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 153,
+        "reasoning": 0,
+        "total": 14180
+      },
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. Terms such as «интерактивные», «батч» and «тестовый» are established Russian technical vocabulary, and there are no ordinary English prose phrases or headings."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required operational fact: the new delivery mode applies to background jobs while interactive requests are unchanged; failures retry after 30 seconds and, after three failed attempts, move to a review queue with no automatic deletion; a notification address is mandatory; batch size is optional and defaults to 20; and a test failure must successfully trigger a notification before enabling."
+        }
+      },
+      "protectedArtifactUnchanged": null
+    },
+    {
+      "id": "exceptions-clear",
+      "origin": "agents-rules-chat-exceptions/calibration.json#clear",
+      "editorModel": [
+        "claude-haiku-4-5"
+      ],
+      "editorCostUsd": 0.009405,
+      "editorUsage": {
+        "input_tokens": 935,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 1694,
+        "output_tokens_details": {
+          "thinking_tokens": 1551
+        },
+        "server_tool_use": {
+          "web_search_requests": 0,
+          "web_fetch_requests": 0
+        },
+        "service_tier": "standard",
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 0,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "inference_geo": "not_available",
+        "iterations": [],
+        "speed": "standard"
+      },
+      "judgeUsage": {
+        "freshInput": 14088,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 178,
+        "reasoning": 0,
+        "total": 14266
+      },
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose and the heading are in Russian. The English passage is the explicitly requested support-request artifact, while product and machine-readable identifiers are exempt."
+        },
+        "english_artifact": {
+          "pass": true,
+          "reason": "The identifiable support request is in English, includes the exact error \"Unsupported value for retry_mode\" and exact key retry_mode, asks whether adaptive retries are planned, and states that there is no announced release date rather than inventing one."
+        },
+        "identifier_and_meaning": {
+          "pass": true,
+          "reason": "The Russian explanation correctly says adaptive is unsupported for retry_mode, recommends changing it to the exact supported value fixed, and states that retries will occur every 30 seconds. It also correctly explains that off disables automatic retries and invents no adaptive-support history or release promise."
+        }
+      },
+      "protectedArtifactUnchanged": true
+    }
+  ]
+}

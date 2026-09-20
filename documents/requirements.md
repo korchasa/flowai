@@ -1183,6 +1183,13 @@ Rules:
 - **Acceptance verified by acceptance tests:** `agents-rules-readability`
 - **Status:** [x]
 
+#### FR-READABILITY.LANGUAGE: Chat language and reader context [ANC:fr:readability.language]
+
+- **Description:** Chat explanations must follow the requested language and remain understandable without access to the agent's private working context. Check unwanted foreign prose separately from unexplained source labels, code names, interface labels, Russian internal jargon, and conversational shorthand. Proper names, useful exact identifiers, citations, and explicitly requested foreign-language deliverables are permitted; their presence alone is not a failure. Preserve task facts and decision consequences when explaining them.
+- **Acceptance:** `deno task acceptance-tests -i claude -f agents-rules-chat- -n 3 --no-cache`. Scenarios: `agents-rules-chat-source`, `agents-rules-chat-code`, `agents-rules-chat-interface`, `agents-rules-chat-jargon`, `agents-rules-chat-dialogue`, `agents-rules-chat-exceptions`. Repeated judge calibration of fixed positive/negative examples is required before claiming stable detection. The calibration set must keep the `defective-redundant-gloss` negative control: the judge accepted that reply as compliant until the `russian_prose` criterion was tightened, and a redundant parenthetical gloss is the dominant observed defect. Three runs establish only observed repeatability, not a population reliability guarantee.
+- **Background:** the measurements, the failed instruction candidates, the independent controls and the retrospective are collected in [the investigation folder](research/claude-language-investigation/README.md); start from [the working record](research/claude-language-investigation/fix-claude-chat-language.md) and [the acceptance design](research/claude-language-investigation/claude-language-acceptance.md). No task file remains — the investigation produced no accepted instruction change.
+- **Status:** [ ] — six scenarios authored and measured; unwanted mixing reproduced in all three source-prose runs. Other contexts have mixed or passing observations; no instruction fix or general reproduction rate verified.
+
 ### FR-DEVCONTAINER: AI Devcontainer Setup — setup-ai-ide-devcontainer [ANC:fr:devcontainer]
 
 - **Description:** Generates `.devcontainer/` config optimized for AI IDE development. Stack detection, AI CLI integration, global skills mounting, security hardening.

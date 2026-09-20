@@ -74,6 +74,7 @@ All workflows are implemented as **Skills** according to the [agentskills.io](ht
 4. **Tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md`): Temporary plans/notes per task.
 5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs the cross-IDE clauses — FR-HOOK-RESOURCES, FR-DIST.MAPPING, FR-IDE-BRIDGE-WORKER.
 6. **`README.md`**: Public-facing overview. Derived from AGENTS.md + SRS + SDS. Installation, usage, pack/skill catalog, project structure. Keep in sync with framework state.
+7. **Investigations** (`documents/research/<slug>/`): Preserved record of an investigation that produced no accepted change — hypotheses, failed candidates, independent controls, retrospective. Keeps material a future session would otherwise re-measure. An investigation is not a task: its folder is self-contained, holds its own working record and evidence, and is not scanned by `check-task-format`. Do not leave a task file behind for it — when work that started as a task ends as an investigation, move the whole record into the folder and delete the task. The SRS clause the investigation informs links to the folder.
 
 ## Documentation Map
 

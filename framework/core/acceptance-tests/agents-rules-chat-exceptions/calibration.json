@@ -1,0 +1,29 @@
+[
+  {
+    "id": "clear",
+    "agentLogs": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.",
+    "expected": {
+      "russian_prose": true,
+      "english_artifact": true,
+      "identifier_and_meaning": true
+    }
+  },
+  {
+    "id": "defective",
+    "agentLogs": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Support request:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.\n\nRoot cause: неподдерживаемое значение `adaptive` в `retry_mode`. Required change: `fixed` — повторы каждые 30 секунд. `off` отключает повторы и не подходит.",
+    "expected": {
+      "russian_prose": false,
+      "english_artifact": true,
+      "identifier_and_meaning": true
+    }
+  },
+  {
+    "id": "clear-brief",
+    "agentLogs": "[turn 1] > Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.\n< Текст обращения:\n> Hello RelayDesk support. We received \"Unsupported value for retry_mode\" with retry_mode=adaptive. Are adaptive retries planned?\n\nПричина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд при временных сбоях.",
+    "expected": {
+      "russian_prose": true,
+      "english_artifact": true,
+      "identifier_and_meaning": true
+    }
+  }
+]

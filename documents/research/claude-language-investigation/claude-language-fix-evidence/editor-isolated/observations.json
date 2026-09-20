@@ -1,0 +1,38 @@
+{
+  "experimentKind": "Isolated editor capability probe; not end-to-end acceptance and not recalibration.",
+  "judgeConfiguration": {
+    "model": "gpt-5.6-sol",
+    "effort": "medium",
+    "temperature": 0
+  },
+  "editorCalls": 4,
+  "judgeCalls": 4,
+  "editorCostUsd": 0.094601,
+  "judgeReportedTokens": 56522,
+  "judgeCostUsd": null,
+  "controlExactDraftPreserved": true,
+  "observations": [
+    {
+      "case": "source-1",
+      "finding": "Only retry changed to повтор. Four redundant English glosses remain: background delivery jobs, review queue, notification address, batch size. The unchanged source checklist judge nevertheless passed russian_prose, contradicting its previous verdict on these same glosses."
+    },
+    {
+      "case": "source-2",
+      "finding": "delivery-заданий changed to заданий доставки; батча changed to пакета. Remaining draft text preserved."
+    },
+    {
+      "case": "source-3",
+      "finding": "English glosses removed. Also deleted все фиксируются and Это контрольный тест, подтверждающий работу оповещений; rewrote the last instruction. Therefore this output does not establish full draft preservation, which the source scenario does not comprehensively score."
+    },
+    {
+      "case": "exceptions-clear",
+      "finding": "Complete draft preserved exactly, ignoring the final newline added when saving edited.txt. Requested English artifact and identifiers preserved."
+    }
+  ],
+  "inputsSha256": {
+    "framework/core/agents/language-editor.md": "fdc531b10943b5b163bc4a680a1cd38ed985d08c8a4cf5ea748ffb651d921b68",
+    "framework/core/acceptance-tests/agents-rules-chat-source/mod.ts": "29768d27c1f7fab30d9551e55f1089141ebdddf27ec4e51b831f15de33bc4d10",
+    "framework/core/acceptance-tests/agents-rules-chat-exceptions/mod.ts": "e784eee517e08eaf37486fd16bf301bc3ba15a1fd8a250a91f573d409472b56c",
+    "framework/core/acceptance-tests/agents-rules-chat-exceptions/calibration.json": "5f6b891d080a0bcc8e2e4892bb1d7e10b058b9d0a342773a552faad632729511"
+  }
+}

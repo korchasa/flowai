@@ -1,0 +1,43 @@
+{
+  "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-53-56",
+  "collectedAt": "2026-09-20T11:56:53.799Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing prose includes ordinary English phrases in parentheses: “manual review queue”, “notification address”, and “batch size”. These are explanatory prose translations, not code, exact UI identifiers, product names, or quoted source evidence, so they violate the Russian-only requirement."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery tasks are affected; failures retry after 30 seconds for three attempts; after the third failure the task remains in a review queue and is not deleted; a notification address is mandatory; batch size is optional with a default of 20; and a test failure must successfully produce a notification before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-c9c285c3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-c9c285c3-sandbox/d6516792-6aa2-449f-a5f1-c7050ead5286.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:53:57.725Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:54:07.029Z",
+              "text": "## Изменения для очереди заданий\n\nЗатрагиваются только **фоновые задачи доставки** — интерактивные запросы работают как раньше.\n\n## Политика при сбое\n\nЕсли задача завершится с ошибкой:\n- Автоматический переповтор через 30 секунд\n- Всего 3 попытки\n- После третьего сбоя задача переходит в **очередь для ревью** (manual review queue)\n- Автоматического удаления нет — задача остаётся в системе\n\n## Нужно настроить перед включением\n\n**Обязательно:**\n- Адрес для уведомлений (notification address) — нужен, чтобы оповещать об ошибках\n\n**Опционально:**\n- Размер батча (batch size) — количество заданий в одном пакете. Если не указать, будет 20 по умолчанию\n\n## Ворота для включения\n\nФичу можно включать только после того, как тестовый сбой успешно произведёт уведомление. Это подтвердит, что система мониторинга работает. Преимущество — меньше потерянных задач, но минус — повторные попытки увеличивают время доставки."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 3766 MB (23.0%), compressor 4352 MB, swap 8314/9216 MB (90%), load1 5.24 on 10 CPU (0.52/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< The user is asking me to read a file called release-note.md and answer questions about it in Russian. They want to know:\n1. What changed for the task queue\n2. What will happen if there's a failure\n3. What we need to configure before enabling it\n4. And they specify not to modify the files.\n\nLet me read the release-note.md file first.Ок, я прочитал файл. Теперь переведу это на русский и ответу на вопросы пользователя:\n\n1. Что изменилось для очереди заданий - фоновые задачи доставки\n2. Что произойдёт при сбое - переповтор через 30 секунд, 3 попытки, потом в очередь для ревью\n3. Что нужно настроить - обязательно адрес уведомления, опционально размер батча\n\nПользователь просит не менять файлы, поэтому я просто расскажу о содержимом.## Изменения для очереди заданий\n\nЗатрагиваются только **фоновые задачи доставки** — интерактивные запросы работают как раньше.\n\n## Политика при сбое\n\nЕсли задача завершится с ошибкой:\n- Автоматический переповтор через 30 секунд\n- Всего 3 попытки\n- После третьего сбоя задача переходит в **очередь для ревью** (manual review queue)\n- Автоматического удаления нет — задача остаётся в системе\n\n## Нужно настроить перед включением\n\n**Обязательно:**\n- Адрес для уведомлений (notification address) — нужен, чтобы оповещать об ошибках\n\n**Опционально:**\n- Размер батча (batch size) — количество заданий в одном пакете. Если не указать, будет 20 по умолчанию\n\n## Ворота для включения\n\nФичу можно включать только после того, как тестовый сбой успешно произведёт уведомление. Это подтвердит, что система мониторинга работает. Преимущество — меньше потерянных задач, но минус — повторные попытки увеличивают время доставки.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-c9c285c3/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-c9c285c3/sandbox/release-note.md\"}\n\n  "
+    }
+  ]
+}

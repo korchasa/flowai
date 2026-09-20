@@ -1,0 +1,28 @@
+Target conversation language: Russian.
+
+Original user request:
+Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.
+
+Source facts:
+<source>
+# Incident
+
+Product: RelayDesk. Error shown verbatim: "Unsupported value for retry_mode". Configuration key: retry_mode. Its supported values are "off" (no automatic repeats) and "fixed" (repeat every 30 seconds). Current value: "adaptive". This deployment requires automatic repeated delivery after temporary failures, so switch to "fixed". Support request should ask whether adaptive retries are planned; no timeline has been announced.
+
+
+</source>
+
+Protected strings and requested artifacts:
+Preserve this explicitly requested English artifact byte-for-byte:
+> Hello RelayDesk support. We received "Unsupported value for retry_mode" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.
+Exact identifiers: retry_mode, adaptive, fixed, off. Exact error: Unsupported value for retry_mode.
+
+Unpublished draft:
+<draft>
+Текст обращения:
+> Hello RelayDesk support. We received "Unsupported value for retry_mode" when using retry_mode=adaptive. Are adaptive retries planned? We have no announced release date.
+
+Причина — неподдерживаемое значение `adaptive` в настройке `retry_mode`. Замените его на `fixed`: доставка будет повторяться каждые 30 секунд. Значение `off` отключает автоматические повторы, поэтому для нашей задачи не подходит.
+</draft>
+
+Return only the corrected message.

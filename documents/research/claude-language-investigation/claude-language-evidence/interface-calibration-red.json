@@ -1,0 +1,314 @@
+{
+  "results": [
+    {
+      "label": "agents-rules-chat-interface/clear/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The response is written in Russian. The English spans “RelayDesk,” “Topic Scoped,” “Topic,” “Team Scoped,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact product or UI identifiers used to help the user locate the relevant controls, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The response explicitly recommends access limited to one project, tells the user to select the intended project in the Topic field, and explains that team-wide access would expose all other and future projects."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The response says to set Expires At to a date and time one week away, explains that leaving it blank makes the key non-expiring, clarifies that Grace Window controls how long the old key remains valid after replacement rather than the contractor’s access duration, and distinguishes immediate revocation via Revoke from key replacement via Rotate."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< В RelayDesk выберите доступ только к одному проекту (`Topic Scoped`) и укажите нужный проект в поле `Topic`. Доступ ко всей команде (`Team Scoped`) открыл бы подрядчику также остальные и будущие проекты. Укажите дату и время через неделю в `Expires At`; пустое поле оставляет ключ бессрочным. `Grace Window` задаёт срок работы старого ключа после замены, а не срок доступа подрядчика. Для немедленного отключения текущего ключа используйте `Revoke`. `Rotate` заменяет ключ и может оставить старый действующим на этот дополнительный срок.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 3774,
+        "cachedInput": 10112,
+        "cacheWrite": 0,
+        "output": 214,
+        "reasoning": 62,
+        "total": 14162
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. The English spans “Topic Scoped,” “Topic,” “Team Scoped,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact UI labels used to help the user locate the relevant controls, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": true,
+          "reason": "The response explains that the selected mode grants access to only one chosen project, tells the user to specify that project in the Topic field, and states that the team-wide mode would expose the other current projects as well as future projects."
+        },
+        "expiry_and_revoke": {
+          "pass": true,
+          "reason": "The response says to set the expiration date and time to one week away, explains that a blank expiration makes the key non-expiring, clarifies that the grace window keeps the old key working after replacement rather than defining the contractor’s access period, and distinguishes immediate revocation via Revoke from replacement via Rotate."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< В RelayDesk выберите доступ только к одному проекту (`Topic Scoped`) и укажите нужный проект в поле `Topic`. Доступ ко всей команде (`Team Scoped`) открыл бы подрядчику также остальные и будущие проекты. Укажите дату и время через неделю в `Expires At`; пустое поле оставляет ключ бессрочным. `Grace Window` задаёт срок работы старого ключа после замены, а не срок доступа подрядчика. Для немедленного отключения текущего ключа используйте `Revoke`. `Rotate` заменяет ключ и может оставить старый действующим на этот дополнительный срок.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14232,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 214,
+        "reasoning": 82,
+        "total": 14528
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/defective/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": false,
+        "expiry_and_revoke": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The English spans (“Topic Scoped,” “Team Scoped,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate”) are exact UI labels used to identify controls and actions, so they fall under the stated exception."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response names “Topic Scoped” and says to fill “Topic,” but it does not explain that this limits access to one selected project, does not explicitly say to select the intended project, and does not explain that “Team Scoped” would grant access to all current and future team projects."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "The response says to set “Expires At” for one week, leave “Grace Window” at 0, and use “Revoke” rather than “Rotate,” but it does not state that expiry requires a specific date and time one week away, that a blank expiry means no expiration, that the grace interval applies to the old key after replacement, or that revocation immediately disables the current key while rotation replaces it."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Выберите Topic Scoped вместо Team Scoped и заполните Topic. Expires At — через неделю. Grace Window оставьте 0. После завершения используйте Revoke, а не Rotate.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14140,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 248,
+        "reasoning": 126,
+        "total": 14514
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/defective/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": false,
+        "expiry_and_revoke": false
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The English spans “Topic Scoped,” “Team Scoped,” “Topic,” “Expires At,” “Grace Window,” “Revoke,” and “Rotate” are exact UI labels used to identify controls and actions, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response names “Topic Scoped” and says to fill “Topic,” but it does not explain that this limits access to one selected project, does not explicitly instruct the user to select the intended project, and does not explain that “Team Scoped” would cover all current and future team projects."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "The response says to set “Expires At” one week away, leave “Grace Window” at 0, and use “Revoke” instead of “Rotate,” but it omits that a blank expiry means no expiry, that the grace interval applies to an old key after replacement, that “Revoke” immediately disables the current key, and that “Rotate” replaces the key rather than revoking access."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.\n< Выберите Topic Scoped вместо Team Scoped и заполните Topic. Expires At — через неделю. Grace Window оставьте 0. После завершения используйте Revoke, а не Rotate.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14140,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 244,
+        "reasoning": 101,
+        "total": 14485
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear-brief/1",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing explanatory prose is in Russian. The English spans “Topic Scoped,” “Topic,” “Expires At,” and “Revoke” are exact UI labels used to help locate the relevant controls, so they are permitted exceptions."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response correctly identifies the one-project scope and says to select the intended project, but it does not explain that the team-wide scope would include all current and future team projects or why that scope is unsuitable."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "The response correctly says to set the expiry date/time one week away and that Revoke immediately disables the current key. However, it does not state that a blank expiry means no expiration, that the grace interval applies to an old key after replacement rather than providing one-week access, or distinguish revocation from key replacement."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ?\n< Выберите доступ только к одному проекту (Topic Scoped), укажите нужный проект в Topic и дату со временем через неделю в Expires At. Для отключения нажмите Revoke: текущий ключ сразу перестанет работать.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14142,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 198,
+        "reasoning": 102,
+        "total": 14442
+      }
+    },
+    {
+      "label": "agents-rules-chat-interface/clear-brief/2",
+      "model": "gpt-5.6-sol",
+      "effort": "medium",
+      "temperature": 0,
+      "expected": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "actual": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "The entire user-facing response is in Russian. The English spans “Topic Scoped,” “Topic,” “Expires At,” and “Revoke” are exact UI labels used to help locate the relevant controls, so they fall under the stated exception."
+        },
+        "permission_meaning": {
+          "pass": false,
+          "reason": "The response correctly says to choose access limited to one project and to select the intended project, but it never explains why the team-wide scope is unsuitable—namely, that it would cover all current and future team projects."
+        },
+        "expiry_and_revoke": {
+          "pass": false,
+          "reason": "The response correctly instructs the user to set a date and time one week away and says that Revoke immediately disables the current key. However, it does not state that a blank expiry means no expiration, does not explain that the grace interval applies to an old key after replacement rather than providing week-long access, and does not distinguish revocation from key replacement."
+        }
+      },
+      "input": "[turn 1] > Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ?\n< Выберите доступ только к одному проекту (Topic Scoped), укажите нужный проект в Topic и дату со временем через неделю в Expires At. Для отключения нажмите Revoke: текущий ключ сразу перестанет работать.",
+      "checklist": [
+        {
+          "id": "russian_prose",
+          "critical": true,
+          "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+        },
+        {
+          "id": "permission_meaning",
+          "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+          "critical": true
+        },
+        {
+          "id": "expiry_and_revoke",
+          "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+          "critical": true
+        }
+      ],
+      "usage": {
+        "freshInput": 14142,
+        "cachedInput": 0,
+        "cacheWrite": 0,
+        "output": 212,
+        "reasoning": 70,
+        "total": 14424
+      }
+    }
+  ],
+  "mismatches": [
+    "agents-rules-chat-interface/clear-brief/1",
+    "agents-rules-chat-interface/clear-brief/2"
+  ]
+}

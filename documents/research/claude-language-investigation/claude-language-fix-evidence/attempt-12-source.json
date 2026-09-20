@@ -1,0 +1,43 @@
+{
+  "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-47-21",
+  "collectedAt": "2026-09-20T11:49:35.971Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing answer is predominantly Russian, but it includes the ordinary English prose phrase “manual review queue” in parentheses. This is neither an exact code or interface identifier nor quoted source evidence, so it violates the Russian-only requirement."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required operational fact: only background tasks are affected; failures retry after 30 seconds; after three unsuccessful attempts the task waits for review and is not deleted; a notification address is mandatory; batch size is optional with a default of 20; and a successful notification from a test failure is required before enabling."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-48afc07e/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-48afc07e-sandbox/2d0b7857-7272-4be4-a723-e02e9f8e42f4.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:47:24.152Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:47:33.577Z",
+              "text": "## Изменения в очереди заданий\n\n**Затронуты только фоновые задачи** — интерактивные запросы работают как раньше.\n\nОсновное улучшение: снижение потери заданий за счёт автоматических повторов.\n\n## Поведение при сбое\n\n1. **Первая попытка**: задача выполняется в очереди\n2. **При ошибке**: повторная попытка через 30 секунд\n3. **После 3 неудачных попыток**: задача переходит в очередь на ревью (manual review queue) — удаления не происходит\n4. **Никакой автоматической очистки** — сбойные задачи остаются доступны для анализа\n\n⚠️ **Побочный эффект**: повторные попытки могут увеличить общее время доставки.\n\n## Обязательная настройка перед включением\n\n- **Адрес уведомления** (обязательно) — оператор должен установить, куда приходят уведомления о сбойных задачах\n- **Размер батча** (опционально) — если не указан, используется 20 заданий\n\n## Условие включения\n\nФичу можно включить только **после того, как тестовый сбой успешно произвёл уведомление** — это подтверждает, что оповещение работает корректно."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2549 MB (15.6%), compressor 6317 MB, swap 8195/9216 MB (89%), load1 4.18 on 10 CPU (0.42/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Пользователь просит прочитать файл release-note.md и ответить на три вопроса:\n1. Что изменилось для очереди заданий\n2. Что произойдёт при сбое\n3. Что нам нужно настроить перед включением\n\nНужно прочитать файл, но не изменять его. Давайте сначала найдём файл.Теперь я вижу содержимое файла. Давайте ответим на три вопроса пользователя на русском языке, как указано в CLAUDE.md:\n\n1. Что изменилось для очереди заданий - это про фоновые задачи (background delivery jobs)\n2. Что произойдёт при сбое - перепроба через 30 секунд, три попытки, потом в очередь на ревью\n3. Что нужно настроить - адрес уведомления (обязательно), размер батча (опционально, по умолчанию 20)## Изменения в очереди заданий\n\n**Затронуты только фоновые задачи** — интерактивные запросы работают как раньше.\n\nОсновное улучшение: снижение потери заданий за счёт автоматических повторов.\n\n## Поведение при сбое\n\n1. **Первая попытка**: задача выполняется в очереди\n2. **При ошибке**: повторная попытка через 30 секунд\n3. **После 3 неудачных попыток**: задача переходит в очередь на ревью (manual review queue) — удаления не происходит\n4. **Никакой автоматической очистки** — сбойные задачи остаются доступны для анализа\n\n⚠️ **Побочный эффект**: повторные попытки могут увеличить общее время доставки.\n\n## Обязательная настройка перед включением\n\n- **Адрес уведомления** (обязательно) — оператор должен установить, куда приходят уведомления о сбойных задачах\n- **Размер батча** (опционально) — если не указан, используется 20 заданий\n\n## Условие включения\n\nФичу можно включить только **после того, как тестовый сбой успешно произвёл уведомление** — это подтверждает, что оповещение работает корректно.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-48afc07e/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-48afc07e/sandbox/release-note.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/.codex/worktrees/claude-language-fix/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    }
+  ]
+}

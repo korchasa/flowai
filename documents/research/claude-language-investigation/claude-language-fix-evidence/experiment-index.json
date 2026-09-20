@@ -1,0 +1,453 @@
+{
+  "scope": "Judge verdicts; inspect raw replies. Invocation success is separate. Isolated editor false acceptance is recorded in observations.json.",
+  "results": [
+    {
+      "evidence": "attempt-1-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-56-46",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-1-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-56-46",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-1-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-56-46",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-10-interface-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-38-44",
+      "case": "agents-rules-chat-interface/run-1",
+      "checks": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-10-interface-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-38-44",
+      "case": "agents-rules-chat-interface/run-2",
+      "checks": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": false
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-10-interface-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-38-44",
+      "case": "agents-rules-chat-interface/run-3",
+      "checks": {
+        "russian_prose": true,
+        "permission_meaning": false,
+        "expiry_and_revoke": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-10-interface-screen.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-37-47",
+      "case": "agents-rules-chat-interface/run-1",
+      "checks": {
+        "russian_prose": true,
+        "permission_meaning": true,
+        "expiry_and_revoke": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-11-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-41-45",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-12-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-47-21",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-13-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-49-36",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-14-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-52-18",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-15-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-53-56",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-2-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-59-11",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-2-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-59-11",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-2-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T10-59-11",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-3-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-00-49",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-3-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-00-49",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-3-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-00-49",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-4-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-07-17",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-4-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-07-17",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-4-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-07-17",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-5-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-09-13",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": false
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-5-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-09-13",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-5-source.json",
+      "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-09-13",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-6-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-18-14",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-7-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-20-27",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-8-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-23-42",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-8-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-23-42",
+      "case": "agents-rules-chat-source/run-2",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-8-confirm.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-23-42",
+      "case": "agents-rules-chat-source/run-3",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-8-screen.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-22-52",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": true,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Read"
+        ]
+      ]
+    },
+    {
+      "evidence": "attempt-9-source.json",
+      "run": "/Users/korchasa/.codex/worktrees/claude-language-fix/flowai/acceptance-tests/runs/2026-09-20T11-32-16",
+      "case": "agents-rules-chat-source/run-1",
+      "checks": {
+        "russian_prose": false,
+        "operational_meaning": true
+      },
+      "tools": [
+        [
+          "Bash",
+          "Read"
+        ]
+      ]
+    }
+  ]
+}

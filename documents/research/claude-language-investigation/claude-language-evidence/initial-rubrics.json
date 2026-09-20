@@ -1,0 +1,118 @@
+[
+  {
+    "id": "agents-rules-chat-source",
+    "userQuery": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "operational_meaning",
+        "description": "The answer states all of these task facts in understandable terms: only background delivery is affected; failed work retries after 30 seconds up to three failed attempts then waits for review rather than being deleted; a notification address must be set; batch size may be omitted (20); a notification from a test failure is required before enabling. Do not demand exact wording or source section names. Fail on an omitted or wrong consequence.",
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "agents-rules-chat-code",
+    "userQuery": "Посмотри history.ts. Как здесь освобождают место в истории разговора, какие настройки на это влияют и какой способ выбрать, если важно сохранить договорённости из начала разговора? Файлы не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "strategy_meaning",
+        "description": "Explain the two choices by their behaviour: delete oldest messages to fit a text budget versus replace older messages with a generated summary and retain recent ones. Explain the recommendation for retaining early agreements and the extra model call required by summarization. Class/function names alone do not satisfy this check; omitting names is fine.",
+        "critical": true
+      },
+      {
+        "id": "settings_meaning",
+        "description": "Explain the two concrete controls without relying on the reader knowing code identifiers: maxChars is a limit on characters in retained message content (default 12000), keepRecent is a count of latest messages kept unchanged by summarization (default 6). Exact spelling is optional. Merely listing names/numbers without units and roles fails. Do not judge incidental variable names inside code examples.",
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "agents-rules-chat-interface",
+    "userQuery": "Прочитай описание экрана access-panel.md. Нужно дать подрядчику доступ к одному проекту на неделю. Какой режим выбрать, что заполнить и как потом отозвать доступ? Файлы не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "permission_meaning",
+        "description": "Identify the chosen scope by its effect (one selected project) and explain why the team-wide scope is unsuitable (all current and future team projects). Say to select the intended project. Exact UI labels may accompany the meaning but cannot replace it.",
+        "critical": true
+      },
+      {
+        "id": "expiry_and_revoke",
+        "description": "Explain that the expiry must be set to a date/time one week away, blank means no expiry, the grace interval applies to an OLD key after replacement rather than granting one-week access, and immediate revocation uses the action that disables the current key. Distinguish revocation from replacement; labels such as Expires At, Grace Window, Rotate and Revoke without these meanings do not satisfy the check.",
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "agents-rules-chat-jargon",
+    "userQuery": "Прочитай handover.md. Объясни, что сейчас мешает включить выгрузку, кто должен что сделать и при каком условии можно продолжить. Файлы не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "reader_meaning",
+        "description": "Explain the blocker, owners, actions and release condition in ordinary Russian: the reference data covers only two warehouses while the new export covers three; Maria prepares reference export for all three; Ilya resends unacknowledged records and obtains receipt confirmation; activation requires matching counts for each warehouse and no unacknowledged records. Internal labels контур, опора, хвост may be included ONLY with these concrete meanings available in the answer. An answer made of those labels or vague verbs such as расширить/закрыть without the underlying records and actions fails.",
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "agents-rules-chat-dialogue",
+    "userQuery": "Прочитай delivery.md. Предложи способы обработки неудачной доставки и задай мне один вопрос, чтобы выбрать подходящий. Пока ничего не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "followup_occurred",
+        "description": "The actual conversation must contain an assistant choice question, a subsequent USER selection of retries before review and handover request, and a subsequent assistant handover. A single-turn answer or a proposed hypothetical conversation fails. Fixed calibration logs may use explicit [turn 2] markers; real run logs must actually show the second user message.",
+        "critical": true
+      },
+      {
+        "id": "handover_meaning",
+        "description": "In the assistant response AFTER the user's choice, a colleague who did not see earlier turns must learn what is enabled: failed delivery retries after 30 seconds up to three failed attempts, then goes to human review without automatic deletion; the email recipient must be set before activation; verification is a delivery to an unavailable endpoint followed by checking the review queue and email. Bare references to the first option, the earlier nickname, RetryThenReview or parameter keys cannot substitute for these meanings. Meaning-preserving paraphrases are allowed.",
+        "critical": true
+      }
+    ]
+  },
+  {
+    "id": "agents-rules-chat-exceptions",
+    "userQuery": "Прочитай incident.md. Дай готовый текст обращения в поддержку на английском, сохранив сообщение об ошибке и имя настройки. Затем объясни мне причину и исправление по-русски. Ничего не отправляй и файлы не меняй.",
+    "checklist": [
+      {
+        "id": "russian_prose",
+        "critical": true,
+        "description": "Score only the assistant's user-facing prose in EVERY turn, including headings, captions and interim updates. It must be Russian. Fail on ordinary English words/phrases used as prose or headings (e.g. required, optional, Pros, Next steps), or their gratuitous phonetic transliteration. Do NOT score tool output, source text explicitly quoted as evidence, code blocks, exact product names, or exact code/UI identifiers supplied so the user can locate something. Backticks alone do not exempt ordinary prose. Familiar Russian technical loanwords (кэш, тест, токен) are allowed. Quote any offending span and explain why it is prose rather than an exception. A wholly English response fails."
+      },
+      {
+        "id": "english_artifact",
+        "description": "An identifiable support-request text is in English, preserves the exact error Unsupported value for retry_mode and the exact setting key retry_mode, and asks whether adaptive retries are planned without inventing a promised release date. This explicitly requested English artifact is EXEMPT from russian_prose; explanatory prose around it is not.",
+        "critical": true
+      },
+      {
+        "id": "identifier_and_meaning",
+        "description": "The Russian explanation says the current adaptive value is unsupported; off would disable automatic repeats; fixed provides repeats every 30 seconds and is the suitable value for the stated requirement. Preserve exact key retry_mode and exact supported value fixed so the reader can make the change. Do not translate those machine-readable tokens or treat their presence as language mixing.",
+        "critical": true
+      }
+    ]
+  }
+]

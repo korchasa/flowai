@@ -1,0 +1,118 @@
+{
+  "run": "/Users/korchasa/www/flowai/flowai/acceptance-tests/runs/2026-09-20T11-07-17",
+  "collectedAt": "2026-09-20T11:08:41.940Z",
+  "rows": [
+    {
+      "key": "agents-rules-chat-source/run-1",
+      "verdict": {
+        "russian_prose": {
+          "pass": true,
+          "reason": "All user-facing prose is in Russian. Terms such as «батч», «тестового» and «опционально» are established Russian technical usage, and there are no ordinary English headings or phrases."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer states that only background delivery jobs change while interactive requests remain unchanged; failures retry after 30 seconds for up to three attempts, then move to a review queue without automatic deletion; a notification address is mandatory; batch size is optional and defaults to 20; and a test-job failure notification must be received as the pre-launch check."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3ef758d3/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-1-3ef758d3-sandbox/33e75f71-23f5-4e05-a536-b14464c8d622.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:07:20.088Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:07:29.288Z",
+              "text": "## Что изменилось для очереди заданий\n\nПоменялось поведение фоновых заданий доставки. Интерактивные запросы работают как раньше. \n\n## Что произойдёт при сбое\n\nСбойное задание переполняется автоматически:\n- первый повтор через 30 секунд\n- повторяется до 3 попыток\n- если все три попытки не удались → задание уходит в очередь на проверку\n- автоматического удаления нет\n\n## Что нужно настроить\n\nПеред включением нужны две вещи:\n\n- **обязательно**: адрес для уведомлений (оператор должен установить)\n- **опционально**: размер батча доставки (если не указан, будет 20)\n\n## Контроль перед запуском\n\nЕсть уловка: сначала поднять функцию и дождаться сбоя тестового задания — если уведомление придёт, значит цепь работает. Новый режим спасает задания от потери, но повторные попытки замедляют доставку."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2606 MB (15.9%), compressor 5818 MB, swap 6634/8192 MB (81%), load1 4.66 on 10 CPU (0.47/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Пользователь просит прочитать файл release-note.md и понять:\n1. Что изменилось для очереди заданий\n2. Что произойдёт при сбое\n3. Что нужно настроить перед включением\n\nИ явно указано: \"Файлы не меняй\" - нужно только прочитать и ответить.\n\nСначала найду файл release-note.md, потом его прочитаю.Прочитал release-note.md. Теперь ответю на три вопроса пользователя на русском:\n\n1. Что изменилось для очереди заданий - фоновые задания доставки, интерактивные запросы не меняются\n2. Что произойдёт при сбое - повтор через 30 секунд, после 3 попыток в очередь на проверку, автоудаления нет\n3. Что нужно настроить - обязательный адрес уведомлений, размер батча опционален (по умолчанию 20)## Что изменилось для очереди заданий\n\nПоменялось поведение фоновых заданий доставки. Интерактивные запросы работают как раньше. \n\n## Что произойдёт при сбое\n\nСбойное задание переполняется автоматически:\n- первый повтор через 30 секунд\n- повторяется до 3 попыток\n- если все три попытки не удались → задание уходит в очередь на проверку\n- автоматического удаления нет\n\n## Что нужно настроить\n\nПеред включением нужны две вещи:\n\n- **обязательно**: адрес для уведомлений (оператор должен установить)\n- **опционально**: размер батча доставки (если не указан, будет 20)\n\n## Контроль перед запуском\n\nЕсть уловка: сначала поднять функцию и дождаться сбоя тестового задания — если уведомление придёт, значит цепь работает. Новый режим спасает задания от потери, но повторные попытки замедляют доставку.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3ef758d3/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-1-3ef758d3/sandbox/release-note.md\"}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-source/run-2",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing response is mostly Russian, but the heading «Контрольная точка rollout» contains the ordinary English word “rollout” used as prose rather than an exact product name, code identifier, quotation, or accepted exception."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states every required fact: only background delivery jobs are affected; a failed job retries after 30 seconds and moves to review after three failed attempts without automatic deletion; the notification address is mandatory; batch size is optional with a default of 20; and a failure notification must be observed before enabling the feature."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-901fbf8f/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-2-901fbf8f-sandbox/078035e2-fd46-4433-8071-26198aee5c44.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:07:40.479Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:07:49.676Z",
+              "text": "## Изменения в очереди заданий\n- Влияет только на **фоновые задания доставки** — интерактивные запросы работают как раньше\n- Новый режим **снижает потери заданий**, но ценой увеличения времени доставки из-за повторных попыток\n\n## Поведение при сбое\n1. Неудачное задание повторяется **через 30 секунд**\n2. После **трёх неудачных попыток** перемещается в очередь проверки\n3. Автоматического удаления нет\n\n## Обязательная конфигурация перед включением\n- **Адрес уведомления** — установить обязательно (требуется оператором)\n- **Размер пакета** — опционально (если не указан, используется 20 заданий по умолчанию)\n\n**Контрольная точка rollout**: функция включается только после того, как сбой заданий произведёт уведомление — это подтверждает рабочность системы оповещений."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2877 MB (17.6%), compressor 5366 MB, swap 6618/8192 MB (81%), load1 4.69 on 10 CPU (0.47/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< The user is asking me to read release-note.md and answer three questions in Russian:\n1. What changed for the job queue?\n2. What will happen on failure?\n3. What do we need to configure before enabling?\n\nAnd they say not to change any files.\n\nLet me first look for the release-note.md file.Now I can answer the three questions based on the content of the release-note.md:\n\n1. **Что изменилось для очереди заданий (What changed for the job queue)?**\n   - Это касается фоновых заданий доставки (Background delivery jobs)\n   - Интерактивные запросы остаются без изменений\n   - Уменьшается потеря заданий (новый режим)\n\n2. **Что произойдёт при сбое (What will happen on failure)?**\n   - Неудачное задание повторяется через 30 секунд\n   - После трёх неудачных попыток оно переходит в очередь проверки\n   - Автоматическое удаление отсутствует\n\n3. **Что нам нужно настроить перед включением (What do we need to configure before enabling)?**\n   - Оператор должен установить адрес уведомления (обязательно)\n   - Размер пакета (опционально, по умолчанию 20 заданий, если не указан)## Изменения в очереди заданий\n- Влияет только на **фоновые задания доставки** — интерактивные запросы работают как раньше\n- Новый режим **снижает потери заданий**, но ценой увеличения времени доставки из-за повторных попыток\n\n## Поведение при сбое\n1. Неудачное задание повторяется **через 30 секунд**\n2. После **трёх неудачных попыток** перемещается в очередь проверки\n3. Автоматического удаления нет\n\n## Обязательная конфигурация перед включением\n- **Адрес уведомления** — установить обязательно (требуется оператором)\n- **Размер пакета** — опционально (если не указан, используется 20 заданий по умолчанию)\n\n**Контрольная точка rollout**: функция включается только после того, как сбой заданий произведёт уведомление — это подтверждает рабочность системы оповещений.\n\n[tool-calls] Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-901fbf8f/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-2-901fbf8f/sandbox/release-note.md\"}\n[stderr] Error during cleanup: Error: Claude Code process exited with code 143\n    at Rk.getProcessExitError (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:11055)\n    at ChildProcess.n (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:15335)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at m (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4681)\n    at ChildProcess.<anonymous> (file:///Users/korchasa/www/flowai/flowai/.acp-bridges/agentclientprotocol__claude-agent-acp@0.68.0/node_modules/@anthropic-ai/claude-agent-sdk/sdk.mjs:118:4885)\n    at Object.onceWrapper (node:events:631:26)\n    at ChildProcess.emit (node:events:521:24)\n    at ChildProcess._handle.onexit (node:internal/child_process:295:12) {\n  telemetryMessage: 'Claude Code process exited with code 143',\n  errorClass: 'process_exited_nonzero',\n  exitCode: 143\n}\n\n  "
+    },
+    {
+      "key": "agents-rules-chat-source/run-3",
+      "verdict": {
+        "russian_prose": {
+          "pass": false,
+          "reason": "The user-facing answer includes ordinary English prose in parenthetical glosses: “background delivery jobs,” “review queue,” “notification address,” “batch size,” and the heading phrase “Rollout gate.” These are explanatory prose, not quoted evidence, code, product names, or necessary identifiers."
+        },
+        "operational_meaning": {
+          "pass": true,
+          "reason": "The answer clearly states that only background delivery jobs change while interactive requests remain unchanged; failures retry after 30 seconds and move to review after three failed attempts without deletion; a notification address is mandatory; batch size is optional with a default of 20; and a test failure must produce a notification before enablement."
+        }
+      },
+      "sessions": [
+        {
+          "path": "/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-88b71acd/bench-home/.claude/projects/-private-var-folders-v9-3l0m1hj17g13s0sth9qm0fqr0000gn-T-flowai-bench-run-3-88b71acd-sandbox/bc6dbe86-d109-4521-b17b-2f94ade230ef.jsonl",
+          "models": [
+            "claude-haiku-4-5-20251001"
+          ],
+          "tools": [
+            "Bash",
+            "Read"
+          ],
+          "messages": [
+            {
+              "role": "user",
+              "timestamp": "2026-09-20T11:07:55.775Z",
+              "text": "Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй."
+            },
+            {
+              "role": "assistant",
+              "timestamp": "2026-09-20T11:08:04.423Z",
+              "text": "## Что изменилось для очереди заданий\n\nОчередь фоновых заданий (background delivery jobs) переходит на новую политику обработки. Интерактивные запросы остаются без изменений.\n\n## Что произойдёт при сбое\n\nКогда задание не выполнится:\n- **Первый механизм**: автоматический повтор через 30 секунд\n- **Второй механизм**: после трёх неудачных попыток задание отправляется в очередь проверки (review queue)\n- **Финальное состояние**: автоматического удаления заданий нет — они хранятся в очереди проверки\n\n## Что нужно настроить перед включением\n\n**Обязательно:**\n- Адрес для отправки уведомлений (notification address) — это критический параметр\n\n**Опционально:**\n- Размер партии заданий (batch size) — если не указан, по умолчанию используется 20 заданий\n\n**Условие активации (Rollout gate):**\n- Включить функцию только после того, как тестовый сбой создаст уведомление. Это подтверждает, что система мониторинга работает. Новый режим снижает потерю заданий, но повторные попытки немного увеличивают время доставки."
+            }
+          ]
+        }
+      ],
+      "agentLogs": "\n  [health] available 2959 MB (18.1%), compressor 5239 MB, swap 6618/8192 MB (81%), load1 4.02 on 10 CPU (0.40/CPU)\n\n[turn 1] > Прочитай release-note.md. Что изменилось для очереди заданий, что произойдёт при сбое и что нам нужно настроить перед включением? Файлы не меняй.\n< Пользователь просит прочитать файл release-note.md и ответить на три вопроса:\n1. Что изменилось для очереди заданий\n2. Что произойдёт при сбое\n3. Что нам нужно настроить перед включением\n\nПользователь говорит \"Файлы не меняй\" - значит это чисто исследовательское задание, без изменений кода.\n\nНужно прочитать файл release-note.md и ответить на русском языке (как указано в CLAUDE.md: \"Reply to the user in Russian\").Найден файл release-note.md в корне. Прочитаю его.Отлично, я прочитал файл release-note.md. Теперь могу ответить на три вопроса пользователя. Ответ на русском языке.## Что изменилось для очереди заданий\n\nОчередь фоновых заданий (background delivery jobs) переходит на новую политику обработки. Интерактивные запросы остаются без изменений.\n\n## Что произойдёт при сбое\n\nКогда задание не выполнится:\n- **Первый механизм**: автоматический повтор через 30 секунд\n- **Второй механизм**: после трёх неудачных попыток задание отправляется в очередь проверки (review queue)\n- **Финальное состояние**: автоматического удаления заданий нет — они хранятся в очереди проверки\n\n## Что нужно настроить перед включением\n\n**Обязательно:**\n- Адрес для отправки уведомлений (notification address) — это критический параметр\n\n**Опционально:**\n- Размер партии заданий (batch size) — если не указан, по умолчанию используется 20 заданий\n\n**Условие активации (Rollout gate):**\n- Включить функцию только после того, как тестовый сбой создаст уведомление. Это подтверждает, что система мониторинга работает. Новый режим снижает потерю заданий, но повторные попытки немного увеличивают время доставки.\n\n[tool-calls] find . -name \"release-note.md\" -type f [kind=execute]: {\"command\":\"find . -name \\\"release-note.md\\\" -type f\"}\n             Read /private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-88b71acd/sandbox/release-note.md [kind=read]: {\"file_path\":\"/private/var/folders/v9/3l0m1hj17g13s0sth9qm0fqr0000gn/T/flowai-bench/run-3-88b71acd/sandbox/release-note.md\"}\n\n  "
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "executable": "claude",
+  "args": [
+    "-p",
+    "--model",
+    "claude-sonnet-4-6",
+    "--system-prompt",
+    "You edit only the language of a chat draft. Return only the corrected message, ready to send to the user. Do not introduce yourself, report your review, or delegate.\n\nInput: target conversation language, unpublished draft, source facts, and protected exact strings or explicitly requested foreign-language passages.\n\nTranslate ordinary foreign words, headings, and explanatory phrases into the target language. Remove redundant foreign glosses when the adjacent target-language words already express their full meaning. A technical topic does not make every source phrase an identifier. Backticks and parentheses do not turn ordinary prose into a protected string.\n\nPreserve common industry loanwords, product names, actual machine-readable identifiers, exact interface labels needed for lookup, quoted evidence, and explicitly requested artifacts in another language. Edit their surrounding explanation in the conversation language. Do not invent a foreign-language artifact when none was requested.\n\nPreserve every claim, negation, condition, number, unit, option, and sequence. Do not shorten reasoning, simplify jargon, invent definitions, or repair factual errors under the guise of translation. Use the source only to choose a meaning-equivalent translation. Do not change protected strings, paths, links, or the contents of a requested foreign-language artifact.\n\nBefore returning the text, compare it with the draft for lost or added facts and scan the headings and prose for remaining unintended language switches. Return the corrected text only.",
+    "--tools",
+    "",
+    "--disable-slash-commands",
+    "--setting-sources",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--no-chrome",
+    "--no-session-persistence",
+    "--output-format",
+    "json"
+  ],
+  "cwd": "/private/tmp/language-editor-sonnet-94a8591e865aae7c/exceptions-clear/sandbox",
+  "isolatedHome": true,
+  "systemHealthGuard": true,
+  "processWatchdog": true,
+  "inputByteIdentical": true,
+  "systemByteIdentical": true
+}
