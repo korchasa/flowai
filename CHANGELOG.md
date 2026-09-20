@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.13](https://github.com/korchasa/flowai/compare/v0.14.12...v0.14.13) (2026-09-20)
+
+
+### Bug Fixes
+
+* **readability:** stop counting a redundant gloss as a language defect ([9a8c1fa](https://github.com/korchasa/flowai/commit/9a8c1fac91b795e90e3947583f39e04f2172fda8))
+
 ### [0.14.12](https://github.com/korchasa/flowai/compare/v0.14.11...v0.14.12) (2026-09-20)
 
 
