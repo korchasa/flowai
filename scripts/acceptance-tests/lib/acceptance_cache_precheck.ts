@@ -10,11 +10,25 @@ import {
   type CacheEntry,
   cacheFilePath,
   computeCacheKey,
+  type JudgeKeyFields,
   readCache,
   resultFromCache,
   trimResultForCache,
   writeCache,
 } from "./cache.ts";
+
+/**
+ * Settings that decide a verdict but are not part of the scenario itself.
+ * Grouped into one object rather than appended as two more positional strings:
+ * `precheckCache` already takes four strings/numbers in a row, and a caller
+ * that swaps two of them would silently read another arm's cache.
+ */
+export interface CacheKeyExtras {
+  /** Reasoning effort pinned for the agent under test. */
+  agentEffort: string;
+  /** Model, effort and temperature of the judge scoring the checklist. */
+  judge: JudgeKeyFields;
+}
 
 export interface CacheFlags {
   noCache: boolean;
@@ -46,6 +60,7 @@ export async function precheckCache(
   ide: string,
   agentModel: string,
   ideCliVersion: string,
+  keyExtras: CacheKeyExtras,
 ): Promise<CachePrecheck> {
   const cacheEligibleForRuns = runs === 1 || cacheFlags.cacheWithRuns;
   const cacheEnabled = !cacheFlags.noCache && cacheEligibleForRuns;
@@ -71,6 +86,8 @@ export async function precheckCache(
       scenario,
       ide,
       agentModel,
+      agentEffort: keyExtras.agentEffort,
+      judge: keyExtras.judge,
       runs,
       ideCliVersion,
     });

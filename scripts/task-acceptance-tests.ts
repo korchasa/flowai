@@ -97,6 +97,7 @@ async function main() {
     setup.adapter.ide,
     setup.agentModel,
     ideCliVersion,
+    { agentEffort: setup.agentEffort, judge: setup.judgeConfig },
   );
 
   const { ctx, tasks } = buildExecutionContext(cache, setup, runDir, tracer);

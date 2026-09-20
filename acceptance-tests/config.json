@@ -17,8 +17,9 @@
       }
     },
     "claude": {
-      "agent_models": ["claude-sonnet-4-6"],
-      "default_agent_model": "claude-sonnet-4-6",
+      "agent_models": ["claude-haiku-4-5", "claude-sonnet-4-6"],
+      "default_agent_model": "claude-haiku-4-5",
+      "agent_effort": "medium",
       "judge": {
         "model": "gpt-5.6-sol",
         "effort": "medium",

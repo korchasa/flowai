@@ -31,6 +31,9 @@ import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
 const REPO_ROOT = Deno.cwd();
 
+/** Judge settings every key-input literal below starts from. */
+const JUDGE = { model: "gpt-5.6-sol", effort: "medium", temperature: 0 };
+
 /**
  * Creates a self-contained fake scenario under a temp dir so mutations do not
  * touch the real framework tree.
@@ -71,6 +74,8 @@ Deno.test("computeCacheKey: deterministic for identical inputs", async () => {
       agentModel: "claude-sonnet-4-6",
       runs: 1,
       ideCliVersion: "1.0.0",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const key2 = await computeCacheKey({
       scenario,
@@ -78,6 +83,8 @@ Deno.test("computeCacheKey: deterministic for identical inputs", async () => {
       agentModel: "claude-sonnet-4-6",
       runs: 1,
       ideCliVersion: "1.0.0",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertEquals(key1, key2);
     assert(/^[0-9a-f]{64}$/.test(key1), "key should be sha256 hex");
@@ -96,6 +103,8 @@ Deno.test("computeCacheKey: changes when scenario mod.ts changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     await Deno.writeTextFile(
       join(dirname(scenario.fixturePath!), "mod.ts"),
@@ -107,6 +116,8 @@ Deno.test("computeCacheKey: changes when scenario mod.ts changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(base, after);
   } finally {
@@ -124,6 +135,8 @@ Deno.test("computeCacheKey: changes when primitive SKILL.md changes", async () =
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     await Deno.writeTextFile(scenario.targetAgentPath!, "# SKILL v2\n");
     const after = await computeCacheKey({
@@ -132,6 +145,8 @@ Deno.test("computeCacheKey: changes when primitive SKILL.md changes", async () =
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(base, after);
   } finally {
@@ -149,6 +164,8 @@ Deno.test("computeCacheKey: changes when fixture file changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     await Deno.writeTextFile(
       join(scenario.fixturePath!, "f.txt"),
@@ -160,6 +177,8 @@ Deno.test("computeCacheKey: changes when fixture file changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(base, after);
   } finally {
@@ -177,6 +196,8 @@ Deno.test("computeCacheKey: changes when ide argument changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const k2 = await computeCacheKey({
       scenario,
@@ -184,6 +205,8 @@ Deno.test("computeCacheKey: changes when ide argument changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(k1, k2);
   } finally {
@@ -201,6 +224,8 @@ Deno.test("computeCacheKey: changes when agentModel changes", async () => {
       agentModel: "a",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const k2 = await computeCacheKey({
       scenario,
@@ -208,6 +233,8 @@ Deno.test("computeCacheKey: changes when agentModel changes", async () => {
       agentModel: "b",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(k1, k2);
   } finally {
@@ -225,6 +252,8 @@ Deno.test("computeCacheKey: changes when ideCliVersion changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "1.2.3",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const k2 = await computeCacheKey({
       scenario,
@@ -232,6 +261,8 @@ Deno.test("computeCacheKey: changes when ideCliVersion changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "1.2.4",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(k1, k2);
   } finally {
@@ -249,6 +280,8 @@ Deno.test("computeCacheKey: empty ideCliVersion is stable and does not crash", a
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const b = await computeCacheKey({
       scenario,
@@ -256,6 +289,8 @@ Deno.test("computeCacheKey: empty ideCliVersion is stable and does not crash", a
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertEquals(a, b);
   } finally {
@@ -273,6 +308,8 @@ Deno.test("computeCacheKey: changes when runs count changes", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const k3 = await computeCacheKey({
       scenario,
@@ -280,6 +317,8 @@ Deno.test("computeCacheKey: changes when runs count changes", async () => {
       agentModel: "m",
       runs: 3,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(k1, k3);
   } finally {
@@ -299,6 +338,8 @@ Deno.test("computeCacheKey: missing fixture dir does not crash", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assert(/^[0-9a-f]{64}$/.test(key));
   } finally {
@@ -519,6 +560,8 @@ Deno.test("isolation-key-change: cache key tracks adapter directory contents", a
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
 
     await Deno.writeTextFile(markerPath, "isolation-key-marker\n");
@@ -528,6 +571,8 @@ Deno.test("isolation-key-change: cache key tracks adapter directory contents", a
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertNotEquals(
       baseline,
@@ -542,6 +587,8 @@ Deno.test("isolation-key-change: cache key tracks adapter directory contents", a
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assertEquals(
       baseline,
@@ -620,6 +667,8 @@ Deno.test("computeCacheKey: ACP lib version + registry fingerprint enter the key
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     } as const;
 
     // ACP is the only transport, so its lib version + agent-spec table are folded
@@ -651,6 +700,8 @@ Deno.test("cache key inputs include the CLI entry point that runs the sweep", as
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     assert(
       "runner:scripts/task-acceptance-tests.ts" in inputs,
@@ -678,6 +729,8 @@ Deno.test("cache key inputs exclude the harness's own unit tests", async () => {
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     });
     const tests = Object.keys(inputs).filter((k) => k.endsWith("_test.ts"));
     assertEquals(
@@ -712,6 +765,8 @@ Deno.test("adding a *_test.ts under lib/ does NOT change the cache key", async (
       agentModel: "m",
       runs: 1,
       ideCliVersion: "",
+      agentEffort: "medium",
+      judge: JUDGE,
     };
     const baseline = await computeCacheKey(args);
     // No imports inside — the cross-package drift guard parses every .ts here.
@@ -806,4 +861,151 @@ Deno.test("cache: an entry written before the split carries no breakdown", () =>
     logs: "logs",
   } as BenchmarkResult;
   assertEquals(trimResultForCache(r).tokensDetails, undefined);
+});
+
+Deno.test("computeCacheKey: changes when the judge model changes", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const base = await computeCacheKey({
+      scenario,
+      ide: "codex",
+      agentModel: "gpt-5.6-terra",
+      agentEffort: "medium",
+      judge: JUDGE,
+      runs: 1,
+      ideCliVersion: "",
+    });
+    const after = await computeCacheKey({
+      scenario,
+      ide: "codex",
+      agentModel: "gpt-5.6-terra",
+      agentEffort: "medium",
+      judge: { ...JUDGE, model: "gpt-5.4" },
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assertNotEquals(
+      base,
+      after,
+      "a different judge can return a different verdict",
+    );
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("computeCacheKey: changes when judge effort or temperature changes", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const mk = (judge: typeof JUDGE) =>
+      computeCacheKey({
+        scenario,
+        ide: "codex",
+        agentModel: "gpt-5.6-terra",
+        agentEffort: "medium",
+        judge,
+        runs: 1,
+        ideCliVersion: "",
+      });
+    const base = await mk(JUDGE);
+    assertNotEquals(base, await mk({ ...JUDGE, effort: "high" }));
+    assertNotEquals(base, await mk({ ...JUDGE, temperature: 1 }));
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("computeCacheKey: changes when the agent effort changes", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const base = await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "claude-haiku-4-5",
+      agentEffort: "medium",
+      judge: JUDGE,
+      runs: 1,
+      ideCliVersion: "",
+    });
+    const after = await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "claude-haiku-4-5",
+      agentEffort: "high",
+      judge: JUDGE,
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assertNotEquals(
+      base,
+      after,
+      "effort changes how the agent under test behaves",
+    );
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("cache key inputs no longer hash acceptance-tests/config.json wholesale", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const inputs = await computeCacheKeyInputs({
+      scenario,
+      ide: "codex",
+      agentModel: "gpt-5.6-terra",
+      agentEffort: "medium",
+      judge: JUDGE,
+      runs: 1,
+      ideCliVersion: "",
+    });
+    const configKeys = Object.keys(inputs).filter((k) =>
+      k.startsWith("config:")
+    );
+    assertEquals(
+      configKeys,
+      [],
+      "hashing the whole file made an edit to one arm's section invalidate every other arm",
+    );
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+Deno.test("computeCacheKey: settings of one arm do not move the key of the other arm", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  try {
+    const scenario = await makeFakeScenario(tmp);
+    const codexKey = (
+      over: Partial<{ agentModel: string; agentEffort: string }>,
+    ) =>
+      computeCacheKey({
+        scenario,
+        ide: "codex",
+        agentModel: "gpt-5.6-terra",
+        agentEffort: "medium",
+        judge: JUDGE,
+        runs: 1,
+        ideCliVersion: "",
+        ...over,
+      });
+    const base = await codexKey({});
+    // Switching the claude arm to another model/effort is expressed as a
+    // different call, never as a file both arms hash.
+    await computeCacheKey({
+      scenario,
+      ide: "claude",
+      agentModel: "claude-haiku-4-5",
+      agentEffort: "high",
+      judge: JUDGE,
+      runs: 1,
+      ideCliVersion: "",
+    });
+    assertEquals(base, await codexKey({}));
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
 });

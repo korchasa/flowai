@@ -20,6 +20,10 @@
  *     ide:            "claude" | "cursor" | "codex" | "opencode",
  *     ideCliVersion:  "" | stdout of `<cli> --version` (2s probe, empty on failure),
  *     agentModel:     "claude-sonnet-4-6" | ...,
+ *     agentEffort:    "low" | "medium" | "high" | "xhigh",
+ *     judgeModel:     "gpt-5.6-sol" | ...,
+ *     judgeEffort:    "" | "low" | "medium" | ...,
+ *     judgeTemperature: number | null,
  *     runs:           int,                       // bucketing for -n > 1
  *     acpLibVersion:  ACP_LIB_VERSION,           // ACP transport lib (sole transport)
  *     acpRegistry:    acpRegistryFingerprint(),  // hash of the ACP_AGENTS table
@@ -30,7 +34,6 @@
  *       "agents.template":      fileHash(framework/core/assets/AGENTS.template.md),
  *       "runner:<relpath>":     fileHash(f) for f in scripts/acceptance-tests/lib/**
  *                               (EXCLUDING *_test.ts) ∪ scripts/task-acceptance-tests.ts,
- *       "config:full":          fileHash(acceptance-tests/config.json),
  *     }),
  *   }))
  *
@@ -65,6 +68,20 @@
  * named `scripts/task-bench.ts` — renamed away on 2026-05-11. A missing path
  * contributes nothing, so the file the sweep is launched from was in no key at
  * all while this header claimed it was. Both were found on 2026-08-22.
+ *
+ * ## v2 → v3
+ *
+ * v2 hashed the WHOLE `acceptance-tests/config.json`, so the arms shared one
+ * input: pointing the claude arm at another model invalidated all 280 codex
+ * slots as well, and a sweep on one arm was paid for by the other. v3 hashes
+ * the settings THIS run actually uses — the agent's model and effort, and the
+ * judge's model, effort and temperature — so each arm's slots move only when
+ * its own settings move. The judge enters the key for the first time here: it
+ * decides the verdict, and before v3 its model could be swapped without
+ * invalidating a single cached verdict, because nothing else in the key
+ * mentioned it. Fields the run does not consume (another arm's section,
+ * `default_ides`) no longer invalidate anything; the arm itself is already in
+ * the key as `ide`.
  */
 
 import { dirname, join, relative } from "@std/path";
@@ -77,7 +94,7 @@ import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 export const CACHE_SCHEMA_VERSION = 1;
 
 /** Cache-key algorithm version. Bump on algorithmic change to invalidate all entries. */
-export const CACHE_ALGORITHM_VERSION = 2;
+export const CACHE_ALGORITHM_VERSION = 3;
 
 /** Judge `reason` strings longer than this are truncated in the cache file. */
 export const MAX_REASON_LEN = 200;
@@ -124,11 +141,29 @@ export interface CacheEntry {
   result: CachedResult;
 }
 
+/**
+ * The judge settings that decide a verdict, as the cache key sees them.
+ *
+ * A structural subset of `ModelConfig` on purpose: only the fields that can
+ * change a verdict belong in the key, and importing the full config type would
+ * drag `env`/`cwd`/`jsonSchema` — run-local paths that differ every run — into
+ * something that must stay stable.
+ */
+export interface JudgeKeyFields {
+  model: string;
+  effort?: string;
+  temperature?: number;
+}
+
 /** Inputs that materialize a cache key. */
 export interface CacheKeyInputs {
   scenario: BenchmarkScenario;
   ide: string;
   agentModel: string;
+  /** Reasoning effort pinned for the agent under test. */
+  agentEffort: string;
+  /** Judge settings for this run — the verdict depends on them. */
+  judge: JudgeKeyFields;
   runs: number;
   /** Best-effort output of `<cli> --version`, or `""` on probe failure. */
   ideCliVersion: string;
@@ -206,12 +241,10 @@ export async function computeCacheKeyInputs(
     await hashFileInto(rel, "cli", hashInputs);
   }
 
-  // 7. Full acceptance-tests/config.json (agent model, judge model, temperature).
-  await hashFileInto(
-    join("acceptance-tests", "config.json"),
-    "config",
-    hashInputs,
-  );
+  // 7. `acceptance-tests/config.json` is deliberately NOT hashed here. The
+  //    settings this run consumes from it — agent model + effort, judge model +
+  //    effort + temperature — enter the key as scalars in `computeCacheKey`, so
+  //    editing another arm's section leaves this arm's slots valid.
 
   return hashInputs;
 }
@@ -222,13 +255,21 @@ export async function computeCacheKeyInputs(
 export async function computeCacheKey(
   inputs: CacheKeyInputs,
 ): Promise<string> {
-  const { scenario, ide, agentModel, runs, ideCliVersion } = inputs;
+  const { scenario, ide, agentModel, agentEffort, judge, runs, ideCliVersion } =
+    inputs;
   const payload = canonicalize({
     version: CACHE_ALGORITHM_VERSION,
     scenarioId: scenario.id,
     ide,
     ideCliVersion,
     agentModel,
+    agentEffort,
+    // The judge decides the verdict, so its settings belong in the key. Absent
+    // optionals are pinned to stable placeholders rather than dropped, so a
+    // config that spells out a default does not produce a different key.
+    judgeModel: judge.model,
+    judgeEffort: judge.effort ?? "",
+    judgeTemperature: judge.temperature ?? null,
     runs,
     // ACP is the only transport. Its lib version + agent-spec table enter every
     // key, so an ACP lib upgrade or a registry edit invalidates stale verdicts.
