@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.12](https://github.com/korchasa/flowai/compare/v0.14.11...v0.14.12) (2026-09-20)
+
+
+### Features
+
+* **core:** ship the reader-context chat rule with its acceptance set ([ad6763e](https://github.com/korchasa/flowai/commit/ad6763e25349ec2a9eb50a0ace014fabbaa828df))
+
+
+### Bug Fixes
+
+* **acceptance:** key the cache on run settings, honour effort on claude ([82eba4e](https://github.com/korchasa/flowai/commit/82eba4e961ca22edf52a9f1e5b3ce8f89c9af117))
+
+
+### Agent Changes
+
+* **acceptance:** record what the variant-layout scenarios cost ([9c1380d](https://github.com/korchasa/flowai/commit/9c1380df96dcfcbb384aeb6cd85bce513d657107))
+
+
+### Documentation
+
+* **readability:** split language and reader-context clauses ([bf346e7](https://github.com/korchasa/flowai/commit/bf346e78bd31f735d905f5bb014f699efd7addad))
+* **srs:** declare FR-MAINT-LANG ahead of its implementation ([32c9265](https://github.com/korchasa/flowai/commit/32c926523c9c4652f261a0d2da298162bbabd98c))
+* **tasks:** plan maintenance category 17 for language hygiene ([2385acd](https://github.com/korchasa/flowai/commit/2385acdb51bcdd59dc91908b66ae17f3dfee92ed))
+
 ### [0.14.11](https://github.com/korchasa/flowai/compare/v0.14.10...v0.14.11) (2026-09-19)
 
 
