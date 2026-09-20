@@ -59,6 +59,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:init | FR-INIT] — The init skill bootstraps AI agent understanding of a project by analyzing codebase, generating a single AGENTS.md file from the pack-level asset template, and scaffolding documentation (CLAUDE.md, SRS, SDS). — [ ]
 - [REF:fr:jit-review | FR-JIT-REVIEW] — JiT-subset of `review` atom: ephemeral Catching JiTTests (pass-on-parent / fail-on-diff) — [x]
 - [REF:fr:maint | FR-MAINT] — Automated project maintenance via `deno task check` (composite gen, marketplace build/validate, lint, test) — [x]
+- [REF:fr:maint-lang | FR-MAINT-LANG] — Language Hygiene category in maintenance (files that seed borrowed names and foreign-language labels into chat replies) — [ ]
 - [REF:fr:maint-scan | FR-MAINT-SCAN] — Parallel read-only scan delegation for maintenance (5 thematic category buckets → 5 self-contained read-only `maintenance-scan-*` workers with embedded check detail; parent owns Verify + severity + HITL; no fallback — loud `Not scanned` report) — [ ]
 - [REF:fr:maint-severity | FR-MAINT-SEVERITY] — Severity scoring for maintenance findings (Critical/High/Medium/Low + rubric + summary tags + reply filters) — [x]
 - [REF:fr:memex | FR-MEMEX] — Memex pack — [x]

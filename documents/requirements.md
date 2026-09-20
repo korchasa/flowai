@@ -1736,6 +1736,19 @@ Rules:
 - **Acceptance verified by acceptance tests:** `maintenance-detects-doc-health-issues`.
 - **Status:** [x]
 
+### FR-MAINT-LANG: Language Hygiene Category in Maintenance [ANC:fr:maint-lang]
+
+- **Description:** `maintenance` adds a "Language Hygiene" category to its multi-category audit, in bucket W4 beside Documentation Health. It reports project files that push borrowed names and foreign-language labels into chat replies, so the seed is removed instead of each reply being corrected by hand. Checks:
+  - **Rule prescribing literal reply text in another language** — an instruction file that fixes a word the agent must print in a reply (a label, a tag, a heading) in a language other than the one the reply is written in.
+  - **Name-over-meaning rule without scope** — a rule telling the agent to reuse existing terms rather than explain them, written with no scope, so it reaches chat replies as well as code and documents.
+  - **Mixed-script paragraphs** — a documentation paragraph whose prose mixes two scripts outside code spans and identifiers.
+  - **Project terms without a definition** — a term used repeatedly across the documentation and defined nowhere.
+  - **Output template fixing prose fragments** — a template that hands the agent ready-made sentence pieces, which then reach the reply in the template's language.
+- **Scope:** Slot 17 in the category index — preserved across later category additions. The first three checks have a deterministic part in `framework/core/skills/maintenance/scripts/language_hygiene.ts`; the rest are LLM judgement in the W4 worker. Maintenance keeps its existing interactive issue-by-issue UX; findings appear under a "Language Hygiene" group in the numbered summary. The category detects the seeds; it does not rewrite replies. The reply side of the same problem is [REF:fr:readability.language | FR-READABILITY.LANGUAGE].
+- **Acceptance:** acceptance scenario `maintenance-language-hygiene` and `deno test -A framework/core/skills/maintenance/scripts/language_hygiene_test.ts` — both to be authored; the FR stays `[ ]` until they exist and pass.
+- **Tasks:** [maintenance-language-hygiene](tasks/2026/09/maintenance-language-hygiene.md)
+- **Status:** [ ]
+
 ### FR-TASK-OVERVIEW: Task Overview Skill — `tasks-overview` [ANC:fr:task-overview]
 
 - **Description:** Core-pack agent-invocable skill `tasks-overview` shows the current state of a project's open tasks in one command, hiding archived ones. Projects do not all use flowai's task layout (flowai only proposes `documents/tasks/<YYYY>/<MM>/<slug>.md` with `status: to do | in progress | done | superseded`), so the skill does not hardcode a schema: it reads the project's own task rules from `AGENTS.md` (the `tasks` role of the Documentation Hierarchy and the task-format section; a project-specific override wins over the framework default), derives a schema (task root, file pattern, status key, archived status values, archive directories, progress section), shows the derivation in chat, writes it into a project-local copy of the bundled script — `scripts/tasks-overview.py`, generated from `framework/core/skills/tasks-overview/scripts/tasks_overview.py` by replacing the text between `# --- SCHEMA BEGIN ---` and `# --- SCHEMA END ---` — runs it and reports the output. When the project already has `scripts/tasks-overview.py`, the skill runs it and never rewrites it: the schema block is project-owned and hand-editable. The script is Python 3 standard library only, so it runs without flowai and without Deno. For the flowai default schema, "archived" means `done` and `superseded`. The skill never edits task files.
