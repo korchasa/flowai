@@ -101,6 +101,12 @@ export function nativeCommandTurn(
  * 52 releases ahead. Pin a version so the cache-key (FR-ACCEPT-CACHE)
  * invalidates on upgrade.
  *
+ * The bridge runs the Claude Code it bundles through the Agent SDK, not the
+ * `claude` on PATH, so the pin also fixes which models a session can reach:
+ * 0.68.0 bundled Claude Code 2.1.232 and every `claude-opus-5-5` session died
+ * on turn 1 with "version 2.1.280 or newer is required". 0.81.0 bundles
+ * 2.1.280 (SDK 0.3.280).
+ *
  * Codex is likewise reached through an npm bridge, NOT through its own CLI:
  * codex-cli (verified 0.144.6) has no `acp` subcommand, so the former
  * `codex acp` row started the interactive TUI with "acp" as the prompt and the
@@ -114,7 +120,7 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     launch: {
       kind: "npm",
       package: "@agentclientprotocol/claude-agent-acp",
-      version: "0.68.0",
+      version: "0.81.0",
       bin: "claude-agent-acp",
       // Allow spawning claude inside a claude session (unset the marker the
       // outer Claude Code session exports).
