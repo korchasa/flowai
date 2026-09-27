@@ -1,10 +1,13 @@
 # Post-closure controls
 
-Three controlled runs made on 2026-09-20, after this collection was saved. All
-used the live acceptance runner with the `agents-rules-chat-source` scenario or
-a single-factor variant of it, three runs each, judge `gpt-5.6-sol` at
-temperature 0, result cache bypassed. Each changed exactly one factor, which the
-failure analysis names as the discipline the original search lacked.
+Four controlled runs made after this collection was saved: Controls 1 to 3 on
+2026-09-20, Control 4 on 2026-09-20 with its analysis completed on 2026-09-27.
+Controls 1 to 3 used the live acceptance runner with the
+`agents-rules-chat-source` scenario or a single-factor variant of it, three runs
+each, judge `gpt-5.6-sol` at temperature 0, result cache bypassed. Each changed
+exactly one factor, which the failure analysis names as the discipline the
+original search lacked. Control 4 changes the model arm instead and covers all
+six chat scenarios.
 
 **Read the counts against the criterion of that day.** Every failure below was
 scored while a parenthetical gloss — a foreign rendering of wording the reply
@@ -108,7 +111,65 @@ the reply. English as the default language of technical terms is a second,
 weaker driver that survives even when the source is German — and it is the one
 the failing run could not have got from the document.
 
-## What the three controls settle
+## Control 4 — is the defect specific to the claude arm?
+
+**Factor changed:** the model arm. Everything else held: the same six
+`agents-rules-chat-*` scenarios, three runs each, the checklist as it stands
+after the 2026-09-20 edit, the same commit, and a shipped `AGENTS.md` whose
+sha256 was verified as `5634038f9c…` in every one of the 36 sandboxes. Command:
+`deno task acceptance-tests -i codex -f agents-rules-chat- -n 3 --no-cache`, run
+`2026-09-20T20-16-09`, exit 0.
+
+**Result:** 15 of 18 sessions passed on the codex `gpt-5.6-terra` arm, against 11
+of 18 on the claude arm. Verdicts and full transcripts:
+[language-sweep-codex-arm.json](claude-language-fix-evidence/language-sweep-codex-arm.json),
+paired with
+[language-sweep-new-criterion.json](claude-language-fix-evidence/language-sweep-new-criterion.json)
+for the claude arm.
+
+The three codex failures split by cause, not by label:
+
+- Two `russian_prose` failures (`agents-rules-chat-jargon` run 1,
+  `agents-rules-chat-interface` run 3) are an **instrument defect**. The ACP
+  client's `#onSessionUpdate` in `scripts/acceptance-tests/lib/acp/client.ts`
+  pushes `agent_thought_chunk` and `agent_message_chunk` into one buffer with no
+  separator and no marker, so codex's English reasoning headline is glued to the
+  front of the Russian answer. `judge-evidence.md` shows the seam verbatim:
+  `**Confirming absence of SRS and SDS documents**Выгрузку нельзя включить`.
+  The reply itself is clean.
+- One real language failure: «недоступный endpoint» in
+  `agents-rules-chat-dialogue` run 2, while run 3 of the same scenario wrote
+  «заведомо недоступный адрес». The rule lowers the rate; it does not enforce.
+- One real meaning failure: `expiry_and_revoke` in
+  `agents-rules-chat-interface` run 3 named a setting without saying that it
+  controls how long the replaced key keeps working.
+
+**Qualitative reading of the two arms' prose.** Codex holds the reader's language
+better and lays the properties of a variant out as separate labelled lines
+without being pushed. Claude compresses those properties into one paragraph,
+drops the risks line, appends English glosses («background delivery jobs»,
+«review queue», «batch size») and writes English headings
+(`## Support Request (English)`). Claude is better at one thing that matters
+here: it explained what an unfamiliar setting does in all three sessions where
+codex explained it in two.
+
+**What Control 4 settles, and the counting it forced.** The language defect is
+not specific to the claude arm, but it is markedly worse there, on a
+byte-identical instruction. That is evidence against any account that blames the
+instruction text alone. The control also forced a count across both arms
+together, 36 sessions, and the count is the reason
+`FR-READABILITY.READER-CONTEXT` was reopened on 2026-09-27: the sibling language
+item failed 10 times, and all eight meaning items together failed once. Five of
+the six scenarios give the agent one turn (`maxSteps: 1`); only
+`agents-rules-chat-dialogue` runs three. Meaning lost while a fact is carried
+from turn to turn cannot appear in a one-turn session, so the near-silence of the
+meaning items is a property of the instrument, not a verdict on the models.
+
+## What the controls settle
+
+Controls 1 to 3 concern the language defect on one scenario. Control 4 widens
+the frame to both model arms and all six scenarios; read its own closing
+paragraph for what it adds.
 
 The behaviour survives every lever tried so far on this scenario: fifteen
 instruction candidates, a runtime editor, the removal of the permissions the

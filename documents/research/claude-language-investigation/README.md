@@ -19,6 +19,7 @@ This folder is a saved collection of the investigation, working hypotheses, fail
 - [Source-language control on a German fixture](claude-language-fix-evidence/source-language-control-german.json) and its [judge calibration](claude-language-fix-evidence/source-language-control-german-calibration.json)
 - [Restored product state and final checks](claude-language-fix-evidence/final-state.json)
 - [Full sweep under the current criterion, 2026-09-20T19-50-09](claude-language-fix-evidence/language-sweep-new-criterion.json) and [the same scenarios under the previous checklist, 2026-09-20T10-38-58](claude-language-fix-evidence/language-sweep-old-criterion.json) — kept as a pair, because the checklist edit between them changed what the judge detects.
+- [Cross-arm control on the codex gpt-5.6-terra arm, 2026-09-20T20-16-09](claude-language-fix-evidence/language-sweep-codex-arm.json) — the same six scenarios, three runs each, the same checklist and commit, and a byte-identical shipped template; pairs with the claude sweep above. Recorded as Control 4 in [post-closure controls](post-closure-controls.md).
 - [Initial calibration](claude-language-evidence/final-calibration.json)
 - [Haiku editor observations](claude-language-fix-evidence/editor-isolated/observations.json)
 - [Sonnet editor observations](claude-language-fix-evidence/editor-isolated-sonnet/observations.json)
@@ -36,9 +37,10 @@ The requirement this investigation informed was split in two on 2026-09-20, afte
 the collection was saved: `FR-READABILITY.LANGUAGE` now covers chat language
 integrity alone, and the new `FR-READABILITY.READER-CONTEXT` covers explanations
 that a reader who has not seen the session can follow. The documents below still
-describe the two defects under the single earlier clause. Three controls run
+describe the two defects under the single earlier clause. Four controls run
 after that split are recorded in [post-closure controls](post-closure-controls.md);
 their run directories are local and gitignored, so the verdicts and transcripts
-they cite are saved as JSON beside the other evidence.
+they cite are saved as JSON beside the other evidence. Control 4, the cross-arm
+run, is what reopened `FR-READABILITY.READER-CONTEXT` on 2026-09-27.
 
 This collection is a snapshot. Canonical project files remain in their original locations. Running the scenario snapshot requires the FlowAI repository and its normal dependencies; the archive is not a standalone test runner. No credentials, environment files, installed dependencies, or unrelated session histories were copied.

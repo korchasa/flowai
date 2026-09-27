@@ -118,3 +118,18 @@ clause; the meaning items ride along in the same checklists.
 5. Record the same rule in the SDS acceptance section: an item that never fails
    cannot award a pass.
 6. Run the validators and the full check.
+
+## Superseding note — 2026-09-27
+
+`FR-READABILITY.READER-CONTEXT` was reopened on 2026-09-27, so the fourth DoD
+item's evidence command — which asserts `Status: [x]` on that clause — now
+fails. The command is left as it was measured; it was true on 2026-09-20 and the
+calibration and sweep facts it cites are unchanged. What changed is the reading
+of those facts, for two reasons recorded in the clause and in
+[post-closure controls](../../research/claude-language-investigation/post-closure-controls.md)
+as Control 4: a cross-arm run on the codex `gpt-5.6-terra` arm failed
+`expiry_and_revoke`, and a count across both arms showed the eight meaning items
+producing 1 failure in 36 sessions against the language item's 10. The
+instrument this task built is sound as a guard against a planted defect and too
+insensitive to award compliance. The follow-up is
+[reopen-reader-context-clause](reopen-reader-context-clause.md).
