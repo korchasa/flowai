@@ -19,6 +19,11 @@
  *                      the opening notification carries the prompt, the closing
  *                      one the answer in `rawOutput` as a bare STRING — a shape
  *                      the client library's schema refuses outright.
+ *   [[THINK]]        → stream an `agent_thought_chunk` reasoning headline and
+ *                      then the reply as an `agent_message_chunk`, the way codex
+ *                      does: two separate notifications, neither carrying a
+ *                      trailing separator, so a client that appends both to one
+ *                      buffer hands the reader `<headline><reply>` glued.
  *   anything else    → stream an `agent_message_chunk` echoing a fixed reply.
  *
  * The sentinel write is the observable "real tool executed" side-effect the
@@ -41,6 +46,12 @@ import { join } from "@std/path";
 
 const TOOL_MARKER = /\[\[TOOL:([^\]]*)\]\]/;
 const DISPATCH_MARKER = /\[\[DISPATCH\]\]/;
+const THINK_MARKER = /\[\[THINK\]\]/;
+
+/** The reasoning headline and the reply the `[[THINK]]` marker streams. */
+export const THINK_REASONING = "Confirming absence of SRS and SDS documents";
+export const THINK_REPLY =
+  "Выгрузку нельзя включить, пока не выполнены две проверки.";
 
 /** What the scripted subagent dispatch sends down, and what it answers with. */
 export const DISPATCH_PROMPT = "Bug report: titles are cut mid-word.";
@@ -155,6 +166,12 @@ class StubAgent implements Agent {
       return { stopReason: "end_turn" };
     }
 
+    if (THINK_MARKER.test(text)) {
+      await this.#emitThought(params.sessionId, THINK_REASONING);
+      await this.#emit(params.sessionId, THINK_REPLY);
+      return { stopReason: "end_turn" };
+    }
+
     await this.#emit(params.sessionId, `echo: ${text}`);
     return { stopReason: "end_turn" };
   }
@@ -168,6 +185,16 @@ class StubAgent implements Agent {
       sessionId,
       update: {
         sessionUpdate: "agent_message_chunk",
+        content: { type: "text", text },
+      },
+    });
+  }
+
+  #emitThought(sessionId: string, text: string): Promise<void> {
+    return this.#conn.sessionUpdate({
+      sessionId,
+      update: {
+        sessionUpdate: "agent_thought_chunk",
         content: { type: "text", text },
       },
     });

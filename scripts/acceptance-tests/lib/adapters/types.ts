@@ -51,5 +51,15 @@ export interface ParsedAgentOutput {
   subtype: string | null; // "success" | "input_required" | "error"
   /** Full concatenated text from all assistant messages (for UserEmulator context). */
   assistantText: string | null;
+  /**
+   * The turn's reasoning summary, kept out of `assistantText` on purpose.
+   *
+   * codex streams reasoning as its own notification and never separates it from
+   * the reply, so a transport that appends both to one buffer hands the judge an
+   * English headline as the first words of the answer. The judge then scores the
+   * reply for a defect the transport introduced. Reasoning belongs in the trace
+   * under its own marker, never in the prose being graded.
+   */
+  reasoningText: string | null;
   raw: unknown;
 }

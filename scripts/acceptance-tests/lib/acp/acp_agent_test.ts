@@ -114,6 +114,7 @@ Deno.test("composePartialTrace carries the interrupted turn's assistant text int
   const out = composePartialTrace(
     "\n[turn 1] > /deep-research WebAssembly on the server\n",
     "**Plan — 5 research directions** (tmp_dir: /tmp/deep-research-TmL4te)",
+    "",
     ["Bash: mktemp -d", "Agent: deep-research-worker"],
   );
   assertStringIncludes(out, "Plan — 5 research directions");
@@ -123,11 +124,43 @@ Deno.test("composePartialTrace carries the interrupted turn's assistant text int
 
 Deno.test("composePartialTrace does not repeat a tool-call block the loop already flushed", () => {
   const flushed = "[turn 1] > go\n< done\n\n[tool-calls] Bash: ls\n";
-  const out = composePartialTrace(flushed, "", ["Bash: ls"]);
+  const out = composePartialTrace(flushed, "", "", ["Bash: ls"]);
   assertEquals(out.split("[tool-calls]").length - 1, 1);
 });
 
 Deno.test("composePartialTrace leaves a completed trace untouched when nothing is in flight", () => {
   const flushed = "[turn 1] > go\n< done\n";
-  assertEquals(composePartialTrace(flushed, "", []), flushed);
+  assertEquals(composePartialTrace(flushed, "", "", []), flushed);
+});
+
+/**
+ * Reasoning reaches the trace under its own marker, never as reply prose.
+ *
+ * On the timeout path the reasoning summary is often the only record of what the
+ * agent was doing, so it must be traced — but a judge reading `< …` treats what
+ * follows as the reply it grades. Two codex-arm failures of the 2026-09-20 chat
+ * sweep came from exactly that confusion upstream in the transport.
+ */
+Deno.test("composePartialTrace marks in-flight reasoning as reasoning, apart from the reply", () => {
+  const out = composePartialTrace(
+    "\n[turn 1] > answer me\n",
+    "Выгрузку нельзя включить, пока не выполнены две проверки.",
+    "Confirming absence of SRS and SDS documents",
+    [],
+  );
+  assertStringIncludes(out, "[agent-reasoning] Confirming absence of SRS");
+  assertStringIncludes(out, "< Выгрузку нельзя включить");
+  // The seam the defect produced must not reappear anywhere in the trace.
+  assertEquals(out.includes("SDS documentsВыгрузку"), false);
+  // The reply line carries the reply alone.
+  const replyLine = out.split("\n").find((l) => l.startsWith("< "));
+  assertEquals(
+    replyLine,
+    "< Выгрузку нельзя включить, пока не выполнены две проверки.",
+  );
+});
+
+Deno.test("composePartialTrace adds no reasoning block when the turn produced none", () => {
+  const out = composePartialTrace("[turn 1] > go\n", "done", "", []);
+  assertEquals(out.includes("[agent-reasoning]"), false);
 });

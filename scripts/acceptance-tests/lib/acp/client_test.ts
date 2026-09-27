@@ -18,7 +18,7 @@ import {
   flattenToolCallContent,
   resolveSessionPath,
 } from "./client.ts";
-import { DISPATCH_REPORT } from "./stub_agent.ts";
+import { DISPATCH_REPORT, THINK_REASONING, THINK_REPLY } from "./stub_agent.ts";
 
 const STUB = fromFileUrl(new URL("./stub_agent.ts", import.meta.url));
 
@@ -122,6 +122,62 @@ Deno.test({
       );
       assert(dispatch, "the dispatch itself was not captured");
       assertStringIncludes(dispatch.resultText ?? "", DISPATCH_REPORT);
+    } finally {
+      await shutdown(child);
+    }
+  },
+});
+
+/**
+ * A reasoning summary must never reach the reply.
+ *
+ * codex streams its reasoning headline as `agent_thought_chunk` and the answer
+ * as `agent_message_chunk`, neither carrying a separator. Appending both to one
+ * buffer handed the judge `**Confirming absence of SRS and SDS documents**Выгрузку
+ * нельзя включить…` and it scored the reply as mixed-language prose — two of the
+ * three codex-arm failures of the 2026-09-20 chat sweep were this defect, not a
+ * defect in the reply (see FR-READABILITY.LANGUAGE and post-closure Control 4).
+ */
+Deno.test({
+  name:
+    "a reasoning summary stays out of the reply and arrives as its own field",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    const cwd = await Deno.makeTempDir({ prefix: "acp-test-" });
+    const child = spawnStub();
+    const client = AcpClient.fromChild(child);
+    try {
+      await client.initialize();
+      const sessionId = await client.newSession(cwd);
+      const out = await client.prompt(sessionId, "answer me [[THINK]]");
+
+      assertEquals(out.subtype, "success");
+      assertEquals(out.assistantText, THINK_REPLY);
+      assertEquals(out.result, THINK_REPLY);
+      assertEquals(out.reasoningText, THINK_REASONING);
+    } finally {
+      await shutdown(child);
+    }
+  },
+});
+
+Deno.test({
+  name:
+    "the in-flight buffer a timeout reads carries the reply without the reasoning",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    const cwd = await Deno.makeTempDir({ prefix: "acp-test-" });
+    const child = spawnStub();
+    const client = AcpClient.fromChild(child);
+    try {
+      await client.initialize();
+      const sessionId = await client.newSession(cwd);
+      await client.prompt(sessionId, "answer me [[THINK]]");
+
+      assertEquals(client.getBufferedText(sessionId), THINK_REPLY);
+      assertEquals(client.getBufferedReasoning(sessionId), THINK_REASONING);
     } finally {
       await shutdown(child);
     }

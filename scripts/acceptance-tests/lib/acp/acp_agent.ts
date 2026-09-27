@@ -93,6 +93,7 @@ export class AcpAgent {
     | {
       getToolCalls(): CapturedToolCall[];
       getBufferedText(sessionId: string): string;
+      getBufferedReasoning(sessionId: string): string;
     }
     | null = null;
   readonly #spec: AcpAgentSpec;
@@ -257,8 +258,13 @@ export class AcpAgent {
 
         const out = await client.prompt(this.#sessionId, nextPrompt);
         const text = out.assistantText ?? out.result ?? "";
+        // The persona and the judge both read the reply; reasoning goes to the
+        // trace only, under its own marker.
         this.#messages.push({ role: "assistant", content: text });
         this.#log.push(`< ${text}\n`);
+        if (out.reasoningText?.trim()) {
+          this.#log.push(`${REASONING_MARKER} ${out.reasoningText}\n`);
+        }
         if (out.subtype === "error") {
           code = 1;
           this.#log.push(`[acp-error] ${JSON.stringify(out.raw)}\n`);
@@ -318,8 +324,11 @@ export class AcpAgent {
     const pending = this.#client && this.#sessionId
       ? this.#client.getBufferedText(this.#sessionId)
       : "";
+    const reasoning = this.#client && this.#sessionId
+      ? this.#client.getBufferedReasoning(this.#sessionId)
+      : "";
     const calls = (this.#client?.getToolCalls() ?? []).map(describeToolCall);
-    return composePartialTrace(this.#log.join(""), pending, calls);
+    return composePartialTrace(this.#log.join(""), pending, reasoning, calls);
   }
 
   /** Public termination for the runner's global-timeout path. */
@@ -396,14 +405,23 @@ export class AcpAgent {
  * dispatched research agents. This composes what the live client still holds
  * onto whatever the loop managed to flush.
  */
+/** Trace marker for a turn's reasoning summary; never merged into the reply. */
+export const REASONING_MARKER = "[agent-reasoning]";
+
 export function composePartialTrace(
   flushed: string,
   pendingAssistantText: string,
+  pendingReasoning: string,
   toolCallLines: readonly string[],
 ): string {
   const parts = [flushed];
   if (pendingAssistantText.trim()) {
     parts.push(`< ${pendingAssistantText}\n`);
+  }
+  // Its own marker, and never on the `< ` reply line: a judge grades what follows
+  // `< ` as the agent's prose, and a reasoning summary is not that.
+  if (pendingReasoning.trim()) {
+    parts.push(`${REASONING_MARKER} ${pendingReasoning}\n`);
   }
   if (toolCallLines.length > 0 && !flushed.includes("[tool-calls]")) {
     parts.push(`\n[tool-calls] ${toolCallLines.join("\n             ")}\n`);

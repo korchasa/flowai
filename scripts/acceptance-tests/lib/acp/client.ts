@@ -199,8 +199,16 @@ export interface AcpClientOptions {
 export class AcpClient {
   readonly #conn: ClientSideConnection;
   readonly #closed?: Promise<unknown>;
-  /** Per-session accumulated assistant text. */
+  /** Per-session accumulated assistant text — the reply, and nothing else. */
   readonly #buffers = new Map<string, string[]>();
+  /**
+   * Per-session accumulated reasoning summary, held apart from the reply.
+   *
+   * Both arrive as `session/update` notifications with no separator between
+   * them, so one shared buffer silently concatenates an English reasoning
+   * headline onto the front of the answer. See `ParsedAgentOutput.reasoningText`.
+   */
+  readonly #thoughts = new Map<string, string[]>();
   /** Tool calls observed this run, keyed by toolCallId (ordered by Map). */
   readonly #toolCalls = new Map<string, CapturedToolCall>();
   /** Sandbox root of the current session; anchors every client-side fs path. */
@@ -284,6 +292,17 @@ export class AcpClient {
     return (this.#buffers.get(sessionId) ?? []).join("");
   }
 
+  /**
+   * Reasoning accumulated for a turn that has not returned yet.
+   *
+   * The counterpart of `getBufferedText` on the timeout path: a killed turn's
+   * reasoning is often the only record of what the agent was doing, and it must
+   * reach the trace as reasoning rather than as reply text.
+   */
+  getBufferedReasoning(sessionId: string): string {
+    return (this.#thoughts.get(sessionId) ?? []).join("");
+  }
+
   /** Convenience: build a client over a spawned child's stdio. */
   static fromChild(
     child: {
@@ -319,6 +338,7 @@ export class AcpClient {
    */
   async prompt(sessionId: string, text: string): Promise<ParsedAgentOutput> {
     this.#buffers.set(sessionId, []);
+    this.#thoughts.set(sessionId, []);
     let dropped = false;
     const dropGuard = this.#closed?.then(() => {
       dropped = true;
@@ -334,11 +354,14 @@ export class AcpClient {
         : await turn;
       const assistantText = (this.#buffers.get(sessionId) ?? []).join("") ||
         null;
+      const reasoningText = (this.#thoughts.get(sessionId) ?? []).join("") ||
+        null;
       return {
         sessionId,
         result: assistantText,
         subtype: resp.stopReason === "end_turn" ? "success" : resp.stopReason,
         assistantText,
+        reasoningText,
         raw: { stopReason: resp.stopReason },
       };
     } catch (e) {
@@ -353,6 +376,8 @@ export class AcpClient {
       result: null,
       subtype: "error",
       assistantText: null,
+      // A turn that died still has reasoning worth tracing; it just has no reply.
+      reasoningText: (this.#thoughts.get(sessionId) ?? []).join("") || null,
       raw: { acpError: reason },
     };
   }
@@ -364,7 +389,14 @@ export class AcpClient {
         u.sessionUpdate === "agent_thought_chunk") &&
       u.content.type === "text"
     ) {
-      const buf = this.#buffers.get(params.sessionId);
+      // implements [FR-ACCEPT.ACP](../../../../documents/requirements.md#fr-accept.acp-acp-transport-for-acceptance-test-runner-ancfraccept.acp):
+      // Reply and reasoning are graded differently, so they are never mixed:
+      // the judge scores the reply's prose, and reasoning reaches the trace
+      // under its own marker.
+      const target = u.sessionUpdate === "agent_thought_chunk"
+        ? this.#thoughts
+        : this.#buffers;
+      const buf = target.get(params.sessionId);
       if (buf) buf.push(u.content.text);
     } else if (u.sessionUpdate === "tool_call") {
       this.#toolCalls.set(u.toolCallId, {
