@@ -16,7 +16,7 @@ atoms:
     target: framework/core/skills/review/SKILL.md
   commit:
     source: framework/atoms/commit.md
-    target: framework/core/commands/commit/SKILL.md
+    target: framework/core/skills/commit/SKILL.md
     default_params:
       DIFF_SOURCE: FRESH_READ
   implement:
@@ -31,16 +31,18 @@ atoms:
       TERMINATION: TOTAL_STOP
   reflect-gate:
     source: framework/atoms/reflect-gate.md
-    target: framework/core/commands/reflect-gate/SKILL.md
+    target: framework/core/skills/reflect-gate/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
 composites:
   review-and-commit:
-    target: framework/core/commands/review-and-commit/SKILL.md
+    target: framework/core/skills/review-and-commit/SKILL.md
     wrapper: framework/composites/review-and-commit.md
     phases:
       - title: Phase 1 — Review
         atom: review
+        params:
+          REPORT_ROLE: INTERMEDIATE
       - title: Phase 2 — Commit
         atom: commit
         params:
@@ -55,6 +57,8 @@ composites:
     phases:
       - title: Review Phase
         atom: review
+        params:
+          REPORT_ROLE: INTERMEDIATE
       - title: Commit Phase
         atom: commit
         params:
@@ -81,6 +85,8 @@ composites:
           TERMINATION: HAND_OFF_TO_NEXT
       - title: Review Phase
         atom: review
+        params:
+          REPORT_ROLE: INTERMEDIATE
       - title: Commit Phase
         atom: commit
         params:
@@ -103,6 +109,8 @@ composites:
           TERMINATION: HAND_OFF_TO_NEXT
       - title: Review Phase
         atom: review
+        params:
+          REPORT_ROLE: INTERMEDIATE
       - title: Commit Phase
         atom: commit
         params:

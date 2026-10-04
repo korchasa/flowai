@@ -40,7 +40,7 @@
 {{KEY_DECISIONS}}
 
 ## Documentation Hierarchy
-1. **`AGENTS.md`**: Project vision, constraints, mandatory rules. READ-ONLY reference.
+1. **`AGENTS.md`**: Project vision, constraints, mandatory rules. It holds rules and verified facts only — no task notes or session logs. Correct a fact here as soon as the repository contradicts it.
 2. **SRS** (`documents/requirements.md`): "What" & "Why". Source of truth for requirements.
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
 4. **Tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md`): Persistent committed plans/notes per task.

@@ -4,13 +4,28 @@ import { runGit } from "@acceptance-tests/utils.ts";
 /**
  * Neither phase after the Commit Phase may be lost.
  *
- * The invocation message carries explicit complexity descriptors, so the
- * Reflect Phase's own check fires deterministically. Two turn boundaries are
+ * The invocation message names a check that does not exist, so a command fails
+ * and the Reflect Phase's own check fires deterministically. Two turn boundaries are
  * under test here: the push report, which reads like the end of the work, and
  * the Reflect Phase's commit question, which is the one place the workflow is
  * supposed to stop. Measured 2026-08-17 with the reflection running BEFORE the
  * push, the push was lost in every run; measured 2026-08-19 with the audit
  * still delegated to the `reflect` skill, in one run of three.
+ *
+ * Changed 2026-10-04: the session now carries a real stale instruction for
+ * the Reflect Phase to correct. The query used to CLAIM a rough session ("I had
+ * to correct you twice and the first approach failed") that the run never
+ * contained; the reflection is told to drop what it cannot quote, so it found
+ * nothing to edit and every edit-dependent item failed (sweep
+ * `2026-10-04T18-23-23`). AGENTS.md now names `deno task verify`, a task
+ * `deno.json` does not define (it is `check`), and the user names the same
+ * stale check, so the first check attempt fails with `Task not found`.
+ *
+ * The persona answers the agent's question about the missing check the way
+ * the developer would: the task was renamed. Without that answer the
+ * Implement Phase's gate stopped on the missing check in two runs of three
+ * and no phase after it ran (`2026-10-04T19-16-28`). The answer states a fact
+ * about the project; it says nothing about the instruction files.
  */
 export const ShipTaskReflectAfterPush = new class
   extends AcceptanceTestScenario {
@@ -23,6 +38,8 @@ export const ShipTaskReflectAfterPush = new class
   agentsTemplateVars = {
     PROJECT_NAME: "Shipper",
     TOOLING_STACK: "- TypeScript\n- Deno",
+    DEVELOPMENT_COMMANDS:
+      "- `deno task verify` — the project check: format, lint and all tests.",
   };
   interactive = true;
 
@@ -39,14 +56,15 @@ export const ShipTaskReflectAfterPush = new class
     await runGit(sandboxPath, ["push", "-u", "origin", "feature/add-trim"]);
   }
 
-  // The descriptors here are what makes the complexity check fire.
+  // The stale check named here is what makes the complexity check fire: the
+  // first attempt to run it fails.
   userQuery =
-    "/ship-task documents/tasks/2026/05/add-trim.md — rough session before this: I had to correct you twice and the first approach failed.";
+    "/ship-task documents/tasks/2026/05/add-trim.md — the project check is `deno task verify`.";
 
   userPersona =
     `You are a developer who already produced the plan file documents/tasks/2026/05/add-trim.md and wants implement → review → commit → push in one go.
 - The plan is final. If the agent proposes variants, reply "Plan is final; just execute the Solution."
-- If the agent asks what went wrong earlier, say the first helper returned the wrong value and you corrected the approach twice.
+- If the agent reports that \`deno task verify\` does not exist, or asks which check to run, reply: "\`verify\` was renamed to \`check\` a while ago; run \`deno task check\`."
 - When the Push Phase asks anything, answer "yes, please push to origin/feature/add-trim".
 - If the agent asks whether to push a commit it made to the instruction files, reply: "yes".
 Keep all answers short and on-topic.`;
@@ -67,7 +85,7 @@ Keep all answers short and on-topic.`;
     {
       id: "edits_applied_and_shown",
       description:
-        "Did the agent apply corrective edits to the project's instruction files (AGENTS.md / CLAUDE.md) and then list what it changed, file by file, before asking anything about them?",
+        'Did the agent correct the project\'s instruction files (AGENTS.md / CLAUDE.md) so they no longer name `deno task verify`, a task `deno.json` does not define, and then list what it changed, file by file, before asking anything about them? Fails if no corrective edit was made: the session always contains that stale command, so this item is never "not applicable".',
       critical: true,
     },
     {

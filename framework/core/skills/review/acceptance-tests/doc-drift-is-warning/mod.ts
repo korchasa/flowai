@@ -1,4 +1,5 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * The diff deletes a CLI subcommand that the project's own SRS still tells the
@@ -38,7 +39,10 @@ When the agent asks whether to save or discard any ephemeral tests it wrote,
 reply: 'discard all'.`;
 
   override sandboxState = {
-    commits: [],
+    commits: [{
+      message: "Add ReportKit CLI and SRS",
+      files: ["cli.ts", "documents/requirements.md"],
+    }],
     modified: ["cli.ts"],
     expectedOutcome:
       "Agent reviews the removal, notices that documents/requirements.md still instructs the maintainer to run `reportkit export`, reports that drift as a warning-severity finding, and still returns Approve because nothing else is wrong.",
@@ -46,6 +50,12 @@ reply: 'discard all'.`;
 
   override async setup(sandboxDir: string): Promise<void> {
     // Parent revision ships two subcommands; the diff removes `export`.
+    //
+    // Changed 2026-10-04: setup now COMMITS that parent revision before it
+    // writes the removal. Setup runs after the runner's init commit, so a file
+    // it only writes is untracked: the agent saw `cli.ts` as a new file, diffed
+    // it against /dev/null, and there was no removal to review (its interview:
+    // "git showed `cli.ts` as untracked, so I compared the entire file").
     await Deno.writeTextFile(
       `${sandboxDir}/cli.ts`,
       `/** ReportKit CLI. */
@@ -54,6 +64,12 @@ reply: 'discard all'.`;
 export function run(argv: string[]): string {
   const cmd = argv[0];
   if (cmd === "render") return "rendered";
+  if (cmd === "export") {
+    const out = argv[argv.indexOf("--out") + 1];
+    if (!out) throw new Error("export needs --out <path>");
+    Deno.writeTextFileSync(out, "rendered");
+    return out;
+  }
   throw new Error(\`unknown subcommand: \${cmd}\`);
 }
 `,
@@ -105,6 +121,22 @@ export function run(argv: string[]): string {
 - **CLI:** \`reportkit\` accepts two subcommands. \`render\` writes the report to
   stdout. \`export --out <path>\` writes it to the given file; run it whenever a
   report has to be archived.
+`,
+    );
+    await runGit(sandboxDir, ["add", "cli.ts", "documents/requirements.md"]);
+    await runGit(sandboxDir, ["commit", "-m", "Add ReportKit CLI and SRS"]);
+
+    // The user's unstaged change: `export` is gone, the SRS is not touched.
+    await Deno.writeTextFile(
+      `${sandboxDir}/cli.ts`,
+      `/** ReportKit CLI. */
+
+// \`[REF:fr:render]\` — the render subcommand this FR is marked complete on.
+export function run(argv: string[]): string {
+  const cmd = argv[0];
+  if (cmd === "render") return "rendered";
+  throw new Error(\`unknown subcommand: \${cmd}\`);
+}
 `,
     );
   }

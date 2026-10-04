@@ -1,4 +1,10 @@
 {
+  "// lock": "A throwaway sandbox needs no lockfile: `deno task check` would write deno.lock into a fixture that ships none and leave an untracked file behind.",
+  "lock": false,
+  "// imports": "Without this map the agent's test imports `jsr:@std/assert` inline, `deno lint` rejects it (no-import-prefix), and the run loops on lint until it stops (2026-10-04, `ship-task-reflect-push-declined` runs 1 and 3).",
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.19"
+  },
   "tasks": {
     "test": "deno test -A",
     "check": "deno fmt --check && deno lint && deno test -A"

@@ -16,6 +16,7 @@ import {
   copyRecursive,
   installCodexAgents,
   runGit,
+  userInvokedCommandOf,
 } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
 import type { CapturedToolCall } from "./acp/client.ts";
@@ -261,7 +262,7 @@ async function prepareSandboxFiles(
       dotCursorPath,
       adapter.ide,
       allowedPacks,
-      scenario.skill,
+      userInvokedCommandOf(scenario.skill, scenario.userQuery),
     );
   } catch (e) {
     // Missing framework dir = fatal precondition; the agent would otherwise

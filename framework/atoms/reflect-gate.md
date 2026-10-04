@@ -1,6 +1,6 @@
 ---
 name: reflect-gate
-description: Close a finished session — audit how it went, criticise the findings, apply the corrective edits to the project's instruction files, show exactly what changed, commit them, and ask whether to push that commit or drop it again.
+description: Use when the user asks to close a session by auditing it AND writing the fixes into the project's instruction files — audits, applies and commits the edits, then asks whether to push. Not for a reflection that only reports findings.
 _params:
   TERMINATION:
     choices: [TOTAL_STOP, HAND_OFF_TO_NEXT]
@@ -71,12 +71,13 @@ Push Phase never reached. Inline steps have no such ending.
    - **Context gaps**: project docs never opened, related source never read, relevant skills or rules never consulted, verification skipped, ambiguities resolved by guessing instead of asking.
    - **Context waste**: files read but never used, whole files read for one fragment, the same unchanged file read twice, verbose tool output that added noise.
    - **Undocumented discoveries**: knowledge gained here that changes how the project is built, run, tested or deployed. Keep what generalises; discard the one-off.
+   - **Stale instructions**: anything the project instructions told you that the repository contradicted — a command or task that does not exist, a path that moved, a convention the code does not follow. Compare the commands the instructions name with the ones the project's manifest defines.
    - **Automation opportunities**: a repeated multi-step sequence (→ a skill), an undocumented convention (→ a rule), an invariant you checked by hand (→ a hook).
 
 3. **Criticise your own findings — before you touch a file**
    - **Validity**: is each finding backed by something you can quote from this session, or is it inference? Drop or downgrade the inferred.
    - **False positives**: reading a neighbouring file to learn the pattern is not wasted context; updating a test after a deliberate behaviour change is not test-fitting.
-   - **Proportionality**: a one-off annoyance does not earn a new rule. Simplify anything disproportionate.
+   - **Proportionality**: a one-off annoyance does not earn a new rule. Simplify anything disproportionate. This limits NEW rules only. A line in an existing instruction file that this session proved wrong is corrected on its first sighting, however rarely it bites: fixing a fact is not adding a rule. A "read-only" marker on `AGENTS.md` keeps task notes out of it; it does not protect a wrong fact in it.
    - **Blind spots**: which whole categories did you not look at — security, performance, documentation?
    - **Severity**: a pattern seen twice with different root causes is not recurring.
    - Say what this pass changed and why. What survives it is what you are about to write into the user's files.

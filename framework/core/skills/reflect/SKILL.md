@@ -69,7 +69,7 @@ When proposing a fix, classify *where* it belongs:
 3. **Constructive**: Focus on actionable improvements (additions, clarifications, removals).
 4. **Do not make changes to the agent's instructions or rules**. Only suggest improvements.
 5. **Mandatory**: The agent MUST use a task management tool (e.g., `todo_write`, `todowrite`, `Task`) to track the execution steps.
-6. **Pattern Validation**: Before proposing a fix for an issue found in the current session, check session history to determine whether it is a **recurring pattern** or an **isolated incident**. Prioritize systemic fixes for recurring patterns over one-off corrections.
+6. **Pattern Validation**: Before proposing a fix for an issue found in the current session, check session history to determine whether it is a **recurring pattern** or an **isolated incident**. Prioritize systemic fixes for recurring patterns over one-off corrections. This ranks NEW rules; a wrong fact in an existing instruction file is corrected even when it bit once (see step 13, Proportionality).
 7. **Rescue is read-only (FR-DOC-RESCUE)**: when surfacing a decision passage for task capture (step 2b), reflect MUST recommend `/plan` and MUST NOT write under the `tasks` role resolved from AGENTS.md, MUST NOT draft or offer to write the task file itself. Clean separation: detection lives here, recording lives in `plan`.
 </rules>
 
@@ -131,6 +131,7 @@ When proposing a fix, classify *where* it belongs:
    - **Unused skills/rules**: Available skills or rules that were relevant but not consulted.
    - **Skipped verification**: Test results, linter output, or runtime checks that would have caught issues earlier.
    - **Unasked questions**: Ambiguities the agent resolved by guessing instead of asking the user.
+   - **Stale instructions**: Anything the project instructions told the agent that the repository contradicted — a command or task that does not exist, a path that moved, a convention the code does not follow. Compare the commands the instructions name with the ones the project's manifest defines.
 
 8. **Analyze Context: Redundant Information**
    Identify what the agent loaded but *didn't need*:
@@ -210,7 +211,7 @@ When proposing a fix, classify *where* it belongs:
    Before presenting the report, critically examine your own analysis:
    - **Validity**: Re-examine each finding — is it backed by concrete evidence from the transcript/history, or is it speculative? Remove or downgrade findings that rely on assumptions rather than observed behavior.
    - **False Positives**: Are any flagged issues actually acceptable or intentional? (e.g., reading a related file to understand patterns is not "redundant context"; updating a test after changing behavior is not always "modifying tests instead of code").
-   - **Proportionality**: Is each proposed fix proportional to the problem severity? A minor one-off issue does not warrant a new rule or hook — flag disproportionate recommendations and simplify them.
+   - **Proportionality**: Is each proposed fix proportional to the problem severity? A minor one-off issue does not warrant a new rule or hook — flag disproportionate recommendations and simplify them. This limits NEW rules only. A line in an existing instruction file that the session proved wrong is corrected on its first sighting, however rarely it bites: fixing a fact is not adding a rule.
    - **Blind Spots**: What categories of problems might you have missed entirely? Consider whether you focused too narrowly on one error type and overlooked others (e.g., security, performance, missing docs).
    - **Severity Calibration**: Are severity labels (HIGH/MEDIUM/LOW, recurring/isolated) accurate? Re-check the evidence — a pattern that appeared in 2 sessions with different root causes is not truly recurring.
    - **Revise**: Based on the above, update the report — remove weak findings, strengthen valid ones, adjust severity, add any newly discovered issues from blind-spot analysis. Explicitly note what changed and why.

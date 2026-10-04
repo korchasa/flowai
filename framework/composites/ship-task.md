@@ -89,7 +89,7 @@ Output a combined summary:
 ### Verdict Gate
 
 After completing the Review report:
-- `Approve` → **DO NOT commit yet**. Continue with the Commit Phase below: re-plan the todo list with the Commit steps and execute all of them in order. Committing before reaching the Reflect step inside the Commit Phase is a workflow violation.
+- `Approve` → the review report you just sent is not the end of the run. Continue in this same turn with the Commit Phase below and execute its steps in order. **DO NOT commit yet** — the commit belongs to the Commit Phase's own commit step, after its documentation sync and grouping.
 - `Request Changes` or `Needs Discussion` → output the full report and **STOP**. Do NOT commit or push.
 - Review Phase crashed or produced no verdict → report the error and **STOP**.
 </gate>

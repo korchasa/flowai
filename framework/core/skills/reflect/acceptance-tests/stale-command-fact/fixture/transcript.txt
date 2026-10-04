@@ -1,0 +1,32 @@
+User: Add a `clamp(value, min, max)` helper to src/math.ts with a test, then run the project check.
+
+Agent: Let me read the math module.
+[read_file path="src/math.ts"]
+System: (file contents — 24 lines, exports sum and multiply)
+
+Agent: I'll add the helper.
+[edit_file path="src/math.ts" old="export function multiply" new="export function clamp(value: number, min: number, max: number): number {\n  return Math.min(Math.max(value, min), max);\n}\n\nexport function multiply"]
+System: File updated.
+
+Agent: And a test for it.
+[edit_file path="src/math_test.ts" old="Deno.test(\"multiply\"" new="Deno.test(\"clamp\", () => {\n  assertEquals(clamp(5, 0, 3), 3);\n  assertEquals(clamp(-1, 0, 3), 0);\n});\n\nDeno.test(\"multiply\""]
+System: File updated.
+
+Agent: AGENTS.md lists the project check, so I'll run it.
+[run_command cmd="deno task verify"]
+System: error: Task not found: verify
+Available tasks:
+- check
+    deno fmt --check && deno lint && deno test -A
+- test
+    deno test -A
+
+Agent: I'll run the check task instead.
+[run_command cmd="deno task chekc"]
+System: error: Task not found: chekc
+
+Agent: Typo — retrying.
+[run_command cmd="deno task check"]
+System: Checked 4 files. ok | 5 passed | 0 failed
+
+Agent: Done. `clamp` is added to src/math.ts with a test, and the project check passes.

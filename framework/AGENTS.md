@@ -78,7 +78,7 @@ Without these, the sandbox's `deno fmt --check` and `deno lint` apply to the cop
 
 When a task creates a new framework primitive, decide the subdir FIRST:
 
-- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/commit`, `/update`, `/review-and-commit`.
+- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/push`, `/update`, `/ship`.
 - **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `deep-research`, `draw-mermaid-diagrams`.
 
 Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.

@@ -3,8 +3,28 @@ import { join } from "@std/path";
 import {
   copyFrameworkToIdeDir,
   installCodexAgents,
+  userInvokedCommandOf,
   writeRunFile,
 } from "./utils.ts";
+
+Deno.test("userInvokedCommandOf exempts the skill only when the query types `/name`", () => {
+  assertEquals(
+    userInvokedCommandOf("commit", "/commit Commit changes."),
+    "commit",
+  );
+  assertEquals(userInvokedCommandOf("init", "/init"), "init");
+  assertEquals(userInvokedCommandOf("commit", "  /commit"), "commit");
+  // A plain-language query is the model discovering the primitive on its own —
+  // exactly what the flag governs, so the flag must stay on.
+  assertEquals(
+    userInvokedCommandOf("commit", "Commit my current changes."),
+    undefined,
+  );
+  // A different command typed by hand does not exempt this one.
+  assertEquals(userInvokedCommandOf("commit", "/commit-all now"), undefined);
+  assertEquals(userInvokedCommandOf("commit", "/review-and-commit"), undefined);
+  assertEquals(userInvokedCommandOf(undefined, "/commit"), undefined);
+});
 
 Deno.test("writeRunFile writes content and returns path", async () => {
   const dir = await Deno.makeTempDir();
@@ -93,6 +113,63 @@ Deno.test("copyFrameworkToIdeDir copies commands into dest/skills/", async () =>
     const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
     const content = await Deno.readTextFile(cmdPath);
     assertStringIncludes(content, "name: demo-command");
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+/**
+ * A primitive's own unit tests are for this repo, not for the sandbox project.
+ * Copied in, they join the sandbox's `deno test` run: on 2026-10-04 the five
+ * `tasks-overview` tests (they spawn Python, which `--allow-read --allow-write`
+ * forbids) turned the fixture baseline of two `review` scenarios red.
+ */
+Deno.test("copyFrameworkToIdeDir leaves primitive unit tests out of the sandbox", async () => {
+  const root = await Deno.makeTempDir({ prefix: "copyfw-tests-" });
+  try {
+    const frameworkPath = await buildTestFrameworkTree(root);
+    const packDir = join(frameworkPath, "testpack");
+    const place = async (rel: string) => {
+      await Deno.mkdir(join(packDir, rel, ".."), { recursive: true });
+      await Deno.writeTextFile(join(packDir, rel), "// x\n");
+    };
+    await place("skills/demo-skill/scripts/run.py");
+    await place("skills/demo-skill/scripts/run_test.ts");
+    await place("commands/demo-command/scripts/gen.ts");
+    await place("commands/demo-command/scripts/gen.test.ts");
+    await place("hooks/demo-hook/run.ts");
+    await place("hooks/demo-hook/run_test.ts");
+    const ideConfigDir = join(root, ".codex");
+    await copyFrameworkToIdeDir(frameworkPath, ideConfigDir, "codex", [
+      "testpack",
+    ]);
+
+    const exists = async (rel: string) => {
+      try {
+        await Deno.stat(join(ideConfigDir, rel));
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    assertEquals(
+      {
+        script: await exists("skills/demo-skill/scripts/run.py"),
+        skillTest: await exists("skills/demo-skill/scripts/run_test.ts"),
+        cmdScript: await exists("skills/demo-command/scripts/gen.ts"),
+        cmdTest: await exists("skills/demo-command/scripts/gen.test.ts"),
+        hook: await exists("scripts/demo-hook/run.ts"),
+        hookTest: await exists("scripts/demo-hook/run_test.ts"),
+      },
+      {
+        script: true,
+        skillTest: false,
+        cmdScript: true,
+        cmdTest: false,
+        hook: true,
+        hookTest: false,
+      },
+    );
   } finally {
     await Deno.remove(root, { recursive: true });
   }

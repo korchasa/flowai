@@ -166,7 +166,7 @@ To pull a newer version of the primitives themselves, use your IDE's own plugin 
 
 flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, OpenAI Codex, etc.) load into context to follow structured workflows.
 
-- **Commands** (`framework/<pack>/commands/<name>/SKILL.md`) — user-invoked workflows (e.g. `/commit`). The agent does not auto-discover them.
+- **Commands** (`framework/<pack>/commands/<name>/SKILL.md`) — user-invoked workflows (e.g. `/push`). The agent does not auto-discover them.
 - **Skills** (`framework/<pack>/skills/<name>/SKILL.md`) — agent-invocable capabilities. The agent picks them up automatically when relevant.
 - **Agents** (`framework/<pack>/agents/<name>.md`) — role definitions with specialized capabilities.
 - **Documentation** (`documents/`) — persistent project memory across sessions.
@@ -192,8 +192,6 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 
 **Commands:**
 - `init` — project initialization (AGENTS.md, docs scaffolding, dev commands)
-- `commit` — streamlined atomic commits (targeted doc sync, inline grouping, auto-invoked reflect)
-- `review-and-commit` — streamlined review + commit (reuses diff across phases)
 - `review-commit-push` — tail-of-cycle composite: review → commit → push → reflect on an already-written uncommitted diff (3 explicit gates; no planning or implementation phase)
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
@@ -202,6 +200,9 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `adapt` — adapt project-local skills/agents/hooks/assets to project specifics (standalone)
 
 **Skills:**
+- `commit` — streamlined atomic commits (targeted doc sync, inline grouping)
+- `review-and-commit` — streamlined review + commit (reuses diff across phases)
+- `reflect-gate` — closes a session: audits it, applies and commits the instruction-file fixes, asks whether to push
 - `implement` — TDD implement skill (RED → GREEN → REFACTOR → CHECK over a written plan)
 - `plan` — task planning; writes persistent task files at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
 - `epic` — structured feature specification for multi-session features

@@ -11,6 +11,21 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * feature commit from the Commit Phase, and the push the Push Phase already
  * made, must survive untouched, and the guards are what keeps the reset from
  * reaching them.
+ *
+ * Changed 2026-10-04: the session now carries a real stale instruction for
+ * the Reflect Phase to correct. The query used to CLAIM a rough session ("I had
+ * to correct you twice and the first approach failed") that the run never
+ * contained; the reflection is told to drop what it cannot quote, so it found
+ * nothing to edit and every edit-dependent item failed (sweep
+ * `2026-10-04T18-23-23`). AGENTS.md now names `deno task verify`, a task
+ * `deno.json` does not define (it is `check`), and the user names the same
+ * stale check, so the first check attempt fails with `Task not found`.
+ *
+ * The persona answers the agent's question about the missing check the way
+ * the developer would: the task was renamed. Without that answer the
+ * Implement Phase's gate stopped on the missing check in two runs of three
+ * and no phase after it ran (`2026-10-04T19-16-28`). The answer states a fact
+ * about the project; it says nothing about the instruction files.
  */
 export const ShipTaskReflectPushDeclined = new class
   extends AcceptanceTestScenario {
@@ -23,6 +38,8 @@ export const ShipTaskReflectPushDeclined = new class
   agentsTemplateVars = {
     PROJECT_NAME: "Shipper",
     TOOLING_STACK: "- TypeScript\n- Deno",
+    DEVELOPMENT_COMMANDS:
+      "- `deno task verify` — the project check: format, lint and all tests.",
   };
   interactive = true;
 
@@ -39,14 +56,15 @@ export const ShipTaskReflectPushDeclined = new class
     await runGit(sandboxPath, ["push", "-u", "origin", "feature/add-trim"]);
   }
 
-  // The descriptors here are what makes the complexity check fire.
+  // The stale check named here is what makes the complexity check fire: the
+  // first attempt to run it fails.
   userQuery =
-    "/ship-task documents/tasks/2026/05/add-trim.md — rough session before this: I had to correct you twice and the first approach failed.";
+    "/ship-task documents/tasks/2026/05/add-trim.md — the project check is `deno task verify`.";
 
   userPersona =
     `You are a developer who already produced the plan file documents/tasks/2026/05/add-trim.md and wants implement → review → commit → push in one go.
 - The plan is final. If the agent proposes variants, reply "Plan is final; just execute the Solution."
-- If the agent asks what went wrong earlier, say the first helper returned the wrong value and you corrected the approach twice.
+- If the agent reports that \`deno task verify\` does not exist, or asks which check to run, reply: "\`verify\` was renamed to \`check\` a while ago; run \`deno task check\`."
 - When the Push Phase asks about pushing the feature work, answer "yes, please push to origin/feature/add-trim".
 - BUT if the agent asks whether to push a commit it made to the instruction files (AGENTS.md / CLAUDE.md), reply exactly: "no".
 Keep all answers short and on-topic.`;
@@ -61,7 +79,7 @@ Keep all answers short and on-topic.`;
     {
       id: "reflect_commit_made_then_removed",
       description:
-        "Did the agent first commit its instruction-file edits itself (an `agent:` commit, made without asking), and then — after the user answered 'no' — remove that commit, so the final `git log` no longer contains it?",
+        "Did the agent first commit its instruction-file edits itself (an `agent:` commit correcting the stale `deno task verify` line, made without asking), and then — after the user answered 'no' — remove that commit, so the final `git log` no longer contains it? Fails if no such commit was ever made: the session always contains that stale command, so this item is never \"not applicable\".",
       critical: true,
     },
     {

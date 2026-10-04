@@ -59,7 +59,7 @@ This project runs two unrelated test systems. The bare word **benchmark** (or th
 
 All workflows are implemented as **Skills** according to the [agentskills.io](https://agentskills.io/home) standard (folders with `SKILL.md`). At the framework source level they are split into two sibling directories per pack, which is the **primary classifier**:
 
-- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/commit` or plugin `/flowai:commit`); the agent does not auto-discover them. Name: short kebab-case without the legacy `flowai-` prefix (e.g. `commit`, `review-and-commit`, `update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the plugin builder injects `disable-model-invocation: true` at build time based on directory placement (FR-PACKS.CMD-INVARIANT).
+- **Commands** — `framework/<pack>/commands/<name>/SKILL.md`. User-only workflows. Invoked by the user (e.g. `/push` or plugin `/flowai:push`); the agent does not auto-discover them. Name: short kebab-case without the legacy `flowai-` prefix (e.g. `push`, `ship`, `update`). Source SKILL.md MUST NOT declare `disable-model-invocation` — the plugin builder injects `disable-model-invocation: true` at build time based on directory placement (FR-PACKS.CMD-INVARIANT).
 - **Skills** — `framework/<pack>/skills/<name>/SKILL.md`. Agent-invocable capabilities (e.g. `draw-mermaid-diagrams`). Name: short kebab-case without the legacy `flowai-` prefix; command-vs-skill classification is determined by source directory. Source SKILL.md MUST NOT declare `disable-model-invocation`.
 
 ### Two meanings of "command" — don't confuse them

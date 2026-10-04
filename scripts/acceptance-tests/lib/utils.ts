@@ -62,17 +62,19 @@ export async function setupGitRepo(path: string) {
 }
 
 /**
- * Recursively copies a directory or file, skipping specified directory names.
+ * Recursively copies a directory or file, skipping specified directory names
+ * and every file for which `skipFile` returns true.
  */
 export async function copyRecursive(
   src: string,
   dest: string,
   skipDirs: string[] = [],
+  skipFile: (name: string) => boolean = () => false,
 ) {
   const stat = await Deno.stat(src);
+  const name = src.split(/[\\/]/).pop();
   if (stat.isDirectory) {
-    const dirName = src.split(/[\\/]/).pop();
-    if (dirName && skipDirs.includes(dirName)) {
+    if (name && skipDirs.includes(name)) {
       return;
     }
     await Deno.mkdir(dest, { recursive: true });
@@ -81,11 +83,22 @@ export async function copyRecursive(
         join(src, entry.name),
         join(dest, entry.name),
         skipDirs,
+        skipFile,
       );
     }
-  } else {
+  } else if (!(name && skipFile(name))) {
     await Deno.copyFile(src, dest);
   }
+}
+
+/**
+ * A primitive's own unit test (`*_test.ts`, `*.test.ts`). It belongs to this
+ * repo's gate, not to the sandbox project: copied in, it joins the sandbox's
+ * `deno test` run and can turn a fixture baseline red (2026-10-04, the
+ * `tasks-overview` tests that spawn Python).
+ */
+function isPrimitiveUnitTest(name: string): boolean {
+  return name.endsWith("_test.ts") || name.endsWith(".test.ts");
 }
 
 /**
@@ -116,6 +129,25 @@ async function resolveSkillModelInPlace(
   }
   const resolved = resolveSkillModel(raw, ideName);
   if (resolved !== raw) await Deno.writeTextFile(skillMdPath, resolved);
+}
+
+/**
+ * The command a scenario invokes BY HAND, if any: `skill` when the query opens
+ * with `/<skill>`, otherwise undefined. Only that case may lift the user-only
+ * flag (see `copyFrameworkToIdeDir`). A plain-language query is the model
+ * discovering the primitive on its own, which is exactly what the flag
+ * governs; lifting it there made a routing scenario for a user-only command
+ * pass by construction (2026-10-02, `commit-trigger-pos-1`).
+ */
+export function userInvokedCommandOf(
+  skill: string | undefined,
+  userQuery: string,
+): string | undefined {
+  if (!skill) return undefined;
+  const typed = userQuery.trimStart();
+  const slash = `/${skill}`;
+  if (typed === slash || typed.startsWith(`${slash} `)) return skill;
+  return undefined;
 }
 
 export async function copyFrameworkToIdeDir(
@@ -152,7 +184,12 @@ export async function copyFrameworkToIdeDir(
       for await (const skill of Deno.readDir(skillsDir)) {
         if (!skill.isDirectory) continue;
         const dstDir = join(ideConfigDir, "skills", skill.name);
-        await copyRecursive(join(skillsDir, skill.name), dstDir, skipDirs);
+        await copyRecursive(
+          join(skillsDir, skill.name),
+          dstDir,
+          skipDirs,
+          isPrimitiveUnitTest,
+        );
         // Resolve abstract model tiers (e.g. `model: cheap`) the same way the
         // agent path does — otherwise the tier reaches the IDE CLI raw and the
         // agent crashes with `model 'cheap' not found` when the skill loads.
@@ -170,7 +207,7 @@ export async function copyFrameworkToIdeDir(
         if (!command.isDirectory) continue;
         const srcDir = join(commandsDir, command.name);
         const dstDir = join(ideConfigDir, "skills", command.name);
-        await copyRecursive(srcDir, dstDir, skipDirs);
+        await copyRecursive(srcDir, dstDir, skipDirs, isPrimitiveUnitTest);
         // Post-copy: inject the user-only flag into SKILL.md if present.
         // copyRecursive cannot transform per-file, so we patch after copying.
         const skillMdPath = join(dstDir, "SKILL.md");
@@ -197,7 +234,9 @@ export async function copyFrameworkToIdeDir(
         // disable-model-invocation set... please run /init yourself" and did
         // no work, and the two `init` brownfield scenarios re-implemented the
         // command by hand. Every OTHER command keeps the flag, so routing
-        // measurements are untouched.
+        // measurements are untouched. The caller decides via
+        // `userInvokedCommandOf`, which returns the name only for a `/<name>`
+        // query: a plain-language query must still meet the flag.
         const resolved = resolveSkillModel(raw, ideName);
         await Deno.writeTextFile(
           skillMdPath,
@@ -235,6 +274,8 @@ export async function copyFrameworkToIdeDir(
         await copyRecursive(
           join(hooksDir, hook.name),
           join(ideConfigDir, "scripts", hook.name),
+          [],
+          isPrimitiveUnitTest,
         );
       }
     } catch { /* no hooks/ in pack */ }

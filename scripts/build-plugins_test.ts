@@ -321,16 +321,16 @@ Deno.test("codex-payload codex-payload-matches-shared-transform-contract", async
       if (e.isDirectory) names.push(e.name);
     }
     names.sort();
-    assert(names.includes("commit"), "command payload missing");
+    assert(names.includes("push"), "command payload missing");
     assert(names.includes("plan"), "skill payload missing");
     assert(
       names.includes("update"),
       "plugin-installable update command missing",
     );
-    assert(!names.includes("flowai-commit"), "flowai- prefix leaked");
+    assert(!names.includes("flowai-push"), "flowai- prefix leaked");
 
     const cmdFm = await readFrontmatter(
-      join(skillsDir, "commit", "SKILL.md"),
+      join(skillsDir, "push", "SKILL.md"),
     );
     assertEquals(cmdFm["disable-model-invocation"], true);
 
@@ -452,7 +452,7 @@ Deno.test(
       });
 
       const cmdFm = await readFrontmatter(
-        join(out, "plugins", "flowai", "skills", "commit", "SKILL.md"),
+        join(out, "plugins", "flowai", "skills", "push", "SKILL.md"),
       );
       assertEquals(
         cmdFm["disable-model-invocation"],
