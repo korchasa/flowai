@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.17](https://github.com/korchasa/flowai/compare/v0.14.16...v0.14.17) (2026-10-04)
+
+
+### Features
+
+* **core:** let the agent invoke commit, review-and-commit and reflect-gate ([70ebb62](https://github.com/korchasa/flowai/commit/70ebb620faee8a21637022890dcf65f634a60a22))
+
+
+### Bug Fixes
+
+* **acceptance:** keep each turn's trace in arrival order ([7a420d3](https://github.com/korchasa/flowai/commit/7a420d312f67e973707b7c458462f3cbe8de076b))
+
+
+### Agent Changes
+
+* **ci:** document merging the CI release commit before a push ([e8c6f65](https://github.com/korchasa/flowai/commit/e8c6f6524752b97ed23f40ecb0392f670d9fd2a0))
+
 ### [0.14.16](https://github.com/korchasa/flowai/compare/v0.14.15...v0.14.16) (2026-10-04)
 
 
