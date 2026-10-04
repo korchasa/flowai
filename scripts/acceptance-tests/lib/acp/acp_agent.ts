@@ -25,7 +25,7 @@ import {
   SystemUnhealthyError,
 } from "../system_health.ts";
 import { resolveBridgeCommand } from "./bridge_store.ts";
-import { AcpClient, type CapturedToolCall } from "./client.ts";
+import { AcpClient, type CapturedToolCall, type TurnEvent } from "./client.ts";
 import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
 import { collectCodexAgentTrace } from "./codex_rollout.ts";
 import {
@@ -94,8 +94,13 @@ export class AcpAgent {
       getToolCalls(): CapturedToolCall[];
       getBufferedText(sessionId: string): string;
       getBufferedReasoning(sessionId: string): string;
+      getTimeline(sessionId: string): TurnEvent[];
     }
     | null = null;
+  /** Tool calls already placed inside a turn's trace, by toolCallId. */
+  readonly #renderedCalls = new Set<string>();
+  /** True between sending a prompt and appending that turn to the log. */
+  #turnInFlight = false;
   readonly #spec: AcpAgentSpec;
 
   constructor(private opts: AcpAgentOptions) {
@@ -256,15 +261,25 @@ export class AcpAgent {
         this.#messages.push({ role: "user", content: nextPrompt });
         this.#log.push(`\n[turn ${step + 1}] > ${nextPrompt}\n`);
 
+        this.#turnInFlight = true;
         const out = await client.prompt(this.#sessionId, nextPrompt);
         const text = out.assistantText ?? out.result ?? "";
         // The persona and the judge both read the reply; reasoning goes to the
         // trace only, under its own marker.
         this.#messages.push({ role: "assistant", content: text });
-        this.#log.push(`< ${text}\n`);
-        if (out.reasoningText?.trim()) {
-          this.#log.push(`${REASONING_MARKER} ${out.reasoningText}\n`);
+        // [REF:fr:accept.acp | FR-ACCEPT.ACP] — the turn is rendered in arrival
+        // order, each tool call between the sentences it ran between.
+        const timeline = client.getTimeline(this.#sessionId);
+        this.#log.push(renderTurnTrace(
+          timeline,
+          callsById(client.getToolCalls()),
+          text,
+          out.reasoningText ?? "",
+        ));
+        for (const e of timeline) {
+          if (e.type === "tool") this.#renderedCalls.add(e.toolCallId);
         }
+        this.#turnInFlight = false;
         if (out.subtype === "error") {
           code = 1;
           this.#log.push(`[acp-error] ${JSON.stringify(out.raw)}\n`);
@@ -284,12 +299,14 @@ export class AcpAgent {
       // Snapshot tool calls before teardown so the runner can score
       // skill-invocation checklist items deterministically.
       this.#toolCalls = client.getToolCalls();
-      if (this.#toolCalls.length > 0) {
+      // Only calls no turn trace placed: a turn cut short by a fatal error.
+      const unplaced = this.#toolCalls.filter((t) =>
+        !this.#renderedCalls.has(t.toolCallId)
+      );
+      if (unplaced.length > 0) {
         this.#log.push(
           `\n[tool-calls] ${
-            this.#toolCalls
-              .map((t) => describeToolCall(t))
-              .join("\n             ")
+            unplaced.map((t) => describeToolCall(t)).join("\n             ")
           }\n`,
         );
       }
@@ -321,14 +338,28 @@ export class AcpAgent {
    * misdiagnosed as a routing failure.
    */
   get partialLogs(): string {
-    const pending = this.#client && this.#sessionId
-      ? this.#client.getBufferedText(this.#sessionId)
-      : "";
-    const reasoning = this.#client && this.#sessionId
-      ? this.#client.getBufferedReasoning(this.#sessionId)
-      : "";
-    const calls = (this.#client?.getToolCalls() ?? []).map(describeToolCall);
-    return composePartialTrace(this.#log.join(""), pending, reasoning, calls);
+    const client = this.#client;
+    const sessionId = this.#sessionId;
+    const flushed = this.#log.join("");
+    if (!client || !sessionId) return flushed;
+    const all = client.getToolCalls();
+    const timeline = this.#turnInFlight ? client.getTimeline(sessionId) : [];
+    const placed = new Set(this.#renderedCalls);
+    for (const e of timeline) if (e.type === "tool") placed.add(e.toolCallId);
+    const unplaced = all.filter((t) => !placed.has(t.toolCallId))
+      .map(describeToolCall);
+    if (timeline.length === 0) {
+      const pending = this.#turnInFlight
+        ? client.getBufferedText(sessionId)
+        : "";
+      const reasoning = this.#turnInFlight
+        ? client.getBufferedReasoning(sessionId)
+        : "";
+      return composePartialTrace(flushed, pending, reasoning, unplaced);
+    }
+    // The turn the timeout cut short keeps its order, like a finished one.
+    const inFlight = renderTurnTrace(timeline, callsById(all), "", "");
+    return composePartialTrace(flushed + inFlight, "", "", unplaced);
   }
 
   /** Public termination for the runner's global-timeout path. */
@@ -427,6 +458,53 @@ export function composePartialTrace(
     parts.push(`\n[tool-calls] ${toolCallLines.join("\n             ")}\n`);
   }
   return parts.join("");
+}
+
+/**
+ * Renders one turn of the trace in the order the agent emitted it: `< ` for
+ * reply text, the reasoning marker for reasoning, `[tool-call]` for a call.
+ *
+ * Until 2026-10-03 a turn was its whole reply, then its reasoning, and every
+ * call of the run went into one block at the end. A judge reading
+ * `review-and-commit-phase-2-diff-eliminated` took a `git diff --stat` run
+ * before the review report for one run after the verdict and failed a correct
+ * run. An empty timeline (a bridge that streamed nothing) falls back to the
+ * turn's whole reply and reasoning.
+ */
+export function renderTurnTrace(
+  timeline: readonly TurnEvent[],
+  calls: ReadonlyMap<string, CapturedToolCall>,
+  fallbackReply: string,
+  fallbackReasoning: string,
+): string {
+  if (timeline.length === 0) {
+    const reasoning = fallbackReasoning.trim()
+      ? `${REASONING_MARKER} ${fallbackReasoning}\n`
+      : "";
+    return `< ${fallbackReply}\n${reasoning}`;
+  }
+  const parts: string[] = [];
+  for (const e of timeline) {
+    if (e.type === "tool") {
+      const call = calls.get(e.toolCallId);
+      if (call) parts.push(`[tool-call] ${describeToolCall(call)}\n`);
+    } else if (e.text.trim()) {
+      // codex opens each reasoning headline with a blank line; on a marker
+      // line that is only noise.
+      parts.push(
+        e.type === "reasoning"
+          ? `${REASONING_MARKER} ${e.text.trimStart()}\n`
+          : `< ${e.text}\n`,
+      );
+    }
+  }
+  return parts.join("");
+}
+
+function callsById(
+  calls: readonly CapturedToolCall[],
+): Map<string, CapturedToolCall> {
+  return new Map(calls.map((t) => [t.toolCallId, t]));
 }
 
 export function describeToolCall(t: CapturedToolCall): string {

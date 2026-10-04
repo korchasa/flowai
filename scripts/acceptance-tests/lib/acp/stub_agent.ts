@@ -24,6 +24,10 @@
  *                      does: two separate notifications, neither carrying a
  *                      trailing separator, so a client that appends both to one
  *                      buffer hands the reader `<headline><reply>` glued.
+ *   [[SEQUENCE]]     → stream a reasoning headline, a reply sentence, one
+ *                      tool call (opened and closed), then a second reply
+ *                      sentence — the order a judge must be able to read back:
+ *                      which command ran before which sentence.
  *   anything else    → stream an `agent_message_chunk` echoing a fixed reply.
  *
  * The sentinel write is the observable "real tool executed" side-effect the
@@ -47,6 +51,13 @@ import { join } from "@std/path";
 const TOOL_MARKER = /\[\[TOOL:([^\]]*)\]\]/;
 const DISPATCH_MARKER = /\[\[DISPATCH\]\]/;
 const THINK_MARKER = /\[\[THINK\]\]/;
+const SEQUENCE_MARKER = /\[\[SEQUENCE\]\]/;
+
+/** What the `[[SEQUENCE]]` marker streams, in this order. */
+export const SEQUENCE_REASONING = "Checking report scope";
+export const SEQUENCE_BEFORE = "The checks passed.";
+export const SEQUENCE_COMMAND = "git diff --stat";
+export const SEQUENCE_AFTER = "## Review: Approve";
 
 /** The reasoning headline and the reply the `[[THINK]]` marker streams. */
 export const THINK_REASONING = "Confirming absence of SRS and SDS documents";
@@ -163,6 +174,33 @@ class StubAgent implements Agent {
       } else {
         await this.#emit(params.sessionId, `blocked: ${command}`);
       }
+      return { stopReason: "end_turn" };
+    }
+
+    if (SEQUENCE_MARKER.test(text)) {
+      const toolCallId = `seq-${++this.#counter}`;
+      await this.#emitThought(params.sessionId, SEQUENCE_REASONING);
+      await this.#emit(params.sessionId, SEQUENCE_BEFORE);
+      await this.#conn.sessionUpdate({
+        sessionId: params.sessionId,
+        update: {
+          sessionUpdate: "tool_call",
+          toolCallId,
+          title: SEQUENCE_COMMAND,
+          kind: "execute",
+          status: "pending",
+          rawInput: { command: SEQUENCE_COMMAND },
+        },
+      });
+      await this.#conn.sessionUpdate({
+        sessionId: params.sessionId,
+        update: {
+          sessionUpdate: "tool_call_update",
+          toolCallId,
+          status: "completed",
+        },
+      });
+      await this.#emit(params.sessionId, SEQUENCE_AFTER);
       return { stopReason: "end_turn" };
     }
 

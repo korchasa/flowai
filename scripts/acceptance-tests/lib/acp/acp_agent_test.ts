@@ -1,6 +1,6 @@
 /**
- * The `[tool-calls]` trace block is the only place an LLM judge learns which
- * tools ran, so how one line reads decides checklist items. Two sweeps were
+ * The `[tool-call]` trace lines are the only place an LLM judge learns which
+ * tools ran and when, so how one line reads decides checklist items. Two sweeps were
  * scored wrong on this rendering alone, both on subagent dispatches, so the
  * dispatch form is pinned here.
  */
@@ -9,6 +9,7 @@ import {
   composePartialTrace,
   describeDispatchResult,
   describeToolCall,
+  renderTurnTrace,
   resolveToolCalls,
 } from "./acp_agent.ts";
 
@@ -163,4 +164,40 @@ Deno.test("composePartialTrace marks in-flight reasoning as reasoning, apart fro
 Deno.test("composePartialTrace adds no reasoning block when the turn produced none", () => {
   const out = composePartialTrace("[turn 1] > go\n", "done", "", []);
   assertEquals(out.includes("[agent-reasoning]"), false);
+});
+
+/**
+ * A turn renders in the order things happened, so a checklist item phrased as
+ * "after the verdict" or "before the commit" can be decided from the trace.
+ * The 2026-10-03 run of `review-and-commit-phase-2-diff-eliminated` was failed
+ * because every call of the turn was printed after all of its sentences.
+ */
+Deno.test("renderTurnTrace puts a tool call between the sentences it ran between", () => {
+  const calls = new Map([["c1", {
+    toolCallId: "c1",
+    title: "git diff --stat",
+    kind: "execute",
+    rawInput: { command: "git diff --stat" },
+  }]]);
+  const out = renderTurnTrace(
+    [
+      { type: "reasoning", text: "Checking report scope" },
+      { type: "reply", text: "The checks passed." },
+      { type: "tool", toolCallId: "c1" },
+      { type: "reply", text: "## Review: Approve" },
+    ],
+    calls,
+    "The checks passed.## Review: Approve",
+    "Checking report scope",
+  );
+  const before = out.indexOf("< The checks passed.");
+  const call = out.indexOf("[tool-call] git diff --stat [kind=execute]");
+  const after = out.indexOf("< ## Review: Approve");
+  assertEquals(before >= 0 && call > before && after > call, true);
+  assertStringIncludes(out, "[agent-reasoning] Checking report scope");
+});
+
+Deno.test("renderTurnTrace falls back to the whole reply and reasoning when no timeline was captured", () => {
+  const out = renderTurnTrace([], new Map(), "done", "thinking");
+  assertEquals(out, "< done\n[agent-reasoning] thinking\n");
 });

@@ -86,6 +86,19 @@ export function confineWritePath(
  * client-side `fs/read_text_file` requests). Consumed by the runner to decide
  * skill-invocation checklist items WITHOUT asking the LLM judge.
  */
+/**
+ * One entry of a turn's timeline: what the agent emitted, in arrival order.
+ *
+ * The reply, reasoning and tool-call stores are unordered with respect to each
+ * other, so a trace built from them alone prints every sentence of a turn and
+ * then every call — and a judge cannot tell a command run before the verdict
+ * from one run after it. Adjacent chunks of the same kind merge into one entry.
+ */
+export type TurnEvent =
+  | { type: "reply"; text: string }
+  | { type: "reasoning"; text: string }
+  | { type: "tool"; toolCallId: string };
+
 export interface CapturedToolCall {
   toolCallId: string;
   title: string;
@@ -211,6 +224,8 @@ export class AcpClient {
   readonly #thoughts = new Map<string, string[]>();
   /** Tool calls observed this run, keyed by toolCallId (ordered by Map). */
   readonly #toolCalls = new Map<string, CapturedToolCall>();
+  /** Per-session timeline of the turn in flight; reset by `prompt()`. */
+  readonly #timelines = new Map<string, TurnEvent[]>();
   /** Sandbox root of the current session; anchors every client-side fs path. */
   #sessionCwd?: string;
 
@@ -250,14 +265,38 @@ export class AcpClient {
   #observeRawMessage(message: unknown): void {
     const m = message as {
       method?: string;
-      params?: { update?: Record<string, unknown> };
+      params?: { sessionId?: unknown; update?: Record<string, unknown> };
     };
     if (m?.method !== "session/update") return;
     const u = m.params?.update;
     const kind = u?.sessionUpdate;
+    // [REF:fr:accept.acp | FR-ACCEPT.ACP] — the timeline is fed from this one
+    // synchronous tap, so text and calls keep the order they arrived in.
+    const timeline = typeof m.params?.sessionId === "string"
+      ? this.#timelines.get(m.params.sessionId)
+      : undefined;
+    if (kind === "agent_message_chunk" || kind === "agent_thought_chunk") {
+      const content = u?.content as { type?: unknown; text?: unknown };
+      if (
+        timeline && content?.type === "text" && typeof content.text === "string"
+      ) {
+        appendText(
+          timeline,
+          kind === "agent_thought_chunk" ? "reasoning" : "reply",
+          content.text,
+        );
+      }
+      return;
+    }
     if (kind !== "tool_call" && kind !== "tool_call_update") return;
     const id = u?.toolCallId;
     if (typeof id !== "string" || id.length === 0) return;
+    if (
+      timeline &&
+      !timeline.some((e) => e.type === "tool" && e.toolCallId === id)
+    ) {
+      timeline.push({ type: "tool", toolCallId: id });
+    }
 
     const prev = this.#toolCalls.get(id) ?? { toolCallId: id, title: "" };
     const result = flattenRawOutput(u?.rawOutput) ??
@@ -303,6 +342,14 @@ export class AcpClient {
     return (this.#thoughts.get(sessionId) ?? []).join("");
   }
 
+  /**
+   * The timeline of the session's latest turn — complete once `prompt()` has
+   * returned, partial while the turn is still in flight.
+   */
+  getTimeline(sessionId: string): TurnEvent[] {
+    return [...(this.#timelines.get(sessionId) ?? [])];
+  }
+
   /** Convenience: build a client over a spawned child's stdio. */
   static fromChild(
     child: {
@@ -339,6 +386,7 @@ export class AcpClient {
   async prompt(sessionId: string, text: string): Promise<ParsedAgentOutput> {
     this.#buffers.set(sessionId, []);
     this.#thoughts.set(sessionId, []);
+    this.#timelines.set(sessionId, []);
     let dropped = false;
     const dropGuard = this.#closed?.then(() => {
       dropped = true;
@@ -442,4 +490,15 @@ export class AcpClient {
       outcome: { outcome: "selected", optionId: allow.optionId },
     });
   }
+}
+
+/** Appends a text chunk, merging it into the previous entry of the same kind. */
+function appendText(
+  timeline: TurnEvent[],
+  type: "reply" | "reasoning",
+  text: string,
+): void {
+  const last = timeline[timeline.length - 1];
+  if (last && last.type === type) last.text += text;
+  else timeline.push({ type, text });
 }

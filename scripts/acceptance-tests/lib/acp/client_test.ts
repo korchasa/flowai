@@ -18,7 +18,14 @@ import {
   flattenToolCallContent,
   resolveSessionPath,
 } from "./client.ts";
-import { DISPATCH_REPORT, THINK_REASONING, THINK_REPLY } from "./stub_agent.ts";
+import {
+  DISPATCH_REPORT,
+  SEQUENCE_AFTER,
+  SEQUENCE_BEFORE,
+  SEQUENCE_REASONING,
+  THINK_REASONING,
+  THINK_REPLY,
+} from "./stub_agent.ts";
 
 const STUB = fromFileUrl(new URL("./stub_agent.ts", import.meta.url));
 
@@ -178,6 +185,45 @@ Deno.test({
 
       assertEquals(client.getBufferedText(sessionId), THINK_REPLY);
       assertEquals(client.getBufferedReasoning(sessionId), THINK_REASONING);
+    } finally {
+      await shutdown(child);
+    }
+  },
+});
+
+/**
+ * The judge has to tell which command ran before which sentence. Until
+ * 2026-10-03 the client kept the reply, the reasoning and the tool calls in
+ * three unordered buffers, so the trace printed every sentence of a turn first
+ * and every call after it. On `review-and-commit-phase-2-diff-eliminated` a
+ * `git diff --stat` the agent ran BEFORE writing its review report was read as
+ * a call made after the verdict, and a correct run was failed.
+ */
+Deno.test({
+  name:
+    "a turn's timeline keeps reasoning, reply and tool calls in arrival order",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  async fn() {
+    const cwd = await Deno.makeTempDir({ prefix: "acp-test-" });
+    const child = spawnStub();
+    const client = AcpClient.fromChild(child);
+    try {
+      await client.initialize();
+      const sessionId = await client.newSession(cwd);
+      await client.prompt(sessionId, "review it [[SEQUENCE]]");
+
+      assertEquals(
+        client.getTimeline(sessionId).map((e) =>
+          e.type === "tool" ? "tool" : `${e.type}:${e.text}`
+        ),
+        [
+          `reasoning:${SEQUENCE_REASONING}`,
+          `reply:${SEQUENCE_BEFORE}`,
+          "tool",
+          `reply:${SEQUENCE_AFTER}`,
+        ],
+      );
     } finally {
       await shutdown(child);
     }
