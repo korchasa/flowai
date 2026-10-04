@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.15](https://github.com/korchasa/flowai/compare/v0.14.14...v0.14.15) (2026-09-27)
+
+
+### Bug Fixes
+
+* **acceptance:** keep the reasoning summary out of the graded reply ([a30f330](https://github.com/korchasa/flowai/commit/a30f330e1267b5d3dbbccefed1dc08550c3c26ce))
+
+
+### Documentation
+
+* **readability:** reopen the reader-context clause ([009031b](https://github.com/korchasa/flowai/commit/009031b0916479502d2dee79fea6a4dc592e2737))
+* **rules:** require option layout that survives Markdown rendering ([69434a3](https://github.com/korchasa/flowai/commit/69434a3ed4b4ba6aa301a74fdb0428a447650cb2))
+
 ### [0.14.14](https://github.com/korchasa/flowai/compare/v0.14.13...v0.14.14) (2026-09-22)
 
 
