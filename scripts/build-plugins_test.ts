@@ -824,6 +824,65 @@ Deno.test("preserves-skill-subdirectories", async () => {
   }
 });
 
+Deno.test("omits-primitive-unit-tests-from-payload", async () => {
+  // A primitive's own `*_test.ts` / `*.test.ts` is this repo's gate. Shipped,
+  // it lands in a user's `.claude/skills/` and joins that project's
+  // `deno test` run (the `tasks-overview` tests spawn Python).
+  const root = await Deno.makeTempDir({ prefix: "flowai-unit-tests-" });
+  const out = await tempOut();
+  try {
+    const packDir = join(root, "framework", "core");
+    const sources = {
+      command: join(packDir, "commands", "tool-cmd"),
+      skill: join(packDir, "skills", "tool-skill"),
+    };
+    for (const [kind, dir] of Object.entries(sources)) {
+      await Deno.mkdir(join(dir, "scripts", "lib"), { recursive: true });
+      await Deno.writeTextFile(
+        join(dir, "SKILL.md"),
+        `---\nname: ${kind}\ndescription: A ${kind}\n---\nBody\n`,
+      );
+      for (
+        const rel of [
+          "scripts/tool.ts",
+          "scripts/tool_test.ts",
+          "scripts/tool.test.ts",
+          "scripts/lib/deep_test.ts",
+          "scripts/test_helper.ts",
+          "scripts/fixtures.test.json",
+        ]
+      ) {
+        await Deno.writeTextFile(join(dir, rel), "export {};\n");
+      }
+    }
+    await Deno.writeTextFile(
+      join(packDir, "pack.yaml"),
+      "name: core\nversion: 1.0.0\ndescription: Core pack\n",
+    );
+
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: join(root, "framework"),
+      outDir: out,
+      version: "1.0.0",
+    });
+
+    const skillsDir = join(out, "plugins", "flowai", "skills");
+    for (const name of ["tool-cmd", "tool-skill"]) {
+      const files = (await listAllFiles(join(skillsDir, name))).sort();
+      assertEquals(files, [
+        "SKILL.md",
+        "scripts/fixtures.test.json",
+        "scripts/test_helper.ts",
+        "scripts/tool.ts",
+      ], `${name} payload`);
+    }
+  } finally {
+    await Deno.remove(root, { recursive: true });
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
 Deno.test("emits-agents-with-claude-native-frontmatter", async () => {
   const out = await tempOut();
   try {

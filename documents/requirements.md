@@ -867,7 +867,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
   - `<out>/.agents/plugins/marketplace.json` — Codex catalog (top-level `name`, `interface.displayName` equal to the technical marketplace name, `plugins[]` with local `source.path: ./plugins/<name>` and install policy).
   - `<out>/plugins/<plugin>/.claude-plugin/plugin.json` — Claude manifest. Core emits `flowai`; optional packs emit `flowai-<pack>`. `version` mirrors upstream `deno.json`.
   - `<out>/plugins/<plugin>/.codex-plugin/plugin.json` — Codex manifest. Includes metadata, `skills: ./skills/`, optional `hooks: ./hooks/hooks.json` only when hooks exist. No `agents` component is declared because Codex plugin docs do not define it.
-  - `<out>/plugins/<plugin>/skills/<stripped>/SKILL.md` (+ supporting subdirs except `acceptance-tests/`). `disable-model-invocation: true` injected on commands (source under `framework/<pack>/commands/`) and absent on skills (source under `framework/<pack>/skills/`). FR-PACKS.CMD-INVARIANT / SKILL-INVARIANT enforced fail-fast: any source SKILL.md that already carries the flag aborts the build with the offending path.
+  - `<out>/plugins/<plugin>/skills/<stripped>/SKILL.md` (+ supporting subdirs except `acceptance-tests/`, and without the primitive's own unit tests `*_test.ts` / `*.test.ts` at any depth — those belong to this repo's gate; shipped, they land in a Cursor / OpenCode user's `.claude/skills/` and join that project's `deno test` run). `disable-model-invocation: true` injected on commands (source under `framework/<pack>/commands/`) and absent on skills (source under `framework/<pack>/skills/`). FR-PACKS.CMD-INVARIANT / SKILL-INVARIANT enforced fail-fast: any source SKILL.md that already carries the flag aborts the build with the offending path.
   - `<out>/plugins/<plugin>/agents/<name>.md` — frontmatter passed through the universal → Claude-native mapping from FR-DIST.MAPPING (keeps `name`, `description`, `tools`, `disallowedTools`, `model`, `effort`, `maxTurns`, `background`, `isolation`, `color`; drops `readonly`, `mode`, `opencode_tools`; resolves `model` tier `max|smart|fast|cheap` to the pair `opus/max|opus/high|sonnet/medium|sonnet/low` per FR-DIST.MAPPING, drops `inherit`).
   - `<out>/plugins/<plugin>/hooks/hooks.json` only when the source pack carries hooks. Hook commands keep `${CLAUDE_PLUGIN_ROOT}` because Claude Code requires it and Codex supports this compatibility variable. Codex users must enable `[features].plugin_hooks = true` before relying on hooks.
   - Output is byte-deterministic across runs.
@@ -881,6 +881,8 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
     Evidence: `scripts/build-plugins_test.ts::codex-plugin-manifests emits-codex-plugin-manifests`.
   - [x] Codex validator rejects malformed marketplace and manifest paths before publication.
     Evidence: `scripts/validate-plugins_test.ts::codex rejects-invalid-codex-marketplace` + `::codex rejects-invalid-codex-plugin-manifest`.
+  - [x] Skill / command payloads ship without the primitive's own unit tests (`*_test.ts`, `*.test.ts`); other supporting files, including names like `test_helper.ts`, are kept.
+    Evidence: `scripts/build-plugins_test.ts::omits-primitive-unit-tests-from-payload`.
   - [x] Skill / command directory names have the `flowai-` prefix stripped.
     Evidence: `scripts/build-plugins_test.ts::skill-and-command-dirs-have-prefix-stripped`.
   - [x] `disable-model-invocation: true` injected for commands, absent for skills.

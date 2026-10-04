@@ -17,6 +17,8 @@
 // Transform passes (in order):
 //   (a) scope filter — drop primitives with `scope: project-only`.
 //   (b) emit skills + commands; commands get disable-model-invocation injected.
+//       Supporting files are copied without `acceptance-tests/` and without
+//       the primitive's own unit tests (`*_test.ts`, `*.test.ts`).
 //   (c) asset copy + path rewrite — pack-level `assets/*` referenced by SKILL.md
 //       is copied INTO the consuming skill's own dir, paths rewritten to local.
 //   (d) init fence strip — block between
@@ -31,7 +33,7 @@
 //   (h) hook transform — `framework/<pack>/hooks/<name>/{hook.yaml,run.ts}` →
 //       `hooks/hooks.json` + per-hook run.ts copy.
 
-import { join, relative } from "@std/path";
+import { basename, join, relative } from "@std/path";
 import { copy, ensureDir, exists } from "@std/fs";
 import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
@@ -478,7 +480,7 @@ async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
       if (child.name === "acceptance-tests") continue;
       const childSrc = join(srcPath, child.name);
       const childDst = join(dstDir, child.name);
-      await copy(childSrc, childDst, { overwrite: true });
+      await copyWithoutUnitTests(childSrc, childDst);
     }
 
     const transformed = transformSkillFile(sourceText, {
@@ -498,6 +500,28 @@ async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
     });
 
     await Deno.writeTextFile(join(dstDir, "SKILL.md"), finalText);
+  }
+}
+
+/**
+ * A primitive's own unit test (`*_test.ts`, `*.test.ts`) belongs to this
+ * repo's gate, not to the payload. Shipped, it lands in a Cursor / OpenCode
+ * user's `.claude/skills/` and joins that project's `deno test` run (the
+ * `tasks-overview` tests spawn Python and fail without `--allow-run`).
+ */
+function isPrimitiveUnitTest(name: string): boolean {
+  return name.endsWith("_test.ts") || name.endsWith(".test.ts");
+}
+
+async function copyWithoutUnitTests(src: string, dst: string): Promise<void> {
+  const info = await Deno.lstat(src);
+  if (info.isDirectory) {
+    await ensureDir(dst);
+    for await (const e of Deno.readDir(src)) {
+      await copyWithoutUnitTests(join(src, e.name), join(dst, e.name));
+    }
+  } else if (!isPrimitiveUnitTest(basename(src))) {
+    await copy(src, dst, { overwrite: true });
   }
 }
 
