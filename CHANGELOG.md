@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.16](https://github.com/korchasa/flowai/compare/v0.14.15...v0.14.16) (2026-10-04)
+
+
+### Bug Fixes
+
+* **dist:** keep primitive unit tests out of the plugin payload ([76a695c](https://github.com/korchasa/flowai/commit/76a695ccb2d8caf88d45c19cbac9ded496bd6aa8))
+
 ### [0.14.15](https://github.com/korchasa/flowai/compare/v0.14.14...v0.14.15) (2026-09-27)
 
 
