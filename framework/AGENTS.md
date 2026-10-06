@@ -5,8 +5,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 ## Responsibility
 
 - `<pack>/pack.yaml` — Pack manifest (name, version, description, scaffolds).
-- `<pack>/commands/` — **User-only** workflows (`SKILL.md` directories). Names: `flowai-*`, `flowai-setup-*`. Source files MUST NOT declare `disable-model-invocation`; the CLI writer injects it at sync time based on directory placement. Benchmark scenarios co-located in `<pack>/commands/<command>/acceptance-tests/`.
-- `<pack>/skills/` — **Agent-invocable** capabilities (`SKILL.md` directories). Names: `flowai-*`. Source files MUST NOT declare `disable-model-invocation`. Benchmark scenarios co-located in `<pack>/skills/<skill>/acceptance-tests/`. Each skill carries TWO categories of scenarios:
+- `<pack>/skills/` — every workflow primitive, all **agent-invocable** (`SKILL.md` directories). Names: short kebab-case. Source files MUST NOT declare `disable-model-invocation`, and no writer injects it. There is no user-only `commands/` kind: it was removed on 2026-10-06, and a pack that still has one fails the build (FR-PACKS.AGENT-COMMIT). Benchmark scenarios co-located in `<pack>/skills/<skill>/acceptance-tests/`. Each skill carries TWO categories of scenarios:
   - **Execution scenarios** (1+ per skill): verify the skill produces correct results when triggered.
   - **Trigger scenarios** (FR-ACCEPT.TRIGGER, exactly 3 per skill): verify description-matching correctness. One positive (`trigger-pos-1/mod.ts`) the skill should activate on; one adjacent-negative (`trigger-adj-1/mod.ts`) where a different skill is the right match; one false-use-negative (`trigger-false-1/mod.ts`) inside the skill's domain but with the wrong intent. Coverage gated by `scripts/check-trigger-coverage.ts`. Authoring guidance in `write-agent-benchmarks` §6.1.
 - `<pack>/agents/` — Canonical agent definitions (`<agent-name>.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by flowai at install time. Benchmark scenarios co-located in `<pack>/agents/<agent-name>/acceptance-tests/`.
@@ -15,11 +14,11 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 
 ### Installation shape
 
-Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target directory `.{ide}/skills/`. The distinction is the `disable-model-invocation: true` flag on commands (injected by the writer, not authored). IDE-level native slash-command directories (`.{ide}/commands/`) are reserved for user-owned primitives managed by `flowai user-sync` — framework commands do not land there.
+`<pack>/skills/` installs into `.{ide}/skills/`. IDE-level native slash-command directories (`.{ide}/commands/`) are reserved for user-owned primitives managed by `flowai user-sync` — framework primitives do not land there.
 
 ## Packs
 
-- `core` — Base commands (commit, plan, review, init, etc.) + core agents.
+- `core` — Base workflows (commit, plan, review, push, ship, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, write-prd, etc.).
 - `deno` — Deno-specific skills.
@@ -29,11 +28,11 @@ Both `<pack>/commands/` and `<pack>/skills/` install into the **same** target di
 
 ## Key Decisions
 
-- Scripts in `<pack>/skills/*/scripts/` and `<pack>/commands/*/scripts/` must be standalone-runnable: a Deno script uses `jsr:` specifiers and no import maps; a Python script uses the standard library only. Prefer Python for a script a skill step tells the user's agent to run — the framework may not assume Deno is installed there, and a script that reaches for the network to make up for it has already cost a measured run (`draw-mermaid-diagrams`, 2026-08-31: the old validator shelled out to `npx @mermaid-js/mermaid-cli`, the cold download blew a 120 s timeout, and the agent shipped a broken diagram).
-- Nothing shipped under `<pack>/skills/<name>/` or `<pack>/commands/<name>/` may spell out this repo's own documentation layout: `check-skills.ts` (FR-UNIVERSAL.DOC-SCHEMA) rejects the literals `documents/tasks/`, `documents/requirements.md` and `documents/design.md` in every file there, including bundled `scripts/*.py` and their `*_test.ts` — only `acceptance-tests/` paths are exempt. Write "the `tasks` role from AGENTS.md" in prose, and in a test build the path from parts (`["documents", "tasks"].join("/")`) when a fixture needs the default. Observed 2026-09-04 on `tasks-overview`: SKILL.md and the unit test both tripped it on the first `deno task check`.
-- Skills and commands follow [agentskills.io](https://agentskills.io/home) standard; the `commands/` vs `skills/` directory is the framework-level classifier for user-only vs agent-invocable intent.
+- Scripts in `<pack>/skills/*/scripts/` must be standalone-runnable: a Deno script uses `jsr:` specifiers and no import maps; a Python script uses the standard library only. Prefer Python for a script a skill step tells the user's agent to run — the framework may not assume Deno is installed there, and a script that reaches for the network to make up for it has already cost a measured run (`draw-mermaid-diagrams`, 2026-08-31: the old validator shelled out to `npx @mermaid-js/mermaid-cli`, the cold download blew a 120 s timeout, and the agent shipped a broken diagram).
+- Nothing shipped under `<pack>/skills/<name>/` may spell out this repo's own documentation layout: `check-skills.ts` (FR-UNIVERSAL.DOC-SCHEMA) rejects the literals `documents/tasks/`, `documents/requirements.md` and `documents/design.md` in every file there, including bundled `scripts/*.py` and their `*_test.ts` — only `acceptance-tests/` paths are exempt. Write "the `tasks` role from AGENTS.md" in prose, and in a test build the path from parts (`["documents", "tasks"].join("/")`) when a fixture needs the default. Observed 2026-09-04 on `tasks-overview`: SKILL.md and the unit test both tripped it on the first `deno task check`.
+- Skills follow [agentskills.io](https://agentskills.io/home) standard.
 - Agent format is canonical (IDE-agnostic); flowai adds IDE-specific frontmatter during distribution.
-- Scaffolded artifact mapping declared in `pack.yaml` `scaffolds:` field (primitive-name → artifact paths; resolves the same whether the primitive lives under `commands/` or `skills/`).
+- Scaffolded artifact mapping declared in `pack.yaml` `scaffolds:` field (primitive-name → artifact paths).
 
 ## IDE Behavior Notes
 
@@ -76,16 +75,11 @@ Without these, the sandbox's `deno fmt --check` and `deno lint` apply to the cop
 
 ### Framework primitive placement
 
-When a task creates a new framework primitive, decide the subdir FIRST:
-
-- **User-invoked via `/<name>`** (no model auto-discovery) → `framework/<pack>/commands/` with short kebab-case names. Examples: `/push`, `/update`, `/ship`.
-- **Model auto-invocable** (skill activation by description match) → `framework/<pack>/skills/` with short kebab-case names. Examples: `deep-research`, `draw-mermaid-diagrams`.
-
-Picking the wrong subdir fails `check-naming-prefix.ts` (NP-3) and requires a file move + SRS/SDS location edits. The CLI writer injects `disable-model-invocation: true` automatically for `commands/` — do NOT set it in source.
+Every new workflow primitive goes to `framework/<pack>/skills/<name>/` with a short kebab-case name, including one the user mostly calls by `/<name>` (`push`, `ship`, `update`). Its description carries a WHEN-trigger and names the neighbouring primitive it is NOT for, and it ships the three trigger scenarios (FR-ACCEPT.TRIGGER). Do NOT set `disable-model-invocation` in source: `check-skills.ts` and the plugin build both reject it.
 
 ### Acceptance Test Infrastructure Smoke Test
 
-Before writing or modifying a benchmark scenario for a command or skill, run one **existing** scenario for the same primitive to verify infrastructure works:
+Before writing or modifying a benchmark scenario for a skill, run one **existing** scenario for the same primitive to verify infrastructure works:
 
 ```sh
 deno task acceptance-tests -f <existing-scenario-id>

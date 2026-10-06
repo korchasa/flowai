@@ -1,7 +1,6 @@
 import { join } from "@std/path";
 import {
   agentToCodexToml,
-  injectDisableModelInvocation,
   resolveSkillModel,
   transformAgent,
 } from "./cli-internals.ts";
@@ -105,16 +104,13 @@ function isPrimitiveUnitTest(name: string): boolean {
  * Copies pack-structured framework/ into flat IDE config dir,
  * matching flowai CLI sync behavior:
  * - Skills: framework/<pack>/skills/<name>/ → dest/skills/<name>/ (as-is, skip acceptance-tests/runs/tmp)
- * - Commands: framework/<pack>/commands/<name>/ → dest/skills/<name>/ (same
- *   target as skills; SKILL.md gets `disable-model-invocation: true` injected
- *   to mark the primitive as user-only, mirroring cli/src/sync.ts)
  * - Agents: framework/<pack>/agents/<name>.md → dest/agents/<name>.md (frontmatter transformed per IDE)
  * - Hooks: framework/<pack>/hooks/<name>/ → dest/scripts/<name>/ (when present)
  */
 /**
  * Read a copied SKILL.md, resolve its abstract model tier in place, and write
- * it back. No-op if the file is absent (some command dirs ship no SKILL.md —
- * the source-level validator flags that separately).
+ * it back. No-op if the file is absent (the source-level validator flags a
+ * primitive without SKILL.md separately).
  */
 async function resolveSkillModelInPlace(
   skillMdPath: string,
@@ -131,31 +127,11 @@ async function resolveSkillModelInPlace(
   if (resolved !== raw) await Deno.writeTextFile(skillMdPath, resolved);
 }
 
-/**
- * The command a scenario invokes BY HAND, if any: `skill` when the query opens
- * with `/<skill>`, otherwise undefined. Only that case may lift the user-only
- * flag (see `copyFrameworkToIdeDir`). A plain-language query is the model
- * discovering the primitive on its own, which is exactly what the flag
- * governs; lifting it there made a routing scenario for a user-only command
- * pass by construction (2026-10-02, `commit-trigger-pos-1`).
- */
-export function userInvokedCommandOf(
-  skill: string | undefined,
-  userQuery: string,
-): string | undefined {
-  if (!skill) return undefined;
-  const typed = userQuery.trimStart();
-  const slash = `/${skill}`;
-  if (typed === slash || typed.startsWith(`${slash} `)) return skill;
-  return undefined;
-}
-
 export async function copyFrameworkToIdeDir(
   frameworkPath: string,
   ideConfigDir: string,
   ideName: string = "claude",
   allowedPacks?: string[],
-  userInvokedCommand?: string,
 ) {
   const skipDirs = ["acceptance-tests", "runs", "tmp"];
 
@@ -196,56 +172,6 @@ export async function copyFrameworkToIdeDir(
         await resolveSkillModelInPlace(join(dstDir, "SKILL.md"), ideName);
       }
     } catch { /* no skills/ in pack */ }
-
-    // Copy commands: framework/<pack>/commands/<name>/ → dest/skills/<name>/
-    // Commands install into the SAME target dir as skills, but their SKILL.md
-    // must carry `disable-model-invocation: true`. Mirrors what
-    // `scripts/build-plugins.ts` does for the rendered marketplace tree.
-    const commandsDir = join(packDir, "commands");
-    try {
-      for await (const command of Deno.readDir(commandsDir)) {
-        if (!command.isDirectory) continue;
-        const srcDir = join(commandsDir, command.name);
-        const dstDir = join(ideConfigDir, "skills", command.name);
-        await copyRecursive(srcDir, dstDir, skipDirs, isPrimitiveUnitTest);
-        // Post-copy: inject the user-only flag into SKILL.md if present.
-        // copyRecursive cannot transform per-file, so we patch after copying.
-        const skillMdPath = join(dstDir, "SKILL.md");
-        let raw: string;
-        try {
-          raw = await Deno.readTextFile(skillMdPath);
-        } catch (e) {
-          if (e instanceof Deno.errors.NotFound) {
-            // No SKILL.md in this command dir — nothing to inject; validator
-            // (scripts/check-skills.ts) surfaces this at the source level.
-            continue;
-          }
-          throw e;
-        }
-        // Malformed frontmatter would throw here — let it bubble so the
-        // benchmark developer sees the issue loudly instead of silently
-        // installing a broken command.
-        //
-        // One command is exempt: the one the scenario itself drives. The flag
-        // says "the model may not DISCOVER this on its own", and a scenario
-        // whose query opens with `/<name>` is the user invoking it by hand —
-        // the case the flag permits. Measured 2026-08-24: with the flag on,
-        // `init-vision-integration` answered "the /init skill has
-        // disable-model-invocation set... please run /init yourself" and did
-        // no work, and the two `init` brownfield scenarios re-implemented the
-        // command by hand. Every OTHER command keeps the flag, so routing
-        // measurements are untouched. The caller decides via
-        // `userInvokedCommandOf`, which returns the name only for a `/<name>`
-        // query: a plain-language query must still meet the flag.
-        const resolved = resolveSkillModel(raw, ideName);
-        await Deno.writeTextFile(
-          skillMdPath,
-          command.name === userInvokedCommand
-            ? resolved
-            : injectDisableModelInvocation(resolved),
-        );
-      }
-    } catch { /* no commands/ in pack */ }
 
     // Copy agents with IDE-specific frontmatter transformation
     const agentsDir = join(packDir, "agents");

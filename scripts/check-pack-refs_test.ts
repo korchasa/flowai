@@ -172,12 +172,12 @@ Deno.test("leakage: detects_leaked_atom in unpacked tree", async () => {
 Deno.test("leakage: detects_leaked_composite in unpacked tree", async () => {
   await withTempTree(
     {
-      "framework/core/commands/bar/SKILL.md": "ok",
-      "framework/core/commands/bar/_composite.md": "leak",
+      "framework/core/skills/bar/SKILL.md": "ok",
+      "framework/core/skills/bar/_composite.md": "leak",
     },
     async (root) => {
       const leaks = await findLeakedFiles(root);
-      assertEquals(leaks, ["framework/core/commands/bar/_composite.md"]);
+      assertEquals(leaks, ["framework/core/skills/bar/_composite.md"]);
     },
   );
 });
@@ -225,7 +225,7 @@ Deno.test("leakage: passes_on_clean_tarball (no leak files present)", async () =
   await withTempTree(
     {
       "framework/core/skills/foo/SKILL.md": "ok",
-      "framework/core/commands/bar/SKILL.md": "ok",
+      "framework/core/skills/bar/SKILL.md": "ok",
       "framework/core/pack.yaml": "id: core",
     },
     async (root) => {

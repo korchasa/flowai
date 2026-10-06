@@ -34,7 +34,6 @@
   "lint": {
     "exclude": [
       "framework/*/skills/*/acceptance-tests/",
-      "framework/*/commands/*/acceptance-tests/",
       "framework/*/agents/*/acceptance-tests/",
       "framework/*/acceptance-tests/*/fixture/",
       "scripts/benchmark/runs/"
@@ -48,7 +47,6 @@
       ".claude/",
       ".flowai.yaml",
       "framework/*/skills/*/acceptance-tests/*/fixture/",
-      "framework/*/commands/*/acceptance-tests/*/fixture/",
       "framework/*/agents/*/acceptance-tests/*/fixture/",
       "framework/*/acceptance-tests/*/fixture/",
       "scripts/benchmark/runs/"

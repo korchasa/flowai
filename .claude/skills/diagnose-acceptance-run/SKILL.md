@@ -39,11 +39,11 @@ first.
 - **The primitive as the agent saw it** — `<run-dir>/sandbox/.codex/skills/<primitive>/SKILL.md`
   (a claude run uses `.claude/skills/`, Cursor `.cursor/skills/`, OpenCode
   `.opencode/skills/`). Compare it against the live source at
-  `framework/<pack>/{skills,commands}/<primitive>/SKILL.md`. Do NOT read
+  `framework/<pack>/skills/<primitive>/SKILL.md`. Do NOT read
   `.claude/skills/<primitive>/SKILL.md` at the repo root and call that the
   sandbox copy — it is the installed current source and says nothing about
   what the failing agent read.
-- **Scenario definition** — `framework/<pack>/{skills,commands,agents}/<primitive>/acceptance-tests/<scenario>/mod.ts`,
+- **Scenario definition** — `framework/<pack>/{skills,agents}/<primitive>/acceptance-tests/<scenario>/mod.ts`,
   found with `find framework -path "*/acceptance-tests/<scenario>/mod.ts"`.
   Fields that matter: `userQuery`, `userPersona`, `checklist[]` (`id`,
   `description`, `critical`), `interactive`, `setup()`, `agentsTemplateVars`.

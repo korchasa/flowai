@@ -1,9 +1,9 @@
 /**
  * task-bench.ts — Discovers and runs agent benchmark scenarios.
  *
- * Walks `framework/<pack>/skills/<skill>/benchmarks/`,
- * `framework/<pack>/commands/<command>/benchmarks/`, and
- * `framework/<pack>/agents/<agent>/benchmarks/` for scenario mod.ts files.
+ * Walks `framework/<pack>/skills/<skill>/acceptance-tests/`,
+ * `framework/<pack>/agents/<agent>/acceptance-tests/`, and
+ * `framework/<pack>/acceptance-tests/` for scenario mod.ts files.
  * Runs each through the benchmark runner with LLM-Judge evaluation, and
  * outputs results as console summary + HTML report.
  *

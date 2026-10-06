@@ -5,7 +5,7 @@ An Assisted Engineering framework: the human owns intent and decisions; AI imple
 The developer initiates and reviews every decision above the level of individual classes/methods — business, architecture, key technical choices — without being required to read code. The agent reports upward in terms of requirements and the class/method structure it builds; diff-level review stays available but optional. The framework's purpose is to prevent **cognitive (mental) debt** — the silent erosion of the human's mental model when AI makes unsurfaced decisions.
 
 > **The flowai project spans four sibling GitHub repositories:**
-> - **this repo (`korchasa/flowai`)** — the framework: skills, commands, agents, packs.
+> - **this repo (`korchasa/flowai`)** — the framework: skills, agents, packs.
 > - **[`korchasa/flowai-plugins`](https://github.com/korchasa/flowai-plugins)** — the generated plugin marketplace this framework is distributed through. Rendered from `framework/<pack>/` by `deno task build-plugins` and pushed by the release job; no human-authored content.
 > - **[`korchasa/flowai-workflow`](https://github.com/korchasa/flowai-workflow)** — universal DAG-based engine for orchestrating AI agents (YAML workflows, execution, validation, loops, resume). Published to JSR as `@korchasa/flowai-workflow`. Separate product, shares the flowai design philosophy.
 > - **[`korchasa/flowai-experiments`](https://github.com/korchasa/flowai-experiments)** — parameterized empirical studies of AI agent platforms (e.g. max `CLAUDE.md`/`AGENTS.md` token budget at which an agent still follows an embedded rule). Informs framework design decisions.
@@ -164,14 +164,13 @@ To pull a newer version of the primitives themselves, use your IDE's own plugin 
 
 ## How It Works
 
-flowai is a set of **Commands**, **Skills**, and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, OpenAI Codex, etc.) load into context to follow structured workflows.
+flowai is a set of **Skills** and **Agents** — markdown instruction files that AI coding assistants (Cursor, Claude Code, OpenCode, OpenAI Codex, etc.) load into context to follow structured workflows.
 
-- **Commands** (`framework/<pack>/commands/<name>/SKILL.md`) — user-invoked workflows (e.g. `/push`). The agent does not auto-discover them.
-- **Skills** (`framework/<pack>/skills/<name>/SKILL.md`) — agent-invocable capabilities. The agent picks them up automatically when relevant.
+- **Skills** (`framework/<pack>/skills/<name>/SKILL.md`) — workflows and capabilities. The agent picks them up automatically when relevant, and you can also call any of them by name (e.g. `/push`).
 - **Agents** (`framework/<pack>/agents/<name>.md`) — role definitions with specialized capabilities.
 - **Documentation** (`documents/`) — persistent project memory across sessions.
 
-Both commands and skills install into `.{ide}/skills/`. The only IDE-visible difference is a `disable-model-invocation: true` flag on commands, injected by the plugin builder (`scripts/build-plugins.ts`) based on the source directory.
+Skills install into `.{ide}/skills/`.
 
 AI models lose context between sessions, and unsurfaced AI decisions erode the human's mental model (cognitive debt). flowai compensates by storing all decisions, requirements, and architecture in structured docs that the agent reads at the start of every session — and by surfacing every above-class/method decision to the human as work proceeds.
 
@@ -188,9 +187,9 @@ The framework is organized into **packs** — modular groups of skills, agents, 
 
 ### core
 
-Base commands for development workflows (commit, plan, review, init, etc.).
+Base workflows for development (commit, plan, review, push, ship, init, etc.). Every one of them is a skill: the agent loads it when your request matches, and you can also call it by name.
 
-**Commands:**
+**Skills:**
 - `init` — project initialization (AGENTS.md, docs scaffolding, dev commands)
 - `review-commit-push` — tail-of-cycle composite: review → commit → push → reflect on an already-written uncommitted diff (3 explicit gates; no planning or implementation phase)
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
@@ -198,8 +197,6 @@ Base commands for development workflows (commit, plan, review, init, etc.).
 - `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)
 - `update` — reconcile project AGENTS.md/CLAUDE.md/scaffolded artifacts with framework templates
 - `adapt` — adapt project-local skills/agents/hooks/assets to project specifics (standalone)
-
-**Skills:**
 - `commit` — streamlined atomic commits (targeted doc sync, inline grouping)
 - `review-and-commit` — streamlined review + commit (reuses diff across phases)
 - `reflect-gate` — closes a session: audits it, applies and commits the instruction-file fixes, asks whether to push
@@ -346,7 +343,7 @@ The full model — each observed failure mode, the principle that answers it, an
 
 ```
 framework/              # THE PRODUCT — rendered into the plugin marketplace
-  core/                 #   Core workflow commands and agents
+  core/                 #   Core workflow skills and agents
   engineering/          #   Procedural engineering knowledge
   devtools/             #   Skill/agent authoring tools
   deno/                 #   Deno-specific skills

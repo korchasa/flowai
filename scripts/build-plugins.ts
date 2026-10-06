@@ -2,7 +2,7 @@
 // implements [REF:fr:dist.marketplace | FR-DIST.MARKETPLACE]
 // Build a shared Claude Code + Codex plugin tree from framework/<pack>/.
 //
-// Reads `framework/<pack>/{pack.yaml,commands,skills,agents,hooks,assets}` and
+// Reads `framework/<pack>/{pack.yaml,skills,agents,hooks,assets}` and
 // emits a plugin-shaped tree at `--out`:
 //
 //   <out>/.claude-plugin/marketplace.json
@@ -16,7 +16,7 @@
 //
 // Transform passes (in order):
 //   (a) scope filter — drop primitives with `scope: project-only`.
-//   (b) emit skills + commands; commands get disable-model-invocation injected.
+//   (b) emit skills; a pack that still carries `commands/` fails the build.
 //       Supporting files are copied without `acceptance-tests/` and without
 //       the primitive's own unit tests (`*_test.ts`, `*.test.ts`).
 //   (c) asset copy + path rewrite — pack-level `assets/*` referenced by SKILL.md
@@ -88,7 +88,6 @@ const CLAUDE_AGENT_KEY_ORDER = [
 const SKILL_KEY_ORDER = [
   "name",
   "description",
-  "disable-model-invocation",
   "argument-hint",
   "allowed-tools",
   "model",
@@ -156,7 +155,7 @@ export interface PluginPackArtifact {
   version: string;
   tags: string[];
   hasHooks: boolean;
-  /** False for hook-only packs (no commands/skills) → Claude-only plugin,
+  /** False for hook-only packs (no skills) → Claude-only plugin,
    *  excluded from Codex outputs since the Codex schema mandates skills. */
   hasSkills: boolean;
   license?: string;
@@ -303,22 +302,23 @@ async function buildPack(
     packManifest.description ?? `flowai ${ctx.packName} pack`,
   );
 
+  // [REF:fr:packs.agent-commit | FR-PACKS.AGENT-COMMIT]: the user-only `commands/` kind was removed. A pack
+  // that still carries the directory would otherwise ship without it.
+  const strayCommands = join(ctx.packDir, "commands");
+  if (await exists(strayCommands)) {
+    throw new Error(
+      `${strayCommands}: the commands/ kind was removed (FR-PACKS.AGENT-COMMIT); ` +
+        `move each primitive to skills/.`,
+    );
+  }
+
   const collectedTags = new Set<string>();
   const primitiveNames = await collectPackPrimitiveNames(ctx.packDir);
   const slashRewriter = makeSlashRewriter(pluginName, primitiveNames);
 
   await emitPrimitives({
-    sourceDir: join(ctx.packDir, "commands"),
-    outDir: join(pluginRoot, "skills"),
-    kind: "command",
-    packDir: ctx.packDir,
-    collectedTags,
-    slashRewriter,
-  });
-  await emitPrimitives({
     sourceDir: join(ctx.packDir, "skills"),
     outDir: join(pluginRoot, "skills"),
-    kind: "skill",
     packDir: ctx.packDir,
     collectedTags,
     slashRewriter,
@@ -332,7 +332,7 @@ async function buildPack(
     outDir: join(pluginRoot, "hooks"),
   });
   // emitPrimitives only creates the skills/ output dir when the pack actually
-  // has commands or skills; a hook-only pack (e.g. `beta`) has none, so
+  // has skills; a hook-only pack (e.g. `beta`) has none, so
   // the Codex manifest must omit the skills component (validate-plugins.ts
   // rejects a declared-but-absent component path).
   const hasSkills = await exists(join(pluginRoot, "skills"));
@@ -437,7 +437,6 @@ async function emitCodexPluginManifest(
 interface EmitPrimitivesOpts {
   sourceDir: string;
   outDir: string;
-  kind: "command" | "skill";
   packDir: string;
   collectedTags: Set<string>;
   slashRewriter: (text: string) => string;
@@ -484,7 +483,6 @@ async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
     }
 
     const transformed = transformSkillFile(sourceText, {
-      kind: opts.kind,
       sourceFile: skillFile,
       slashRewriter: opts.slashRewriter,
       collectedTags: opts.collectedTags,
@@ -533,18 +531,15 @@ async function collectPackPrimitiveNames(
   packDir: string,
 ): Promise<Set<string>> {
   const names = new Set<string>();
-  for (const dirName of ["commands", "skills"]) {
-    const dir = join(packDir, dirName);
-    if (!(await exists(dir))) continue;
-    for await (const entry of Deno.readDir(dir)) {
-      if (entry.isDirectory) names.add(stripFlowaiPrefix(entry.name));
-    }
+  const dir = join(packDir, "skills");
+  if (!(await exists(dir))) return names;
+  for await (const entry of Deno.readDir(dir)) {
+    if (entry.isDirectory) names.add(stripFlowaiPrefix(entry.name));
   }
   return names;
 }
 
 interface TransformSkillCtx {
-  kind: "command" | "skill";
   sourceFile: string;
   slashRewriter: (text: string) => string;
   collectedTags: Set<string>;
@@ -562,21 +557,11 @@ export function transformSkillFile(
   const body = text.slice(m[0].length);
   const fm = parseYaml(rawFm) as Record<string, unknown>;
 
-  if (ctx.kind === "command" && "disable-model-invocation" in fm) {
-    throw new Error(
-      `FR-PACKS.CMD-INVARIANT violated: ${ctx.sourceFile} carries disable-model-invocation in source. ` +
-        `Commands must rely on writer injection.`,
-    );
-  }
-  if (ctx.kind === "skill" && "disable-model-invocation" in fm) {
+  if ("disable-model-invocation" in fm) {
     throw new Error(
       `FR-PACKS.SKILL-INVARIANT violated: ${ctx.sourceFile} carries disable-model-invocation. ` +
-        `Move the primitive under commands/ if it is user-only.`,
+        `Every flowai primitive is agent-invocable; there is no user-only kind.`,
     );
-  }
-
-  if (ctx.kind === "command") {
-    fm["disable-model-invocation"] = true;
   }
 
   // The tier owns `effort`; a concrete model id leaves a standalone effort alone.

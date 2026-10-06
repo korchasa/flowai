@@ -308,7 +308,7 @@ Deno.test("skips-generated-and-fixture-surfaces", () => {
   for (
     const p of [
       "documents/design-notes.md",
-      "framework/core/commands/adapt/SKILL.md",
+      "framework/core/skills/adapt/SKILL.md",
       "README.md",
     ]
   ) {

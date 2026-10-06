@@ -1,6 +1,6 @@
 /**
  * Benchmark scenario discovery + filter/override helpers.
- * Walks `framework/<pack>/{skills,commands,agents,benchmarks}/.../mod.ts`.
+ * Walks `framework/<pack>/{skills,agents,acceptance-tests}/.../mod.ts`.
  */
 import { dirname, join } from "@std/path";
 import { existsSync, walk } from "@std/fs";
@@ -55,8 +55,8 @@ async function importScenariosFromDir(
 }
 
 /**
- * Walks `framework/<pack>/skills/`, `framework/<pack>/commands/`,
- * `framework/<pack>/agents/`, and `framework/<pack>/acceptance-tests/` for
+ * Walks `framework/<pack>/skills/`, `framework/<pack>/agents/`, and
+ * `framework/<pack>/acceptance-tests/` for
  * benchmark scenario mod.ts files.
  */
 export async function discoverScenarios(): Promise<BenchmarkScenario[]> {
@@ -70,14 +70,9 @@ export async function discoverScenarios(): Promise<BenchmarkScenario[]> {
   for await (const packEntry of Deno.readDir(frameworkDir)) {
     if (!packEntry.isDirectory) continue;
 
-    // framework/<pack>/{skills,commands,agents,benchmarks}/<name>/acceptance-tests/*/mod.ts
+    // framework/<pack>/{skills,agents}/<name>/acceptance-tests/*/mod.ts
     await importScenariosFromDir(
       join(frameworkDir, packEntry.name, "skills"),
-      packEntry.name,
-      scenarios,
-    );
-    await importScenariosFromDir(
-      join(frameworkDir, packEntry.name, "commands"),
       packEntry.name,
       scenarios,
     );

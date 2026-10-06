@@ -71,16 +71,6 @@ export async function buildPrimitiveMap(
       }
     } catch { /* no skills/ */ }
 
-    // Commands: directory names under commands/ (user-only primitives)
-    const commandsDir = join(packDir, "commands");
-    try {
-      for await (const cmd of Deno.readDir(commandsDir)) {
-        if (cmd.isDirectory) {
-          map.set(cmd.name, pack.name);
-        }
-      }
-    } catch { /* no commands/ */ }
-
     // Agents: file stems under agents/
     const agentsDir = join(packDir, "agents");
     try {
@@ -159,25 +149,22 @@ export async function validatePackRefs(
       continue;
     }
 
-    // Scan SKILL.md files in skills/ and commands/ (both install from
-    // SKILL.md; the subdir only differs for author-facing classification).
-    for (const subdir of ["skills", "commands"]) {
-      const dir = join(packDir, subdir);
-      try {
-        for await (const entry of Deno.readDir(dir)) {
-          if (!entry.isDirectory) continue;
-          const skillMdPath = join(dir, entry.name, "SKILL.md");
-          try {
-            const content = await Deno.readTextFile(skillMdPath);
-            const relPath =
-              `framework/${pack.name}/${subdir}/${entry.name}/SKILL.md`;
-            allErrors.push(
-              ...findCrossPackRefs(content, pack.name, relPath, primitiveMap),
-            );
-          } catch { /* no SKILL.md */ }
-        }
-      } catch { /* no skills/ or commands/ */ }
-    }
+    // Scan SKILL.md files in skills/
+    const skillsDir = join(packDir, "skills");
+    try {
+      for await (const entry of Deno.readDir(skillsDir)) {
+        if (!entry.isDirectory) continue;
+        const skillMdPath = join(skillsDir, entry.name, "SKILL.md");
+        try {
+          const content = await Deno.readTextFile(skillMdPath);
+          const relPath =
+            `framework/${pack.name}/skills/${entry.name}/SKILL.md`;
+          allErrors.push(
+            ...findCrossPackRefs(content, pack.name, relPath, primitiveMap),
+          );
+        } catch { /* no SKILL.md */ }
+      }
+    } catch { /* no skills/ */ }
 
     // Scan agent .md files
     const agentsDir = join(packDir, "agents");

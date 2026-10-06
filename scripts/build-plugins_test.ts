@@ -4,7 +4,12 @@
 // Tests run the real build against the actual `framework/core/` tree, plus
 // hermetic fixtures for fail-fast invariant violations. No network.
 
-import { assert, assertEquals, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "@std/assert";
 import { join } from "@std/path";
 import { parse as parseYaml } from "@std/yaml";
 import {
@@ -321,18 +326,18 @@ Deno.test("codex-payload codex-payload-matches-shared-transform-contract", async
       if (e.isDirectory) names.push(e.name);
     }
     names.sort();
-    assert(names.includes("push"), "command payload missing");
+    assert(names.includes("push"), "push payload missing");
     assert(names.includes("plan"), "skill payload missing");
     assert(
       names.includes("update"),
-      "plugin-installable update command missing",
+      "plugin-installable update skill missing",
     );
     assert(!names.includes("flowai-push"), "flowai- prefix leaked");
 
-    const cmdFm = await readFrontmatter(
+    const pushFm = await readFrontmatter(
       join(skillsDir, "push", "SKILL.md"),
     );
-    assertEquals(cmdFm["disable-model-invocation"], true);
+    assertEquals(pushFm["disable-model-invocation"], undefined);
 
     const skillText = await Deno.readTextFile(
       join(skillsDir, "update", "SKILL.md"),
@@ -345,7 +350,7 @@ Deno.test("codex-payload codex-payload-matches-shared-transform-contract", async
   }
 });
 
-Deno.test("skill-and-command-dirs-have-prefix-stripped", async () => {
+Deno.test("skill-dirs-have-prefix-stripped", async () => {
   const out = await tempOut();
   try {
     await buildPlugins({
@@ -380,7 +385,7 @@ Deno.test("short source primitive names emit stable short plugin payload", async
   try {
     const frameworkDir = join(root, "framework");
     const packDir = join(frameworkDir, "core");
-    await Deno.mkdir(join(packDir, "commands", "commit"), {
+    await Deno.mkdir(join(packDir, "skills", "commit"), {
       recursive: true,
     });
     await Deno.mkdir(join(packDir, "skills", "review"), {
@@ -392,7 +397,7 @@ Deno.test("short source primitive names emit stable short plugin payload", async
       "name: core\nversion: 1.0.0\ndescription: Core pack\n",
     );
     await Deno.writeTextFile(
-      join(packDir, "commands", "commit", "SKILL.md"),
+      join(packDir, "skills", "commit", "SKILL.md"),
       "---\nname: commit\ndescription: Commit changes\n---\nRun /review.\n",
     );
     await Deno.writeTextFile(
@@ -418,10 +423,10 @@ Deno.test("short source primitive names emit stable short plugin payload", async
     }
     names.sort();
     assertEquals(names, ["commit", "review"]);
-    const commandText = await Deno.readTextFile(
+    const commitText = await Deno.readTextFile(
       join(skillsDir, "commit", "SKILL.md"),
     );
-    assertStringIncludes(commandText, "/flowai:review");
+    assertStringIncludes(commitText, "/flowai:review");
     const skillText = await Deno.readTextFile(
       join(skillsDir, "review", "SKILL.md"),
     );
@@ -440,39 +445,30 @@ Deno.test("short source primitive names emit stable short plugin payload", async
   }
 });
 
-Deno.test(
-  "commands-get-disable-model-invocation-injected-skills-do-not",
-  async () => {
-    const out = await tempOut();
-    try {
-      await buildPlugins({
-        packs: ["core"],
-        frameworkDir: FRAMEWORK,
-        outDir: out,
-      });
-
-      const cmdFm = await readFrontmatter(
-        join(out, "plugins", "flowai", "skills", "push", "SKILL.md"),
-      );
+Deno.test("no-emitted-skill-carries-disable-model-invocation", async () => {
+  // [REF:fr:packs.agent-commit | FR-PACKS.AGENT-COMMIT]: every primitive is agent-invocable, the former
+  // commands (`push`, `ship`, `init`, ...) included.
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    const skillsDir = join(out, "plugins", "flowai", "skills");
+    for await (const e of Deno.readDir(skillsDir)) {
+      if (!e.isDirectory) continue;
+      const fm = await readFrontmatter(join(skillsDir, e.name, "SKILL.md"));
       assertEquals(
-        cmdFm["disable-model-invocation"],
-        true,
-        "command must carry disable-model-invocation: true",
-      );
-
-      const sklFm = await readFrontmatter(
-        join(out, "plugins", "flowai", "skills", "review", "SKILL.md"),
-      );
-      assertEquals(
-        sklFm["disable-model-invocation"],
+        fm["disable-model-invocation"],
         undefined,
-        "skill must NOT carry disable-model-invocation",
+        `${e.name} must NOT carry disable-model-invocation`,
       );
-    } finally {
-      await Deno.remove(out, { recursive: true });
     }
-  },
-);
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
 
 Deno.test("agent-frontmatter-matches-claude-native-mapping", () => {
   const universal = {
@@ -720,12 +716,14 @@ async function listAllFiles(root: string): Promise<string[]> {
   return out;
 }
 
-Deno.test("fails-fast-on-cmd-invariant-violation", async () => {
+Deno.test("fails-fast-on-stray-commands-directory", async () => {
+  // [REF:fr:packs.agent-commit | FR-PACKS.AGENT-COMMIT]: the user-only category is gone. A pack that still
+  // carries `commands/` must fail the build, not be skipped in silence.
   const fx = await Deno.makeTempDir({ prefix: "flowai-fix-cmd-" });
   const out = await tempOut();
   try {
     const pack = join(fx, "framework", "core");
-    await Deno.mkdir(join(pack, "commands", "bad"), { recursive: true });
+    await Deno.mkdir(join(pack, "commands", "stray"), { recursive: true });
     await Deno.writeTextFile(
       join(fx, "deno.json"),
       JSON.stringify({ version: "0.0.1" }),
@@ -735,30 +733,18 @@ Deno.test("fails-fast-on-cmd-invariant-violation", async () => {
       'name: core\nversion: "1.0.0"\ndescription: t\n',
     );
     await Deno.writeTextFile(
-      join(pack, "commands", "bad", "SKILL.md"),
-      "---\nname: bad\ndescription: x\ndisable-model-invocation: true\n---\nbody\n",
+      join(pack, "commands", "stray", "SKILL.md"),
+      "---\nname: stray\ndescription: x\n---\nbody\n",
     );
-    let threw = false;
-    try {
-      await buildPlugins({
+    const err = await assertRejects(() =>
+      buildPlugins({
         packs: ["core"],
         frameworkDir: join(fx, "framework"),
         outDir: out,
-      });
-    } catch (e) {
-      threw = true;
-      assertStringIncludes(
-        (e as Error).message,
-        "FR-PACKS.CMD-INVARIANT",
-        "error must name violated invariant",
-      );
-      assertStringIncludes(
-        (e as Error).message,
-        "bad",
-        "error must name offending file",
-      );
-    }
-    assert(threw, "build should have thrown on CMD-INVARIANT violation");
+      })
+    );
+    assertStringIncludes((err as Error).message, join(pack, "commands"));
+    assertStringIncludes((err as Error).message, "skills/");
   } finally {
     await Deno.remove(fx, { recursive: true });
     await Deno.remove(out, { recursive: true }).catch(() => {});
@@ -833,8 +819,8 @@ Deno.test("omits-primitive-unit-tests-from-payload", async () => {
   try {
     const packDir = join(root, "framework", "core");
     const sources = {
-      command: join(packDir, "commands", "tool-cmd"),
-      skill: join(packDir, "skills", "tool-skill"),
+      "tool-a": join(packDir, "skills", "tool-a"),
+      "tool-b": join(packDir, "skills", "tool-b"),
     };
     for (const [kind, dir] of Object.entries(sources)) {
       await Deno.mkdir(join(dir, "scripts", "lib"), { recursive: true });
@@ -868,7 +854,7 @@ Deno.test("omits-primitive-unit-tests-from-payload", async () => {
     });
 
     const skillsDir = join(out, "plugins", "flowai", "skills");
-    for (const name of ["tool-cmd", "tool-skill"]) {
+    for (const name of ["tool-a", "tool-b"]) {
       const files = (await listAllFiles(join(skillsDir, name))).sort();
       assertEquals(files, [
         "SKILL.md",
@@ -916,7 +902,7 @@ Deno.test("emits-agents-with-claude-native-frontmatter", async () => {
 
 // ---------- New round-2 transforms ----------
 
-Deno.test("plugin-includes-project-integration-update-command", async () => {
+Deno.test("plugin-includes-project-integration-update-skill", async () => {
   const out = await tempOut();
   try {
     await buildPlugins({
@@ -931,7 +917,7 @@ Deno.test("plugin-includes-project-integration-update-command", async () => {
     }
     assert(
       names.includes("update"),
-      `update command must be present for plugin/user-level installs, got: ${
+      `update skill must be present for plugin/user-level installs, got: ${
         names.join(", ")
       }`,
     );
@@ -1059,7 +1045,7 @@ Deno.test("slash-rewriter-skips-file-paths-and-identifiers", async () => {
   try {
     const pack = join(fx, "framework", "core");
     await Deno.mkdir(join(pack, "skills", "a"), { recursive: true });
-    await Deno.mkdir(join(pack, "commands", "commit"), { recursive: true });
+    await Deno.mkdir(join(pack, "skills", "commit"), { recursive: true });
     await Deno.writeTextFile(
       join(fx, "deno.json"),
       JSON.stringify({ version: "0.0.1" }),
@@ -1069,7 +1055,7 @@ Deno.test("slash-rewriter-skips-file-paths-and-identifiers", async () => {
       'name: core\nversion: "1.0.0"\ndescription: t\n',
     );
     await Deno.writeTextFile(
-      join(pack, "commands", "commit", "SKILL.md"),
+      join(pack, "skills", "commit", "SKILL.md"),
       [
         "---",
         "name: commit",
@@ -1115,7 +1101,7 @@ Deno.test("rewrites-cross-skill-slash-invocations", async () => {
   try {
     const pack = join(fx, "framework", "core");
     await Deno.mkdir(join(pack, "skills", "a"), { recursive: true });
-    await Deno.mkdir(join(pack, "commands", "commit"), { recursive: true });
+    await Deno.mkdir(join(pack, "skills", "commit"), { recursive: true });
     await Deno.mkdir(join(pack, "skills", "plan"), { recursive: true });
     await Deno.mkdir(join(pack, "skills", "review"), { recursive: true });
     await Deno.writeTextFile(
@@ -1127,7 +1113,7 @@ Deno.test("rewrites-cross-skill-slash-invocations", async () => {
       'name: core\nversion: "1.0.0"\ndescription: t\n',
     );
     await Deno.writeTextFile(
-      join(pack, "commands", "commit", "SKILL.md"),
+      join(pack, "skills", "commit", "SKILL.md"),
       [
         "---",
         "name: commit",

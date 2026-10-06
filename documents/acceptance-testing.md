@@ -4,7 +4,7 @@ This document describes the **benchmark** (regression test) infrastructure in `f
 
 ## 0. Benchmarks vs Experiments
 
-- **Benchmark** (this repo) — regression test for a single framework primitive (skill, command, agent). Binary pass/fail per scenario. Run via `deno task bench`. Scenarios co-located with primitive under `framework/<pack>/.../<primitive>/acceptance-tests/`. Run artifacts in `acceptance-tests/runs/` (gitignored). Goal: detect regressions in primitive behavior.
+- **Benchmark** (this repo) — regression test for a single framework primitive (skill, agent). Binary pass/fail per scenario. Run via `deno task bench`. Scenarios co-located with primitive under `framework/<pack>/.../<primitive>/acceptance-tests/`. Run artifacts in `acceptance-tests/runs/` (gitignored). Goal: detect regressions in primitive behavior.
 - **Experiment** ([`flowai-experiments`](https://github.com/korchasa/flowai-experiments)) — parameterized sweep producing a curve or headline number. Not tied to any primitive. Goal: empirically measure a system characteristic (e.g., max memory file length at which adherence stays ≥80%). See the sibling repo for infrastructure, CLI, methodology, and committed results.
 
 Key differences:
@@ -20,22 +20,15 @@ The benchmarking system (`scripts/task-bench.ts`) evaluates agent performance by
 
 ## 2. Directory Structure
 
-Scenarios are co-located with each primitive (commands, skills, agents); runs and infra stored centrally in `acceptance-tests/`.
+Scenarios are co-located with each primitive (skills, agents); runs and infra stored centrally in `acceptance-tests/`.
 
 ```text
-framework/<pack>/commands/<command>/
-├── SKILL.md                    # User-only primitive
-└── acceptance-tests/
-    └── <scenario>/
-        ├── mod.ts              # Scenario definition
-        └── fixture/            # Test fixtures (optional)
-
 framework/<pack>/skills/<skill>/
 ├── SKILL.md                    # Agent-invocable primitive
 └── acceptance-tests/
     └── <scenario>/
-        ├── mod.ts
-        └── fixture/
+        ├── mod.ts              # Scenario definition
+        └── fixture/            # Test fixtures (optional)
 
 acceptance-tests/
 ├── runs/                       # All run artifacts (git-ignored)

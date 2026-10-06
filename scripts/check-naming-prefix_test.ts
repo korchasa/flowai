@@ -14,10 +14,6 @@ Deno.test("validateNamingPrefix: unprefixed skill name passes", () => {
   assertEquals(validateNamingPrefix("fix-tests", "skill"), []);
 });
 
-Deno.test("validateNamingPrefix: unprefixed command name passes", () => {
-  assertEquals(validateNamingPrefix("commit", "command"), []);
-});
-
 Deno.test("validateNamingPrefix: setup-style skill name passes", () => {
   assertEquals(
     validateNamingPrefix(
@@ -46,15 +42,6 @@ Deno.test("validateNamingPrefix: prefixed skill is error (NP-1)", () => {
   assertEquals(errors[0].message.includes("flowai-"), true);
 });
 
-Deno.test("validateNamingPrefix: prefixed command is error (NP-1)", () => {
-  const errors = validateNamingPrefix(
-    `${RETIRED_SOURCE_PREFIX}commit`,
-    "command",
-  );
-  assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "NP-1");
-});
-
 Deno.test("validateNamingPrefix: prefixed agent is error (NP-1)", () => {
   const errors = validateNamingPrefix(
     `${RETIRED_SOURCE_PREFIX}console-expert`,
@@ -67,15 +54,6 @@ Deno.test("validateNamingPrefix: prefixed agent is error (NP-1)", () => {
 Deno.test("validateNamingPrefix: empty name is error", () => {
   const errors = validateNamingPrefix("", "skill");
   assertEquals(errors.length, 1);
-});
-
-// --- NP-2: command prefix convention ---
-
-Deno.test("validateNamingPrefix: command with retired skill-name prefix is error (NP-2)", () => {
-  // This name pattern belongs under skills/, not commands/.
-  const errors = validateNamingPrefix(`${RETIRED_PREFIX}foo`, "command");
-  assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "NP-2");
 });
 
 // --- NP-3: skill prefix convention ---
@@ -141,11 +119,11 @@ Deno.test("validateAllNamingPrefixes: non-existent dir returns empty", async () 
   assertEquals(errors, []);
 });
 
-Deno.test("validateAllNamingPrefixes: duplicate command and skill installed name is error (NP-4)", async () => {
+Deno.test("validateAllNamingPrefixes: skill name duplicated across packs is error (NP-4)", async () => {
   const tmp = await Deno.makeTempDir();
   try {
     const fw = join(tmp, "framework");
-    await Deno.mkdir(join(fw, "core", "commands", "review"), {
+    await Deno.mkdir(join(fw, "engineering", "skills", "review"), {
       recursive: true,
     });
     await Deno.mkdir(join(fw, "core", "skills", "review"), {

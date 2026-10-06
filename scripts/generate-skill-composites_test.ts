@@ -55,7 +55,7 @@ Deno.test("manifest_layout: generator inputs live outside primitive directories"
   // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
   const m = await loadManifest(MANIFEST_PATH);
   const primitiveInputRe =
-    /^framework\/[^/]+\/(?:commands|skills)\/[^/]+\/_(?:atom|composite)\.md$/;
+    /^framework\/[^/]+\/skills\/[^/]+\/_(?:atom|composite)\.md$/;
 
   for (const [id, atom] of Object.entries(m.atoms)) {
     assertEquals(
@@ -124,7 +124,7 @@ Deno.test("manifest_loads: composite phase must specify atom XOR inline", async 
 atoms: {}
 composites:
   foo:
-    target: framework/core/commands/foo/SKILL.md
+    target: framework/core/skills/foo/SKILL.md
     wrapper: framework/composites/foo.md
     phases:
       - title: P
@@ -328,7 +328,7 @@ Deno.test("manifest_loads: composite must reference an existing atom", async () 
 atoms: {}
 composites:
   foo:
-    target: framework/core/commands/foo/SKILL.md
+    target: framework/core/skills/foo/SKILL.md
     wrapper: framework/composites/foo.md
     phases:
       - title: P
@@ -399,11 +399,11 @@ Deno.test("validateCompositeCanon: rejects description missing 'Self-contained' 
 Deno.test("checkGitignoreParity: reports a missing target", async () => {
   const fakeTargets = [
     ...await listTargets(),
-    "framework/core/commands/nonexistent/SKILL.md",
+    "framework/core/skills/nonexistent/SKILL.md",
   ];
   const diff = await checkGitignoreParity(fakeTargets);
   assertEquals(diff?.missing, [
-    "framework/core/commands/nonexistent/SKILL.md",
+    "framework/core/skills/nonexistent/SKILL.md",
   ]);
   assertEquals(diff?.extra, []);
 });

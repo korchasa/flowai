@@ -26,7 +26,7 @@ atoms:
       TERMINATION: TOTAL_STOP
   push:
     source: framework/atoms/push.md
-    target: framework/core/commands/push/SKILL.md
+    target: framework/core/skills/push/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
   reflect-gate:
@@ -52,7 +52,7 @@ composites:
         params:
           TERMINATION: TOTAL_STOP
   review-commit-push:
-    target: framework/core/commands/review-commit-push/SKILL.md
+    target: framework/core/skills/review-commit-push/SKILL.md
     wrapper: framework/composites/review-commit-push.md
     phases:
       - title: Review Phase
@@ -72,7 +72,7 @@ composites:
         params:
           TERMINATION: TOTAL_STOP
   ship:
-    target: framework/core/commands/ship/SKILL.md
+    target: framework/core/skills/ship/SKILL.md
     wrapper: framework/composites/ship.md
     phases:
       - title: Plan Phase
@@ -100,7 +100,7 @@ composites:
         params:
           TERMINATION: TOTAL_STOP
   ship-task:
-    target: framework/core/commands/ship-task/SKILL.md
+    target: framework/core/skills/ship-task/SKILL.md
     wrapper: framework/composites/ship-task.md
     phases:
       - title: Implement Phase

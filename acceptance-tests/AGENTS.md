@@ -11,13 +11,12 @@ Evidence-based agent evaluation infrastructure (run artifacts and config).
 
 Scenario definitions live co-located with primitives:
 `framework/<pack>/skills/<skill>/acceptance-tests/<scenario>/mod.ts`,
-`framework/<pack>/commands/<command>/acceptance-tests/<scenario>/mod.ts`,
 `framework/<pack>/agents/<agent>/acceptance-tests/<scenario>/mod.ts`,
 `framework/<pack>/acceptance-tests/<scenario>/mod.ts` (pack-level).
 
 ## Key Decisions
 
-- Scenarios are discovered dynamically via `walk()` over `framework/<pack>/{skills,commands,agents,acceptance-tests}/` in `scripts/task-acceptance-tests.ts`.
+- Scenarios are discovered dynamically via `walk()` over `framework/<pack>/{skills,agents,acceptance-tests}/` in `scripts/task-acceptance-tests.ts`.
 - Evaluation uses LLM-Judge (`scripts/acceptance-tests/lib/judge.ts`) with semantic checklist items.
 - Each run is isolated in a temporary sandbox directory.
 - Multi-run support for statistical pass-rate analysis.

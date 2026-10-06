@@ -17,7 +17,7 @@
 
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
-import { analyzeProject } from "../../framework/core/commands/init/scripts/generate_agents.ts";
+import { analyzeProject } from "../../framework/core/skills/init/scripts/generate_agents.ts";
 
 /**
  * Fill the AGENTS template with benchmark-appropriate values. Pure: no I/O, so

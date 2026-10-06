@@ -252,30 +252,6 @@ export function resolveSkillModel(content: string, ideName: string): string {
   return content.replace(fm, () => newFm);
 }
 
-/** Inject `disable-model-invocation: true` into the leading frontmatter. */
-export function injectDisableModelInvocation(content: string): string {
-  const head = content.slice(0, 200);
-  const crlf = /\r\n/.test(head);
-  const eol = crlf ? "\r\n" : "\n";
-
-  const fmRe = /^---\r?\n([\s\S]*?)\r?\n---/;
-  const match = content.match(fmRe);
-  if (!match) {
-    throw new Error(
-      "injectDisableModelInvocation: content has no frontmatter block",
-    );
-  }
-
-  const fmBody = match[1];
-  if (/^\s*disable-model-invocation\s*:/m.test(fmBody)) {
-    return content;
-  }
-
-  const newFmBody = fmBody + eol + "disable-model-invocation: true";
-  const newFrontmatter = `---${eol}${newFmBody}${eol}---`;
-  return content.replace(fmRe, newFrontmatter);
-}
-
 /**
  * Renders a universal agent file as a Codex custom-agent role. Codex reads
  * roles ONLY from `$CODEX_HOME/agents/<name>.toml` (a project-local

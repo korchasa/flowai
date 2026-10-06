@@ -110,7 +110,7 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=framework/*/skills/*/acceptance-tests,framework/*/commands/*/acceptance-tests,framework/*/agents/*/acceptance-tests,framework/*/acceptance-tests/*/fixture",
+          "--ignore=framework/*/skills/*/acceptance-tests,framework/*/agents/*/acceptance-tests,framework/*/acceptance-tests/*/fixture",
           "framework",
         ],
       },

@@ -1,6 +1,6 @@
 ---
 name: push
-description: "User-invoked safe git push. Confirms before setting first-time upstream and before pushing a diverged main/master, and refuses force pushes without explicit authorization. Self-contained — execute the inlined steps directly."
+description: "Use when the user asks to push the current branch — confirms a first-time upstream and a diverged main, and refuses force pushes without explicit authorization. Not for committing or reviewing. Self-contained — execute the inlined steps directly."
 argument-hint: optional branch name (defaults to current branch)
 _params:
   TERMINATION:

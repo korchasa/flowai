@@ -4,14 +4,13 @@ import {
   collectDocumentationSchemaIndirectionErrors,
   descriptionHasWhenTrigger,
   discoverSkillsDirs,
-  inferKind,
   isFrameworkSkillsDir,
   validateAllSkills,
   validateDescriptionLength,
   validateDescriptionWhenTrigger,
   validateDocumentationSchemaIndirection,
   validateIdeNeutrality,
-  validateKindInvariants,
+  validateNoInvocationFlag,
   validatePathResolution,
   validateProgressiveDisclosure,
   validateShellInterpolation,
@@ -477,14 +476,14 @@ Deno.test("doc schema indirection: allows SALP traceability links in source comm
   // still reject string literals that hard-code the doc path.
   assertEquals(
     validateDocumentationSchemaIndirection(
-      "framework/core/commands/init/scripts/generate_agents.ts",
+      "framework/core/skills/init/scripts/generate_agents.ts",
       "// [REF:fr:init | FR-INIT] — init\n",
     ),
     [],
   );
 
   const errors = validateDocumentationSchemaIndirection(
-    "framework/core/commands/init/scripts/generate_agents.ts",
+    "framework/core/skills/init/scripts/generate_agents.ts",
     'const path = "documents/requirements.md";\n',
   );
   assertEquals(errors.length, 1);
@@ -495,7 +494,6 @@ Deno.test("doc schema indirection: scans distributed primitive resources", async
   try {
     const files = [
       "framework/core/skills/example/SKILL.md",
-      "framework/core/commands/example/SKILL.md",
       "framework/core/agents/example.md",
       "framework/core/hooks/pre_tool_use.ts",
       "framework/core/pack.yaml",
@@ -547,49 +545,19 @@ Deno.test("ALLOWED_SUBDIRS contains expected entries", () => {
   assertEquals(ALLOWED_SUBDIRS.has("reference"), false);
 });
 
-// --- inferKind ---
+// --- validateNoInvocationFlag (FR-PACKS.SKILL-INVARIANT) ---
 
-Deno.test("inferKind: commands/ directory → command", () => {
-  assertEquals(inferKind("framework/core/commands"), "command");
-  assertEquals(inferKind("/abs/framework/core/commands"), "command");
-});
-
-Deno.test("inferKind: skills/ directory → skill", () => {
-  assertEquals(inferKind("framework/core/skills"), "skill");
-  assertEquals(inferKind("/abs/framework/engineering/skills"), "skill");
-});
-
-// --- validateKindInvariants (FR-PACKS.{CMD,SKILL}-INVARIANT) ---
-
-Deno.test("validateKindInvariants: command without flag passes", () => {
-  const errors = validateKindInvariants("commit", "command", {
-    name: "commit",
-    description: "x",
-  });
-  assertEquals(errors, []);
-});
-
-Deno.test("validateKindInvariants: command WITH flag fails", () => {
-  const errors = validateKindInvariants("commit", "command", {
-    name: "commit",
-    description: "x",
-    "disable-model-invocation": true,
-  });
-  assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-PACKS.CMD-INVARIANT");
-});
-
-Deno.test("validateKindInvariants: skill without flag passes", () => {
-  const errors = validateKindInvariants("flowai-foo", "skill", {
-    name: "flowai-foo",
+Deno.test("validateNoInvocationFlag: primitive without flag passes", () => {
+  const errors = validateNoInvocationFlag("foo", {
+    name: "foo",
     description: "y",
   });
   assertEquals(errors, []);
 });
 
-Deno.test("validateKindInvariants: skill WITH flag fails", () => {
-  const errors = validateKindInvariants("flowai-bar", "skill", {
-    name: "flowai-bar",
+Deno.test("validateNoInvocationFlag: primitive WITH flag fails", () => {
+  const errors = validateNoInvocationFlag("push", {
+    name: "push",
     description: "y",
     "disable-model-invocation": true,
   });
@@ -601,7 +569,6 @@ Deno.test("validateKindInvariants: skill WITH flag fails", () => {
 
 Deno.test("isFrameworkSkillsDir: relative framework path matches", () => {
   assertEquals(isFrameworkSkillsDir("framework/engineering/skills"), true);
-  assertEquals(isFrameworkSkillsDir("framework/core/commands"), true);
 });
 
 Deno.test("isFrameworkSkillsDir: absolute framework path matches", () => {
@@ -637,7 +604,7 @@ Deno.test("regression: discoverSkillsDirs output is accepted by isFrameworkSkill
   assertEquals(
     dirs.length > 0,
     true,
-    "expected the real framework tree to yield at least one skill/command dir",
+    "expected the real framework tree to yield at least one skills dir",
   );
   for (const dir of dirs) {
     assertEquals(
@@ -656,15 +623,14 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
   // criterion surfaces through the production aggregation path (validateAllSkills).
   const root = await Deno.makeTempDir();
   try {
-    // Violations 1 & 4 — FR-PACKS.CMD-INVARIANT (a command carrying the
-    // injected-only flag) plus FR-DESC-QUALITY's length cap, which unlike the
-    // WHEN-trigger gate covers commands too.
-    const cmd = `${root}/framework/testpack/commands/bad-cmd`;
-    await Deno.mkdir(cmd, { recursive: true });
-    const overCap = "x".repeat(DESCRIPTION_MAX_CHARS + 1);
+    // Violations 1 & 4 — FR-PACKS.SKILL-INVARIANT (a primitive carrying the
+    // retired user-only flag) plus FR-DESC-QUALITY's length cap.
+    const flagged = `${root}/framework/testpack/skills/bad-flag`;
+    await Deno.mkdir(flagged, { recursive: true });
+    const overCap = "Use when x. " + "x".repeat(DESCRIPTION_MAX_CHARS);
     await Deno.writeTextFile(
-      `${cmd}/SKILL.md`,
-      `---\nname: bad-cmd\ndescription: ${overCap}\ndisable-model-invocation: true\n---\n\n# Body\n`,
+      `${flagged}/SKILL.md`,
+      `---\nname: bad-flag\ndescription: ${overCap}\ndisable-model-invocation: true\n---\n\n# Body\n`,
     );
 
     // Violations 2 & 3 — FR-DESC-QUALITY (no WHEN phrase) + FR-UNIVERSAL.IDE-NEUTRAL
@@ -677,15 +643,14 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
     );
 
     const errors = await validateAllSkills([
-      `${root}/framework/testpack/commands`,
       `${root}/framework/testpack/skills`,
     ]);
     const criteria = new Set(errors.map((e) => e.criterion));
 
     assertEquals(
-      criteria.has("FR-PACKS.CMD-INVARIANT"),
+      criteria.has("FR-PACKS.SKILL-INVARIANT"),
       true,
-      "kind-invariant check must fire on a framework command",
+      "invocation-flag check must fire on a framework primitive",
     );
     // Both description checks emit FR-DESC-QUALITY, so a criterion-level
     // assertion cannot tell them apart — it stays green with either check
@@ -700,11 +665,11 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
     );
     assertEquals(
       descErrors.some((e) =>
-        e.skill === "bad-cmd" &&
+        e.skill === "bad-flag" &&
         e.message.includes(`limit: ${DESCRIPTION_MAX_CHARS}`)
       ),
       true,
-      "description length cap must fire on a framework command",
+      "description length cap must fire on a framework primitive",
     );
     assertEquals(
       criteria.has("FR-UNIVERSAL.IDE-NEUTRAL"),
@@ -719,7 +684,7 @@ Deno.test("regression: validateAllSkills fires every framework-only check end-to
 // --- validateDescriptionWhenTrigger (FR-DESC-QUALITY) ---
 
 Deno.test("FR-DESC-QUALITY: skill description without WHEN phrase errors", () => {
-  const errors = validateDescriptionWhenTrigger("my-skill", "skill", {
+  const errors = validateDescriptionWhenTrigger("my-skill", {
     name: "my-skill",
     description: "Rewrites text in a dense factual style with no fluff.",
   });
@@ -729,19 +694,11 @@ Deno.test("FR-DESC-QUALITY: skill description without WHEN phrase errors", () =>
 });
 
 Deno.test("FR-DESC-QUALITY: skill description with WHEN phrase passes", () => {
-  const errors = validateDescriptionWhenTrigger("my-skill", "skill", {
+  const errors = validateDescriptionWhenTrigger("my-skill", {
     name: "my-skill",
     description:
       "Rewrites text in a dense factual style. Use when the user asks to " +
       "tighten docs.",
-  });
-  assertEquals(errors, []);
-});
-
-Deno.test("FR-DESC-QUALITY: command description without WHEN phrase is exempt", () => {
-  const errors = validateDescriptionWhenTrigger("commit", "command", {
-    name: "commit",
-    description: "Commit current changes as atomic conventional commits.",
   });
   assertEquals(errors, []);
 });
@@ -776,7 +733,7 @@ Deno.test("FR-DESC-QUALITY: descriptionHasWhenTrigger recognizes allowlist phras
 
 Deno.test("FR-DESC-QUALITY: description over DESCRIPTION_MAX_CHARS is an error", () => {
   const desc = "u".repeat(DESCRIPTION_MAX_CHARS + 1);
-  const errors = validateDescriptionLength("my-skill", "skill", {
+  const errors = validateDescriptionLength("my-skill", {
     name: "my-skill",
     description: desc,
   });
@@ -787,20 +744,11 @@ Deno.test("FR-DESC-QUALITY: description over DESCRIPTION_MAX_CHARS is an error",
 });
 
 Deno.test("FR-DESC-QUALITY: description exactly at DESCRIPTION_MAX_CHARS passes", () => {
-  const errors = validateDescriptionLength("my-skill", "skill", {
+  const errors = validateDescriptionLength("my-skill", {
     name: "my-skill",
     description: "u".repeat(DESCRIPTION_MAX_CHARS),
   });
   assertEquals(errors, []);
-});
-
-Deno.test("FR-DESC-QUALITY: the length cap covers commands too", () => {
-  const errors = validateDescriptionLength("my-command", "command", {
-    name: "my-command",
-    description: "u".repeat(DESCRIPTION_MAX_CHARS + 1),
-  });
-  assertEquals(errors.length, 1);
-  assertEquals(errors[0].criterion, "FR-DESC-QUALITY");
 });
 
 // --- validateIdeNeutrality (FR-UNIVERSAL.IDE-NEUTRAL) ---

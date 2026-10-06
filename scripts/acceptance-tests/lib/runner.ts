@@ -16,7 +16,6 @@ import {
   copyRecursive,
   installCodexAgents,
   runGit,
-  userInvokedCommandOf,
 } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
 import type { CapturedToolCall } from "./acp/client.ts";
@@ -262,7 +261,6 @@ async function prepareSandboxFiles(
       dotCursorPath,
       adapter.ide,
       allowedPacks,
-      userInvokedCommandOf(scenario.skill, scenario.userQuery),
     );
   } catch (e) {
     // Missing framework dir = fatal precondition; the agent would otherwise
@@ -386,7 +384,7 @@ async function initSandboxGit(
       throw new Error(
         `Setup failure: skill "${scenario.skill}" not found in sandbox ` +
           `at ${skillMdPath}. Check that copyFrameworkToIdeDir copies ` +
-          `the primitive correctly (skills/ AND commands/).`,
+          `the primitive correctly from skills/.`,
       );
     }
   }

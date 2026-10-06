@@ -200,18 +200,16 @@ export abstract class AcceptanceTestScenario implements BenchmarkScenario {
   };
 
   get targetAgentPath(): string {
-    // Scan pack structure: framework/<pack>/{skills,commands}/<skill>/SKILL.md
+    // Scan pack structure: framework/<pack>/skills/<skill>/SKILL.md
     try {
       for (const pack of Deno.readDirSync("framework")) {
         if (!pack.isDirectory) continue;
-        for (const kind of ["skills", "commands"]) {
-          const skillPath =
-            `framework/${pack.name}/${kind}/${this.skill}/SKILL.md`;
-          try {
-            Deno.statSync(skillPath);
-            return skillPath;
-          } catch { /* not in this location */ }
-        }
+        const skillPath =
+          `framework/${pack.name}/skills/${this.skill}/SKILL.md`;
+        try {
+          Deno.statSync(skillPath);
+          return skillPath;
+        } catch { /* not in this pack */ }
       }
     } catch { /* framework dir not found */ }
     // Fallback for legacy flat structure

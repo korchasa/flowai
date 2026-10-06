@@ -2,14 +2,14 @@
  * Validates framework primitive source names.
  *
  * Checks:
- * - NP-1: Commands, skills, and agents must NOT use the retired "flowai-" source prefix.
- * - NP-2: Commands under `<pack>/commands/` must not use the retired skill-name infix.
+ * - NP-1: Skills, agents and hooks must NOT use the retired "flowai-" source prefix.
+ * - NP-2: retired with the user-only `commands/` kind (FR-PACKS.AGENT-COMMIT).
  * - NP-3: Skills under `<pack>/skills/` must not use the retired skill-name infix.
- * - NP-4: Installed names must be unique across commands and skills because both install into `.{ide}/skills/`.
+ * - NP-4: Installed skill names must be unique across packs because every pack installs into `.{ide}/skills/`.
  * - NP-5: Primitive names must not repeat their owning pack prefix.
  *
- * NP-2 and NP-3 keep the retired skill-name namespace out of new
- * primitives after the naming migration.
+ * NP-3 keeps the retired skill-name namespace out of new primitives after the
+ * naming migration.
  *
  * Exits with code 1 if any violation is found.
  */
@@ -24,7 +24,7 @@ const PACK_ALIAS_SEGMENTS: Readonly<Record<string, readonly string[]>> = {
 
 export type NamingError = {
   name: string;
-  kind: "skill" | "command" | "agent" | "hook";
+  kind: "skill" | "agent" | "hook";
   criterion: string;
   message: string;
 };
@@ -35,7 +35,7 @@ export type NamingError = {
  */
 export function validateNamingPrefix(
   name: string,
-  kind: "skill" | "command" | "agent" | "hook",
+  kind: "skill" | "agent" | "hook",
   packName?: string,
 ): NamingError[] {
   if (name.length === 0) {
@@ -57,26 +57,13 @@ export function validateNamingPrefix(
     }];
   }
 
-  // NP-2 / NP-3: kind-specific retired namespace checks for commands vs skills.
-  // Commands are user-invoked workflows; skills are agent-invocable capabilities.
-  // A name in the wrong shape for its directory is almost always a misplaced
-  // primitive — surface it loudly at validation time.
-  if (kind === "command" && name.startsWith(RETIRED_SKILL_PREFIX)) {
-    return [{
-      name,
-      kind,
-      criterion: "NP-2",
-      message: `command '${name}' must not use the retired skill-name infix ` +
-        `(retired skill-name prefix)`,
-    }];
-  }
+  // NP-3: the retired skill-name namespace stays out of new skills.
   if (kind === "skill" && name.startsWith(RETIRED_SKILL_PREFIX)) {
     return [{
       name,
       kind,
       criterion: "NP-3",
-      message: `skill '${name}' must not use the retired skill-name infix ` +
-        `(agent-invocable capability; kind is determined by skills/)`,
+      message: `skill '${name}' must not use the retired skill-name infix`,
     }];
   }
 
@@ -153,21 +140,6 @@ export async function validateAllNamingPrefixes(
         }
       }
     } catch { /* no skills/ */ }
-
-    // Commands: each subdirectory in <pack>/commands/ (user-only primitives)
-    const commandsDir = join(packPath, "commands");
-    try {
-      for await (const entry of Deno.readDir(commandsDir)) {
-        if (entry.isDirectory) {
-          errors.push(
-            ...validateNamingPrefix(entry.name, "command", pack.name),
-          );
-          const owners = installedSkillNames.get(entry.name) ?? [];
-          owners.push(`${pack.name}/commands`);
-          installedSkillNames.set(entry.name, owners);
-        }
-      }
-    } catch { /* no commands/ */ }
 
     // Agents: each .md file in <pack>/agents/ (excluding non-agent docs)
     const agentsDir = join(packPath, "agents");

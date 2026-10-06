@@ -8,10 +8,6 @@
  *   acceptance-tests/trigger-adj-1/mod.ts
  *   acceptance-tests/trigger-false-1/mod.ts
  *
- * Commands (`framework/<pack>/commands/`) are exempt — they are user-only
- * primitives invoked via `/name` and do not participate in description-matching
- * routing decisions.
- *
  * Exits with code 1 if any skill is missing any of the 3 scenarios. Stray
  * `trigger-{type}-{2,3,...}` directories are reported as misnamed (the
  * previous 3+3+3 layout was reduced to 1+1+1 on 2026-05-10).

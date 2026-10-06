@@ -3,28 +3,8 @@ import { join } from "@std/path";
 import {
   copyFrameworkToIdeDir,
   installCodexAgents,
-  userInvokedCommandOf,
   writeRunFile,
 } from "./utils.ts";
-
-Deno.test("userInvokedCommandOf exempts the skill only when the query types `/name`", () => {
-  assertEquals(
-    userInvokedCommandOf("commit", "/commit Commit changes."),
-    "commit",
-  );
-  assertEquals(userInvokedCommandOf("init", "/init"), "init");
-  assertEquals(userInvokedCommandOf("commit", "  /commit"), "commit");
-  // A plain-language query is the model discovering the primitive on its own —
-  // exactly what the flag governs, so the flag must stay on.
-  assertEquals(
-    userInvokedCommandOf("commit", "Commit my current changes."),
-    undefined,
-  );
-  // A different command typed by hand does not exempt this one.
-  assertEquals(userInvokedCommandOf("commit", "/commit-all now"), undefined);
-  assertEquals(userInvokedCommandOf("commit", "/review-and-commit"), undefined);
-  assertEquals(userInvokedCommandOf(undefined, "/commit"), undefined);
-});
 
 Deno.test("writeRunFile writes content and returns path", async () => {
   const dir = await Deno.makeTempDir();
@@ -55,7 +35,6 @@ Deno.test("writeRunFile overwrites existing file", async () => {
  * Layout:
  *   <root>/framework/<pack>/pack.yaml
  *   <root>/framework/<pack>/skills/<skill>/SKILL.md
- *   <root>/framework/<pack>/commands/<command>/SKILL.md
  */
 async function buildTestFrameworkTree(root: string): Promise<string> {
   const frameworkPath = join(root, "framework");
@@ -69,14 +48,6 @@ async function buildTestFrameworkTree(root: string): Promise<string> {
   await Deno.writeTextFile(
     join(skillDir, "SKILL.md"),
     "---\nname: demo-skill\ndescription: Demo skill.\n---\n\n# Demo Skill\n",
-  );
-
-  // Command primitive (user-only — writer must inject disable-model-invocation)
-  const cmdDir = join(packDir, "commands", "demo-command");
-  await Deno.mkdir(cmdDir, { recursive: true });
-  await Deno.writeTextFile(
-    join(cmdDir, "SKILL.md"),
-    "---\nname: demo-command\ndescription: Demo command.\n---\n\n# Demo Command\n",
   );
 
   return frameworkPath;
@@ -99,25 +70,6 @@ Deno.test("copyFrameworkToIdeDir copies skills into dest/skills/", async () => {
   }
 });
 
-Deno.test("copyFrameworkToIdeDir copies commands into dest/skills/", async () => {
-  const root = await Deno.makeTempDir({ prefix: "copyfw-commands-" });
-  try {
-    const frameworkPath = await buildTestFrameworkTree(root);
-    const ideConfigDir = join(root, ".claude");
-    await copyFrameworkToIdeDir(frameworkPath, ideConfigDir, "claude", [
-      "testpack",
-    ]);
-
-    // Commands install into the SAME target dir as skills (.{ide}/skills/);
-    // the classifier is the source directory, not the install location.
-    const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
-    const content = await Deno.readTextFile(cmdPath);
-    assertStringIncludes(content, "name: demo-command");
-  } finally {
-    await Deno.remove(root, { recursive: true });
-  }
-});
-
 /**
  * A primitive's own unit tests are for this repo, not for the sandbox project.
  * Copied in, they join the sandbox's `deno test` run: on 2026-10-04 the five
@@ -135,8 +87,6 @@ Deno.test("copyFrameworkToIdeDir leaves primitive unit tests out of the sandbox"
     };
     await place("skills/demo-skill/scripts/run.py");
     await place("skills/demo-skill/scripts/run_test.ts");
-    await place("commands/demo-command/scripts/gen.ts");
-    await place("commands/demo-command/scripts/gen.test.ts");
     await place("hooks/demo-hook/run.ts");
     await place("hooks/demo-hook/run_test.ts");
     const ideConfigDir = join(root, ".codex");
@@ -156,16 +106,12 @@ Deno.test("copyFrameworkToIdeDir leaves primitive unit tests out of the sandbox"
       {
         script: await exists("skills/demo-skill/scripts/run.py"),
         skillTest: await exists("skills/demo-skill/scripts/run_test.ts"),
-        cmdScript: await exists("skills/demo-command/scripts/gen.ts"),
-        cmdTest: await exists("skills/demo-command/scripts/gen.test.ts"),
         hook: await exists("scripts/demo-hook/run.ts"),
         hookTest: await exists("scripts/demo-hook/run_test.ts"),
       },
       {
         script: true,
         skillTest: false,
-        cmdScript: true,
-        cmdTest: false,
         hook: true,
         hookTest: false,
       },
@@ -206,32 +152,8 @@ Deno.test("copyFrameworkToIdeDir resolves abstract model tier in skills", async 
   }
 });
 
-Deno.test("copyFrameworkToIdeDir exempts the command the scenario drives", async () => {
-  const root = await Deno.makeTempDir({ prefix: "copyfw-userinvoked-" });
-  try {
-    const frameworkPath = await buildTestFrameworkTree(root);
-    const ideConfigDir = join(root, ".claude");
-    // Fifth argument: the command this scenario invokes by hand via `/name`.
-    // Regression for 2026-08-24, when `init-vision-integration` refused to do
-    // any work because the flag said the model may not load `/init`.
-    await copyFrameworkToIdeDir(frameworkPath, ideConfigDir, "claude", [
-      "testpack",
-    ], "demo-command");
-
-    const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
-    const content = await Deno.readTextFile(cmdPath);
-    assertEquals(
-      content.includes("disable-model-invocation"),
-      false,
-      "the command under test must stay loadable by the model",
-    );
-  } finally {
-    await Deno.remove(root, { recursive: true });
-  }
-});
-
-Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands", async () => {
-  const root = await Deno.makeTempDir({ prefix: "copyfw-inject-" });
+Deno.test("copyFrameworkToIdeDir installs every skill without disable-model-invocation", async () => {
+  const root = await Deno.makeTempDir({ prefix: "copyfw-noflag-" });
   try {
     const frameworkPath = await buildTestFrameworkTree(root);
     const ideConfigDir = join(root, ".claude");
@@ -239,23 +161,11 @@ Deno.test("copyFrameworkToIdeDir injects disable-model-invocation into commands"
       "testpack",
     ]);
 
-    // Commands MUST have `disable-model-invocation: true` injected in their
-    // frontmatter by the writer — it's the IDE signal that makes them
-    // user-only (not agent-auto-invocable). This mirrors the shipped
-    // behaviour of `scripts/build-plugins.ts`, reimplemented for the harness
-    // in cli-internals.ts::injectDisableModelInvocation.
-    const cmdPath = join(ideConfigDir, "skills", "demo-command", "SKILL.md");
-    const content = await Deno.readTextFile(cmdPath);
-    assertStringIncludes(content, "disable-model-invocation: true");
-
-    // Skills MUST NOT have this flag — they are agent-invocable.
+    // [REF:fr:packs.agent-commit | FR-PACKS.AGENT-COMMIT]: there is no user-only kind, so the harness must
+    // never hide a primitive from the model.
     const skillPath = join(ideConfigDir, "skills", "demo-skill", "SKILL.md");
     const skillContent = await Deno.readTextFile(skillPath);
-    assertEquals(
-      skillContent.includes("disable-model-invocation"),
-      false,
-      "skills must not carry disable-model-invocation flag",
-    );
+    assertEquals(skillContent.includes("disable-model-invocation"), false);
   } finally {
     await Deno.remove(root, { recursive: true });
   }

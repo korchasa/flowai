@@ -1,5 +1,4 @@
-// [REF:fr:packs.cmd-invariant | FR-PACKS.CMD-INVARIANT] — commands/ SKILL.md MUST NOT declare `disable-model-invocation`
-// [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — skills/ SKILL.md MUST NOT declare `disable-model-invocation`
+// [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — no framework SKILL.md may declare `disable-model-invocation`
 /**
  * Validates all skill directories against FR-UNIVERSAL.AGENTSKILLS and FR-UNIVERSAL.XIDE-PATHS (agentskills.io compliance).
  *
@@ -10,8 +9,7 @@
  * - FR-UNIVERSAL.REFS: File references (no nested subdirs in allowed dirs)
  * - FR-UNIVERSAL.PLACEHOLDERS: No custom path placeholders (<this-skill-dir>)
  * - FR-UNIVERSAL.IDE-VARS: No IDE-specific path variables (${...SKILL_DIR})
- * - FR-PACKS.CMD-INVARIANT: Command source MUST NOT carry `disable-model-invocation`
- * - FR-PACKS.SKILL-INVARIANT: Skill source MUST NOT carry `disable-model-invocation`
+ * - FR-PACKS.SKILL-INVARIANT: no source primitive may carry `disable-model-invocation`
  *
  * Exits with code 1 if any violation is found.
  */
@@ -55,25 +53,10 @@ export const ALLOWED_SUBDIRS = new Set([
   "acceptance-tests",
 ]);
 
-/** Source directory kind, inferred from the parent directory name.
- * `commands` = user-only primitives (disable-model-invocation injected by writer).
- * `skills` = agent-invocable primitives (no flag allowed). */
-export type SkillKind = "skill" | "command";
-
-/** Infer kind from the skills directory path. Any path segment named
- * `commands` beats `skills` in the same path (they are mutually exclusive
- * in practice since the layout is `framework/<pack>/{skills|commands}/`). */
-export function inferKind(skillsDir: string): SkillKind {
-  // Normalize separators and look for a trailing segment.
-  const segments = skillsDir.replace(/\\/g, "/").split("/");
-  if (segments.includes("commands")) return "command";
-  return "skill";
-}
-
 /**
  * True if `skillsDir` points inside the framework source tree (the product),
  * as opposed to dev-only installs like `.claude/skills`. Framework-only checks
- * (kind invariants, IDE-neutrality, the FR-DESC-QUALITY WHEN-trigger gate)
+ * (the invocation-flag invariant, IDE-neutrality, the FR-DESC-QUALITY WHEN-trigger gate)
  * gate on this.
  *
  * Matches a `framework` path segment whether the path is relative
@@ -88,47 +71,23 @@ export function isFrameworkSkillsDir(skillsDir: string): boolean {
 }
 
 /**
- * Enforces per-kind invariants that the framework split relies on:
- *
- * - Under `commands/`: the source SKILL.md must NOT carry
- *   `disable-model-invocation`. The plugin builder injects the flag at build
- *   time (see `scripts/build-plugins.ts`); having it in source means either a
- *   stale migration artifact or an author trying to hand-maintain the flag
- *   despite directory-based classification.
- *
- * - Under `skills/`: the source SKILL.md must NOT carry
- *   `disable-model-invocation` at all. Skills are agent-invocable by
- *   definition; a skill with the flag is a command in the wrong directory.
- *
- * - Name prefixes are enforced by `check-naming-prefix.ts`, not here.
+ * FR-PACKS.SKILL-INVARIANT: every flowai primitive is agent-invocable — the
+ * user-only `commands/` kind was removed (FR-PACKS.AGENT-COMMIT) — so no source
+ * SKILL.md may declare `disable-model-invocation`. Name prefixes are enforced
+ * by `check-naming-prefix.ts`, not here.
  */
-export function validateKindInvariants(
+export function validateNoInvocationFlag(
   dirName: string,
-  kind: SkillKind,
   fmData: Record<string, unknown>,
 ): SkillError[] {
-  const errors: SkillError[] = [];
-  const hasFlag = "disable-model-invocation" in fmData;
-  if (kind === "command" && hasFlag) {
-    errors.push({
-      skill: dirName,
-      criterion: "FR-PACKS.CMD-INVARIANT",
-      message:
-        "Command SKILL.md must NOT declare `disable-model-invocation` in " +
-        "source; the writer injects it at sync time based on the commands/ " +
-        "directory placement.",
-    });
-  }
-  if (kind === "skill" && hasFlag) {
-    errors.push({
-      skill: dirName,
-      criterion: "FR-PACKS.SKILL-INVARIANT",
-      message:
-        "Skill SKILL.md must NOT declare `disable-model-invocation`. A " +
-        "primitive that is user-only belongs under commands/, not skills/.",
-    });
-  }
-  return errors;
+  if (!("disable-model-invocation" in fmData)) return [];
+  return [{
+    skill: dirName,
+    criterion: "FR-PACKS.SKILL-INVARIANT",
+    message:
+      "SKILL.md must NOT declare `disable-model-invocation`: every flowai " +
+      "primitive is agent-invocable, there is no user-only kind.",
+  }];
 }
 
 // SKILL_MAX_LINES, SKILL_MAX_TOKENS, FRONTMATTER_MAX_TOKENS imported from
@@ -164,19 +123,16 @@ export function descriptionHasWhenTrigger(description: string): boolean {
 }
 
 /**
- * FR-DESC-QUALITY: agent-invocable `skills/` must state WHEN to invoke them —
- * the description is the only signal the model classifier uses to discover the
- * skill. `commands/` are user-invoked (no auto-discovery) and exempt.
+ * FR-DESC-QUALITY: every skill must state WHEN to invoke it — the description
+ * is the only signal the model classifier uses to discover the skill.
  *
  * Note: presence of a WHEN phrase is a deterministic floor, NOT a quality
  * guarantee — description quality stays reviewer-judged (see SDS §5).
  */
 export function validateDescriptionWhenTrigger(
   dirName: string,
-  kind: SkillKind,
   frontmatter: Record<string, unknown>,
 ): SkillError[] {
-  if (kind !== "skill") return [];
   const desc = typeof frontmatter.description === "string"
     ? frontmatter.description
     : "";
@@ -186,7 +142,7 @@ export function validateDescriptionWhenTrigger(
     criterion: "FR-DESC-QUALITY",
     message:
       'description missing a WHEN-trigger phrase (e.g. "Use when …"); a ' +
-      "skills/ description must state when to invoke the skill, not just what " +
+      "skill description must state when to invoke the skill, not just what " +
       "it does (see engineer-skill WHAT+WHEN rule).",
   }];
 }
@@ -194,9 +150,7 @@ export function validateDescriptionWhenTrigger(
 /**
  * FR-DESC-QUALITY: the IDE renders one listing line per installed primitive on
  * every turn, so an over-long `description` is truncated and the skill stops
- * being routable. Unlike the WHEN-trigger gate above, this covers `commands/`
- * too — a command occupies the same listing line even though the model never
- * auto-discovers it.
+ * being routable.
  *
  * Independent of FR-UNIVERSAL.DISCLOSURE's FRONTMATTER_MAX_TOKENS: that one is
  * the agentskills.io spec ceiling over name+description, this one is the IDE
@@ -205,7 +159,6 @@ export function validateDescriptionWhenTrigger(
  */
 export function validateDescriptionLength(
   dirName: string,
-  _kind: SkillKind,
   frontmatter: Record<string, unknown>,
 ): SkillError[] {
   const desc = typeof frontmatter.description === "string"
@@ -421,7 +374,7 @@ function isDocumentationSchemaAllowedPath(resourcePath: string): boolean {
 function isDocumentationSchemaScannedPath(resourcePath: string): boolean {
   const path = normalizePath(resourcePath);
   if (path.includes("/acceptance-tests/")) return false;
-  if (/^framework\/[^/]+\/(?:skills|commands|agents|hooks)\//.test(path)) {
+  if (/^framework\/[^/]+\/(?:skills|agents|hooks)\//.test(path)) {
     return true;
   }
   if (/^framework\/[^/]+\/pack\.yaml$/.test(path)) return true;
@@ -607,34 +560,29 @@ export async function validateSkill(
   // [REF:fr:universal.frontmatter | FR-UNIVERSAL.FRONTMATTER]: Frontmatter (Zod schema)
   errors.push(...validateSkillFrontmatter(dirName, fm.data));
 
-  // [REF:fr:packs | FR-PACKS].{CMD,SKILL}-INVARIANT: commands/ vs skills/ directory invariants.
-  // Only applies to framework source tree; installed copies under .{ide}/skills/
-  // legitimately carry `disable-model-invocation: true` on commands because
-  // the writer injects it at sync time.
+  // [REF:fr:packs | FR-PACKS].SKILL-INVARIANT: no user-only flag in source.
+  // Only applies to the framework source tree; dev-only skills under
+  // `.claude/skills/` may still carry `disable-model-invocation: true`.
   if (isFrameworkSkillsDir(skillsDir)) {
-    const kind = inferKind(skillsDir);
     errors.push(
-      ...validateKindInvariants(
+      ...validateNoInvocationFlag(
         dirName,
-        kind,
         fm.data as Record<string, unknown>,
       ),
     );
-    // [REF:fr:desc-quality | FR-DESC-QUALITY]: skills/ descriptions must carry
+    // [REF:fr:desc-quality | FR-DESC-QUALITY]: descriptions must carry
     // a WHEN-trigger phrase so the model classifier can discover them.
     errors.push(
       ...validateDescriptionWhenTrigger(
         dirName,
-        kind,
         fm.data as Record<string, unknown>,
       ),
     );
-    // [REF:fr:desc-quality | FR-DESC-QUALITY]: descriptions of both kinds must
-    // fit the IDE skill-listing budget.
+    // [REF:fr:desc-quality | FR-DESC-QUALITY]: descriptions must fit the IDE
+    // skill-listing budget.
     errors.push(
       ...validateDescriptionLength(
         dirName,
-        kind,
         fm.data as Record<string, unknown>,
       ),
     );
@@ -646,7 +594,7 @@ export async function validateSkill(
   // [REF:fr:universal.xide-paths | FR-UNIVERSAL.XIDE-PATHS]: Cross-IDE script path resolution
   errors.push(...validatePathResolution(dirName, content));
 
-  // [REF:fr:universal.ide-neutral | FR-UNIVERSAL.IDE-NEUTRAL]: framework skills/commands/agents must not name
+  // [REF:fr:universal.ide-neutral | FR-UNIVERSAL.IDE-NEUTRAL]: framework skills/agents must not name
   // IDE-specific models or CLI binaries (gpt-5, codex, claude-sonnet-4, etc.).
   // A model ID belongs in whatever per-IDE mapping the host resolves at run
   // time, not in user-facing skill bodies.
@@ -776,9 +724,8 @@ export async function validateAllSkills(
   return allErrors;
 }
 
-/** Discover all skill-bearing directories from pack structure.
- * Both `<pack>/skills/` (agent-invocable) and `<pack>/commands/` (user-only)
- * contain `SKILL.md` primitives and must be validated identically.
+/** Discover all skill-bearing directories from pack structure: one
+ * `<pack>/skills/` per pack (a stray `commands/` fails the plugin build).
  *
  * Emits paths RELATIVE to `frameworkDir` (e.g. `framework/core/skills`). The
  * framework-only checks gate on `isFrameworkSkillsDir()`, so this function's
@@ -792,13 +739,11 @@ export async function discoverSkillsDirs(
   try {
     for await (const pack of Deno.readDir(frameworkDir)) {
       if (!pack.isDirectory) continue;
-      for (const subdir of ["skills", "commands"]) {
-        const path = join(frameworkDir, pack.name, subdir);
-        try {
-          const stat = await Deno.stat(path);
-          if (stat.isDirectory) dirs.push(path);
-        } catch { /* subdir not present in this pack */ }
-      }
+      const path = join(frameworkDir, pack.name, "skills");
+      try {
+        const stat = await Deno.stat(path);
+        if (stat.isDirectory) dirs.push(path);
+      } catch { /* no skills/ in this pack */ }
     }
   } catch { /* framework dir not found */ }
   return dirs;
