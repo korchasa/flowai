@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.20](https://github.com/korchasa/flowai/compare/v0.14.19...v0.14.20) (2026-10-06)
+
+
+### Bug Fixes
+
+* **acceptance:** stop counting a skill search as a skill load ([4ca8266](https://github.com/korchasa/flowai/commit/4ca82662f371430742dca9fa79df644ea86f93ed))
+
 ### [0.14.19](https://github.com/korchasa/flowai/compare/v0.14.18...v0.14.19) (2026-10-06)
 
 
