@@ -24,6 +24,10 @@
  * So a shell command that names `skills/<skill>/SKILL.md` explicitly counts as
  * invocation too — the path is delimited on both sides, so neither a glob
  * sweep over every skill directory nor a longer skill name can cross-match.
+ * The command must also READ exactly one skill file: a search (`rg`, `grep`)
+ * or a command naming several SKILL.md files is the agent looking around, not
+ * loading a skill. Captured 2026-10-06 (update-trigger-adj-1, gpt-6-luna): one
+ * `rg -n -i '<pattern>'` over 11 installed SKILL.md files scored as `update`.
  */
 import type { CapturedToolCall } from "./acp/client.ts";
 
@@ -74,8 +78,23 @@ export function detectSkillInvocation(
 
 /** True iff a shell command names `skills/<one of accepted>/SKILL.md`. */
 function shellReadsSkill(command: string, accepted: Set<string>): boolean {
-  for (const m of command.matchAll(/skills\/([^\/\s*'"]+)\/SKILL\.md/g)) {
-    if (accepted.has(m[1])) return true;
+  const names = new Set(
+    [...command.matchAll(/skills\/([^\/\s*'"]+)\/SKILL\.md/g)].map((m) => m[1]),
+  );
+  if (names.size !== 1 || runsSearchProgram(command)) return false;
+  const [name] = names;
+  return accepted.has(name);
+}
+
+/** Programs that search a file rather than read it to the model. */
+const SEARCH_PROGRAMS = new Set(["rg", "grep", "egrep", "fgrep", "ag", "ack"]);
+
+/** True iff any stage of a shell command line starts a search program. */
+function runsSearchProgram(command: string): boolean {
+  for (const stage of command.split(/&&|\|\||[;|\n]/)) {
+    const words = stage.trim().split(/\s+/).filter((w) => !/^\w+=/.test(w));
+    const program = (words[0] ?? "").split("/").pop() ?? "";
+    if (SEARCH_PROGRAMS.has(program)) return true;
   }
   return false;
 }

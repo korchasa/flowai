@@ -25,6 +25,9 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
   };
   interactive = true;
 
+  // `fixture/deno.json` keeps the copied `.codex/` and `documents/` out of the
+  // sandbox's fmt/lint/test, as in the sibling scenarios. Without it the
+  // agent's `deno fmt --check` failed on the installed framework files.
   override async setup(sandboxPath: string) {
     const bare = `${sandboxPath}/../ship-remote.git`;
     await new Deno.Command("git", {

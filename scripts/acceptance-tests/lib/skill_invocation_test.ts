@@ -171,3 +171,55 @@ Deno.test("detectSkillInvocation: a shell sweep over every skill is discovery, n
   ];
   assertEquals(detectSkillInvocation(calls, "epic"), false);
 });
+
+// Captured 2026-10-06 (update-trigger-adj-1, gpt-6-luna): asked about a
+// different job, the agent searched every installed SKILL.md at once with
+// `rg`, and the detector scored that one search as loading `update`.
+Deno.test("detectSkillInvocation: a search across many SKILL.md files is not invocation", () => {
+  const skills = [
+    "commit",
+    "investigate",
+    "plan",
+    "push",
+    "review",
+    "ship",
+    "epic",
+    "reflect",
+    "update",
+    "init",
+    "configure-deno-commands",
+  ];
+  const command = `rg -n -i 'update|upgrade' ${
+    skills.map((s) => `.codex/skills/${s}/SKILL.md`).join(" ")
+  } .codex/agents/console-expert.md`;
+  assertEquals(
+    detectSkillInvocation([codexShellRead(command)], "update"),
+    false,
+  );
+});
+
+Deno.test("detectSkillInvocation: a search inside one SKILL.md is not invocation", () => {
+  const calls = [
+    codexShellRead("grep -n 'Rules' .codex/skills/update/SKILL.md"),
+    codexShellRead(
+      "cd /sandbox && NO_COLOR=1 rg -n 'x' .codex/skills/update/SKILL.md",
+    ),
+  ];
+  assertEquals(detectSkillInvocation(calls, "update"), false);
+});
+
+Deno.test("detectSkillInvocation: a read that names two SKILL.md files is not invocation", () => {
+  const calls = [
+    codexShellRead(
+      "cat .codex/skills/plan/SKILL.md .codex/skills/update/SKILL.md",
+    ),
+  ];
+  assertEquals(detectSkillInvocation(calls, "update"), false);
+});
+
+Deno.test("detectSkillInvocation: a one-file read after a cd still counts", () => {
+  const calls = [
+    codexShellRead("cd /sandbox && head -n 80 .codex/skills/update/SKILL.md"),
+  ];
+  assertEquals(detectSkillInvocation(calls, "update"), true);
+});
