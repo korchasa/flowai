@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.19](https://github.com/korchasa/flowai/compare/v0.14.18...v0.14.19) (2026-10-06)
+
+
+### Bug Fixes
+
+* **push,update:** investigate red CI in a SHA worktree; list missing rules ([0661cd2](https://github.com/korchasa/flowai/commit/0661cd2c0998e0eb323ae0a86b7d6f813f285c74))
+
+
+### Tests
+
+* **push:** commit the CI mocks in investigates-ci-failure setup ([028455b](https://github.com/korchasa/flowai/commit/028455bfc92b82514b4f7a637f235d24123dbe49))
+* **ship-task:** let the contract tests run in the rejects fixture ([cf2aa30](https://github.com/korchasa/flowai/commit/cf2aa30962c3afca0997bd8e7ea5facec56c0662))
+
 ### [0.14.18](https://github.com/korchasa/flowai/compare/v0.14.17...v0.14.18) (2026-10-06)
 
 
