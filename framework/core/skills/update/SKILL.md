@@ -34,7 +34,7 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
 <rules>
 1. **No installer lifecycle.** Do not run an installer or a sync tool, and do not parse its output; this command edits project-owned files only.
 2. **Project writes only.** Modify only current-project artifacts (`AGENTS.md`, `CLAUDE.md`, scaffolded docs/config). Never write plugin cache files, user-level skill directories, or installed primitive files.
-3. **Read-only sources.** Read templates/assets wherever installed, including plugin/user-level locations, but treat those files as immutable.
+3. **Read-only sources.** Read templates/assets wherever installed, including plugin/user-level locations, but treat those files as immutable. Read-only limits what you do to the file; it does not disqualify a copy that already shows local or uncommitted changes. Such a copy is still the template for this run: name its state in the report and compare against its current contents.
 4. **Preserve user content.** Update framework-originated sections only. Keep project-specific sections and local conventions unless the user explicitly approves a change.
 5. **Diff before write.** Show proposed per-file changes and ask for confirmation before writing.
 6. **Cross-IDE.** Detect Claude Code, Cursor, OpenCode, and Codex config dirs when looking for project-local sources.
@@ -92,7 +92,12 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
      - project-specific section -> preserve.
      - framework section customized by project -> propose a merge that keeps local constraints.
      - obsolete legacy sections (`documents/AGENTS.md`, `scripts/AGENTS.md`) -> propose collapsing them into root `AGENTS.md`.
-   - When a section has missing named rules, list each missing rule by name instead of summarizing the count. For Planning Rules, explicitly name missing rules such as `Proactive Resolution`.
+   - Build the rule inventory with the bundled script, from this skill's directory, and paste its output into the report verbatim:
+     ```sh
+     python3 <this skill's directory>/scripts/compare_rules.py <template path from step 2> AGENTS.md
+     ```
+     It prints every named rule of the template (a list item opening with a bold label) that `AGENTS.md` does not carry under any heading, one per line with its template section, and then the template sections `AGENTS.md` has no heading for. Exit 2 means a path was wrong; fix the path and rerun. The script reads only; it never writes.
+   - The inventory is the floor of the comparison, not its ceiling: also compare the wording of rules that are present, which the script does not judge.
 
 5. **Check scaffolded artifacts** (for `--scaffolds` / `--all`)
    - Use known scaffold mappings from visible pack metadata when available. Also resolve documentation roles from AGENTS.md; for documentation artifacts, role bindings override template defaults.
@@ -124,7 +129,8 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
      - current project section
      - proposed project section
      - reason for the change, including the practical risk or benefit. Example: if proposing the TDD `CHECK` step, explain that skipping it leaves formatter, linter, and regression failures undetected after GREEN.
-   - Use a unified diff or compact before/after blocks.
+   - Use a unified diff or compact before/after blocks. A diff accompanies the rule inventory from step 4; it never replaces it.
+   - Address every rule the inventory lists by its name: propose adding it, or say why this project keeps it out. A summary such as "several planning rules are missing" or a wholesale replacement of `AGENTS.md` does not satisfy this.
    - Keep proposals per file so the user can approve or reject each one.
 
 8. **Apply approved changes**
@@ -146,6 +152,7 @@ If project-local flowai primitives exist under `.{ide}/skills/`, `.{ide}/agents/
 [ ] Did not run an installer or a sync tool of any kind.
 [ ] Located a read-only framework template source or stopped with a clear install/update instruction.
 [ ] Read actual project `AGENTS.md` and compared template content against the artifact, not only template git history.
+[ ] Ran `scripts/compare_rules.py` and addressed every missing rule it listed by name.
 [ ] Proposed only project-owned artifact changes.
 [ ] Preserved project-specific sections and local conventions.
 [ ] Asked confirmation before each write.

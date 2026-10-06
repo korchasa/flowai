@@ -45,8 +45,11 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
     await runGit(sandboxPath, ["push", "origin", "feature/add-trim"]);
   }
 
+  // Until 2026-10-06 the query ended with "Touches FR-TRIM." The fixture has no SRS, so the review's FR Coverage
+  // Audit blocked the happy path on `no acceptance reference` — a phase this
+  // scenario does not measure.
   userQuery =
-    "/ship Add a configurable `trim(input, options?)` helper to strings.ts that supports trimming a custom character set (e.g. trim leading commas + spaces), in addition to the default whitespace-only trim. Touches FR-TRIM.";
+    "/ship Add a configurable `trim(input, options?)` helper to strings.ts that supports trimming a custom character set (e.g. trim leading commas + spaces), in addition to the default whitespace-only trim.";
 
   userPersona =
     `You are a developer who wants the agent to plan, implement, review, commit, and push a small task end-to-end.
