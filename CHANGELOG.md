@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.18](https://github.com/korchasa/flowai/compare/v0.14.17...v0.14.18) (2026-10-06)
+
+
+### Features
+
+* **core:** open every workflow to the agent, drop user-only commands ([998774b](https://github.com/korchasa/flowai/commit/998774b5bb3785659e8943482e198d7baf9f5687))
+
 ### [0.14.17](https://github.com/korchasa/flowai/compare/v0.14.16...v0.14.17) (2026-10-04)
 
 
