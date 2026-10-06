@@ -74,7 +74,7 @@ Keep all answers short and on-topic.`;
     {
       id: "plan_to_implement_gate",
       description:
-        "Did the Plan Phase present at least 2 variants AND wait for the user's selection BEFORE writing the Solution section?",
+        "Did the Plan Phase present the variants as a choice AND wait for the user's selection BEFORE writing the Solution section? At least 2 variants pass; a single variant passes only when the agent said why the path is obvious and no alternative applies (the plan's single-variant exception).",
       critical: true,
     },
     {
