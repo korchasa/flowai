@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.21](https://github.com/korchasa/flowai/compare/v0.14.20...v0.14.21) (2026-10-06)
+
+
+### Bug Fixes
+
+* **plan,review:** a missing requirements document never blocks the cycle ([ec33fec](https://github.com/korchasa/flowai/commit/ec33fec38392f42f627252977b3df23bd2974d65))
+
 ### [0.14.20](https://github.com/korchasa/flowai/compare/v0.14.19...v0.14.20) (2026-10-06)
 
 
