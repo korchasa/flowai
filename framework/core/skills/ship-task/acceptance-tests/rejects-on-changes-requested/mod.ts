@@ -83,7 +83,11 @@ export const ShipTaskRejectsOnChangesRequested = new class
             test: "deno test -A src/",
           },
           // Contract tests are deliberately OUTSIDE the check task — they are
-          // run per changed module, not on every check.
+          // run per changed module, not on every check. The task scopes its
+          // test run to `src/`, so `contract/` must NOT go into `test.exclude`:
+          // deno applies that list to explicit paths too, and the command
+          // AGENTS.md mandates, `deno test -A contract/`, then printed "No test
+          // modules found" and exited 0 (measured 2026-10-06).
           fmt: {
             exclude: [
               ".codex/",
@@ -99,7 +103,6 @@ export const ShipTaskRejectsOnChangesRequested = new class
               ".codex/",
               "documents/",
               "acceptance-tests/",
-              "contract/",
             ],
           },
         },
