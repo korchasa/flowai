@@ -35,7 +35,6 @@ export const PushInvestigatesCiFailure = new class
     await runGit(sandboxPath, ["commit", "-m", "feat: add note"]);
     await runGit(sandboxPath, ["push", "-u", "origin", "feature/x"]);
     await Deno.writeTextFile(`${sandboxPath}/note.txt`, "hello\nworld\n");
-    await runGit(sandboxPath, ["commit", "-am", "feat: extend note"]);
 
     // Mock Status command: exits 1 (red, terminal failure).
     const statusPath = `${sandboxPath}/mock-status.sh`;
@@ -76,6 +75,13 @@ export const PushInvestigatesCiFailure = new class
 - **Run URL command:** \`bash ${urlPath}\`
 `;
     await Deno.writeTextFile(agentsPath, existing + ciSection);
+
+    // Commit the CI declaration and the mocks with the note change: the
+    // runner commits `init` before setup runs, so anything left uncommitted
+    // here reaches the agent as a dirty tree, and `investigate`'s Clean
+    // Baseline rule then forbids the handoff this scenario tests.
+    await runGit(sandboxPath, ["add", "-A"]);
+    await runGit(sandboxPath, ["commit", "-m", "feat: extend note"]);
   }
 
   userQuery = "/push push the feature branch";
