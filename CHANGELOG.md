@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.22](https://github.com/korchasa/flowai/compare/v0.14.21...v0.14.22) (2026-10-07)
+
+
+### Bug Fixes
+
+* **plan:** never reference an FR whose text is recorded nowhere ([35c3910](https://github.com/korchasa/flowai/commit/35c3910ebb6273c7e0c9fd3dc5a9f3269b8ae3b0))
+
 ### [0.14.21](https://github.com/korchasa/flowai/compare/v0.14.20...v0.14.21) (2026-10-06)
 
 
