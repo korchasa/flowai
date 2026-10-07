@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.30](https://github.com/korchasa/flowai/compare/v0.14.29...v0.14.30) (2026-10-07)
+
+
+### Bug Fixes
+
+* **plan,review:** turn the four stable sweep failures green ([968e22f](https://github.com/korchasa/flowai/commit/968e22fb38f0ff6e78116d18e81fb1c1d5395081))
+
+
+### Agent Changes
+
+* integrate upstream by commit-then-merge, never stash ([fa18ec0](https://github.com/korchasa/flowai/commit/fa18ec0cc604accd05425063ccbc14f731ee106e))
+
 ### [0.14.29](https://github.com/korchasa/flowai/compare/v0.14.28...v0.14.29) (2026-10-07)
 
 
