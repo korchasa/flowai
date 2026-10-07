@@ -1,6 +1,12 @@
 import { assert, assertEquals } from "@std/assert";
-import { tokenCostLines } from "./acceptance_report.ts";
-import type { BenchmarkResult } from "./types.ts";
+import {
+  hasAnyFailures,
+  infraErrorLines,
+  passRateCounts,
+  tokenCostLines,
+} from "./acceptance_report.ts";
+import { buildInfraErrorResult } from "./infra_abort.ts";
+import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 
 function result(
   agentTotal: number,
@@ -75,4 +81,65 @@ Deno.test("tokenCostLines: a sweep that measured nothing says so", () => {
   const bare = { ...result(1, 1) };
   delete bare.tokensDetails;
   assertEquals(tokenCostLines([bare]), []);
+});
+
+const CAPACITY =
+  'codex turn error "server_overloaded": Selected model is at capacity.';
+
+function scenario(id: string): BenchmarkScenario {
+  return {
+    id,
+    name: id,
+    sandboxState: { commits: [], expectedOutcome: "" },
+    setup: () => Promise.resolve(),
+    userQuery: "",
+    agentsTemplateVars: { PROJECT_NAME: "X" },
+    checklist: [],
+  };
+}
+
+Deno.test("an infrastructure error fails the sweep and is listed apart from checklist failures", () => {
+  const aborted = buildInfraErrorResult("trigger-pos", "gpt", CAPACITY, "");
+  const red = {
+    ...result(1, 1),
+    scenarioId: "plan-basic",
+    success: false,
+    errorsCount: 1,
+  };
+  const green = { ...result(1, 1), scenarioId: "draw" };
+
+  assertEquals(infraErrorLines([aborted, red, green]), [
+    `trigger-pos: ${CAPACITY}`,
+  ]);
+  assert(
+    hasAnyFailures([aborted, green], [
+      scenario("trigger-pos"),
+      scenario("draw"),
+    ], 1),
+  );
+  assertEquals(hasAnyFailures([green], [scenario("draw")], 1), false);
+});
+
+Deno.test("an infrastructure error is not scored as a checklist failure", () => {
+  const aborted = buildInfraErrorResult("trigger-pos", "gpt", CAPACITY, "log");
+  assertEquals(aborted.success, false);
+  assertEquals(aborted.infraError, CAPACITY);
+  assertEquals(aborted.errorsCount, 0);
+  assertEquals(aborted.checklistResults, {});
+  assertEquals(aborted.logs, "log");
+});
+
+Deno.test("passRateCounts names the runs the infrastructure took away", () => {
+  const aborted = buildInfraErrorResult("s", "gpt", CAPACITY, "");
+  const green = { ...result(1, 1), scenarioId: "s" };
+  assertEquals(passRateCounts([green, aborted, green], 3), {
+    passed: 2,
+    infraErrors: 1,
+    ok: true,
+  });
+  assertEquals(passRateCounts([aborted, aborted, green], 3), {
+    passed: 1,
+    infraErrors: 2,
+    ok: false,
+  });
 });

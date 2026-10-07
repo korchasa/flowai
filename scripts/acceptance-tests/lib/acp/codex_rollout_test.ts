@@ -2,7 +2,9 @@ import { assertEquals, assertStringIncludes } from "@std/assert";
 import { join } from "@std/path";
 import {
   collectCodexAgentTrace,
+  collectCodexTurnErrors,
   parseCodexRollout,
+  parseCodexTurnErrors,
   renderCodexAgentTrace,
 } from "./codex_rollout.ts";
 
@@ -119,6 +121,81 @@ Deno.test("collectCodexAgentTrace walks every rollout under CODEX_HOME/sessions"
     assertStringIncludes(out, "spawn_agent -> surface-scout");
     assertStringIncludes(out, "message /root/surface_check -> /root:");
     assertEquals(await collectCodexAgentTrace(join(home, "missing")), "");
+  } finally {
+    await Deno.remove(home, { recursive: true });
+  }
+});
+
+// The last line of the rollout `review-commit-push-trigger-pos-1` left on
+// 2026-10-06 (run 2026-10-06T15-29-37): the turn ended without a single tool
+// call, and the bridge reported it as an ordinary reply with exit code 0.
+const OVERLOADED = JSON.stringify({
+  timestamp: "2026-10-06T15:37:55.123Z",
+  type: "event_msg",
+  payload: {
+    type: "task_complete",
+    turn_id: "01a111dd-2f16-7c52-b550-fd8d4e7a81cd",
+    last_agent_message: null,
+    error: {
+      message: "Selected model is at capacity. Please try a different model.",
+      codex_error_info: "server_overloaded",
+    },
+    started_at: 1791301070,
+    completed_at: 1791301075,
+    duration_ms: 5059,
+  },
+});
+
+Deno.test("parseCodexTurnErrors reads the server_overloaded abort of 2026-10-06", () => {
+  assertEquals(parseCodexTurnErrors([SPAWN, OVERLOADED, ""].join("\n")), [{
+    kind: "server_overloaded",
+    message: "Selected model is at capacity. Please try a different model.",
+  }]);
+});
+
+Deno.test("parseCodexTurnErrors: a turn that completed cleanly carries no error", () => {
+  const clean = JSON.stringify({
+    type: "event_msg",
+    payload: { type: "task_complete", last_agent_message: "Done." },
+  });
+  assertEquals(parseCodexTurnErrors(clean + "\nnot json\n"), []);
+});
+
+Deno.test("parseCodexTurnErrors: a variant with a payload is named by its key", () => {
+  const line = JSON.stringify({
+    type: "event_msg",
+    payload: {
+      type: "task_complete",
+      error: {
+        message: "stream disconnected",
+        codex_error_info: {
+          response_stream_disconnected: { http_status_code: 502 },
+        },
+      },
+    },
+  });
+  assertEquals(parseCodexTurnErrors(line), [{
+    kind: "response_stream_disconnected",
+    message: "stream disconnected",
+  }]);
+});
+
+Deno.test("collectCodexTurnErrors walks every rollout under CODEX_HOME/sessions", async () => {
+  const home = await Deno.makeTempDir();
+  try {
+    const dir = join(home, "sessions", "2026", "10", "06");
+    await Deno.mkdir(dir, { recursive: true });
+    await Deno.writeTextFile(
+      join(dir, "rollout-2026-10-06T18-37-50-aaaa.jsonl"),
+      OVERLOADED + "\n",
+    );
+    await Deno.writeTextFile(
+      join(dir, "rollout-2026-10-06T18-38-10-bbbb.jsonl"),
+      SPAWN + "\n",
+    );
+    const errors = await collectCodexTurnErrors(home);
+    assertEquals(errors.map((e) => e.kind), ["server_overloaded"]);
+    assertEquals(await collectCodexTurnErrors(join(home, "missing")), []);
   } finally {
     await Deno.remove(home, { recursive: true });
   }

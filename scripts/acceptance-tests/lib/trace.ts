@@ -121,6 +121,8 @@ export class TraceLogger {
       totalCost: number;
       errors: number;
       warnings: number;
+      /** Set on a run the harness could not measure (FR-ACCEPT.INFRA-ABORT). */
+      infraError?: string;
     },
   ) {
     this.collector.logSummary(scenarioId, result);

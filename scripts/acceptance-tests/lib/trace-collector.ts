@@ -9,7 +9,7 @@ import type {
   TraceEvent,
   TraceSource,
 } from "./trace-types.ts";
-import { escape } from "./trace-types.ts";
+import { escape, summaryStatus } from "./trace-types.ts";
 
 export class TraceCollector {
   private events: TraceEvent[] = [];
@@ -327,6 +327,8 @@ export class TraceCollector {
       totalCost: number;
       errors: number;
       warnings: number;
+      /** Set on a run the harness could not measure (FR-ACCEPT.INFRA-ABORT). */
+      infraError?: string;
     },
   ) {
     const scenario = this.scenarios.get(scenarioId);
@@ -337,11 +339,16 @@ export class TraceCollector {
     const statusColor = result.success
       ? "var(--success-color)"
       : "var(--error-color)";
+    const infraNote = result.infraError
+      ? `<p class="infra-error"><strong>Infrastructure error — not a verdict:</strong> ${
+        escape(result.infraError)
+      }</p>`
+      : "";
     const content = `
       <div class="summary-card">
         <div class="metric">
           <span class="metric-value" style="color: ${statusColor}">${
-      result.success ? "PASSED" : "FAILED"
+      summaryStatus(result)
     }</span>
           <span class="metric-label">Result</span>
         </div>
@@ -364,6 +371,7 @@ export class TraceCollector {
           <span class="metric-label">Tokens</span>
         </div>
       </div>
+      ${infraNote}
     `;
 
     this.addEvent(scenarioId, "summary", {
