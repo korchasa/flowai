@@ -77,3 +77,30 @@ function assertStringIncludes(actual: string, expected: string) {
     );
   }
 }
+
+Deno.test("TraceLogger: an infrastructure abort reads as ERROR, not FAILED", async () => {
+  // [REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]
+  const tempDir = await createTempDir("trace");
+  const tracer = new TraceLogger(tempDir);
+  await tracer.init("Trigger", "trig-1", "gpt-6-luna", "SKILL.md", "Push it");
+  await tracer.logSummary("trig-1", {
+    success: false,
+    score: 0,
+    durationMs: 9000,
+    tokensUsed: 0,
+    totalCost: 0,
+    errors: 0,
+    warnings: 0,
+    infraError: "Agent session aborted by the model provider <capacity>",
+  });
+
+  const content = await Deno.readTextFile(join(tempDir, "trace.html"));
+  assertStringIncludes(content, ">ERROR<");
+  assertStringIncludes(
+    content,
+    "aborted by the model provider &lt;capacity&gt;",
+  );
+  if (content.includes(">FAILED<")) {
+    throw new Error("an aborted run must not render as FAILED");
+  }
+});

@@ -8,6 +8,7 @@ import type { Args } from "@std/flags";
 import { ansi } from "../../utils.ts";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import { runScenario } from "./runner.ts";
+import { buildInfraErrorResult } from "./infra_abort.ts";
 import {
   type BenchmarkConfig,
   DEFAULT_CODEX_EFFORT,
@@ -221,14 +222,20 @@ async function executeTask(
     ctx.totals.totalCostAll += result.totalCost;
     ctx.runResults.get(scenario.id)?.push(result);
 
-    const statusLabel = result.success ? "PASSED" : "FAILED";
-    console.log(
-      `  Result: ${statusLabel} (Errors: ${result.errorsCount}, Warnings: ${result.warningsCount}) Cost: $${
-        result.totalCost.toFixed(6)
-      }`,
-    );
-    console.log("  Checklist:");
-    printChecklistResults(result, scenario);
+    if (result.infraError) {
+      // [REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]: no checklist was
+      // decided, so none is printed — an empty one would read as a 0% verdict.
+      console.log(`  Result: ERROR (infrastructure) — ${result.infraError}`);
+    } else {
+      const statusLabel = result.success ? "PASSED" : "FAILED";
+      console.log(
+        `  Result: ${statusLabel} (Errors: ${result.errorsCount}, Warnings: ${result.warningsCount}) Cost: $${
+          result.totalCost.toFixed(6)
+        }`,
+      );
+      console.log("  Checklist:");
+      printChecklistResults(result, scenario);
+    }
 
     if (!result.success) {
       const reportPath = join(ctx.runDir, "report.html");
@@ -240,6 +247,17 @@ async function executeTask(
     }
   } catch (e) {
     console.error(`  Error running scenario ${scenario.id}:`, e);
+    // A run the runner could not finish is an ERROR in the summary, never a
+    // silent gap: without it a one-run sweep whose only scenario threw exits 0.
+    const msg = e instanceof Error ? e.message : String(e);
+    const result = buildInfraErrorResult(
+      scenario.id,
+      ctx.agentModel,
+      `Runner exception: ${msg}`,
+      "",
+    );
+    ctx.results.push(result);
+    ctx.runResults.get(scenario.id)?.push(result);
   } finally {
     const remaining = (ctx.remainingRuns.get(scenario.id) ?? 0) - 1;
     ctx.remainingRuns.set(scenario.id, remaining);

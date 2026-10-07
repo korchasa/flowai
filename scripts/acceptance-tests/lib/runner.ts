@@ -18,6 +18,12 @@ import {
   runGit,
 } from "./utils.ts";
 import { AcpAgent } from "./acp/acp_agent.ts";
+import { collectCodexTurnErrors } from "./acp/codex_rollout.ts";
+import {
+  buildInfraErrorResult,
+  detectInfraAbort,
+  unclassifiedTurnErrors,
+} from "./infra_abort.ts";
 import type { CapturedToolCall } from "./acp/client.ts";
 import type { AcpIde } from "./acp/registry.ts";
 import {
@@ -441,6 +447,11 @@ interface AgentRunOutcome {
    * (FR-ACCEPT.TOKEN-USAGE).
    */
   userEmulator: UserEmulator | null;
+  /**
+   * Set when the session measured nothing — a dead login or a provider abort
+   * (FR-ACCEPT.INFRA-ABORT). The run is then reported as ERROR, unjudged.
+   */
+  infraError: string | null;
 }
 
 /**
@@ -717,14 +728,22 @@ async function runAgentWithTimeout(
   const durationMs = performance.now() - start;
   console.log(`  Agent finished with exit code ${agentResult.code}`);
 
-  const authFailure = detectAuthFailure(
-    agentResult.logs,
-    agent.getToolCalls().length,
-  );
-  if (authFailure) {
-    agent.kill();
-    throw new Error(authFailure);
+  // implements [REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]: a session
+  // the login or the provider cut off is not a behavioural result. It used to
+  // throw here, and the throw dropped the run from the summary altogether.
+  const toolCallCount = agent.getToolCalls().length;
+  const turnErrors = adapterEnv.CODEX_HOME
+    ? await collectCodexTurnErrors(adapterEnv.CODEX_HOME)
+    : [];
+  for (const e of unclassifiedTurnErrors(turnErrors)) {
+    console.warn(
+      `  WARNING: codex turn error "${e.kind}": ${e.message} — scored as ` +
+        `behaviour; check that the agent, not the provider, caused it.`,
+    );
   }
+  const infraError = detectAuthFailure(agentResult.logs, toolCallCount) ??
+    detectInfraAbort({ logs: agentResult.logs, toolCallCount, turnErrors });
+  if (infraError) agent.kill();
   const faultWarning = detectHarnessFaultWarning(
     agentResult.logs,
     agent.getToolCalls().length,
@@ -740,7 +759,14 @@ async function runAgentWithTimeout(
         `prompt rejected, etc.). Inspect sandbox and agent logs.`,
     );
   }
-  return { ...agentResult, durationMs, agent, judgeConfig, userEmulator };
+  return {
+    ...agentResult,
+    durationMs,
+    agent,
+    judgeConfig,
+    userEmulator,
+    infraError,
+  };
 }
 
 /**
@@ -1030,12 +1056,19 @@ export async function runScenario(
     await prepareSandboxFiles(sandboxPath, scenario, adapter);
     const initHash = await initSandboxGit(sandboxPath, scenario, adapter);
 
-    const { code, logs, durationMs, agent, judgeConfig, userEmulator } =
-      await runAgentWithTimeout(
-        scenario,
-        sandboxPath,
-        options,
-      );
+    const {
+      code,
+      logs,
+      durationMs,
+      agent,
+      judgeConfig,
+      userEmulator,
+      infraError,
+    } = await runAgentWithTimeout(
+      scenario,
+      sandboxPath,
+      options,
+    );
 
     const agentUsage = await collectAgentUsage(agent, adapter);
     await tracer.logExecutionSection();
@@ -1045,6 +1078,27 @@ export async function runScenario(
       logs,
       { step: 1, source: "agent", model: options.agentModel },
     );
+
+    // [REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]: never judged. A
+    // judge scoring an aborted session fails `skill_invoked` and the run reads
+    // as a routing defect; a negative trigger passes on the empty trace and
+    // its pass would be cached.
+    if (infraError) {
+      console.error(`  INFRA ERROR: ${infraError}`);
+      const result = buildInfraErrorResult(
+        scenario.id,
+        options.agentModel,
+        infraError,
+        logs,
+        durationMs,
+      );
+      await tracer.logSummary(traceId, {
+        ...result,
+        errors: 0,
+        warnings: 0,
+      });
+      return result;
+    }
 
     const { evidence, truncatedLogs, statusStr, logStr } =
       await gatherJudgeEvidence(

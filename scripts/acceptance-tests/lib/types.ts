@@ -293,6 +293,12 @@ export interface BenchmarkResult {
   checklistResults: Record<string, { pass: boolean; reason: string }>;
   logs: string; // Full conversation log
   evidence?: string; // Debug evidence
+  /**
+   * Set when the harness could not measure the run — the provider aborted the
+   * session, the login was dead, or the runner threw (FR-ACCEPT.INFRA-ABORT).
+   * Such a result is an ERROR, never a checklist FAIL, and is never cached.
+   */
+  infraError?: string;
 }
 
 export interface LLMMessage {

@@ -8,7 +8,7 @@ import type {
   ScenarioMetadata,
   TraceEvent,
 } from "./trace-types.ts";
-import { escape } from "./trace-types.ts";
+import { escape, summaryStatus } from "./trace-types.ts";
 import { getCSS, getJS } from "./trace-styles.ts";
 
 /** Formats scenario name with skill prefix for display. */
@@ -84,9 +84,7 @@ function renderDashboard(
           <tfoot>
             <tr class="total-row">
               <td>TOTAL</td>
-              <td class="text-right">${
-    groups.every((g) => g.allPassed) ? "PASSED" : "FAILED"
-  }</td>
+              <td class="text-right">${overallStatus(groups)}</td>
               <td class="text-right">${
     groups.length > 0
       ? (groups.reduce((a, g) => a + g.avgScore, 0) / groups.length).toFixed(
@@ -114,6 +112,18 @@ function renderDashboard(
     `;
 }
 
+/**
+ * Status of the whole sweep. ERROR when nothing failed its checklist but some
+ * run was cut off by the infrastructure: the sweep is red, yet no primitive
+ * was found wrong (FR-ACCEPT.INFRA-ABORT).
+ */
+function overallStatus(groups: ScenarioGroupStats[]): string {
+  const runs = groups.flatMap((g) => g.runs);
+  const notPassed = runs.filter((r) => !r.summary?.success);
+  if (notPassed.length === 0) return "PASSED";
+  return notPassed.every((r) => r.summary?.infraError) ? "ERROR" : "FAILED";
+}
+
 /** Renders table body rows for the dashboard (group rows + optional run sub-rows). */
 function renderDashboardRows(groups: ScenarioGroupStats[]): string {
   return groups.map((g) => {
@@ -123,7 +133,9 @@ function renderDashboardRows(groups: ScenarioGroupStats[]): string {
       ? `${g.passRate.toFixed(0)}% (${
         g.runs.filter((r) => r.summary?.success).length
       }/${g.runs.length})`
-      : (g.allPassed ? "PASSED" : "FAILED");
+      : (g.runs[0].summary
+        ? summaryStatus(g.runs[0].summary)
+        : (g.allPassed ? "PASSED" : "FAILED"));
 
     const groupRow = `
                 <tr class="group-row" onclick="${
@@ -152,9 +164,7 @@ function renderDashboardRows(groups: ScenarioGroupStats[]): string {
       const runStatusClass = s.summary
         ? (s.summary.success ? "status-pass" : "status-fail")
         : "status-pending";
-      const runStatusText = s.summary
-        ? (s.summary.success ? "PASSED" : "FAILED")
-        : "PENDING";
+      const runStatusText = s.summary ? summaryStatus(s.summary) : "PENDING";
       return `
                 <tr class="run-row run-group-${g.groupId}" style="display: none; cursor: pointer" onclick="showScenario('${s.id}')">
                   <td style="padding-left: 32px">run-${s.runIndex || "?"}</td>
@@ -308,7 +318,7 @@ function renderScenarioSummaryCard(
           <div class="metric">
             <span class="metric-value" style="color: ${
     summary.success ? "var(--success-color)" : "var(--error-color)"
-  }">${summary.success ? "PASSED" : "FAILED"}</span>
+  }">${summaryStatus(summary)}</span>
             <span class="metric-label">Result</span>
           </div>
           <div class="metric">
