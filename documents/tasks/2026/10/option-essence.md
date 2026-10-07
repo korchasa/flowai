@@ -1,6 +1,6 @@
 ---
 date: 2026-10-07
-status: in progress
+status: done
 implements:
   - FR-UNIVERSAL.QA-FORMAT
   - FR-PLAN-VARIANT-ARCHETYPES
@@ -65,9 +65,9 @@ personal `CLAUDE.md` in both account roots (`~/.claude`, `~/.claude-work`).
 - [x] FR-PLAN-VARIANT-ARCHETYPES: `plan` variants carry the Essence line.
   - Test: `Benchmark: plan-variant-properties-labelled` item `essence_line_per_option`
   - Evidence: `deno task acceptance-tests -f plan-variant-properties-labelled -n 3 --no-cache` — fails before, passes after. Result: failed pre-fix (`2026-10-07T17-33-51`), passed 3/3 after (`2026-10-07T17-41-10`; run-1 vacuously — the agent stopped on the pre-existing conflict between `plan` Step 3 "Do NOT fill `## Solution` yet" and the task-format skill's "Solution is never blank").
-- [ ] FR-UNIVERSAL.QA-FORMAT rule 6 holds on Opus with the reworded rule.
+- [x] FR-UNIVERSAL.QA-FORMAT rule 6 holds on Opus with the reworded rule.
   - Test: `Benchmark: agents-rules-option-standalone` items `options_standalone`, `essence_line_per_option`
-  - Evidence: `deno task acceptance-tests -i claude -m claude-opus-5-5 -f agents-rules-option-standalone -n 5 --no-cache` — at least 4/5, as before the change. Not measured yet: the run on 2026-10-07 (`2026-10-07T17-48-41`) aborted on an expired `CLAUDE_CODE_OAUTH_TOKEN`.
+  - Evidence: `deno task acceptance-tests -i claude -m claude-opus-5-5 -f agents-rules-option-standalone -n 5 --no-cache` — at least 4/5, as before the change. Result: 4/5, `essence_line_per_option` 5/5 (`2026-10-07T20-12-29`). The first wording scored 3/5 (`2026-10-07T20-05-44`) because one agent read "a short name the reader answers by" as permission to drop the option letters; the title sentence now ties the name to the option's letter or number.
 - [x] The judge separates options with and without a proper Essence line.
   - Test: `framework/core/acceptance-tests/agents-rules-chat-calibration/calibrate.ts` case `option-standalone`
   - Evidence: `deno test -A framework/core/acceptance-tests/agents-rules-chat-calibration/calibrate.ts -- <new-dir> option-standalone` — every fixed reply matches its expected verdicts. Result: 10/10 matched (`acceptance-tests/runs/option-essence-calibration-1`).
