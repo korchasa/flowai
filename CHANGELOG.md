@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.24](https://github.com/korchasa/flowai/compare/v0.14.23...v0.14.24) (2026-10-07)
+
+
+### Bug Fixes
+
+* **agents-rules:** every option of a question stands on its own ([8a16e94](https://github.com/korchasa/flowai/commit/8a16e94874e2ae6394e3722dce2ebceea6aede58))
+
 ### [0.14.23](https://github.com/korchasa/flowai/compare/v0.14.22...v0.14.23) (2026-10-07)
 
 
