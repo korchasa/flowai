@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.23](https://github.com/korchasa/flowai/compare/v0.14.22...v0.14.23) (2026-10-07)
+
+
+### Bug Fixes
+
+* **hooks:** strip source files in doc-anchors like check-salp ([6a7bd87](https://github.com/korchasa/flowai/commit/6a7bd87d987f4cc080927cdcc399c1672dae80a4))
+
 ### [0.14.22](https://github.com/korchasa/flowai/compare/v0.14.21...v0.14.22) (2026-10-07)
 
 
