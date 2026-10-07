@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.28](https://github.com/korchasa/flowai/compare/v0.14.27...v0.14.28) (2026-10-07)
+
+
+### Bug Fixes
+
+* **write-prd:** ask for missing numeric targets with a recommended value ([fcf338e](https://github.com/korchasa/flowai/commit/fcf338e78da5d00aaa3e75845911cfac206dbf05))
+
 ### [0.14.27](https://github.com/korchasa/flowai/compare/v0.14.26...v0.14.27) (2026-10-07)
 
 
