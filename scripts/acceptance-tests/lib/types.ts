@@ -152,6 +152,15 @@ export interface BenchmarkScenario {
   };
 
   /**
+   * The scenario simulates an environment with no pre-declared subagents.
+   * The runner then installs no codex roles into `CODEX_HOME/agents/`.
+   * `setup()` cannot do this itself: it runs before the runner creates
+   * `CODEX_HOME`. Agents copied into the sandbox's IDE dirs are still the
+   * scenario's to remove in `setup()`.
+   */
+  noSubagents?: boolean;
+
+  /**
    * Skip this scenario with a reason.
    * If set, the scenario will not be executed and will be reported as skipped.
    */

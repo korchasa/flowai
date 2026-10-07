@@ -69,6 +69,19 @@ export function resolveAllowedPacks(
   return [...new Set([...base, ...(extraPacks ?? [])])];
 }
 
+/**
+ * Packs whose agents become codex roles for this scenario. A scenario that
+ * simulates an environment without subagents (`noSubagents`) gets none: the
+ * roles live in `CODEX_HOME`, which the runner fills after `setup()` has run,
+ * so the scenario cannot remove them itself.
+ */
+export function codexRolePacks(
+  scenario: Pick<BenchmarkScenario, "pack" | "extraPacks" | "noSubagents">,
+): string[] | undefined {
+  if (scenario.noSubagents) return [];
+  return resolveAllowedPacks(scenario.pack, scenario.extraPacks);
+}
+
 /** Build the always-pass result for a scenario marked `skip`. */
 function buildSkippedResult(
   scenario: BenchmarkScenario,
@@ -614,9 +627,14 @@ async function runAgentWithTimeout(
       join(Deno.cwd(), "framework"),
       adapterEnv.CODEX_HOME,
       options.agentModel,
-      resolveAllowedPacks(scenario.pack, scenario.extraPacks),
+      codexRolePacks(scenario),
     );
-    console.log(`  Codex roles installed: ${installed.join(", ") || "none"}`);
+    console.log(
+      `  Codex roles installed: ${
+        installed.join(", ") ||
+        (scenario.noSubagents ? "none (scenario.noSubagents)" : "none")
+      }`,
+    );
   }
 
   // The judge and the simulated user run on a codex app-server from a temp cwd

@@ -11,7 +11,11 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  *
  * setup() deletes the installed agents dir AFTER the framework copy
  * (runner order: fixtures → framework → setup), simulating the no-subagent
- * environment inside the sandbox.
+ * environment inside the sandbox. On codex the dispatchable roles live in
+ * `CODEX_HOME/agents/*.toml`, which the runner writes after setup();
+ * `noSubagents` tells the runner to install none. Without it the agent finds
+ * `surface-scout.toml`, dispatches it as the skill demands, and the degradation
+ * note is rightly never written (observed 2026-10-07, both runs).
  */
 export const PlanSurfaceDegradationBench = new class
   extends AcceptanceTestScenario {
@@ -19,6 +23,7 @@ export const PlanSurfaceDegradationBench = new class
   name = "Plan degrades visibly when no subagents are available";
   skill = "plan";
   stepTimeoutMs = 420_000;
+  noSubagents = true;
   agentsTemplateVars = {
     PROJECT_NAME: "TestProject",
     TOOLING_STACK: "- TypeScript\n- Deno",

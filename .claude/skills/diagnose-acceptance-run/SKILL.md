@@ -105,6 +105,6 @@ atoms, and the body must carry the no-delegation rule.
 
 ## Simulated-user marker
 
-A simulated user's reply appears in the trace as `[USER INPUT] <reply>`. A
+A simulated user's reply appears in the trace as `[turn N] > <reply>` (`acp/acp_agent.ts`); older runs used `[USER INPUT] <reply>`. No such line means the simulated user never got a turn — on an interactive scenario, because the agent asked nothing. A
 reply that does not fit the question the agent asked is PERSONA-MISMATCH, not
 an agent defect.
