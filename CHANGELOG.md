@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.28](https://github.com/korchasa/flowai/compare/v0.14.27...v0.14.28) (2026-10-07)
+
+
+### Bug Fixes
+
+* **write-prd:** ask for missing numeric targets with a recommended value ([fcf338e](https://github.com/korchasa/flowai/commit/fcf338e78da5d00aaa3e75845911cfac206dbf05))
+
+### [0.14.27](https://github.com/korchasa/flowai/compare/v0.14.26...v0.14.27) (2026-10-07)
+
+
+### Bug Fixes
+
+* **acceptance-tests:** ask the codex agent to question in its reply ([cfffcb7](https://github.com/korchasa/flowai/commit/cfffcb7e3e9557e0f8b2400abea43df321dea530))
+
+### [0.14.26](https://github.com/korchasa/flowai/compare/v0.14.25...v0.14.26) (2026-10-07)
+
+
+### Bug Fixes
+
+* **agents-rules:** tie the option title to its letter or number ([a51ec62](https://github.com/korchasa/flowai/commit/a51ec628e19f908a1c3e7a21b480f0186f70ac7f))
+
+### [0.14.25](https://github.com/korchasa/flowai/compare/v0.14.24...v0.14.25) (2026-10-07)
+
+
+### Bug Fixes
+
+* **agents-rules:** every analysed option opens with an Essence line ([19db355](https://github.com/korchasa/flowai/commit/19db355a0c96794b11fd8001b6898913cafb8869))
+
+### [0.14.24](https://github.com/korchasa/flowai/compare/v0.14.23...v0.14.24) (2026-10-07)
+
+
+### Bug Fixes
+
+* **agents-rules:** every option of a question stands on its own ([8a16e94](https://github.com/korchasa/flowai/commit/8a16e94874e2ae6394e3722dce2ebceea6aede58))
+
+### [0.14.23](https://github.com/korchasa/flowai/compare/v0.14.22...v0.14.23) (2026-10-07)
+
+
+### Bug Fixes
+
+* **hooks:** strip source files in doc-anchors like check-salp ([6a7bd87](https://github.com/korchasa/flowai/commit/6a7bd87d987f4cc080927cdcc399c1672dae80a4))
+
+### [0.14.22](https://github.com/korchasa/flowai/compare/v0.14.21...v0.14.22) (2026-10-07)
+
+
+### Bug Fixes
+
+* **plan:** never reference an FR whose text is recorded nowhere ([35c3910](https://github.com/korchasa/flowai/commit/35c3910ebb6273c7e0c9fd3dc5a9f3269b8ae3b0))
+
+### [0.14.21](https://github.com/korchasa/flowai/compare/v0.14.20...v0.14.21) (2026-10-06)
+
+
+### Bug Fixes
+
+* **plan,review:** a missing requirements document never blocks the cycle ([ec33fec](https://github.com/korchasa/flowai/commit/ec33fec38392f42f627252977b3df23bd2974d65))
+
+### [0.14.20](https://github.com/korchasa/flowai/compare/v0.14.19...v0.14.20) (2026-10-06)
+
+
+### Bug Fixes
+
+* **acceptance:** stop counting a skill search as a skill load ([4ca8266](https://github.com/korchasa/flowai/commit/4ca82662f371430742dca9fa79df644ea86f93ed))
+
+### [0.14.19](https://github.com/korchasa/flowai/compare/v0.14.18...v0.14.19) (2026-10-06)
+
+
+### Bug Fixes
+
+* **push,update:** investigate red CI in a SHA worktree; list missing rules ([0661cd2](https://github.com/korchasa/flowai/commit/0661cd2c0998e0eb323ae0a86b7d6f813f285c74))
+
+
+### Tests
+
+* **push:** commit the CI mocks in investigates-ci-failure setup ([028455b](https://github.com/korchasa/flowai/commit/028455bfc92b82514b4f7a637f235d24123dbe49))
+* **ship-task:** let the contract tests run in the rejects fixture ([cf2aa30](https://github.com/korchasa/flowai/commit/cf2aa30962c3afca0997bd8e7ea5facec56c0662))
+
 ### [0.14.18](https://github.com/korchasa/flowai/compare/v0.14.17...v0.14.18) (2026-10-06)
 
 

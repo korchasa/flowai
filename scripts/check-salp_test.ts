@@ -14,7 +14,12 @@
  */
 import { assertEquals } from "@std/assert";
 import { join } from "@std/path";
-import { collectFindings, type Finding } from "./check-salp.ts";
+import {
+  collectFindings,
+  type Finding,
+  stripNonReferenceContext,
+} from "./check-salp.ts";
+import { stripNonReferenceContext as hookStrip } from "../framework/beta/hooks/doc-anchors-validate/run.ts";
 
 async function withTempDir(fn: (dir: string) => Promise<void>): Promise<void> {
   const dir = await Deno.makeTempDir({ prefix: "salp-test-" });
@@ -247,4 +252,31 @@ Deno.test("ignores-salp-anchors-in-ts-string-literals", async () => {
     assertEquals(dead.length, 1);
     assertEquals(dead[0].message.includes("fr:ghost"), true);
   });
+});
+
+Deno.test("hook-strips-non-reference-context-like-the-validator", () => {
+  // The doc-anchors Stop hook carries its own copy of the stripper, because
+  // it ships as a single file with no imports. The two copies drifted once:
+  // the hook kept a per-line `//` test after this validator moved to a
+  // character scan, and reported a REF inside a template literal as dead
+  // while `deno task check` stayed green. Both must strip every case alike.
+  const cases: Array<[string, string]> = [
+    ["doc.md", "See `[REF:fr:a]` and\n```\n[REF:fr:b]\n```\n[REF:fr:c]"],
+    ["a.ts", "// [REF:fr:a] real comment\nconst x = 1; // [REF:fr:b] trailing"],
+    ["b.ts", "/* [REF:fr:a]\n * [REF:fr:b] */ const y = '// [REF:fr:c]';"],
+    ["c.ts", 'const s = "// [REF:fr:a]"; /* [REF:fr:b] */ const t = 2;'],
+    [
+      "d.ts",
+      "const f = `head\n// [REF:fr:a]\n${ {k: `in // [REF:fr:b]`}.k }\ntail`;\n// [REF:fr:c]",
+    ],
+    ["e.ts", "const g = `esc \\` // [REF:fr:a]`;\n// `[REF:fr:b]` [REF:fr:c]"],
+    ["f.yaml", "key: '[REF:fr:a]' # [REF:fr:b]"],
+  ];
+  for (const [file, content] of cases) {
+    assertEquals(
+      hookStrip(file, content),
+      stripNonReferenceContext(file, content),
+      file,
+    );
+  }
 });

@@ -15,7 +15,8 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * 1. AGENTS.template.md changed — with formatting noise
  * 2. Several other project-local skill SKILL.md files changed — formatting only (noise)
  * 3. ONE substantive change hidden in AGENTS.template.md: new "Proactive
- *    Resolution" planning rule
+ *    Resolution" rule. The template once kept it under Planning Rules and
+ *    now keeps it under Core Project Rules; the checklist accepts either.
  * 4. Project AGENTS.md is missing that rule
  * 5. Agent must NOT dismiss everything as formatting — must compare
  *    template against artifact to find the gap
@@ -182,7 +183,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     {
       id: "proposed_adding_rule",
       description:
-        'Did the agent propose adding the "Proactive Resolution" rule to the project\'s Planning Rules section in AGENTS.md?',
+        'Did the agent propose adding the "Proactive Resolution" rule to AGENTS.md by name — in the section where the template carries it (Core Project Rules) or in the project\'s Planning Rules? A wholesale replacement of AGENTS.md that never names the rule does not count.',
       critical: true,
     },
     {

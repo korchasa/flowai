@@ -83,6 +83,12 @@ export const AgentsRulesVariantAnalysis = new class
       critical: true,
     },
     {
+      id: "essence_line_per_option",
+      description:
+        "Take EVERY option of EVERY set of alternatives that carries its own analysis (pros, cons, risks and the like). Does each such option have its own labelled essence line - labelled `Essence`, `Суть`, `Gist` or an equivalent - placed under the option title and BEFORE the pros, that says in plain words what would be done, to what, and what the reader gets? FAIL if any such option has no essence line; if the line carries no label or is folded into another property's line; or if it only restates the title without saying what would be done and what the reader gets. Short reply options that carry no analysis of their own (Apply / Skip / Edit, yes / no) are not scored.",
+      critical: true,
+    },
+    {
       id: "tradeoffs_outside_the_options",
       description:
         "For each set of alternatives, are the cross-option trade-offs stated as their OWN part that follows the option list — not folded into one option's properties and not omitted? A short trade-off sentence per set is enough; the item asks where it sits, not how long it is.",

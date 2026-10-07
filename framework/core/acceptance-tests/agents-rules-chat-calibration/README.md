@@ -44,5 +44,12 @@ sharpen the checklist; never relax a criterion to match the verdict. The
 Russian reply that repeats its own wording in English parentheses, which the
 judge accepted until the language criterion named that pattern.
 
+The calibration script also covers one sibling that is not part of the chat
+language set: `agents-rules-option-standalone` (suffix `option-standalone`,
+FR-UNIVERSAL.QA-FORMAT rule 6). It checks that every option of a next-step
+question can be understood without the report above it. Its defect shows on
+Opus, not on the default Claude model, so run it with
+`-i claude -m claude-opus-5-5 -f agents-rules-option-standalone`.
+
 The first measurements and their limitations are recorded in
 [the investigation](../../../../documents/research/claude-language-investigation/claude-language-acceptance.md).

@@ -66,6 +66,12 @@ export const WritePrdBasicBench = new class extends AcceptanceTestScenario {
       critical: false,
     },
     {
+      id: "targets_asked_with_recommendation",
+      description:
+        "The request gives only the business target (40% fewer order-status tickets) and the scale (50K DAU, 10K orders/day). Before writing the PRD, did the agent ask the user about the quantitative targets the request does not give — at least delivery latency and the supported OS versions or the guardrail thresholds — and offer a recommended numeric value with a short rationale for each one it asked about? Questions only about audience, constraints, scope or timeline do not count, and neither does listing the targets as open questions in the PRD.",
+      critical: true,
+    },
+    {
       id: "specific_not_vague",
       description:
         "Are requirements specific and measurable rather than vague (e.g., 'latency < 200ms' instead of 'should be fast')?",

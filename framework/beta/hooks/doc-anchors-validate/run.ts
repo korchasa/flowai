@@ -328,8 +328,13 @@ async function loadSalpIgnores(paths: string[]): Promise<SalpIgnore[]> {
 
 /** Strip contexts where SALP tokens are illustrative, not real references:
  *  markdown fenced blocks + inline `code`; in `.ts`/`.js` keep only comment
- *  lines (SALP tokens in source live in doc comments). Line count preserved. */
-function stripNonReferenceContext(file: string, content: string): string {
+ *  text, outside strings and template literals. Line count preserved. Kept
+ *  identical to `scripts/check-salp.ts` — the parity test in
+ *  `scripts/check-salp_test.ts` fails when the two copies drift. */
+export function stripNonReferenceContext(
+  file: string,
+  content: string,
+): string {
   if (file.endsWith(".md")) return stripMarkdownCodeSpans(content);
   if (file.endsWith(".ts") || file.endsWith(".js")) {
     return keepOnlyCommentLines(content);
@@ -356,23 +361,134 @@ function stripMarkdownCodeSpans(content: string): string {
   return out.join("\n");
 }
 
+/** Extract comment text out of `.ts` / `.js` source, blanking everything else.
+ *
+ *  A character-level scan is required, not a per-line shape test: a line that
+ *  merely STARTS with `//` may be DATA inside a template literal. Acceptance
+ *  scenarios write whole source files into their sandbox that way, and those
+ *  bytes are cross-references of the SANDBOX project, not of this repo.
+ *  Reading them produced a one-sided view — the `//`-shaped line inside a
+ *  literal yielded a REF, while the markdown heading carrying the matching
+ *  ANC, sitting in a second literal in the same file, did not — and the
+ *  validator reported the pair as a dead ref.
+ *
+ *  Code, string and template-literal bytes (including `${…}` interpolation,
+ *  which re-enters code) are replaced by spaces so line and column numbers
+ *  survive. Backtick-delimited inline code INSIDE comments is blanked
+ *  afterwards, as before, so grammar templates in JSDoc are not read as real
+ *  anchors. */
 function keepOnlyCommentLines(content: string): string {
   const lines = content.split("\n");
-  let inBlockComment = false;
   const out: string[] = [];
+  // Frame stack, base frame = code. A backtick pushes a template frame; a
+  // `${` inside a template pushes a nested code frame whose `depth` counts
+  // unmatched `{` so the matching `}` closes the right one. Only the stack
+  // and the block-comment flag survive across lines — quotes do not.
+  const stack: Array<{ tpl: boolean; depth: number }> = [
+    { tpl: false, depth: 0 },
+  ];
+  let inBlockComment = false;
+
   for (const line of lines) {
-    let keep = false;
-    if (inBlockComment) {
-      keep = true;
-      if (line.includes("*/")) inBlockComment = false;
-    } else if (/\/\*/.test(line) && !/\*\/[ \t]*$/.test(line)) {
-      keep = true;
-      inBlockComment = true;
-    } else if (/^[ \t]*\/\//.test(line)) {
-      keep = true;
+    let kept = "";
+    let inLineComment = false;
+    let quote: string | null = null;
+    let i = 0;
+    // Consume an escape pair without disturbing column alignment.
+    const skipEscape = () => {
+      kept += i + 1 < line.length ? "  " : " ";
+      i += 2;
+    };
+    while (i < line.length) {
+      const c = line[i];
+      const c2 = line[i + 1];
+
+      if (inBlockComment) {
+        if (c === "*" && c2 === "/") {
+          inBlockComment = false;
+          kept += "  ";
+          i += 2;
+          continue;
+        }
+        kept += c;
+        i += 1;
+        continue;
+      }
+      if (inLineComment) {
+        kept += c;
+        i += 1;
+        continue;
+      }
+      if (quote !== null) {
+        if (c === "\\") {
+          skipEscape();
+          continue;
+        }
+        if (c === quote) quote = null;
+        kept += " ";
+        i += 1;
+        continue;
+      }
+
+      const top = stack[stack.length - 1];
+      if (top.tpl) {
+        if (c === "\\") {
+          skipEscape();
+          continue;
+        }
+        if (c === "$" && c2 === "{") {
+          stack.push({ tpl: false, depth: 0 });
+          kept += "  ";
+          i += 2;
+          continue;
+        }
+        if (c === "`") stack.pop();
+        kept += " ";
+        i += 1;
+        continue;
+      }
+
+      if (c === "/" && c2 === "/") {
+        inLineComment = true;
+        kept += "//";
+        i += 2;
+        continue;
+      }
+      if (c === "/" && c2 === "*") {
+        inBlockComment = true;
+        kept += "/*";
+        i += 2;
+        continue;
+      }
+      if (c === "'" || c === '"') {
+        quote = c;
+        kept += " ";
+        i += 1;
+        continue;
+      }
+      if (c === "`") {
+        stack.push({ tpl: true, depth: 0 });
+        kept += " ";
+        i += 1;
+        continue;
+      }
+      if (stack.length > 1) {
+        if (c === "{") {
+          top.depth += 1;
+        } else if (c === "}") {
+          if (top.depth === 0) {
+            stack.pop();
+            kept += " ";
+            i += 1;
+            continue;
+          }
+          top.depth -= 1;
+        }
+      }
+      kept += " ";
+      i += 1;
     }
-    if (keep) out.push(line.replace(/`[^`]*`/g, (m) => " ".repeat(m.length)));
-    else out.push("");
+    out.push(kept.replace(/`[^`]*`/g, (m) => " ".repeat(m.length)));
   }
   return out.join("\n");
 }

@@ -18,8 +18,9 @@ When asking the user a choice (audience, constraints, timeline):
 
 - **Numbered** — each question is a numbered list item (`1.`, `2.`, …), not a heading, a bold-only line, or a paragraph.
 - **Self-contained** — the question is answerable from itself and its options alone. Name what is being decided and what the answer changes, inside the question. "Which of the above?", a bare "Your choice?", and "Which variant do you prefer?" with nothing restated are defects: they send the reader back up the transcript to reconstruct the question.
+- **Each option stands on its own** — a reader often jumps straight to the options, so an option's title and the lines under it must be enough to choose without the text above the question or the earlier turns. The title is a short name after the option's letter or number, and the reader answers with that letter or number; the `**Essence:**` line under it says what would be done, to what, and what the reader gets. A short reply option with no analysis of its own (Apply / Skip / Edit) has no Essence line, and its title says it alone. Explain inside the option any id, name, number or term it takes from a report, a file or an earlier turn, and replace a pointer such as "the issues found", "as above" or "the current round" with the items it means. An explanation elsewhere in the reply does not count — not in the report above the question, not in another option — and neither does a label tucked into parentheses or an aside: explain it in the option or delete it. Before sending, go through each option alone and list every label (letters plus digits such as `E4` or `N3`), coined term and bare number in it; each must be explained in that same option or removed.
 - **`agent's choice`** — on a multi-select where the user delegates with `agent's choice` (or its language equivalent), pick the subset yourself, justify the pick in one line, and proceed without re-asking for confirmation.
-- When the choices are mutually exclusive alternatives with their own analysis, that analysis is nested under the option inside the question — never repeated as a separate block before it.
+- When the choices are mutually exclusive alternatives with their own analysis, that analysis is nested under the option inside the question — never repeated as a separate block before it. It opens with the `**Essence:**` line, then `**Pros:**`, `**Cons:**`, `**Risks:**` and `**Best for:**`, each on its own labelled line.
 
 ## 1. Core Principles
 
@@ -29,7 +30,9 @@ When asking the user a choice (audience, constraints, timeline):
   or "reliable" without metrics.
 - **Unambiguous**: Remove ambiguity. If a requirement can be interpreted in
   multiple ways, it is a bug in the PRD.
-- **Living Document**: Acknowledge that the PRD evolves. Mark unknowns clearly.
+- **Living Document**: Acknowledge that the PRD evolves. A target nobody has
+  approved yet is still written as a number and marked as a proposal; it is
+  never left blank or replaced by an open question.
 
 ## 2. Writing Strategy (AI Instructions)
 
@@ -40,7 +43,19 @@ When asked to write a PRD:
 2. **Ask Clarifying Questions**: If key context is missing (e.g., "Who is this
    for?", "What are the constraints?"), ask the user before generating the full
    doc. Follow the **Question Format** section above (FR-UNIVERSAL.QA-FORMAT).
-3. **Drafting**: Use the template below.
+   - **Quantitative targets**: list every number the PRD will need that the
+     request does not give — latency, throughput, availability, retry limits,
+     supported OS or browser versions, guardrail thresholds. Ask about them in
+     the same round of questions, and for each one offer a concrete recommended
+     value and the reason for it — `Recommended: <value>, because <reason>` —
+     so the user can accept it in one word. A value with no reason gives the
+     user nothing to judge it by, and "the currently supported versions" is not
+     a value. The user still decides the number; you only make the decision
+     cheap.
+3. **Drafting**: Use the template below. A target the user confirmed or gave is
+   a requirement. A target the user left unanswered goes in as your recommended
+   value marked `(proposed, awaiting approval)`, and Open Questions lists it for
+   approval with that value.
 4. **Review**: Check against the "Bad vs Good" examples in Section 4.
 5. **Persist**: MUST write the final PRD to a file (e.g., `documents/prd-<slug>.md`
    or a path specified by the user). Do NOT only output the PRD in chat — always
@@ -105,6 +120,7 @@ When asked to write a PRD:
 
 - List of unresolved questions that need input from stakeholders or technical
   research.
+- Every `(proposed, awaiting approval)` target, with its proposed value.
 
 ## 4. Examples: "Bad" vs "Good" Requirements
 

@@ -20,10 +20,21 @@ Deno.test("agentLaunchEnv: a codex session carries CODEX_CONFIG on top of the ad
   });
   assertEquals(env.HOME, "/tmp/h");
   assertEquals(env.CODEX_HOME, "/tmp/h/.codex");
-  assertEquals(JSON.parse(env.CODEX_CONFIG), {
-    model_reasoning_effort: "medium",
-    model: "gpt-5.6-terra",
+  const cfg = JSON.parse(env.CODEX_CONFIG);
+  assertEquals(cfg.model_reasoning_effort, "medium");
+  assertEquals(cfg.model, "gpt-5.6-terra");
+});
+
+Deno.test("agentLaunchEnv: a codex session forbids the async question tool", () => {
+  const env = agentLaunchEnv({
+    ide: "codex",
+    model: "gpt-6-luna",
+    effort: "medium",
+    base: {},
   });
+  const instructions = JSON.parse(env.CODEX_CONFIG).developer_instructions;
+  assertEquals(typeof instructions, "string");
+  assertEquals(instructions.includes("request_user_input_async"), true);
 });
 
 Deno.test("claudeAgentEnv: maps each effort onto a thinking-token budget", () => {

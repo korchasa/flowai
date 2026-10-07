@@ -25,6 +25,9 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
   };
   interactive = true;
 
+  // `fixture/deno.json` keeps the copied `.codex/` and `documents/` out of the
+  // sandbox's fmt/lint/test, as in the sibling scenarios. Without it the
+  // agent's `deno fmt --check` failed on the installed framework files.
   override async setup(sandboxPath: string) {
     const bare = `${sandboxPath}/../ship-remote.git`;
     await new Deno.Command("git", {
@@ -45,12 +48,16 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
     await runGit(sandboxPath, ["push", "origin", "feature/add-trim"]);
   }
 
+  // Until 2026-10-06 the query ended with "Touches FR-TRIM." The fixture has no SRS, so the review's FR Coverage
+  // Audit blocked the happy path on `no acceptance reference` — a phase this
+  // scenario does not measure.
   userQuery =
-    "/ship Add a configurable `trim(input, options?)` helper to strings.ts that supports trimming a custom character set (e.g. trim leading commas + spaces), in addition to the default whitespace-only trim. Touches FR-TRIM.";
+    "/ship Add a configurable `trim(input, options?)` helper to strings.ts that supports trimming a custom character set (e.g. trim leading commas + spaces), in addition to the default whitespace-only trim.";
 
   userPersona =
     `You are a developer who wants the agent to plan, implement, review, commit, and push a small task end-to-end.
 - When the agent presents Plan-Phase variants, pick the simplest one in one short sentence ("Go with variant 1.").
+- When the agent asks where to record a requirement, say it is up to the agent.
 - When the agent writes the task file, expect ALL five frontmatter keys: date, status, implements, tags, related_tasks. If you notice any missing, mention it.
 - When the Implement Phase reports results, acknowledge briefly.
 - When the Review Phase asks anything, answer affirmatively.
@@ -68,7 +75,7 @@ Keep all answers short and on-topic.`;
     {
       id: "plan_to_implement_gate",
       description:
-        "Did the Plan Phase present at least 2 variants AND wait for the user's selection BEFORE writing the Solution section?",
+        "Did the Plan Phase present the variants as a choice AND wait for the user's selection BEFORE writing the Solution section? At least 2 variants pass; a single variant passes only when the agent said why the path is obvious and no alternative applies (the plan's single-variant exception).",
       critical: true,
     },
     {

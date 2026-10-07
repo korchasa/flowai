@@ -85,7 +85,10 @@ const SKIP_PATH_PATTERNS = [
  *     source MUST appear inside real comments.
  *  Line numbers are preserved by emitting a blank line for every stripped
  *  line. */
-function stripNonReferenceContext(file: string, content: string): string {
+export function stripNonReferenceContext(
+  file: string,
+  content: string,
+): string {
   if (file.endsWith(".md")) return stripMarkdownCodeSpans(content);
   if (file.endsWith(".ts") || file.endsWith(".js")) {
     return keepOnlyCommentLines(content);

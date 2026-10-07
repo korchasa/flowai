@@ -65,6 +65,41 @@ Deno.test("ignores-code-span-examples", () => {
   assertEquals(issues, []);
 });
 
+Deno.test("ignores-salp-tokens-inside-template-literals", () => {
+  // An acceptance scenario's `setup()` writes sandbox files out of template
+  // literals: a source file whose comment carries a REF, and an SRS whose
+  // heading carries the matching ANC. Both belong to the SANDBOX project, so
+  // the hook must read neither. A per-line shape test read the REF (its line
+  // starts with `//`) and dropped the ANC, and reported a dead ref.
+  const issues = findIssues([
+    {
+      path: "mod.ts",
+      content: [
+        "export async function setup(sandbox: string) {",
+        "  await Deno.writeTextFile(",
+        "    `${sandbox}/cli.ts`,",
+        "    `/** CLI. */",
+        "",
+        "// [REF:fr:render] — the render subcommand.",
+        "export function run(argv: string[]): string {",
+        "  throw new Error(\\`unknown: \\${argv[0]}\\`);",
+        "}",
+        "`,",
+        "  );",
+        "  await Deno.writeTextFile(",
+        "    `${sandbox}/docs/srs.md`,",
+        "    `# SRS",
+        "",
+        "### 3.1 FR-RENDER: Render to stdout [ANC:fr:render]",
+        "`,",
+        "  );",
+        "}",
+      ].join("\n"),
+    },
+  ]);
+  assertEquals(issues, []);
+});
+
 Deno.test("no-salp-tokens-silent", () => {
   const issues = findIssues([
     { path: "a.md", content: "# Title\n\nPlain prose, no anchors." },
