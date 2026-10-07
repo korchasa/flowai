@@ -39,6 +39,7 @@ related_tasks: [detector-search-ship-fixture]
 - [x] FR-DOC-NO-SRS: the plan coins no FR and writes no index row when the SRS file is absent.
   - Test: `Benchmark: plan-no-srs-no-coined-fr`
   - Evidence: `deno task acceptance-tests -f plan-no-srs-no-coined-fr --no-cache` passes; it failed on the pre-fix rules. FAILED in run `2026-10-06T21-15-45` (`implements_empty`, `no_index_fr_row`), PASSED 6/6 in `2026-10-06T21-19-46`; `plan-updates-index-on-new-fr` still PASSED 9/9 in `2026-10-06T21-24-05`.
+  - Note (2026-10-07): the scenario was renamed `plan-no-srs-no-dead-fr-ref` and the rule it checks was revised in [no-dead-fr-ref](no-dead-fr-ref.md); the command above no longer finds it.
 - [x] FR-DOC-NO-SRS: the full cycle commits and pushes in that project, and a justified single variant satisfies the plan gate.
   - Test: `Benchmark: ship-full-cycle-success`
   - Evidence: `deno task acceptance-tests -f ship-full-cycle-success --no-cache` passes. PASSED 7/7 in run `2026-10-06T21-36-56`.

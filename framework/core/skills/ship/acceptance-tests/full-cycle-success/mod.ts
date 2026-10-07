@@ -57,6 +57,7 @@ export const ShipFullCycleSuccess = new class extends AcceptanceTestScenario {
   userPersona =
     `You are a developer who wants the agent to plan, implement, review, commit, and push a small task end-to-end.
 - When the agent presents Plan-Phase variants, pick the simplest one in one short sentence ("Go with variant 1.").
+- When the agent asks where to record a requirement, say it is up to the agent.
 - When the agent writes the task file, expect ALL five frontmatter keys: date, status, implements, tags, related_tasks. If you notice any missing, mention it.
 - When the Implement Phase reports results, acknowledge briefly.
 - When the Review Phase asks anything, answer affirmatively.

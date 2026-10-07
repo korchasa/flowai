@@ -5,12 +5,13 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * requirements document does not exist yet, and a request that names no FR.
  * Observed 2026-10-06 in `ship-full-cycle-success`: the plan coined
  * `FR-STRING-TRIM`, put it in `implements:` and registered an index row whose
- * reference resolves nowhere; every later gate then bound to an FR that had
- * no section to live in. Creating the requirements document is `init`'s job.
+ * reference resolves nowhere. Where the requirement's text goes is the agent's
+ * call — ask the user, or record it in a document the project has — but an FR
+ * it references must have its text somewhere.
  */
-export const PlanNoSrsNoCoinedFr = new class extends AcceptanceTestScenario {
-  id = "plan-no-srs-no-coined-fr";
-  name = "Plan coins no FR when the project has no requirements document";
+export const PlanNoSrsNoDeadFrRef = new class extends AcceptanceTestScenario {
+  id = "plan-no-srs-no-dead-fr-ref";
+  name = "Plan references no FR whose text is recorded nowhere";
   skill = "plan";
   stepTimeoutMs = 300_000;
   agentsTemplateVars = {
@@ -24,8 +25,9 @@ export const PlanNoSrsNoCoinedFr = new class extends AcceptanceTestScenario {
 
   userPersona = `You are a developer planning a small helper. Be brief.
 When the agent presents implementation variants, pick variant 1 (simplest).
-When the agent asks ANY confirmation question, answer "yes, proceed".
-Do not name any requirement ID yourself, and do not ask for documents to be created.`;
+When the agent asks where to record a requirement, say it is up to the agent.
+When the agent asks any other confirmation question, answer "yes, proceed".
+Do not name any requirement ID yourself.`;
 
   checklist = [
     {
@@ -35,27 +37,15 @@ Do not name any requirement ID yourself, and do not ask for documents to be crea
       critical: true,
     },
     {
-      id: "implements_empty",
+      id: "no_dead_fr_ref",
       description:
-        "Read the YAML frontmatter of the created task file. Is `implements:` present and EMPTY (`[]` or no items)? Any FR-* identifier listed there fails this item: the project has no requirements document, and the user named no FR.",
-      critical: true,
-    },
-    {
-      id: "no_index_fr_row",
-      description:
-        "Did the agent NOT add an FR row to a documentation index (`documents/index.md` absent after the run, or present with no FR-* row)?",
-      critical: true,
-    },
-    {
-      id: "no_srs_created",
-      description:
-        "Did the agent NOT create `documents/requirements.md` or any other requirements document?",
+        "Collect every FR-* identifier the agent wrote anywhere — the task file's `implements:` and Definition of Done, a documentation index row, a code comment. Does EACH of them have a section of its own that states the requirement — a heading or entry defining that FR-ID in the README, in a requirements document, or in another project document? The places that only REFERENCE the FR do not count as its record: the task file (frontmatter, Goal, Definition of Done, Solution), a documentation index row, a code comment. Writing no FR-* identifier at all passes. One FR-* identifier that is referenced but defined in no section of its own fails this item.",
       critical: true,
     },
     {
       id: "dod_has_evidence",
       description:
-        "Does every `## Definition of Done` item of the task file still carry a runnable test or evidence command (it may omit an FR-ID)?",
+        "Does every `## Definition of Done` item of the task file carry a runnable test or evidence command?",
       critical: false,
     },
     {

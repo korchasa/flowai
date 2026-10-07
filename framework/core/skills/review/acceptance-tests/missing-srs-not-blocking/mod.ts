@@ -1,7 +1,6 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 const TRIM_SOURCE = `
-// [REF:fr:trim | FR-TRIM]
 /** Remove the given characters (default: whitespace) from both ends of a string. */
 export function trim(input: string, options: { chars?: string } = {}): string {
   const chars = options.chars;
@@ -55,7 +54,8 @@ Add \`trim\` to \`strings.ts\` with an optional \`chars\` option and cover it in
 /**
  * A project whose AGENTS.md declares the requirements lifecycle but whose
  * requirements document does not exist yet. The change under review is a
- * finished, tested helper; its task file names an FR. Observed 2026-10-06 in
+ * finished, tested helper; its task file names FR-TRIM, whose text the project
+ * keeps in its README, so no reference points into nowhere. Observed 2026-10-06 in
  * `ship-full-cycle-success`: the review's FR Coverage Audit returned
  * `Request Changes` because the absent document gave the FR "no acceptance
  * reference", while the commit gate of the same template reports a missing
