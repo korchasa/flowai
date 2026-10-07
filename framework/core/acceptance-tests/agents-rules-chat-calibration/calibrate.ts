@@ -1,7 +1,8 @@
 /**
  * Explicit, paid judge calibration for FR-READABILITY.LANGUAGE and
  * FR-READABILITY.READER-CONTEXT: the fixed replies exercise the language item
- * and the meaning items of the same checklists.
+ * and the meaning items of the same checklists. The `option-standalone` case
+ * calibrates FR-UNIVERSAL.QA-FORMAT rule 6 (each option stands on its own).
  * This file is deliberately not named *_test.ts: regular checks must not call models.
  * Run from the repository root:
  * deno test -A <this-file> -- <output-directory>
@@ -19,14 +20,17 @@ if (!outputArg) throw new Error("Pass a new output directory after --");
 const output = resolve(outputArg);
 const caseRoot = resolve(import.meta.dirname!, "..");
 const selectedCase = Deno.args[1];
-const suffixes = [
-  "source",
-  "code",
-  "interface",
-  "jargon",
-  "dialogue",
-  "exceptions",
-];
+// Case name -> scenario folder.
+const cases: Record<string, string> = {
+  source: "agents-rules-chat-source",
+  code: "agents-rules-chat-code",
+  interface: "agents-rules-chat-interface",
+  jargon: "agents-rules-chat-jargon",
+  dialogue: "agents-rules-chat-dialogue",
+  exceptions: "agents-rules-chat-exceptions",
+  "option-standalone": "agents-rules-option-standalone",
+};
+const suffixes = Object.keys(cases);
 if (selectedCase && !suffixes.includes(selectedCase)) {
   throw new Error(`Unknown case: ${selectedCase}`);
 }
@@ -48,7 +52,7 @@ Deno.test({
     const mismatches: string[] = [];
     try {
       for (const suffix of selectedCase ? [selectedCase] : suffixes) {
-        const folder = join(caseRoot, `agents-rules-chat-${suffix}`);
+        const folder = join(caseRoot, cases[suffix]);
         const { scenario }: { scenario: BenchmarkScenario } = await import(
           new URL(`file://${folder}/mod.ts`).href
         );
