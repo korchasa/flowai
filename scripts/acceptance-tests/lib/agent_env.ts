@@ -12,14 +12,34 @@
 export function codexAgentEnv(
   effort: string,
   model: string,
+  extra: Record<string, unknown> = {},
 ): Record<string, string> {
   return {
     CODEX_CONFIG: JSON.stringify({
       model_reasoning_effort: effort,
       model,
+      ...extra,
     }),
   };
 }
+
+/**
+ * Developer instruction for the codex agent under test: ask in the reply, not
+ * through `request_user_input_async`.
+ *
+ * [REF:fr:accept.acp | FR-ACCEPT.ACP] — codex 0.159 offers that tool by
+ * default. It returns `{"accepted":true}` at once and expects the answer as a
+ * later `AsyncQuestionReply` input, which codex-acp 2.0.1 does not implement:
+ * no `elicitation/create` reaches the client even when it declares form
+ * support (probe 2026-10-07). The agent then sleeps, gives up and goes on
+ * without the answer, and the simulated user never gets a turn —
+ * `write-prd-basic` failed that way on 2026-10-07. A question in the reply is
+ * one the `UserEmulator` answers in the next turn.
+ */
+export const CODEX_NO_ASYNC_QUESTIONS =
+  "Do not call the `request_user_input_async` tool: in this environment its " +
+  "answer never arrives. When you need information from the user, ask in " +
+  "your reply and end your turn; the user answers in the next message.";
 
 /**
  * Reasoning effort, expressed the only way the Claude bridge accepts it.
@@ -65,7 +85,8 @@ export function claudeAgentEnv(effort: string): Record<string, string> {
 /**
  * Adapter env plus the IDE-specific model/effort pin.
  *
- * Codex takes both through `CODEX_CONFIG`; claude takes the model through
+ * Codex takes both through `CODEX_CONFIG`, together with the instruction to
+ * ask in the reply (`CODEX_NO_ASYNC_QUESTIONS`); claude takes the model through
  * `ANTHROPIC_MODEL` (set by `AcpAgent`) and the effort through the thinking
  * budget here. Cursor and opencode expose no effort knob, so their env is
  * passed through untouched.
@@ -78,7 +99,12 @@ export function agentLaunchEnv(opts: {
 }): Record<string, string> {
   switch (opts.ide) {
     case "codex":
-      return { ...opts.base, ...codexAgentEnv(opts.effort, opts.model) };
+      return {
+        ...opts.base,
+        ...codexAgentEnv(opts.effort, opts.model, {
+          developer_instructions: CODEX_NO_ASYNC_QUESTIONS,
+        }),
+      };
     case "claude":
       return { ...opts.base, ...claudeAgentEnv(opts.effort) };
     default:
