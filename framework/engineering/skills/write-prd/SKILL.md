@@ -30,7 +30,9 @@ When asking the user a choice (audience, constraints, timeline):
   or "reliable" without metrics.
 - **Unambiguous**: Remove ambiguity. If a requirement can be interpreted in
   multiple ways, it is a bug in the PRD.
-- **Living Document**: Acknowledge that the PRD evolves. Mark unknowns clearly.
+- **Living Document**: Acknowledge that the PRD evolves. A target nobody has
+  approved yet is still written as a number and marked as a proposal; it is
+  never left blank or replaced by an open question.
 
 ## 2. Writing Strategy (AI Instructions)
 
@@ -41,7 +43,19 @@ When asked to write a PRD:
 2. **Ask Clarifying Questions**: If key context is missing (e.g., "Who is this
    for?", "What are the constraints?"), ask the user before generating the full
    doc. Follow the **Question Format** section above (FR-UNIVERSAL.QA-FORMAT).
-3. **Drafting**: Use the template below.
+   - **Quantitative targets**: list every number the PRD will need that the
+     request does not give — latency, throughput, availability, retry limits,
+     supported OS or browser versions, guardrail thresholds. Ask about them in
+     the same round of questions, and for each one offer a concrete recommended
+     value and the reason for it — `Recommended: <value>, because <reason>` —
+     so the user can accept it in one word. A value with no reason gives the
+     user nothing to judge it by, and "the currently supported versions" is not
+     a value. The user still decides the number; you only make the decision
+     cheap.
+3. **Drafting**: Use the template below. A target the user confirmed or gave is
+   a requirement. A target the user left unanswered goes in as your recommended
+   value marked `(proposed, awaiting approval)`, and Open Questions lists it for
+   approval with that value.
 4. **Review**: Check against the "Bad vs Good" examples in Section 4.
 5. **Persist**: MUST write the final PRD to a file (e.g., `documents/prd-<slug>.md`
    or a path specified by the user). Do NOT only output the PRD in chat — always
@@ -106,6 +120,7 @@ When asked to write a PRD:
 
 - List of unresolved questions that need input from stakeholders or technical
   research.
+- Every `(proposed, awaiting approval)` target, with its proposed value.
 
 ## 4. Examples: "Bad" vs "Good" Requirements
 
