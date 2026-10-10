@@ -5,8 +5,8 @@
  * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
  */
 
-import { dirname, join, resolve } from "jsr:@std/path";
-import { parse as parseYaml } from "jsr:@std/yaml";
+import { dirname, join, resolve } from "jsr:@std/path@^1.1.4";
+import { parse as parseYaml } from "jsr:@std/yaml@^1.0.12";
 
 /** Check if the file path is a SKILL.md inside a skills/ directory. */
 export function isSkillMd(filePath: string): boolean {

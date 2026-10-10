@@ -764,7 +764,7 @@ interface EmitHooksOpts {
  * Translates `framework/<pack>/hooks/<name>/{hook.yaml,run.ts}` into Claude
  * plugin hooks/hooks.json. Per Claude Code plugin docs hooks/hooks.json holds
  *   { hooks: { <EventName>: [{ matcher, hooks: [{ type: "command", command }] }] } }
- * The `command` field shells `deno run -A ${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts`.
+ * The `command` field shells `deno run -A "${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts"`.
  *
  * Core has zero hooks today; the code path exists for devtools / memex rollout.
  */
@@ -813,8 +813,10 @@ async function emitHooks(opts: EmitHooksOpts): Promise<boolean> {
     await ensureDir(join(opts.outDir, hookName));
     await Deno.copyFile(runSrc, join(opts.outDir, hookName, "run.ts"));
 
+    // Quoted: the plugin root sits under the user's home, which may hold a
+    // space, and the shell would split an unquoted path in two.
     const command =
-      `deno run -A \${CLAUDE_PLUGIN_ROOT}/hooks/${hookName}/run.ts`;
+      `deno run -A "\${CLAUDE_PLUGIN_ROOT}/hooks/${hookName}/run.ts"`;
     const hookSpec: {
       type: "command";
       command: string;

@@ -13,7 +13,7 @@
  * a memex is found, or empty object otherwise. Reads only.
  */
 
-import { dirname, resolve } from "jsr:@std/path";
+import { dirname, resolve } from "jsr:@std/path@^1.1.4";
 
 interface Status {
   root: string;

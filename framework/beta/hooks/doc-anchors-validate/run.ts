@@ -37,7 +37,7 @@
  * the user's session). Parser mirrors the pure core from `scripts/lib/salp.ts`.
  */
 
-import { dirname, join } from "jsr:@std/path";
+import { dirname, join } from "jsr:@std/path@^1.1.4";
 
 // ---------------------------------------------------------------------------
 // Inlined SALP parser (pure; no I/O). Grammar (examples in backticks so the

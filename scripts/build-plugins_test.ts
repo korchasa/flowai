@@ -1273,9 +1273,12 @@ Deno.test("transforms-hook-yaml-into-hooks-json", async () => {
     );
     assertEquals(hooks.hooks.SessionStart[0].matcher, "startup|resume");
     assertEquals(hooks.hooks.SessionStart[0].hooks[0].type, "command");
+    // Quoted: an unquoted plugin root splits at the first space in the path
+    // (`C:\Users\John Smith\...`, a home directory with a space) and deno is
+    // handed a script path that does not exist.
     assertStringIncludes(
       hooks.hooks.SessionStart[0].hooks[0].command,
-      "${CLAUDE_PLUGIN_ROOT}/hooks/my-hook/run.ts",
+      '"${CLAUDE_PLUGIN_ROOT}/hooks/my-hook/run.ts"',
     );
     assertEquals(hooks.hooks.SessionStart[0].hooks[0].timeout, 10);
     // Run.ts must be copied alongside.
