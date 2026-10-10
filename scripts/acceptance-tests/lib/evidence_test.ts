@@ -5,6 +5,7 @@ import {
   type JudgeEvidenceParts,
   MAX_DIFF_LEN,
   MAX_TRACE_LEN,
+  readTaskFiles,
   truncateDiff,
   truncateTrace,
 } from "./evidence.ts";
@@ -252,5 +253,37 @@ Deno.test("collectGeneratedFiles fails loudly on a sandbox that is not a git rep
     );
   } finally {
     await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("readTaskFiles reads the nested <YYYY>/<MM>/ task layout, not only the top level", async () => {
+  // The accepted task layout is documents/tasks/<YYYY>/<MM>/<slug>.md; a
+  // one-level read handed the judge "(no task files found)" for every task a
+  // skill wrote there.
+  const root = await Deno.makeTempDir({ prefix: "evidence-test-tasks-" });
+  try {
+    await write(root, "documents/tasks/2026/10/new-shape.md", "NESTED TASK");
+    await write(root, "documents/tasks/legacy-flat.md", "FLAT TASK");
+    await write(root, "documents/tasks/2026/10/notes.txt", "NOT A TASK");
+    const out = await readTaskFiles(root);
+    assertStringIncludes(out, "--- 2026/10/new-shape.md ---\nNESTED TASK");
+    assertStringIncludes(out, "--- legacy-flat.md ---\nFLAT TASK");
+    assertEquals(out.includes("NOT A TASK"), false);
+  } finally {
+    await Deno.remove(root, { recursive: true });
+  }
+});
+
+Deno.test("readTaskFiles falls back to the legacy documents/task.md and reports an empty tasks dir", async () => {
+  const legacy = await Deno.makeTempDir({ prefix: "evidence-test-tasks-" });
+  const empty = await Deno.makeTempDir({ prefix: "evidence-test-tasks-" });
+  try {
+    await write(legacy, "documents/task.md", "LEGACY TASK");
+    assertEquals(await readTaskFiles(legacy), "LEGACY TASK");
+    await Deno.mkdir(`${empty}/documents/tasks`, { recursive: true });
+    assertEquals(await readTaskFiles(empty), "(no task files found)");
+  } finally {
+    await Deno.remove(legacy, { recursive: true });
+    await Deno.remove(empty, { recursive: true });
   }
 });

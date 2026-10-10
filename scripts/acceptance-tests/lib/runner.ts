@@ -8,6 +8,7 @@ import { evaluateChecklist } from "./judge.ts";
 import {
   collectGeneratedFiles,
   formatJudgeEvidence,
+  readTaskFiles,
   truncateTrace,
 } from "./evidence.ts";
 import { TraceLogger } from "./trace.ts";
@@ -782,30 +783,6 @@ function collectAgentUsage(
   adapter: AgentAdapter,
 ): Promise<TokenBreakdown | null> {
   return adapter.calculateUsage(agent.getEnv());
-}
-
-/** Read all .md files under documents/tasks/, falling back to legacy task.md. */
-async function readTaskFiles(sandboxPath: string): Promise<string> {
-  let taskFilesContent = "";
-  try {
-    const tasksDir = join(sandboxPath, "documents", "tasks");
-    for await (const entry of Deno.readDir(tasksDir)) {
-      if (entry.isFile && entry.name.endsWith(".md")) {
-        const content = await Deno.readTextFile(join(tasksDir, entry.name));
-        taskFilesContent += `\n--- ${entry.name} ---\n${content}\n`;
-      }
-    }
-    if (!taskFilesContent) taskFilesContent = "(no task files found)";
-  } catch (_) {
-    try {
-      taskFilesContent = await Deno.readTextFile(
-        join(sandboxPath, "documents", "task.md"),
-      );
-    } catch (_) {
-      taskFilesContent = "(no task files found)";
-    }
-  }
-  return taskFilesContent;
 }
 
 /**
