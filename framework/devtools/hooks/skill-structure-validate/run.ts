@@ -2,7 +2,8 @@
 
 /**
  * skill-structure-validate hook: auto-validate SKILL.md structure after edits.
- * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
+ * PostToolUse hook — exit 0; on errors, stdout JSON with
+ * `hookSpecificOutput.additionalContext` (the only place Claude Code reads it).
  */
 
 import { dirname, join, resolve } from "jsr:@std/path@^1.1.4";
@@ -72,7 +73,10 @@ if (import.meta.main) {
   if (error) {
     console.log(
       JSON.stringify({
-        additionalContext: `SKILL.md validation failed: ${error}`,
+        hookSpecificOutput: {
+          hookEventName: "PostToolUse",
+          additionalContext: `SKILL.md validation failed: ${error}`,
+        },
       }),
     );
   }

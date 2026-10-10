@@ -99,3 +99,47 @@ Deno.test("integration: non-SKILL.md file produces no output", async () => {
   assertEquals(code, 0);
   assertEquals(new TextDecoder().decode(stdout).trim(), "");
 });
+
+Deno.test("integration: invalid SKILL.md reports through hookSpecificOutput", async () => {
+  // Claude Code reads a PostToolUse hook's context only from
+  // hookSpecificOutput.additionalContext next to hookEventName; a top-level
+  // additionalContext never reaches the agent.
+  const tmpDir = await Deno.makeTempDir();
+  try {
+    const skillMd = `${tmpDir}/skills/broken/SKILL.md`;
+    await Deno.mkdir(`${tmpDir}/skills/broken`, { recursive: true });
+    await Deno.writeTextFile(skillMd, "no frontmatter here\n");
+    const cmd = new Deno.Command("deno", {
+      args: [
+        "run",
+        "-A",
+        "--no-config",
+        new URL("./run.ts", import.meta.url).pathname,
+      ],
+      stdin: "piped",
+      stdout: "piped",
+      stderr: "piped",
+    });
+    const child = cmd.spawn();
+    const writer = child.stdin.getWriter();
+    await writer.write(
+      new TextEncoder().encode(
+        JSON.stringify({
+          tool_name: "Write",
+          tool_input: { file_path: skillMd },
+        }),
+      ),
+    );
+    await writer.close();
+    const { stdout, code } = await child.output();
+    assertEquals(code, 0);
+    const out = JSON.parse(new TextDecoder().decode(stdout));
+    assertEquals(out.hookSpecificOutput?.hookEventName, "PostToolUse");
+    assertStringIncludes(
+      out.hookSpecificOutput?.additionalContext ?? "",
+      "No YAML frontmatter found",
+    );
+  } finally {
+    await Deno.remove(tmpDir, { recursive: true });
+  }
+});
