@@ -18,6 +18,11 @@ export interface FakeAppServerOptions {
   /** Hold the answer this long, so overlapping turns are really in flight. */
   turnDelayMs?: number;
   /**
+   * Acknowledge `turn/start`, then close the stream before the turn ends — a
+   * child that dies mid-turn, after the request itself already succeeded.
+   */
+  closeAfterTurnAck?: boolean;
+  /**
    * Report this `TokenUsageBreakdown` as the thread's cumulative total before
    * the turn ends (FR-ACCEPT.TOKEN-USAGE). Omit to send no usage frame at all,
    * which is how an older app-server behaves.
@@ -139,6 +144,11 @@ export function fakeAppServer(opts: FakeAppServerOptions = {}): FakeAppServer {
             threadId: string;
             input: { text: string }[];
           };
+          if (opts.closeAfterTurnAck) {
+            await send({ jsonrpc: "2.0", id, result: {} });
+            await out.close().catch(() => {});
+            return;
+          }
           const status = opts.status ?? "completed";
           if (opts.turnDelayMs) {
             // Answer out of band so a second turn/start is read meanwhile.
