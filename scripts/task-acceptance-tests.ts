@@ -1,5 +1,5 @@
 /**
- * task-bench.ts — Discovers and runs agent benchmark scenarios.
+ * task-acceptance-tests.ts — Discovers and runs acceptance test scenarios.
  *
  * Walks `framework/<pack>/skills/<skill>/acceptance-tests/`,
  * `framework/<pack>/agents/<agent>/acceptance-tests/`, and
@@ -15,7 +15,7 @@
  *   - acceptance_runtime.ts        — runtime setup, run-dir, task scheduler
  *   - acceptance_report.ts         — summary table, pass-rate block, finalizeRun
  *
- * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
+ * Usage: deno task acceptance-tests [-f filter] [-m model] [-i ide] [-n runs]
  */
 import { join } from "@std/path";
 import { closeCodexSessions, loadConfig } from "./acceptance-tests/lib/llm.ts";

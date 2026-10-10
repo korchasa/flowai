@@ -22,7 +22,7 @@
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
 - `.agents/skills/` and `.codex/agents/` are the codex-side copies of the dev resources in `.claude/skills/` and `.claude/agents/`; `deno task check` neither formats nor lints them. Before committing one, `diff` it against its `.claude/` source and read the TOML by eye: the port of 2026-09-02 had been made by a search-replace that turned every "Claude Code" into "Codex" in three files (`--ide Codex`, `~/.Codex/projects`, `Codex -p --resume`), and nothing in the gate could have caught it.
-- Everything in `framework/` is the framework — the product of this project. Users install it via flowai into their IDE's config dir (`.claude/`). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
+- Everything in `framework/` is the framework — the product of this project. Users install it as plugins from the `korchasa/flowai-plugins` marketplace, or copy the rendered skills of a local plugin build into `.claude/skills/` (Cursor, OpenCode). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
 - Any changes to skills or agents must follow Acceptance Test TDD flow (see "Acceptance Test TDD" section below) — untested skill changes lead to regressions that are hard to detect without acceptance tests.
 - This is a universal framework for multiple IDEs (Cursor, Claude Code, OpenCode). Do not use tool names specific to a single IDE — write generically and provide examples for various IDEs. For example, instead of `use todo_write`, use `add to todo list (by todo_write, todowrite, etc.)`.
 - Use relative paths in commands when possible — absolute paths only when required by the tool or context.
@@ -172,7 +172,7 @@ wherever it carries meaning better than prose does.
 1. **RED**: Write a failing test (`deno test <id>`) for new or changed logic.
 2. **GREEN**: Write minimal code to pass the test.
 3. **REFACTOR**: Improve code and tests without changing behavior. Re-run `deno test <id>`.
-4. **CHECK**: Run `deno fmt && deno lint && deno test`. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
+4. **CHECK**: Run `deno task check` (formatter, linter, every test the gate runs). Not a bare `deno test` from the root: it also discovers `scripts/acceptance-tests/lib/runner_test.ts`, which spawns live agents, and the test files of the gitignored SWE-rebench checkouts under `scripts/benchmark/runs/`. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
 
 #### Code Test Rules
 
@@ -258,8 +258,8 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
   - static code analysis (linting)
   - all project tests
   - skill validation
-- `test <path>` — runs a single test file or test suite.
-- `dev` — runs the application in development mode with watch mode enabled.
+- `test <path>` — runs a single test file or test suite. With no path it runs `scripts/` minus the same exclusions as `check` (`runner_test.ts`, `scripts/benchmark/runs/`).
+- `dev` — watches `scripts/` and re-runs the formatter and the linter on every change (`scripts/task-dev.ts`).
 
 ### `deno task check` Output Quirks
 
