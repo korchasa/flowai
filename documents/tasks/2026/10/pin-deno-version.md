@@ -1,6 +1,6 @@
 ---
 date: 2026-10-18
-status: in progress
+status: done
 implements:
   - FR-CICD.DENO-PIN
 tags: [ci, deno]
@@ -43,9 +43,9 @@ A `deno.lock` written on the developer machine must be byte-identical to the one
 - [x] FR-CICD.DENO-PIN: `env -u AUTO_INSTALL_PLUGINS deno task check` is green locally and leaves `deno.lock` unchanged.
   - Test: manual — korchasa
   - Evidence: `env -u AUTO_INSTALL_PLUGINS deno task check` exits 0, then `git diff --exit-code deno.lock` exits 0 — verified: EXIT 0, 913 + 213 passed, deno.lock untouched
-- [ ] FR-CICD.DENO-PIN: CI is green on the pushed commit.
+- [x] FR-CICD.DENO-PIN: CI is green on the pushed commit.
   - Test: manual — korchasa
-  - Evidence: CI Status command from AGENTS.md §CI/CD exits 0 for the pushed SHA
+  - Evidence: CI Status command from AGENTS.md §CI/CD exits 0 for the pushed SHA — verified: run 39121486893 on 3116dced, `check` and `release` both success; the `check` log shows `deno-version-file: .dvmrc` and "Going to install stable version 2.9.7"
 
 ## Solution
 
