@@ -9,6 +9,8 @@ import { fromFileUrl, join } from "@std/path";
 import { AcpAgent } from "./acp_agent.ts";
 import {
   DISPATCH_REPORT,
+  LATE_REPORT,
+  LATE_WAITING,
   SEQUENCE_AFTER,
   SEQUENCE_BEFORE,
   SEQUENCE_COMMAND,
@@ -25,7 +27,11 @@ const LAUNCH = { command: Deno.execPath(), args: ["run", "-A", STUB] };
 
 async function runStub(
   prompt: string,
-  opts: { guarded?: boolean; workspace?: string } = {},
+  opts: {
+    guarded?: boolean;
+    workspace?: string;
+    env?: Record<string, string>;
+  } = {},
 ): Promise<{ agent: AcpAgent; code: number; logs: string; workspace: string }> {
   const workspace = opts.workspace ??
     await Deno.makeTempDir({ prefix: "acp-agent-" });
@@ -36,6 +42,10 @@ async function runStub(
     prompt,
     launch: LAUNCH,
     disableWatchdog: !opts.guarded,
+    // Never the user's own ~/.claude: the owed-notice check reads it.
+    env: opts.env ?? {
+      CLAUDE_CONFIG_DIR: await Deno.makeTempDir({ prefix: "acp-claude-" }),
+    },
   });
   const { code, logs } = await agent.run();
   return { agent, code, logs, workspace };
@@ -80,6 +90,24 @@ Deno.test("reasoning stays out of the reply, and the turn keeps arrival order", 
   ].map((line) => seq.logs.indexOf(line));
   assert(order.every((i) => i >= 0), `missing a line: ${seq.logs}`);
   assertEquals([...order].sort((a, b) => a - b), order);
+});
+
+Deno.test("a turn that ends with a background notice still queued waits for its answer", async () => {
+  // The claude bridge settles a turn once no subagent it spawned is live, even
+  // when the last one's notice is still queued for the model (sweep
+  // 2026-10-18T14-45-21, maintenance-detects-doc-health-issues). Ending the
+  // session there killed the CLI before the model wrote its report.
+  // CLAUDE_CONFIG_DIR, not HOME: the stub is a deno process, and a fresh HOME
+  // would send it to download its whole dependency cache again.
+  const configDir = await Deno.makeTempDir({ prefix: "acp-claude-config-" });
+  const { code, logs, agent } = await runStub("scan [[LATE_NOTICE]]", {
+    env: { CLAUDE_CONFIG_DIR: configDir },
+  });
+  assertEquals(code, 0);
+  assertStringIncludes(logs, `< ${LATE_WAITING}`);
+  assertStringIncludes(logs, "[owed-notice] the turn ended with 1 background");
+  assertStringIncludes(logs, LATE_REPORT);
+  assertStringIncludes(agent.getMessages().at(-1)?.content ?? "", LATE_REPORT);
 });
 
 Deno.test("a connection drop maps to a failure verdict, not a throw", async () => {
