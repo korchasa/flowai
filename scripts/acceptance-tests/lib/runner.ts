@@ -368,7 +368,7 @@ async function prepareSandboxFiles(
  * skill is mounted in the sandbox — catches copyFrameworkToIdeDir
  * regressions that would cause silent false-passes.
  */
-async function initSandboxGit(
+export async function initSandboxGit(
   sandboxPath: string,
   scenario: BenchmarkScenario,
   adapter: AgentAdapter,
@@ -392,7 +392,10 @@ async function initSandboxGit(
   const initHashOut = await runGit(sandboxPath, ["rev-parse", "HEAD"]);
   const initHash = new TextDecoder().decode(initHashOut.stdout).trim();
 
-  await scenario.setup(sandboxPath);
+  await scenario.setup(sandboxPath, {
+    ide: adapter.ide,
+    configDir: adapter.configDir,
+  });
 
   // Sanity check: verify target skill is actually mounted in sandbox.
   if (scenario.skill) {

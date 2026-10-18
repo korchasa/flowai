@@ -1,5 +1,8 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
@@ -36,7 +39,7 @@ export const FlowAdaptAgentsBasicBench = new class
         message: "Initial sync with generic agents",
         files: [
           ".flowai.yaml",
-          ".codex/agents/console-expert.md",
+          "<configDir>/agents/console-expert.md",
         ],
       },
     ],
@@ -47,15 +50,15 @@ export const FlowAdaptAgentsBasicBench = new class
   interactive = true;
   userPersona =
     "The project maintainer who ran /adapt. When the agent shows an adapted diff and asks whether to accept it, reply 'yes, apply it'. Approve every proposed adaptation; answer any other question with the simplest option in one short sentence. Never ask for extra work.";
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     // Create .flowai.yaml
     await Deno.writeTextFile(
       join(sandboxPath, ".flowai.yaml"),
-      'version: "1.1"\nides:\n  - codex\npacks:\n  - core\n',
+      `version: "1.1"\nides:\n  - ${ctx.ide}\npacks:\n  - core\n`,
     );
 
-    // Create .codex/agents/ with generic (upstream) agent
-    const agentsDir = join(sandboxPath, ".codex", "agents");
+    // Overwrite <configDir>/agents/console-expert.md with a generic (upstream) agent
+    const agentsDir = join(sandboxPath, ctx.configDir, "agents");
     await Deno.mkdir(agentsDir, { recursive: true });
 
     const genericAgent = `---
@@ -104,7 +107,7 @@ You are a console expert. Execute complex console tasks without modifying code.
     {
       id: "scanned_agents",
       description:
-        "Did the agent scan installed agents in .codex/agents/ to find flowai-* files?",
+        "Did the agent scan the installed agents under `agents/` in the IDE config dir (`.claude/` on the claude arm, `.codex/` on codex) to find the agents to adapt?",
       critical: true,
     },
     {

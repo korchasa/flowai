@@ -1,5 +1,8 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
@@ -30,8 +33,8 @@ export const FlowUpdatePluginUserScopeBench = new class
         message: "Initial project state",
         files: [
           "AGENTS.md",
-          ".codex/skills/commit/SKILL.md",
-          ".codex/skills/update/assets/AGENTS.template.md",
+          "<configDir>/skills/commit/SKILL.md",
+          "<configDir>/skills/update/assets/AGENTS.template.md",
         ],
       },
     ],
@@ -39,7 +42,7 @@ export const FlowUpdatePluginUserScopeBench = new class
       "Agent treats plugin/user-level framework source as read-only, proposes AGENTS.md update, and does not run an installer or rewrite installed primitive files",
   };
 
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     await Deno.writeTextFile(
       join(sandboxPath, "AGENTS.md"),
       [
@@ -57,7 +60,7 @@ export const FlowUpdatePluginUserScopeBench = new class
 
     const updateSkillDir = join(
       sandboxPath,
-      ".codex",
+      ctx.configDir,
       "skills",
       "update",
     );
@@ -81,7 +84,7 @@ export const FlowUpdatePluginUserScopeBench = new class
 
     const projectLocalPrimitive = join(
       sandboxPath,
-      ".codex",
+      ctx.configDir,
       "skills",
       "commit",
       "SKILL.md",
@@ -131,7 +134,7 @@ export const FlowUpdatePluginUserScopeBench = new class
     {
       id: "did_not_adapt_primitive",
       description:
-        "Did the agent avoid rewriting `.codex/skills/commit/SKILL.md` and instead leave primitive adaptation to `adapt` if needed?",
+        "Did the agent avoid rewriting the installed `skills/commit/SKILL.md` (in the IDE config dir — `.claude/` on the claude arm, `.codex/` on codex) and instead leave primitive adaptation to `adapt` if needed?",
       critical: true,
     },
     {

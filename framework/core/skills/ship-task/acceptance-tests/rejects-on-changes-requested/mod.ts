@@ -1,6 +1,11 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
+// Every arm's IDE config dir: the runner copies the framework into one of them
+// (`.claude/` on the claude arm, `.codex/` on codex), and the sandbox's
+// fmt/lint/test must skip it whichever arm runs.
+const IDE_DIRS = [".claude/", ".codex/", ".cursor/", ".opencode/"];
+
 /**
  * The workflow must not ship past a blocker it cannot resolve inside the task.
  * Two routes are acceptable and the checklist takes either: the Review Phase
@@ -93,17 +98,17 @@ export const ShipTaskRejectsOnChangesRequested = new class
           // modules found" and exited 0 (measured 2026-10-06).
           fmt: {
             exclude: [
-              ".codex/",
+              ...IDE_DIRS,
               "documents/",
               "acceptance-tests/",
               "AGENTS.md",
               "CLAUDE.md",
             ],
           },
-          lint: { exclude: [".codex/", "documents/", "acceptance-tests/"] },
+          lint: { exclude: [...IDE_DIRS, "documents/", "acceptance-tests/"] },
           test: {
             exclude: [
-              ".codex/",
+              ...IDE_DIRS,
               "documents/",
               "acceptance-tests/",
             ],

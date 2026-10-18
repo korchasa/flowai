@@ -1,5 +1,8 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
@@ -7,7 +10,7 @@ import { runGit } from "@acceptance-tests/utils.ts";
  * not just analyzes `git diff` of template files vs their own HEAD.
  *
  * Reproduces a real failure mode: when many skill files change (mostly
- * formatting), the agent runs `git diff` on `.codex/skills/`, sees
+ * formatting), the agent runs `git diff` on `<configDir>/skills/`, sees
  * "mostly formatting noise", concludes "no migration needed" — without
  * ever reading the actual project artifact (AGENTS.md) to compare.
  *
@@ -41,24 +44,24 @@ export const FlowUpdateTemplateVsArtifactBench = new class
       {
         message: "Initial sync (baseline)",
         files: [
-          ".codex/assets/AGENTS.template.md",
-          ".codex/skills/reflect/SKILL.md",
-          ".codex/skills/review/SKILL.md",
-          ".codex/skills/commit/SKILL.md",
+          "<configDir>/assets/AGENTS.template.md",
+          "<configDir>/skills/reflect/SKILL.md",
+          "<configDir>/skills/review/SKILL.md",
+          "<configDir>/skills/commit/SKILL.md",
         ],
       },
     ],
     modified: [
-      ".codex/assets/AGENTS.template.md",
-      ".codex/skills/reflect/SKILL.md",
-      ".codex/skills/review/SKILL.md",
-      ".codex/skills/commit/SKILL.md",
+      "<configDir>/assets/AGENTS.template.md",
+      "<configDir>/skills/reflect/SKILL.md",
+      "<configDir>/skills/review/SKILL.md",
+      "<configDir>/skills/commit/SKILL.md",
     ],
     expectedOutcome:
       "Agent compares templates against project artifacts (not just git diff), finds missing Proactive Resolution rule in AGENTS.md, proposes adding it",
   };
 
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     // Overwrite template-generated AGENTS.md with version MISSING "Proactive Resolution"
     // so the agent must compare templates vs artifacts to find the gap
     await Deno.writeTextFile(
@@ -91,8 +94,8 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     );
 
     // --- Prepare "old" template versions (baseline) ---
-    const skillsBase = join(sandboxPath, ".codex", "skills");
-    const assetsBase = join(sandboxPath, ".codex", "assets");
+    const skillsBase = join(sandboxPath, ctx.configDir, "skills");
+    const assetsBase = join(sandboxPath, ctx.configDir, "assets");
 
     // 1. AGENTS.template.md — remove "Proactive Resolution" + add formatting noise
     const mainTemplatePath = join(
@@ -159,13 +162,13 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     {
       id: "detected_multiple_changes",
       description:
-        "Did the agent notice multiple changed files in `.codex/skills/` but avoid treating them as update work for this command?",
+        "Did the agent notice multiple changed files under `skills/` in the IDE config dir the framework is installed in (`.claude/` on the claude arm, `.codex/` on codex) but avoid treating them as update work for this command?",
       critical: true,
     },
     {
       id: "did_not_adapt_skills",
       description:
-        "Did the agent avoid adapting or rewriting changed `.codex/skills/*/SKILL.md` files and instead keep focus on project artifacts?",
+        "Did the agent avoid adapting or rewriting the changed installed `skills/*/SKILL.md` files and instead keep focus on project artifacts?",
       critical: true,
     },
     {

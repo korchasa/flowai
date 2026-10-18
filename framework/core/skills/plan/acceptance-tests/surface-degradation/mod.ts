@@ -1,5 +1,8 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 
 /**
  * Degradation path (loop5 critic round 1 objection 3): when the environment
@@ -29,15 +32,15 @@ export const PlanSurfaceDegradationBench = new class
     TOOLING_STACK: "- TypeScript\n- Deno",
   };
 
-  async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     await Deno.mkdir(join(sandboxPath, "documents"), { recursive: true });
     // Simulate a no-subagent environment: remove installed agent templates.
-    for (const dir of [".codex/agents", ".claude/agents", ".cursor/agents"]) {
-      try {
-        await Deno.remove(join(sandboxPath, dir), { recursive: true });
-      } catch (e) {
-        if (!(e instanceof Deno.errors.NotFound)) throw e;
-      }
+    try {
+      await Deno.remove(join(sandboxPath, ctx.configDir, "agents"), {
+        recursive: true,
+      });
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) throw e;
     }
   }
 

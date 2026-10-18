@@ -1,15 +1,19 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * Simulates a framework template update where AGENTS.template.md gained a CHECK step.
  *
  * Runner sequence: copy fixtures → copy framework → write AGENTS.md → setup().
- * In setup(), .codex/ already contains the full framework.
+ * In setup(), the IDE config dir (`.claude/` on the claude arm, `.codex/` on
+ * codex — `ctx.configDir`) already contains the full framework.
  *
  * Strategy:
- * 1. Read real AGENTS.template.md from .codex/assets/
+ * 1. Read real AGENTS.template.md from <configDir>/assets/
  * 2. Create an "old" version by stripping the CHECK step
  * 3. Commit everything (old template = baseline)
  * 4. Restore real version → only this template shows as modified in git
@@ -33,15 +37,15 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     commits: [
       {
         message: "Initial sync (baseline)",
-        files: [".codex/assets/AGENTS.template.md"],
+        files: ["<configDir>/assets/AGENTS.template.md"],
       },
     ],
-    modified: [".codex/assets/AGENTS.template.md"],
+    modified: ["<configDir>/assets/AGENTS.template.md"],
     expectedOutcome:
       "Agent detects template change, compares it to AGENTS.md, and proposes adding CHECK step to TDD Flow section",
   };
 
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     // Overwrite template-generated AGENTS.md with outdated version (3-step TDD, no CHECK)
     // so the agent can detect the gap and propose adding CHECK
     await Deno.writeTextFile(
@@ -64,10 +68,10 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
       ].join("\n"),
     );
 
-    // Runner has already copied framework to .codex/ and written AGENTS.md
+    // Runner has already copied framework to the IDE dir and written AGENTS.md
     const templatePath = join(
       sandboxPath,
-      ".codex",
+      ctx.configDir,
       "assets",
       "AGENTS.template.md",
     );
@@ -88,7 +92,7 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     // Restore real (new) version — simulates an updated framework template source.
     await Deno.writeTextFile(templatePath, newContent);
 
-    // Now only .codex/assets/AGENTS.template.md is modified
+    // Now only <configDir>/assets/AGENTS.template.md is modified
   }
 
   userQuery =
@@ -98,7 +102,7 @@ export const FlowUpdateBasicBench = new class extends AcceptanceTestScenario {
     {
       id: "detected_asset_change",
       description:
-        "Did the agent detect or read `.codex/assets/AGENTS.template.md` as the read-only framework template source?",
+        "Did the agent detect or read `assets/AGENTS.template.md` inside the IDE config dir the framework is installed in (`.claude/` on the claude arm, `.codex/` on codex) as the read-only framework template source?",
       critical: true,
     },
     {

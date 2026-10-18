@@ -1,5 +1,8 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
@@ -36,7 +39,7 @@ export const FlowAdaptSkillsBasicBench = new class
         message: "Initial sync with generic skills",
         files: [
           ".flowai.yaml",
-          ".codex/skills/commit/SKILL.md",
+          "<configDir>/skills/commit/SKILL.md",
         ],
       },
     ],
@@ -47,15 +50,15 @@ export const FlowAdaptSkillsBasicBench = new class
   interactive = true;
   userPersona =
     "The project maintainer who ran /adapt. When the agent shows an adapted diff and asks whether to accept it, reply 'yes, apply it'. Approve every proposed adaptation; answer any other question with the simplest option in one short sentence. Never ask for extra work.";
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     // Create .flowai.yaml
     await Deno.writeTextFile(
       join(sandboxPath, ".flowai.yaml"),
-      'version: "1.1"\nides:\n  - codex\npacks:\n  - core\n',
+      `version: "1.1"\nides:\n  - ${ctx.ide}\npacks:\n  - core\n`,
     );
 
-    // Create .codex/skills/commit/ with generic (upstream) version
-    const skillDir = join(sandboxPath, ".codex", "skills", "commit");
+    // Overwrite <configDir>/skills/commit/ with a generic (upstream) version
+    const skillDir = join(sandboxPath, ctx.configDir, "skills", "commit");
     await Deno.mkdir(skillDir, { recursive: true });
 
     const genericSkill = `---
@@ -96,7 +99,7 @@ description: Commit workflow
     {
       id: "scanned_skills",
       description:
-        "Did the agent scan installed skills in .codex/skills/ to find flowai-* directories?",
+        "Did the agent scan the installed skills under `skills/` in the IDE config dir (`.claude/` on the claude arm, `.codex/` on codex) to find the skills to adapt?",
       critical: true,
     },
     {

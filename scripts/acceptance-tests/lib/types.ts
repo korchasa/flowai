@@ -6,6 +6,22 @@ export interface BenchmarkChecklistItem {
   critical: boolean;
 }
 
+/**
+ * Facts about the sandbox that only the runner knows, handed to `setup()`.
+ *
+ * The framework lands in a different directory per arm (`.claude/` on the
+ * claude arm, `.codex/` on codex, and so on), while the layout inside it is
+ * the same: `skills/`, `agents/`, `assets/`, `scripts/`. A scenario that
+ * plants or removes framework files must build the path from `configDir`,
+ * never hard-code one arm's directory.
+ */
+export interface SandboxContext {
+  /** IDE the arm drives, as `.flowai.yaml` names it ("claude", "codex", …). */
+  ide: string;
+  /** IDE config dir the framework was copied into, relative to the sandbox. */
+  configDir: string;
+}
+
 export interface BenchmarkScenario {
   id: string;
   name: string;
@@ -50,7 +66,8 @@ export interface BenchmarkScenario {
    *   1. Copy fixture files to sandbox
    *   2. Copy framework to IDE config dir
    *   3. `git init` + commit all framework/fixture files as "init"
-   *   4. Call `setup(sandboxPath)` — scenario creates its specific git state
+   *   4. Call `setup(sandboxPath, { ide, configDir })` — scenario creates its
+   *      specific git state
    *   5. Start agent
    *
    * setup() receives a sandbox with an initialized git repo where all
@@ -74,8 +91,9 @@ export interface BenchmarkScenario {
    * Called AFTER runner initializes git with framework/fixture files committed.
    * Must NOT call setupGitRepo() — git is already initialized.
    * @param sandboxPath Absolute path to the temporary sandbox directory
+   * @param ctx Where the runner put the framework (see SandboxContext)
    */
-  setup: (sandboxPath: string) => Promise<void>;
+  setup: (sandboxPath: string, ctx: SandboxContext) => Promise<void>;
 
   /**
    * Path to the fixture directory (optional).
@@ -225,7 +243,7 @@ export abstract class AcceptanceTestScenario implements BenchmarkScenario {
     return `framework/skills/${this.skill}/SKILL.md`;
   }
 
-  setup(_sandboxPath: string): Promise<void> {
+  setup(_sandboxPath: string, _ctx: SandboxContext): Promise<void> {
     return Promise.resolve();
   }
 }
@@ -267,7 +285,7 @@ export abstract class AcceptanceTestAgentScenario implements BenchmarkScenario {
     return `framework/agents/${this.agent}.md`;
   }
 
-  setup(_sandboxPath: string): Promise<void> {
+  setup(_sandboxPath: string, _ctx: SandboxContext): Promise<void> {
     return Promise.resolve();
   }
 }

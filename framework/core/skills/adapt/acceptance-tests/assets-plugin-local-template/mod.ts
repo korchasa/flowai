@@ -1,11 +1,15 @@
 import { join } from "@std/path";
-import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
+import {
+  AcceptanceTestScenario,
+  type SandboxContext,
+} from "@acceptance-tests/types.ts";
 import { runGit } from "@acceptance-tests/utils.ts";
 
 /**
  * Plugin-install layout: the AGENTS template lives ONLY as a skill-local plugin
- * asset (`.codex/skills/adapt/assets/AGENTS.template.md`) — there is NO
- * `.codex/assets/` directory. A plugin-blind implementation that reads only
+ * asset (`<configDir>/skills/adapt/assets/AGENTS.template.md`, where
+ * `<configDir>` is `.claude/` on the claude arm and `.codex/` on codex) — there
+ * is NO `<configDir>/assets/` directory. A plugin-blind implementation that reads only
  * `{ide}/assets/` cannot find the template ("skill just doesn't see the file").
  *
  * The planted template carries a framework rule that AGENTS.md is missing, so a
@@ -29,10 +33,10 @@ export const FlowAdaptPluginLocalTemplateBench = new class
   override sandboxState = {
     commits: [
       {
-        message: "Plugin-style install: skill-local template, no .codex/assets",
+        message: "Plugin-style install: skill-local template, no shared assets",
         files: [
           ".flowai.yaml",
-          ".codex/skills/adapt/assets/AGENTS.template.md",
+          "<configDir>/skills/adapt/assets/AGENTS.template.md",
           "AGENTS.md",
         ],
       },
@@ -42,16 +46,16 @@ export const FlowAdaptPluginLocalTemplateBench = new class
       "it to AGENTS.md, and detects the missing framework rule",
   };
 
-  override async setup(sandboxPath: string) {
+  override async setup(sandboxPath: string, ctx: SandboxContext) {
     await Deno.writeTextFile(
       join(sandboxPath, ".flowai.yaml"),
-      'version: "1.1"\nides:\n  - claude\npacks:\n  - core\n',
+      `version: "1.1"\nides:\n  - ${ctx.ide}\npacks:\n  - core\n`,
     );
 
-    // Simulate an IDE-plugin install: there is NO project-local `.codex/assets/`.
+    // Simulate an IDE-plugin install: there is NO project-local `<configDir>/assets/`.
     // The harness mounts pack assets there by default (CLI-sync layout), so we
     // remove it — the skill-local plugin asset below must be the ONLY template.
-    const standardAssets = join(sandboxPath, ".codex", "assets");
+    const standardAssets = join(sandboxPath, ctx.configDir, "assets");
     try {
       await Deno.remove(standardAssets, { recursive: true });
     } catch (e) {
@@ -59,7 +63,13 @@ export const FlowAdaptPluginLocalTemplateBench = new class
     }
 
     // Skill-local plugin asset — the ONLY copy of the template in the project.
-    const assetsDir = join(sandboxPath, ".codex", "skills", "adapt", "assets");
+    const assetsDir = join(
+      sandboxPath,
+      ctx.configDir,
+      "skills",
+      "adapt",
+      "assets",
+    );
     await Deno.mkdir(assetsDir, { recursive: true });
     const template = `# Core Project Rules
 - Follow your assigned role strictly.
@@ -91,7 +101,7 @@ export const FlowAdaptPluginLocalTemplateBench = new class
     await runGit(sandboxPath, [
       "commit",
       "-m",
-      "Plugin-style install: skill-local template, no .codex/assets",
+      "Plugin-style install: skill-local template, no shared assets",
     ]);
   }
 
@@ -102,9 +112,9 @@ export const FlowAdaptPluginLocalTemplateBench = new class
       id: "located_skill_local_template",
       description:
         "Did the agent locate and read the AGENTS template from the skill-local " +
-        "plugin asset path (.codex/skills/adapt/assets/AGENTS.template.md), " +
-        "instead of reporting the template as missing or only checking " +
-        ".codex/assets/?",
+        "plugin asset path (`skills/adapt/assets/AGENTS.template.md` inside the " +
+        "IDE config dir — `.claude/` on the claude arm, `.codex/` on codex), instead of reporting the template " +
+        "as missing or only checking the IDE config dir's `assets/`?",
       critical: true,
     },
     {
