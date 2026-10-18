@@ -62,23 +62,28 @@ Deno.test("codex authenticates by subscription, like claude", () => {
   );
 });
 
-Deno.test("ACP_LIB_VERSION tracks the import-map pin", async () => {
+Deno.test("ACP_LIB_VERSION tracks the locked ai-ide-cli version", async () => {
   // The constant is folded into the benchmark cache key, so a lib bump is
   // supposed to invalidate stale verdicts. It only does that while the two
-  // agree. Found drifted 2026-08-15: the import map had moved to
-  // @agentclientprotocol/sdk@1.3.0 while this still read 0.4.5 — the migration
-  // invalidated the cache through the registry fingerprint instead, by luck,
-  // and the next sdk-only bump would have invalidated nothing.
+  // agree. Found drifted 2026-08-15, when the client lib was still the ACP SDK:
+  // the import map had moved to @agentclientprotocol/sdk@1.3.0 while this
+  // still read 0.4.5. The import map holds a range, so the lock is what names
+  // the version a run actually loads.
+  const root = new URL("../../../../", import.meta.url);
   const denoJson = JSON.parse(
-    await Deno.readTextFile(new URL("../../../../deno.json", import.meta.url)),
+    await Deno.readTextFile(new URL("deno.json", root)),
   ) as { imports: Record<string, string> };
-  const spec = denoJson.imports["@agentclientprotocol/sdk"];
-  assert(spec, "deno.json must pin @agentclientprotocol/sdk");
-  const pinned = spec.slice(spec.lastIndexOf("@") + 1);
+  const spec = denoJson.imports["@korchasa/ai-ide-cli"];
+  assert(spec, "deno.json must import @korchasa/ai-ide-cli");
+  const lock = JSON.parse(
+    await Deno.readTextFile(new URL("deno.lock", root)),
+  ) as { specifiers: Record<string, string> };
+  const locked = lock.specifiers[spec];
+  assert(locked, `deno.lock must resolve ${spec}`);
   assertEquals(
     ACP_LIB_VERSION,
-    pinned,
-    `ACP_LIB_VERSION (${ACP_LIB_VERSION}) must equal the import-map pin (${pinned})`,
+    locked,
+    `ACP_LIB_VERSION (${ACP_LIB_VERSION}) must equal the locked version (${locked})`,
   );
 });
 

@@ -51,8 +51,8 @@ Benchmarks support multiple IDEs (Cursor, Claude Code, OpenCode, Codex) over a s
   - `ides.<ide>.judge`: LLM judge config (model, temperature)
 - **ACP transport** (`scripts/acceptance-tests/lib/acp/`):
   - `registry.ts`: `ACP_AGENTS` data table — one row per IDE `{ ide, launch:{command,args,env}, authMode, configDir }` (`claude-code-acp`, `cursor-agent --acp`, `codex acp`, `opencode acp`). Onboarding a new IDE = adding a row.
-  - `client.ts`: `AcpClient` over the official `@zed-industries/agent-client-protocol` lib — `initialize` → `session/new` → `session/prompt`, auto-allows permissions.
-  - `acp_agent.ts`: `AcpAgent` — spawns the registry's launch under `setpgrp_exec.py` (guards), drives the multi-turn session.
+  - `acp_agent.ts`: `AcpAgent` — opens an `@korchasa/ai-ide-cli` ACP session on the registry's launch (`initialize` → `session/new` → `session/prompt` belong to the library), auto-allows permissions, confines client-fs writes to the sandbox, runs the bridge in its own process group under the watchdog (guards), drives the multi-turn session.
+  - `turn_recorder.ts`: `TurnRecorder` — keeps what the trace needs of each `session/update`: reply and reasoning apart, the turn's timeline in arrival order, tool calls merged by id.
   - `mock_bin.ts`: PATH-shadow tool mocking (IDE-agnostic stub executables).
   - `auth.ts`: `prepareAcpClaudeHome` — bench-home isolation (FR-ACCEPT-ISOLATION).
 - **Adapter profiles** (`scripts/acceptance-tests/lib/adapters/`):

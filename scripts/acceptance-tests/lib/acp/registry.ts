@@ -7,19 +7,21 @@
  * / setupMocks) with a connection + a launch spec — onboarding a new IDE becomes
  * adding a row, not writing a class.
  *
- * The resolved command is spawned by `AcpAgent` under the same
- * `setpgrp_exec.py` process-group wrapping + watchdog (FR-ACCEPT-GUARDS), so the
- * bridge and its descendants stay inside the killed group.
+ * The resolved command is handed to the ai-ide-cli session as its ACP front;
+ * `AcpAgent` spawns it as the leader of its own process group under the
+ * watchdog (FR-ACCEPT-GUARDS), so the bridge and its descendants stay inside
+ * the killed group.
  */
 import type { AcpLaunch } from "./bridge_store.ts";
 
 /**
- * Pinned version of the official ACP client library. Kept in lock-step with the
- * `npm:@agentclientprotocol/sdk@<v>` import specifiers across this
- * dir. Folded into the benchmark cache-key (FR-ACCEPT-CACHE) so a lib upgrade
- * invalidates stale ACP verdicts.
+ * Version of `@korchasa/ai-ide-cli`, the ACP client library every agent and
+ * judge session runs on (FR-ACCEPT.ACP). Kept equal to the version `deno.lock`
+ * resolves for the import map's `@korchasa/ai-ide-cli` entry. Folded into the
+ * benchmark cache-key (FR-ACCEPT-CACHE) so a lib upgrade invalidates stale ACP
+ * verdicts.
  */
-export const ACP_LIB_VERSION = "1.3.0";
+export const ACP_LIB_VERSION = "2.1.0";
 
 export type AcpIde = "claude" | "cursor" | "codex" | "opencode";
 

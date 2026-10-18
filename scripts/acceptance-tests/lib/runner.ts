@@ -30,7 +30,7 @@ import {
   detectInfraAbort,
   unclassifiedTurnErrors,
 } from "./infra_abort.ts";
-import type { CapturedToolCall } from "./acp/client.ts";
+import type { CapturedToolCall } from "./acp/turn_recorder.ts";
 import type { AcpIde } from "./acp/registry.ts";
 import {
   detectSkillInvocation,

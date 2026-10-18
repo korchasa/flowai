@@ -123,30 +123,30 @@ export function tokensFromRollout(
 }
 
 /**
- * ACP `Usage` as the claude bridge returns it on `PromptResponse.usage`
- * (FR-ACCEPT.JUDGE-ACP). Its fields are already disjoint — verified 2026-10-17:
+ * ACP prompt usage as the ai-ide-cli session hands it over on its `turn-end`
+ * event (`raw.usage`): the library renames the ACP `Usage` fields to its
+ * `CliRunUsage` spelling and keeps their values (FR-ACCEPT.JUDGE-ACP). The
+ * claude bridge's fields are already disjoint — verified 2026-10-17:
  * `totalTokens` = input + output + cache read + cache write.
  */
-export interface AcpTokenUsage {
-  inputTokens: number;
-  outputTokens: number;
-  cachedReadTokens?: number | null;
-  cachedWriteTokens?: number | null;
-  totalTokens: number;
+export interface AcpRunUsage {
+  input_tokens?: number;
+  output_tokens?: number;
+  cached_tokens?: number;
+  cache_write_tokens?: number;
+  total_tokens?: number;
 }
 
-/** Converts one ACP prompt usage. Nothing is subtracted, and reasoning is 0:
+/** Converts one ACP turn usage. Nothing is subtracted, and reasoning is 0:
  * the bridge does not split it out of the output. */
-export function tokensFromAcpUsage(
-  u: Partial<AcpTokenUsage>,
-): TokenBreakdown {
+export function tokensFromAcpUsage(u: AcpRunUsage): TokenBreakdown {
   return {
-    freshInput: num(u.inputTokens),
-    cachedInput: num(u.cachedReadTokens),
-    cacheWrite: num(u.cachedWriteTokens),
-    output: num(u.outputTokens),
+    freshInput: num(u.input_tokens),
+    cachedInput: num(u.cached_tokens),
+    cacheWrite: num(u.cache_write_tokens),
+    output: num(u.output_tokens),
     reasoning: 0,
-    total: num(u.totalTokens),
+    total: num(u.total_tokens),
   };
 }
 

@@ -4,7 +4,7 @@ import type { TokenBreakdown } from "../token_usage.ts";
  * Data-only IDE profile consumed by the runner under the ACP transport
  * (FR-ACCEPT.ACP). The per-IDE behavioural surface (buildArgs / parseOutput /
  * setupMocks / stream-json) was retired with the direct-CLI adapters — agents
- * are now driven through the single `AcpClient` + the data-only `ACP_AGENTS`
+ * are now driven through the single `AcpAgent` + the data-only `ACP_AGENTS`
  * registry. What remains is the small set of facts the runner still needs:
  * which IDE, its config dir, optional sandbox `$HOME` isolation, token usage,
  * and a version string for the cache key.
@@ -42,7 +42,7 @@ export interface AgentAdapter {
 }
 
 /**
- * Structured agent turn output accumulated by `AcpClient` and consumed by the
+ * Structured agent turn output accumulated by `TurnRecorder` and consumed by the
  * runner / judge / `UserEmulator`.
  */
 export interface ParsedAgentOutput {

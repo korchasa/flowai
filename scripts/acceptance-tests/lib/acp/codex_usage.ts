@@ -21,7 +21,7 @@
  *
  * The judge is deliberately not here: FR-ACCEPT.JUDGE-APPSERVER starts its
  * threads with `ephemeral: true`, so it writes no rollout. Its counts come off
- * the protocol in `appserver_client.ts`.
+ * the protocol in `llm.ts` (`AppServerSession`).
  */
 import { join } from "@std/path";
 import { walk } from "@std/fs/walk";

@@ -4,8 +4,8 @@
  * Trigger scenarios assert whether the agent loaded a specific skill in
  * response to a query. Historically this was graded by the LLM judge, which
  * could only infer invocation from the agent's prose — the ACP transcript did
- * not carry tool calls. The client now captures `tool_call` notifications (see
- * `acp/client.ts`), so the runner can decide these items WITHOUT the judge.
+ * not carry tool calls. The recorder now captures `tool_call` notifications (see
+ * `acp/turn_recorder.ts`), so the runner can decide these items WITHOUT the judge.
  *
  * Empirically, claude-code-acp surfaces a `Skill` invocation as a `tool_call`
  * with `title: "Skill"`, `kind: "other"`, `rawInput: { skill: "<name>" }`.
@@ -36,7 +36,7 @@
  * rawInput. That title is the codex bridge's own wording — claude-agent-acp
  * titles its Read tool `Read <path>` — so the Claude exclusion above holds.
  */
-import type { CapturedToolCall } from "./acp/client.ts";
+import type { CapturedToolCall } from "./acp/turn_recorder.ts";
 
 /** Checklist item ids handled deterministically (never sent to the judge). */
 export const DETERMINISTIC_SKILL_CHECK_IDS = new Set([

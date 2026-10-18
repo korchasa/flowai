@@ -1,6 +1,9 @@
 {
   "version": "0.14.31",
   "license": "MIT",
+  "minimumDependencyAge": {
+    "exclude": ["jsr:@korchasa/*"]
+  },
   "imports": {
     "@cliffy/command": "jsr:@cliffy/command@^1.0.0",
     "@cliffy/prompt": "jsr:@cliffy/prompt@^1.0.0",
@@ -16,7 +19,8 @@
     "@std/yaml": "jsr:@std/yaml@^1.0.12",
     "zod": "npm:zod@^3.25.76",
     "@agentclientprotocol/sdk": "npm:@agentclientprotocol/sdk@1.3.0",
-    "@acceptance-tests/": "./scripts/acceptance-tests/lib/"
+    "@acceptance-tests/": "./scripts/acceptance-tests/lib/",
+    "@korchasa/ai-ide-cli": "jsr:@korchasa/ai-ide-cli@^2.1.0"
   },
   "tasks": {
     "check": "deno run -A scripts/task-check.ts",

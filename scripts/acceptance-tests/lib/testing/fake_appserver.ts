@@ -1,25 +1,31 @@
 /**
- * A protocol-speaking stand-in for `codex app-server --stdio`.
+ * A protocol-speaking stand-in for `codex app-server --listen stdio://`.
  *
  * Test-only, and deliberately NOT a mock of our own code: it replaces the
- * EXTERNAL process, so `AppServerSession` and `codexChatCompletion` are
- * exercised end to end — framing, request/response correlation, the
- * `turn/completed` notification — without an LLM call.
+ * EXTERNAL process, so the ai-ide-cli `CodexAppServerClient` and
+ * `codexChatCompletion` are exercised end to end — spawn, framing,
+ * request/response correlation, the `turn/completed` notification — without an
+ * LLM call.
+ *
+ * The client spawns a binary by path, so the fake is a real process:
+ * {@link fakeAppServerBinary} writes a small shell launcher that runs this file
+ * under the current Deno with its options in `FAKE_APPSERVER_OPTS` and appends
+ * every client frame it reads to `FAKE_APPSERVER_LOG` (one JSON per line).
  */
-import type { AppServerProcess } from "../appserver_client.ts";
+import { join } from "@std/path";
 
 export interface FakeAppServerOptions {
   /** Turn status to report. Defaults to `completed`. */
   status?: string;
   /** `error.message` on the reported turn. */
   errorMessage?: string;
-  /** Close the stream instead of answering the handshake. */
+  /** Exit instead of answering the handshake. */
   failHandshake?: boolean;
   /** Hold the answer this long, so overlapping turns are really in flight. */
   turnDelayMs?: number;
   /**
-   * Acknowledge `turn/start`, then close the stream before the turn ends — a
-   * child that dies mid-turn, after the request itself already succeeded.
+   * Acknowledge `turn/start`, then exit before the turn ends — a child that
+   * dies mid-turn, after the request itself already succeeded.
    */
   closeAfterTurnAck?: boolean;
   /**
@@ -37,22 +43,60 @@ export interface FakeAppServerOptions {
 }
 
 export interface FakeAppServer {
-  readonly process: AppServerProcess;
-  /** Every client frame this fake received, in order. */
-  readonly seen: Record<string, unknown>[];
+  /** Path to pass as the client's `binary`. */
+  readonly binary: string;
+  /** Every client frame the fake received so far, in order, across spawns. */
+  seen(): Promise<Record<string, unknown>[]>;
+  /** How many times the binary was started. */
+  spawns(): Promise<number>;
+  /** Remove the launcher and its log. */
+  cleanup(): Promise<void>;
 }
 
-/** Build one fake app-server child. */
-export function fakeAppServer(opts: FakeAppServerOptions = {}): FakeAppServer {
-  const seen: Record<string, unknown>[] = [];
-  const toClient = new TransformStream<Uint8Array, Uint8Array>();
-  const fromClient = new TransformStream<Uint8Array, Uint8Array>();
-  const encoder = new TextEncoder();
-  const out = toClient.writable.getWriter();
-  let threads = 0;
+const SELF = new URL(import.meta.url).pathname;
 
+/** Single-quote a value for `/bin/sh`. */
+function shQuote(s: string): string {
+  return `'${s.replaceAll("'", `'\\''`)}'`;
+}
+
+/** Write a launcher for one fake app-server configuration. */
+export async function fakeAppServerBinary(
+  opts: FakeAppServerOptions = {},
+): Promise<FakeAppServer> {
+  const dir = await Deno.makeTempDir({ prefix: "fake-appserver-" });
+  const binary = join(dir, "codex");
+  const log = join(dir, "frames.jsonl");
+  const starts = join(dir, "spawns.log");
+  await Deno.writeTextFile(
+    binary,
+    [
+      "#!/bin/sh",
+      `echo x >> ${shQuote(starts)}`,
+      `FAKE_APPSERVER_OPTS=${shQuote(JSON.stringify(opts))} \\`,
+      `FAKE_APPSERVER_LOG=${shQuote(log)} \\`,
+      `exec ${shQuote(Deno.execPath())} run -A ${shQuote(SELF)} "$@"`,
+      "",
+    ].join("\n"),
+  );
+  await Deno.chmod(binary, 0o755);
+  const lines = async (path: string) =>
+    (await Deno.readTextFile(path).catch(() => "")).split("\n").filter(
+      Boolean,
+    );
+  return {
+    binary,
+    seen: async () => (await lines(log)).map((l) => JSON.parse(l)),
+    spawns: async () => (await lines(starts)).length,
+    cleanup: () => Deno.remove(dir, { recursive: true }).catch(() => {}),
+  };
+}
+
+async function serve(opts: FakeAppServerOptions, log: string): Promise<void> {
+  const encoder = new TextEncoder();
+  let threads = 0;
   const send = (msg: unknown) =>
-    out.write(encoder.encode(JSON.stringify(msg) + "\n"));
+    Deno.stdout.write(encoder.encode(JSON.stringify(msg) + "\n"));
 
   async function answerTurn(
     id: unknown,
@@ -113,60 +157,52 @@ export function fakeAppServer(opts: FakeAppServerOptions = {}): FakeAppServer {
     await send({ jsonrpc: "2.0", id, result: {} });
   }
 
-  (async () => {
-    let buffer = "";
-    const decoder = new TextDecoder();
-    for await (const chunk of fromClient.readable) {
-      buffer += decoder.decode(chunk, { stream: true });
-      let nl: number;
-      while ((nl = buffer.indexOf("\n")) >= 0) {
-        const line = buffer.slice(0, nl);
-        buffer = buffer.slice(nl + 1);
-        if (line.trim() === "") continue;
-        const msg = JSON.parse(line) as Record<string, unknown>;
-        seen.push(msg);
-        if (opts.failHandshake) {
-          await out.close().catch(() => {});
-          return;
+  let buffer = "";
+  const decoder = new TextDecoder();
+  for await (const chunk of Deno.stdin.readable) {
+    buffer += decoder.decode(chunk, { stream: true });
+    let nl: number;
+    while ((nl = buffer.indexOf("\n")) >= 0) {
+      const line = buffer.slice(0, nl);
+      buffer = buffer.slice(nl + 1);
+      if (line.trim() === "") continue;
+      await Deno.writeTextFile(log, line + "\n", { append: true });
+      const msg = JSON.parse(line) as Record<string, unknown>;
+      if (opts.failHandshake) Deno.exit(1);
+      const id = msg.id;
+      if (msg.method === "initialize") {
+        await send({ jsonrpc: "2.0", id, result: { userAgent: "fake" } });
+      } else if (msg.method === "thread/start") {
+        threads += 1;
+        await send({
+          jsonrpc: "2.0",
+          id,
+          result: { thread: { id: `thread-${threads}` } },
+        });
+      } else if (msg.method === "turn/start") {
+        const params = msg.params as {
+          threadId: string;
+          input: { text: string }[];
+        };
+        if (opts.closeAfterTurnAck) {
+          await send({ jsonrpc: "2.0", id, result: {} });
+          Deno.exit(1);
         }
-        const id = msg.id;
-        if (msg.method === "initialize") {
-          await send({ jsonrpc: "2.0", id, result: { userAgent: "fake" } });
-        } else if (msg.method === "thread/start") {
-          threads += 1;
-          await send({
-            jsonrpc: "2.0",
-            id,
-            result: { thread: { id: `thread-${threads}` } },
-          });
-        } else if (msg.method === "turn/start") {
-          const params = msg.params as {
-            threadId: string;
-            input: { text: string }[];
-          };
-          if (opts.closeAfterTurnAck) {
-            await send({ jsonrpc: "2.0", id, result: {} });
-            await out.close().catch(() => {});
-            return;
-          }
-          const status = opts.status ?? "completed";
-          if (opts.turnDelayMs) {
-            // Answer out of band so a second turn/start is read meanwhile.
-            void answerTurn(id, params, status);
-            continue;
-          }
-          await answerTurn(id, params, status);
+        const status = opts.status ?? "completed";
+        if (opts.turnDelayMs) {
+          // Answer out of band so a second turn/start is read meanwhile.
+          void answerTurn(id, params, status);
+          continue;
         }
+        await answerTurn(id, params, status);
       }
     }
-  })();
+  }
+}
 
-  return {
-    process: {
-      stdin: fromClient.writable,
-      stdout: toClient.readable,
-      kill: () => {},
-    },
-    seen,
-  };
+if (import.meta.main) {
+  await serve(
+    JSON.parse(Deno.env.get("FAKE_APPSERVER_OPTS") ?? "{}"),
+    Deno.env.get("FAKE_APPSERVER_LOG") ?? "/dev/null",
+  );
 }

@@ -1,5 +1,5 @@
 import { assertEquals } from "@std/assert";
-import type { CapturedToolCall } from "./acp/client.ts";
+import type { CapturedToolCall } from "./acp/turn_recorder.ts";
 import { detectSkillInvocation } from "./skill_invocation.ts";
 
 // Shape observed empirically from claude-code-acp for a `Skill` tool call:

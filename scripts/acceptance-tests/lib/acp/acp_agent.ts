@@ -1,31 +1,40 @@
 /**
  * ACP agent executor (FR-ACCEPT.ACP) — the sole transport-side agent runner.
- * Spawns an IDE's ACP server from the data-only registry, preserving
- * FR-ACCEPT-GUARDS (setpgrp process group + watchdog + health gate), and drives
- * the conversation over the official ACP client:
+ * Drives an IDE's ACP bridge through an ai-ide-cli session, preserving
+ * FR-ACCEPT-GUARDS (own process group + watchdog + health gate):
  *
- *   spawn(registry.launch) under setpgrp_exec.py
- *     → AcpClient over the child's stdio
+ *   openSession({ transport: "acp", acpFront: <pinned local bridge>,
+ *                 processGroup: true, … })
  *     → initialize → session/new → session/prompt (turn 1)
  *     → [UserEmulator] session/prompt on the SAME session (multi-turn — ACP
  *        keeps the session across turns)
  *     → accumulate a readable transcript for the judge.
  *
- * Tool mocking is IDE-agnostic via PATH-shadowing (`writeMockBin`): the client
- * auto-allows every permission request, and mocked commands resolve to stub
- * executables that print the canned result. Errors map to a non-zero exit code
- * via the client's deterministic failure verdict (FR-ACCEPT.ACP error mapping).
+ * Tool mocking is IDE-agnostic via PATH-shadowing (`writeMockBin`): the
+ * session auto-allows every permission request, and mocked commands resolve to
+ * stub executables that print the canned result. Errors map to a non-zero exit
+ * code via a deterministic failure verdict (FR-ACCEPT.ACP error mapping).
  */
-import { dirname, fromFileUrl, join } from "@std/path";
-import { ndJsonStream } from "@agentclientprotocol/sdk";
+import { dirname, join } from "@std/path";
+import {
+  type AcpFrontLauncher,
+  getRuntimeAdapter,
+  type RuntimeSession,
+} from "@korchasa/ai-ide-cli/runtime";
+import { ProcessRegistry } from "@korchasa/ai-ide-cli/process-registry";
 import { startWatchdog, type WatchdogHandle } from "../process_watchdog.ts";
 import {
   assertHealthy,
   describeHealth,
   SystemUnhealthyError,
 } from "../system_health.ts";
+import type { ParsedAgentOutput } from "../adapters/types.ts";
 import { resolveBridgeCommand } from "./bridge_store.ts";
-import { AcpClient, type CapturedToolCall, type TurnEvent } from "./client.ts";
+import {
+  type CapturedToolCall,
+  type TurnEvent,
+  TurnRecorder,
+} from "./turn_recorder.ts";
 import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
 import { collectCodexAgentTrace } from "./codex_rollout.ts";
 import {
@@ -35,9 +44,7 @@ import {
   nativeCommandTurn,
 } from "./registry.ts";
 
-const SETPGRP_WRAPPER = fromFileUrl(
-  new URL("../setpgrp_exec.py", import.meta.url),
-);
+export type { CapturedToolCall, TurnEvent } from "./turn_recorder.ts";
 
 export interface AcpAgentOptions {
   ide: AcpIde;
@@ -51,8 +58,10 @@ export interface AcpAgentOptions {
   /** Max conversation turns (UserEmulator). Defaults to 10. */
   maxSteps?: number;
   name?: string;
-  /** Test-only: skip the setpgrp wrapper + watchdog. */
+  /** Test-only: no own process group, no watchdog. */
   disableWatchdog?: boolean;
+  /** Test-only: launch this command instead of the pinned bridge. */
+  launch?: { command: string; args: string[] };
 }
 
 export interface AcpAgentResult {
@@ -67,7 +76,7 @@ interface Message {
 
 /**
  * Pick the tool-call list to score: the run's own snapshot when it exists,
- * otherwise whatever the client has captured so far.
+ * otherwise whatever the recorder has captured so far.
  *
  * Split out to be testable. The snapshot wins because it is taken after the
  * session closes; the live list only ever matters for a run that was killed
@@ -81,22 +90,53 @@ export function resolveToolCalls(
   return live ?? [];
 }
 
+/**
+ * A process registry that tells its owner about every child the library
+ * spawns into it — the only handle on the bridge's pid, which the watchdog
+ * (FR-ACCEPT-GUARDS) and the group kill need.
+ */
+class ObservedRegistry extends ProcessRegistry {
+  readonly #onSpawn: (p: Deno.ChildProcess) => void;
+
+  constructor(onSpawn: (p: Deno.ChildProcess) => void) {
+    super();
+    this.#onSpawn = onSpawn;
+  }
+
+  override register(
+    p: Deno.ChildProcess,
+    opts?: Parameters<ProcessRegistry["register"]>[1],
+  ): void {
+    super.register(p, opts);
+    this.#onSpawn(p);
+  }
+}
+
+/**
+ * Reads the session's events up to the turn's end. The library queues its
+ * synthetic `turn-end` after every update of the turn (ai-ide-cli FR-L59), so
+ * the recorder, fed from `onEvent`, already holds the whole turn here.
+ * `next()` by hand: leaving a `for await` would close the session's stream.
+ */
+async function awaitTurnEnd(session: RuntimeSession): Promise<string> {
+  while (true) {
+    const { value, done } = await session.events.next();
+    if (done) throw new Error("acp connection closed before turn completion");
+    if (value.type === "turn-end") {
+      return String(value.raw["stopReason"] ?? "end_turn");
+    }
+  }
+}
+
 /** Executes one IDE agent over ACP for the full (multi-turn) scenario. */
 export class AcpAgent {
-  #child: Deno.ChildProcess | null = null;
+  #pid: number | null = null;
+  #session: RuntimeSession | null = null;
   #watchdog: WatchdogHandle | null = null;
-  #sessionId: string | null = null;
   #messages: Message[] = [];
   #log: string[] = [];
   #toolCalls: CapturedToolCall[] = [];
-  #client:
-    | {
-      getToolCalls(): CapturedToolCall[];
-      getBufferedText(sessionId: string): string;
-      getBufferedReasoning(sessionId: string): string;
-      getTimeline(sessionId: string): TurnEvent[];
-    }
-    | null = null;
+  #recorder: TurnRecorder | null = null;
   /** Tool calls already placed inside a turn's trace, by toolCallId. */
   readonly #renderedCalls = new Set<string>();
   /** True between sending a prompt and appending that turn to the log. */
@@ -108,7 +148,7 @@ export class AcpAgent {
   }
 
   getSessionId(): string | null {
-    return this.#sessionId;
+    return this.#session?.sessionId ?? null;
   }
 
   /**
@@ -127,7 +167,7 @@ export class AcpAgent {
   /**
    * Tool calls observed this run — used for deterministic checklist items.
    *
-   * Falls back to the live client while a run is still in flight. `run()`
+   * Falls back to the live recorder while a run is still in flight. `run()`
    * snapshots the calls in its `finally`, which never executes when a caller
    * kills the agent on a wall-clock timeout — so every timed-out scenario used
    * to score "0 tool call(s) observed" no matter what the agent had done.
@@ -135,7 +175,7 @@ export class AcpAgent {
    * five months of cap-raising, and it was read as "the agent never started".
    */
   getToolCalls(): CapturedToolCall[] {
-    return resolveToolCalls(this.#toolCalls, this.#client?.getToolCalls());
+    return resolveToolCalls(this.#toolCalls, this.#recorder?.getToolCalls());
   }
 
   /**
@@ -179,15 +219,15 @@ export class AcpAgent {
     // implements [FR-ACCEPT.BRIDGE-LOCAL](../../../../documents/requirements.md#fr-accept.bridge-local-acp-bridges-are-installed-once-and-launched-directly-ancfraccept.bridge-local):
     // npm bridges come from the local store, never from `npx`. A missing
     // pinned version throws here, before the spawn.
-    const launch = resolveBridgeCommand(this.#spec.launch);
-    const wrap = !this.opts.disableWatchdog;
-    const command = wrap ? "python3" : launch.command;
-    const args = wrap
-      ? [SETPGRP_WRAPPER, launch.command, ...launch.args]
-      : [...launch.args];
+    const launch = this.opts.launch ?? resolveBridgeCommand(this.#spec.launch);
+    const front: AcpFrontLauncher = {
+      cmd: launch.command,
+      args: launch.args,
+      env: this.#spec.launch.env ?? {},
+      pilot: true,
+    };
 
     const env: Record<string, string> = {
-      ...this.#spec.launch.env,
       // Many Claude tools honour ANTHROPIC_MODEL; harmless if ignored.
       ANTHROPIC_MODEL: this.opts.model,
       ...this.opts.env,
@@ -210,47 +250,62 @@ export class AcpAgent {
       }
     }
 
-    let child: Deno.ChildProcess;
+    const guarded = !this.opts.disableWatchdog;
+    const recorder = new TurnRecorder();
+    this.#recorder = recorder;
+    // implements [FR-ACCEPT-GUARDS](../../../../documents/requirements.md#fr-accept-guards-resource-guards-for-spawned-agents-ancfraccept-guards):
+    // the bridge leads its own process group (ai-ide-cli `processGroup`), and
+    // the watchdog follows that group from the moment the library spawns it.
+    const registry = new ObservedRegistry((child) => {
+      this.#pid = child.pid;
+      if (!guarded) return;
+      this.#watchdog = startWatchdog(child.pid, {
+        onTrip: (trip) => {
+          const tag = trip.cause === "fork-loop"
+            ? "[fork-loop guard]"
+            : "[rss-bloat guard]";
+          this.#log.push(`\n${tag} killed agent tree: ${trip.reason}\n`);
+          console.error(`${tag} ${trip.reason}`);
+        },
+      });
+    });
+
+    let session: RuntimeSession;
     try {
-      child = new Deno.Command(command, {
-        args,
+      session = await getRuntimeAdapter(this.opts.ide).openSession!({
+        transport: "acp",
+        acpFront: front,
         cwd: this.opts.workspace,
         env,
-        stdin: "piped",
-        stdout: "piped",
-        stderr: "piped",
-      }).spawn();
+        processGroup: guarded,
+        processRegistry: registry,
+        // The `bypassPermissions` equivalent of the direct path. Mocking is
+        // done by PATH-shadowing, not by denying here, so the model always
+        // sees a real tool result (canned for mocked tools).
+        onToolUseObserved: () => "allow",
+        // implements [FR-ACCEPT-ISOLATION](../../../../documents/requirements.md#fr-accept-isolation-sandbox-isolation-from-user-level-skills-ancfraccept-isolation):
+        // client-side fs anchored to the sandbox, and no
+        // write may land outside it.
+        acpClientFs: { writeRoot: this.opts.workspace },
+        onEvent: (event) => {
+          if (event.type === "session/update") recorder.observe(event.raw);
+        },
+        // Drain stderr (claude-code-acp logs there) for diagnostics.
+        onStderr: (text) => {
+          if (text.trim()) this.#log.push(`[stderr] ${text}`);
+        },
+      });
     } catch (e) {
-      this.#log.push(`Error starting ACP agent: ${e}\n`);
+      this.#log.push(`\n[acp-fatal] ${e}\n`);
+      this.#kill();
+      this.#watchdog?.stop();
       return { code: 1, logs: this.#log.join("") };
     }
-    this.#child = child;
-
-    this.#watchdog = startWatchdog(child.pid, {
-      disabled: this.opts.disableWatchdog,
-      onTrip: (trip) => {
-        const tag = trip.cause === "fork-loop"
-          ? "[fork-loop guard]"
-          : "[rss-bloat guard]";
-        this.#log.push(`\n${tag} killed agent tree: ${trip.reason}\n`);
-        console.error(`${tag} ${trip.reason}`);
-      },
-    });
-
-    // Drain stderr (claude-code-acp logs there) for diagnostics.
-    const stderrDone = this.#drainStderr(child.stderr);
-
-    const client = new AcpClient({
-      stream: ndJsonStream(child.stdin, child.stdout),
-      closed: child.status,
-    });
-    this.#client = client;
+    this.#session = session;
+    const sessionId = session.sessionId;
 
     let code = 0;
     try {
-      await client.initialize();
-      this.#sessionId = await client.newSession(this.opts.workspace);
-
       const maxSteps = this.opts.maxSteps ?? 10;
       let nextPrompt: string | null = this.opts.prompt;
       for (let step = 0; step < maxSteps && nextPrompt; step++) {
@@ -262,17 +317,26 @@ export class AcpAgent {
         this.#log.push(`\n[turn ${step + 1}] > ${nextPrompt}\n`);
 
         this.#turnInFlight = true;
-        const out = await client.prompt(this.#sessionId, nextPrompt);
+        recorder.startTurn();
+        let out: ParsedAgentOutput;
+        try {
+          await session.send(nextPrompt);
+          out = recorder.turnOutput(sessionId, await awaitTurnEnd(session));
+        } catch (e) {
+          // A connection drop, an agent error response or a watchdog kill all
+          // land here — a deterministic failure verdict, never a throw.
+          out = recorder.failureOutput(sessionId, e);
+        }
         const text = out.assistantText ?? out.result ?? "";
         // The persona and the judge both read the reply; reasoning goes to the
         // trace only, under its own marker.
         this.#messages.push({ role: "assistant", content: text });
         // [REF:fr:accept.acp | FR-ACCEPT.ACP] — the turn is rendered in arrival
         // order, each tool call between the sentences it ran between.
-        const timeline = client.getTimeline(this.#sessionId);
+        const timeline = recorder.getTimeline();
         this.#log.push(renderTurnTrace(
           timeline,
-          callsById(client.getToolCalls()),
+          callsById(recorder.getToolCalls()),
           text,
           out.reasoningText ?? "",
         ));
@@ -298,7 +362,7 @@ export class AcpAgent {
     } finally {
       // Snapshot tool calls before teardown so the runner can score
       // skill-invocation checklist items deterministically.
-      this.#toolCalls = client.getToolCalls();
+      this.#toolCalls = recorder.getToolCalls();
       // Only calls no turn trace placed: a turn cut short by a fatal error.
       const unplaced = this.#toolCalls.filter((t) =>
         !this.#renderedCalls.has(t.toolCallId)
@@ -311,8 +375,7 @@ export class AcpAgent {
         );
       }
       this.#kill();
-      await stderrDone.catch(() => {});
-      await child.status.catch(() => {});
+      await session.done.catch(() => {});
       // The codex bridge never surfaces a subagent's reply or its agent_type as a
       // session update; both live only in the rollouts (see codex_rollout.ts).
       if (env.CODEX_HOME) {
@@ -338,22 +401,19 @@ export class AcpAgent {
    * misdiagnosed as a routing failure.
    */
   get partialLogs(): string {
-    const client = this.#client;
-    const sessionId = this.#sessionId;
+    const recorder = this.#recorder;
     const flushed = this.#log.join("");
-    if (!client || !sessionId) return flushed;
-    const all = client.getToolCalls();
-    const timeline = this.#turnInFlight ? client.getTimeline(sessionId) : [];
+    if (!recorder || !this.#session) return flushed;
+    const all = recorder.getToolCalls();
+    const timeline = this.#turnInFlight ? recorder.getTimeline() : [];
     const placed = new Set(this.#renderedCalls);
     for (const e of timeline) if (e.type === "tool") placed.add(e.toolCallId);
     const unplaced = all.filter((t) => !placed.has(t.toolCallId))
       .map(describeToolCall);
     if (timeline.length === 0) {
-      const pending = this.#turnInFlight
-        ? client.getBufferedText(sessionId)
-        : "";
+      const pending = this.#turnInFlight ? recorder.getBufferedText() : "";
       const reasoning = this.#turnInFlight
-        ? client.getBufferedReasoning(sessionId)
+        ? recorder.getBufferedReasoning()
         : "";
       return composePartialTrace(flushed, pending, reasoning, unplaced);
     }
@@ -370,32 +430,19 @@ export class AcpAgent {
     } catch { /* ignore */ }
   }
 
-  async #drainStderr(stream: ReadableStream<Uint8Array>): Promise<void> {
-    const dec = new TextDecoder();
-    const reader = stream.getReader();
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const t = dec.decode(value, { stream: true });
-        if (t.trim()) this.#log.push(`[stderr] ${t}`);
-      }
-    } catch {
-      /* ignore */
-    } finally {
-      reader.releaseLock();
-    }
-  }
-
+  /**
+   * SIGTERM the bridge's whole group first — the agent's own children (shells,
+   * test runners) must not outlive it — then end the session, which disposes
+   * the bridge with the library's bounded SIGTERM → SIGKILL.
+   */
   #kill(): void {
-    if (!this.#child) return;
-    const pid = this.#child.pid;
-    try {
-      Deno.kill(-pid, "SIGTERM");
-    } catch { /* group gone */ }
-    try {
-      this.#child.kill("SIGTERM");
-    } catch { /* leader gone */ }
+    const pid = this.#pid;
+    if (pid !== null && !this.opts.disableWatchdog) {
+      try {
+        Deno.kill(-pid, "SIGTERM");
+      } catch { /* group gone */ }
+    }
+    this.#session?.abort();
   }
 }
 

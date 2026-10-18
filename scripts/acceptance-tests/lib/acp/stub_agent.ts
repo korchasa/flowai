@@ -1,7 +1,7 @@
 /**
  * Local ACP stub agent (FR-ACCEPT.ACP) — a faithful, deterministic, LLM-free
  * agent that speaks just enough of the Agent Client Protocol to drive
- * `AcpClient` tests offline. Run as a child process over stdio:
+ * `AcpAgent` and judge tests offline. Run as a child process over stdio:
  *
  *   deno run -A scripts/acceptance-tests/lib/acp/stub_agent.ts
  *
@@ -34,6 +34,12 @@
  *   [[META]]         → reply with a JSON object describing what the stub saw:
  *                      the session's `_meta`, how many sessions are open, the
  *                      session id, `ANTHROPIC_MODEL`, `HOME` and the stub's pid.
+ *   [[WRITE:<path>]] → ask the CLIENT to write `<path>` (`fs/write_text_file`)
+ *                      and reply `wrote` or `refused: <error>` — the client-fs
+ *                      confinement a sandboxed run depends on.
+ *   [[STALL]]        → stream a reply chunk, reasoning and one tool call, then
+ *                      never answer the prompt — the turn a global timeout
+ *                      cuts short.
  *   anything else    → stream an `agent_message_chunk` echoing a fixed reply.
  *
  * The sentinel write is the observable "real tool executed" side-effect the
@@ -62,6 +68,13 @@ const THINK_MARKER = /\[\[THINK\]\]/;
 const SEQUENCE_MARKER = /\[\[SEQUENCE\]\]/;
 const REPLY_MARKER = /\[\[REPLY\]\]([\s\S]*?)\[\[\/REPLY\]\]/;
 const META_MARKER = /\[\[META\]\]/;
+const WRITE_MARKER = /\[\[WRITE:([^\]]*)\]\]/;
+const STALL_MARKER = /\[\[STALL\]\]/;
+
+/** What a `[[STALL]]` turn streams before it hangs. */
+export const STALL_REPLY = "Starting the review.";
+export const STALL_REASONING = "Reading the diff";
+export const STALL_COMMAND = "git status";
 
 /** What a `[[REPLY]]` turn reports as its usage (disjoint fields, like the
  * claude bridge's). */
@@ -137,6 +150,39 @@ class StubAgent implements Agent {
     if (text.includes("[[CRASH]]")) {
       // Simulate a mid-turn connection drop: die before responding.
       Deno.exit(1);
+    }
+
+    const write = text.match(WRITE_MARKER);
+    if (write) {
+      try {
+        await this.#conn.writeTextFile({
+          sessionId: params.sessionId,
+          path: write[1],
+          content: "stub",
+        });
+        await this.#emit(params.sessionId, "wrote");
+      } catch (e) {
+        const msg = (e as { message?: string })?.message ?? String(e);
+        await this.#emit(params.sessionId, `refused: ${msg}`);
+      }
+      return { stopReason: "end_turn" };
+    }
+
+    if (STALL_MARKER.test(text)) {
+      await this.#emit(params.sessionId, STALL_REPLY);
+      await this.#emitThought(params.sessionId, STALL_REASONING);
+      await this.#conn.sessionUpdate({
+        sessionId: params.sessionId,
+        update: {
+          sessionUpdate: "tool_call",
+          toolCallId: `stall-${++this.#counter}`,
+          title: STALL_COMMAND,
+          kind: "execute",
+          status: "pending",
+          rawInput: { command: STALL_COMMAND },
+        },
+      });
+      return await new Promise<PromptResponse>(() => {});
     }
 
     const reply = text.match(REPLY_MARKER);

@@ -1,6 +1,6 @@
 ---
 date: 2026-10-18
-status: to do
+status: done
 implements: [FR-ACCEPT.ACP, FR-BENCH-SWE.IDE]
 tags: [acceptance, benchmark, transport, ai-ide-cli]
 related_tasks: [2026-06-migrate-acceptance-to-acp, 2026-09-fast-agent-cli-startup, 2026-10-claude-judge-over-acp]
@@ -221,75 +221,75 @@ Dispositions (union of the scout list and my own, for the chosen variant):
 
 ## Definition of Done
 
-- [ ] Library answers an ACP permission request in the shape the protocol defines (`{ outcome: { outcome: "selected", optionId } }`).
+- [x] Library answers an ACP permission request in the shape the protocol defines (`{ outcome: { outcome: "selected", optionId } }`).
   - FR: library FR-L54
-  - Test: `ai-ide-cli/runtime/acp/permissions_test.ts::answers in the protocol's outcome shape`
+  - Test: `ai-ide-cli/runtime/acp/permissions_test.ts::FR-L54 answers in the protocol's outcome shape`
   - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/permissions_test.ts runtime/acp/inbound_test.ts`
-- [ ] Library ACP session honours `onToolUseObserved`; a non-ACP session transport that cannot honour it rejects it instead of dropping it.
+- [x] Library ACP session honours `onToolUseObserved`; a non-ACP session transport that cannot honour it rejects it instead of dropping it.
   - FR: library FR-L55
-  - Test: `ai-ide-cli/runtime/acp/adapter_test.ts::session permission requests reach onToolUseObserved`
-  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/adapter_test.ts runtime/session_contract_test.ts`
-- [ ] Library serves `fs/read_text_file` and `fs/write_text_file` when `acpClientFs` is set: a relative path resolves against the session cwd, a write outside `writeRoot` is refused; without the option the capability stays declined.
+  - Test: `ai-ide-cli/runtime/acp/session_options_test.ts::FR-L55 session permission requests reach onToolUseObserved`, `FR-L55 non-ACP session transports refuse the ACP-only options`
+  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/session_options_test.ts runtime/session_contract_test.ts`
+- [x] Library serves `fs/read_text_file` and `fs/write_text_file` when `acpClientFs` is set: a relative path resolves against the session cwd, a write outside `writeRoot` is refused; without the option the capability stays declined.
   - FR: library FR-L56
-  - Test: `ai-ide-cli/runtime/acp/inbound_test.ts::client fs anchors relative paths and refuses writes outside writeRoot`
-  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/inbound_test.ts runtime/acp/mapping_test.ts`
-- [ ] Library forwards `acpSessionMeta` as `_meta` on `session/new` and `session/load`.
+  - Test: `ai-ide-cli/runtime/acp/session_options_test.ts::FR-L56 client fs anchors relative paths and refuses writes outside writeRoot`, `FR-L56 without acpClientFs the fs capability stays declined`, and `runtime/acp/client-fs_test.ts`
+  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/session_options_test.ts runtime/acp/client-fs_test.ts runtime/acp/inbound_test.ts`
+- [x] Library forwards `acpSessionMeta` as `_meta` on `session/new` and `session/load`.
   - FR: library FR-L57
-  - Test: `ai-ide-cli/runtime/acp/mapping_test.ts::session/new carries acpSessionMeta as _meta`
-  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/mapping_test.ts`
-- [ ] Library lets one ACP bridge process serve many sessions: `openAcpConnection` spawns and initialises once, each `openSession` on it sends its own `session/new`, every update and inbound request reaches only the session whose `sessionId` it carries, and `close()` ends the process.
+  - Test: `ai-ide-cli/runtime/acp/session_options_test.ts::FR-L57 session/new carries acpSessionMeta as _meta`
+  - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/session_options_test.ts runtime/acp/mapping_test.ts`
+- [x] Library lets one ACP bridge process serve many sessions: `openAcpConnection` spawns and initialises once, each `openSession` on it sends its own `session/new`, every update and inbound request reaches only the session whose `sessionId` it carries, and `close()` ends the process.
   - FR: library FR-L58
-  - Test: `ai-ide-cli/runtime/acp/connection_test.ts::two sessions share one process and see only their own updates`
+  - Test: `ai-ide-cli/runtime/acp/connection_test.ts::FR-L58 two sessions share one process and see only their own updates`, `FR-L58 close() ends every open session`, `FR-L58 the runtime's login variables reach the front`
   - Evidence: `cd ../ai-ide-cli && deno test -A runtime/acp/connection_test.ts runtime/acp/adapter_test.ts`
-- [ ] Library `deno task check` is green, the SRS carries one FR per addition, and the release is on JSR.
-  - FR: library FR-L54..FR-L58
+- [x] Library `deno task check` is green, the SRS carries one FR per addition, and the release is on JSR.
+  - FR: library FR-L54..FR-L61
   - Test: `ai-ide-cli` `deno task check`
   - Evidence: `cd ../ai-ide-cli && deno task check > "$SCRATCH/lib-check.log" 2>&1; echo "EXIT: $?"`; `curl -s https://jsr.io/@korchasa/ai-ide-cli/meta.json | jq -r .latest` prints the new version
-- [ ] Acceptance tests drive the agent under test through ai-ide-cli.
+- [x] Acceptance tests drive the agent under test through ai-ide-cli.
   - FR: FR-ACCEPT.ACP
-  - Test: `scripts/acceptance-tests/lib/acp/acp_agent_test.ts` against `stub_agent.ts` — `runs a turn through the library session`, `a global timeout keeps the partial log`, `a dispatch's result reaches the trace`, `a client-fs write outside the sandbox is refused`, `turn-end stop reason and usage reach the result` — and `turn_recorder_test.ts` (moved capture tests)
+  - Test: `scripts/acceptance-tests/lib/acp/acp_agent_session_test.ts` against `stub_agent.ts` — `runs a turn through the library session`, `a global timeout keeps the partial log`, `a dispatch's result reaches the trace`, `a client-fs write outside the sandbox is refused`, `a connection drop maps to a failure verdict, not a throw` — and `turn_recorder_test.ts` (moved capture tests)
   - Evidence: `grep -c "@korchasa/ai-ide-cli" scripts/acceptance-tests/lib/acp/acp_agent.ts` ≥ 1; `test ! -e scripts/acceptance-tests/lib/acp/client.ts`; `deno test -A scripts/acceptance-tests/lib/acp/`
-- [ ] The judge and both emulators run through ai-ide-cli.
+- [x] The judge and both emulators run through ai-ide-cli.
   - FR: FR-ACCEPT.JUDGE-ACP, FR-ACCEPT.JUDGE-APPSERVER
   - Test: `scripts/acceptance-tests/lib/judge_transport_test.ts` — `calls on one key share one bridge process`, `the pinned effort reaches _meta.claudeCode.options`, `judge usage comes from the turn-end event` — and `scripts/acceptance-tests/lib/llm_test.ts`
   - Evidence: `test ! -e scripts/acceptance-tests/lib/appserver_client.ts && test ! -e scripts/acceptance-tests/lib/acp/claude_judge.ts`; `grep -c "@korchasa/ai-ide-cli" scripts/acceptance-tests/lib/llm.ts scripts/acceptance-tests/lib/judge_transport.ts` ≥ 1 each; `deno test -A scripts/acceptance-tests/lib/llm_test.ts scripts/acceptance-tests/lib/judge_transport_test.ts scripts/benchmark/human_emulator_test.ts`
-- [ ] The SWE-rebench benchmark drives its codex arm through ai-ide-cli.
+- [x] The SWE-rebench benchmark drives its codex arm through ai-ide-cli.
   - FR: FR-BENCH-SWE.IDE
   - Test: `scripts/benchmark/run_test.ts`, `scripts/benchmark/operator_test.ts`
   - Evidence: `grep -n "new AcpAgent" scripts/benchmark/run.ts` (the arm runner still goes through the rewritten `AcpAgent`); `deno test -A scripts/benchmark/run_test.ts scripts/benchmark/operator_test.ts`
-- [ ] The guards still hold: the agent runs in its own process group, the watchdog kills the whole tree, and the health gate refuses a spawn.
+- [x] The guards still hold: the agent runs in its own process group, the watchdog kills the whole tree, and the health gate refuses a spawn.
   - FR: FR-ACCEPT-GUARDS
-  - Test: `scripts/acceptance-tests/lib/acp/acp_agent_test.ts::the watchdog follows the child the library spawns`, `process_watchdog_test.ts`
-  - Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts scripts/acceptance-tests/lib/acp/acp_agent_test.ts`
-- [ ] No `npx` and no unpinned bridge at session time.
+  - Test: `scripts/acceptance-tests/lib/acp/acp_agent_session_test.ts::the guarded bridge leads its own process group and leaves nothing behind`, `process_watchdog_test.ts`
+  - Evidence: `deno test -A scripts/acceptance-tests/lib/process_watchdog_test.ts scripts/acceptance-tests/lib/acp/acp_agent_session_test.ts`
+- [x] No `npx` and no unpinned bridge at session time.
   - FR: FR-ACCEPT.BRIDGE-LOCAL
   - Test: `scripts/acceptance-tests/lib/acp/bridge_store_test.ts`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/acp/bridge_store_test.ts scripts/acceptance-tests/lib/acp/registry_test.ts`
-- [ ] The cache key carries the library version instead of the ACP SDK version.
+- [x] The cache key carries the library version instead of the ACP SDK version.
   - FR: FR-ACCEPT-CACHE
-  - Test: `scripts/acceptance-tests/lib/acp/registry_test.ts::the library version matches deno.lock`, `cache_test.ts::acp transport participates in cache key`
+  - Test: `scripts/acceptance-tests/lib/acp/registry_test.ts::ACP_LIB_VERSION tracks the locked ai-ide-cli version`, `cache_test.ts::computeCacheKey: ACP lib version + registry fingerprint enter the key`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/cache_test.ts scripts/acceptance-tests/lib/acp/registry_test.ts`
-- [ ] flowai imports the library from JSR, never from a local path.
+- [x] flowai imports the library from JSR, never from a local path.
   - FR: FR-ACCEPT.ACP
   - Test: `jq` check below (config, no test module)
   - Evidence: `jq -r '.imports["@korchasa/ai-ide-cli"]' deno.json` starts with `jsr:@korchasa/ai-ide-cli@^`
-- [ ] Parity (smoke, one run per side — it catches a broken transport, not a subtle one; the transport paths themselves are pinned by the stub-agent tests above): the same scenarios give the same verdict before and after, on both IDEs. Before runs on HEAD in a scratch worktree, after on the change.
+- [x] Parity (smoke, one run per side — it catches a broken transport, not a subtle one; the transport paths themselves are pinned by the stub-agent tests above): the same scenarios give the same verdict before and after, on both IDEs. Before runs on HEAD in a scratch worktree, after on the change.
   - FR: FR-ACCEPT.ACP
   - Test: Benchmark: `draw-mermaid-diagrams-sequence`, `select-llm-model-fails-fast-no-fetch`, `write-prd-basic`
   - Evidence: `deno task acceptance-tests -f <id> --no-cache` and `-i codex` for `draw-mermaid-diagrams-sequence`, `select-llm-model-fails-fast-no-fetch`, `write-prd-basic`; verdicts recorded in this file under `## Parity`
-- [ ] Parity: one benchmark instance ends with the same exit code and a non-empty patch before and after.
+- [x] Parity: one benchmark instance ends with the same exit code and a non-empty patch before and after.
   - FR: FR-BENCH-SWE.IDE
   - Test: manual — korchasa reads the recorded exit codes and patch sizes
   - Evidence: `cp scripts/benchmark/pool2_provenance.json "$SCRATCH/prov.json"`; `deno task benchmark pool2-run --arm baseline --ide codex --model gpt-6-luna --instance agronholm__anyio-1121 --out "$SCRATCH/bench-<side>" --cells "$SCRATCH/cells-<side>"` on HEAD (scratch worktree) and on the change; `cp "$SCRATCH/prov.json" scripts/benchmark/pool2_provenance.json` after each; `git diff --quiet scripts/benchmark/ && echo clean`; exit code, grade and patch size recorded under `## Parity`
-- [ ] The excluded test modules pass by hand.
+- [x] The excluded test modules pass by hand.
   - FR: FR-ACCEPT.ACP
   - Test: `scripts/acceptance-tests/lib/runner_test.ts`
   - Evidence: `deno test -A scripts/acceptance-tests/lib/runner_test.ts`
-- [ ] SRS, SDS, `acceptance-testing.md`, `AGENTS.md` and `README.md` describe the library-based transport and name no deleted file or test; no ACP spawn goes through `setpgrp_exec.py` any more.
+- [x] SRS, SDS, `acceptance-testing.md`, `AGENTS.md` and `README.md` describe the library-based transport and name no deleted file or test; no ACP spawn goes through `setpgrp_exec.py` any more.
   - FR: FR-ACCEPT.ACP, FR-ACCEPT-GUARDS
   - Test: `grep` checks below
   - Evidence: `grep -rn -E "appserver_client(_test)?\.ts|claude_judge(_test)?\.ts|acp/client(_test)?\.ts|AcpClient|@zed-industries/agent-client-protocol" documents/requirements.md documents/design.md documents/acceptance-testing.md AGENTS.md README.md` prints nothing; `grep -n setpgrp_exec scripts/acceptance-tests/lib/acp/*.ts scripts/acceptance-tests/lib/judge_transport.ts` prints nothing; `grep -n "every spawn is wrapped" documents/requirements.md` prints nothing (the guard text names which spawns use the wrapper)
-- [ ] flowai `deno task check` is green.
+- [x] flowai `deno task check` is green.
   - FR: FR-ACCEPT.ACP
   - Test: `deno task check`
   - Evidence: `deno task check > "$SCRATCH/check.log" 2>&1; echo "EXIT: $?"` and the `N passed | 0 failed` lines
@@ -303,6 +303,9 @@ Dispositions (union of the scout list and my own, for the chosen variant):
 - **L3 — client filesystem (`feat(acp)`).** New option `acpClientFs?: { writeRoot: string }` on invoke and session options. When set: `buildInitializeParams` declares `fs.readTextFile`/`writeTextFile: true`, and `createInboundRequestHandler` serves `fs/read_text_file` (relative path anchored to the session cwd) and `fs/write_text_file` (anchored, then refused outside `writeRoot`). The anchoring rules are flowai's `resolveSessionPath` / `confineWritePath`, moved with their tests. Absent → today's behaviour (declined, `-32601`). The `mapping.ts:152-155` comment that cites ADR-0002 for declining fs is rewritten: the ADR removes HITL and says nothing about fs.
 - **L4 — session `_meta` (`feat(acp)`).** New option `acpSessionMeta?: Record<string, unknown>`; `buildSessionNewParams` adds it as `_meta`, so `session/load` carries it too.
 - **L6 — one bridge, many sessions (`feat(acp)`).** New `openAcpConnection(runtime, opts)` exported from `./runtime`: spawns the front and runs `initialize` once; `connection.openSession(sessionOpts)` sends `session/new` and returns a `RuntimeSession` whose event queue gets only notifications carrying its `sessionId`; inbound requests (permission, fs) are routed the same way; `close()` ends the process. `openSessionViaAcp` becomes a connection of one session, so its behaviour is unchanged. This is what FR-ACCEPT.JUDGE-ACP needs: today every `openSession` spawns its own process (`adapter.ts:686`), while the SRS keeps one bridge per `[model, effort, env, cwd]` (0.36–1.23 s per spawn, FR-ACCEPT.BRIDGE-LOCAL).
+- **L7 — turn-end after the turn's last update (`fix(acp)`, FR-L59), found while writing L6's tests.** The prompt response resolved `send()` while the drain loop still held trailing chunks, so `turn-end` overtook them and a consumer that stops reading at `turn-end` lost the end of the reply (a 300-chunk turn arrived short). The session now waits for the drain loop to reach the client's received-notification count before queuing `turn-end`.
+- **L8 — abort after the front died (`fix(acp)`, FR-L60), found by `acp_agent_session_test.ts`.** `abort()` sent `session/cancel` into a broken pipe and the rejection escaped unhandled, failing the consumer's whole test module. The write's rejection is now dropped: there is nothing left to cancel.
+- **L9 — the front's total in ACP usage (`feat(acp)`, FR-L61), found by `judge_transport_test.ts`.** `usageFromPromptResponse` dropped `totalTokens`, while flowai's token accounting takes the total from the source and never recomputes it (`token_usage.ts`). `CliRunUsage` gains `total_tokens`, filled from the ACP `totalTokens`. Also in L6: `openAcpConnection` takes no login-variable matcher from the caller (its type is private and broke the library's doc lint); it picks the runtime's own (FR-L53), so a login token survives `inheritEnv: false`.
 - **L5 — docs and release.** One FR per addition in the library SRS (next free ids after FR-L53), SDS notes, README "Alternate Transport (ACP)" options. `deno task check` green, push to `main`; CI cuts the minor and publishes to JSR. flowai waits for the JSR version.
 
 ### flowai
@@ -310,10 +313,11 @@ Dispositions (union of the scout list and my own, for the chosen variant):
 - **F1 — trace capture without a client.** New `scripts/acceptance-tests/lib/acp/turn_recorder.ts` takes the raw `session/update` params from the library `onEvent` and keeps what `AcpClient` kept: reply and reasoning buffers, the arrival-order timeline, tool calls merged across `tool_call` / `tool_call_update` (`flattenRawOutput`, `flattenToolCallContent`, `CapturedToolCall`, `TurnEvent`). The library does not validate frames, so the raw-tap workaround is no longer needed. `client.ts` and `client_test.ts` are deleted; capture tests move to `turn_recorder_test.ts`, fs tests went upstream in L3.
 - **F2 — `AcpAgent` on the library.** The synthetic `turn-end` (stop reason, usage) reaches only the session's event iterator, never `onEvent` (`adapter.ts:617-624` vs `727-737`), so each turn also drains `session.events` up to its `turn-end`. `run()` keeps its contract (`{ code, logs }`, health gate, mock bin, per-turn trace, partial log, codex rollout tail). The spawn becomes `getRuntimeAdapter(ide).openSession({ transport: "acp", acpFront: <bridge_store command + registry env>, cwd: workspace, env, processGroup: true, processRegistry, onToolUseObserved: () => "allow", acpClientFs: { writeRoot: workspace }, onEvent: recorder, onStderr: log })`; each turn is `session.send(text)` followed by that drain; a send that throws is the `subtype:"error"` verdict it was before. Model selection stays in env (`ANTHROPIC_MODEL`, `CODEX_CONFIG`) exactly as today, so the handshake asks the bridge for nothing new. `stub_agent.ts` stays the test agent, launched through `acpFront`.
 - **F3 — guards.** A `ProcessRegistry` subclass in `acp_agent.ts` starts the watchdog on the child the library registers (pgid == pid under `processGroup: true`) and stops it on unregister; teardown still kills the group. The `setpgrp_exec.py` wrapper leaves the agent and judge spawns; the file stays for `process_watchdog_test.ts`.
-- **F4 — claude judge.** `claudeChatCompletion`, its prewarm and its close move into `judge_transport.ts`. The pool keeps one library connection (L6) per `[model, effort, env, cwd]`, as FR-ACCEPT.JUDGE-ACP requires; each call opens its own session on it with `acpSessionMeta: { claudeCode: { options: { tools: [], settingSources: [], systemPrompt, effort } } }` — `effort` is `config.effort ?? DEFAULT_CLAUDE_EFFORT`, as `claude_judge.ts` sends today — and one spare session per key is opened ahead. The reply's schema check stays; usage comes from the `turn-end` read off the session's event iterator. `claude_judge.ts` + test are deleted; tests move to `judge_transport_test.ts`.
+- **F4 — claude judge.** `claudeChatCompletion`, its prewarm and its close move into `judge_transport.ts`. The pool keeps one library connection (L6) per `[model, effort, env, cwd]`, as FR-ACCEPT.JUDGE-ACP requires; each call opens its own session on it with `acpSessionMeta: { claudeCode: { options: { tools: [], settingSources: [], systemPrompt, effort } } }` — `effort` is `config.effort ?? DEFAULT_CLAUDE_EFFORT`, as `claude_judge.ts` sends today. No spare session is opened ahead: the old judge prewarmed the bridge only, and so does this one. Ending a call's session sends `session/close` (L6), so finished sessions do not pile up in the bridge. The reply's schema check stays; usage comes from the `turn-end` read off the session's event iterator. `claude_judge.ts` + test are deleted; tests move to `judge_transport_test.ts`.
 - **F5 — codex judge and emulators.** `llm.ts` keeps one app-server child per key, as FR-ACCEPT.JUDGE-APPSERVER requires (the measured gain is per child), but drives it through the library `CodexAppServerClient` (`jsr:@korchasa/ai-ide-cli/codex/app-server`): `thread/start` (read-only, ephemeral, model, cwd) and `turn/start` (model, effort, outputSchema) as today. `appserver_client.ts` + test are deleted; `testing/fake_appserver.ts` becomes an executable stub passed as `binary`.
 - **F6 — versions and cache.** `ACP_LIB_VERSION` becomes the ai-ide-cli version, pinned by a registry test against `deno.lock`; `cache.ts` folds it in. `ACP_AGENTS` and the bridge pins stay.
 - **F7 — dependency.** `deno.json` imports `@korchasa/ai-ide-cli` as `jsr:@korchasa/ai-ide-cli@^<new minor>`; `@agentclientprotocol/sdk` stays only for `stub_agent.ts`. During development a local path may stand in; the commit carries the JSR form only.
+- **F8 — the benchmark closes its emulator pool (`fix`), found by the parity run.** Since `50b06c9e` the human emulator holds a codex app-server child per key, and `scripts/benchmark.ts` never closed the pool: the before run printed its last line, wrote a non-empty patch and then sat idle until killed. The command now calls `closeCodexSessions()` after `parse`, as `task-acceptance-tests.ts` already did for the acceptance run.
 - **D1 — SRS.** FR-ACCEPT.ACP (transport now via the library), FR-ACCEPT-GUARDS (process group from `processGroup`), FR-ACCEPT.JUDGE-APPSERVER and FR-ACCEPT.JUDGE-ACP (transport and acceptance commands), FR-BENCH-SWE.IDE (drop limitation 1, the client that refused `session_info_update` is gone); FR-ACCEPT-GUARDS says which spawns still use `setpgrp_exec.py`; every `Evidence:` / `Acceptance:` line that cites a deleted test (FR-ACCEPT-ISOLATION, FR-ACCEPT.ACP, FR-ACCEPT.JUDGE-APPSERVER, FR-ACCEPT.JUDGE-ACP, FR-ACCEPT.TOKEN-USAGE) is re-pointed at its flowai replacement; `**Tasks:**` back-pointers to this file on FR-ACCEPT.ACP and FR-BENCH-SWE.IDE.
 - **D2 — SDS.** §3.4, §3.4.1 (`acpLibVersion` is the ai-ide-cli version), §3.4.2, §3.4.4, §3.4.5, §3.4.6 (usage source), §3.4.8, §3.22 describe the library path; `documents/acceptance-testing.md:54-55` likewise.
 - **D3 — AGENTS.md / README.** Architecture line and any mention of the deleted files.
@@ -321,6 +325,24 @@ Dispositions (union of the scout list and my own, for the chosen variant):
 
 ## Parity
 
-<!-- filled during Implement: before/after verdicts -->
+Before = HEAD `db7b73f9` in a scratch worktree; after = this change with ai-ide-cli 2.1.0 (commit `0a58b2f`, the code JSR serves). One run per scenario per IDE, `--no-cache`.
+
+- `draw-mermaid-diagrams-sequence`
+  - claude: before PASSED, after PASSED
+  - codex: before PASSED, after PASSED
+- `select-llm-model-fails-fast-no-fetch`
+  - claude: before PASSED, after PASSED
+  - codex: before PASSED, after PASSED
+- `write-prd-basic` — the single runs disagreed (before PASSED on both IDEs, after FAILED on both), so the scenario was resampled on both sides. It is flaky on the old code too, at the same rate, and fails on the same items; the transport did not move it.
+  - codex: before 4 of 7 PASSED, after 4 of 8 PASSED. Failed items on both sides: `qa_format_compliant` (the judge accepts `1. **question**` in one run and rejects it in the next; a second clarification round written as a bare paragraph), `specific_not_vague` (OS versions and guardrail thresholds left open), and `targets_asked_with_recommendation` once before.
+  - claude: before 1 of 3 PASSED, after 0 of 2. Failed item on both sides: `targets_asked_with_recommendation` — the agent writes the whole PRD before asking (twice before, twice after); `qa_format_compliant` once before.
+  - Inputs compared on one before and one after codex rollout: same model (`gpt-6-luna`), effort (`medium`), sandbox and approval policy, base instructions (18037 characters) and first three user messages byte-for-byte in length. The only differences are the emulator's answer (it varies run to run on both sides) and the session `originator`, `@agentclientprotocol/codex-acp` before and `ai-ide-cli` after (the library sends `clientInfo`, the old client sent none).
+- Benchmark, `agronholm__anyio-1121`, codex baseline arm, `gpt-6-luna`, `--no-grade` (no docker grading; the item compares exit code and patch, and grading would add nothing about the transport)
+  - before: `exit=0` for the instance, patch 966 characters, then the command never exited (idle emulator child, F8) and was killed after ~2 min
+  - after: `exit=0` for the instance, patch 882 characters, command exited 0 on its own; `scripts/benchmark/` clean after restoring the provenance file
+- `runner_test.ts` by hand: 7 passed, 0 failed
 
 ## Follow-ups
+
+- `write-prd-basic` is flaky on both IDEs before and after this change (codex about 4 of 7, claude 1 of 5 across both sides): the claude agent often writes the PRD before asking, and the judge rules `1. **question**` compliant in one run and not in the next. Needs its own fix — the skill text, the checklist wording, or both.
+- Library `runtime/acp/client-fs.ts` confines writes lexically: a symlink inside `writeRoot` that points outside lets a write escape. Not a boundary for flowai (the agent under test has a shell anyway), but the library is public — check the real path of the deepest existing ancestor before writing.

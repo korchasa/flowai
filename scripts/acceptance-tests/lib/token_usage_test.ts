@@ -4,6 +4,7 @@ import {
   EMPTY_TOKENS,
   formatTokens,
   summarizeRunUsage,
+  tokensFromAcpUsage,
   tokensFromAppServer,
   tokensFromRollout,
 } from "./token_usage.ts";
@@ -191,4 +192,39 @@ Deno.test("summarizeRunUsage: nothing measured at all leaves the breakdown off",
   const { tokensUsed, tokensDetails } = summarizeRunUsage(null, null);
   assertEquals(tokensUsed, 0);
   assertEquals(tokensDetails, undefined);
+});
+
+Deno.test("ACP usage maps without subtraction", () => {
+  // The library's turn-end spelling of the claude bridge's disjoint fields.
+  assertEquals(
+    tokensFromAcpUsage({
+      input_tokens: 100,
+      output_tokens: 20,
+      cached_tokens: 30,
+      cache_write_tokens: 5,
+      total_tokens: 155,
+    }),
+    {
+      freshInput: 100,
+      cachedInput: 30,
+      cacheWrite: 5,
+      output: 20,
+      reasoning: 0,
+      total: 155,
+    },
+  );
+});
+
+Deno.test("absent ACP cache fields read as zero", () => {
+  assertEquals(
+    tokensFromAcpUsage({ input_tokens: 7, output_tokens: 3, total_tokens: 10 }),
+    {
+      freshInput: 7,
+      cachedInput: 0,
+      cacheWrite: 0,
+      output: 3,
+      reasoning: 0,
+      total: 10,
+    },
+  );
 });

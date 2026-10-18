@@ -12,7 +12,7 @@ export type SupportedIde = AcpIde;
  * Builds the data-only IDE profile from the ACP registry (FR-ACCEPT.ACP). The
  * per-IDE behavioural classes were retired with the direct transport — the
  * profile carries only the facts the runner needs; the agent is driven through
- * `AcpClient`. Throws if the IDE is unsupported.
+ * `AcpAgent` on an ai-ide-cli session. Throws if the IDE is unsupported.
  */
 export function createAdapter(ide: string): AgentAdapter {
   const spec = ACP_AGENTS[ide as AcpIde];

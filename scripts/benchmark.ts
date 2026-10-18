@@ -63,6 +63,7 @@ import {
   upsertGate,
 } from "./benchmark/pool2_gate.ts";
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
+import { closeCodexSessions } from "@acceptance-tests/llm.ts";
 import {
   bridgeVersionFor,
   cellId,
@@ -961,3 +962,8 @@ await new Command()
     for (const l of lines) console.log(l);
   })
   .parse(Deno.args);
+
+// The human emulator keeps one codex app-server child per key alive for the
+// whole command (FR-ACCEPT.JUDGE-APPSERVER); left open, it holds the process
+// after the last line is printed and a finished run never exits.
+closeCodexSessions();
