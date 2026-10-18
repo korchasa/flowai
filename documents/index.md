@@ -22,6 +22,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:atom-implement | FR-ATOM-IMPLEMENT] — TDD implement atom — implement (RED→GREEN→REFACTOR→CHECK over a written plan) — [x]
 - [REF:fr:atom-push | FR-ATOM-PUSH] — Git push atom — push (non-force, upstream-safe, no-auto-PR) — [x]
 - [REF:fr:atom-push.ci-await | FR-ATOM-PUSH.CI-AWAIT] — Push atom awaits CI declared in AGENTS.md and invokes investigate on failure — [x]
+- [REF:fr:bench-swe-ide | FR-BENCH-SWE.IDE] — Codex is the IDE under test in the SWE-rebench benchmark; both arms share one IDE, bridge and isolated codex home. — [x]
 - [REF:fr:cicd | FR-CICD] — CI/CD pipeline follows supply-chain security and least-privilege practices — [x]
 - [REF:fr:cmd-exec | FR-CMD-EXEC] — Executable workflows for common development tasks via chat commands — [ ]
 - [REF:fr:component | FR-COMPONENT] — Component Coverage — [ ]
