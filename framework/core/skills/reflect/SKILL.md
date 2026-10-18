@@ -1,6 +1,6 @@
 ---
 name: reflect
-description: Use when the user asks to reflect on the CURRENT session, analyze the agent's own process, audit context usage in this conversation, or extract lessons from how the task was executed. Not for historical analysis — use reflect-by-history for that.
+description: Use when the user asks to reflect on the CURRENT session or one transcript file they name, analyze the agent's own process, audit context use, or extract lessons from how a task was done. Not for multi-session history — use reflect-by-history.
 ---
 
 # Task: Reflect on Process, Technical Decisions, Context & Knowledge Gaps
