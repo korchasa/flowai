@@ -3,6 +3,7 @@ import { chatCompletion } from "./judge_transport.ts";
 import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
 import { writeRunFile } from "./utils.ts";
 import { EMPTY_TOKENS, type TokenBreakdown } from "./token_usage.ts";
+import { REASONING_MARKER } from "./acp/acp_agent.ts";
 
 export interface JudgeRequest {
   messages: LLMMessage[];
@@ -75,6 +76,16 @@ Evaluate the agent's performance by comparing its actions and results against a 
 # CONTEXT
 You are provided with the user's original query, the agent's execution logs, and the resulting file changes (diffs).
 Your task is to verify if the agent successfully fulfilled the requirements based on the evidence.
+
+# TRACE FORMAT
+The test runner writes <agent_logs> with these line markers:
+- \`[turn N] > <text>\` — the message the user sent to open turn N.
+- \`< <text>\` — the agent's own reply to the user; the text runs on until the next marker line. The last \`< \` block of the last turn is the agent's final answer.
+- \`${REASONING_MARKER} <text>\` — the agent's reasoning summary; the user never sees it.
+- \`[tool-call] <tool>: <input>\` — a tool call the agent made. A subagent dispatch also shows, indented under it, \`-> returned:\` and what the subagent handed back.
+- \`[tool-calls]\` — a block of calls captured when a turn was cut short.
+- A subagent's own internal tool calls may appear as top-level \`[tool-call]\` lines after its hand-back. They belong to the subagent, and a \`< \` line after them is still the parent agent's reply, and can be its final answer.
+- \`[stderr]\`, \`[health]\`, \`[acp-error]\` — written by the test harness, not by the agent; never read them as the agent's reply.
 
 # RULES
 1. Base your judgment ONLY on the provided evidence in <evidence> below — do NOT use any tools to search for files or information.
