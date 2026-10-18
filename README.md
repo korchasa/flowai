@@ -255,7 +255,7 @@ Skill and agent authoring tools.
 
 **Skills:**
 - `engineer-skill` — create/modify a skill
-- `engineer-command` — create/modify a command
+- `engineer-command` — create/modify an IDE slash command (one Markdown file in `.cursor/commands/`, `.claude/commands/` or `.opencode/commands/`)
 - `engineer-rule` — create/modify a rule
 - `engineer-hook` — create/modify a hook
 - `engineer-subagent` — create/modify a subagent

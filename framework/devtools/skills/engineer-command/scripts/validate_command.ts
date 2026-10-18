@@ -1,154 +1,175 @@
 #!/usr/bin/env -S deno run -A
 /**
- * Quick validation script for commands - minimal version
+ * Validates one IDE slash-command file against the format of its IDE.
+ *
+ * Usage: deno run -A validate_command.ts <path/to/name.md> --ide <claude|cursor|opencode>
  */
 
-import { join } from "jsr:@std/path";
+import { basename } from "jsr:@std/path";
 import { parse as parseYaml } from "jsr:@std/yaml";
 
-/** Map JS value to Python's type().__name__ for output parity */
-function pythonTypeName(value: unknown): string {
-  if (value === null) return "NoneType";
+export type CommandIde = "claude" | "cursor" | "opencode";
+
+const ALLOWED_KEYS: Record<Exclude<CommandIde, "cursor">, string[]> = {
+  claude: [
+    "allowed-tools",
+    "argument-hint",
+    "description",
+    "disable-model-invocation",
+    "model",
+  ],
+  opencode: ["agent", "description", "model", "subtask"],
+};
+
+function typeName(value: unknown): string {
+  if (value === null) return "null";
   if (Array.isArray(value)) return "list";
-  if (typeof value === "object") return "dict";
-  if (typeof value === "number") {
-    return Number.isInteger(value) ? "int" : "float";
-  }
-  if (typeof value === "boolean") return "bool";
-  return typeof value; // string, etc.
+  if (typeof value === "object") return "mapping";
+  return typeof value;
 }
 
-export function validateCommand(commandPath: string): [boolean, string] {
-  // Check SKILL.md exists
-  const skillMd = join(commandPath, "SKILL.md");
-  try {
-    Deno.statSync(skillMd);
-  } catch {
-    return [false, "SKILL.md not found"];
+function checkName(name: string): string | null {
+  if (!/^[a-z0-9-]+$/.test(name)) {
+    return `Command name '${name}' should be hyphen-case (lowercase letters, digits, and hyphens only)`;
   }
-
-  // Read and validate frontmatter
-  const content = Deno.readTextFileSync(skillMd);
-  if (!content.startsWith("---")) {
-    return [false, "No YAML frontmatter found"];
+  if (name.startsWith("-") || name.endsWith("-") || name.includes("--")) {
+    return `Command name '${name}' cannot start/end with a hyphen or contain consecutive hyphens`;
   }
-
-  // Extract frontmatter
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) {
-    return [false, "Invalid frontmatter format"];
+  if (name.length > 64) {
+    return `Command name is too long (${name.length} characters). Maximum is 64 characters.`;
   }
+  return null;
+}
 
-  const frontmatterText = match[1];
-
-  // Parse YAML frontmatter
-  let frontmatter: unknown;
-  try {
-    frontmatter = parseYaml(frontmatterText);
-    if (
-      typeof frontmatter !== "object" || frontmatter === null ||
-      Array.isArray(frontmatter)
-    ) {
-      return [false, "Frontmatter must be a YAML dictionary"];
+/**
+ * Claude Code executes a bang-backtick pair preceded by whitespace (or at the
+ * start of a line) while it expands the command. That needs `allowed-tools`.
+ */
+function findShellInterpolation(
+  lines: string[],
+  offset: number,
+): string | null {
+  for (let i = 0; i < lines.length; i++) {
+    if (/(^|\s)!`/.test(lines[i])) {
+      return `Line ${
+        i + 1 + offset
+      }: Claude Code runs a bang-backtick pair preceded by whitespace while it expands the command. Declare the command in 'allowed-tools', or glue the bang to the preceding character if it is not meant to run.`;
     }
+  }
+  return null;
+}
+
+export function validateCommand(path: string, ide: string): [boolean, string] {
+  let stat: Deno.FileInfo;
+  try {
+    stat = Deno.statSync(path);
+  } catch {
+    return [false, `Command file not found: ${path}`];
+  }
+  if (stat.isDirectory) {
+    return [
+      false,
+      "A command is one Markdown file, not a directory. Write .<ide>/commands/<name>.md; a SKILL.md package belongs to skill authoring.",
+    ];
+  }
+  if (!path.endsWith(".md")) return [false, "Command file must end in .md"];
+  if (ide !== "claude" && ide !== "cursor" && ide !== "opencode") {
+    return [
+      false,
+      `Unknown IDE '${ide}'. Use one of: claude, cursor, opencode`,
+    ];
+  }
+
+  const nameError = checkName(basename(path, ".md"));
+  if (nameError) return [false, nameError];
+
+  const content = Deno.readTextFileSync(path);
+  const match = content.match(/^---\n([\s\S]*?)\n---\n?/);
+
+  if (ide === "cursor") {
+    if (content.startsWith("---")) {
+      return [
+        false,
+        "Cursor commands are plain Markdown; remove the YAML frontmatter",
+      ];
+    }
+    if (!content.trim()) return [false, "Command body is empty"];
+    return [true, "Command is valid!"];
+  }
+
+  if (!match) {
+    return [
+      false,
+      `${ide} commands need YAML frontmatter with a 'description'`,
+    ];
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(match[1]);
   } catch (e) {
     return [false, `Invalid YAML in frontmatter: ${e}`];
   }
+  if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+    return [false, "Frontmatter must be a YAML mapping"];
+  }
+  const fm = parsed as Record<string, unknown>;
 
-  const fm = frontmatter as Record<string, unknown>;
-
-  // Define allowed properties
-  const ALLOWED_PROPERTIES = new Set([
-    "name",
-    "description",
-    "license",
-    "allowed-tools",
-    "metadata",
-  ]);
-
-  // Check for unexpected properties
-  const unexpectedKeys = Object.keys(fm).filter((k) =>
-    !ALLOWED_PROPERTIES.has(k)
-  );
-  if (unexpectedKeys.length > 0) {
-    const sortedUnexpected = unexpectedKeys.sort().join(", ");
-    const sortedAllowed = [...ALLOWED_PROPERTIES].sort().join(", ");
+  const allowed = ALLOWED_KEYS[ide];
+  const unexpected = Object.keys(fm).filter((k) => !allowed.includes(k)).sort();
+  if (unexpected.length > 0) {
     return [
       false,
-      `Unexpected key(s) in SKILL.md frontmatter: ${sortedUnexpected}. Allowed properties are: ${sortedAllowed}`,
+      `Unexpected key(s) in ${ide} command frontmatter: ${
+        unexpected.join(", ")
+      }. Allowed: ${allowed.join(", ")}`,
     ];
   }
 
-  // Check required fields
-  if (!("name" in fm)) {
-    return [false, "Missing 'name' in frontmatter"];
-  }
   if (!("description" in fm)) {
     return [false, "Missing 'description' in frontmatter"];
   }
-
-  // Extract name for validation
-  const rawName = fm["name"];
-  if (typeof rawName !== "string") {
-    return [false, `Name must be a string, got ${pythonTypeName(rawName)}`];
-  }
-  const name: string = rawName.trim();
-  if (name) {
-    // Check naming convention (hyphen-case: lowercase with hyphens)
-    if (!/^[a-z0-9-]+$/.test(name)) {
-      return [
-        false,
-        `Name '${name}' should be hyphen-case (lowercase letters, digits, and hyphens only)`,
-      ];
-    }
-    if (name.startsWith("-") || name.endsWith("-") || name.includes("--")) {
-      return [
-        false,
-        `Name '${name}' cannot start/end with hyphen or contain consecutive hyphens`,
-      ];
-    }
-    // Check name length (max 64 characters per spec)
-    if (name.length > 64) {
-      return [
-        false,
-        `Name is too long (${name.length} characters). Maximum is 64 characters.`,
-      ];
-    }
-  }
-
-  // Extract and validate description
-  const rawDescription = fm["description"];
-  if (typeof rawDescription !== "string") {
+  if (typeof fm.description !== "string" || !fm.description.trim()) {
     return [
       false,
-      `Description must be a string, got ${pythonTypeName(rawDescription)}`,
+      `'description' must be a non-empty string, got ${
+        typeName(fm.description)
+      }`,
     ];
   }
-  const description: string = rawDescription.trim();
-  if (description) {
-    // Check for angle brackets
-    if (description.includes("<") || description.includes(">")) {
-      return [false, "Description cannot contain angle brackets (< or >)"];
-    }
-    // Check description length (max 1024 characters per spec)
-    if (description.length > 1024) {
-      return [
-        false,
-        `Description is too long (${description.length} characters). Maximum is 1024 characters.`,
-      ];
-    }
+  if ("argument-hint" in fm && typeof fm["argument-hint"] !== "string") {
+    return [
+      false,
+      `'argument-hint' must be a string, got ${
+        typeName(fm["argument-hint"])
+      }. Quote it: argument-hint: '[action] [service]'`,
+    ];
+  }
+
+  const body = content.slice(match[0].length);
+  if (!body.trim()) return [false, "Command body is empty"];
+
+  if (ide === "claude" && !("allowed-tools" in fm)) {
+    const headerLines = match[0].split("\n").length - 1;
+    const shellError = findShellInterpolation(body.split("\n"), headerLines);
+    if (shellError) return [false, shellError];
   }
 
   return [true, "Command is valid!"];
 }
 
 if (import.meta.main) {
-  if (Deno.args.length !== 1) {
-    console.log("Usage: deno run -A validate_command.ts <command_directory>");
+  const args = [...Deno.args];
+  const ideFlag = args.indexOf("--ide");
+  const ide = ideFlag >= 0 ? args.splice(ideFlag, 2)[1] : undefined;
+  if (args.length !== 1 || !ide) {
+    console.log(
+      "Usage: deno run -A validate_command.ts <path/to/name.md> --ide <claude|cursor|opencode>",
+    );
     Deno.exit(1);
   }
 
-  const [valid, message] = validateCommand(Deno.args[0]);
+  const [valid, message] = validateCommand(args[0], ide);
   if (valid) {
     console.log(JSON.stringify({ ok: true, result: { valid: true, message } }));
   } else {
