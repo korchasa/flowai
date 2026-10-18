@@ -1,5 +1,5 @@
-import { assertEquals } from "@std/assert";
-import { buildCheckPlan } from "./task-check.ts";
+import { assertEquals, assertStringIncludes } from "@std/assert";
+import { buildCheckPlan, denoVersionMismatch } from "./task-check.ts";
 
 Deno.test("buildCheckPlan: prerequisites regenerates composite SKILL.md files", () => {
   const plan = buildCheckPlan();
@@ -89,4 +89,28 @@ Deno.test("buildCheckPlan: parallel covers fmt + lint + tests + validators", () 
     labels.some((l) => l.includes("check-task-format.ts")),
     true,
   );
+});
+
+// [REF:fr:cicd | FR-CICD.DENO-PIN] — the running Deno must equal .dvmrc,
+// because deno.lock content depends on the version that writes it.
+Deno.test("denoVersionMismatch: equal versions pass", () => {
+  assertEquals(denoVersionMismatch("2.9.7", "2.9.7\n"), null);
+});
+
+Deno.test("denoVersionMismatch: a leading v in .dvmrc is accepted", () => {
+  assertEquals(denoVersionMismatch("2.9.7", "v2.9.7"), null);
+});
+
+Deno.test("denoVersionMismatch: a patch-level difference fails and names both versions", () => {
+  const message = denoVersionMismatch("2.9.8", "2.9.7\n");
+  assertEquals(typeof message, "string");
+  assertStringIncludes(message!, "2.9.8");
+  assertStringIncludes(message!, "2.9.7");
+  assertStringIncludes(message!, ".dvmrc");
+});
+
+Deno.test("denoVersionMismatch: an empty .dvmrc fails", () => {
+  const message = denoVersionMismatch("2.9.7", "  \n");
+  assertEquals(typeof message, "string");
+  assertStringIncludes(message!, ".dvmrc");
 });

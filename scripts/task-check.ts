@@ -169,7 +169,36 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
   };
 }
 
+/** The file that pins the Deno version for CI (`setup-deno`) and local checks. */
+export const DENO_VERSION_FILE = ".dvmrc";
+
+/**
+ * [REF:fr:cicd | FR-CICD.DENO-PIN] — `deno.lock` content depends on the Deno
+ * version that writes it, so a skew between the machine and CI turns every
+ * dependency bump into a red integrity step. Returns an error message when the
+ * running version differs from the pinned one (exact match, patch included),
+ * or `null` when they agree.
+ */
+export function denoVersionMismatch(
+  running: string,
+  pinnedFileText: string,
+): string | null {
+  const pinned = pinnedFileText.trim().replace(/^v/, "");
+  if (pinned === "") {
+    return `${DENO_VERSION_FILE} is empty: it must hold the Deno version the project is pinned to.`;
+  }
+  if (running === pinned) return null;
+  return `Running Deno ${running}, but ${DENO_VERSION_FILE} pins ${pinned}. ` +
+    `deno.lock written by a different version differs from the one CI produces. ` +
+    `Install Deno ${pinned}, or bump ${DENO_VERSION_FILE} to ${running}, re-resolve deno.lock, and commit both.`;
+}
+
 async function main(): Promise<void> {
+  const mismatch = denoVersionMismatch(
+    Deno.version.deno,
+    await Deno.readTextFile(DENO_VERSION_FILE),
+  );
+  if (mismatch !== null) throw new Error(mismatch);
   const plan = buildCheckPlan({
     syncPluginsLocal: await shouldAutoInstall(),
   });

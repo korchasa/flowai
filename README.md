@@ -401,7 +401,7 @@ The agent reads these at session start. If the docs are outdated, the agent work
 
 For contributors working on **the framework** (skills, commands, agents, packs):
 
-**Prerequisites:** [Deno](https://deno.land), Git
+**Prerequisites:** [Deno](https://deno.land) at the exact version in `.dvmrc`, Git. CI installs the same version from that file, and `deno task check` stops first thing when the running Deno differs, because `deno.lock` content depends on the Deno version that writes it. To move to a newer Deno, bump `.dvmrc`, re-resolve `deno.lock` with that Deno, and commit both together.
 
 ```sh
 git clone https://github.com/korchasa/flowai.git

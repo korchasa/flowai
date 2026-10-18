@@ -1616,6 +1616,7 @@ Rules:
   - [x] **FR-CICD.PRIV Least privilege**: Check job uses `contents: read` only. Write permissions (`contents: write`, `id-token: write`) granted only to release job, gated on `push` to `main`.
   - [x] **FR-CICD.INTEGRITY File integrity**: After third-party setup steps (`checkout`, `setup-deno`) and after `deno task check`, verify no unexpected file modifications via `git diff --exit-code` + untracked file check. Fail pipeline if integrity violated.
   - [x] **FR-CICD.JOBS Job separation**: Pipeline split into `check` (read-only) and `release` (write) jobs. `release` depends on `check` success.
+  - [x] **FR-CICD.DENO-PIN One Deno version**: `.dvmrc` is the single source of the Deno version. Both CI `setup-deno` steps read it via `deno-version-file`, and `deno task check` fails before any other step when the running Deno differs from it (exact match, patch included), naming both versions. Why: `deno.lock` content depends on the Deno version that writes it, so a skew turns every dependency bump into a red integrity step. Acceptance: `scripts/task-check_test.ts::denoVersionMismatch: *`; `grep -c 'deno-version-file: .dvmrc' .github/workflows/ci.yml` = 2. Task: [pin-deno-version](tasks/2026/10/pin-deno-version.md).
 
 ### FR-REVIEW-SPLIT: Responsibility Separation: Review vs Commit [ANC:fr:review-split]
 

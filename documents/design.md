@@ -769,6 +769,12 @@ graph TD
 - **Why a completeness check instead of unit tests:** the script differs per project, so no shared test can cover it; the defect a hand-written scanner most often has is a wrong selector that silently drops or invents tasks, and an independent count catches exactly that on the first run.
 - **Acceptance verified by acceptance tests:** `tasks-overview-basic` (one file per task under `docs/todo/` with a `state:` key, overriding the framework default), `tasks-overview-single-file-roadmap` (tasks as `### ` headings of one `ROADMAP.md`, status from the enclosing section), `tasks-overview-reuses-existing-script`, `tasks-overview-trigger-pos-1`, `tasks-overview-trigger-adj-1`, `tasks-overview-trigger-false-1`.
 
+### 3.25 Pinned Deno Version — FR-CICD.DENO-PIN (`.dvmrc`, `scripts/task-check.ts`) [ANC:sds:3-25]
+
+- **Purpose:** `deno.lock` content depends on the Deno version that writes it, so the machine and CI must run the same Deno, or every dependency bump fails CI's file-integrity step.
+- **Source of truth:** `.dvmrc` holds one exact version. Both `setup-deno` steps in `.github/workflows/ci.yml` read it via `deno-version-file`; `setup-deno` takes the trimmed file contents as the version.
+- **Local gate:** `scripts/task-check.ts` `main()` compares `Deno.version.deno` with `.dvmrc` through the pure helper `denoVersionMismatch()` before any prerequisite and throws on a mismatch (exact match, patch included; a leading `v` in the file is accepted). The message names both versions and the two ways out: install the pinned Deno, or bump `.dvmrc`, re-resolve `deno.lock` and commit both. Local Deno comes from Homebrew, which upgrades it without reading `.dvmrc`, so this gate is what catches the drift before a push.
+
 ## 4. Data and Storage
 
 - File-based storage only. No database. Entities: Skill (Name, Content, Path), Agent (Name, Prompt, Capabilities).
