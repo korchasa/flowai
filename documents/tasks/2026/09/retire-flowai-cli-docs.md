@@ -1,6 +1,6 @@
 ---
 date: "2026-09-12"
-status: in progress
+status: done
 implements:
   - FR-DIST
   - FR-DIST.MARKETPLACE
@@ -161,11 +161,12 @@ Dispositions (union of the planner's list and the scout's):
 - [x] FR-ADAPT: FR-ADAPT prose, `framework/core/commands/adapt/SKILL.md`, `framework/core/commands/update/SKILL.md`, `framework/core/agents/skill-adapter.md` and `agent-adapter.md` name the plugin layout, not `flowai sync`; `scripts/acceptance-tests/lib/cli-internals.ts` header describes the transform as this repo's own.
   - Benchmark: `adapt-*` and `update-*` existing scenarios (no behaviour change — wording only; the sweep is the regression gate)
   - Evidence: `! grep -rn -E 'flowai (sync|update|migrate)|flowai-cli' framework/core/commands/adapt framework/core/commands/update framework/core/agents/skill-adapter.md framework/core/agents/agent-adapter.md scripts/acceptance-tests/lib/cli-internals.ts`
-- [ ] FR-DIST: the `setup-ai-ide-devcontainer` skill installs flowai through the plugin marketplace (Claude Code / Codex containers) and never emits `jsr:@korchasa/flowai`; the renamed scenario proves it.
+- [x] FR-DIST: the `setup-ai-ide-devcontainer` skill installs flowai through the plugin marketplace (Claude Code / Codex containers) and never emits `jsr:@korchasa/flowai`; the renamed scenario proves it.
   - Benchmark: `setup-ai-ide-devcontainer-deno-flowai-plugins` (renamed from `setup-ai-ide-devcontainer-deno-flowai`, RED first)
   - Evidence: `deno task acceptance-tests -f setup-ai-ide-devcontainer-deno-flowai-plugins && ! grep -rnE 'deno install[^\n]*jsr:@korchasa/flowai' framework/core/skills/setup-ai-ide-devcontainer --include='*.md' && [ "$(grep -rh 'jsr:@korchasa/flowai' framework/core/skills/setup-ai-ide-devcontainer --include='*.md' | grep -vcE 'Never|Do NOT')" = 0 ]`
     - The gate forbids the install COMMAND, not the string (decision taken during implementation, 2026-09-17). The original blanket `! grep -rn '@korchasa/flowai'` also forbade the two sentences that STATE the prohibition, so the only way to satisfy it was to delete the skill's own guard. A check that cannot pass while the requirement holds is not a gate; it forces either a false `[x]` or damage to the primitive.
     - The second half counts the mentions that are not prohibitions and requires 0, so a plain mention cannot slip back in under the first half's radar.
+    - Result 2026-10-18 on `93d1df83`, which carries the skill commit `7e7858e2`: the scenario PASSED 11/11 on claude `claude-sonnet-5-5` (55.6 s), and the generated `devcontainer.json` chains `claude plugin marketplace add korchasa/flowai-plugins` after the Claude CLI install; both grep halves pass (non-prohibition count 0). The earlier cached PASS of 2026-09-15 predated the skill commit and is not this item's evidence.
 - [x] FR-DIST: SDS §3.5 describes `scripts/build-plugins.ts` as the distribution implementation, §3.4 heading names `acceptance-tests/`, and no SDS line names `flowai-cli`.
   - Test: `manual — korchasa`
   - Evidence: `grep -qE '^### 3\.5 .*build-plugins\.ts' documents/design.md && grep -qE '^### 3\.4 .*acceptance-tests/' documents/design.md && ! grep -n 'flowai-cli' documents/design.md`
