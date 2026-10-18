@@ -28,6 +28,13 @@
  * or a command naming several SKILL.md files is the agent looking around, not
  * loading a skill. Captured 2026-10-06 (update-trigger-adj-1, gpt-6-luna): one
  * `rg -n -i '<pattern>'` over 11 installed SKILL.md files scored as `update`.
+ *
+ * codex-acp 2.x (codex 0.159) parses a one-file `cat`/`sed` into a `read`
+ * action and drops the command from the report. Captured 2026-09-30
+ * (select-llm-model-source-parse-failure-becomes-gap, gpt-6-luna):
+ * `kind: "read"`, `title: "Read file '<path>'"`, `locations: [{ path }]`, no
+ * rawInput. That title is the codex bridge's own wording — claude-agent-acp
+ * titles its Read tool `Read <path>` — so the Claude exclusion above holds.
  */
 import type { CapturedToolCall } from "./acp/client.ts";
 
@@ -44,6 +51,9 @@ export const DETERMINISTIC_SKILL_CHECK_IDS = new Set([
  * real Skill tool uses `skill` (claude) / `name`.
  */
 const SKILL_NAME_KEYS = ["skill", "name", "skillName"];
+
+/** Title prefix codex-acp 2.x gives a shell command it parsed as a file read. */
+const CODEX_PARSED_READ_TITLE = "Read file '";
 
 /**
  * Returns true iff the captured tool calls contain an explicit Skill-tool call
@@ -72,11 +82,16 @@ export function detectSkillInvocation(
     if (typeof command === "string" && shellReadsSkill(command, accepted)) {
       return true;
     }
+    if (tc.kind === "read" && tc.title.startsWith(CODEX_PARSED_READ_TITLE)) {
+      for (const loc of tc.locations ?? []) {
+        if (shellReadsSkill(loc.path, accepted)) return true;
+      }
+    }
   }
   return false;
 }
 
-/** True iff a shell command names `skills/<one of accepted>/SKILL.md`. */
+/** True iff a shell command or a path names `skills/<one of accepted>/SKILL.md`. */
 function shellReadsSkill(command: string, accepted: Set<string>): boolean {
   const names = new Set(
     [...command.matchAll(/skills\/([^\/\s*'"]+)\/SKILL\.md/g)].map((m) => m[1]),

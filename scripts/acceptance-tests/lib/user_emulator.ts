@@ -1,8 +1,5 @@
-import {
-  type ChatCompletionFn,
-  codexChatCompletion,
-  type ModelConfig,
-} from "./llm.ts";
+import type { ChatCompletionFn, ModelConfig } from "./llm.ts";
+import { chatCompletion } from "./judge_transport.ts";
 import type { LLMMessage } from "./types.ts";
 import { addTokens, EMPTY_TOKENS, type TokenBreakdown } from "./token_usage.ts";
 
@@ -22,7 +19,7 @@ export class UserEmulator {
   constructor(options: UserEmulatorOptions) {
     this.persona = options.persona;
     this.config = options.config;
-    this.llm = options.llmClient || codexChatCompletion;
+    this.llm = options.llmClient || chatCompletion;
   }
 
   /**

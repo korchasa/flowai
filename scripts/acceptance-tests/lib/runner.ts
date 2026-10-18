@@ -1,9 +1,14 @@
 import { join } from "@std/path";
 import type { BenchmarkResult, BenchmarkScenario } from "./types.ts";
 import type { ChatCompletionFn, ModelConfig } from "./llm.ts";
-import { prewarmCodexSession } from "./llm.ts";
+import { judgeTransportFor, prewarmJudgeSession } from "./judge_transport.ts";
 import { agentLaunchEnv } from "./agent_env.ts";
-import { type CodexJudgeHome, runCodexJudgeHome } from "./acp/auth.ts";
+import {
+  type ClaudeJudgeHome,
+  type CodexJudgeHome,
+  runClaudeJudgeHome,
+  runCodexJudgeHome,
+} from "./acp/auth.ts";
 import { evaluateChecklist } from "./judge.ts";
 import {
   collectGeneratedFiles,
@@ -414,17 +419,34 @@ async function initSandboxGit(
  * and its own cold first turn. The judge needs none of it: its `CODEX_HOME`
  * carries the auth and its `cwd` is a temp dir the client makes itself.
  *
+ * implements [REF:fr:accept.judge-acp | FR-ACCEPT.JUDGE-ACP]: a claude judge
+ * model runs under the run's claude judge home on every arm — the judge's
+ * model picks the home, not the arm under test.
+ *
  * Pure so the sharing invariant can be asserted without a live run.
  */
 export function buildJudgeConfig(
   ide: string,
   base: ModelConfig,
-  judgeHome: CodexJudgeHome,
+  homes: { codex?: CodexJudgeHome; claude?: ClaudeJudgeHome },
 ): ModelConfig {
+  if (judgeTransportFor(base.model) === "claude-acp") {
+    if (!homes.claude) {
+      throw new Error(
+        `judge model "${base.model}" needs the run's claude judge home`,
+      );
+    }
+    return { ...base, env: { ...homes.claude.env }, cwd: homes.claude.cwd };
+  }
   if (ide !== "codex") return { ...base };
+  if (!homes.codex) {
+    throw new Error(
+      `judge model "${base.model}" needs the run's codex judge home`,
+    );
+  }
   return {
     ...base,
-    env: { HOME: judgeHome.HOME, CODEX_HOME: judgeHome.CODEX_HOME },
+    env: { HOME: homes.codex.HOME, CODEX_HOME: homes.codex.CODEX_HOME },
   };
 }
 
@@ -637,16 +659,18 @@ async function runAgentWithTimeout(
     );
   }
 
-  // The judge and the simulated user run on a codex app-server from a temp cwd
-  // (FR-ACCEPT.JUDGE-APPSERVER). On a codex run they share ONE isolated
-  // `CODEX_HOME` for the whole run (auth symlink, empty skills), so one
-  // app-server child serves every scenario; on other IDEs the operator's own
-  // `~/.codex` auth is used and `--ignore-user-config` keeps its config.toml
-  // out.
+  // The judge and the simulated user share one transport, chosen by the judge
+  // model. A claude model runs over the claude ACP bridge under ONE isolated
+  // home per run (FR-ACCEPT.JUDGE-ACP). Any other model runs on a codex
+  // app-server from a temp cwd (FR-ACCEPT.JUDGE-APPSERVER): on a codex run
+  // they share ONE isolated `CODEX_HOME` for the whole run (auth symlink,
+  // empty skills), on other IDEs the operator's own `~/.codex` auth is used.
   const judgeConfig = buildJudgeConfig(
     options.adapter.ide,
     options.judgeConfig,
-    await runCodexJudgeHome(),
+    judgeTransportFor(options.judgeConfig.model) === "claude-acp"
+      ? { claude: await runClaudeJudgeHome() }
+      : { codex: await runCodexJudgeHome() },
   );
 
   const userEmulator = scenario.interactive && scenario.userPersona
@@ -675,11 +699,11 @@ async function runAgentWithTimeout(
 
   // Global scenario timeout (default 15 min)
   // implements [REF:fr:accept.judge-appserver | FR-ACCEPT.JUDGE-APPSERVER]:
-  // open the judge's app-server session now, not when the verdict is due. The
-  // ~2 s handshake + thread/start then overlaps a scenario that runs ~50 s.
-  // Deliberately not awaited, and a failure only logs — the session degrades to
-  // being opened at call time.
-  prewarmCodexSession({
+  // open the judge's session now, not when the verdict is due. The handshake
+  // then overlaps a scenario that runs ~50 s. Deliberately not awaited, and a
+  // failure only logs — the session degrades to being opened at call time. A
+  // claude judge spawns its ACP bridge here instead (FR-ACCEPT.JUDGE-ACP).
+  prewarmJudgeSession({
     model: judgeConfig.model,
     effort: judgeConfig.effort,
     env: judgeConfig.env,

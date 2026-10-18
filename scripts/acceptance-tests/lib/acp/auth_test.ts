@@ -19,6 +19,7 @@ import {
   prepareAcpCodexHome,
   prepareBenchCodexHome,
   prepareCodexJudgeHome,
+  runClaudeJudgeHome,
   runCodexJudgeHome,
 } from "./auth.ts";
 
@@ -421,6 +422,29 @@ Deno.test("runCodexJudgeHome: every scenario of a run gets the same home", async
   );
   const stat = await Deno.stat(join(first.CODEX_HOME, "skills"));
   assertEquals(stat.isDirectory, true);
+});
+
+// implements [REF:fr:accept.judge-acp | FR-ACCEPT.JUDGE-ACP]: ONE claude
+// judge home per run, outside $HOME, with an isolated claude config and a cwd
+// outside every repository.
+Deno.test("runClaudeJudgeHome: one isolated home per run, outside $HOME", async () => {
+  const first = await runClaudeJudgeHome();
+  const second = await runClaudeJudgeHome();
+  assertEquals(second, first);
+
+  const home = Deno.env.get("HOME");
+  for (const p of [first.env.HOME, first.cwd]) {
+    assert(
+      !home || !p.startsWith(home + "/"),
+      `the claude judge home must not sit under $HOME (got ${p})`,
+    );
+  }
+  assertEquals(first.env.CLAUDE_CODE_DISABLE_BUNDLED_SKILLS, "1");
+  assertEquals(
+    (await Deno.stat(join(first.env.HOME, ".claude", "skills"))).isDirectory,
+    true,
+  );
+  assertEquals((await Deno.stat(first.cwd)).isDirectory, true);
 });
 
 // implements [FR-ACCEPT.BRIDGE-LOCAL](../../../../documents/requirements.md#fr-accept.bridge-local-acp-bridges-are-installed-once-and-launched-directly-ancfraccept.bridge-local):

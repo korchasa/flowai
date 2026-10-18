@@ -28,6 +28,12 @@
  *                      tool call (opened and closed), then a second reply
  *                      sentence — the order a judge must be able to read back:
  *                      which command ran before which sentence.
+ *   [[REPLY]]x[[/REPLY]] → stream `x` verbatim, split over two chunks, and
+ *                      return `STUB_USAGE` on the PromptResponse — the shape
+ *                      the claude bridge answers a judge turn with.
+ *   [[META]]         → reply with a JSON object describing what the stub saw:
+ *                      the session's `_meta`, how many sessions are open, the
+ *                      session id, `ANTHROPIC_MODEL`, `HOME` and the stub's pid.
  *   anything else    → stream an `agent_message_chunk` echoing a fixed reply.
  *
  * The sentinel write is the observable "real tool executed" side-effect the
@@ -37,6 +43,8 @@ import {
   type Agent,
   AgentSideConnection,
   type CancelNotification,
+  type CloseSessionRequest,
+  type CloseSessionResponse,
   type InitializeRequest,
   type InitializeResponse,
   ndJsonStream,
@@ -52,6 +60,18 @@ const TOOL_MARKER = /\[\[TOOL:([^\]]*)\]\]/;
 const DISPATCH_MARKER = /\[\[DISPATCH\]\]/;
 const THINK_MARKER = /\[\[THINK\]\]/;
 const SEQUENCE_MARKER = /\[\[SEQUENCE\]\]/;
+const REPLY_MARKER = /\[\[REPLY\]\]([\s\S]*?)\[\[\/REPLY\]\]/;
+const META_MARKER = /\[\[META\]\]/;
+
+/** What a `[[REPLY]]` turn reports as its usage (disjoint fields, like the
+ * claude bridge's). */
+export const STUB_USAGE = {
+  inputTokens: 100,
+  outputTokens: 20,
+  cachedReadTokens: 30,
+  cachedWriteTokens: 5,
+  totalTokens: 155,
+};
 
 /** What the `[[SEQUENCE]]` marker streams, in this order. */
 export const SEQUENCE_REASONING = "Checking report scope";
@@ -72,6 +92,8 @@ class StubAgent implements Agent {
   #conn: AgentSideConnection;
   #cwd = "";
   #counter = 0;
+  #meta = new Map<string, unknown>();
+  #open = new Set<string>();
 
   constructor(conn: AgentSideConnection) {
     this.#conn = conn;
@@ -80,7 +102,10 @@ class StubAgent implements Agent {
   initialize(_params: InitializeRequest): Promise<InitializeResponse> {
     return Promise.resolve({
       protocolVersion: PROTOCOL_VERSION,
-      agentCapabilities: { loadSession: true },
+      agentCapabilities: {
+        loadSession: true,
+        sessionCapabilities: { close: {} },
+      },
       authMethods: [],
     });
   }
@@ -92,7 +117,16 @@ class StubAgent implements Agent {
 
   newSession(params: NewSessionRequest): Promise<NewSessionResponse> {
     this.#cwd = params.cwd;
-    return Promise.resolve({ sessionId: `stub-session-${++this.#counter}` });
+    const sessionId = `stub-session-${++this.#counter}`;
+    this.#meta.set(sessionId, params._meta ?? null);
+    this.#open.add(sessionId);
+    return Promise.resolve({ sessionId });
+  }
+
+  closeSession(params: CloseSessionRequest): Promise<CloseSessionResponse> {
+    this.#open.delete(params.sessionId);
+    this.#meta.delete(params.sessionId);
+    return Promise.resolve({});
   }
 
   async prompt(params: PromptRequest): Promise<PromptResponse> {
@@ -103,6 +137,29 @@ class StubAgent implements Agent {
     if (text.includes("[[CRASH]]")) {
       // Simulate a mid-turn connection drop: die before responding.
       Deno.exit(1);
+    }
+
+    const reply = text.match(REPLY_MARKER);
+    if (reply) {
+      const half = Math.floor(reply[1].length / 2);
+      await this.#emit(params.sessionId, reply[1].slice(0, half));
+      await this.#emit(params.sessionId, reply[1].slice(half));
+      return { stopReason: "end_turn", usage: STUB_USAGE };
+    }
+
+    if (META_MARKER.test(text)) {
+      await this.#emit(
+        params.sessionId,
+        JSON.stringify({
+          meta: this.#meta.get(params.sessionId) ?? null,
+          open: this.#open.size,
+          sessionId: params.sessionId,
+          model: Deno.env.get("ANTHROPIC_MODEL") ?? null,
+          home: Deno.env.get("HOME") ?? null,
+          pid: Deno.pid,
+        }),
+      );
+      return { stopReason: "end_turn" };
     }
 
     if (DISPATCH_MARKER.test(text)) {

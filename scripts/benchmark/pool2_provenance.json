@@ -784,6 +784,11 @@
       "ide": "codex",
       "model": "gpt-5.6-sol",
       "effort": "high"
+    },
+    "codex/gpt-6-luna@medium": {
+      "ide": "codex",
+      "model": "gpt-6-luna",
+      "effort": "medium"
     }
   }
 }

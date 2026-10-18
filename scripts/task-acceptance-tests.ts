@@ -18,7 +18,8 @@
  * Usage: deno task bench [-f filter] [-m model] [-i ide] [-n runs]
  */
 import { join } from "@std/path";
-import { closeCodexSessions, loadConfig } from "./acceptance-tests/lib/llm.ts";
+import { loadConfig } from "./acceptance-tests/lib/llm.ts";
+import { closeJudgeSessions } from "./acceptance-tests/lib/judge_transport.ts";
 import {
   acquireBenchmarkLock,
   parseAndValidateArgs,
@@ -112,10 +113,10 @@ async function main() {
   }
 
   // implements [FR-ACCEPT.JUDGE-APPSERVER](../documents/requirements.md#fr-accept.judge-appserver-judge-and-emulators-run-on-a-prewarmed-codex-app-server-ancfraccept.judge-appserver):
-  // the judge's app-server children outlive the
-  // scenarios that opened them; close them before the report or the process
-  // never exits.
-  closeCodexSessions();
+  // the judge's app-server children (and, for a claude judge, its ACP bridges
+  // under the claude judge transport) outlive the scenarios that opened them;
+  // close them before the report or the process never exits.
+  await closeJudgeSessions();
 
   await updateLatestSymlink(runDir);
   finalizeRun(

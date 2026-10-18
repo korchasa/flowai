@@ -163,6 +163,35 @@ export function runCodexJudgeHome(): Promise<CodexJudgeHome> {
   return judgeHomeOnce;
 }
 
+/** Where a claude judge runs: the bridge env and the session cwd. */
+export interface ClaudeJudgeHome {
+  env: Record<string, string>;
+  cwd: string;
+}
+
+let claudeJudgeHomeOnce: Promise<ClaudeJudgeHome> | undefined;
+
+/**
+ * The run's single claude judge home, created on first use
+ * (FR-ACCEPT.JUDGE-ACP). Built exactly like an agent's home
+ * (`prepareAcpClaudeHome`: empty skills, credentials linked, bundled skills
+ * and nonessential traffic off) inside a temp root outside `$HOME`, with the
+ * session cwd beside it — outside every repository, so no `AGENTS.md` or
+ * `CLAUDE.md` up the path reaches the judge. One per run, because the bridge
+ * pool is keyed by env and cwd: a per-scenario home would spawn a bridge per
+ * scenario.
+ */
+// implements [REF:fr:accept.judge-acp | FR-ACCEPT.JUDGE-ACP]
+export function runClaudeJudgeHome(): Promise<ClaudeJudgeHome> {
+  claudeJudgeHomeOnce ??= (async () => {
+    const root = await Deno.makeTempDir({ prefix: "flowai-judge-home-" });
+    const cwd = join(root, "cwd");
+    await Deno.mkdir(cwd);
+    return { env: { ...(await prepareAcpClaudeHome(cwd)) }, cwd };
+  })();
+  return claudeJudgeHomeOnce;
+}
+
 /** Empty `CODEX_HOME` with an empty `skills/` and ONLY the credentials linked. */
 async function populateCodexHome(codexHome: string): Promise<void> {
   await Deno.mkdir(join(codexHome, "skills"), { recursive: true });

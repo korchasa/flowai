@@ -1,4 +1,5 @@
-import { codexChatCompletion, type ModelConfig } from "./llm.ts";
+import type { ModelConfig } from "./llm.ts";
+import { chatCompletion } from "./judge_transport.ts";
 import type { BenchmarkChecklistItem, LLMMessage } from "./types.ts";
 import { writeRunFile } from "./utils.ts";
 import { EMPTY_TOKENS, type TokenBreakdown } from "./token_usage.ts";
@@ -115,7 +116,7 @@ export async function evaluateChecklist(
   checklist: BenchmarkChecklistItem[],
   judgeConfig: ModelConfig,
   runDir: string,
-  llmClient: typeof codexChatCompletion = codexChatCompletion,
+  llmClient: typeof chatCompletion = chatCompletion,
 ): Promise<{
   results: Record<string, { pass: boolean; reason: string }>;
   messages: LLMMessage[];

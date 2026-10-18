@@ -122,6 +122,34 @@ export function tokensFromRollout(
   };
 }
 
+/**
+ * ACP `Usage` as the claude bridge returns it on `PromptResponse.usage`
+ * (FR-ACCEPT.JUDGE-ACP). Its fields are already disjoint — verified 2026-10-17:
+ * `totalTokens` = input + output + cache read + cache write.
+ */
+export interface AcpTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  cachedReadTokens?: number | null;
+  cachedWriteTokens?: number | null;
+  totalTokens: number;
+}
+
+/** Converts one ACP prompt usage. Nothing is subtracted, and reasoning is 0:
+ * the bridge does not split it out of the output. */
+export function tokensFromAcpUsage(
+  u: Partial<AcpTokenUsage>,
+): TokenBreakdown {
+  return {
+    freshInput: num(u.inputTokens),
+    cachedInput: num(u.cachedReadTokens),
+    cacheWrite: num(u.cachedWriteTokens),
+    output: num(u.outputTokens),
+    reasoning: 0,
+    total: num(u.totalTokens),
+  };
+}
+
 function group(n: number): string {
   return n.toLocaleString("en-US");
 }

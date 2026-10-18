@@ -113,6 +113,11 @@ export function nativeCommandTurn(
  * codex transport could never have worked. `@agentclientprotocol/codex-acp`
  * speaks ACP over the Codex app-server and supports ChatGPT-subscription login
  * (`~/.codex/auth.json`), so no API key is provisioned for the bench.
+ *
+ * The same bundling rule applies: 1.1.7 shipped `@openai/codex` 0.145.0, and
+ * the server rejected every `gpt-6-*` model for a ChatGPT account on that
+ * client ("not supported when using Codex with a ChatGPT account"). 2.0.1
+ * depends on `@openai/codex` ^0.159.1 and runs `gpt-6-luna` (2026-09-30).
  */
 export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
   claude: {
@@ -142,7 +147,7 @@ export const ACP_AGENTS: Readonly<Record<AcpIde, AcpAgentSpec>> = {
     launch: {
       kind: "npm",
       package: "@agentclientprotocol/codex-acp",
-      version: "1.1.7",
+      version: "2.0.1",
       bin: "codex-acp",
       // Start in full-access agent mode: the bridge's default mode may be
       // read-only, which would let a bench session "finish" having written

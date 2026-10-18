@@ -65,15 +65,20 @@ Deno.test("loadConfig - should throw error if file not found (fail fast)", async
   );
 });
 
-Deno.test("acceptance-tests/config.json: every arm runs on codex — agent and judge alike", async () => {
+// implements [REF:fr:accept.judge-acp | FR-ACCEPT.JUDGE-ACP]: the judge runs
+// on the model the default arm runs, on every arm.
+Deno.test("acceptance-tests/config.json: the default arm is claude, every judge runs on claude-sonnet-5-5", async () => {
   const config = await loadConfig("acceptance-tests/config.json");
-  assertEquals(config.default_ides, ["codex"]);
-  const codexModel = /^(gpt[-.]|o\d|codex)/i;
+  assertEquals(config.default_ides, ["claude"]);
+  const claude = getIdeConfig(config, "claude");
+  assertEquals(claude.default_agent_model, "claude-sonnet-5-5");
+  assertEquals(claude.agent_models.includes(claude.default_agent_model), true);
+  assertEquals(typeof claude.agent_effort, "string");
   for (const [ide, section] of Object.entries(config.ides)) {
     assertEquals(
-      codexModel.test(section.judge.model),
-      true,
-      `${ide}: judge model "${section.judge.model}" is not a codex model`,
+      section.judge.model,
+      claude.default_agent_model,
+      `${ide}: the judge must run on the default arm's model`,
     );
     assertEquals(
       typeof section.judge.effort,
@@ -82,6 +87,6 @@ Deno.test("acceptance-tests/config.json: every arm runs on codex — agent and j
     );
   }
   const codex = getIdeConfig(config, "codex");
-  assertEquals(codexModel.test(codex.default_agent_model), true);
+  assertEquals(/^(gpt[-.]|o\d|codex)/i.test(codex.default_agent_model), true);
   assertEquals(typeof codex.agent_effort, "string");
 });

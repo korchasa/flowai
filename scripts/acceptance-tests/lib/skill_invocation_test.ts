@@ -223,3 +223,36 @@ Deno.test("detectSkillInvocation: a one-file read after a cd still counts", () =
   ];
   assertEquals(detectSkillInvocation(calls, "update"), true);
 });
+
+// codex-acp 2.0.1 (codex 0.159) parses a one-file `cat`/`sed` into a `read`
+// action and reports it WITHOUT the command: no rawInput, only a title and a
+// location. Captured 2026-09-30 (select-llm-model-source-parse-failure-becomes-gap,
+// gpt-6-luna): the model ran `cat <bench-home>/.codex/skills/select-llm-model/SKILL.md`
+// and the bridge sent `kind: "read"`, `title: "Read file '<path>'"`, `locations: [{ path }]`.
+function codexParsedRead(path: string): CapturedToolCall {
+  return {
+    toolCallId: "tc-read",
+    title: `Read file '${path}'`,
+    kind: "read",
+    locations: [{ path }],
+  };
+}
+
+Deno.test("detectSkillInvocation: codex-acp 2.x reports a SKILL.md read as a parsed read action", () => {
+  const path =
+    "/private/var/folders/x/T/flowai-bench/run-1/sandbox/.codex/skills/select-llm-model/SKILL.md";
+  assertEquals(
+    detectSkillInvocation([codexParsedRead(path)], "select-llm-model"),
+    true,
+  );
+  assertEquals(
+    detectSkillInvocation([codexParsedRead(path)], "select-llm"),
+    false,
+  );
+  assertEquals(
+    detectSkillInvocation([
+      codexParsedRead("/sandbox/.codex/skills/epic/README.md"),
+    ], "epic"),
+    false,
+  );
+});

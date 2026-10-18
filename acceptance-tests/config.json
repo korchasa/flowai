@@ -1,27 +1,31 @@
 {
-  "default_ides": ["codex"],
+  "default_ides": ["claude"],
   "ides": {
     "codex": {
       "agent_models": [
-        "gpt-5.6-terra",
+        "gpt-6-luna",
         "gpt-5.6-sol",
         "gpt-5.4",
         "gpt-5.3-codex"
       ],
-      "default_agent_model": "gpt-5.6-terra",
+      "default_agent_model": "gpt-6-luna",
       "agent_effort": "medium",
       "judge": {
-        "model": "gpt-5.6-sol",
+        "model": "claude-sonnet-5-5",
         "effort": "medium",
         "temperature": 0
       }
     },
     "claude": {
-      "agent_models": ["claude-haiku-4-5", "claude-sonnet-4-6"],
-      "default_agent_model": "claude-haiku-4-5",
+      "agent_models": [
+        "claude-sonnet-5-5",
+        "claude-haiku-4-5",
+        "claude-sonnet-4-6"
+      ],
+      "default_agent_model": "claude-sonnet-5-5",
       "agent_effort": "medium",
       "judge": {
-        "model": "gpt-5.6-sol",
+        "model": "claude-sonnet-5-5",
         "effort": "medium",
         "temperature": 0
       }
@@ -30,7 +34,7 @@
       "agent_models": ["gemini-3-flash"],
       "default_agent_model": "gemini-3-flash",
       "judge": {
-        "model": "gpt-5.6-sol",
+        "model": "claude-sonnet-5-5",
         "effort": "medium",
         "temperature": 0
       }

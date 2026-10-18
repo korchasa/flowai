@@ -3,7 +3,12 @@
  * These tests use the default IDE from acceptance-tests/config.json.
  */
 
-import { assert, assertEquals, assertStringIncludes } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertStringIncludes,
+  assertThrows,
+} from "@std/assert";
 import { join } from "@std/path";
 import { load } from "@std/dotenv";
 import { buildJudgeConfig, runScenario } from "./runner.ts";
@@ -294,7 +299,7 @@ Deno.test("the judge env is the run home and nothing else", () => {
     CODEX_HOME: "/tmp/flowai-judge-home-x/.codex-judge",
   };
 
-  const config = buildJudgeConfig("codex", base, judgeHome);
+  const config = buildJudgeConfig("codex", base, { codex: judgeHome });
 
   assertEquals(
     Object.entries(config.env ?? {}).sort(),
@@ -303,16 +308,44 @@ Deno.test("the judge env is the run home and nothing else", () => {
   // The key that decides how many app-server children a sweep spawns.
   assertEquals(
     codexSessionKey(config),
-    codexSessionKey(buildJudgeConfig("codex", base, judgeHome)),
+    codexSessionKey(buildJudgeConfig("codex", base, { codex: judgeHome })),
   );
 });
 
-Deno.test("a non-codex judge keeps its config untouched", () => {
-  const base = { model: "sonnet", temperature: 0 };
+Deno.test("a codex judge on a non-codex arm keeps its config untouched", () => {
+  const base = { model: "gpt-5.6-sol", temperature: 0 };
   const config = buildJudgeConfig("claude", base, {
-    HOME: "/tmp/flowai-judge-home-x",
-    CODEX_HOME: "/tmp/flowai-judge-home-x/.codex-judge",
+    codex: {
+      HOME: "/tmp/flowai-judge-home-x",
+      CODEX_HOME: "/tmp/flowai-judge-home-x/.codex-judge",
+    },
   });
   assertEquals(config.env, undefined);
-  assertEquals(config.model, "sonnet");
+  assertEquals(config.model, "gpt-5.6-sol");
+});
+
+// implements [REF:fr:accept.judge-acp | FR-ACCEPT.JUDGE-ACP]: a claude judge
+// runs under the run's claude judge home on EVERY arm — the judge model picks
+// the home, not the arm under test.
+Deno.test("a claude judge runs under the run's claude judge home", () => {
+  const base = { model: "claude-sonnet-5-5", temperature: 0, effort: "medium" };
+  const claude = {
+    env: {
+      HOME: "/tmp/flowai-judge-home-y/bench-home",
+      CLAUDE_CODE_DISABLE_BUNDLED_SKILLS: "1",
+      CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: "1",
+    },
+    cwd: "/tmp/flowai-judge-home-y/cwd",
+  };
+  for (const ide of ["claude", "codex", "cursor"]) {
+    const config = buildJudgeConfig(ide, base, { claude });
+    assertEquals(config.env, claude.env, ide);
+    assertEquals(config.cwd, claude.cwd, ide);
+    assertEquals(config.model, "claude-sonnet-5-5");
+  }
+  assertThrows(
+    () => buildJudgeConfig("claude", base, {}),
+    Error,
+    "claude judge home",
+  );
 });
