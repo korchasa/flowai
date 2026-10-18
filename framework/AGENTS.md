@@ -8,13 +8,13 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `<pack>/skills/` — every workflow primitive, all **agent-invocable** (`SKILL.md` directories). Names: short kebab-case. Source files MUST NOT declare `disable-model-invocation`, and no writer injects it. There is no user-only `commands/` kind: it was removed on 2026-10-06, and a pack that still has one fails the build (FR-PACKS.AGENT-COMMIT). Benchmark scenarios co-located in `<pack>/skills/<skill>/acceptance-tests/`. Each skill carries TWO categories of scenarios:
   - **Execution scenarios** (1+ per skill): verify the skill produces correct results when triggered.
   - **Trigger scenarios** (FR-ACCEPT.TRIGGER, exactly 3 per skill): verify description-matching correctness. One positive (`trigger-pos-1/mod.ts`) the skill should activate on; one adjacent-negative (`trigger-adj-1/mod.ts`) where a different skill is the right match; one false-use-negative (`trigger-false-1/mod.ts`) inside the skill's domain but with the wrong intent. Coverage gated by `scripts/check-trigger-coverage.ts`. Authoring guidance in `write-agent-benchmarks` §6.1.
-- `<pack>/agents/` — Canonical agent definitions (`<agent-name>.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by flowai at install time. Benchmark scenarios co-located in `<pack>/agents/<agent-name>/acceptance-tests/`.
+- `<pack>/agents/` — Canonical agent definitions (`<agent-name>.md` files, IDE-agnostic). Each agent has `name` + `description` frontmatter and a shared system prompt body. IDE-specific transformation is handled by the plugin build (`scripts/build-plugins.ts`). Benchmark scenarios co-located in `<pack>/agents/<agent-name>/acceptance-tests/`.
 - `<pack>/assets/` — Shared templates (AGENTS.md templates) used by multiple skills and the acceptance test runner.
 - `<pack>/acceptance-tests/` — Pack-level acceptance test scenarios (e.g., AGENTS.md rules verification) with shared fixtures.
 
 ### Installation shape
 
-`<pack>/skills/` installs into `.{ide}/skills/`. IDE-level native slash-command directories (`.{ide}/commands/`) are reserved for user-owned primitives managed by `flowai user-sync` — framework primitives do not land there.
+`<pack>/skills/` installs into `.{ide}/skills/`. IDE-level native slash-command directories (`.{ide}/commands/`) belong to the user — the framework never writes there.
 
 ## Packs
 
@@ -31,7 +31,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - Scripts in `<pack>/skills/*/scripts/` must be standalone-runnable: a Deno script uses `jsr:` specifiers and no import maps; a Python script uses the standard library only. Prefer Python for a script a skill step tells the user's agent to run — the framework may not assume Deno is installed there, and a script that reaches for the network to make up for it has already cost a measured run (`draw-mermaid-diagrams`, 2026-08-31: the old validator shelled out to `npx @mermaid-js/mermaid-cli`, the cold download blew a 120 s timeout, and the agent shipped a broken diagram).
 - Nothing shipped under `<pack>/skills/<name>/` may spell out this repo's own documentation layout: `check-skills.ts` (FR-UNIVERSAL.DOC-SCHEMA) rejects the literals `documents/tasks/`, `documents/requirements.md` and `documents/design.md` in every file there, including bundled `scripts/*.py` and their `*_test.ts` — only `acceptance-tests/` paths are exempt. Write "the `tasks` role from AGENTS.md" in prose, and in a test build the path from parts (`["documents", "tasks"].join("/")`) when a fixture needs the default. Observed 2026-09-04 on `tasks-overview`: SKILL.md and the unit test both tripped it on the first `deno task check`.
 - Skills follow [agentskills.io](https://agentskills.io/home) standard.
-- Agent format is canonical (IDE-agnostic); flowai adds IDE-specific frontmatter during distribution.
+- Agent format is canonical (IDE-agnostic); the plugin build adds IDE-specific frontmatter.
 - Scaffolded artifact mapping declared in `pack.yaml` `scaffolds:` field (primitive-name → artifact paths).
 
 ## IDE Behavior Notes

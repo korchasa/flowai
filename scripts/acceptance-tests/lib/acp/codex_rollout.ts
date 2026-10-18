@@ -100,10 +100,61 @@ export function renderCodexAgentTrace(
   }\n`;
 }
 
-/** Reads every `sessions/**\/rollout-*.jsonl` under `codexHome` and renders their subagent events. */
-export async function collectCodexAgentTrace(
-  codexHome: string,
-): Promise<string> {
+/**
+ * A turn codex itself recorded as failed: the `error` of a `task_complete` event.
+ *
+ * The codex ACP bridge forwards such an error as an ordinary agent reply and
+ * ends the turn with `end_turn`, so neither the exit code nor the stop reason
+ * shows it. The rollout is the only place it is structured. Observed 2026-10-06
+ * on `review-commit-push-trigger-pos-1`: `codex_error_info: "server_overloaded"`
+ * after 0 tool calls, scored by the judge as a routing failure
+ * ([REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]).
+ */
+export interface CodexTurnError {
+  /** The `codex_error_info` variant, e.g. `server_overloaded`. */
+  kind: string;
+  message: string;
+}
+
+/**
+ * The variant name of a `codex_error_info` value. A unit variant serialises as
+ * its name; a variant with a payload as a one-key object
+ * (`{"response_stream_disconnected": {"http_status_code": 502}}`).
+ */
+function errorKind(info: unknown): string {
+  if (typeof info === "string") return info;
+  if (info && typeof info === "object") {
+    const keys = Object.keys(info);
+    if (keys.length === 1) return keys[0];
+  }
+  return "";
+}
+
+/** Parses one rollout (JSONL) into the turn errors it records, in file order. */
+export function parseCodexTurnErrors(jsonl: string): CodexTurnError[] {
+  const errors: CodexTurnError[] = [];
+  for (const line of jsonl.split("\n")) {
+    if (!line.trim()) continue;
+    let item: { type?: string; payload?: Record<string, unknown> };
+    try {
+      item = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const p = item.payload;
+    if (item.type !== "event_msg" || p?.type !== "task_complete") continue;
+    const err = p.error as Record<string, unknown> | null | undefined;
+    if (!err || typeof err !== "object") continue;
+    errors.push({
+      kind: errorKind(err.codex_error_info),
+      message: str(err.message),
+    });
+  }
+  return errors;
+}
+
+/** Every `sessions/**\/rollout-*.jsonl` under `codexHome`, sorted; empty when there is none. */
+async function listRollouts(codexHome: string): Promise<string[]> {
   const root = join(codexHome, "sessions");
   const files: string[] = [];
   try {
@@ -116,12 +167,29 @@ export async function collectCodexAgentTrace(
       files.push(e.path);
     }
   } catch {
-    return "";
+    return [];
   }
-  files.sort();
+  return files.sort();
+}
+
+/** Reads every rollout under `codexHome` and renders their subagent events. */
+export async function collectCodexAgentTrace(
+  codexHome: string,
+): Promise<string> {
   const events: CodexAgentEvent[] = [];
-  for (const f of files) {
+  for (const f of await listRollouts(codexHome)) {
     events.push(...parseCodexRollout(await Deno.readTextFile(f)));
   }
   return renderCodexAgentTrace(events);
+}
+
+/** Reads every rollout under `codexHome` (the agent and its subagents) for turn errors. */
+export async function collectCodexTurnErrors(
+  codexHome: string,
+): Promise<CodexTurnError[]> {
+  const errors: CodexTurnError[] = [];
+  for (const f of await listRollouts(codexHome)) {
+    errors.push(...parseCodexTurnErrors(await Deno.readTextFile(f)));
+  }
+  return errors;
 }

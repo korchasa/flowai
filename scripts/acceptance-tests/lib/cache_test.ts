@@ -27,6 +27,8 @@ import {
   trimResultForCache,
   writeCache,
 } from "./cache.ts";
+import { maybeWriteScenarioCache } from "./acceptance_cache_precheck.ts";
+import { buildInfraErrorResult } from "./infra_abort.ts";
 import { ACP_LIB_VERSION, acpRegistryFingerprint } from "./acp/registry.ts";
 
 const REPO_ROOT = Deno.cwd();
@@ -1006,6 +1008,65 @@ Deno.test("computeCacheKey: settings of one arm do not move the key of the other
     });
     assertEquals(base, await codexKey({}));
   } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+// A run the provider aborted (FR-ACCEPT.INFRA-ABORT) measured nothing, so it
+// can never stand as the scenario's verdict. The green run beside it is the
+// positive control: the same context writes an entry when no run was aborted.
+Deno.test("maybeWriteScenarioCache: an infrastructure error writes no verdict", async () => {
+  const tmp = await Deno.makeTempDir({ prefix: "cache-test-" });
+  const origCwd = Deno.cwd();
+  try {
+    Deno.chdir(tmp);
+    const scenario: BenchmarkScenario = {
+      id: "infra",
+      name: "I",
+      pack: "p",
+      sandboxState: { commits: [], expectedOutcome: "" },
+      setup: () => Promise.resolve(),
+      userQuery: "",
+      agentsTemplateVars: { PROJECT_NAME: "X" },
+      checklist: [],
+    };
+    const green: BenchmarkResult = {
+      scenarioId: "infra",
+      success: true,
+      score: 100,
+      errorsCount: 0,
+      warningsCount: 0,
+      durationMs: 1,
+      tokensUsed: 0,
+      totalCost: 0,
+      toolCallsCount: 0,
+      model: "m",
+      checklistResults: {},
+      logs: "",
+    };
+    const ctx = (results: BenchmarkResult[]) => ({
+      cacheWriteEnabled: true,
+      cachedScenarioIds: new Set<string>(),
+      runResults: new Map([["infra", results]]),
+      runs: results.length,
+      scenarioCacheKeys: new Map([["infra", "k"]]),
+      adapter: { ide: "codex" },
+      agentModel: "m",
+    });
+
+    await maybeWriteScenarioCache(
+      scenario,
+      ctx([
+        green,
+        buildInfraErrorResult("infra", "m", "server_overloaded", ""),
+      ]),
+    );
+    assertEquals(await readCache(scenario, "codex"), null);
+
+    await maybeWriteScenarioCache(scenario, ctx([green]));
+    assertEquals((await readCache(scenario, "codex"))?.key, "k");
+  } finally {
+    Deno.chdir(origCwd);
     await Deno.remove(tmp, { recursive: true });
   }
 });

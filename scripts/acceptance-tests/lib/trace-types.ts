@@ -29,6 +29,8 @@ export interface ScenarioMetadata {
     totalCost: number;
     errors: number;
     warnings: number;
+    /** Set on a run the harness could not measure (FR-ACCEPT.INFRA-ABORT). */
+    infraError?: string;
   };
 }
 
@@ -48,6 +50,18 @@ export interface ScenarioGroupStats {
 }
 
 /** HTML-escapes a string for safe embedding in HTML content. */
+/**
+ * Status word of one run. An infrastructure abort is ERROR: it says nothing
+ * about the primitive, so it must not read as FAILED
+ * ([REF:fr:accept.infra-abort | FR-ACCEPT.INFRA-ABORT]).
+ */
+export function summaryStatus(
+  summary: { success: boolean; infraError?: string },
+): "PASSED" | "FAILED" | "ERROR" {
+  if (summary.infraError) return "ERROR";
+  return summary.success ? "PASSED" : "FAILED";
+}
+
 export function escape(str: string) {
   return str
     .replace(/&/g, "&amp;")

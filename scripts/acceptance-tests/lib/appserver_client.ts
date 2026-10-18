@@ -185,6 +185,7 @@ export class AppServerSession {
       items: ThreadItem[];
       usage: TokenBreakdown;
       resolve: (turn: CompletedTurn) => void;
+      reject: (error: Error) => void;
     }
   >();
   readonly #ready: Promise<void>;
@@ -254,9 +255,11 @@ export class AppServerSession {
       items: [] as ThreadItem[],
       usage: EMPTY_TOKENS,
       resolve: (_: CompletedTurn) => {},
+      reject: (_: Error) => {},
     };
     const completed = new Promise<CompletedTurn>((resolve, reject) => {
       state.resolve = resolve;
+      state.reject = reject;
       signal?.addEventListener(
         "abort",
         () => reject(new Error("Codex app-server turn aborted")),
@@ -417,5 +420,8 @@ export class AppServerSession {
     this.#closeError ??= error;
     for (const [, waiter] of this.#pending) waiter.reject(error);
     this.#pending.clear();
+    // A turn whose `turn/start` was already acknowledged waits only for
+    // `turn/completed`, which a dead child never sends.
+    for (const [, turn] of this.#turns) turn.reject(error);
   }
 }

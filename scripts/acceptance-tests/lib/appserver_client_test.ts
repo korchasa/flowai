@@ -175,6 +175,34 @@ Deno.test("AppServerSession surfaces a failed turn as an error", async () => {
   assertStringIncludes(message, "usage limit");
 });
 
+Deno.test("AppServerSession fails a live turn when the child dies after acknowledging it", async () => {
+  // The turn/start request already resolved, so only the turn waiter is left;
+  // a judge call without an abort signal would otherwise wait forever.
+  const fake = fakeAppServer({ closeAfterTurnAck: true });
+  const session = new AppServerSession({
+    model: "m",
+    effort: "medium",
+    cwd: "/tmp/x",
+    spawn: () => fake.process,
+  });
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const outcome = await Promise.race([
+      session.run("ping").then(
+        () => "resolved",
+        (e) => `rejected: ${(e as Error).message}`,
+      ),
+      new Promise<string>((r) => {
+        timer = setTimeout(() => r("still waiting after 2 s"), 2000);
+      }),
+    ]);
+    assertStringIncludes(outcome, "rejected: Codex app-server closed");
+  } finally {
+    clearTimeout(timer);
+    session.close();
+  }
+});
+
 Deno.test("AppServerSession keeps two overlapping turns apart", async () => {
   // One child serves several scenarios at once under `-p N`. The protocol
   // frames carry the thread id; without routing on it the two answers swap.

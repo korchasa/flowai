@@ -45,11 +45,34 @@ export function printTokenCost(results: BenchmarkResult[]): void {
   for (const line of lines) console.log(line);
 }
 
+/**
+ * One line per run the harness could not measure (FR-ACCEPT.INFRA-ABORT).
+ * Kept apart from checklist failures: those say the primitive is wrong, these
+ * say nothing about it.
+ */
+export function infraErrorLines(results: BenchmarkResult[]): string[] {
+  return results.filter((r) => r.infraError).map((r) =>
+    `${r.scenarioId}: ${r.infraError}`
+  );
+}
+
 /** Print the trailing detailed errors & warnings block. */
 export function printDetailedErrors(
   results: BenchmarkResult[],
   allScenarios: BenchmarkScenario[],
 ): void {
+  const infra = infraErrorLines(results);
+  if (infra.length > 0) {
+    console.log(
+      "\n--- INFRASTRUCTURE ERRORS (not measured — re-run, not a verdict) ---",
+    );
+    const red = ansi("\x1b[31m");
+    const reset = ansi("\x1b[0m");
+    for (const line of infra) {
+      console.log(`  ${red}[INFRA ERROR]${reset} ${line}`);
+    }
+  }
+
   const failedResults = results.filter((r) =>
     r.errorsCount > 0 || r.warningsCount > 0
   );
@@ -105,7 +128,7 @@ export function printSummaryTable(
     totalTimeMs += r.durationMs;
     totalTokens += r.tokensUsed;
 
-    const nameColor = r.errorsCount > 0
+    const nameColor = r.errorsCount > 0 || r.infraError
       ? ansi("\x1b[31m")
       : (r.warningsCount > 0 ? ansi("\x1b[33m") : ansi("\x1b[32m"));
     const errColor = r.errorsCount > 0 ? ansi("\x1b[31m") : "";
@@ -128,7 +151,7 @@ export function printSummaryTable(
         (r.durationMs / 1000).toFixed(1).padStart(10)
       } | ${formattedTokens.padStart(12)} | $${
         r.totalCost.toFixed(6).padStart(10)
-      }`,
+      }${r.infraError ? " [INFRA ERROR]" : ""}`,
     );
   }
 
@@ -149,6 +172,21 @@ export function printSummaryTable(
   console.log("-".repeat(130));
 }
 
+/**
+ * Pass count of one scenario's runs against the majority threshold, plus how
+ * many runs the infrastructure took away. An aborted run is not a pass, but it
+ * is named, so a scenario below threshold for that reason reads as "re-run",
+ * not as "the primitive regressed".
+ */
+export function passRateCounts(
+  scenarioResults: BenchmarkResult[],
+  runs: number,
+): { passed: number; infraErrors: number; ok: boolean } {
+  const passed = scenarioResults.filter((r) => r.success).length;
+  const infraErrors = scenarioResults.filter((r) => r.infraError).length;
+  return { passed, infraErrors, ok: passed >= Math.ceil(runs / 2) };
+}
+
 /** Print the per-scenario PASS RATES block. Only meaningful when runs > 1. */
 export function printPassRates(
   results: BenchmarkResult[],
@@ -159,16 +197,17 @@ export function printPassRates(
   console.log(`\n--- PASS RATES (threshold: ${threshold}/${runs}) ---`);
   for (const scenario of scenariosToRun) {
     const scenarioResults = results.filter((r) => r.scenarioId === scenario.id);
-    const passed = scenarioResults.filter((r) => r.success).length;
+    const { passed, infraErrors, ok } = passRateCounts(scenarioResults, runs);
     const rate = (passed / runs) * 100;
-    const ok = passed >= threshold;
     const color = ok ? ansi("\x1b[32m") : ansi("\x1b[31m");
     const mark = ok ? "PASS" : "FAIL";
     const reset = ansi("\x1b[0m");
     console.log(
       `${color}[${mark}]${reset} ${scenario.id.padEnd(30)}: ${
         rate.toFixed(1)
-      }% (${passed}/${runs})`,
+      }% (${passed}/${runs})${
+        infraErrors > 0 ? `, ${infraErrors} infra error(s)` : ""
+      }`,
     );
   }
 }
@@ -177,7 +216,7 @@ export function printPassRates(
  * Compute overall failure status. With multiple runs: scenario passes if
  * >50% of runs succeed. With single run: scenario passes if it succeeds.
  */
-function hasAnyFailures(
+export function hasAnyFailures(
   results: BenchmarkResult[],
   scenariosToRun: BenchmarkScenario[],
   runs: number,
@@ -187,8 +226,7 @@ function hasAnyFailures(
       const scenarioResults = results.filter((r) =>
         r.scenarioId === scenario.id
       );
-      const passed = scenarioResults.filter((r) => r.success).length;
-      if (passed < Math.ceil(runs / 2)) return true;
+      if (!passRateCounts(scenarioResults, runs).ok) return true;
     }
     return false;
   }
@@ -208,7 +246,13 @@ export function finalizeRun(
   console.log(`\nReport: file://${reportPath}`);
 
   if (hasAnyFailures(results, scenariosToRun, runs)) {
-    console.log(`\n${ansi("\x1b[31m")}Some tests failed.${ansi("\x1b[0m")}`);
+    const infra = infraErrorLines(results).length;
+    const note = infra > 0
+      ? ` ${infra} run(s) were aborted by the infrastructure and measured nothing — re-run them before reading any verdict.`
+      : "";
+    console.log(
+      `\n${ansi("\x1b[31m")}Some tests failed.${note}${ansi("\x1b[0m")}`,
+    );
     Deno.exit(1);
   }
 

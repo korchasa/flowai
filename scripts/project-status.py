@@ -186,7 +186,8 @@ def block_benchmarks():
                 stats["pending"] += 1
             if (row.get("verdict") or {}).get("resolved"):
                 stats["resolved"] += 1
-        finished = [r.get("finishedAt", "") for r in header.get("reps", [])]
+        # A rep still running carries `finishedAt: null`; skip it.
+        finished = [r["finishedAt"] for r in header.get("reps", []) if r.get("finishedAt")]
         last = max(finished)[:10] if finished else "?"
         arm = key.get("arm", "?")
         fw = key.get("framework") or "-"

@@ -1,5 +1,6 @@
 // [REF:fr:maint | FR-MAINT] — project maintenance via deno task check
 import { shouldAutoInstall } from "./sync-plugins-local.ts";
+import { SCRIPTS_TEST_IGNORE } from "./task-test.ts";
 import { runCommands, runCommandsInParallelBuffered } from "./utils.ts";
 import type { CommandSpec } from "./utils.ts";
 
@@ -100,7 +101,7 @@ export function buildCheckPlan(options: CheckPlanOptions = {}): CheckPlan {
         args: [
           "test",
           "-A",
-          "--ignore=scripts/acceptance-tests/lib/runner_test.ts,scripts/benchmark/runs",
+          SCRIPTS_TEST_IGNORE,
           "scripts",
         ],
       },

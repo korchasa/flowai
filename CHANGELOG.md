@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.31](https://github.com/korchasa/flowai/compare/v0.14.30...v0.14.31) (2026-10-10)
+
+
+### Bug Fixes
+
+* **acceptance-tests:** fail a live judge turn when the app-server dies ([76e15d6](https://github.com/korchasa/flowai/commit/76e15d6a22d76d9969dba8633fee106cf5f5de61))
+* **acceptance-tests:** show the judge task files in year/month folders ([88e3f32](https://github.com/korchasa/flowai/commit/88e3f3239754023ccbbdc0e810a9fed25e1cac14))
+* **devtools:** report SKILL.md validation through hookSpecificOutput ([83418e1](https://github.com/korchasa/flowai/commit/83418e105b28d780f2772e8b189b2872c2028dcc))
+* **hooks:** quote the plugin hook path and pin std versions ([2a284da](https://github.com/korchasa/flowai/commit/2a284dafeaafaa03f9091f7ce9f4e8825cb6e230))
+* **status:** skip a benchmark rep that is still running ([754715c](https://github.com/korchasa/flowai/commit/754715c428275d27211ae3749b6e3110fc2966ca))
+* **test:** keep live-agent and bench-checkout tests out of a bare run ([6d84c22](https://github.com/korchasa/flowai/commit/6d84c225b7084f3655adc932d9669913ca96b996))
+
+
+### Documentation
+
+* align install, init and test instructions with the plugin build ([1a9dbb7](https://github.com/korchasa/flowai/commit/1a9dbb7d3d9e7fc0bc381dc4ad13b2476f203edb))
+
+### [0.14.30](https://github.com/korchasa/flowai/compare/v0.14.29...v0.14.30) (2026-10-07)
+
+
+### Bug Fixes
+
+* **plan,review:** turn the four stable sweep failures green ([968e22f](https://github.com/korchasa/flowai/commit/968e22fb38f0ff6e78116d18e81fb1c1d5395081))
+
+
+### Agent Changes
+
+* integrate upstream by commit-then-merge, never stash ([fa18ec0](https://github.com/korchasa/flowai/commit/fa18ec0cc604accd05425063ccbc14f731ee106e))
+
+### [0.14.29](https://github.com/korchasa/flowai/compare/v0.14.28...v0.14.29) (2026-10-07)
+
+
+### Features
+
+* **acceptance:** report provider-aborted runs as infrastructure ERROR ([d1f2bf6](https://github.com/korchasa/flowai/commit/d1f2bf62824be717a418b397c24c680524b3dcc2))
+
+### [0.14.28](https://github.com/korchasa/flowai/compare/v0.14.27...v0.14.28) (2026-10-07)
+
+
+### Bug Fixes
+
+* **write-prd:** ask for missing numeric targets with a recommended value ([fcf338e](https://github.com/korchasa/flowai/commit/fcf338e78da5d00aaa3e75845911cfac206dbf05))
+
 ### [0.14.27](https://github.com/korchasa/flowai/compare/v0.14.26...v0.14.27) (2026-10-07)
 
 

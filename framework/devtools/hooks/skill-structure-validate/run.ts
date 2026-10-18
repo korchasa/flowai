@@ -2,11 +2,12 @@
 
 /**
  * skill-structure-validate hook: auto-validate SKILL.md structure after edits.
- * PostToolUse hook — exit 0, stdout JSON with additionalContext on errors.
+ * PostToolUse hook — exit 0; on errors, stdout JSON with
+ * `hookSpecificOutput.additionalContext` (the only place Claude Code reads it).
  */
 
-import { dirname, join, resolve } from "jsr:@std/path";
-import { parse as parseYaml } from "jsr:@std/yaml";
+import { dirname, join, resolve } from "jsr:@std/path@^1.1.4";
+import { parse as parseYaml } from "jsr:@std/yaml@^1.0.12";
 
 /** Check if the file path is a SKILL.md inside a skills/ directory. */
 export function isSkillMd(filePath: string): boolean {
@@ -72,7 +73,10 @@ if (import.meta.main) {
   if (error) {
     console.log(
       JSON.stringify({
-        additionalContext: `SKILL.md validation failed: ${error}`,
+        hookSpecificOutput: {
+          hookEventName: "PostToolUse",
+          additionalContext: `SKILL.md validation failed: ${error}`,
+        },
       }),
     );
   }

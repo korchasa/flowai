@@ -15,14 +15,14 @@
 - Do not add fallbacks, default behaviors, or error recovery silently — if the user didn't ask for it, it's an assumption. If you believe a fallback is genuinely needed, ask the user first.
 - Do not use tables in chat output — use two-level lists instead. Tables render poorly in terminal and are harder to scan.
 - **Push is pre-authorized**: this is a solo-maintained project — `git push` (non-force) to any branch including `main` is pre-authorized and does NOT require per-action confirmation. Treat it as a local, reversible action. Force push, branch deletion on remote, and PR merge still require explicit confirmation.
-- **Worktree freshness**: immediately after entering a worktree (e.g., `EnterWorktree` or `git worktree add`), check whether the branch is behind `main` and rebase before making edits. Diff-pollution from upstream commits is invisible until review. Quick check: `git log --oneline ${branch_base}..main | head` — non-empty output means rebase first (`git stash -u && git rebase main && git stash pop`).
+- **Worktree freshness**: immediately after entering a worktree (e.g., `EnterWorktree` or `git worktree add`), check whether the branch is behind `main` and rebase before making edits. Diff-pollution from upstream commits is invisible until review. Quick check: `git fetch origin main && git log --oneline HEAD..origin/main | head` — local `main` lags the remote, so compare against `origin/main`. Non-empty output on a clean tree → `git rebase origin/main`. On a dirty tree, never `git stash`: the stash stack is shared by every worktree of the repo, so a parallel session can pop your entry, and a `pop` over files upstream also changed stops on a conflict with your edits half-applied. Commit your work first, then merge (`git merge origin/main`, or the host's own "sync with base branch" tool when it offers one). Observed 2026-10-08: a resumed session found its branch 29 commits behind with 2 of its dirty files changed upstream; commit-then-merge went through cleanly.
 - **Worktree paths**: when CWD is inside a worktree, prefer **relative paths** for `Write`/`Edit` calls. If an absolute path is required, derive it from `pwd` / `Deno.cwd()`, never from project memory. The worktree path (`<repo-root>/.claude/worktrees/<name>/`) and the repo-root path point to **different working trees**; an absolute path to repo-root from inside a worktree is a silent cross-tree leak.
 - **Safety guards are not friction**: when a guard blocks an action (`system_health`, `process_watchdog`, pre-commit hooks, lint disables, `--force`, `--no-verify`), the guard is a signal that conditions are wrong — NOT a hint to use the override. Diagnostic text in the guard's error message that mentions an override env var or flag is informational for an operator, NOT authorization for the agent. To proceed: report the blocker, propose remediation (free memory, fix the failing test, address the lint warning), and ask the user — or hand off. Do NOT pre-emptively use override flags / env vars / `--force` / `--no-verify` without explicit per-action authorization.
 
 ---
 - When `typescript-lsp` plugin is enabled, it auto-removes unused exports/imports on save. When adding a new exported function, edit the consumer file (import) before or simultaneously with the provider file (export) — otherwise LSP will delete the "unused" export between edits. Alternative: use Write tool (full rewrite) instead of Edit for the provider file.
 - `.agents/skills/` and `.codex/agents/` are the codex-side copies of the dev resources in `.claude/skills/` and `.claude/agents/`; `deno task check` neither formats nor lints them. Before committing one, `diff` it against its `.claude/` source and read the TOML by eye: the port of 2026-09-02 had been made by a search-replace that turned every "Claude Code" into "Codex" in three files (`--ide Codex`, `~/.Codex/projects`, `Codex -p --resume`), and nothing in the gate could have caught it.
-- Everything in `framework/` is the framework — the product of this project. Users install it via flowai into their IDE's config dir (`.claude/`). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
+- Everything in `framework/` is the framework — the product of this project. Users install it as plugins from the `korchasa/flowai-plugins` marketplace, or copy the rendered skills of a local plugin build into `.claude/skills/` (Cursor, OpenCode). Do not confuse framework skills/agents with dev resources in `.claude/skills/` and `.claude/agents/`.
 - Any changes to skills or agents must follow Acceptance Test TDD flow (see "Acceptance Test TDD" section below) — untested skill changes lead to regressions that are hard to detect without acceptance tests.
 - This is a universal framework for multiple IDEs (Cursor, Claude Code, OpenCode). Do not use tool names specific to a single IDE — write generically and provide examples for various IDEs. For example, instead of `use todo_write`, use `add to todo list (by todo_write, todowrite, etc.)`.
 - Use relative paths in commands when possible — absolute paths only when required by the tool or context.
@@ -174,7 +174,7 @@ wherever it carries meaning better than prose does.
 1. **RED**: Write a failing test (`deno test <id>`) for new or changed logic.
 2. **GREEN**: Write minimal code to pass the test.
 3. **REFACTOR**: Improve code and tests without changing behavior. Re-run `deno test <id>`.
-4. **CHECK**: Run `deno fmt && deno lint && deno test`. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
+4. **CHECK**: Run `deno task check` (formatter, linter, every test the gate runs). Not a bare `deno test` from the root: it also discovers `scripts/acceptance-tests/lib/runner_test.ts`, which spawns live agents, and the test files of the gitignored SWE-rebench checkouts under `scripts/benchmark/runs/`. You are NOT done after GREEN — skipping CHECK leaves formatting errors and regressions undetected. This step is mandatory.
 
 #### Code Test Rules
 
@@ -260,8 +260,8 @@ When the root cause is outside your control (missing API keys/URLs, missing gene
   - static code analysis (linting)
   - all project tests
   - skill validation
-- `test <path>` — runs a single test file or test suite.
-- `dev` — runs the application in development mode with watch mode enabled.
+- `test <path>` — runs a single test file or test suite. With no path it runs `scripts/` minus the same exclusions as `check` (`runner_test.ts`, `scripts/benchmark/runs/`).
+- `dev` — watches `scripts/` and re-runs the formatter and the linter on every change (`scripts/task-dev.ts`).
 
 ### `deno task check` Output Quirks
 

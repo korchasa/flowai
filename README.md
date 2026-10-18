@@ -48,7 +48,7 @@ Developer: sets task, decides direction
 
 flowai is distributed as a generated plugin marketplace, [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins). How you consume it depends on whether your IDE can install a plugin:
 
-- **Claude Code** and **Codex** install from the marketplace natively. No Deno toolchain required.
+- **Claude Code** and **Codex** install from the marketplace natively; installing needs no Deno toolchain. Some primitives run Deno scripts at work time, so keep `deno` on `PATH` if you use them: the `init` skill, the `engineer-*` skills, and the hooks of the `devtools`, `memex` and `beta` packs.
 - **Cursor** and **OpenCode** have no plugin marketplace. Their users build the same tree locally and copy the rendered skills into `.claude/skills/`, which both IDEs read.
 
 Jump to your IDE:
@@ -147,7 +147,7 @@ Copy and paste the following prompt into your AI IDE (Claude Code, Codex, Cursor
 > 1. Look up the install instructions for my IDE in https://github.com/korchasa/flowai#installation.
 > 2. On Claude Code or Codex, add the `korchasa/flowai-plugins` marketplace and install the `flowai` plugin plus whichever optional packs match my stack.
 > 3. On Cursor or OpenCode, clone `korchasa/flowai`, run `deno task build-plugins`, and copy `dist/claude-plugins/plugins/<pack>/skills/*` into `.claude/skills/`.
-> 4. Run `/init` to analyze the codebase and generate AGENTS.md files, documentation scaffolding, and development commands.
+> 4. Run the flowai `init` skill to analyze the codebase and generate AGENTS.md files, documentation scaffolding, and development commands. On Claude Code call it as `/flowai:init`: a bare `/init` there starts Claude Code's own built-in command instead.
 
 ## Updating
 

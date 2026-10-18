@@ -6,6 +6,7 @@
  * in `scripts/task-check.ts`, so a test placed there is never run by the gate.
  */
 
+import { join } from "@std/path";
 import { runGit } from "./utils.ts";
 
 /** Per-section cap for a diff blob before it is elided at the tail. */
@@ -272,4 +273,43 @@ export async function collectGeneratedFiles(
     }
   }
   return parts.join("\n");
+}
+
+/** Every `.md` path under `dir`, relative to it, in sorted order. */
+async function listMarkdown(dir: string, prefix = ""): Promise<string[]> {
+  const found: string[] = [];
+  for await (const entry of Deno.readDir(dir)) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory) {
+      found.push(...await listMarkdown(join(dir, entry.name), rel));
+    } else if (entry.isFile && entry.name.endsWith(".md")) {
+      found.push(rel);
+    }
+  }
+  return found.sort();
+}
+
+/**
+ * Read every .md file under documents/tasks/ — the accepted layout nests them
+ * as `<YYYY>/<MM>/<slug>.md` — falling back to legacy documents/task.md.
+ */
+export async function readTaskFiles(sandboxPath: string): Promise<string> {
+  let taskFilesContent = "";
+  try {
+    const tasksDir = join(sandboxPath, "documents", "tasks");
+    for (const rel of await listMarkdown(tasksDir)) {
+      const content = await Deno.readTextFile(join(tasksDir, rel));
+      taskFilesContent += `\n--- ${rel} ---\n${content}\n`;
+    }
+    if (!taskFilesContent) taskFilesContent = "(no task files found)";
+  } catch (_) {
+    try {
+      taskFilesContent = await Deno.readTextFile(
+        join(sandboxPath, "documents", "task.md"),
+      );
+    } catch (_) {
+      taskFilesContent = "(no task files found)";
+    }
+  }
+  return taskFilesContent;
 }
