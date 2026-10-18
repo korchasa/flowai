@@ -143,7 +143,7 @@ The user wants to bootstrap an AI agent's understanding of the project. The agen
 9. **Generate Documentation**
    - Resolve documentation roles from the generated `AGENTS.md`: `SRS`, `SDS`, `tasks`, and `index`. If a role is missing, add it to AGENTS.md before generating docs.
    - Generate core documentation files at the resolved role paths:
-     - `SRS`: Read the pack-level template at `../../assets/SRS.template.md` and use its section and field structure verbatim (`## 3. Functional Reqs` with per-FR `**Desc:**` / `**Scenario:**` / `**Acceptance:**` / `**Status:**` fields). Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
+     - `SRS`: Read the pack-level template at `../../assets/SRS.template.md` and use its section and field structure verbatim (`## 3. Functional Reqs` with per-FR `**Desc:**` / `**Rationale:**` / `**Scenario:**` / `**Acceptance:**` / `**Status:**` fields — `**Rationale:**` is mandatory: write why each requirement exists, from the interview answers or the inferred context). Fill based on interview data (Greenfield) or inferred context (Brownfield). Skip if file exists and has more than 50 lines.
      - `SDS`: Read the pack-level template at `../../assets/SDS.template.md` and create the initial structure from it (`## 3. Components` with per-component `**Purpose:**` / `**Interfaces:**` / `**Deps:**` fields). Skip if file exists and has more than 50 lines.
      - `tasks` directory:
        - For **Brownfield**: Create an init-context task using the role's layout with "Discovered Context" (file tree) and README summary.

@@ -26,6 +26,7 @@ The problem is 'Boredom' and the solution is 'Fun'.
 There are no major risks. 
 The tech stack is 'Deno' and 'TypeScript'. 
 The architecture is 'Monolith'. 
+The first feature is a 'fun-fact' command that prints a random fun fact, because users get bored while waiting for builds. 
 When the agent asks for project details or starts an interview, provide these details. 
 Always confirm when asked to overwrite or create files.
 Always confirm when asked to apply diffs.`;
@@ -59,6 +60,12 @@ Always confirm when asked to apply diffs.`;
       id: "srs_sds_structure",
       description:
         "Do the generated SRS and SDS follow the pack's SRS/SDS templates? The SRS must have the numbered sections '## 1. Intro' … '## 6. Acceptance' with the template's bold fields (e.g. '**Desc:**', '**Def/Abbr:**', '**Context:**'), and any FR entry under '## 3. Functional Reqs' must carry '**Desc:**', '**Scenario:**', '**Acceptance:**' and '**Status:**' (a greenfield project may have zero FR entries yet — that is fine); the SDS must have '## 3. Components' whose entries carry '**Purpose:**', '**Interfaces:**' and '**Deps:**'. These section and field names are not in AGENTS.md — the agent has to read the SRS/SDS templates to get them (FR-INIT). Judge from the files' actual contents; if the evidence does not show them, say so rather than guessing.",
+      critical: true,
+    },
+    {
+      id: "fr_rationale_field",
+      description:
+        "Does every FR entry under '## 3. Functional Reqs' in the generated SRS carry a '**Rationale:**' field that states why the requirement exists (for example, why the 'fun-fact' command is needed)? The field name comes from the pack's SRS template, not from AGENTS.md (FR-DOCS.RATIONALE). Fail if any FR entry lacks the field or leaves it empty, and fail if the SRS has no FR entry at all — the persona named a first feature, so there is one to record. Judge from the file's actual contents.",
       critical: true,
     },
     {

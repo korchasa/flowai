@@ -529,6 +529,14 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
   - [x] Project-document path rules live in `AGENTS.md`; the SRS/SDS schema blocks live in `framework/core/assets/SRS.template.md` and `SDS.template.md` and are absent from `AGENTS.md`; `CLAUDE.md` is same-content compatibility, not a second schema source. Evidence: `scripts/check-agents-template_test.ts` ("does NOT embed the SRS/SDS format blocks").
   - [x] Distributed plugin primitives outside `AGENTS*`/`CLAUDE*` templates avoid concrete SRS/SDS/tasks/index paths and schema blocks. Evidence: `scripts/check-skills_test.ts::doc schema indirection`.
 
+#### FR-DOCS.RATIONALE Mandatory Rationale field in every FR [ANC:fr:docs.rationale]
+
+- **Description:** Every FR block carries a `**Rationale:**` field that states why the requirement exists — the problem it removes, the incident or measurement behind it, or the user decision it records. The field sits in both FR templates: the project's own SRS format (`documents/AGENTS.md`) and the shipped `framework/core/assets/SRS.template.md`, whose per-FR field list `init` names when it scaffolds an SRS. The shipped `AGENTS.template.md` and this project's `AGENTS.md` declare the rule as `Rationale-as-gate`. It is enforced the way `**Acceptance:**` is, by the `review` FR Coverage Audit (step 4a, check 5): an FR section the diff adds or modifies without a non-empty `**Rationale:**` is `[critical] no rationale`, and the verdict cannot be `Approve`. The check binds only when the project's AGENTS.md declares the rule, and only on FR sections the diff touches. FRs written before the rule get their rationale when they are next edited; there is no bulk backfill.
+- **Rationale:** a requirement without its reason cannot be weighed against a conflicting one, and a later session cannot tell a load-bearing constraint from a historical accident. Before this clause, 3 of 130 FRs in this SRS stated a reason in a labelled field. User decision 2026-10-18: one field for both templates, named after the ISO/IEC/IEEE 29148 term, gated at review on touched FRs, backfilled on edit.
+- **Tasks:** [REF:task:2026-10-fr-rationale-field | fr-rationale-field]
+- **Acceptance verified by acceptance tests:** `init-greenfield` (item `fr_rationale_field`), `review-missing-rationale-blocks`, `review-doc-drift-is-warning` (an untouched FR without the field does not block).
+- **Status:** [x]
+
 ### FR-HOWTO: Automation & How-To [ANC:fr:howto]
 
 - **Description:** The system must provide short-named guides for complex or situational tasks (QA, testing, diagrams, prompts, research, etc.).

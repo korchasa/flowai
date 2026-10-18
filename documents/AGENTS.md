@@ -20,6 +20,7 @@ SRS (`requirements.md`), SDS (`design.md`) and task files (`tasks/`). The root `
 ## 3. Functional Reqs
 ### 3.1 FR-CMD-EXEC
 - **Desc:**
+- **Rationale:** <why this requirement exists>
 - **Scenario:**
 - **Acceptance verified by acceptance tests:** `scenario-id-1`, `scenario-id-2`
   <!-- or: **Acceptance:** tests/foo_test.ts::test_bar | `deno task check-x` | manual — <reviewer> -->

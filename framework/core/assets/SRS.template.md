@@ -8,6 +8,7 @@
 ## 3. Functional Reqs
 ### 3.1 FR-CMD-EXEC
 - **Desc:**
+- **Rationale:** <why this requirement exists>
 - **Scenario:**
 - **Acceptance:** <test-path::test-name | benchmark-id | `evidence-command` | `manual — <reviewer>`>
 - **Status:** [ ] / [x]
