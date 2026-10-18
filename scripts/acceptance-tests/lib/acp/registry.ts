@@ -21,7 +21,7 @@ import type { AcpLaunch } from "./bridge_store.ts";
  * benchmark cache-key (FR-ACCEPT-CACHE) so a lib upgrade invalidates stale ACP
  * verdicts.
  */
-export const ACP_LIB_VERSION = "2.1.0";
+export const ACP_LIB_VERSION = "3.0.3";
 
 export type AcpIde = "claude" | "cursor" | "codex" | "opencode";
 
