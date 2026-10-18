@@ -12,6 +12,5 @@
         "matcher": "Write|Edit"
       }
     ]
-  },
-  "autoCompactWindow": 200000
+  }
 }
