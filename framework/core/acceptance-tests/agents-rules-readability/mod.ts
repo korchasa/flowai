@@ -1,5 +1,6 @@
 import { join } from "@std/path";
 import type { BenchmarkScenario } from "@acceptance-tests/types.ts";
+import { runGit } from "@acceptance-tests/utils.ts";
 
 const FIXTURE_PATH = join(
   import.meta.dirname!,
@@ -102,6 +103,13 @@ export const AgentsRulesReadability = new class implements BenchmarkScenario {
       '  const resolvedLevel = isLogLevel(level) ? level : "debug";',
       '  let resolvedLevel = isLogLevel(level) ? level : "debug";',
     );
+
+    // The runner commits `init` BEFORE setup, so the two planted lines would
+    // sit in the working tree as uncommitted edits, and the judge read them as
+    // the agent's own (no_fix_applied failed 2 of 3 runs, 2026-10-18). Commit
+    // them, so any diff left at the end is the agent's.
+    await runGit(sandboxPath, ["add", "-A"]);
+    await runGit(sandboxPath, ["commit", "-m", "Add usage summary helper"]);
   }
 
   userQuery =
@@ -117,13 +125,13 @@ export const AgentsRulesReadability = new class implements BenchmarkScenario {
     {
       id: "next_step_per_failure",
       description:
-        "For EACH failure the agent reports, does it name a concrete next step (a command to run, or the specific edit to make)? If a cause is genuinely unknown from the output, does it say so instead of inventing a step?",
+        "For EACH failure the agent reports, does it name a concrete next step (a command to run, or the specific edit to make)? If a cause is genuinely unknown from the output, does it say so instead of inventing a step? A choice between named edits counts as a named step, because the user said they want to decide (e.g. 'Either delete the line, or use the value'), and an extra observation after the step does not cancel it. FAIL a failure whose report only restates what is wrong or what the tool wants ('so the linter wants `const`', 'the linter suggests removing it') and never states the edit as something to do. Quote the failure that has no step.",
       critical: true,
     },
     {
       id: "short_single_idea_sentences",
       description:
-        "Are the sentences short and single-idea — no sentence running past roughly 25 words, and no chains of clauses joined by semicolons, em-dashes, or nested parentheses?",
+        "Look ONLY at the report the agent writes after running the command. Are the sentences short and single-idea? FAIL only when you can quote a sentence that (a) runs past 25 words — count them, do not estimate; (b) chains clauses with semicolons, em-dashes or nested parentheses; or (c) glues two unrelated statements about different things into one sentence (e.g. 'The variable is unused, and the logger has no tests'). A statement together with its own reason, consequence, contrast or recommendation is ONE idea, whatever conjunction joins it: '`x` is never reassigned, so `const` is enough', 'Renaming it would silence the warning but leave dead code', 'Either delete the line, or use the value'. Two sentences that sit next to each other are two sentences, not a chain. Quote every failing sentence and say which of (a)-(c) it breaks; when you can quote none, the item passes.",
       critical: true,
     },
     {

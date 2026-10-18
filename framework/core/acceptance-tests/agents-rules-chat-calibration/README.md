@@ -40,9 +40,15 @@ replace live Claude runs. Correct brief replies and established terms are
 positive controls; Russian-only opaque replies are negative controls for meaning.
 When the judge decides a reply wrongly, add that reply as a fixed control and
 sharpen the checklist; never relax a criterion to match the verdict. The
-`defective-redundant-gloss` sample in the `source` case is such a control: a
-Russian reply that repeats its own wording in English parentheses, which the
-judge accepted until the language criterion named that pattern.
+`clear-redundant-gloss` sample in the `source` case is such a control: a
+Russian reply that repeats its own wording in English parentheses. It was a
+negative control until 2026-09-20, when the language criterion stopped counting
+a redundant gloss as a defect, and it is a positive control now.
+
+Known defect, 2026-10-18: on the claude judge the script hangs on its first
+call. It builds a codex judge home (`prepareCodexJudgeHome`) but reads the
+`ides.claude.judge` config, so no judge answer ever arrives. Until it is fixed,
+calibration is unavailable on the claude arm.
 
 The calibration script also covers one sibling that is not part of the chat
 language set: `agents-rules-option-standalone` (suffix `option-standalone`,

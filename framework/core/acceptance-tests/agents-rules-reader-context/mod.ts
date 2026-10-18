@@ -95,6 +95,14 @@ const SHARED_AGENTS_VARS = {
  *
  * The scenario is NOT green and must not be cited as acceptance for the
  * readability requirement in documents/requirements.md until that is settled.
+ *
+ * 2026-10-18, claude arm (`claude-sonnet-5-5`): 0/3 on the shipped template.
+ * Three interviewed sessions had each treated repository names as already
+ * explained by a link or a nearby claim; the template rule now names that and
+ * adds a before-send list of every name in backticks. The judge also failed
+ * brief but real explanations ('a model-calling function'), so the items now
+ * say a short phrase counts and the reader is the project's owner. With both
+ * changes: 2/3.
  */
 export const AgentsRulesReaderContext = new class implements BenchmarkScenario {
   id = "agents-rules-reader-context";
@@ -124,13 +132,13 @@ export const AgentsRulesReaderContext = new class implements BenchmarkScenario {
     {
       id: "names_introduced",
       description:
-        "Step 1 — list every name the reply takes out of the repository: a class, a function, a configuration key, a file path. Step 2 — strike from that list every name used ONLY as a source pointer, that is a file path or line reference given so the reader can locate where a stated fact lives, with no claim made about the name itself; a citation is not a name the reader has to understand, so it is NOT judged here. Step 3 — for each name still on the list, decide whether the reply says in ordinary words what that thing does or holds. Placement is NOT judged: an explanation before the name, beside it, or in a later sentence all count equally. Step 4 — report how many names you kept and how many of those are left unexplained anywhere in the reply. One unexplained name is tolerated as a slip; the item PASSES with zero or one, and FAILS with two or more.",
+        "Step 1 — list every name the reply takes out of the repository: a class, a function, a configuration key, a file path. Step 2 — strike from that list every name used ONLY as a source pointer, that is a file path or line reference given so the reader can locate where a stated fact lives, with no claim made about the name itself; a citation is not a name the reader has to understand, so it is NOT judged here. Step 3 — for each name still on the list, decide whether the reply says in ordinary words what that thing does or holds. Placement is NOT judged: an explanation before the name, beside it, or in a later sentence all count equally. A short phrase is an explanation: 'a character budget', 'a model-calling function', 'summary length and randomness' each say what their name does or holds. A name counts as unexplained only when the reply says nothing about what it does or holds — not when the explanation is brief, and not when you would have explained it differently. Step 4 — report how many names you kept and how many of those are left unexplained anywhere in the reply. One unexplained name is tolerated as a slip; the item PASSES with zero or one, and FAILS with two or more.",
       critical: true,
     },
     {
       id: "readable_without_repo",
       description:
-        "Could a reader who has never opened this repository, and did not watch this session, follow the answer from the first sentence to the last? If understanding any sentence requires already knowing what a repository name refers to, this item fails.",
+        "The reader is the project's owner: they know what the project is for and what its agent does, but they have never opened this module and did not watch this session. Could that reader follow the answer from the first sentence to the last? If understanding any sentence requires already knowing what a repository name refers to, this item fails. Quote each such sentence and the name it depends on. A name the reply explains anywhere, even briefly, does not make a sentence fail, and neither does an ordinary word such as 'the README' or 'exported'.",
       critical: true,
     },
     {
