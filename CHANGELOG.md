@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.42](https://github.com/korchasa/flowai/compare/v0.14.41...v0.14.42) (2026-10-18)
+
+
+### Bug Fixes
+
+* **agents-rules:** repair four chat-writing reds on the claude arm ([068f0c5](https://github.com/korchasa/flowai/commit/068f0c518b28ff39b9795e2d360cb318be4382ee))
+
 ### [0.14.41](https://github.com/korchasa/flowai/compare/v0.14.40...v0.14.41) (2026-10-18)
 
 
