@@ -91,9 +91,14 @@ two pages.
 6. Design packaging in the main plan.
    - Keep one canonical source tree and emit IDE-specific install files.
    - Generate native manifests per IDE instead of forcing one manifest to fit all.
-   - For Codex, wire plugin apps through an `.app.json` file referenced by
-     `.codex-plugin/plugin.json` `apps`, and wire bundled MCP servers through
-     `.mcp.json` referenced by `mcpServers`.
+   - For Codex, two manifest formats coexist; name the one you pick and why.
+     In both, plugin apps are wired through an `.app.json` file referenced by an
+     `apps` field — name that file and that field in the layout and the plan.
+     - Portable: root `plugin.json`, Codex settings under
+       `extensions.com.openai`, so `extensions.com.openai.apps` references
+       `./.app.json`; bundled MCP servers live in a root `mcp.json` (no dot).
+     - Legacy compatibility fallback: `.codex-plugin/plugin.json`, whose `apps`
+       references `.app.json` and whose `mcpServers` references `.mcp.json`.
    - Include marketplace files only for IDEs that support them.
    - Keep manifest paths relative to the plugin root where the host requires it.
    - Put assets near the consuming manifest, skill, wrapper, or app config.
@@ -151,7 +156,8 @@ writing files.
 
 - Claude Code: plugins use `.claude-plugin/plugin.json`; components can include
   skills, agents, hooks, MCP servers, LSP servers, monitors, settings, and assets.
-- Codex: plugins use `.codex-plugin/plugin.json`; bundled surfaces can include
+- Codex: plugins use a root `plugin.json` with `extensions.com.openai`, or the
+  legacy `.codex-plugin/plugin.json` fallback; bundled surfaces can include
   skills, apps, MCP servers, hooks, assets, and marketplace metadata.
 - Cursor: MCP is the main documented extension surface for external tools; project
   and global `mcp.json` plus extension API may apply.
