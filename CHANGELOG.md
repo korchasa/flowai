@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.43](https://github.com/korchasa/flowai/compare/v0.14.42...v0.14.43) (2026-10-18)
+
+
+### Bug Fixes
+
+* **agents-rules:** make rule 6 hold on the default claude arm ([5d8780c](https://github.com/korchasa/flowai/commit/5d8780c291c174350e4a3dd4b6dad1d55164a75c))
+* **core:** carry the new rule-6 wording into every question format ([507cbdf](https://github.com/korchasa/flowai/commit/507cbdfac66bd124bb213a4129f3519005905135))
+
+
+### Tests
+
+* **agents-rules:** calibrate the option-standalone judge on claude ([96c29dd](https://github.com/korchasa/flowai/commit/96c29ddece365996c4446d9697d5825f6a025d31))
+* **agents-rules:** close the group-pointer gap in option-standalone ([8c07c5b](https://github.com/korchasa/flowai/commit/8c07c5bce6fd6ab7caf912d463b01f79c8836810))
+
 ### [0.14.42](https://github.com/korchasa/flowai/compare/v0.14.41...v0.14.42) (2026-10-18)
 
 
