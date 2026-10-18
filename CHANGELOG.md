@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.39](https://github.com/korchasa/flowai/compare/v0.14.38...v0.14.39) (2026-10-18)
+
+
+### Features
+
+* **devtools:** engineer-command writes one IDE slash-command file ([e6f6588](https://github.com/korchasa/flowai/commit/e6f658865c4bd312c4eb69affd7a773bd6c7f962))
+
+
+### Bug Fixes
+
+* **commit:** run no project check in the standalone commit ([a45978f](https://github.com/korchasa/flowai/commit/a45978f1862bea7aa14ca411320b7b82652473f1))
+* **engineering:** current Codex manifest and resolvable devtools links ([dffb768](https://github.com/korchasa/flowai/commit/dffb768a764507f8118b8e36123cdaefac622fcc))
+* **engineering:** restore the Codex manifest and devtools link fix ([e800d9b](https://github.com/korchasa/flowai/commit/e800d9bca048048e7c750f4315fc38335d113971))
+
 ### [0.14.38](https://github.com/korchasa/flowai/compare/v0.14.37...v0.14.38) (2026-10-18)
 
 
