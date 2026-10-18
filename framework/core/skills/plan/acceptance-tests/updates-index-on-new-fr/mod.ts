@@ -1,5 +1,11 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
+// The fixture ships an SRS without an FR-PAUSE section. Without it the
+// scenario contradicts FR-DOC-NO-SRS: with no requirements document the plan
+// must not name an FR whose text is recorded nowhere, so `implements:` stays
+// `[]` and the index gets no row — the agent then asks where the text should
+// live, and the persona's answer decides the run (0/3 on 2026-10-18).
+
 export const PlanUpdatesIndexBench = new class extends AcceptanceTestScenario {
   id = "plan-updates-index-on-new-fr";
   name = "Plan updates documents/index.md when introducing a new FR";

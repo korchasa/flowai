@@ -29,7 +29,7 @@ export const PlanLoadsRelatedTasksBench = new class
     {
       id: "skips_unrelated_profile_task",
       description:
-        "Did the agent correctly skip `add-profile-edit` (under documents/tasks/2026/04/) — its `implements:` is FR-PROFILE-EDIT which has no intersection with the planned task's FR-AUTH-LOGIN? The unrelated task must NOT appear as loaded context.",
+        "Did the agent correctly skip `add-profile-edit` (under documents/tasks/2026/04/) — its `implements:` is FR-PROFILE-EDIT which has no intersection with the planned task's FR-AUTH-LOGIN? The unrelated task must NOT appear as loaded context. Loaded context means: listed in chat as a loaded or related task, summarised as context for the new plan, or written into the new task file's `related_tasks:`. FAIL if `add-profile-edit` appears in any of these. Reading the file to check its `implements:` frontmatter is how the skill tests the intersection and is NOT loading it, and naming the task once as checked and excluded is not presenting it as loaded — neither fails this item on its own.",
       critical: true,
     },
     {
