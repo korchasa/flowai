@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.38](https://github.com/korchasa/flowai/compare/v0.14.37...v0.14.38) (2026-10-18)
+
+
+### Bug Fixes
+
+* **reflect:** claim a named transcript file in the description ([72ef47f](https://github.com/korchasa/flowai/commit/72ef47feeee0e960b1e359eb3de6db39aa483599))
+* **setup-ai-ide-devcontainer:** ask the Step 4 questions instead of defaulting ([c5facf5](https://github.com/korchasa/flowai/commit/c5facf5116f93e627ad251872ed367d6b42e9434))
+
+
+### Tests
+
+* **acceptance:** give the judge a legend of the trace markers ([1dffe8f](https://github.com/korchasa/flowai/commit/1dffe8f2e9694d2ab12e8a15bd48ffb88cf8d987))
+
 ### [0.14.37](https://github.com/korchasa/flowai/compare/v0.14.36...v0.14.37) (2026-10-18)
 
 

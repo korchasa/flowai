@@ -65,7 +65,7 @@ Scan the project for indicators that map to devcontainer features beyond the bas
 6. **Present** grouped list to user (see catalog for format). Show what was detected and why (which indicator file triggered each suggestion). **Every catalog mapping that fired gets its own line**, named and attributed to the file that triggered it. Do not merge two needs into one line and do not silently fold one into another; if you think one feature makes another unnecessary, say so ON that feature's own line and let the user decide.
 7. **User confirms** or customizes the list. Confirmed features are merged into the `features` block in step 5 (Generate Configuration)
 
-**Step 6 always runs; only step 7 may be skipped.** A request that pre-authorizes the suggestions ("accept all suggested features", or a complete feature list) waives the WAIT, never the PRESENTATION: the grouped list is the record of what was found and which file triggered it, and it is what lets the user notice something was missed. Present it BEFORE writing any file. A summary printed after the files exist is not this step — by then the decision it documents has already been made.
+**Step 6 always runs; only step 7 may be skipped.** A request that pre-authorizes the suggestions ("accept all suggested features", or a complete feature list) waives the WAIT, never the PRESENTATION: the grouped list is the record of what was found and which file triggered it, and it is what lets the user notice something was missed. Present it BEFORE writing any file, in the same message that asks the Step 4 questions the request left unanswered — that message ends your turn (see Step 4). Only when the request answered every Step 4 item too does the list go out as a message of its own before the first file write, with no stop. A summary printed after the files exist is not this step — by then the decision it documents has already been made.
 
 ### Step 3: Detect Existing Configuration
 
@@ -79,7 +79,12 @@ Check if `.devcontainer/` exists:
 
 ### Step 4: Determine Capabilities
 
-Ask the user (skip items already answered in prior context):
+Ask the user every item below that the request and prior context did not answer, then STOP for the reply. Skip only the items the user has already answered.
+
+- **A "(default)" label is not an answer.** It marks the option to recommend inside the question, not one to pick on the user's behalf. Writing "you didn't say, so I chose the defaults" in the closing summary means these questions were skipped.
+- **"Accept all suggested features" answers Step 2's confirmation only.** It says nothing about AI CLIs, host mounts, the firewall or a Dockerfile.
+- **A project rule about forward motion inside an authorized plan does not reach these questions.** The request authorized a devcontainer, not its privileges: the firewall adds Linux capabilities, and the host mount exposes the user's AI config to the container. Those are the user's choices to make.
+- **Ask the unanswered items in ONE message together with the Step 2 grouped list (and the Step 3 questions, when a config exists), then end your turn.** Generate and write nothing before the reply.
 
 1. **AI CLI tools** (multi-select): "Which AI CLI tools to install in the container? (install only — authentication is always manual via `<cli> login` inside the container after first start)"
    - Claude Code — install via `postCreateCommand` script (`curl claude.ai/install.sh`) + writable named volume for `~/.claude`

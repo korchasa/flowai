@@ -1,6 +1,7 @@
 import { assert, assertEquals } from "@std/assert";
 import { buildJudgeRequest, evaluateChecklist } from "./judge.ts";
 import type { codexChatCompletion } from "./llm.ts";
+import { REASONING_MARKER } from "./acp/acp_agent.ts";
 
 const checklist = [
   { id: "a1", description: "did X", critical: true },
@@ -50,6 +51,29 @@ Deno.test("buildJudgeRequest: reasons are demanded in English so verdicts read t
   const req = buildJudgeRequest("q", "logs", "diffs", checklist);
   const system = req.messages.find((m) => m.role === "system")!;
   assert(/in English/i.test(system.content));
+});
+
+Deno.test("buildJudgeRequest: the judge is told what each trace marker the runner writes means", () => {
+  const req = buildJudgeRequest("q", "logs", "diffs", checklist);
+  const system = req.messages.find((m) => m.role === "system")!;
+  const legend = system.content.split("<evidence>")[0];
+  for (
+    const marker of [
+      "[turn N] >",
+      "< ",
+      REASONING_MARKER,
+      "[tool-call]",
+      "-> returned:",
+      "[stderr]",
+      "[health]",
+    ]
+  ) {
+    assert(legend.includes(marker), `legend explains \`${marker}\``);
+  }
+  // Measured 2026-10-18 on `delegate-to-ide-via-subagent`: on the claude arm a
+  // subagent's own calls land between the hand-back and the parent's `< `
+  // reply, and the judge failed a correct relay for "no final answer".
+  assert(/subagent/i.test(legend) && /final answer/i.test(legend));
 });
 
 Deno.test("evaluateChecklist: the judge reports what its own turn cost", async () => {

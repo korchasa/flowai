@@ -204,7 +204,7 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 - `plan` — task planning; writes persistent task files at `documents/tasks/<YYYY>/<MM>/<slug>.md` with `date`, `status`, `implements`, `tags`, and `related_tasks` frontmatter
 - `epic` — structured feature specification for multi-session features
 - `review` — QA + code review of current changes
-- `reflect` — self-analysis of the current session
+- `reflect` — self-analysis of the current session or of one transcript file you name
 - `reflect-by-history` — cross-session analysis of past IDE transcripts
 - `investigate` — deep bug investigation via hypothesis-driven experiments
 - `maintenance` — project health audit (16-category scan + interactive resolution)
