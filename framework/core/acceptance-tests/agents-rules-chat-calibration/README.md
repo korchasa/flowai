@@ -55,7 +55,7 @@ language set: `agents-rules-option-standalone` (suffix `option-standalone`,
 FR-UNIVERSAL.QA-FORMAT rule 6). It checks that every option of a next-step
 question can be understood without the report above it. Its defect, first seen
 only on Opus, reproduces on the default Claude model since 2026-10-18. Its
-`observed-*` controls are six real replies from the 2026-10-18 runs, each
+`observed-*` controls are eight real replies from the 2026-10-18 runs, each
 labelled by the rule text with the reason in `labelBasis`. The single
 `options_standalone` item it used to carry caught every negative control on the
 claude judge (`claude-sonnet-5-5`, effort medium) but was right on only 3 of 10
@@ -65,8 +65,23 @@ was split into three narrow items — bare labels, unresolved group phrases,
 numbers and coined terms. At effort medium they were still wrong on 15 of 24
 calls (`-h`); at effort high on none of 24 (`-g-high`), and on 2 of 24 with the
 committed config (`-i`). That measurement is why the judge runs at effort high
-on every IDE since 2026-10-18. Known gap: the group-phrase item is lenient on
-"the same N errands" / "the remaining N anomalies".
+on every IDE since 2026-10-18.
+
+The group-phrase item (`options_pointers_resolved`) then passed three of four
+live replies that kept «те же пять заданий» or «остальные три странности»: the
+judge read them as counts stated as facts. Two of them are negative controls now
+(`observed-19-49-59-r2`, `observed-19-52-50-r3`), and the item says that a count
+joined to «те же», «эти», «остальные», «оставшиеся» or «прежние» is a pointer,
+while a bare count only tells how many. A first wording that also failed any
+option acting on a counted set false-failed the positive control
+`observed-17-50-51-r2` on both calls (`-j`), so it was narrowed to the
+determiner. The committed checklist matched all 28 calls (`-k`).
+
+The other seven cases were re-run at effort high on 2026-10-18 with the
+committed checklists and matched every call: `source` 10, `code` 4,
+`interface` 6, `jargon` 4, `dialogue` 6, `exceptions` 8, `no-catch-all` 6
+(`acceptance-tests/runs/calib-high-2026-10-18-<case>`). Their controls and
+checklists needed no change.
 
 The first measurements and their limitations are recorded in
 [the investigation](../../../../documents/research/claude-language-investigation/claude-language-acceptance.md).

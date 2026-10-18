@@ -61,7 +61,10 @@ Follow-ups, not in this task:
 
 - Read by the rule text, 2 of the 6 fixed-text replies are clean; four kept «те же пять заданий» or «остальные три
   странности», and the judge passed three of them. Add such replies as controls and sharpen `options_pointers_resolved`.
+  Done 2026-10-18: two controls added, item sharpened, 28/28 calls matched (`option-calibration-2026-10-18-k`); see
+  the calibration README.
 - The old rule-6 wording still sits in the repo's `AGENTS.md`, `framework/atoms/plan.md` and five skills (`epic`,
   `maintenance`, `engineer-skill`, `engineer-command`, `write-prd`); each needs its own acceptance cycle.
 - The judge effort change moves every scenario's verdict on every arm; the other judge calibrations
-  (`agents-rules-chat-*`, `no-catch-all`) have not been re-run at `high`.
+  (`agents-rules-chat-*`, `no-catch-all`) have not been re-run at `high`. Done 2026-10-18: all seven cases matched
+  every call at `high` (`calib-high-2026-10-18-<case>`); live scenario runs at `high` are still not re-measured.
