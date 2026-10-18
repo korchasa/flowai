@@ -1,7 +1,7 @@
 # Related Skills for Plugin Marketplace Work
 
 Use this reference when a plugin-marketplace task needs adjacent expertise.
-Prefer these existing skills instead of duplicating their procedures.
+Prefer these skills instead of duplicating their procedures.
 
 ## Primary Routing
 
@@ -12,21 +12,31 @@ Prefer these existing skills instead of duplicating their procedures.
   schemas, stdio server design, host wiring, probes, and stable tool naming.
 - [engineer-plugin-hooks](../../engineer-plugin-hooks/SKILL.md) — hook event
   adapters, blocking policy, audit hooks, and host-specific hook formats.
-- [engineer-skill](../../../../devtools/skills/engineer-skill/SKILL.md) —
+
+## Authoring Skills from the `devtools` Pack
+
+These skills ship in the flowai `devtools` pack (the `flowai-devtools` plugin),
+not in this one, so a project that installed only this pack does not have them.
+List them by name with their link whenever the task calls for them, whether or
+not they are installed locally. When one is missing locally, say which pack
+provides it; do not drop it from the list. The links point at the published
+marketplace, so they open without a local install.
+
+- [engineer-skill](https://github.com/korchasa/flowai-plugins/blob/main/plugins/flowai-devtools/skills/engineer-skill/SKILL.md) —
   SKILL.md package authoring, frontmatter, progressive disclosure, bundled
   scripts/references/assets, and cross-IDE placement.
-- [engineer-command](../../../../devtools/skills/engineer-command/SKILL.md) —
+- [engineer-command](https://github.com/korchasa/flowai-plugins/blob/main/plugins/flowai-devtools/skills/engineer-command/SKILL.md) —
   user-invoked workflow commands that should not be auto-discovered by the
   model.
-- [engineer-subagent](../../../../devtools/skills/engineer-subagent/SKILL.md) —
+- [engineer-subagent](https://github.com/korchasa/flowai-plugins/blob/main/plugins/flowai-devtools/skills/engineer-subagent/SKILL.md) —
   reusable agent/subagent definitions outside Codex plugin packaging.
-- [engineer-hook](../../../../devtools/skills/engineer-hook/SKILL.md) — generic
+- [engineer-hook](https://github.com/korchasa/flowai-plugins/blob/main/plugins/flowai-devtools/skills/engineer-hook/SKILL.md) — generic
   AI IDE hook creation beyond plugin packaging.
+- [write-agent-benchmarks](https://github.com/korchasa/flowai-plugins/blob/main/plugins/flowai-devtools/skills/write-agent-benchmarks/SKILL.md)
+  — acceptance scenarios for skill, command, agent, and plugin behavior.
 
 ## Supporting Skills
 
-- [write-agent-benchmarks](../../../../devtools/skills/write-agent-benchmarks/SKILL.md)
-  — acceptance scenarios for skill, command, agent, and plugin behavior.
 - [browser-automation](../../browser-automation/SKILL.md) — browser-based install
   or marketplace UI verification.
 - [deep-research](../../deep-research/SKILL.md) — broad host-doc or ecosystem
