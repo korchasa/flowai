@@ -12,8 +12,16 @@
 import { assertEquals } from "@std/assert";
 import { join, resolve } from "@std/path";
 import { evaluateChecklist } from "@acceptance-tests/judge.ts";
-import { closeCodexSessions, loadConfig } from "@acceptance-tests/llm.ts";
-import { prepareCodexJudgeHome } from "@acceptance-tests/acp/auth.ts";
+import { loadConfig } from "@acceptance-tests/llm.ts";
+import {
+  closeJudgeSessions,
+  judgeTransportFor,
+} from "@acceptance-tests/judge_transport.ts";
+import {
+  prepareCodexJudgeHome,
+  runClaudeJudgeHome,
+} from "@acceptance-tests/acp/auth.ts";
+import { buildJudgeConfig } from "@acceptance-tests/runner.ts";
 import type { BenchmarkScenario } from "@acceptance-tests/types.ts";
 
 const outputArg = Deno.args[0];
@@ -45,11 +53,21 @@ Deno.test({
   fn: async () => {
     // A fresh directory makes old results impossible to mistake for this run.
     await Deno.mkdir(output);
-    const judgeHome = await Deno.makeTempDir({
-      prefix: "chat-judge-calibration-",
-    });
-    const env = await prepareCodexJudgeHome(judgeHome);
-    const config = (await loadConfig()).ides.claude.judge;
+    const base = (await loadConfig()).ides.claude.judge;
+    // The judge home must match the judge's transport, exactly as the runner
+    // builds it: a claude model needs the claude ACP home, any other model a
+    // codex app-server home. A codex home under a claude judge hung forever.
+    const config = buildJudgeConfig(
+      "codex",
+      base,
+      judgeTransportFor(base.model) === "claude-acp"
+        ? { claude: await runClaudeJudgeHome() }
+        : {
+          codex: await prepareCodexJudgeHome(
+            await Deno.makeTempDir({ prefix: "chat-judge-calibration-" }),
+          ),
+        },
+    );
     const results: unknown[] = [];
     const mismatches: string[] = [];
     try {
@@ -75,7 +93,7 @@ Deno.test({
               sample.agentLogs,
               "No files were changed.",
               scenario.checklist,
-              { ...config, env: { ...env }, cwd: judgeHome },
+              config,
               runDir,
             );
             const actual = Object.fromEntries(
@@ -118,7 +136,7 @@ Deno.test({
         "Judge disagreed with predefined labels; inspect results.json",
       );
     } finally {
-      closeCodexSessions();
+      await closeJudgeSessions();
     }
   },
 });

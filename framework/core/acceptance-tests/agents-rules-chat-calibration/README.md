@@ -45,17 +45,24 @@ Russian reply that repeats its own wording in English parentheses. It was a
 negative control until 2026-09-20, when the language criterion stopped counting
 a redundant gloss as a defect, and it is a positive control now.
 
-Known defect, 2026-10-18: on the claude judge the script hangs on its first
-call. It builds a codex judge home (`prepareCodexJudgeHome`) but reads the
-`ides.claude.judge` config, so no judge answer ever arrives. Until it is fixed,
-calibration is unavailable on the claude arm.
+The script builds the judge home the way the runner does (`buildJudgeConfig`):
+a claude judge model gets the run's claude ACP home, any other model a codex
+app-server home. Until 2026-10-18 it always built a codex home, and on the
+claude judge the first call hung forever.
 
 The calibration script also covers one sibling that is not part of the chat
 language set: `agents-rules-option-standalone` (suffix `option-standalone`,
 FR-UNIVERSAL.QA-FORMAT rule 6). It checks that every option of a next-step
-question can be understood without the report above it. Its defect shows on
-Opus, not on the default Claude model, so run it with
-`-i claude -m claude-opus-5-5 -f agents-rules-option-standalone`.
+question can be understood without the report above it. Its defect, first seen
+only on Opus, reproduces on the default Claude model since 2026-10-18. Its
+`observed-*` controls are six real replies from the 2026-10-18 runs, each
+labelled by the rule text with the reason in `labelBasis`. On the claude judge
+(`claude-sonnet-5-5`, effort medium) the `options_standalone` item catches every
+negative control but fails many positive ones: 3 of 10 positive calls were
+right before the item got its "what counts as explained" allowances and decision
+rule, 6 of 10 after, and every negative call was right in both
+(`acceptance-tests/runs/option-calibration-2026-10-18` and `-b`). A third,
+longer wording made the judge pass bare errand ids and was reverted (`-c`).
 
 The first measurements and their limitations are recorded in
 [the investigation](../../../../documents/research/claude-language-investigation/claude-language-acceptance.md).
