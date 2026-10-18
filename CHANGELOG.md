@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.32](https://github.com/korchasa/flowai/compare/v0.14.31...v0.14.32) (2026-10-18)
+
+
+### Features
+
+* **acceptance:** claude judge over ACP, codex arm on gpt-6-luna ([98458f2](https://github.com/korchasa/flowai/commit/98458f2066d3c0abd111737034fdb19dc9d03c58))
+* **core:** add chat-links-validate turn-end hook ([182920f](https://github.com/korchasa/flowai/commit/182920fee71c28460e3fd71fecddbbd80425b9d4))
+* **core:** forbid catch-all options in questions ([c4934e3](https://github.com/korchasa/flowai/commit/c4934e35a880df6f6bebd65d02823ef4361ddae6))
+
 ### [0.14.31](https://github.com/korchasa/flowai/compare/v0.14.30...v0.14.31) (2026-10-10)
 
 
