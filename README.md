@@ -78,7 +78,7 @@ Install flowai as a native plugin from the [korchasa/flowai-plugins](https://git
 /reload-plugins
 ```
 
-Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box with no extra install step. Hooks declared by `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
+Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box with no extra install step. Hooks declared by `core` (`chat-links-validate`, a turn-end check of file references in the chat answer), `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
 
 > **`doc-anchors-validate` is Claude Code only, and ships in the opt-in `beta` pack** (`flowai-beta`) — install it deliberately; it is not bundled into core. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent; the reason prescribes delegating the mechanical fix to a subagent so the main agent resumes its primary task instead of fixing inline. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
 >
@@ -221,6 +221,9 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 - `skill-adapter` — adapts a single skill to project specifics after upstream update
 - `agent-adapter` — adapts a single agent to project specifics after upstream update
 - `maintenance-scan-hygiene` / `maintenance-scan-dependencies` / `maintenance-scan-contracts` / `maintenance-scan-docs` / `maintenance-scan-coverage` — self-contained read-only scan workers spawned in parallel by the `maintenance` skill, one per audit bucket
+
+**Hooks:**
+- `chat-links-validate` — turn-end (`Stop`) check of the file references in the final chat answer. It sends the agent back for a one-line correction when a link points at no file, an existing project file is left in backticks instead of a link, or a path does not resolve from the project root. Claude Code only; on other IDEs the same rule reaches the agent as a line in `AGENTS.md`.
 
 ### engineering
 

@@ -1,0 +1,3 @@
+event: Stop
+description: "Turn-end check of file references in the final chat answer; blocks the stop when a link points at no file, an existing project file is left unlinked, or a path does not resolve from the project root"
+timeout: 30

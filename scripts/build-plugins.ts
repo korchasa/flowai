@@ -766,7 +766,7 @@ interface EmitHooksOpts {
  *   { hooks: { <EventName>: [{ matcher, hooks: [{ type: "command", command }] }] } }
  * The `command` field shells `deno run -A ${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts`.
  *
- * Core has zero hooks today; the code path exists for devtools / memex rollout.
+ * Every pack with a `hooks/` directory goes through here: core, devtools, memex, beta.
  */
 async function emitHooks(opts: EmitHooksOpts): Promise<boolean> {
   if (!(await exists(opts.sourceDir))) return false;

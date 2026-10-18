@@ -146,6 +146,7 @@ wherever it carries meaning better than prose does.
 - Conclusion first: the result opens the paragraph, the reasoning follows.
 - A failure report states what happened and what to do next.
 - Name the concrete edit or command for each problem, not just what the tool wants.
+- **File references are clickable links.** Every existing file or directory you point the reader at is a Markdown link they open with one click, never a path in backticks, in bold or in plain text. A file in this project: the target is its path from the project root, e.g. `[run.ts](framework/core/hooks/chat-links-validate/run.ts)`, never a fragment that resolves only from some subdirectory. A file outside the project: the absolute path as the target. A line number goes into the link text: `[run.ts:12](framework/core/hooks/chat-links-validate/run.ts)`. Before sending, check that every linked path exists. An address with no file behind it — a file you plan to create, a path on a server, a template — stays in backticks and is never a link. In Claude Code the `chat-links-validate` Stop hook enforces this at turn end.
 
 ## Planning Rules
 

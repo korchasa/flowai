@@ -183,9 +183,9 @@ Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
     ) as Record<string, unknown>;
     assertEquals(manifest.name, "flowai");
     assertEquals(manifest.skills, "./skills/");
-    // core carries no hooks (the doc-anchors-validate Stop hook lives in the
-    // opt-in `beta` pack), so the manifest omits the hooks component.
-    assertEquals(manifest.hooks, undefined);
+    // core ships the chat-links-validate Stop hook, so the manifest carries
+    // the hooks component.
+    assertEquals(manifest.hooks, "./hooks/hooks.json");
     assertEquals(manifest.repository, "https://github.com/korchasa/flowai");
     assertEquals((manifest.author as Record<string, unknown>).name, "korchasa");
     assertEquals(
@@ -202,6 +202,41 @@ Deno.test("codex-plugin-manifests emits-codex-plugin-manifests", async () => {
       ),
       "Codex manifest must declare user-visible capabilities",
     );
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// The chat-links-validate Stop hook ships in core (plugin `flowai`), so every
+// flowai install checks the file references in the final chat answer.
+// [REF:fr:chat-links.hook | FR-CHAT-LINKS.HOOK]
+Deno.test("core-pack ships-chat-links-stop-hook", async () => {
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["core"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+
+    const hooks = await readJson(
+      join(out, "plugins", "flowai", "hooks", "hooks.json"),
+    ) as {
+      hooks: Record<
+        string,
+        Array<{ hooks: Array<{ command: string; timeout?: number }> }>
+      >;
+    };
+    assert(Array.isArray(hooks.hooks.Stop), "core must emit a Stop hook");
+    assertStringIncludes(
+      hooks.hooks.Stop[0].hooks[0].command,
+      "hooks/chat-links-validate/run.ts",
+    );
+
+    const runCopied = await Deno.stat(
+      join(out, "plugins", "flowai", "hooks", "chat-links-validate", "run.ts"),
+    ).then(() => true).catch(() => false);
+    assert(runCopied, "core plugin must copy the hook run.ts");
   } finally {
     await Deno.remove(out, { recursive: true });
   }
