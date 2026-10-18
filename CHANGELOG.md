@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.41](https://github.com/korchasa/flowai/compare/v0.14.40...v0.14.41) (2026-10-18)
+
+
+### Bug Fixes
+
+* **acceptance:** hold a claude turn while a background notice is owed ([78aa532](https://github.com/korchasa/flowai/commit/78aa5327499fcb33244a63b29927bfe47e79e95a))
+
+
+### Tests
+
+* **acceptance:** name the owed-notice marker in the judge's trace legend ([873bc5c](https://github.com/korchasa/flowai/commit/873bc5cf3d1022083c8ccb097d5745cdcc60b776))
+
 ### [0.14.40](https://github.com/korchasa/flowai/compare/v0.14.39...v0.14.40) (2026-10-18)
 
 
