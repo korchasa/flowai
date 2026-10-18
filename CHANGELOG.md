@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.40](https://github.com/korchasa/flowai/compare/v0.14.39...v0.14.40) (2026-10-18)
+
+
+### Bug Fixes
+
+* **plan:** stop after the plan and give every option set its trade-offs ([5142212](https://github.com/korchasa/flowai/commit/5142212e6dfe58c6d07998811195517bcd000528))
+
 ### [0.14.39](https://github.com/korchasa/flowai/compare/v0.14.38...v0.14.39) (2026-10-18)
 
 
