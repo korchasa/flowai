@@ -65,13 +65,37 @@ export function buildRuntimeSetup(
   };
 }
 
-/** Create the timestamped run directory and shared trace logger. */
-export async function createRunDir(): Promise<
+/**
+ * Create the timestamped run directory and shared trace logger.
+ *
+ * The dir is claimed with a non-recursive mkdir, which fails when it already
+ * exists, so a concurrent runner process started in the same second takes
+ * `<ts>-2`, `<ts>-3`, … instead of sharing `<ts>`. Sharing it meant sharing the
+ * external sandbox root hashed from the run-dir path, and the second
+ * process's setupSandbox removed the first one's live sandbox. Observed
+ * 2026-10-18 with a claude and a codex run of `write-prd-basic`.
+ */
+export async function createRunDir(
+  { root = Deno.cwd(), now = () => new Date() }: {
+    root?: string;
+    now?: () => Date;
+  } = {},
+): Promise<
   { runDir: string; tracer: TraceLogger }
 > {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const runDir = join(Deno.cwd(), "acceptance-tests", "runs", timestamp);
-  await Deno.mkdir(runDir, { recursive: true });
+  const timestamp = now().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const runsDir = join(root, "acceptance-tests", "runs");
+  await Deno.mkdir(runsDir, { recursive: true });
+  let runDir = join(runsDir, timestamp);
+  for (let attempt = 2;; attempt++) {
+    try {
+      await Deno.mkdir(runDir);
+      break;
+    } catch (e) {
+      if (!(e instanceof Deno.errors.AlreadyExists)) throw e;
+      runDir = join(runsDir, `${timestamp}-${attempt}`);
+    }
+  }
   const tracer = new TraceLogger(runDir, "report.html");
   return { runDir, tracer };
 }
