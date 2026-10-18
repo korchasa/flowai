@@ -1,6 +1,6 @@
 ---
 date: 2026-10-18
-status: in progress
+status: done
 implements:
   - FR-READABILITY
   - FR-READABILITY.LANGUAGE
@@ -10,6 +10,7 @@ tags: [acceptance-tests, agents-rules, claude-arm]
 related_tasks:
   - "[write-prd-basic-flaky](write-prd-basic-flaky.md)"
   - "[option-standalone](../09/option-standalone.md)"
+  - "[option-standalone-claude](option-standalone-claude.md)"
 ---
 # Chat-writing reds on the claude arm: six scenarios, split by broken layer
 
@@ -70,9 +71,9 @@ Per scenario, HEAD pass rate, the broken layer and what the interviews or judge 
 - [x] FR-READABILITY: names from the code are explained and listed before sending.
   - Benchmark: `agents-rules-reader-context` (coverage, not acceptance — see FR-READABILITY.READER-CONTEXT)
   - Evidence: `deno task acceptance-tests -f agents-rules-reader-context -n 3 --no-cache` — 2/3 (`acceptance-tests/runs/2026-10-18T17-45-50`)
-- [ ] FR-UNIVERSAL.QA-FORMAT rule 6: every option stands on its own on the default model.
+- [x] FR-UNIVERSAL.QA-FORMAT rule 6: every option stands on its own on the default model.
   - Benchmark: `agents-rules-option-standalone`
-  - Evidence: `deno task acceptance-tests -f agents-rules-option-standalone -n 3 --no-cache` — 0/3 on HEAD and on two rewrites (last: `acceptance-tests/runs/2026-10-18T17-50-51`); the rewrites were reverted on the user's decision.
+  - Evidence: `deno task acceptance-tests -f agents-rules-option-standalone -n 3 --no-cache` — 0/3 on HEAD and on two rewrites here (last: `acceptance-tests/runs/2026-10-18T17-50-51`), reverted on the user's decision. Closed by the follow-up [option-standalone-claude](option-standalone-claude.md): calibrated judge at effort high, rule 6 rewritten, 2/3 (`acceptance-tests/runs/2026-10-18T19-49-59`) and 3/3 (`acceptance-tests/runs/2026-10-18T19-52-50`).
 
 ## Solution
 
