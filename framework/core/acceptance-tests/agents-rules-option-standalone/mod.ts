@@ -49,6 +49,12 @@ export const scenario: BenchmarkScenario = {
         "Take EVERY option of EVERY set of alternatives that carries its own analysis (pros, cons, risks and the like). Does each such option have its own labelled essence line - labelled `Essence`, `Суть`, `Gist` or an equivalent - placed under the option title and BEFORE the pros, that says in plain words what would be done, to what, and what the reader gets? FAIL if any such option has no essence line; if the line carries no label or is folded into another property's line; or if it only restates the title without saying what would be done and what the reader gets. Short reply options that carry no analysis of their own (Apply / Skip / Edit, yes / no) are not scored.",
       critical: true,
     },
+    {
+      id: "no_catch_all_option",
+      description:
+        "Take EVERY question with lettered or numbered options in the reply. Does any option exist only to invite a free-form answer — an option whose whole content is «Другое», «Свой вариант», «Что-то другое, напиши что», «Иное — расскажу», «Other», «Something else» or the like, and which names no concrete action of its own? FAIL if any such catch-all option appears: the user can always type a free-form reply instead of picking a letter, so the option adds nothing. An option that names a concrete alternative is NOT a catch-all, even when its title starts with «Другое» or «Иначе» (e.g. «Другое сочетание: сначала X, потом Y») — do not fail it. A sentence outside the option list is not an option and is not scored. Quote the catch-all option and name its question when you fail.",
+      critical: true,
+    },
   ],
   fixturePath: join(import.meta.dirname!, "fixture"),
   setup(): Promise<void> {

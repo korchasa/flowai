@@ -2,7 +2,8 @@
  * Explicit, paid judge calibration for FR-READABILITY.LANGUAGE and
  * FR-READABILITY.READER-CONTEXT: the fixed replies exercise the language item
  * and the meaning items of the same checklists. The `option-standalone` case
- * calibrates FR-UNIVERSAL.QA-FORMAT rule 6 (each option stands on its own).
+ * calibrates FR-UNIVERSAL.QA-FORMAT rule 6 (each option stands on its own),
+ * the `no-catch-all` case calibrates rule 7 (no catch-all option).
  * This file is deliberately not named *_test.ts: regular checks must not call models.
  * Run from the repository root:
  * deno test -A <this-file> -- <output-directory>
@@ -29,6 +30,7 @@ const cases: Record<string, string> = {
   dialogue: "agents-rules-chat-dialogue",
   exceptions: "agents-rules-chat-exceptions",
   "option-standalone": "agents-rules-option-standalone",
+  "no-catch-all": "agents-rules-no-catch-all-option",
 };
 const suffixes = Object.keys(cases);
 if (selectedCase && !suffixes.includes(selectedCase)) {
