@@ -56,13 +56,17 @@ FR-UNIVERSAL.QA-FORMAT rule 6). It checks that every option of a next-step
 question can be understood without the report above it. Its defect, first seen
 only on Opus, reproduces on the default Claude model since 2026-10-18. Its
 `observed-*` controls are six real replies from the 2026-10-18 runs, each
-labelled by the rule text with the reason in `labelBasis`. On the claude judge
-(`claude-sonnet-5-5`, effort medium) the `options_standalone` item catches every
-negative control but fails many positive ones: 3 of 10 positive calls were
-right before the item got its "what counts as explained" allowances and decision
-rule, 6 of 10 after, and every negative call was right in both
-(`acceptance-tests/runs/option-calibration-2026-10-18` and `-b`). A third,
-longer wording made the judge pass bare errand ids and was reverted (`-c`).
+labelled by the rule text with the reason in `labelBasis`. The single
+`options_standalone` item it used to carry caught every negative control on the
+claude judge (`claude-sonnet-5-5`, effort medium) but was right on only 3 of 10
+clean-reply calls, 6 of 10 after allowances were added, and longer wordings made
+it worse (`acceptance-tests/runs/option-calibration-2026-10-18`, `-b`, `-c`). It
+was split into three narrow items — bare labels, unresolved group phrases,
+numbers and coined terms. At effort medium they were still wrong on 15 of 24
+calls (`-h`); at effort high on none of 24 (`-g-high`), and on 2 of 24 with the
+committed config (`-i`). That measurement is why the judge runs at effort high
+on every IDE since 2026-10-18. Known gap: the group-phrase item is lenient on
+"the same N errands" / "the remaining N anomalies".
 
 The first measurements and their limitations are recorded in
 [the investigation](../../../../documents/research/claude-language-investigation/claude-language-acceptance.md).

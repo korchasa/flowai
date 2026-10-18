@@ -12,6 +12,10 @@ import type { BenchmarkScenario } from "@acceptance-tests/types.ts";
 // (observed on the first run, 2026-09-30T13-14-33).
 // Do not tell the agent in the query how to write the options:
 // a request that hands over that structure passes on the pre-fix text too.
+// Shared reader framing of the three rule-6 items.
+const OPTIONS_READER =
+  "Take the question(s) with lettered or numbered options about what to do next. The reader is the benchmark's owner: they know the project in general — a browser agent is run through a fixed set of test errands on real sites and every run costs money — but they skipped everything above the question in this reply and never opened round-3.md. Read ONLY each option — its title and the lines under it — as that reader. The cross-option trade-offs and the recommendation are not options and are not scored. FAIL if no such question with options exists.";
+
 export const scenario: BenchmarkScenario = {
   id: "agents-rules-option-standalone",
   name: "Each next-step option is understandable without the report above it",
@@ -37,10 +41,25 @@ export const scenario: BenchmarkScenario = {
         "The assistant reply must contain a report on round-3.md followed by a question about what to do next with at least two lettered or numbered options. A reply with no such question fails.",
       critical: true,
     },
+    // Rule 6 split into three narrow items (2026-10-18): one broad item with
+    // four kinds of defect false-failed 4 of 10 clean calibration replies on
+    // the claude judge, and every longer wording of it got worse.
     {
-      id: "options_standalone",
+      id: "options_labels_explained",
       description:
-        "Take the question(s) with lettered or numbered options about what to do next. The reader is the benchmark's owner: they know the project in general — a browser agent is run through a fixed set of test errands on real sites and every run costs money — but they skipped everything above the question in this reply and never opened round-3.md. Read ONLY each option — its title and the lines under it — as that reader. For EACH option: can they tell, from the option's own text, what would be done, to what, and why it matters? FAIL if any option needs text outside itself: (a) an id or name from the file or the report (E4, N3, b-31d9) with nothing in the option saying what it is; (b) a pointer to earlier material — «найденные странности», «эти аномалии», «оставшиеся проблемы», «текущий раунд», «как выше», «из отчёта» — without the option stating the items it means; (c) a term the assistant coined or took from the file used as if the reader knows it (e.g. «бюджет вызовов», «доля текста страниц», «чекер») with no short explanation inside the option; (d) a number whose meaning is given only above the question (e.g. «53%» without saying what it measures). Knowledge the owner has in general is not a dependency: «все 8 тестовых поручений», «прогон», site and product names (GitHub, Booking.com, YouTube) and ordinary words need no explanation when the option makes clear what they refer to. A term explained once inside the option is fine. What counts as explained: a number is explained when the same phrase says what it measures («на текст страниц уходит около 43% стоимости», «текст прочитанных страниц — половина цены»); an id is explained when the thing it labels is described beside it («пропуск строк на GitHub (N1)»); a pointer is fine when the option itself then lists the items it means («сбои из списка выше: пропуск строк на GitHub, …»); a figure the option itself sets as its action («обрывать задание после 10 вызовов») needs nothing more; a plain-words description of what happened («агент не открыл ответ отеля на Booking», «прочитал, осмотрелся, прочитал снова») is not a term. Decision rule: FAIL only by quoting a phrase that matches (a)–(d) and that none of these allowances covers. «Vague», «only partly self-explanatory», «could be clearer», «borderline» and «under a strict reading» are not grounds, and neither is a claim the reader cannot verify — the item scores whether the option can be understood, not whether its facts are proven. A missing, unlabelled or title-restating Essence line is scored by the essence item, not here. The cross-option trade-offs and the recommendation are not options and are not scored. Quote each dependent phrase and name the option it is in. FAIL if no such question with options exists.",
+        `${OPTIONS_READER} List every label in the options made of letters and digits: errand or anomaly ids such as E7, N9, E1–E3, N2–N4, or a build id. FAIL if a label appears in an option whose own text does not say in words what that label stands for. A label is explained when the thing it labels is described in the same option («зависание поиска на Amazon (N9)», «задание на Gmail (E7)»); a range is explained when the option says what the labelled items are. Site and product names are not labels. Quote each unexplained label and name its option.`,
+      critical: true,
+    },
+    {
+      id: "options_pointers_resolved",
+      description:
+        `${OPTIONS_READER} Find every pointer in an option: a phrase that names a set of items as if the reader already knew which ones — «найденные странности», «эти аномалии», «четыре сбоя», «оставшиеся проблемы», «текущий раунд», «главный вывод», «как выше», «из списка выше». FAIL if the option does not itself name ALL the items such a pointer stands for — naming some of them («четыре сбоя», then one example) fails. Fine: a pointer followed in the same option by the full list; a count stated as a fact («в трёх заданиях из семи»); a description that is complete in itself («сбои, из-за которых агент повторяет действия: …»); a sentence saying some data is missing («в файле это не измерено»). Judge only the option's own words — do not compare its list with the report. Labels such as E7 and numbers are scored by other items; ignore them here. Quote each unresolved pointer and name its option.`,
+      critical: true,
+    },
+    {
+      id: "options_numbers_terms_explained",
+      description:
+        `${OPTIONS_READER} Labels such as E7 or N9 and pointers such as «эти аномалии» are scored by other items; ignore them here. FAIL only for (a) a percentage or money amount from the report whose meaning the option never gives («снижает долю в 61%» with no «of what»; «сколько из $2.10 ушло» without saying whose cost $2.10 is), or (b) a coined name — a term the assistant or the file made up for a concept («бюджет вызовов», «чекер») — used as if the reader knew it, with no short explanation in the option. A number is explained only when its own sentence says what it measures: a percentage names the whole it is a share of («на текст страниц уходит около 61% стоимости»; «доля в 61%» or «доля текста 61%» with no «стоимости», «цены» or «затрат» fails), and a money amount says whose cost it is. The option's title or subject does not explain a number. Never a defect: a figure the option sets as its action («обрывать задание после 12 вызовов»); a stated cost («прогон стоит около $5»); counts of errands; ordinary words of the domain (вызов, прогон, сценарий, оценка, поручение, текст страниц); plain descriptions of what happened or what is broken, however terse; site and product names. Quote each failing number or name and its option.`,
       critical: true,
     },
     {

@@ -12,7 +12,7 @@
       "agent_effort": "medium",
       "judge": {
         "model": "claude-sonnet-5-5",
-        "effort": "medium",
+        "effort": "high",
         "temperature": 0
       }
     },
@@ -26,7 +26,7 @@
       "agent_effort": "medium",
       "judge": {
         "model": "claude-sonnet-5-5",
-        "effort": "medium",
+        "effort": "high",
         "temperature": 0
       }
     },
@@ -35,7 +35,7 @@
       "default_agent_model": "gemini-3-flash",
       "judge": {
         "model": "claude-sonnet-5-5",
-        "effort": "medium",
+        "effort": "high",
         "temperature": 0
       }
     }
