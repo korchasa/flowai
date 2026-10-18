@@ -40,6 +40,10 @@
  *   [[STALL]]        → stream a reply chunk, reasoning and one tool call, then
  *                      never answer the prompt — the turn a global timeout
  *                      cuts short.
+ *   [[LATE_NOTICE]]  → the claude bridge's race: end the turn while a finished
+ *                      background task's notice is still queued in the
+ *                      session transcript, then answer that notice on the
+ *                      model's own, out of turn, a moment later.
  *   anything else    → stream an `agent_message_chunk` echoing a fixed reply.
  *
  * The sentinel write is the observable "real tool executed" side-effect the
@@ -70,6 +74,13 @@ const REPLY_MARKER = /\[\[REPLY\]\]([\s\S]*?)\[\[\/REPLY\]\]/;
 const META_MARKER = /\[\[META\]\]/;
 const WRITE_MARKER = /\[\[WRITE:([^\]]*)\]\]/;
 const STALL_MARKER = /\[\[STALL\]\]/;
+const LATE_NOTICE_MARKER = /\[\[LATE_NOTICE\]\]/;
+
+/** What a `[[LATE_NOTICE]]` turn says before it ends, and after. */
+export const LATE_WAITING = "Four of five agents have reported.";
+export const LATE_REPORT = "## Maintenance report: all five scans done";
+/** How long the stub's "model" takes to pick the queued notice up, ms. */
+const LATE_DELAY_MS = 1000;
 
 /** What a `[[STALL]]` turn streams before it hangs. */
 export const STALL_REPLY = "Starting the review.";
@@ -183,6 +194,41 @@ class StubAgent implements Agent {
         },
       });
       return await new Promise<PromptResponse>(() => {});
+    }
+
+    if (LATE_NOTICE_MARKER.test(text)) {
+      // The transcript lines claude writes, in its order (sweep run
+      // 2026-10-18T14-45-21, maintenance-detects-doc-health-issues): the
+      // notice is queued before the turn settles, and dequeued, answered and
+      // closed only after.
+      const sid = params.sessionId;
+      const notice = "<task-notification>\n<task-id>a1</task-id>";
+      await this.#appendTranscript(sid, {
+        type: "queue-operation",
+        operation: "enqueue",
+        content: notice,
+      });
+      await this.#emit(sid, LATE_WAITING);
+      setTimeout(async () => {
+        await this.#appendTranscript(
+          sid,
+          { type: "queue-operation", operation: "dequeue" },
+          {
+            type: "user",
+            origin: { kind: "task-notification" },
+            message: { role: "user", content: notice },
+          },
+        );
+        await this.#emit(sid, LATE_REPORT);
+        await this.#appendTranscript(sid, {
+          type: "assistant",
+          message: {
+            stop_reason: "end_turn",
+            content: [{ type: "text", text: LATE_REPORT }],
+          },
+        });
+      }, LATE_DELAY_MS);
+      return { stopReason: "end_turn" };
     }
 
     const reply = text.match(REPLY_MARKER);
@@ -329,6 +375,24 @@ class StubAgent implements Agent {
         content: { type: "text", text },
       },
     });
+  }
+
+  /** Appends lines to the session transcript where claude keeps it. */
+  async #appendTranscript(
+    sessionId: string,
+    ...entries: Record<string, unknown>[]
+  ): Promise<void> {
+    const slug = this.#cwd.replace(/[^A-Za-z0-9]/g, "-");
+    const configDir = Deno.env.get("CLAUDE_CONFIG_DIR") ??
+      join(Deno.env.get("HOME") ?? "", ".claude");
+    const dir = join(configDir, "projects", slug);
+    await Deno.mkdir(dir, { recursive: true });
+    const lines = entries.map((e) => JSON.stringify({ ...e, sessionId }));
+    await Deno.writeTextFile(
+      join(dir, `${sessionId}.jsonl`),
+      lines.join("\n") + "\n",
+      { append: true },
+    );
   }
 
   #emitThought(sessionId: string, text: string): Promise<void> {

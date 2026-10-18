@@ -38,6 +38,10 @@ import {
 import { writeLoginShellPathPrepend, writeMockBin } from "./mock_bin.ts";
 import { collectCodexAgentTrace } from "./codex_rollout.ts";
 import {
+  findClaudeTranscript,
+  unansweredTaskNotifications,
+} from "./claude_transcript.ts";
+import {
   ACP_AGENTS,
   type AcpAgentSpec,
   type AcpIde,
@@ -128,6 +132,11 @@ async function awaitTurnEnd(session: RuntimeSession): Promise<string> {
   }
 }
 
+/** How often a turn held for an owed background notice re-reads the transcript, ms. */
+const OWED_NOTICE_POLL_MS = 250;
+/** Stream silence that ends the late output of an answered notice, ms. */
+const OWED_NOTICE_QUIET_MS = 500;
+
 /** Executes one IDE agent over ACP for the full (multi-turn) scenario. */
 export class AcpAgent {
   #pid: number | null = null;
@@ -141,6 +150,10 @@ export class AcpAgent {
   readonly #renderedCalls = new Set<string>();
   /** True between sending a prompt and appending that turn to the log. */
   #turnInFlight = false;
+  /** When the bridge last sent a `session/update`, epoch ms. */
+  #lastUpdateAt = 0;
+  /** Set once the session is killed or gone; ends any wait on the agent. */
+  #stopped = false;
   readonly #spec: AcpAgentSpec;
 
   constructor(private opts: AcpAgentOptions) {
@@ -288,7 +301,9 @@ export class AcpAgent {
         // write may land outside it.
         acpClientFs: { writeRoot: this.opts.workspace },
         onEvent: (event) => {
-          if (event.type === "session/update") recorder.observe(event.raw);
+          if (event.type !== "session/update") return;
+          this.#lastUpdateAt = Date.now();
+          recorder.observe(event.raw);
         },
         // Drain stderr (claude-code-acp logs there) for diagnostics.
         onStderr: (text) => {
@@ -303,6 +318,10 @@ export class AcpAgent {
     }
     this.#session = session;
     const sessionId = session.sessionId;
+    session.done.then(
+      () => this.#stopped = true,
+      () => this.#stopped = true,
+    );
 
     let code = 0;
     try {
@@ -321,7 +340,11 @@ export class AcpAgent {
         let out: ParsedAgentOutput;
         try {
           await session.send(nextPrompt);
-          out = recorder.turnOutput(sessionId, await awaitTurnEnd(session));
+          const stopReason = await awaitTurnEnd(session);
+          if (stopReason === "end_turn") {
+            await this.#awaitOwedNotices(sessionId, env);
+          }
+          out = recorder.turnOutput(sessionId, stopReason);
         } catch (e) {
           // A connection drop, an agent error response or a watchdog kill all
           // land here — a deterministic failure verdict, never a throw.
@@ -422,6 +445,50 @@ export class AcpAgent {
     return composePartialTrace(flushed + inFlight, "", "", unplaced);
   }
 
+  /**
+   * Holds a claude turn open while the model still owes an answer to a
+   * background task's notice — the bridge race `claude_transcript.ts`
+   * describes. Re-reads the CLI's transcript until it shows nothing owed twice
+   * in a row (the dequeue and its `user` entry land a millisecond apart), and
+   * after a wait lets the bridge's out-of-turn output finish arriving, so the
+   * answer joins this turn. Like the bridge's own hold on a live subagent it
+   * has no deadline of its own: the session's end and the runner's global
+   * timeout bound it.
+   */
+  async #awaitOwedNotices(
+    sessionId: string,
+    env: Record<string, string>,
+  ): Promise<void> {
+    if (this.opts.ide !== "claude") return;
+    const home = env.HOME ?? Deno.env.get("HOME") ?? "";
+    const configDir = env.CLAUDE_CONFIG_DIR ??
+      Deno.env.get("CLAUDE_CONFIG_DIR") ?? join(home, ".claude");
+    const path = await findClaudeTranscript(configDir, sessionId);
+    if (!path) {
+      this.#log.push(
+        `[owed-notice] no transcript of session ${sessionId} under ${configDir}; not checked\n`,
+      );
+      return;
+    }
+    const started = Date.now();
+    let peak = 0;
+    let clearReads = 0;
+    while (!this.#stopped) {
+      const owed = unansweredTaskNotifications(await Deno.readTextFile(path));
+      peak = Math.max(peak, owed);
+      const quiet = Date.now() - this.#lastUpdateAt >= OWED_NOTICE_QUIET_MS;
+      if (owed > 0) clearReads = 0;
+      else if (++clearReads >= 2 && (peak === 0 || quiet)) break;
+      await new Promise((r) => setTimeout(r, OWED_NOTICE_POLL_MS));
+    }
+    if (peak > 0) {
+      const seconds = ((Date.now() - started) / 1000).toFixed(1);
+      this.#log.push(
+        `[owed-notice] the turn ended with ${peak} background task notice(s) unanswered; waited ${seconds} s for the agent to answer\n`,
+      );
+    }
+  }
+
   /** Public termination for the runner's global-timeout path. */
   kill(): void {
     this.#kill();
@@ -436,6 +503,7 @@ export class AcpAgent {
    * the bridge with the library's bounded SIGTERM → SIGKILL.
    */
   #kill(): void {
+    this.#stopped = true;
     const pid = this.#pid;
     if (pid !== null && !this.opts.disableWatchdog) {
       try {
