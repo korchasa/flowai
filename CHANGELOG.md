@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.33](https://github.com/korchasa/flowai/compare/v0.14.32...v0.14.33) (2026-10-18)
+
+
+### Documentation
+
+* **tasks:** plan driving acceptance tests and benchmark through ai-ide-cli ([aa01097](https://github.com/korchasa/flowai/commit/aa010979bd92d109415fdee4b049fd11c1b1e27c))
+
+
+### Chores
+
+* **settings:** drop the autoCompactWindow cap ([db7b73f](https://github.com/korchasa/flowai/commit/db7b73f95f48959254f8659c2a73d4c4975bb6be))
+
+
+### Code Refactoring
+
+* **acceptance:** drive agents, judge and emulators through ai-ide-cli ([45d283e](https://github.com/korchasa/flowai/commit/45d283e14ef5ba04323ccf2a924d64a1971dffd5))
+
 ### [0.14.32](https://github.com/korchasa/flowai/compare/v0.14.31...v0.14.32) (2026-10-18)
 
 
