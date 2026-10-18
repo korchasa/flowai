@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.36](https://github.com/korchasa/flowai/compare/v0.14.35...v0.14.36) (2026-10-18)
+
+
+### Features
+
+* **core:** add a mandatory Rationale field to the SRS FR template ([2d0ae36](https://github.com/korchasa/flowai/commit/2d0ae366ab7fe0c6e875dd7d068460a7da718405))
+
+
+### Continuous Integration
+
+* pin the Deno version in .dvmrc for CI and deno task check ([2276f53](https://github.com/korchasa/flowai/commit/2276f5376b600626e055c5c0b3ff7d1e73269a27))
+
+
+### Documentation
+
+* **tasks:** close pin-deno-version after green CI ([93d1df8](https://github.com/korchasa/flowai/commit/93d1df8324d8ec33e9958f6c899ee7c0baed5dbc))
+* **tasks:** close retire-flowai-cli-docs after the devcontainer scenario ([db27f24](https://github.com/korchasa/flowai/commit/db27f24c5a5ac08ae061141a6c5cc76a5da3d963))
+
+
+### Tests
+
+* **acceptance:** make scenario setup arm-neutral via SandboxContext ([0c28be1](https://github.com/korchasa/flowai/commit/0c28be11a3cd0327c6e2f0185c0cfc5d8e32037c))
+
 ### [0.14.35](https://github.com/korchasa/flowai/compare/v0.14.34...v0.14.35) (2026-10-18)
 
 
