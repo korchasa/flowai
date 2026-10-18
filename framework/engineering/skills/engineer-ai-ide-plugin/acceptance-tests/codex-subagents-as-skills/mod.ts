@@ -30,13 +30,13 @@ export const EngineerAiIdePluginCodexSubagentsAsSkills = new class
     {
       id: "codex_apps_manifest",
       description:
-        'Did the agent include Codex app integration packaging through an `.app.json` file referenced by an `apps` manifest field — either `extensions.com.openai.apps` in a root `plugin.json` (the portable format) or `apps` in `.codex-plugin/plugin.json` (the legacy fallback)? A placeholder such as "the app file" in place of `.app.json` does not count.',
+        "Did the agent include Codex app integration packaging through an `.app.json` file referenced by the `apps` manifest field?",
       critical: true,
     },
     {
       id: "codex_mcp_manifest",
       description:
-        "Did the agent include Codex MCP server packaging — either a root `mcp.json` next to a root `plugin.json` (the portable format) or an `.mcp.json` file referenced by the `mcpServers` field of `.codex-plugin/plugin.json` (the legacy fallback)?",
+        "Did the agent include Codex MCP server packaging through an `.mcp.json` file referenced by the `mcpServers` manifest field?",
       critical: false,
     },
   ];

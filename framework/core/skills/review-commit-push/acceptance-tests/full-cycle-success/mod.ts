@@ -94,7 +94,7 @@ Keep all answers short and on-topic.`;
     {
       id: "review_produced_verdict",
       description:
-        "Did the Review Phase output a structured report whose FIRST line contains `Approve` (or `Request Changes` / `Needs Discussion`)?",
+        "Did the Review Phase send the user its structured review report as a visible message of its own — the review's sections (verdict, findings, checks) — whose heading line contains `Approve` (or `Request Changes` / `Needs Discussion`)? The heading is the report's own first line: a phase-transition sentence or tool calls in EARLIER messages do not count against it. A verdict that appears only in the agent's reasoning, or only as a bullet inside the final combined summary, fails this item.",
       critical: true,
     },
     {

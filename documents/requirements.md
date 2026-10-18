@@ -1640,8 +1640,10 @@ Rules:
 - **Description:** Clear separation of concerns between `review` and `commit`:
   - Review owns: project checks (lint/test), hygiene scan, code quality verdict
   - Commit owns: documentation audit, atomic grouping, commit execution, task file cleanup
-  - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks.
-- **Acceptance verified by acceptance tests:** `commit-no-checks`, `review-no-grouping`
+  - Review MUST NOT do atomic commit grouping (SA3). Commit MUST NOT run project checks. The standalone `commit` atom states the ban as its own rule; composites ban checks in the Commit Phase through `DIFF_SOURCE: REUSE_PRIOR_PHASE`.
+- **Rationale:** verification is the review's job, so a check inside the commit repeats it at full cost. A check run there also leaves artefacts in the tree: on 2026-10-18, before the atom stated the ban, `commit-flips-task-status` ran the tests in 4 of 4 claude runs, `deno test` wrote an untracked `deno.lock`, and 2 of the 4 left it after the commit and asked the user what to do with it.
+- **Tasks:** [REF:task:2026-10-pipeline-reds-2026-10-18 | pipeline-reds-2026-10-18]
+- **Acceptance verified by acceptance tests:** `commit-no-checks`, `commit-flips-task-status` (item `clean_status`), `review-no-grouping`
 
 ### FR-JIT-REVIEW: JIT Review Skill — `jit-review` [ANC:fr:jit-review]
 
