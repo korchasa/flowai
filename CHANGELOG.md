@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.34](https://github.com/korchasa/flowai/compare/v0.14.33...v0.14.34) (2026-10-18)
+
+
+### Features
+
+* **core:** tasks-overview writes its own status script ([71a9d01](https://github.com/korchasa/flowai/commit/71a9d01cd97a2460cdd6a33e7d3da574cc0a54e1))
+
+
+### Agent Changes
+
+* **acceptance:** resample both sides before calling a parity mismatch a regression ([1d69b12](https://github.com/korchasa/flowai/commit/1d69b125fdc9c1038545fac09b2a8f213418e4b7))
+
 ### [0.14.33](https://github.com/korchasa/flowai/compare/v0.14.32...v0.14.33) (2026-10-18)
 
 
