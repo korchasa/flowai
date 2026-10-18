@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.35](https://github.com/korchasa/flowai/compare/v0.14.34...v0.14.35) (2026-10-18)
+
+
+### Bug Fixes
+
+* **acceptance:** give each runner process its own run dir ([79c1af0](https://github.com/korchasa/flowai/commit/79c1af0c7d782db7243385f8a4a8f5d5f4bc80cd))
+* **acceptance:** take ai-ide-cli 3.0.3 for symlink-safe client-fs writes ([0b50ecf](https://github.com/korchasa/flowai/commit/0b50ecf7de9bec84a494219c53e58b22b09e9119))
+* **write-prd:** ask before drafting, recommend every number, number every question ([1d63b72](https://github.com/korchasa/flowai/commit/1d63b7203aba0eb7fba96193b7f958b6620d86d7))
+
+
+### Agent Changes
+
+* **acceptance:** resample both sides before calling a parity mismatch a regression ([4be8810](https://github.com/korchasa/flowai/commit/4be8810e3a815ff68061966e701dd8bc9bd9375f))
+
+
+### Chores
+
+* **deps:** restore the lock entries the CI deno resolves ([cf65de4](https://github.com/korchasa/flowai/commit/cf65de4d100823bc4d1f80e2624bd4369926356c))
+
 ### [0.14.34](https://github.com/korchasa/flowai/compare/v0.14.33...v0.14.34) (2026-10-18)
 
 
