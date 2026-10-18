@@ -80,7 +80,7 @@ export const WritePrdBasicBench = new class extends AcceptanceTestScenario {
     {
       id: "qa_format_compliant",
       description:
-        "If the agent asked clarifying questions to the user (target audience, constraints, timeline), did each question follow FR-UNIVERSAL.QA-FORMAT — i.e. each question is a numbered list item (a line starting with '1.', '2.', ...), NOT a bold heading like '**1. Title**', a Markdown heading, or a bare paragraph? If the agent did not ask any clarifying questions, this criterion is vacuously satisfied (mark as passed).",
+        "Did every question the agent put to the user, in every turn, follow FR-UNIVERSAL.QA-FORMAT rule 1 — each question is a Markdown numbered list item, i.e. its line starts with a number, a dot and a space ('1. ', '2. ', ...)? Bold text AFTER the number does not matter: '1. **Which statuses trigger a push?**' passes. It fails when the number sits inside the bold ('**1. Title**'), when the question is a Markdown heading, or when the question is a bare paragraph with no number — this includes a single follow-up question in a later turn (for example about a conflict between two of the user's constraints), which must also be numbered ('1. ...'). Only questions are judged: options under a question (A., B., bullets) and other numbered items in the same reply (findings, steps, a summary) are not questions, and a question list that restarts at '1.' after such a list is still compliant. If the agent asked no questions at all, mark as passed.",
       critical: true,
     },
   ];

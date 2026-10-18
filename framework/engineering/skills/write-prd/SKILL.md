@@ -5,7 +5,7 @@ description: Produce a Product Requirements Document (PRD) for a product feature
 
 # How to Write a Product Requirements Document (PRD)
 
-> **CRITICAL**: MUST save the final PRD to a file (e.g., `documents/prd-<slug>.md`). Do NOT only output in chat — always persist to disk.
+> **CRITICAL**: MUST save the final PRD to a file (e.g., `documents/prd-<slug>.md`). Do NOT only output in chat — always persist to disk. The file is written AFTER the round of clarifying questions in Section 2 step 2 has been answered, never in the reply that asks them.
 
 When generating or refining a Product Requirements Document (PRD), follow these
 guidelines to ensure clarity, completeness, and alignment. This rule is designed
@@ -14,9 +14,9 @@ documentation.
 
 ## 0. Question Format (FR-UNIVERSAL.QA-FORMAT)
 
-When asking the user a choice (audience, constraints, timeline):
+This format binds on EVERY question you put to the user, in every turn: the first round of clarifying questions, a later round, and a single follow-up question — for example one that surfaces a conflict between two of the user's constraints. A question you ask because a project rule told you to stop and ask is still a question to the user and still follows this format.
 
-- **Numbered** — each question is a numbered list item (`1.`, `2.`, …), not a heading, a bold-only line, or a paragraph.
+- **Numbered** — each question is a numbered list item (`1.`, `2.`, …), not a heading, a bold-only line, or a paragraph. A single question is still `1. …`. Bold text after the number is fine (`1. **Which statuses trigger a push?**`); the number inside the bold (`**1. Title**`) is not a list item.
 - **Self-contained** — the question is answerable from itself and its options alone. Name what is being decided and what the answer changes, inside the question. "Which of the above?", a bare "Your choice?", and "Which variant do you prefer?" with nothing restated are defects: they send the reader back up the transcript to reconstruct the question.
 - **Each option stands on its own** — a reader often jumps straight to the options, so an option's title and the lines under it must be enough to choose without the text above the question or the earlier turns. The title is a short name after the option's letter or number, and the reader answers with that letter or number; the `**Essence:**` line under it says what would be done, to what, and what the reader gets. A short reply option with no analysis of its own (Apply / Skip / Edit) has no Essence line, and its title says it alone. Explain inside the option any id, name, number or term it takes from a report, a file or an earlier turn, and replace a pointer such as "the issues found", "as above" or "the current round" with the items it means. An explanation elsewhere in the reply does not count — not in the report above the question, not in another option — and neither does a label tucked into parentheses or an aside: explain it in the option or delete it. Before sending, go through each option alone and list every label (letters plus digits such as `E4` or `N3`), coined term and bare number in it; each must be explained in that same option or removed.
 - **No catch-all option** — never add an option whose only content is an invitation to answer freely ("Other", "Something else", "Your own variant", "Tell me what you need"). The user can always type a free-form reply instead of a letter or number, and an IDE's question tool (`AskUserQuestion` and the like) already offers a free-text answer of its own, so such an option adds a line and no choice. An option that names a concrete alternative is a real option, even when its title starts with "Other".
@@ -33,7 +33,8 @@ When asking the user a choice (audience, constraints, timeline):
   multiple ways, it is a bug in the PRD.
 - **Living Document**: Acknowledge that the PRD evolves. A target nobody has
   approved yet is still written as a number and marked as a proposal; it is
-  never left blank or replaced by an open question.
+  never left blank or replaced by an open question. Proposals are what remains
+  after the user was asked (Section 2), not a substitute for asking.
 
 ## 2. Writing Strategy (AI Instructions)
 
@@ -41,22 +42,45 @@ When asked to write a PRD:
 
 1. **Analyze the Request**: Identify the core problem, target audience, and
    business goal.
-2. **Ask Clarifying Questions**: If key context is missing (e.g., "Who is this
-   for?", "What are the constraints?"), ask the user before generating the full
-   doc. Follow the **Question Format** section above (FR-UNIVERSAL.QA-FORMAT).
+2. **Ask Clarifying Questions — first, and alone**: your first reply to a PRD
+   request is one round of clarifying questions and nothing else. Do not create
+   or write the PRD file in that reply, and do not draft the PRD in chat. This
+   round is not conditional: a request always leaves numbers for the user to
+   decide (see Quantitative targets below), so "the request gives enough
+   context to draft" is never a reason to skip it. The one exception is a user
+   who said in the request itself to skip questions and use your
+   recommendations — then draft at once and mark every target you chose
+   `(proposed, awaiting approval)`. Follow the **Question Format** section above
+   (FR-UNIVERSAL.QA-FORMAT).
+   - **Context**: ask about what the request does not state and the PRD
+     depends on — the target audience, constraints (platforms, providers,
+     budget), and the timeline.
    - **Quantitative targets**: list every number the PRD will need that the
      request does not give — latency, throughput, availability, retry limits,
      supported OS or browser versions, guardrail thresholds. Ask about them in
      the same round of questions, and for each one offer a concrete recommended
      value and the reason for it — `Recommended: <value>, because <reason>` —
      so the user can accept it in one word. A value with no reason gives the
-     user nothing to judge it by, and "the currently supported versions" is not
-     a value. The user still decides the number; you only make the decision
-     cheap.
-3. **Drafting**: Use the template below. A target the user confirmed or gave is
-   a requirement. A target the user left unanswered goes in as your recommended
-   value marked `(proposed, awaiting approval)`, and Open Questions lists it for
-   approval with that value.
+     user nothing to judge it by. The user still decides the number; you only
+     make the decision cheap.
+   - **When the product's own data is unknown**: not knowing the product's
+     current value — its supported OS floor, its baseline, its provider limits —
+     is the normal case, and exactly the case the recommendation is for. It is
+     not a reason to withhold one. Recommend a concrete number from public data
+     and common practice (for OS versions: the oldest versions that still hold
+     a large share of active devices) and say in the reason that it is a
+     starting point the user can replace with their own figure. "Please specify
+     your versions", "the versions the app supports today", "set after
+     reviewing baselines" and "confirm during technical review" are not
+     values.
+3. **Drafting**: only after the user has answered the round in step 2. Use
+   the template below. A target the user confirmed or gave is a requirement. A
+   target you asked about and the user left unanswered goes in as your
+   recommended value marked `(proposed, awaiting approval)`, and Open Questions
+   lists it for approval with that value. A number you notice only while
+   drafting is handled the same way: your recommended value, marked as a
+   proposal, listed in Open Questions — never a blank, a "TBD", or a question
+   without a value.
 4. **Review**: Check against the "Bad vs Good" examples in Section 4.
 5. **Persist**: MUST write the final PRD to a file (e.g., `documents/prd-<slug>.md`
    or a path specified by the user). Do NOT only output the PRD in chat — always
