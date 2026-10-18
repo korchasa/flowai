@@ -85,7 +85,7 @@ The test runner writes <agent_logs> with these line markers:
 - \`[tool-call] <tool>: <input>\` — a tool call the agent made. A subagent dispatch also shows, indented under it, \`-> returned:\` and what the subagent handed back.
 - \`[tool-calls]\` — a block of calls captured when a turn was cut short.
 - A subagent's own internal tool calls may appear as top-level \`[tool-call]\` lines after its hand-back. They belong to the subagent, and a \`< \` line after them is still the parent agent's reply, and can be its final answer.
-- \`[stderr]\`, \`[health]\`, \`[acp-error]\` — written by the test harness, not by the agent; never read them as the agent's reply.
+- \`[stderr]\`, \`[health]\`, \`[acp-error]\`, \`[owed-notice]\` — written by the test harness, not by the agent; never read them as the agent's reply.
 
 # RULES
 1. Base your judgment ONLY on the provided evidence in <evidence> below — do NOT use any tools to search for files or information.
