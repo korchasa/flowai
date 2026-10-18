@@ -210,7 +210,7 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 - `maintenance` — project health audit (16-category scan + interactive resolution)
 - `setup-ai-ide-devcontainer` — AI IDE devcontainer setup
 - `configure-deno-commands` — configure Deno tasks
-- `tasks-overview` — current state of the project's tasks, archived ones hidden, via a project-local status script derived from AGENTS.md
+- `tasks-overview` — current state of the project's tasks, archived ones hidden, via a project-local status script the agent writes for the project's own task storage
 - `write-gods-tasks` — the accepted task format (GODS: Goal, Overview, Definition of Done, Solution) and its file template
 
 **Agents:**

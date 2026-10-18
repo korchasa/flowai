@@ -4,7 +4,8 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * The project's task convention differs from the framework default: tasks
  * sit in `docs/todo/<slug>.md` with a `state:` key. The skill must derive
  * that convention from AGENTS.md, write a project-local script for it, run
- * it and show only the non-archived tasks — without touching any task file.
+ * it, check that the script found every task, and show only the
+ * non-archived tasks — without touching any task file.
  */
 export const TasksOverviewBasicBench = new class
   extends AcceptanceTestScenario {
@@ -35,7 +36,7 @@ export const TasksOverviewBasicBench = new class
     {
       id: "script_written_with_project_schema",
       description:
-        "Does `scripts/tasks-overview.py` exist in the sandbox with a schema block whose `root` is `docs/todo`, whose `status_key` is `state`, and whose `archived_statuses` include both `closed` and `archived`?",
+        "Does `scripts/tasks-overview.py` exist in the sandbox, read the task files under `docs/todo`, take the status from the `state` frontmatter key, and treat both `closed` and `archived` as archived?",
       critical: true,
     },
     {
@@ -48,6 +49,12 @@ export const TasksOverviewBasicBench = new class
       id: "script_executed",
       description:
         "Did the agent run the script it wrote (a `python3 scripts/tasks-overview.py` invocation, or the same file via an equivalent command) and show its output?",
+      critical: true,
+    },
+    {
+      id: "completeness_checked",
+      description:
+        "After the first run of the new script, did the agent count the tasks a SECOND, independent way (for example `find docs/todo -name '*.md' | wc -l`, `ls`, or a `grep -c` over the task files — anything that does not go through the script) and compare that count with the total the script reported (open plus archived), saying in chat whether the two agree? Reading the script's own output twice, or only eyeballing it, fails.",
       critical: true,
     },
     {

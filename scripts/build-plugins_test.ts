@@ -848,7 +848,7 @@ Deno.test("preserves-skill-subdirectories", async () => {
 Deno.test("omits-primitive-unit-tests-from-payload", async () => {
   // A primitive's own `*_test.ts` / `*.test.ts` is this repo's gate. Shipped,
   // it lands in a user's `.claude/skills/` and joins that project's
-  // `deno test` run (the `tasks-overview` tests spawn Python).
+  // `deno test` run (the former `tasks-overview` template tests spawned Python).
   const root = await Deno.makeTempDir({ prefix: "flowai-unit-tests-" });
   const out = await tempOut();
   try {

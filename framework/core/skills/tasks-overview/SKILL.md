@@ -1,57 +1,85 @@
 ---
 name: tasks-overview
-description: Show the current state of the project's tasks, hiding archived ones, deriving the task layout from AGENTS.md and generating a project-local status script. Use when the user asks which tasks are open or in progress, or how far the work has got.
+description: Show the current state of the project's tasks, hiding archived ones, by writing a project-local status script for however the project stores its tasks. Use when the user asks which tasks are open or in progress, or how far the work has got.
 ---
 
 # Tasks Overview
 
 ## Overview
 
-Every project keeps its tasks somewhere — a directory of Markdown files with a
-status key in the frontmatter is the common shape, but the directory, the key
-and the values differ from project to project. flowai proposes one layout
-(the `tasks` role from AGENTS.md, by default a date-nested
-`<tasks dir>/<YYYY>/<MM>/<slug>.md` tree with `status: to do | in progress |
-done | superseded`) and many projects use their own. Reading every task file by
-hand on every request is slow and inconsistent, so this skill turns the
-project's convention into a script once, keeps that script in the project, and
-runs it from then on.
+Every project keeps its tasks somewhere, and the storage differs from project
+to project: one Markdown file per task with a status key in the frontmatter,
+headings in a single roadmap file, a YAML or JSON list, an issue tracker
+reached through its CLI. flowai proposes one layout (the `tasks` role from
+AGENTS.md, by default a date-nested `<tasks dir>/<YYYY>/<MM>/<slug>.md` tree
+with `status: to do | in progress | done | superseded`) and many projects use
+their own. Reading every task by hand on every request is slow and
+inconsistent, so this skill writes a script for the project's storage once,
+keeps that script in the project, and runs it from then on.
 
-The script is `scripts/tasks-overview.py`. It is the bundled template
-`scripts/tasks_overview.py` (next to this file) with one block replaced: the
-schema block that says where the tasks live and how to read them. Everything
-else is unchanged scanning logic that needs only Python 3.
+This skill ships no script. The storage is known only inside the project, so
+the script is written there, for that storage, against the output contract
+below. The contract keeps the report the same in every project; the
+completeness check replaces the tests a shared template would have had.
+
+## Output Contract
+
+The project script is `scripts/tasks-overview.py`. It MUST:
+
+- run with Python 3 and its standard library only (`subprocess` is allowed
+  when the tasks live in a tracker reachable through a CLI);
+- print the non-archived tasks grouped by status: `in progress` first, `to do`
+  second, then the remaining statuses in alphabetical order, each group under
+  a `<status>:` header line, using the project's own status names (map the
+  project's equivalents of "in progress" and "to do" to the first two places);
+- print one line per task: its location (file path, `file#heading`, issue
+  number), the progress `[done/total]` when the task has checklist steps, the
+  title, and the date when the storage has one;
+- end with the footer `N open, M archived (hidden; use --all)`;
+- show the archived groups too when called with `--all`, and then drop the
+  `(hidden; use --all)` part of the footer;
+- print `no tasks under <location>` and exit 0 when there are none;
+- exit 2 with a message on stderr naming the path or command when the storage
+  is missing, a task cannot be read, or the argument is unknown — never skip a
+  task silently;
+- never write to the task storage.
 
 ## Rules & Constraints
 
 <rules>
 1. **An existing script wins.** If the project already has
-   `scripts/tasks-overview.py`, run it and report. Do not re-derive the schema
+   `scripts/tasks-overview.py`, run it and report. Do not re-derive the storage
    and do not rewrite the file — the user owns it once it is in the project;
    if its output looks wrong, say so and leave the fix to the user.
 2. **The project's convention beats the framework default.** AGENTS.md (or
-   CLAUDE.md) is the source for the task layout. When it carries a
+   CLAUDE.md) is the source for the task storage. When it carries a
    project-specific section that overrides or contradicts the framework's
    default task rules, the project-specific one is the truth. The framework
    layout is only assumed when AGENTS.md carries no project-specific override
    of it.
-3. **Never modify a task file.** This skill reads tasks; it does not fix
-   frontmatter, flip statuses or move files. The only file it writes is the
-   script.
-4. **Only the schema block changes.** Copy the template as-is and replace the
-   text between `# --- SCHEMA BEGIN ---` and `# --- SCHEMA END ---`. Do not
-   edit the scanning logic, and do not write the script from scratch — the
-   template is tested, a rewrite is not.
-5. **Show the derivation, with quotes.** Before writing the script, state
-   each schema key and QUOTE the AGENTS.md sentence it comes from (the words
-   themselves, in quotation marks or a code span — not a paraphrase), so a
-   wrong guess is caught before it becomes a script. A value with no quoted
-   source is a guess and must be named as one.
+3. **Never modify the task storage.** This skill reads tasks; it does not fix
+   frontmatter, flip statuses, move files or edit issues. The only file it
+   writes is the script.
+4. **Write for the storage the project has.** Write the script yourself, to
+   the Output Contract, for the storage AGENTS.md describes — not for the
+   framework layout, and not by forcing a different storage into the
+   one-file-per-task shape. Keep it short and readable: the user will edit it.
+5. **Show the derivation, with quotes.** Before writing the script, state how
+   the tasks are stored — where they live, what one task is, where its status
+   and its steps come from, which statuses count as archived — and QUOTE the
+   AGENTS.md sentence each answer comes from (the words themselves, in
+   quotation marks or a code span — not a paraphrase), so a wrong guess is
+   caught before it becomes a script. An answer with no quoted source is a
+   guess and must be named as one.
 6. **No guessed location.** If neither AGENTS.md nor the tree says where the
    tasks live, ask the user in one line and STOP. Do not scan the whole
    repository for anything that looks like a task.
-7. **Fail loudly.** If `python3` is missing, or the script exits with 2,
-   report the message and STOP — do not fall back to reading the files by hand.
+7. **Check completeness on the first run.** A freshly written script is
+   untested. After its first run, count the tasks a second, independent way
+   and compare with the script's total — see step 5.
+8. **Fail loudly.** If `python3` is missing, or the script exits with 2,
+   report the message and STOP — do not fall back to reading the tasks by
+   hand.
 </rules>
 
 ## Instructions
@@ -59,77 +87,62 @@ else is unchanged scanning logic that needs only Python 3.
 <step_by_step>
 
 1. **Reuse gate.** Check for `scripts/tasks-overview.py` in the project root.
-   - Present → run it exactly as in step 5 and skip steps 2–4. If the user
+   - Present → run it exactly as in step 4, skip steps 2, 3 and 5. If the user
      asked for archived tasks too, pass `--all`.
    - Absent → continue.
 
-2. **Derive the schema from AGENTS.md.** Read `AGENTS.md` (or `CLAUDE.md`
-   when that is the file the project has). Find the rules about tasks:
-   the `tasks` role in the documentation hierarchy, a "Tasks" section, or any
-   sentence naming the task directory, the status key and its values. Apply
-   Rule 2: a project-specific section that says the framework layout is
-   superseded, or names a different directory, is the one to follow. Fill
-   these keys (the template's comments explain each):
-   - `root` — the task directory relative to the project root.
-   - `pattern` — the glob under `root` that selects task files
-     (`**/*.md` for nested layouts, `*.md` for a flat directory).
-   - `ignore` — file names inside `root` that are not tasks (`README.md`
-     and the like).
-   - `status_key` — the frontmatter key that holds the status (`status`,
-     `state`, …).
-   - `missing_status` — the label to show when a file has no status key.
-   - `archived_statuses` — every value that means the task is finished or
-     retired (`done`, `superseded`, `closed`, `archived`, `dropped`, …).
-   - `archived_dirs` — subdirectories of `root` whose files are archived
-     whatever their status (`archive/`), or `[]`.
-   - `progress_section` — the heading whose `- [ ]` / `- [x]` items measure
-     progress (`## Definition of Done`, `## Checklist`, …), or `None` when
-     the project has no such section.
+2. **Derive the storage from AGENTS.md.** Read `AGENTS.md` (or `CLAUDE.md`
+   when that is the file the project has). Find the rules about tasks: the
+   `tasks` role in the documentation hierarchy, a "Tasks" section, or any
+   sentence naming where tasks live. Apply Rule 2. Establish:
+   - **location** — the directory, file or tracker that holds the tasks;
+   - **unit** — what one task is (a file, a heading, a list entry, an issue);
+   - **status** — where a task's status comes from (a frontmatter key, the
+     section the task sits under, a field, a label) and its possible values;
+   - **archived** — which statuses, directories or sections mean finished or
+     retired (`done`, `superseded`, `closed`, `archived`, `dropped`, …);
+   - **steps** — what measures progress (`- [ ]` / `- [x]` items under a
+     given heading, sub-tasks), or none;
+   - **title and date** — where they come from, if the storage has them.
    If AGENTS.md carries no project-specific task rules, use the flowai default
-   (root `documents/tasks`, `**/*.md`, `status`, archived `done` + `superseded`,
-   `## Definition of Done`) — but only after confirming that directory exists.
-   If the location cannot be established, apply Rule 6.
+   (the directory the `tasks` role names, every `*.md` under it, frontmatter `status`, archived `done` and
+   `superseded`, steps under `## Definition of Done`, title from the first
+   `# ` heading, frontmatter `date`) — but only after confirming that
+   directory exists. If the location cannot be established, apply Rule 6.
+   Look at one or two real tasks to confirm the shape before writing code.
 
-3. **Show the derivation** (Rule 5): one line per key — the value and the
-   quoted sentence from AGENTS.md it was taken from (or "framework default",
-   named as such). Example:
-   `status_key: state — "with frontmatter \`state: open | blocked | closed | archived\`"`.
+3. **Show the derivation and write the script.** Show one line per answer from
+   step 2 with its quoted source (Rule 5), for example:
+   `status — the enclosing "## " section: "A task's status is the ## section it sits under"`.
+   Then write `scripts/tasks-overview.py` (create `scripts/` if needed) to the
+   Output Contract (Rule 4).
 
-4. **Write the project script.** Copy the template
-   `scripts/tasks_overview.py` from this skill's directory to
-   `scripts/tasks-overview.py` in the project root (create `scripts/` if
-   needed), then replace only the schema block (Rule 4) with the derived
-   values, keeping the `SCHEMA = { ... }` shape:
-
-   ```bash
-   mkdir -p scripts
-   cp <this skill's directory>/scripts/tasks_overview.py scripts/tasks-overview.py
-   ```
-
-   Then edit the block between `# --- SCHEMA BEGIN ---` and
-   `# --- SCHEMA END ---` in `scripts/tasks-overview.py`.
-
-5. **Run it and report.**
+4. **Run it.**
 
    ```bash
    python3 scripts/tasks-overview.py
    ```
 
-   Add `--all` when the user wants archived tasks too. The output groups tasks
-   by status (`in progress`, `to do`, then the rest), one line per task with
-   the path, the progress (`[done/total]` when a progress section exists),
-   the title and the date, and ends with `N open, M archived (hidden; use
-   --all)`. Exit 2 means the root is missing, the schema block is malformed,
-   or a file could not be read — the message names the path; apply Rule 7.
-   Paste the script's output VERBATIM in a fenced code block in your reply —
-   the user sees your message, not the tool result, and a retelling of the
-   list is not the list. Comments or a short reading of it may follow the
-   block, never replace it. When the script was just created, add one
-   sentence saying that `scripts/tasks-overview.py` now lives in their
+   Add `--all` when the user wants archived tasks too. Exit 2 → apply Rule 8.
+
+5. **Completeness check (new script only).** Count the tasks without the
+   script — `find <dir> -name '*.md' | wc -l` minus the ignored files, `grep -c`
+   over the task headings, the tracker CLI's own count — and compare that
+   number with the script's total (open plus archived from the footer). Say in
+   chat what you counted, how, and whether the numbers agree.
+   - Agree → go to step 6.
+   - Disagree → find which tasks the script missed or invented, fix the script
+     you just wrote, and run steps 4–5 once more. If they still disagree,
+     report both numbers and the tasks in question, and STOP without
+     presenting the list as complete.
+   - No independent count exists (a tracker with no count command) → say so
+     plainly instead of claiming completeness.
+
+6. **Report.** Paste the script's output VERBATIM in a fenced code block in
+   your reply — the user sees your message, not the tool result, and a
+   retelling of the list is not the list. Comments or a short reading of it may
+   follow the block, never replace it. When the script was just created, add
+   one sentence saying that `scripts/tasks-overview.py` now lives in their
    project and is theirs to edit — the next request will run it directly.
 
 </step_by_step>
-
-## Resources
-
-- [`scripts/tasks_overview.py`](scripts/tasks_overview.py) — the template; its schema block is the only project-specific part.

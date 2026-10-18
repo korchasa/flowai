@@ -505,7 +505,8 @@ async function emitPrimitives(opts: EmitPrimitivesOpts): Promise<void> {
  * A primitive's own unit test (`*_test.ts`, `*.test.ts`) belongs to this
  * repo's gate, not to the payload. Shipped, it lands in a Cursor / OpenCode
  * user's `.claude/skills/` and joins that project's `deno test` run (the
- * `tasks-overview` tests spawn Python and fail without `--allow-run`).
+ * former `tasks-overview` template tests spawned Python and failed without
+ * `--allow-run`).
  */
 function isPrimitiveUnitTest(name: string): boolean {
   return name.endsWith("_test.ts") || name.endsWith(".test.ts");
