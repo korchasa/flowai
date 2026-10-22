@@ -1,0 +1,29 @@
+{
+  "imports": {
+    "@std/assert": "jsr:@std/assert@^1.0.19"
+  },
+  "tasks": {
+    "test": "deno test tests/",
+    "check": "deno fmt --check && deno lint"
+  },
+  "fmt": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
+  },
+  "lint": {
+    "exclude": [
+      ".claude/",
+      ".codex/",
+      ".opencode/",
+      ".cursor/",
+      "documents/",
+      "acceptance-tests/"
+    ]
+  }
+}

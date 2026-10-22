@@ -1128,8 +1128,10 @@ Rules:
 ### FR-ATOM-IMPLEMENT: TDD Implement Atom — `implement` [ANC:fr:atom-implement]
 
 - **Description:** Model-invocable skill that drives the canonical TDD cycle (RED → GREEN → REFACTOR → CHECK, per [AGENTS.md § TDD Flow](../framework/AGENTS.md)) against a written plan's Solution section. Triggers on "implement under TDD per task plan" prompts without overlapping `plan` (planning) or `review` (post-implement review). Source: `framework/atoms/implement.md`. Generated SKILL.md materialized by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts) per FR-SKILL-COMPOSE.
-- **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md)
-- **Acceptance verified by acceptance tests:** `implement-tdd-cycle-completes`, `implement-returns-to-red-on-check-failure`, `implement-trigger-pos-1`, `implement-trigger-adj-1`, `implement-trigger-false-1`. (Implementation deviates from the task's "consolidated mixed-1" plan to keep `check-trigger-coverage.ts` happy without an exemption.)
+- **Parent probes keep the work in place:** whenever the cycle needs the code without the change — to show a failure is pre-existing, to see a new test fail on the original source, to compare lint or type-check output before and after — the atom runs it in a separate tree (`git worktree add <scratch> HEAD`, removed afterwards) or reads one file with `git show HEAD:<path>`, and never moves the uncommitted work out of the working tree (`git stash`, checkout, restore or reset of the changed files).
+- **Rationale:** the TDD cycle is defined in AGENTS.md; this atom exists so a written plan is executed under it without scope drift. The parent-probe clause was added after the SWE-rebench Sonnet campaign of 2026-10-21, where 39 of the 50 `git stash` calls of the flowai arm came from the implement turn, and a session cut off between `stash` and `pop` loses the whole change.
+- **Tasks:** [generate-skills-from-atoms](tasks/2026/05/generate-skills-from-atoms.md), [REF:task:2026-10-no-stash-parent-probe | no-stash-parent-probe]
+- **Acceptance verified by acceptance tests:** `implement-parent-probe-keeps-working-tree`, `implement-tdd-cycle-completes`, `implement-returns-to-red-on-check-failure`, `implement-trigger-pos-1`, `implement-trigger-adj-1`, `implement-trigger-false-1`. (Implementation deviates from the task's "consolidated mixed-1" plan to keep `check-trigger-coverage.ts` happy without an exemption.)
 - **Status:** [x]
 
 ### FR-ATOM-REFLECT-GATE: Reflect Gate Atom — `reflect-gate` [ANC:fr:atom-reflect-gate]
@@ -1661,10 +1663,11 @@ Rules:
 ### FR-JIT-REVIEW: JIT Review Skill — `jit-review` [ANC:fr:jit-review]
 
 - **Description:** JiT-subset of the `review` atom. Given a diff (staged, unstaged, or commit-range), the review skill synthesizes ephemeral **Catching JiTTests** — temporary tests that pass on the parent revision and fail on the diff revision — as part of the same review pass. Adapts Meta's Intent-Aware JiTTests pipeline (FSE 2026) to flowai's language-agnostic `test`-command interface declared in AGENTS.md. Activates automatically inside every `review` invocation and every composite that uses it (`review-and-commit`, `ship`); no separate user-facing skill or command.
-- **Tasks:** [merge-jit-review-into-review-atom](tasks/2026/05/merge-jit-review-into-review-atom.md)
+- **Rationale:** a review that cannot tell a regression the diff introduced from behaviour the parent already had either blocks on old failures or approves new ones; a test that passes on the parent and fails on the diff is the one objective signal of the former. The parent must be built beside the working tree, never by moving the diff out of it: in the SWE-rebench Sonnet campaign of 2026-10-21 a review probed one failing test with `git stash -q; <25 test runs>; git stash pop -q`, the session hit its 40-minute budget inside that span, and the finished fix stayed in the stash while the harness captured an empty patch.
+- **Tasks:** [merge-jit-review-into-review-atom](tasks/2026/05/merge-jit-review-into-review-atom.md), [REF:task:2026-10-no-stash-parent-probe | no-stash-parent-probe]
 - **Scope:** Interleaved into `framework/atoms/review.md` as step 2b (parent baseline), 3d-e (intent hints + inference), 6/7/8 side-channel risk hypotheses, 8a (mutant + ephemeral test synthesis), 8b (dual-run + filter), extended step 10 (report sections: Intents, Catching Tests, Uncovered Risks, Degradation Notes), and step 11 (ephemeral dispose prompt). NOT a standalone skill.
 - **Scenario:** Developer prepares a diff (staged or unstaged) and invokes `/review` (or a composite that runs `review` as a phase). The agent:
-  1. Collects the diff target and resolves the parent revision via `git worktree add` (or `git show` fallback).
+  1. Collects the diff target and builds the parent revision as a separate tree via `git worktree add` (or `git show` fallback). It never moves the diff out of the working tree to reach the parent — no `git stash`, no checkout, restore or reset of the diff's files — and the same holds for every later look at the parent during the review: rerunning one failing test, comparing lint or type-check output, reading an old file version. The parent worktree is removed before the review ends.
   2. Runs the declared `test`/`check` command on parent (step 2b); if parent baseline is red, JiT subset disables itself and review continues (graceful degradation).
   3. Infers ≤5 intents per diff and ≤3 risk hypotheses per intent as a side-channel during the existing code-review reading passes (steps 3e, 6, 7, 8).
   4. Synthesizes one mutant per risk (≤15 mutants total); skips on pure code deletion or other degradation triggers.
@@ -1680,7 +1683,7 @@ Rules:
   - Mutant budget: ≤5 intents × ≤3 risks × 1 mutant = ≤15 mutants. Report top-5 catching tests by severity × uniqueness.
   - Verdict gate is shared with `review`: catching tests that fail-on-diff are `[critical]` findings; no second gate.
   - Ephemeral tests live under a session-id'd scratch directory (`.flowai/review-jit/<sid>/` with `.gitignore` ensure, or `$(mktemp -d)/review-jit-<sid>/`); session-id MUST be unique per invocation so parallel reviews do not clobber each other.
-- **Acceptance verified by acceptance tests:** `review-catches-regression-via-jittests`, `review-no-change-no-alarm`
+- **Acceptance verified by acceptance tests:** `review-catches-regression-via-jittests`, `review-no-change-no-alarm`, `review-parent-probe-keeps-working-tree` (regression guard only: it passed 3 of 3 runs on the text without the stash ban too, and so did an earlier wording of its query, because a short fresh review on `claude-sonnet-5-5` already builds a worktree; the evidence that the ban is needed is the benchmark transcript cited in Rationale)
 
 ### FR-DIAGNOSE-BENCH: Benchmark Failure Diagnostic Skill — `diagnose-benchmark-failure` [ANC:fr:diagnose-bench]
 
