@@ -2,13 +2,21 @@
  * Session cost counters for benchmark runs (FR-BENCH-SWE.COST).
  *
  * Cost is always measured, never a quality criterion (FR-BENCH-V1 principle).
- * Token usage lives ONLY in the codex rollouts (every `*.jsonl` under
- * `<CODEX_HOME>/sessions/`). There are TWO such roots per instance since
- * FR-BENCH-SWE.ISOLATION split the human emulator's store away from the agent's,
- * and both sit in the OS temp root that macOS purges within days (all
+ * Token usage lives ONLY in the session transcripts the subject IDE wrote —
+ * codex rollouts under `<CODEX_HOME>/sessions/`, Claude Code transcripts under
+ * `<HOME>/.claude/projects/` (`session_store.ts` finds them). The human
+ * emulator writes into the same store, so its tokens count inside the arm's
+ * overhead. A temp-root store is purged by the OS within days (all
  * pre-2026-07-22 campaign transcripts were lost exactly this way) — so the
  * harness harvests counters IMMEDIATELY after each session and persists them
  * durably next to the run artifacts.
+ *
+ * Claude transcripts go through the acceptance lib's reader
+ * (`parseClaudeTranscript`, FR-ACCEPT.TOKEN-USAGE), so the two test systems
+ * count a Claude session the same way. The counters keep one meaning across
+ * IDEs: `inputTokens` is the whole input, cache included (codex's
+ * `input_tokens` already contains its cached part; for Claude it is fresh +
+ * cache read + cache write), and `outputTokens` includes reasoning.
  *
  * Rollout quirks this module encodes:
  * - `token_count` events carry a RUNNING TOTAL (`total_token_usage`), re-emitted
@@ -17,14 +25,11 @@
  *   field codex actually writes) falling back to `id`;
  * - a killed session truncates the final line → malformed lines are counted
  *   (`parseErrors`), never silently dropped.
- *
- * The Claude Code transcript reader this replaced was retired 2026-08-09 with
- * the Claude subject arm: it produced nothing on the codex path, which is the
- * only path campaigns run on.
  */
 
 import { join } from "@std/path";
-import { walk } from "@std/fs";
+import { parseClaudeTranscript } from "@acceptance-tests/acp/claude_usage.ts";
+import { type SessionStores, storeFiles } from "./session_store.ts";
 
 export interface TranscriptUsage {
   /** API responses — one `token_count` event each. */
@@ -124,31 +129,39 @@ export function usageFromRollout(text: string): TranscriptUsage {
 }
 
 /**
- * Harvest every rollout under `<codexHome>/sessions` for each store listed.
+ * Aggregate one Claude Code transcript into usage counters, through the
+ * shared reader. `apiCalls` counts distinct `message.id`, `toolCalls` distinct
+ * `tool_use` ids; the token fields keep the cross-IDE meaning described in the
+ * module header.
+ */
+export function usageFromClaudeTranscript(text: string): TranscriptUsage {
+  const r = parseClaudeTranscript(text);
+  const t = r.tokens;
+  return {
+    apiCalls: r.apiCalls,
+    inputTokens: t ? t.freshInput + t.cachedInput + t.cacheWrite : 0,
+    outputTokens: t ? t.output + t.reasoning : 0,
+    cacheReadTokens: t?.cachedInput ?? 0,
+    cacheCreationTokens: t?.cacheWrite ?? 0,
+    toolCalls: r.toolCalls,
+    parseErrors: r.parseErrors,
+  };
+}
+
+/**
+ * Harvest every transcript of the store. Every directory listed counts — the
+ * arm's cost is their SUM, which keeps the emulator's tokens inside the arm's
+ * overhead. Reading only the agent's part would quietly shrink every measured
+ * cost.
  *
- * Two stores, not one, since FR-BENCH-SWE.ISOLATION split the human emulator's
- * config root away from the agent's: the arm's cost is their SUM, which keeps
- * the emulator's tokens inside the arm's overhead exactly as they were counted
- * when both shared a directory. Reading only the agent's store would quietly
- * shrink every measured cost.
- *
- * Fails fast, naming the offending store, when a sessions dir is absent: a
- * session that produced no rollout is a harness defect, not a zero-cost run.
+ * Fails fast, naming the offending directory, when one is absent: a session
+ * that produced no transcript is a harness defect, not a zero-cost run.
  */
 export async function collectSessionMetrics(
-  codexHomes: readonly string[],
+  stores: SessionStores,
   wallClockMs: number,
 ): Promise<SessionMetrics> {
-  const sessionDirs: string[] = [];
-  for (const home of codexHomes) {
-    const dir = join(home, "sessions");
-    try {
-      await Deno.stat(dir);
-    } catch {
-      throw new Error(`no transcripts: sessions dir absent at ${dir}`);
-    }
-    sessionDirs.push(dir);
-  }
+  const files = await storeFiles(stores);
   const totals: SessionMetrics = {
     wallClockMs,
     transcriptFiles: 0,
@@ -160,20 +173,19 @@ export async function collectSessionMetrics(
     toolCalls: 0,
     parseErrors: 0,
   };
-  for (const dir of sessionDirs) {
-    for await (
-      const entry of walk(dir, { includeDirs: false, exts: [".jsonl"] })
-    ) {
-      const u = usageFromRollout(await Deno.readTextFile(entry.path));
-      totals.transcriptFiles++;
-      totals.apiCalls += u.apiCalls;
-      totals.inputTokens += u.inputTokens;
-      totals.outputTokens += u.outputTokens;
-      totals.cacheReadTokens += u.cacheReadTokens;
-      totals.cacheCreationTokens += u.cacheCreationTokens;
-      totals.toolCalls += u.toolCalls;
-      totals.parseErrors += u.parseErrors;
-    }
+  for (const file of files) {
+    const parse = file.ide === "codex"
+      ? usageFromRollout
+      : usageFromClaudeTranscript;
+    const u = parse(await Deno.readTextFile(file.path));
+    totals.transcriptFiles++;
+    totals.apiCalls += u.apiCalls;
+    totals.inputTokens += u.inputTokens;
+    totals.outputTokens += u.outputTokens;
+    totals.cacheReadTokens += u.cacheReadTokens;
+    totals.cacheCreationTokens += u.cacheCreationTokens;
+    totals.toolCalls += u.toolCalls;
+    totals.parseErrors += u.parseErrors;
   }
   return totals;
 }

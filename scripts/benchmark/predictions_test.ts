@@ -228,3 +228,29 @@ Deno.test("captureDiff: drops regenerated lock files, keeps the source fix", asy
     await Deno.remove(dir, { recursive: true });
   }
 });
+
+// The flowai arm on claude writes the process rules twice — `AGENTS.md` and a
+// real root `CLAUDE.md`, the file Claude Code loads on its own. Neither is the
+// fix, so both stay out of the patch.
+Deno.test("captureDiff: the installed AGENTS.md and CLAUDE.md never reach the patch", async () => {
+  const dir = await Deno.makeTempDir();
+  try {
+    await git(dir, ["init", "-q"]);
+    await git(dir, ["config", "user.email", "t@t"]);
+    await git(dir, ["config", "user.name", "t"]);
+    await Deno.writeTextFile(join(dir, "mod.py"), "x = 1\n");
+    await git(dir, ["add", "-A"]);
+    await git(dir, ["commit", "-qm", "base"]);
+
+    await Deno.writeTextFile(join(dir, "mod.py"), "x = 2\n");
+    await Deno.writeTextFile(join(dir, "AGENTS.md"), "# rules\n");
+    await Deno.writeTextFile(join(dir, "CLAUDE.md"), "# rules\n");
+
+    const diff = await captureDiff(dir);
+    assertStringIncludes(diff, "+x = 2");
+    assertEquals(diff.includes("AGENTS.md"), false);
+    assertEquals(diff.includes("CLAUDE.md"), false);
+  } finally {
+    await Deno.remove(dir, { recursive: true });
+  }
+});

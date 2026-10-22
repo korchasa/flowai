@@ -1,5 +1,10 @@
-import { assert } from "@std/assert";
-import { renderAgentsMd, renderDocStubs } from "./agents_md.ts";
+import { assert, assertEquals } from "@std/assert";
+import { join } from "@std/path";
+import {
+  installAgentsMd,
+  renderAgentsMd,
+  renderDocStubs,
+} from "./agents_md.ts";
 
 /**
  * Every doc role the rendered AGENTS.md resolves MUST exist on disk, or the plan
@@ -124,4 +129,38 @@ Deno.test("renderAgentsMd: empty stack still renders without placeholders", () =
   );
   assert(!/\{\{/.test(out), "no placeholder remains on empty stack");
   assert(out.includes("psf/requests"));
+});
+
+// Claude Code loads `CLAUDE.md` from the session cwd and never `AGENTS.md`, so
+// on claude the flowai arm's process rules reach the model only through a
+// REAL root `CLAUDE.md` — the acceptance runner learned this on 2026-08-13,
+// when a symlink left the rules unread. Codex reads `AGENTS.md` itself and
+// gets no second copy.
+Deno.test("installAgentsMd: claude also gets a real CLAUDE.md with the same rules", async () => {
+  const repoRoot = new URL("../..", import.meta.url).pathname;
+  const sandbox = await Deno.makeTempDir();
+  const codexSandbox = await Deno.makeTempDir();
+  try {
+    await installAgentsMd(repoRoot, sandbox, "psf/requests", "claude");
+    const agents = await Deno.readTextFile(join(sandbox, "AGENTS.md"));
+    const claude = await Deno.readTextFile(join(sandbox, "CLAUDE.md"));
+    assertEquals(claude, agents);
+    assertEquals(
+      (await Deno.lstat(join(sandbox, "CLAUDE.md"))).isSymlink,
+      false,
+    );
+
+    await installAgentsMd(repoRoot, codexSandbox, "psf/requests", "codex");
+    await Deno.stat(join(codexSandbox, "AGENTS.md"));
+    let hasClaudeMd = true;
+    try {
+      await Deno.stat(join(codexSandbox, "CLAUDE.md"));
+    } catch {
+      hasClaudeMd = false;
+    }
+    assertEquals(hasClaudeMd, false);
+  } finally {
+    await Deno.remove(sandbox, { recursive: true });
+    await Deno.remove(codexSandbox, { recursive: true });
+  }
 });

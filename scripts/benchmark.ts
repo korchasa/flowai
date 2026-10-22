@@ -28,6 +28,9 @@ import { stripTestHunks } from "./benchmark/patch.ts";
 import {
   type Arm,
   assertModelForIde,
+  DEFAULT_BENCH_IDE,
+  DEFAULT_BENCH_MODEL,
+  DEFAULT_HUMAN_EMULATOR_MODEL,
   humanEmulatorConfig,
   SESSION_BUDGET_MS,
   SESSION_MAX_STEPS,
@@ -36,11 +39,13 @@ import type { AcpIde } from "@acceptance-tests/acp/registry.ts";
 /**
  * IDEs this benchmark can put UNDER TEST. Narrower than the acceptance-test
  * runner's `SUPPORTED_IDES` on purpose: that list stays wide because the
- * framework's own primitives are tested on every IDE, while the benchmark's
- * cost capture, human emulator and frozen pool are all codex-shaped since the
- * Claude subject arm was retired (2026-08-09).
+ * framework's own primitives are tested on every IDE, while the benchmark
+ * needs a session-transcript reader per IDE for its cost, web and peek
+ * harvests (`session_store.ts`), and only claude and codex have one. Claude is
+ * the default since 2026-10-21, matching the acceptance tests; codex stays so
+ * its recorded campaigns can be repeated.
  */
-const BENCH_SUBJECT_IDES: readonly string[] = ["codex"];
+const BENCH_SUBJECT_IDES: readonly string[] = ["claude", "codex"];
 import { renderRetroMarkdown, scanRun } from "./benchmark/retro.ts";
 import {
   ensureRebenchSetup,
@@ -63,7 +68,7 @@ import {
   upsertGate,
 } from "./benchmark/pool2_gate.ts";
 import { loadPool2InstanceData } from "./benchmark/pool2_dataset.ts";
-import { closeCodexSessions } from "@acceptance-tests/llm.ts";
+import { closeJudgeSessions } from "@acceptance-tests/judge_transport.ts";
 import {
   bridgeVersionFor,
   cellId,
@@ -158,7 +163,7 @@ async function writeGradablePredictions(
 await new Command()
   .name("benchmark")
   .description(
-    "SWE-rebench same-harness A/B benchmark for flowai-core, codex under test (FR-BENCH-SWE)",
+    "SWE-rebench same-harness A/B benchmark for flowai-core, Claude Code (default) or codex under test (FR-BENCH-SWE)",
   )
   .action(function () {
     this.showHelp();
@@ -262,16 +267,16 @@ await new Command()
   .option("--limit <n:number>", "Run only the first N passers (metered slice)")
   .option("--out <dir:string>", "Base output dir (default runs/pool2-<arm>)")
   .option("--model <name:string>", "Agent model", {
-    default: "gpt-5.6-terra",
+    default: DEFAULT_BENCH_MODEL,
   })
-  .option("--ide <name:string>", "IDE under test (codex)", {
-    default: "codex",
+  .option("--ide <name:string>", "IDE under test (claude | codex)", {
+    default: DEFAULT_BENCH_IDE,
   })
   .option(
     "--human-emulator-model <name:string>",
     "Human-emulator model (one referee for both arms, pinned at medium effort)",
     {
-      default: "gpt-5.6-sol",
+      default: DEFAULT_HUMAN_EMULATOR_MODEL,
     },
   )
   .option(
@@ -297,15 +302,14 @@ await new Command()
       console.error(`--arm must be 'baseline' or 'flowai', got '${opts.arm}'`);
       Deno.exit(1);
     }
-    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
+    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-claude-code-is-the-default-ide-under-test-codex-kept-ancfrbench-swe-ide):
     // reject an unknown IDE or a cross-IDE model before any session is spawned.
     const pool2Ide = opts.ide as AcpIde;
     if (!BENCH_SUBJECT_IDES.includes(pool2Ide)) {
       console.error(
         `--ide must be one of ${BENCH_SUBJECT_IDES.join(", ")}, got ` +
-          `'${opts.ide}'. The Claude subject arm was retired 2026-08-09 — cost ` +
-          `capture, the human emulator and the frozen pool are all codex-shaped ` +
-          `now (documents/tasks/2026/08/bench-codex-only.md).`,
+          `'${opts.ide}' — the benchmark reads session transcripts only for ` +
+          `those IDEs (FR-BENCH-SWE.IDE).`,
       );
       Deno.exit(1);
     }
@@ -379,7 +383,7 @@ await new Command()
         (framework ? ` framework=${framework}` : "") +
         ` out=${outDir}`,
     );
-    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
+    // implements [FR-BENCH-SWE.IDE](../documents/requirements.md#fr-bench-swe.ide-claude-code-is-the-default-ide-under-test-codex-kept-ancfrbench-swe-ide):
     // A campaign dir belongs to ONE (ide, model, effort). Two guards, both
     // needed:
     //   - the BASE dir (`campaign.json`) holds rep1..rep3, so it is what catches
@@ -963,7 +967,8 @@ await new Command()
   })
   .parse(Deno.args);
 
-// The human emulator keeps one codex app-server child per key alive for the
-// whole command (FR-ACCEPT.JUDGE-APPSERVER); left open, it holds the process
+// A codex human emulator keeps one app-server child per key alive for the
+// whole command (FR-ACCEPT.JUDGE-APPSERVER), and a claude bridge left open by
+// a failed instance would do the same; left open, either holds the process
 // after the last line is printed and a finished run never exits.
-closeCodexSessions();
+await closeJudgeSessions();

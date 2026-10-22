@@ -2,6 +2,7 @@ import { assert, assertEquals, assertRejects } from "@std/assert";
 import { join } from "@std/path";
 import { ensureDir } from "@std/fs";
 import {
+  accessesFromClaudeTranscript,
   accessesFromRollout,
   collectWebAudit,
   isOracleAdjacent,
@@ -153,18 +154,115 @@ Deno.test("collectWebAudit: harvests the agent's and the emulator's stores; an a
       shellCommand("call_b", "curl https://docs.djangoproject.com/") + "\n",
     );
 
-    const audit = await collectWebAudit([agent, emulator], REPO, INSTANCE);
+    const audit = await collectWebAudit(
+      { ide: "codex", codexHomes: [agent, emulator] },
+      REPO,
+      INSTANCE,
+    );
     assertEquals(audit.instanceId, INSTANCE);
     assertEquals(audit.transcriptFiles, 2);
     assertEquals(audit.accesses.length, 2);
     assertEquals(audit.flaggedCount, 1, "only the own-repo commit flags");
 
     await assertRejects(
-      () => collectWebAudit([agent, join(tmp, "nope")], REPO, INSTANCE),
+      () =>
+        collectWebAudit(
+          { ide: "codex", codexHomes: [agent, join(tmp, "nope")] },
+          REPO,
+          INSTANCE,
+        ),
       Error,
       "sessions dir absent",
     );
   } finally {
     await Deno.remove(tmp, { recursive: true });
+  }
+});
+
+/** One Claude Code `assistant` line carrying `tool_use` blocks. */
+function claudeTools(
+  msgId: string,
+  calls: Array<{ id: string; name: string; input: Record<string, unknown> }>,
+): string {
+  return JSON.stringify({
+    type: "assistant",
+    message: {
+      id: msgId,
+      content: calls.map((c) => ({ type: "tool_use", ...c })),
+    },
+  });
+}
+
+// Claude Code reaches the network three ways: its own WebFetch and WebSearch
+// tools, and URLs inside Bash commands. A response repeats its tool_use blocks
+// across lines, so blocks are deduped by their own id.
+Deno.test("accessesFromClaudeTranscript: WebFetch, WebSearch and Bash URLs, deduped by tool_use id", () => {
+  const fetch = {
+    id: "toolu_1",
+    name: "WebFetch",
+    input: { url: `https://github.com/${REPO}/pull/16454`, prompt: "read" },
+  };
+  const text = [
+    claudeTools("msg_1", [fetch]),
+    claudeTools("msg_1", [
+      fetch,
+      {
+        id: "toolu_2",
+        name: "WebSearch",
+        input: { query: "django 16454 fix" },
+      },
+    ]),
+    claudeTools("msg_2", [
+      {
+        id: "toolu_3",
+        name: "Bash",
+        input: { command: "pip download x -i https://pypi.org/simple" },
+      },
+      { id: "toolu_4", name: "Read", input: { file_path: "/sandbox/a.py" } },
+    ]),
+    "{torn",
+  ].join("\n");
+  const { accesses, parseErrors } = accessesFromClaudeTranscript(
+    text,
+    REPO,
+    INSTANCE,
+  );
+  assertEquals(parseErrors, 1);
+  assertEquals(accesses, [
+    {
+      tool: "WebFetch",
+      target: `https://github.com/${REPO}/pull/16454`,
+      flagged: true,
+    },
+    { tool: "WebSearch", target: "django 16454 fix", flagged: true },
+    { tool: "Shell", target: "https://pypi.org/simple", flagged: false },
+  ]);
+});
+
+Deno.test("collectWebAudit: reads a claude HOME's transcripts", async () => {
+  const home = await Deno.makeTempDir({ prefix: "webaudit-claude-" });
+  try {
+    const slug = join(home, ".claude", "projects", "-tmp-sb");
+    await ensureDir(slug);
+    await Deno.writeTextFile(
+      join(slug, "s.jsonl"),
+      claudeTools("msg_1", [
+        {
+          id: "toolu_1",
+          name: "WebFetch",
+          input: { url: "https://docs.python.org/" },
+        },
+      ]) + "\n",
+    );
+    const audit = await collectWebAudit(
+      { ide: "claude", homes: [home] },
+      REPO,
+      INSTANCE,
+    );
+    assertEquals(audit.transcriptFiles, 1);
+    assertEquals(audit.accesses.length, 1);
+    assertEquals(audit.flaggedCount, 0);
+  } finally {
+    await Deno.remove(home, { recursive: true });
   }
 });

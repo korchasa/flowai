@@ -789,6 +789,11 @@
       "ide": "codex",
       "model": "gpt-6-luna",
       "effort": "medium"
+    },
+    "claude/claude-sonnet-5-5@medium": {
+      "ide": "claude",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
     }
   }
 }

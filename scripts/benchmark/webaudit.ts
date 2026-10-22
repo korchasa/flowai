@@ -4,36 +4,39 @@
  * Research is normal agent work (user decision 2026-07-22) — web access is
  * AUDITED, never banned. The risk being audited: a benchmark instance's real
  * upstream fix is public on GitHub during the run, so an unlogged fetch of the
- * own-repo PR/commit is an invisible oracle leak. This module extracts every
- * `http(s)` URL from the shell commands recorded in the codex rollouts — the
- * agent's store AND the human emulator's, which FR-BENCH-SWE.ISOLATION keeps
- * apart but which are equally auditable (the emulator's `--sandbox read-only`
- * blocks writes, not the network) — and flags oracle-adjacent targets for human
- * review. Flags are disclosure, not disqualification: false positives are
- * acceptable and no automatic exclusion happens.
+ * own-repo PR/commit is an invisible oracle leak. This module reads every
+ * transcript of the run's session store (`session_store.ts`) — the agent's
+ * AND the human emulator's, which are equally auditable — and flags
+ * oracle-adjacent targets for human review. Flags are disclosure, not
+ * disqualification: false positives are acceptable and no automatic exclusion
+ * happens.
  *
- * The shell IS the whole audit surface here. The retired Claude reader also had
- * `WebFetch` URLs and `WebSearch` queries to read, but codex has no such tools
- * in the bench sandbox — it reaches the network through `exec_command` /
- * `shell_command`, whose argument carries the command text verbatim. Measured
- * across every rollout on this host: 33465 `exec_command` records (field `cmd`)
- * and 5588 `shell_command` records (field `command`), all string-valued.
- * Consequence stated, not hidden: a search the model performs internally, with
- * no shell command, leaves no trace here.
+ * The audit surface differs per subject IDE:
  *
- * Same rollout discipline as metrics.ts (FR-BENCH-SWE.COST): tool calls repeat
- * across retries → dedupe by `call_id`; malformed lines are counted
- * (`parseErrors`), never dropped; harvest runs IMMEDIATELY after the session
- * because the OS purges both session roots within days.
+ * - codex has no web tools in the bench sandbox; it reaches the network
+ *   through `exec_command` / `shell_command`, whose argument carries the
+ *   command text verbatim (measured across every rollout on this host: 33465
+ *   `exec_command` records, field `cmd`, and 5588 `shell_command` records,
+ *   field `command`, all string-valued). Every `http(s)` URL in that text is an
+ *   access. A search the model performs internally, with no shell command,
+ *   leaves no trace.
+ * - Claude Code has `WebFetch` (a URL) and `WebSearch` (a query) next to
+ *   `Bash`, whose `command` is scanned for URLs like a codex shell command.
+ *
+ * Same discipline as metrics.ts (FR-BENCH-SWE.COST): tool calls repeat across
+ * retries and content-block lines → dedupe by call id (`call_id` on codex, the
+ * `tool_use` block id on Claude); malformed lines are counted (`parseErrors`),
+ * never dropped; harvest runs IMMEDIATELY after the session because the OS
+ * purges temp-root stores within days.
  */
 
 import { join } from "@std/path";
-import { walk } from "@std/fs";
+import { type SessionStores, storeFiles } from "./session_store.ts";
 
 export interface WebAccess {
-  /** Only the shell reaches the network under codex. */
-  tool: "Shell";
-  /** The URL found in the command text. */
+  /** A shell command (codex shell tools, Claude `Bash`) or a Claude web tool. */
+  tool: "Shell" | "WebFetch" | "WebSearch";
+  /** The URL (shell, WebFetch) or the search query (WebSearch). */
   target: string;
   /** Oracle-adjacent — needs human review in the report. */
   flagged: boolean;
@@ -154,27 +157,86 @@ export function shellCommandsFromRollout(
   return { commands: [...callsById.values()], parseErrors };
 }
 
+/** One Claude Code tool call: the `tool_use` block's id, name and input. */
+export interface ClaudeToolCall {
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+
 /**
- * Harvest every rollout under `<codexHome>/sessions` for each store listed — the
- * agent's and the human emulator's, which FR-BENCH-SWE.ISOLATION keeps separate.
- * Fails fast, naming the offending store, when a sessions dir is absent: a
- * session with no rollout is a harness defect, not a clean-network run.
+ * Every tool call one Claude Code transcript recorded, deduped by the
+ * `tool_use` block id (a response repeats its blocks across the lines that
+ * share its `message.id`), last occurrence wins. Shared with the peek audit
+ * for the same reason `shellCommandsFromRollout` is.
+ */
+export function claudeToolCallsFromTranscript(
+  text: string,
+): { calls: ClaudeToolCall[]; parseErrors: number } {
+  const byId = new Map<string, ClaudeToolCall>();
+  let parseErrors = 0;
+  for (const line of text.split("\n")) {
+    if (line.trim() === "") continue;
+    let j: Record<string, unknown>;
+    try {
+      j = JSON.parse(line) as Record<string, unknown>;
+    } catch {
+      parseErrors++;
+      continue;
+    }
+    if (j.type !== "assistant") continue;
+    const msg = (j.message ?? {}) as Record<string, unknown>;
+    const content = Array.isArray(msg.content) ? msg.content : [];
+    for (const block of content) {
+      const b = block as Record<string, unknown>;
+      if (b.type !== "tool_use" || typeof b.id !== "string") continue;
+      const input = b.input && typeof b.input === "object"
+        ? b.input as Record<string, unknown>
+        : {};
+      byId.set(b.id, { id: b.id, name: String(b.name ?? ""), input });
+    }
+  }
+  return { calls: [...byId.values()], parseErrors };
+}
+
+/** Extract deduped, flagged web accesses from one Claude Code transcript. */
+export function accessesFromClaudeTranscript(
+  text: string,
+  repo: string,
+  instanceId: string,
+): { accesses: WebAccess[]; parseErrors: number } {
+  const { calls, parseErrors } = claudeToolCallsFromTranscript(text);
+  const accesses: WebAccess[] = [];
+  const push = (tool: WebAccess["tool"], target: string) =>
+    accesses.push({
+      tool,
+      target,
+      flagged: isOracleAdjacent(target, repo, instanceId),
+    });
+  for (const c of calls) {
+    if (c.name === "WebFetch" && typeof c.input.url === "string") {
+      push("WebFetch", c.input.url);
+    } else if (c.name === "WebSearch" && typeof c.input.query === "string") {
+      push("WebSearch", c.input.query);
+    } else if (c.name === "Bash" && typeof c.input.command === "string") {
+      for (const url of c.input.command.match(URL_RE) ?? []) push("Shell", url);
+    }
+  }
+  return { accesses, parseErrors };
+}
+
+/**
+ * Harvest every transcript of the run's session store — the agent's and the
+ * human emulator's. Fails fast, naming the offending directory, when one is
+ * absent: a session with no transcript is a harness defect, not a
+ * clean-network run.
  */
 export async function collectWebAudit(
-  codexHomes: readonly string[],
+  stores: SessionStores,
   repo: string,
   instanceId: string,
 ): Promise<InstanceWebAudit> {
-  const sessionDirs: string[] = [];
-  for (const home of codexHomes) {
-    const dir = join(home, "sessions");
-    try {
-      await Deno.stat(dir);
-    } catch {
-      throw new Error(`no transcripts: sessions dir absent at ${dir}`);
-    }
-    sessionDirs.push(dir);
-  }
+  const files = await storeFiles(stores);
   const audit: InstanceWebAudit = {
     instanceId,
     repo,
@@ -183,19 +245,18 @@ export async function collectWebAudit(
     accesses: [],
     flaggedCount: 0,
   };
-  for (const dir of sessionDirs) {
-    for await (
-      const entry of walk(dir, { includeDirs: false, exts: [".jsonl"] })
-    ) {
-      const { accesses, parseErrors } = accessesFromRollout(
-        await Deno.readTextFile(entry.path),
-        repo,
-        instanceId,
-      );
-      audit.transcriptFiles++;
-      audit.parseErrors += parseErrors;
-      audit.accesses.push(...accesses);
-    }
+  for (const file of files) {
+    const extract = file.ide === "codex"
+      ? accessesFromRollout
+      : accessesFromClaudeTranscript;
+    const { accesses, parseErrors } = extract(
+      await Deno.readTextFile(file.path),
+      repo,
+      instanceId,
+    );
+    audit.transcriptFiles++;
+    audit.parseErrors += parseErrors;
+    audit.accesses.push(...accesses);
   }
   audit.flaggedCount = audit.accesses.filter((a) => a.flagged).length;
   return audit;

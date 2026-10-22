@@ -2,6 +2,7 @@ import { assert, assertEquals, assertThrows } from "@std/assert";
 import { isAbsolute } from "@std/path";
 import {
   assertModelForIde,
+  benchAgentEnv,
   codexAgentEnv,
   effortEnv,
   emulatorEnvFor,
@@ -10,6 +11,7 @@ import {
   isEmulatorOutage,
   isTransientSetupFailure,
   repoCacheDir,
+  sessionStoresFor,
   timeoutLog,
 } from "./run.ts";
 
@@ -199,7 +201,8 @@ Deno.test("humanEmulatorConfig: the referee is pinned, not inherited from the ag
   // emulator's does not.
   assertEquals(humanEmulatorConfig({ effort: "high" }).effort, "medium");
   assertEquals(humanEmulatorConfig({ effort: "low" }).effort, "medium");
-  assertEquals(humanEmulatorConfig({}).model, "gpt-5.6-sol");
+  // Same model as the acceptance judge and user emulator since 2026-10-17.
+  assertEquals(humanEmulatorConfig({}).model, "claude-sonnet-5-5");
 });
 
 Deno.test("humanEmulatorConfig: an explicit model still wins", () => {
@@ -220,7 +223,7 @@ Deno.test("humanEmulatorConfig: an explicit model still wins", () => {
  * referee silently.
  */
 Deno.test("emulatorEnvFor: exactly the two keys codex needs, nothing of the agent's", () => {
-  const env = emulatorEnvFor({
+  const env = emulatorEnvFor("gpt-5.6-sol", {
     HOME: "/tmp/bench-home",
     CODEX_HOME: "/Users/x/.flowai-dev/bench/anyio-1134-abc/.codex",
   });
@@ -232,4 +235,107 @@ Deno.test("emulatorEnvFor: exactly the two keys codex needs, nothing of the agen
   assertEquals("CODEX_CONFIG" in env, false);
   assertEquals("PATH" in env, false);
   assertEquals("CLAUDE_EFFORT" in env, false);
+});
+
+// A claude emulator runs over the claude ACP bridge, which needs the isolated
+// HOME (Keychain links for auth, and its transcript lands in the run's store)
+// and nothing else — not even the codex store a codex subject prepared.
+Deno.test("emulatorEnvFor: a claude emulator gets HOME alone", () => {
+  assertEquals(
+    emulatorEnvFor("claude-sonnet-5-5", {
+      HOME: "/tmp/bench-home",
+      CODEX_HOME: "/x/.codex",
+    }),
+    { HOME: "/tmp/bench-home" },
+  );
+});
+
+Deno.test("emulatorEnvFor: a codex emulator without a codex store fails fast", () => {
+  assertThrows(
+    () => emulatorEnvFor("gpt-5.6-sol", { HOME: "/tmp/bench-home" }),
+    Error,
+    "CODEX_HOME",
+  );
+});
+
+// The claude emulator dies inside the judge transport, whose errors name the
+// bridge; AcpAgent logs them as `[acp-fatal]` like the codex wrapper's.
+Deno.test("isEmulatorOutage: a dead claude emulator bridge leaves the instance pending", () => {
+  assert(
+    isEmulatorOutage(
+      "[acp-fatal] Error: claude judge bridge failed: connection closed",
+    ),
+  );
+  assert(isEmulatorOutage('Error: claude judge bridge stopped with "refusal"'));
+  assert(
+    isEmulatorOutage("Error: claude judge bridge returned an empty reply"),
+  );
+  assertEquals(isEmulatorOutage("the claude judge bridge is fine"), false);
+});
+
+// The agent's operating point per subject IDE. Claude takes the same thinking
+// budget the acceptance runner pins (`claudeAgentEnv`) and gets no codex
+// config; codex keeps the exact env its recorded cells ran under.
+Deno.test("benchAgentEnv: claude pins effort and thinking budget, no codex config", () => {
+  const env = benchAgentEnv("claude", "medium", "claude-sonnet-5-5");
+  assertEquals(env.CLAUDE_EFFORT, "medium");
+  assertEquals(env.MAX_THINKING_TOKENS, "10000");
+  assertEquals("CODEX_CONFIG" in env, false);
+});
+
+Deno.test("benchAgentEnv: codex is unchanged — effort env plus CODEX_CONFIG", () => {
+  assertEquals(benchAgentEnv("codex", "medium", "gpt-5.6-terra"), {
+    ...effortEnv("medium"),
+    ...codexAgentEnv("medium", "gpt-5.6-terra"),
+  });
+});
+
+// The agent writes into its IDE's store and the emulator into the store of its
+// transport, which follows the emulator's model. Every harvest must read both,
+// or a mixed campaign silently drops the referee's overhead.
+Deno.test("sessionStoresFor: one store when agent and emulator share a format, two otherwise", () => {
+  const homes = {
+    benchHome: "/T/bh",
+    codexHome: "/U/.flowai-dev/bench/k/.codex",
+  };
+  assertEquals(
+    sessionStoresFor({
+      ide: "claude",
+      emulatorModel: "claude-sonnet-5-5",
+      ...homes,
+    }),
+    [{ ide: "claude", homes: ["/T/bh"] }],
+  );
+  assertEquals(
+    sessionStoresFor({ ide: "codex", emulatorModel: "gpt-5.6-sol", ...homes }),
+    [{ ide: "codex", codexHomes: ["/U/.flowai-dev/bench/k/.codex"] }],
+  );
+  assertEquals(
+    sessionStoresFor({
+      ide: "codex",
+      emulatorModel: "claude-sonnet-5-5",
+      ...homes,
+    }),
+    [
+      { ide: "codex", codexHomes: ["/U/.flowai-dev/bench/k/.codex"] },
+      { ide: "claude", homes: ["/T/bh"] },
+    ],
+  );
+  assertEquals(
+    sessionStoresFor({ ide: "claude", emulatorModel: "gpt-5.6-sol", ...homes }),
+    [
+      { ide: "claude", homes: ["/T/bh"] },
+      { ide: "codex", codexHomes: ["/U/.flowai-dev/bench/k/.codex"] },
+    ],
+  );
+  assertThrows(
+    () =>
+      sessionStoresFor({
+        ide: "codex",
+        emulatorModel: "gpt-5.6-sol",
+        benchHome: "/T/bh",
+      }),
+    Error,
+    "CODEX_HOME",
+  );
 });

@@ -1,9 +1,9 @@
 /**
  * Same-harness A/B agent driver for the SWE-bench benchmark (FR-BENCH-SWE).
  *
- * Both arms run the SAME harness — Codex over the ACP transport
- * (FR-BENCH-SWE.IDE; the Claude subject arm was retired 2026-08-09) — so the
- * only difference within a campaign is flowai:
+ * Both arms run the SAME harness — one IDE over the ACP transport, Claude Code
+ * by default and codex on request (FR-BENCH-SWE.IDE) — so the only difference
+ * within a campaign is flowai:
  *   - baseline: nothing installed, neutral "fix the bug" prompt.
  *   - flowai:   local `core` pack + process-rules AGENTS.md installed, prompt
  *               steering plan → implement → review.
@@ -34,7 +34,11 @@
 import { join, resolve } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { AcpAgent } from "@acceptance-tests/acp/acp_agent.ts";
-import { codexAgentEnv } from "@acceptance-tests/agent_env.ts";
+import { claudeAgentEnv, codexAgentEnv } from "@acceptance-tests/agent_env.ts";
+import {
+  closeClaudeBridge,
+  judgeTransportFor,
+} from "@acceptance-tests/judge_transport.ts";
 import {
   SPAWN_WAIT_TIMEOUT_MS,
   waitForHealthy,
@@ -48,6 +52,10 @@ import { prepareSandbox } from "./prepare_sandbox.ts";
 import { installProjectDeps } from "./install_env.ts";
 import { externalSandboxRoot, linkIntoRunDir } from "./sandbox_root.ts";
 import { installAgentsMd, installDocStubs } from "./agents_md.ts";
+import {
+  preserveClaudeTranscripts,
+  type SessionStore,
+} from "./session_store.ts";
 import { captureDiff, type Prediction, toPrediction } from "./predictions.ts";
 import {
   baselineTask,
@@ -81,9 +89,10 @@ export interface RunOptions {
   instanceIds: string[];
   model: string;
   /**
-   * IDE under test (FR-BENCH-SWE.IDE). Defaults to `codex`, the only subject
-   * IDE since 2026-08-09. Both arms of one campaign MUST use the same IDE — it
-   * is a harness variable, not the thing being measured (flowai is).
+   * IDE under test (FR-BENCH-SWE.IDE). Defaults to `claude`, the acceptance
+   * tests' default arm since 2026-10-17; `codex` stays selectable. Both arms of
+   * one campaign MUST use the same IDE — it is a harness variable, not the
+   * thing being measured (flowai is).
    */
   ide?: AcpIde;
   /**
@@ -128,22 +137,53 @@ export function effortEnv(effort: string): Record<string, string> {
 
 /**
  * implements [FR-BENCH-SWE.ISOLATION]: the environment for the human emulator's
- * codex app-server child.
+ * transport child — the claude ACP bridge or the codex app-server, chosen by
+ * the emulator's model (`judgeTransportFor`).
  *
- * The emulator SHARES the agent's session store (user decision 2026-08-09 — one
- * bench home under `~/.flowai-dev`, checked afterwards by `peek_audit.ts`
- * rather than split apart), but it does not share the agent's ENVIRONMENT.
- * Written as a whitelist on purpose: spreading the agent env would pass down
- * `CODEX_CONFIG` (the agent's model and effort, which the referee must NOT
- * inherit — see `humanEmulatorConfig`) and the sandbox venv `PATH`, and any key
- * added there later would reach the referee silently. Two keys are what codex
- * needs: `CODEX_HOME` for auth and its session store, `HOME` so nothing
- * resolves back to the developer's.
+ * The emulator SHARES the agent's session store (user decision 2026-08-09 —
+ * checked afterwards by `peek_audit.ts` rather than split apart), but it does
+ * not share the agent's ENVIRONMENT. Written as a whitelist on purpose:
+ * spreading the agent env would pass down the agent's model and effort
+ * (`CODEX_CONFIG`, `MAX_THINKING_TOKENS`, `CLAUDE_EFFORT` — the referee must
+ * NOT inherit them, see `humanEmulatorConfig`) and the sandbox venv `PATH`, and
+ * any key added there later would reach the referee silently. A claude
+ * emulator needs `HOME` alone: the bench-home carries the Keychain links its
+ * auth resolves through, and its transcript lands in the run's store. A codex
+ * emulator needs `CODEX_HOME` for auth and its session store too, and fails
+ * fast without one rather than falling back to the developer's.
  */
 export function emulatorEnvFor(
-  home: { HOME: string; CODEX_HOME: string },
+  model: string,
+  home: { HOME: string; CODEX_HOME?: string },
 ): Record<string, string> {
+  if (judgeTransportFor(model) === "claude-acp") return { HOME: home.HOME };
+  if (!home.CODEX_HOME) {
+    throw new Error(
+      `human emulator "${model}" runs on codex but the run has no CODEX_HOME`,
+    );
+  }
   return { HOME: home.HOME, CODEX_HOME: home.CODEX_HOME };
+}
+
+/**
+ * implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):
+ * The agent's operating point, per subject IDE. `effortEnv` goes to every IDE
+ * (it neutralises an inherited shell value either way). Claude adds the
+ * thinking budget the acceptance runner pins for the same effort
+ * (`claudeAgentEnv`); its model reaches the bridge as `ANTHROPIC_MODEL`
+ * through `AcpAgent`. Codex keeps exactly the env its recorded cells ran
+ * under, so those cells stay reproducible.
+ */
+export function benchAgentEnv(
+  ide: AcpIde,
+  effort: string,
+  model: string,
+): Record<string, string> {
+  return {
+    ...effortEnv(effort),
+    ...(ide === "codex" ? codexAgentEnv(effort, model) : {}),
+    ...(ide === "claude" ? claudeAgentEnv(effort) : {}),
+  };
 }
 
 /**
@@ -163,19 +203,57 @@ export { codexAgentEnv };
  * flowai. The agent's own effort keeps flowing through `effortEnv` /
  * `codexAgentEnv` untouched.
  *
- * Model defaults to `gpt-5.6-sol`: the emulator moved off `claude -p` with the
- * Claude subject arm's retirement. Consequence, recorded not hidden — the
- * emulator identity is part of the cell key, so cells measured before this
- * change are not comparable with cells measured after it.
+ * Model defaults to `claude-sonnet-5-5`, the model of the acceptance judge and
+ * user emulator since 2026-10-17 (it was `gpt-5.6-sol` from 2026-08-09).
+ * Consequence, recorded not hidden — the emulator identity is part of the cell
+ * key, so cells measured under one referee are not comparable with cells
+ * measured under another.
  */
 export function humanEmulatorConfig(
   opts: { humanEmulatorModel?: string; effort?: string },
 ): { model: string; effort: string } {
   return {
-    model: opts.humanEmulatorModel ?? "gpt-5.6-sol",
+    model: opts.humanEmulatorModel ?? DEFAULT_HUMAN_EMULATOR_MODEL,
     effort: "medium",
   };
 }
+
+/**
+ * implements [FR-BENCH-SWE.ISOLATION]: the session stores one run writes into.
+ * The agent writes into its IDE's store; the human emulator writes into the
+ * store of its TRANSPORT, which follows the emulator's model rather than the
+ * subject IDE — so a codex subject judged by a claude referee leaves two
+ * stores of two formats. Every harvest reads all of them: the emulator's
+ * tokens are part of the arm's overhead (FR-BENCH-SWE.COST) and its commands
+ * are as auditable as the agent's.
+ */
+export function sessionStoresFor(opts: {
+  ide: AcpIde;
+  emulatorModel: string;
+  benchHome: string;
+  codexHome?: string;
+}): SessionStore[] {
+  const codex = (): SessionStore => {
+    if (!opts.codexHome) {
+      throw new Error("a codex session store needs a CODEX_HOME");
+    }
+    return { ide: "codex", codexHomes: [opts.codexHome] };
+  };
+  const claude = (): SessionStore => ({
+    ide: "claude",
+    homes: [opts.benchHome],
+  });
+  const agent = opts.ide === "codex" ? codex() : claude();
+  const emulator = judgeTransportFor(opts.emulatorModel) === "claude-acp"
+    ? claude()
+    : codex();
+  return agent.ide === emulator.ide ? [agent] : [agent, emulator];
+}
+
+/** Default subject IDE, agent model and referee model (FR-BENCH-SWE.IDE). */
+export const DEFAULT_BENCH_IDE: AcpIde = "claude";
+export const DEFAULT_BENCH_MODEL = "claude-sonnet-5-5";
+export const DEFAULT_HUMAN_EMULATOR_MODEL = "claude-sonnet-5-5";
 
 /** Model-id families each IDE can actually serve. */
 const IDE_MODEL_PATTERNS: Record<string, RegExp> = {
@@ -184,7 +262,7 @@ const IDE_MODEL_PATTERNS: Record<string, RegExp> = {
 };
 
 /**
- * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
+ * implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-claude-code-is-the-default-ide-under-test-codex-kept-ancfrbench-swe-ide):
  * Fail fast when the campaign's model belongs to a DIFFERENT IDE than the one
  * under test (`--ide codex --model sonnet`). Without this the label reaches a
  * bridge that cannot serve it, and the run either dies deep inside a session
@@ -225,8 +303,9 @@ export function isAuthFailure(logs: string): boolean {
 /**
  * Detect a dead HUMAN EMULATOR — the other half of "never fairly attempted".
  *
- * The emulator is a separate codex app-server process (`codexChatCompletion`), so
- * its failure never reaches ACP and `isAuthFailure` cannot see it. Measured
+ * The emulator is a separate process — the claude ACP bridge or the codex
+ * app-server, by its model — so its failure never reaches the agent's ACP
+ * session and `isAuthFailure` cannot see it. Measured
  * 2026-07-30, when it still ran on `claude -p`: the account's OAuth refresh
  * token was revoked server-side ("OAuth refresh token is no longer valid" in
  * the CLI's own debug log), every emulator call died, and 14 of 15 sessions
@@ -241,7 +320,10 @@ export function isAuthFailure(logs: string): boolean {
  * kept as a genuine measurement (`mempalace-1004` shipped 31 KB that way).
  */
 export function isEmulatorOutage(logs: string): boolean {
-  return /Codex CLI failed \(exit \d+\)/.test(logs);
+  return /Codex CLI failed \(exit \d+\)/.test(logs) ||
+    /claude judge bridge (failed:|stopped with|returned an empty reply)/.test(
+      logs,
+    );
 }
 
 /**
@@ -467,7 +549,7 @@ export async function runArm(
   // IDE under test (FR-BENCH-SWE.IDE). The config dir comes from the ACP
   // registry (`.claude` / `.codex` / …), never a literal, so installing the
   // pack lands where THIS IDE discovers skills.
-  const ide: AcpIde = opts.ide ?? "codex";
+  const ide: AcpIde = opts.ide ?? DEFAULT_BENCH_IDE;
   const adapter = createAdapter(ide);
 
   if (opts.arm === "flowai") {
@@ -477,7 +559,7 @@ export async function runArm(
       ide,
       CORE_PACKS,
     );
-    await installAgentsMd(opts.repoRoot, sandboxDir, data.repo);
+    await installAgentsMd(opts.repoRoot, sandboxDir, data.repo, ide);
     // Initialize the flowai doc-system on disk. Seeding ONLY an empty Tasks dir
     // was not enough: on django-14792 the agent saw the SRS/index files absent,
     // conflated that with "roles unbound", declared the repo "not flowai", and
@@ -498,21 +580,34 @@ export async function runArm(
   // predictable root outside the project, holding the credentials once, with a
   // per-run store beneath it (user decision 2026-08-09). The adapter's own
   // `CODEX_HOME` is overridden rather than reused: the acceptance-test runner
-  // shares that code path and must keep writing into its own temp home.
-  const benchHome = adapterEnv.HOME ?? Deno.env.get("HOME") ?? "";
-  const codexHome = await prepareBenchCodexHome(sandboxDir);
+  // shares that code path and must keep writing into its own temp home. A run
+  // needs it when the agent OR the emulator runs on codex; a claude-only run
+  // gets none.
+  //
+  // The isolated HOME the adapter built is required: without one the agent —
+  // and a claude emulator — would write into the developer's own home, so its
+  // absence is a harness defect, not something to fall back from.
+  const benchHome = adapterEnv.HOME;
+  if (!benchHome) {
+    throw new Error(`the ${ide} adapter built no isolated HOME for the run`);
+  }
+  const emulator = humanEmulatorConfig(opts);
+  const needsCodexStore = ide === "codex" ||
+    judgeTransportFor(emulator.model) === "codex-appserver";
+  const codexHome = needsCodexStore
+    ? await prepareBenchCodexHome(sandboxDir)
+    : undefined;
   const baseEnv: Record<string, string> = {
     ...adapterEnv,
-    CODEX_HOME: codexHome,
+    ...(codexHome ? { CODEX_HOME: codexHome } : {}),
   };
   // Pin reasoning effort for the agent, so it is a property of the campaign and
   // not of the operator's shell. The emulator does NOT read it from here — it is
-  // pinned separately by argv (`humanEmulatorConfig`) and runs in its own env.
+  // pinned separately (`humanEmulatorConfig`) and runs in its own env.
   const effort = opts.effort ?? "medium";
   const env = {
     ...baseEnv,
-    ...effortEnv(effort),
-    ...(ide === "codex" ? codexAgentEnv(effort, opts.model) : {}),
+    ...benchAgentEnv(ide, effort, opts.model),
     // The sandbox venv goes FIRST on the agent's PATH, so `python` and `pytest`
     // resolve to the installed project without the agent being told anything —
     // an instruction it could ignore, whereas PATH it cannot. Same in both arms.
@@ -538,23 +633,30 @@ export async function runArm(
   // names the AGENT's model) and at a fixed effort — see `humanEmulatorConfig`.
   //
   // implements [FR-BENCH-SWE.ISOLATION]: agent and emulator share the run's
-  // codex store under `~/.flowai-dev`, and `peek_audit.ts` checks afterwards
-  // whether either reached for the other's session. The emulator still gets a
-  // whitelisted env, not the agent's.
-  const emulator = humanEmulatorConfig(opts);
-  const emuEnv = emulatorEnvFor({ HOME: benchHome, CODEX_HOME: codexHome });
+  // session store, and `peek_audit.ts` checks afterwards whether either
+  // reached for the other's session. The emulator still gets a whitelisted
+  // env, not the agent's, and runs from a temp cwd outside the developer's
+  // home; its prefix is one of the peek audit's markers.
+  const emuEnv = emulatorEnvFor(emulator.model, {
+    HOME: benchHome,
+    CODEX_HOME: codexHome,
+  });
+  const emuCwd = await Deno.makeTempDir({
+    prefix: opts.arm === "flowai" ? "flowai-operator-" : "answer-emulator-",
+  });
+  const emuCall = { ...emulator, env: emuEnv, cwd: emuCwd };
   // Skill-invocation prefix for THIS ide — `/plan …` is rejected outright by
   // the codex bridge, which needs `$plan …` (FR-BENCH-SWE.IDE).
   const prefix = commandPrefixFor(ide);
   const operator: Operator = opts.arm === "flowai"
     ? new FlowaiOperator(
       data.problemStatement,
-      makeCliOperatorEmulator(emulator, emuEnv),
+      makeCliOperatorEmulator(emuCall),
       prefix,
     )
     : new AnswerEmulatorOperator(
       data.problemStatement,
-      makeCliAnswerEmulator(emulator, emuEnv),
+      makeCliAnswerEmulator(emuCall),
     );
 
   const agent = new AcpAgent({
@@ -568,11 +670,26 @@ export async function runArm(
   });
 
   const wallStart = Date.now();
-  const result = await runWithTimeout(agent, opts.stepTimeoutMs, operator);
+  let result: { code: number; logs: string };
+  try {
+    result = await runWithTimeout(agent, opts.stepTimeoutMs, operator);
+  } finally {
+    // One emulator bridge per instance (its own cwd): close it now rather than
+    // keep every instance's bridge alive until the campaign exits. A codex
+    // emulator's app-server session is closed at exit (`closeJudgeSessions`).
+    await closeClaudeBridge(emuCall);
+    await Deno.remove(emuCwd, { recursive: true }).catch(() => {});
+  }
   const wallClockMs = Date.now() - wallStart;
   const logPath = join(instDir, `${data.instanceId}.log`);
   await Deno.writeTextFile(logPath, result.logs);
   await linkIntoRunDir(instDir, extInstDir, codexHome);
+  const stores = sessionStoresFor({
+    ide,
+    emulatorModel: emulator.model,
+    benchHome,
+    codexHome,
+  });
 
   // implements [FR-BENCH-SWE.COST](../../documents/requirements.md#fr-bench-swe.cost-session-cost-counters-informative-never-a-quality-criterion-ancfrbench-swe-cost):
   // harvest cost counters from the bench-home transcripts
@@ -581,13 +698,10 @@ export async function runArm(
   // (a long LLM session's primary measurement) is not sacrificed to a
   // counter.
   //
-  // implements [FR-BENCH-SWE.IDE](../../documents/requirements.md#fr-bench-swe.ide-codex-is-the-ide-under-test-ancfrbench-swe-ide):
-  // Cost is harvested from the codex rollouts the session just wrote under the
-  // bench CODEX_HOME. The Claude-transcript reader this replaced was retired
-  // with the Claude subject arm (2026-08-09): it produced nothing on the codex
-  // path, which is the only path campaigns run on.
+  // Cost is harvested from every store the run wrote into — codex rollouts,
+  // Claude Code transcripts, or both (`sessionStoresFor`).
   try {
-    const metrics = await collectSessionMetrics([codexHome], wallClockMs);
+    const metrics = await collectSessionMetrics(stores, wallClockMs);
     await Deno.writeTextFile(
       join(instDir, `${data.instanceId}.metrics.json`),
       JSON.stringify(metrics, null, 2) + "\n",
@@ -602,16 +716,12 @@ export async function runArm(
   // implements [FR-BENCH-SWE.WEBAUDIT](../../documents/requirements.md#fr-bench-swe.webaudit-per-instance-web-access-audit-flagged-never-banned-ancfrbench-swe-webaudit):
   // audit web accesses from the same soon-to-be-purged rollouts — research is
   // allowed, oracle-adjacent hits are flagged for the report, never banned.
-  // Under codex the shell is the whole surface: no WebFetch/WebSearch tools
-  // exist in the sandbox, so `exec_command` / `shell_command` text is what gets
-  // scanned. Loud on failure, never fails the instance (same as metrics).
+  // Codex reaches the network only through its shell; Claude Code also has
+  // WebFetch and WebSearch (`webaudit.ts`). Loud on failure, never fails the
+  // instance (same as metrics).
   {
     try {
-      const audit = await collectWebAudit(
-        [codexHome],
-        data.repo,
-        data.instanceId,
-      );
+      const audit = await collectWebAudit(stores, data.repo, data.instanceId);
       await Deno.writeTextFile(
         join(instDir, `${data.instanceId}.webaudit.json`),
         JSON.stringify(audit, null, 2) + "\n",
@@ -627,13 +737,13 @@ export async function runArm(
   }
 
   // implements [FR-BENCH-SWE.ISOLATION]: check that the separation actually
-  // held. Codex has no sandbox mode that denies disk reads, so keeping the two
-  // session stores apart removes the pointer and nothing more — this pass reads
-  // the same rollouts and flags any shell command that reached for a session
-  // store at all. Disclosure, never automatic exclusion; loud on failure, never
-  // fails the instance (same as metrics and the web audit).
+  // held. Neither IDE has a sandbox mode that denies disk reads, so keeping the
+  // two sessions apart removes the pointer and nothing more — this pass reads
+  // the same transcripts and flags any command or file-tool path that reached
+  // for a session store at all. Disclosure, never automatic exclusion; loud on
+  // failure, never fails the instance (same as metrics and the web audit).
   try {
-    const peek = await collectPeekAudit([codexHome], data.instanceId);
+    const peek = await collectPeekAudit(stores, data.instanceId);
     await Deno.writeTextFile(
       join(instDir, `${data.instanceId}.peekaudit.json`),
       JSON.stringify(peek, null, 2) + "\n",
@@ -650,6 +760,21 @@ export async function runArm(
     console.error(
       `  [peekaudit] FAILED ${data.instanceId}: ${(e as Error).message}`,
     );
+  }
+
+  // implements [FR-BENCH-SWE.ISOLATION]: Claude Code transcripts live in the
+  // temp bench-home the OS purges; keep a copy beside the codex stores so a
+  // campaign's cost and audit numbers keep their evidence. Loud on failure,
+  // never fails the instance.
+  if (stores.some((st) => st.ide === "claude")) {
+    try {
+      const kept = await preserveClaudeTranscripts(benchHome, sandboxDir);
+      if (kept) console.log(`  transcripts: ${kept}`);
+    } catch (e) {
+      console.error(
+        `  [transcripts] FAILED ${data.instanceId}: ${(e as Error).message}`,
+      );
+    }
   }
 
   const diff = await captureDiff(sandboxDir);

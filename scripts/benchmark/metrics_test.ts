@@ -173,7 +173,10 @@ Deno.test("collectSessionMetrics: harvests codex rollouts under a CODEX_HOME", a
         }),
       ].join("\n"),
     );
-    const m = await collectSessionMetrics([codexHome], 1234);
+    const m = await collectSessionMetrics({
+      ide: "codex",
+      codexHomes: [codexHome],
+    }, 1234);
     assertEquals(m.transcriptFiles, 1);
     assertEquals(m.inputTokens, 200);
     assertEquals(m.cacheReadTokens, 100);
@@ -210,7 +213,10 @@ Deno.test("collectSessionMetrics: sums the agent's and the emulator's stores", a
         tokenCount({ input_tokens: 50, output_tokens: 5, total_tokens: 55 }),
       ].join("\n"),
     );
-    const m = await collectSessionMetrics([agent, emulator], 7);
+    const m = await collectSessionMetrics(
+      { ide: "codex", codexHomes: [agent, emulator] },
+      7,
+    );
     assertEquals(m.transcriptFiles, 2);
     assertEquals(m.inputTokens, 250);
     assertEquals(m.outputTokens, 25);
@@ -226,11 +232,92 @@ Deno.test("collectSessionMetrics: fails fast naming the store whose sessions dir
     const agent = `${root}/agent/.codex`;
     await Deno.mkdir(`${agent}/sessions`, { recursive: true });
     await assertRejects(
-      () => collectSessionMetrics([agent, `${root}/emulator/.codex`], 1),
+      () =>
+        collectSessionMetrics(
+          { ide: "codex", codexHomes: [agent, `${root}/emulator/.codex`] },
+          1,
+        ),
       Error,
       `${root}/emulator/.codex`,
     );
   } finally {
     await Deno.remove(root, { recursive: true });
+  }
+});
+
+/** One Claude Code `assistant` line; a response may span several sharing an id. */
+function claudeLine(
+  id: string,
+  usage: Record<string, unknown>,
+  tools: string[] = [],
+): string {
+  return JSON.stringify({
+    type: "assistant",
+    message: {
+      id,
+      usage,
+      content: tools.map((t) => ({
+        type: "tool_use",
+        id: t,
+        name: "Bash",
+        input: {},
+      })),
+    },
+  });
+}
+
+// The claude arm keeps the counters' cross-IDE meaning: `inputTokens` is the
+// WHOLE input (fresh + cache read + cache write), as codex's `input_tokens`
+// already includes its cached part, and `outputTokens` includes thinking, as
+// codex's includes reasoning.
+Deno.test("collectSessionMetrics: harvests claude transcripts, subagents included", async () => {
+  const home = await Deno.makeTempDir();
+  try {
+    const slug = `${home}/.claude/projects/-tmp-sb`;
+    await Deno.mkdir(`${slug}/s1/subagents`, { recursive: true });
+    const usage = {
+      input_tokens: 10,
+      cache_read_input_tokens: 100,
+      cache_creation_input_tokens: 20,
+      output_tokens: 7,
+      output_tokens_details: { thinking_tokens: 3 },
+    };
+    await Deno.writeTextFile(
+      `${slug}/s1.jsonl`,
+      [
+        claudeLine("msg_1", usage, ["toolu_1"]),
+        claudeLine("msg_1", usage, ["toolu_1", "toolu_2"]),
+        "{torn",
+      ].join("\n"),
+    );
+    await Deno.writeTextFile(
+      `${slug}/s1/subagents/agent-a.jsonl`,
+      claudeLine("msg_2", usage, ["toolu_3"]),
+    );
+    const m = await collectSessionMetrics({ ide: "claude", homes: [home] }, 5);
+    assertEquals(m.transcriptFiles, 2);
+    assertEquals(m.apiCalls, 2);
+    assertEquals(m.inputTokens, 260);
+    assertEquals(m.cacheReadTokens, 200);
+    assertEquals(m.cacheCreationTokens, 40);
+    assertEquals(m.outputTokens, 14);
+    assertEquals(m.toolCalls, 3);
+    assertEquals(m.parseErrors, 1);
+    assertEquals(m.wallClockMs, 5);
+  } finally {
+    await Deno.remove(home, { recursive: true });
+  }
+});
+
+Deno.test("collectSessionMetrics: a claude HOME with no projects dir fails fast", async () => {
+  const home = await Deno.makeTempDir();
+  try {
+    await assertRejects(
+      () => collectSessionMetrics({ ide: "claude", homes: [home] }, 1),
+      Error,
+      `${home}/.claude/projects`,
+    );
+  } finally {
+    await Deno.remove(home, { recursive: true });
   }
 });

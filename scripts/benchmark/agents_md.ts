@@ -154,17 +154,26 @@ export async function installDocStubs(
 /**
  * Render `framework/core/assets/AGENTS.template.md` for `repo` and write it to
  * `<sandboxDir>/AGENTS.md`. Stack is detected via the init analyzer.
+ *
+ * On claude the same text also goes into a REAL root `CLAUDE.md`
+ * (FR-BENCH-SWE.IDE): Claude Code loads that file from the session cwd and
+ * never `AGENTS.md`, so without it the process rules would never reach a
+ * claude session. Not a symlink — the acceptance runner measured on
+ * 2026-08-13 that a symlinked `CLAUDE.md` left the rules unread. Both files
+ * are in `DIFF_EXCLUDES`.
  */
 export async function installAgentsMd(
   repoRoot: string,
   sandboxDir: string,
   repo: string,
+  ide: string,
 ): Promise<void> {
   const tplPath = join(repoRoot, "framework/core/assets/AGENTS.template.md");
   const template = await Deno.readTextFile(tplPath);
   const { stack } = await analyzeProject(sandboxDir);
-  await Deno.writeTextFile(
-    join(sandboxDir, "AGENTS.md"),
-    renderAgentsMd(template, { repo, stack }),
-  );
+  const rules = renderAgentsMd(template, { repo, stack });
+  await Deno.writeTextFile(join(sandboxDir, "AGENTS.md"), rules);
+  if (ide === "claude") {
+    await Deno.writeTextFile(join(sandboxDir, "CLAUDE.md"), rules);
+  }
 }

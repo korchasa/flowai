@@ -21,7 +21,7 @@
  */
 
 import type { LLMMessage } from "@acceptance-tests/types.ts";
-import { codexChatCompletion } from "@acceptance-tests/llm.ts";
+import { chatCompletion } from "@acceptance-tests/judge_transport.ts";
 import { type CommandPrefix, replanTurn, reviewTurn } from "./operator.ts";
 
 /**
@@ -328,30 +328,37 @@ export interface EmulatorConfig {
   effort: string;
 }
 
+/** One emulator's call settings: its operating point plus where it runs. */
+export interface EmulatorCall extends EmulatorConfig {
+  /** Whitelisted env (`emulatorEnvFor`) — the bench's isolated config root. */
+  env: Record<string, string>;
+  /** Temp cwd outside the developer's home, owned and removed by the caller. */
+  cwd: string;
+}
+
 /**
- * Production emulator over the codex app-server (existing CLI auth, no API key). It ran
- * on `claude -p` until 2026-08-09, when the Claude subject arm was retired.
+ * Production emulator over the transport its model names (`chatCompletion`):
+ * a claude model goes over the claude ACP bridge, any other over the codex
+ * app-server. Neither needs an API key — both use the existing subscription
+ * auth. It ran on `claude -p` until 2026-08-09 and on the codex app-server
+ * until 2026-10-21, when the default referee moved to `claude-sonnet-5-5`.
  *
  * Isolation is two-fold, both mandatory (verified empirically 2026-07-04):
  * - `env` carries the bench's isolated config root (the adapter's
- *   `prepareWorkspace` bench-home + `CODEX_HOME`) so the developer's personal
- *   user memory does not load;
+ *   `prepareWorkspace` bench-home, plus `CODEX_HOME` on codex) so the
+ *   developer's personal user memory does not load;
  * - the emulator runs from a temp cwd OUTSIDE the developer's home, because
  *   ancestor-directory memory files (`CLAUDE.md`/`AGENTS.md` up the cwd path,
  *   e.g. `~/AGENTS.md`) load regardless of the config root and their preferences
  *   leak into the verdict (observed: a personal "reply in Russian" rule reached
- *   the bench agent mid-pipeline).
+ *   the bench agent mid-pipeline). On claude the bridge session also loads no
+ *   setting sources at all.
  */
-export function makeCliOperatorEmulator(
-  config: EmulatorConfig,
-  env: Record<string, string> = {},
-): HumanEmulator {
-  let cwd: string | undefined;
+export function makeCliOperatorEmulator(call: EmulatorCall): HumanEmulator {
   return async (problemStatement, agentOutput) => {
-    cwd ??= await Deno.makeTempDir({ prefix: "flowai-operator-" });
-    const res = await codexChatCompletion(
+    const res = await chatCompletion(
       operatorMessages(problemStatement, agentOutput),
-      { ...config, env, cwd },
+      call,
     );
     return res.content;
   };
@@ -359,16 +366,11 @@ export function makeCliOperatorEmulator(
 
 /** CLI answer emulator for the bare arm — same isolation rules as the gate
  * (isolated config root via env + temp cwd outside the developer's home). */
-export function makeCliAnswerEmulator(
-  config: EmulatorConfig,
-  env: Record<string, string> = {},
-): HumanEmulator {
-  let cwd: string | undefined;
+export function makeCliAnswerEmulator(call: EmulatorCall): HumanEmulator {
   return async (problemStatement, agentMessage) => {
-    cwd ??= await Deno.makeTempDir({ prefix: "answer-emulator-" });
-    const res = await codexChatCompletion(
+    const res = await chatCompletion(
       answerMessages(problemStatement, agentMessage),
-      { ...config, env, cwd },
+      call,
     );
     return res.content;
   };

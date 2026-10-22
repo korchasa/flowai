@@ -9,6 +9,7 @@ import { fromFileUrl } from "@std/path";
 import {
   chatCompletion,
   type ClaudeCallConfig,
+  closeClaudeBridge,
   closeJudgeSessions,
   judgeTransportFor,
   parseStructuredReply,
@@ -244,6 +245,34 @@ Deno.test({
       await closeJudgeSessions();
       await Deno.remove(config.cwd!, { recursive: true });
       await Deno.remove(home, { recursive: true });
+    }
+  },
+});
+
+// The benchmark opens one emulator bridge per instance (its own cwd), so a
+// campaign that only closed bridges at exit would keep every one of them
+// alive. `closeClaudeBridge` closes exactly the bridge of one config.
+Deno.test({
+  name: "closeClaudeBridge closes one config's bridge and leaves the others",
+  sanitizeResources: false,
+  sanitizeOps: false,
+  fn: async () => {
+    const a = await stubConfig();
+    const b = await stubConfig();
+    try {
+      const a1 = await meta(a);
+      const b1 = await meta(b);
+      await closeClaudeBridge(a);
+      const a2 = await meta(a);
+      const b2 = await meta(b);
+      assert(a2.pid !== a1.pid, "a closed bridge is not reused");
+      assertEquals(b2.pid, b1.pid, "another config's bridge survives");
+      // Closing a config that has no bridge is a no-op, not an error.
+      await closeClaudeBridge({ ...a, model: "claude-never-opened" });
+    } finally {
+      await closeJudgeSessions();
+      await Deno.remove(a.cwd!, { recursive: true });
+      await Deno.remove(b.cwd!, { recursive: true });
     }
   },
 });

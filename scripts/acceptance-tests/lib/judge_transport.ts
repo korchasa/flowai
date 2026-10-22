@@ -208,6 +208,22 @@ async function prewarmClaudeJudge(config: ClaudeCallConfig): Promise<void> {
   }
 }
 
+/**
+ * Close the pooled bridge of one config, if there is one. A caller that opens
+ * a bridge per unit of work (the benchmark's per-instance human emulator)
+ * closes it when the unit ends, instead of keeping every bridge alive until
+ * the run exits.
+ */
+export async function closeClaudeBridge(
+  config: ClaudeCallConfig,
+): Promise<void> {
+  const key = bridgeKey(config);
+  const pending = bridges.get(key);
+  if (!pending) return;
+  bridges.delete(key);
+  await pending.then(closeBridge).catch(() => {});
+}
+
 /** Close every pooled bridge. Call at the end of a run. */
 async function closeClaudeJudgeSessions(): Promise<void> {
   const pending = [...bridges.values()];
