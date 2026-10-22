@@ -54,6 +54,7 @@ The user has already produced a plan. The plan file is resolved through the `tas
    - **CHECK**: run the project check command from step 2. It MUST exit 0. If it fails:
      - **Within Solution scope**: fix the root cause. Do NOT disable lint rules or silence formatter output. On a second fix attempt that also fails, STOP and emit STOP-ANALYSIS REPORT per AGENTS.md "Diagnosing Failures".
      - **Pre-existing / out-of-scope**: surface as "out-of-scope finding"; do NOT fix here.
+   - **Looking at the code without your change** (is this failure pre-existing? does the new test fail on the original source? lint or type-check output before vs after): run it in a separate tree — `git worktree add <scratch-dir> HEAD`, then `git worktree remove` it when done — or read one file with `git show HEAD:<path>`. **Never take your uncommitted work out of the working tree to do it** — no `git stash` in any form, no `git checkout -- <path>`, `git restore` or `git reset` of the files you changed. A session cut off before the work is put back leaves the working tree empty, and the finished change is lost.
 
 4. **Repeat per Solution step**
    - After CHECK is green for the current Solution step, return to RED for the next step. Update the todo list status.
