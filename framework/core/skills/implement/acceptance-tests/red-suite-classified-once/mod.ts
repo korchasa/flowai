@@ -14,7 +14,8 @@ import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
  * the last one (52), almost never between steps (2): the agent took a
  * baseline, often more than once, then reran the suite at the end and on the
  * parent. The skill must run the whole suite at most twice in all — once
- * before the change, if it wants a record of pre-existing failures, and once
+ * on the code without the change as a record of pre-existing failures (since
+ * 2026-10-23 in a separate tree of the parent, in the background), and once
  * after — and classify the receipt failure from that record or by running
  * only the failing test file on the parent revision, in a separate tree.
  */
@@ -56,7 +57,7 @@ Keep answers brief and affirmative.`;
     {
       id: "classification_evidence_targeted",
       description:
-        "How did the agent establish that the receipt failure exists without the change? PASS if it came from a whole-suite run made on the working tree BEFORE the agent's first source edit (the failure is on that record), or from running the receipt test file alone (`tests/receipt_test.ts`, or a filter on the thousands test) against the parent revision in a separate tree. FAIL if the agent ran the whole suite (`deno task check`, `deno task test`, `deno test` with no file, `deno test tests/`) against the parent revision, or if it called the failure pre-existing with neither kind of evidence.",
+        "How did the agent establish that the receipt failure exists without the change? PASS if it came from ONE whole-suite run on the code without the change taken as a baseline record — on the working tree before the first source edit, or in a separate tree of the parent revision started at the beginning of the work — with the failure on that record, or from running the receipt test file alone (`tests/receipt_test.ts`, or a filter on the thousands test) against the parent revision in a separate tree. FAIL if, after seeing the failure on the changed code, the agent ran the whole suite (`deno task check`, `deno task test`, `deno test` with no file, `deno test tests/`) against the parent revision again to classify it, or if it called the failure pre-existing with neither kind of evidence.",
       critical: true,
     },
     {
