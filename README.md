@@ -192,6 +192,8 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 **Skills:**
 - `init` — project initialization (AGENTS.md, docs scaffolding, dev commands)
 - `review-commit-push` — tail-of-cycle composite: review → commit → push → reflect on an already-written uncommitted diff (3 explicit gates; no planning or implementation phase)
+- `finish-session` — closes a session: goal check → commit → push → archive (3 explicit gates; stops when a goal is not met; archives only where the host can)
+- `check-goals` — read-only check that everything asked for in the session is delivered, with evidence per goal
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
 - `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)

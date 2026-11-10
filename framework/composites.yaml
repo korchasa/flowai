@@ -34,6 +34,11 @@ atoms:
     target: framework/core/skills/reflect-gate/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
+  check-goals:
+    source: framework/atoms/check-goals.md
+    target: framework/core/skills/check-goals/SKILL.md
+    default_params:
+      TERMINATION: TOTAL_STOP
 composites:
   review-and-commit:
     target: framework/core/skills/review-and-commit/SKILL.md
@@ -123,3 +128,21 @@ composites:
         atom: reflect-gate
         params:
           TERMINATION: TOTAL_STOP
+  finish-session:
+    target: framework/core/skills/finish-session/SKILL.md
+    wrapper: framework/composites/finish-session.md
+    phases:
+      - title: Goals Phase
+        atom: check-goals
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Commit Phase
+        atom: commit
+        params:
+          DIFF_SOURCE: FRESH_READ
+      - title: Push Phase
+        atom: push
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
+      - title: Archive Phase
+        inline: true

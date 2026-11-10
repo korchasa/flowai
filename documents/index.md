@@ -73,6 +73,8 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:packs.scope | FR-PACKS.SCOPE] — scope: project-only only for primitives that cannot run from plugin/user-level installs. — [ ]
 - [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — scripts/check-skills.ts rejects any framework/<pack>/skills/*/SKILL.md that carries disable-model-invocation in source. — [ ]
 - [REF:fr:packs.struct | FR-PACKS.STRUCT] — pack.yaml format: name (string), version (semver), description (string). — [ ]
+- [REF:fr:atom-check-goals | FR-ATOM-CHECK-GOALS] — read-only check of the session's goals against evidence gathered now, one verdict line — [x]
+- [REF:fr:finish-session | FR-FINISH-SESSION] — Session finish composite: goal check → commit → push → archive (3 gates) — [x]
 - [REF:fr:packs.version | FR-PACKS.VERSION] — flowai sync output shows pack versions. — [ ]
 - [REF:fr:plan-hands-off | FR-PLAN-HANDS-OFF] — a standalone plan ends with the task file; later replies adjust the plan and never start implementation — [x]
 - [REF:fr:plan-outcome-completeness | FR-PLAN-OUTCOME-COMPLETENESS] — plan seeds DoD from stated outcomes (verbatim values), enumerates affected surface, records explicit scope cuts in Follow-ups; silent drops are defects — [ ]
