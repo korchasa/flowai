@@ -21,6 +21,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `core` — Base workflows (commit, plan, review, push, ship, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, write-prd, etc.).
+- `swarm` — One manager session and its child sessions on task files (four skills: start-child, children-status, close-swarm, session-status). Session control exists only in the Claude desktop app; elsewhere each skill does its file-side work and says what it could not do.
 
 ## Key Decisions
 

@@ -53,7 +53,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - composite `ship`: `framework/composites/ship.md` → `framework/core/skills/ship/SKILL.md` (atoms: plan, implement, review, commit, push, reflect-gate)
 - composite `ship-task`: `framework/composites/ship-task.md` → `framework/core/skills/ship-task/SKILL.md` (atoms: implement, review, commit, push, reflect-gate)
 
-#### Skills by pack (34)
+#### Skills by pack (38)
 
 There is one primitive kind: every workflow is an agent-invocable skill under `framework/<pack>/skills/` (FR-PACKS.AGENT-COMMIT).
 
@@ -91,6 +91,9 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 `draw-mermaid-diagrams`, `engineer-plugin-marketplace`,
 `interactive-teaching-materials`, `write-dep`, `write-prd` — all standalone
 
+**swarm (4):** `children-status`, `close-swarm`, `session-status`,
+`start-child` (see §3.26) — standalone
+
 #### Agents by pack (12) — all standalone
 
 - `framework/core/agents/agent-adapter.md`
@@ -108,7 +111,7 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 
 #### Summary
 
-- Skills: 34 (7 atom-generated and 5 composite-generated, all in `core`; 22 standalone across 3 packs).
+- Skills: 38 (7 atom-generated and 5 composite-generated, all in `core`; 26 standalone across 4 packs).
 - Agents: 12 (all standalone — 11 in `core`, 1 in `engineering`).
 - Gitignored generated paths: 10 (6 atom targets + 4 composite targets).
 
@@ -136,7 +139,7 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
     scripts/<name>         # utility scripts (optional)
     assets/                # shared templates (optional, e.g. AGENTS.md templates)
   ```
-- **Packs:** `core` (base workflows, plus two turn-end hooks: `chat-links-validate` — see "Chat file-reference hook" below — and `doc-anchors-validate`, see [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]), `devtools` (skill/agent authoring), `engineering` (procedural knowledge).
+- **Packs:** `core` (base workflows, plus two turn-end hooks: `chat-links-validate` — see "Chat file-reference hook" below — and `doc-anchors-validate`, see [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]), `devtools` (skill/agent authoring), `engineering` (procedural knowledge), `swarm` (one manager session and its child sessions on task files, see §3.26).
 - **Resource discovery:** Convention over configuration — resources found by scanning subdirectories, not listed in `pack.yaml`.
 - **No inter-pack dependencies:** Each pack is self-contained. Enforced by `check-pack-refs.ts` (core→non-core and non-core-A→non-core-B references are errors; any→core and intra-pack are OK).
 - **Naming:** Directory names inside packs are the full installed names (e.g., `commit/`, `write-dep/`). flowai copies them as-is — no name transformation at install time.
@@ -498,7 +501,7 @@ graph TD
   - `<out>/plugins/<plugin>/skills/<stripped>/SKILL.md` (+ supporting subdirs) — one dir per skill; no emitted SKILL.md carries `disable-model-invocation`. Supporting files are copied recursively without `acceptance-tests/` and without files named `*_test.ts` / `*.test.ts` (`copyWithoutUnitTests`); `validate-plugins.ts` and the hook emitter read no test files, so nothing downstream needs them.
   - `<out>/plugins/<plugin>/agents/<name>.md` — agents with Claude-native frontmatter. Codex manifest does not declare an `agents` component because current Codex plugin docs do not define one.
   - `<out>/plugins/<plugin>/hooks/hooks.json` — generated only when the pack has hooks. `core` ships `chat-links-validate` (`Stop`, see [REF:fr:chat-links.hook | FR-CHAT-LINKS.HOOK]) and `doc-anchors-validate` (`Stop`, see [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]); other packs as applicable.
-- **Internal model:** `DEFAULT_PACKS` currently publishes `core`, `devtools`, and `engineering`. `PluginPackArtifact` records plugin name, pack name, description, version, tags, hook presence, skill presence (`hasSkills`), and license. Build flow: emit shared payload once per pack → emit Claude manifest → emit Codex manifest (only when `hasSkills`) → emit Claude marketplace → emit Codex marketplace (skill-less packs filtered out). The Codex plugin schema mandates a `skills` component, so a hook-only pack (no skills) is **Claude-only** — it appears in the Claude catalog but emits no Codex manifest/marketplace entry; `sync-plugins-local.ts` derives its Codex install set from the Codex marketplace (`.agents/plugins/marketplace.json`), not the Claude one, so the divergent name sets do not cause a hard-fail. No pack is hook-only today; the `Stop` hooks of `core` stay Claude-only. Surface-specific emitters never re-read framework source.
+- **Internal model:** `DEFAULT_PACKS` currently publishes `core`, `devtools`, `engineering`, and `swarm`. `PluginPackArtifact` records plugin name, pack name, description, version, tags, hook presence, skill presence (`hasSkills`), and license. Build flow: emit shared payload once per pack → emit Claude manifest → emit Codex manifest (only when `hasSkills`) → emit Claude marketplace → emit Codex marketplace (skill-less packs filtered out). The Codex plugin schema mandates a `skills` component, so a hook-only pack (no skills) is **Claude-only** — it appears in the Claude catalog but emits no Codex manifest/marketplace entry; `sync-plugins-local.ts` derives its Codex install set from the Codex marketplace (`.agents/plugins/marketplace.json`), not the Claude one, so the divergent name sets do not cause a hard-fail. No pack is hook-only today; the `Stop` hooks of `core` stay Claude-only. Surface-specific emitters never re-read framework source.
 - **Short names:** source directories under `skills/`, and source agent stems under `agents/`, use unprefixed kebab-case names. Plugin names are `flowai` for core and `flowai-<pack>` for optional packs, so source `core/skills/push` emits `/flowai:push`. Legacy `flowai-<short>` source names are rejected by `scripts/check-naming-prefix.ts`; plugin build still strips the legacy prefix defensively for compatibility fixtures.
 - **Frontmatter transforms:**
   - SKILL.md: no invocation flag is injected. Resolve `model` tier (`max|smart|fast|cheap|inherit`) → the pair `opus/max | opus/high | sonnet/medium | sonnet/low | (drop both)`; the tier writes `effort` alongside `model`.
@@ -704,6 +707,23 @@ graph TD
 - **Purpose:** `deno.lock` content depends on the Deno version that writes it, so the machine and CI must run the same Deno, or every dependency bump fails CI's file-integrity step.
 - **Source of truth:** `.dvmrc` holds one exact version. Both `setup-deno` steps in `.github/workflows/ci.yml` read it via `deno-version-file`; `setup-deno` takes the trimmed file contents as the version.
 - **Local gate:** `scripts/task-check.ts` `main()` compares `Deno.version.deno` with `.dvmrc` through the pure helper `denoVersionMismatch()` before any prerequisite and throws on a mismatch (exact match, patch included; a leading `v` in the file is accepted). The message names both versions and the two ways out: install the pinned Deno, or bump `.dvmrc`, re-resolve `deno.lock` and commit both. Local Deno comes from Homebrew, which upgrades it without reading `.dvmrc`, so this gate is what catches the drift before a push.
+
+### 3.26 Swarm Pack — FR-SWARM (`framework/swarm/`) [ANC:sds:3-26]
+
+- **Purpose:** Realize [REF:fr:swarm | FR-SWARM] — one working cycle for a manager session and the child sessions it starts, with the state kept in task files and git instead of in any session's memory.
+- **Components:** four standalone agent-invocable skills under `framework/swarm/skills/`, shipped as the plugin `flowai-swarm`: `start-child`, `children-status`, `close-swarm` (manager side) and `session-status` (child side, usable in any single session). No script, hook or agent. The pack references only `core` skills by name: `finish-session`, `tasks-overview`, `check-goals`.
+- **State model ([REF:fr:swarm.ledger | FR-SWARM.LEDGER]):**
+  - Manager's task file — the ledger. `## Swarm`: a rule line, then one plain bullet per child with links only (title, session reference, the child's task file, branch and worktree, the manager's Definition-of-Done item served, `closed`). `## Decisions`: dated decisions with recipients. `## Follow-ups`: collected from closed children. A `Swarm closed` Definition-of-Done item gates the manager's `finish-session`.
+  - Child's task file — `related_tasks:` to the manager's file; done and left are its Definition-of-Done checkboxes; `## Status` holds six plain bullets: `State:` (`working` | `blocked on operator` | `done` | `failed`), `Needs from the operator:`, `Not verified:`, `Branch:`, `Told directly by the operator:`, `Updated:`.
+  - A child's state is never copied into the manager's row; `children-status` reads it from the child's file each time, so a status request leaves no edit behind.
+  - Plain bullets, never checkboxes, in the swarm-owned sections: task-status derivation ([REF:fr:doc-task-lifecycle | FR-DOC-TASK-LIFECYCLE]) counts only `## Definition of Done`.
+- **Where the files are read from:** `start-child` commits the child's task file and the manager's row by explicit paths before the session starts, because a worktree is cut from a commit. A child in a shared checkout edits its task file in place. A child in its own worktree commits its task file by explicit path on every `session-status` run, and the manager reads `git show <branch>:<path>`.
+- **Derived state:** `stalled` is never written by a child. `children-status` derives it where the host lists sessions: written `working`, session not running. The host's "waits for the user" and "failed" override the written state. What the host's session listing returns for a session waiting on a question versus a finished one is not recorded here yet — it is captured in the manual live-host run of FR-SWARM.
+- **Trust boundary:** a child's report is a claim. Git-provable facts (committed, pushed, merged, uncommitted files) are checked by the manager and stated as fact; everything else is printed with the marker `by the child's report`. No evidence command of a child is re-run at close.
+- **Finishing ([REF:fr:swarm.close | FR-SWARM.CLOSE]):** each session finishes itself with `finish-session` ([REF:fr:finish-session | FR-FINISH-SESSION], unchanged): a child as the last step of its brief, the manager after `close-swarm`. `close-swarm` does only the cross-session part — the `Could be lost` list, follow-ups into the manager's file, branch and worktree settlement, the `closed` mark, archiving another session — and ends with `Still open`. `finish-session` is not cascaded into running children; the `Swarm closed` item makes the manager's goal check stop while a child is open.
+- **Host neutrality:** session control (start, list, message, archive another session) exists only in the Claude desktop app (`documents/ides-difference.md` §2.14). Each skill decides from its own tool list, names a host tool only as an example, and on a host without one does all file-side work and says in one line what it could not do. The acceptance sandbox drives a CLI, so the scenarios cover exactly that branch.
+- **Not a skill:** sending a decision to children is one call of the host's message tool; the record is kept by the rule line at the head of `## Swarm`.
+- **Deferred:** a turn-end hook that writes `## Status` without relying on the child, a script that builds the board deterministically, a machine-readable format for external viewers, cost and budget per child, in-session subagents.
 
 ## 4. Data and Storage
 
