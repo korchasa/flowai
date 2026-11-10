@@ -623,15 +623,6 @@ export async function validateSkill(
  * outside framework/, which is excluded above).
  */
 /**
- * Skills exempt from FR-UNIVERSAL.IDE-NEUTRAL. `ai-ide-runner` is a cross-IDE
- * relay/comparison skill whose body deliberately documents the mapping from
- * vendor labels to native provider model IDs (e.g. `anthropic/claude-sonnet-4.6`,
- * `openai/gpt-5.4`) — naming concrete models IS the skill's subject matter, so
- * abstracting them to tiers would destroy the example. See SDS §3.17.
- */
-export const IDE_NEUTRAL_EXEMPT = new Set(["ai-ide-runner"]);
-
-/**
  * A bang-backtick shell interpolation in a distributed body is executed, not
  * shown.
  *
@@ -669,7 +660,6 @@ export function validateIdeNeutrality(
   dirName: string,
   content: string,
 ): SkillError[] {
-  if (IDE_NEUTRAL_EXEMPT.has(dirName)) return [];
   const errors: SkillError[] = [];
   // Strip frontmatter to avoid flagging `model: smart` tiers or descriptions.
   const body = content.replace(/^---\n[\s\S]*?\n---\n/, "");

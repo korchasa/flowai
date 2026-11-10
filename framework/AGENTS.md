@@ -21,10 +21,6 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `core` — Base workflows (commit, plan, review, push, ship, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, write-prd, etc.).
-- `deno` — Deno-specific skills.
-- `typescript` — TypeScript-specific setup skills.
-- `memex` — Memex: long-term knowledge bank for AI agents (three skills: save, ask, audit).
-- `beta` — Opt-in beta capabilities not yet promoted to core. Ships the `doc-anchors-validate` Stop hook (Claude-only), the `select-llm-model` skill, and the cross-IDE delegation primitives (`ai-ide-runner`, `delegate-to-ide` skills + `worker` agent, consolidated here from the former standalone `ide-bridge` pack). With skills present the pack is no longer hook-only — it emits a Codex manifest/marketplace entry too (`hasSkills` true).
 
 ## Key Decisions
 

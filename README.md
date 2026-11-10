@@ -48,7 +48,7 @@ Developer: sets task, decides direction
 
 flowai is distributed as a generated plugin marketplace, [korchasa/flowai-plugins](https://github.com/korchasa/flowai-plugins). How you consume it depends on whether your IDE can install a plugin:
 
-- **Claude Code** and **Codex** install from the marketplace natively; installing needs no Deno toolchain. Some primitives run Deno scripts at work time, so keep `deno` on `PATH` if you use them: the `init` skill, the `engineer-*` skills, and the hooks of the `devtools`, `memex` and `beta` packs.
+- **Claude Code** and **Codex** install from the marketplace natively; installing needs no Deno toolchain. Some primitives run Deno scripts at work time, so keep `deno` on `PATH` if you use them: the `init` skill, the `engineer-*` skills, and the hooks of the `core` and `devtools` packs.
 - **Cursor** and **OpenCode** have no plugin marketplace. Their users build the same tree locally and copy the rendered skills into `.claude/skills/`, which both IDEs read.
 
 Jump to your IDE:
@@ -58,7 +58,7 @@ Jump to your IDE:
 - **Cursor** → [build and copy](#cursor)
 - **OpenCode** → [build and copy](#opencode)
 
-All seven packs — `core`, `deno`, `devtools`, `engineering`, `memex`, `typescript`, and the opt-in `beta` — ship the same way.
+All three packs — `core`, `devtools` and `engineering` — ship the same way.
 
 ### Claude Code
 
@@ -68,19 +68,15 @@ Install flowai as a native plugin from the [korchasa/flowai-plugins](https://git
 # Inside a Claude Code session:
 /plugin marketplace add korchasa/flowai-plugins
 /plugin install flowai@flowai-plugins
-# Optional, pick whichever stacks you use:
-/plugin install flowai-deno@flowai-plugins
-/plugin install flowai-typescript@flowai-plugins
+# Optional:
 /plugin install flowai-engineering@flowai-plugins
 /plugin install flowai-devtools@flowai-plugins
-/plugin install flowai-memex@flowai-plugins
-/plugin install flowai-beta@flowai-plugins  # opt-in: select-llm-model skill + doc-anchors Stop hook (hook is Claude-only)
 /reload-plugins
 ```
 
-Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-memex:save`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box with no extra install step. Hooks declared by `core` (`chat-links-validate`, a turn-end check of file references in the chat answer), `devtools`, `memex`, and the opt-in `beta` pack (`doc-anchors-validate`, a turn-end SALP anchor/reference check) are translated to Claude Code's `hooks.json` format automatically.
+Skills are invoked under the plugin namespace: core uses `/flowai:`, while optional packs use `/flowai-<pack>:`, e.g. `/flowai:commit`, `/flowai:plan`, `/flowai:update`, `/flowai-engineering:deep-research`, `/flowai-devtools:engineer-skill`. Source primitive names are short kebab-case names; the plugin namespace carries the `flowai` brand. Cross-skill references inside skill bodies are rewritten to the namespaced form during build, and pack-level assets (e.g. `AGENTS.template.md`) ship inside each consuming skill — `/flowai:update` and `/flowai:init` work out of the box with no extra install step. Hooks declared by `core` (`chat-links-validate`, a turn-end check of file references in the chat answer, and `doc-anchors-validate`, a turn-end SALP anchor/reference check) and by `devtools` are translated to Claude Code's `hooks.json` format automatically.
 
-> **`doc-anchors-validate` is Claude Code only, and ships in the opt-in `beta` pack** (`flowai-beta`) — install it deliberately; it is not bundled into core. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent; the reason prescribes delegating the mechanical fix to a subagent so the main agent resumes its primary task instead of fixing inline. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
+> **`doc-anchors-validate` is Claude Code only and ships in `core`** (plugin `flowai`), so every flowai install gets it; it stays silent in a repository that holds no SALP token. This hook fires on turn-end (`Stop`) and feeds dangling/duplicate SALP anchor findings back to the agent; the reason prescribes delegating the mechanical fix to a subagent so the main agent resumes its primary task instead of fixing inline. Empirical probes (2026-06) show the mechanism is supported only on Claude Code: Codex does not emit a turn-end hook (`codex exec` fires `SessionStart` but never `Stop`; the feature flag also renamed `codex_hooks`→`hooks`), OpenCode's `session.idle` is observation-only (no way to send the agent back to fix), and the `cursor-agent` CLI does not execute `.cursor/hooks.json` hooks at all (those are a Cursor IDE-app feature). On those IDEs the hook is simply not installed/active — no degraded fallback.
 >
 > A consuming project that hits false positives on its own fixture/example layout (anything not matching flowai's built-in skip patterns) narrows the scan two further ways, both additive to the built-ins. Preferred: commit a `.salpignore` dot-file (`.gitignore`-style globs) next to the fixtures it silences — patterns are matched relative to that file's directory, deeper files override shallower, `!` re-includes, `#`/blank lines are skipped, so the exclusion travels with the code. Ad-hoc/non-committed: set `FLOWAI_DOC_ANCHORS_SKIP` to a comma-separated list of path substrings, e.g. `FLOWAI_DOC_ANCHORS_SKIP=fixtures,examples/,vendor/`.
 
@@ -93,13 +89,9 @@ Install flowai as a native plugin from the same marketplace, using the Codex CLI
 # From a shell with Codex CLI installed:
 codex plugin marketplace add korchasa/flowai-plugins
 codex plugin add flowai@flowai-plugins
-# Optional, pick whichever stacks you use:
-codex plugin add flowai-deno@flowai-plugins
-codex plugin add flowai-typescript@flowai-plugins
+# Optional:
 codex plugin add flowai-engineering@flowai-plugins
 codex plugin add flowai-devtools@flowai-plugins
-codex plugin add flowai-memex@flowai-plugins
-codex plugin add flowai-beta@flowai-plugins  # select-llm-model skill works on Codex; the doc-anchors Stop hook is inert there (no turn-end hook).
 ```
 
 `plugin add` materializes the plugin payload under `~/.codex/plugins/cache/` and writes `[plugins."<name>@flowai-plugins"] enabled = true`; start a **fresh Codex thread** to load newly installed skills and hooks. Codex receives the same generated `skills/` payload through `.agents/plugins/marketplace.json` and per-pack `.codex-plugin/plugin.json`.
@@ -117,7 +109,7 @@ cd flowai
 deno task build-plugins
 # Copy the packs you want into the project you work in:
 cp -R dist/claude-plugins/plugins/flowai/skills/*        /path/to/project/.claude/skills/
-cp -R dist/claude-plugins/plugins/flowai-deno/skills/*   /path/to/project/.claude/skills/
+cp -R dist/claude-plugins/plugins/flowai-devtools/skills/* /path/to/project/.claude/skills/
 ```
 
 Cursor reads agent-invocable skills from `.claude/skills/` (`documents/ides-difference.md:176`), so no further wiring is needed. Repeat the build-and-copy to update. Agents and hooks are not installed this way: Cursor's agents live in `.cursor/agents/` and its hooks are an IDE-app feature the `cursor-agent` CLI does not execute.
@@ -224,6 +216,7 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 
 **Hooks:**
 - `chat-links-validate` — turn-end (`Stop`) check of the file references in the final chat answer. It sends the agent back for a one-line correction when a link points at no file, an existing project file is left in backticks instead of a link, or a path does not resolve from the project root. Claude Code only; on other IDEs the same rule reaches the agent as a line in `AGENTS.md`.
+- `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Claude Code only; narrow its scan with a committed `.salpignore` or `FLOWAI_DOC_ANCHORS_SKIP`.
 
 ### engineering
 
@@ -260,49 +253,6 @@ Skill and agent authoring tools.
 - `engineer-hook` — create/modify a hook
 - `engineer-subagent` — create/modify a subagent
 - `write-agent-benchmarks` — agent acceptance tests
-
-### deno
-
-Deno-specific skills.
-
-**Skills:**
-- `cli` — Deno CLI operations
-- `deploy` — Deno Deploy management
-
-### typescript
-
-TypeScript-specific setup skills.
-
-**Skills:**
-- `setup-agent-code-style-deno` — Deno/TS code style
-- `setup-agent-code-style-strict` — strict TypeScript
-
-### memex
-
-Memex — a long-term knowledge bank for AI agents: ingest sources, answer questions with citations, audit the bank for orphans/dead links/contradictions.
-
-**Skills:**
-- `save` — ingest a source (URL, file path, or free text) into the memex
-- `ask` — answer a question from the memex with citations
-- `audit` — audit a memex for orphans, dead links, and contradictions
-
-**Hooks:**
-- `status` — detect when the cwd is inside a memex and inject its status (pages, sources, recent log) as context
-
-### beta
-
-Opt-in beta capabilities not yet promoted to core. The `select-llm-model` skill and the cross-IDE delegation skills work on every IDE; the `doc-anchors-validate` hook is **Claude Code only**.
-
-**Skills:**
-- `select-llm-model` — task-driven LLM recommender. Give it a free-form task; it derives benchmark-category weights, then **live-fetches** current standings through two CLI tools with subcommands — `benchmarks.ts` (Artificial Analysis, which absorbs ~15 benchmarks incl. GPQA/HLE/LiveCodeBench/Terminal-Bench-hard/τ²; Aider Polyglot; Steel.dev WebArena/OSWorld/SWE-bench Verified) and `openrouter.ts` (real deployment input/output price, per-provider breakdown with reliability, model speed). Returns a ranked shortlist with per-axis rationale, source citations, and the fetch timestamp; fails fast (no fabrication) when it cannot fetch. (LMArena, ARC-AGI, LLM-Stats and other no-stable-endpoint sources are reported as explicit Gaps.)
-- `ai-ide-runner` — one-shot relay / fan-out comparison across Claude Code / OpenCode / Cursor / Codex CLIs; child's stdout relayed verbatim
-- `delegate-to-ide` — delegate a task to another IDE via an isolated-context subagent so the child's transcript stays out of the parent's context
-
-**Agents:**
-- `worker` — single-shot cross-IDE CLI worker; spawned by `delegate-to-ide`
-
-**Hooks:**
-- `doc-anchors-validate` — turn-end (`Stop`) SALP anchor/reference integrity check; feeds dangling/duplicate findings back to the agent, which delegates the fix to a subagent and resumes its primary task. Extend its skip set per project via `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings). See the Claude-Code-only note under [Claude Code](#claude-code).
 
 ## Developer Workflow
 
@@ -349,10 +299,6 @@ framework/              # THE PRODUCT — rendered into the plugin marketplace
   core/                 #   Core workflow skills and agents
   engineering/          #   Procedural engineering knowledge
   devtools/             #   Skill/agent authoring tools
-  deno/                 #   Deno-specific skills
-  typescript/           #   TypeScript-specific setup skills
-  memex/                #   Long-term knowledge bank skills
-  beta/                 #   Opt-in: select-llm-model, doc-anchors hook, cross-IDE delegation
   atoms/ composites/    #   Composite-skill generator sources (not distributed)
 documents/              # Project documentation (SRS, SDS, tasks)
 scripts/                # Deno task scripts + acceptance test infrastructure + tasks-overview.py (project-local status script)

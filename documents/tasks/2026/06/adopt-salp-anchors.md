@@ -7,7 +7,6 @@ implements:
   - FR-DOC-IDS
   - FR-DOC-INDEX
   - FR-DOC-TASK-LINK
-  - FR-MEMEX
 tags: [framework, docs, anchors, salp, memex, refactor, linter]
 related_tasks:
   - 2026/05/replace-adr-with-tasks.md

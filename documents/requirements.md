@@ -339,14 +339,11 @@ reverse. Grouped A–G by the boundary they defend.
   [REF:fm:process.misdiagnose | FM-PROCESS.MISDIAGNOSE],
   [REF:fm:scope.env | FM-SCOPE.ENV].
   Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
-  [REF:fr:model-select | FR-MODEL-SELECT],
   [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-NO-FABRICATION** [ANC:pr:no-fabrication] — Missing data or a missing
   dependency is a blocker: stop and say so, don't invent a fake to keep going.
   Heals: [REF:fm:process.fabricate | FM-PROCESS.FABRICATE].
   Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
-  [REF:fr:model-select | FR-MODEL-SELECT],
-  [REF:fr:memex | FR-MEMEX],
   [REF:fr:accept.rules | FR-ACCEPT.RULES].
 - **PR-EXTERNALIZE** [ANC:pr:externalize] — Do the thinking on the page: write the
   plan, the diagnosis, the trade-off out as you work — not only to inform the
@@ -384,7 +381,6 @@ reverse. Grouped A–G by the boundary they defend.
   don't muffle it behind a silent fallback. Heals:
   [REF:fm:verify.swallow | FM-VERIFY.SWALLOW].
   Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES],
-  [REF:fr:model-select | FR-MODEL-SELECT],
   [REF:fr:universal.doc-schema | FR-UNIVERSAL.DOC-SCHEMA].
 - **PR-QA-TEST** [ANC:pr:qa-test] — Write the tests from the task, with a QA
   mindset, before the code. Heals:
@@ -434,8 +430,7 @@ reverse. Grouped A–G by the boundary they defend.
   failed attempts — stop and call the human. Heals:
   [REF:fm:process.stuck | FM-PROCESS.STUCK].
   Realized by: [REF:fr:accept.rules | FR-ACCEPT.RULES],
-  [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
-  [REF:fr:model-select | FR-MODEL-SELECT].
+  [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH].
 
 #### F. Memory and communication
 
@@ -448,8 +443,7 @@ reverse. Grouped A–G by the boundary they defend.
   Realized by: [REF:fr:docs | FR-DOCS],
   [REF:fr:doc-tasks | FR-DOC-TASKS],
   [REF:fr:doc-task-lifecycle | FR-DOC-TASK-LIFECYCLE],
-  [REF:fr:doc-index | FR-DOC-INDEX],
-  [REF:fr:memex | FR-MEMEX].
+  [REF:fr:doc-index | FR-DOC-INDEX].
 - **PR-REPORT** [ANC:pr:report] — Report upward the truth and all of what matters,
   pitched at the requirement and class/method level — the structure produced, not
   raw diffs and not only the top-line "done" — in plain words the human reads
@@ -463,8 +457,7 @@ reverse. Grouped A–G by the boundary they defend.
   evidence — code, a test, command output. Heals:
   [REF:fm:report.unsupported | FM-REPORT.UNSUPPORTED].
   Realized by: [REF:fr:diagnose-bench | FR-DIAGNOSE-BENCH],
-  [REF:fr:accept.rules | FR-ACCEPT.RULES],
-  [REF:fr:model-select | FR-MODEL-SELECT].
+  [REF:fr:accept.rules | FR-ACCEPT.RULES].
 
 #### G. Tool and guard discipline
 
@@ -477,8 +470,7 @@ reverse. Grouped A–G by the boundary they defend.
 - **PR-GUARDS** [ANC:pr:guards] — When a guard fires, remove the cause or call the
   human; don't route around it, and don't read an override flag in the error as
   permission. Heals: [REF:fm:process.override | FM-PROCESS.OVERRIDE].
-  Realized by: [REF:fr:accept-guards | FR-ACCEPT-GUARDS],
-  [REF:fr:model-select | FR-MODEL-SELECT].
+  Realized by: [REF:fr:accept-guards | FR-ACCEPT-GUARDS].
 
 ## 2. General description
 
@@ -519,7 +511,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 ### FR-RULES: Rule Enforcement [ANC:fr:rules]
 
 - **Description:** The system must automatically apply development rules and coding standards (code style, TDD, documentation).
-- **Acceptance verified by acceptance tests:** `setup-agent-code-style-deno-basic`, `setup-agent-code-style-strict-basic`
+- **Acceptance verified by acceptance tests:** `agents-rules-fail-fast`, `agents-rules-functionality-preservation`
 
 ### FR-DOCS: Documentation Management [ANC:fr:docs]
 
@@ -774,7 +766,7 @@ Note: FR-DIST.MAPPING defines cross-IDE resource mapping; open questions need us
 - **Rationale:** each IDE had its own control layer — a `stream-json` dialect parser and a hook-based mocker — so every new IDE or CLI release cost a hand-written adapter, and the four adapters drifted apart. ACP is the one protocol all four IDEs speak, so one runner and one data-only registry replace them. The transport carries its bridges' timing too: a claude turn that ended while a background task's notice was still queued for the model cut `maintenance-detects-doc-health-issues` short in the sweep `2026-10-18T14-45-21`, which is why the runner checks the CLI's own transcript before it ends a turn.
 - **Tasks:** [migrate-acceptance-to-acp](tasks/2026/06/migrate-acceptance-to-acp.md), [harness-on-ai-ide-cli](tasks/2026/10/harness-on-ai-ide-cli.md)
 - **Scope:** Runner-side only. Absorbs FR-ACCEPT.OPENCODE (OpenCode via ACP). Does NOT change plugin distribution (FR-DIST.*) or the parity-gate semantics — only the transport by which the bench drives an IDE agent.
-- **Acceptance verified by acceptance tests:** `draw-mermaid-diagrams-sequence` (no-mock skill-load, green over ACP), `select-llm-model-fails-fast-no-fetch` (curl/wget mocked via PATH-shadow, green over ACP).
+- **Acceptance verified by acceptance tests:** `draw-mermaid-diagrams-sequence` (no-mock skill-load, green over ACP).
 - **Acceptance (code):** `deno test -A scripts/acceptance-tests/lib/acp/` (`acp_agent_session_test.ts`: a prompt turn over the library session against the stub agent, auto-allow, connection drop as a failure verdict, client-fs confinement, guarded process group; plus mock_bin, auth-isolation, `turn_recorder_test.ts`), `scripts/acceptance-tests/lib/process_watchdog_test.ts::kills ACP wrapper child tree`, `scripts/acceptance-tests/lib/cache_test.ts::computeCacheKey: ACP lib version + registry fingerprint enter the key`; full `deno task check` green with no `stream-json` path remaining.
 - **Acceptance — the runner speaks each IDE's invocation form:** `scripts/acceptance-tests/lib/acp/registry_test.ts::nativeCommandTurn rewrites only the leading slash command to the IDE's prefix` and `::commandPrefixFor: codex invokes skills with $, every other IDE with /` (the `/<skill> <args>` scenario query becomes `$<skill> <args>` on codex, whose ACP bridge otherwise intercepts `/plan` and `/review` as its own commands); end-to-end by the codex rollout of `plan-basic` (2026-09-02): the `$plan` turn reaches the skill — the agent reads `.codex/skills/plan/SKILL.md` six times — where the 2026-09-02T01-07-10 sweep had 21 of 22 `plan` scenarios red with `Command "/plan" requires no arguments.` and no rollout on disk at all.
 - **Acceptance — a dispatch's result reaches the trace whatever shape the bridge sends:** `scripts/acceptance-tests/lib/acp/acp_agent_session_test.ts::a dispatch's result reaches the trace` (drives the real stub agent's `[[DISPATCH]]` shape: answer in `rawOutput` as a bare string, which the earlier SDK client refused with `-32602`; the library passes every notification through unvalidated), plus `turn_recorder_test.ts::flattenRawOutput reads content blocks handed over at the top level`.
@@ -898,7 +890,7 @@ All 39 skills have at least one acceptance test scenario. Coverage is the source
 
 #### FR-DIST.MARKETPLACE Claude Code + Codex Plugin Marketplace [ANC:fr:dist.marketplace]
 
-- **Desc:** **Preferred** native-plugin distribution channel for Claude Code and Codex users — on those IDEs the marketplace plugin is the recommended install path (native install, per-IDE update flow, no Deno toolchain required). The framework publishes a generated marketplace at downstream repo `korchasa/flowai-plugins`. Surface catalogs (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-plugins.ts` on every release (CI step inside the existing `release` job, gated on the same `should_release` condition that cuts the `v<X>` GitHub release). No plugin artefacts are committed to this repo (`dist/` is gitignored). Seven marketplace packs ship as separate plugins (`flowai`, `flowai-beta`, `flowai-deno`, `flowai-devtools`, `flowai-engineering`, `flowai-memex`, `flowai-typescript`). Cursor and OpenCode have no plugin marketplace, so their users clone this repository, run `deno task build-plugins`, and copy `dist/claude-plugins/plugins/<pack>/skills/*` into `.claude/skills/` — both IDEs read that directory (`documents/ides-difference.md:176,178`).
+- **Desc:** **Preferred** native-plugin distribution channel for Claude Code and Codex users — on those IDEs the marketplace plugin is the recommended install path (native install, per-IDE update flow, no Deno toolchain required). The framework publishes a generated marketplace at downstream repo `korchasa/flowai-plugins`. Surface catalogs (`.claude-plugin/marketplace.json`, `.agents/plugins/marketplace.json`) and plugin payloads are generated from `framework/<pack>/` by `scripts/build-plugins.ts` on every release (CI step inside the existing `release` job, gated on the same `should_release` condition that cuts the `v<X>` GitHub release). No plugin artefacts are committed to this repo (`dist/` is gitignored). Three marketplace packs ship as separate plugins (`flowai`, `flowai-devtools`, `flowai-engineering`). Cursor and OpenCode have no plugin marketplace, so their users clone this repository, run `deno task build-plugins`, and copy `dist/claude-plugins/plugins/<pack>/skills/*` into `.claude/skills/` — both IDEs read that directory (`documents/ides-difference.md:176,178`).
 - **Tasks:** [claude-code-plugin-marketplace-pilot](tasks/2026/05/claude-code-plugin-marketplace-pilot.md), [codex-plugin-marketplace-support](tasks/2026/05/codex-plugin-marketplace-support.md), [remove-flowai-prefix-from-primitives](tasks/2026/05/remove-flowai-prefix-from-primitives.md), [local-marketplace-namespace](tasks/2026/05/local-marketplace-namespace.md), [REF:task:2026-09-retire-flowai-cli-docs | retire-flowai-cli-docs]
 - **Scenario:** A user on Claude Code runs `/plugin marketplace add korchasa/flowai-plugins` once, then `/plugin install flowai@flowai-plugins`. A user on Codex runs `codex plugin marketplace add korchasa/flowai-plugins`, then `codex plugin add flowai@flowai-plugins` (plus optional pack IDs). Codex writes the plugin payload cache plus `[plugins."<name>@flowai-plugins"] enabled = true` in `~/.codex/config.toml`; the next Codex thread loads installed packs. Skills become available under the installed plugin namespace. Short primitive names avoid duplicate branding (`/flowai:commit`, not `/flowai:flowai-commit`). Updates flow via each IDE's plugin update path tied to the downstream repo commit SHA, so one framework release maps to exactly one plugin update event.
 - **Local install contract:** `deno task build-plugins` produces a local marketplace root at `./dist/claude-plugins`. Claude Code supports a one-session smoke via `claude --plugin-dir ./dist/claude-plugins/plugins/flowai` and persistent user install via `claude plugin marketplace add ./dist/claude-plugins` + `claude plugin install flowai@flowai-plugins --scope user`. Codex supports local marketplace registration via `codex plugin marketplace add ./dist/claude-plugins` plus per-pack activation via `codex plugin add <name>@flowai-plugins`; disabling a specific pack requires editing `[plugins."<name>@flowai-plugins"] enabled = false`.
@@ -1558,7 +1550,7 @@ Rules:
   - [x] Supported events: PostToolUse, PreToolUse, SessionStart. Event/tool name mapping per IDE.
   - [x] `Stop` (turn-end) supported in the plugin-bundle path — `emitHooks` is event-agnostic, so a `Stop` hook flows into `hooks.json` under a top-level `Stop` key. Verified by `scripts/build-plugins_test.ts::emits-stop-event-hooks-json`. Effective turn-end-hook support is **Claude Code only** (empirically probed 2026-06): Codex `codex exec` never fires `Stop` (only `SessionStart`), OpenCode `session.idle` is observation-only, and the `cursor-agent` CLI runs no `.cursor/hooks.json` hooks. A per-IDE mapping for `Stop` would therefore be inert on non-Claude IDEs and is intentionally NOT pursued for the `doc-anchors-validate` hook.
   - [x] `run.ts` uses stdin JSON contract (Claude Code canonical format). Cursor/OpenCode wrappers normalize format. SessionStart hooks output `hookSpecificOutput.additionalContext`.
-  - [x] Framework hooks: `skill-structure-validate` (devtools, PostToolUse), `status` (memex, SessionStart), `doc-anchors-validate` (beta, Stop), `chat-links-validate` (core, Stop — [REF:fr:chat-links.hook | FR-CHAT-LINKS.HOOK]).
+  - [x] Framework hooks: `skill-structure-validate` (devtools, PostToolUse), `doc-anchors-validate` (core, Stop — [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]), `chat-links-validate` (core, Stop — [REF:fr:chat-links.hook | FR-CHAT-LINKS.HOOK]).
 
 #### FR-HOOK-RESOURCES.INSTALL IDE-Specific Installation [ANC:fr:hook-resources.install]
 
@@ -1703,87 +1695,26 @@ Rules:
 - **Acceptance verified by acceptance tests:** `diagnose-benchmark-failure-md-prior-bullets`, `diagnose-benchmark-failure-raw-session`, `diagnose-benchmark-failure-foreign-layout`
 - **Status:** [x]
 
-### FR-AI-IDE-RUNNER: AI IDE Runner Skill — `ai-ide-runner` [ANC:fr:ai-ide-runner]
-
-- **Description:** Agent-invocable skill that spawns another AI IDE runtime (`claude`, `opencode`, `cursor-agent`, `codex`) from the current session in non-interactive mode, captures its stdout, and relays it back verbatim. Enables single-IDE "second opinion" runs, multi-IDE fan-out comparisons, and multi-model comparisons within one IDE.
-- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
-- **Scope:** Lives under `framework/beta/skills/ai-ide-runner/` (cross-IDE delegation skills live in the `beta` pack alongside `delegate-to-ide` + `worker` — see FR-IDE-BRIDGE-WORKER, FR-IDE-BRIDGE-DELEGATE). Model-invocable. Triggered by queries like "run in <ide>", "compare <ide> vs <ide>", "try on <model>", "which IDE handles X better".
-- **Constraints:**
-  - MUST relay the child runtime's stdout byte-for-byte; MUST NOT synthesise a "better" answer from the outer model's weights. The skill is a courier, not a co-author.
-  - MUST default to the vendor's native IDE when the user names only a model: Anthropic/Claude → `claude`; OpenAI/GPT → `codex`; Cursor's own Composer → `cursor-agent`. Route to OpenCode only when the user says "in OpenCode", asks for OpenRouter billing, or requests cross-provider fan-out.
-  - MUST prefer native providers over routed variants in OpenCode (`anthropic/claude-sonnet-4.6` beats `openrouter/anthropic/claude-sonnet-4.6` unless the user explicitly asks for OpenRouter).
-  - If the native provider fails (auth / not configured / model ID mismatch), MUST report the failure and stop — MUST NOT silently retry with a routed variant.
-  - MUST apply the `CLAUDECODE=""` environment override when the caller is itself Claude Code and the child is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
-  - MUST NOT install or authenticate CLIs, persist transcripts, or judge output quality automatically.
-- **Acceptance verified by acceptance tests:** `ai-ide-runner-fanout-parallel-claude-opencode`, `ai-ide-runner-opencode-provider-format`, `ai-ide-runner-single-cursor-read-only`, `ai-ide-runner-default-native-ide-for-model`
-
-### FR-IDE-BRIDGE-WORKER: Cross-IDE Delegation Subagent — `worker` [ANC:fr:ide-bridge-worker]
-
-- **Description:** Subagent that owns a single cross-IDE CLI invocation in an isolated context window. Receives `{target_ide}` (`codex` / `claude` / `opencode` / `cursor-agent`), optional `{model}`, and `{task_prompt}`; runs the target's non-interactive CLI exactly once; relays its stdout (or hook-block `reason` payload) byte-for-byte back to the parent. Single-shot — multi-turn / session-resume is explicitly out of scope. Lets a parent agent in IDE A delegate work to IDE B without the child's transcript flooding the parent's context.
-- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
-- **Scope:** Lives under `framework/beta/agents/worker.md`. Invoked via the parent IDE's subagent-dispatch mechanism (Claude Code `Agent`/`Task` tool, OpenCode `@<agent>` mention). Not directly user-invocable; spawned by `delegate-to-ide` (FR-IDE-BRIDGE-DELEGATE).
-- **Constraints:**
-  - MUST relay the child runtime's stdout byte-for-byte; MUST NOT synthesise an answer from the outer model's weights — the worker is a courier, not a co-author. Inherits the FR-AI-IDE-RUNNER output contract.
-  - MUST treat a hook-blocked Bash call's `reason` payload as the child's stdout (verbatim relay applies to the mock prefix, including the `<TOOL>-MOCK:` token).
-  - MUST issue exactly one Bash invocation to the target binary per task. Retries, fan-out, and follow-up calls are out of scope (use `ai-ide-runner` for one-shot relay/comparison; this worker does single-shot delegation).
-  - MUST apply the `CLAUDECODE=""` prefix when the target is `claude` (otherwise the inner CLI refuses with "already in a Claude session").
-  - MUST use OpenCode's mandatory `provider/model` format; MUST NOT silently fall back to routed providers on native failure.
-  - MUST NOT install or authenticate CLIs, persist transcripts, judge output quality, or spawn nested subagents.
-- **Acceptance verified by acceptance tests:** `delegate-to-ide-via-subagent` (end-to-end: parent skill → worker subagent → mocked Codex CLI → relay back to parent; verifies binary choice, single-shot invocation, and verbatim relay through the subagent path). The worker has no standalone acceptance scenario by design — `AcceptanceTestAgentScenario` exposes the agent file to the main runtime but does not execute it as a subagent (the main runtime sees the userQuery directly), so isolated worker tests do not actually exercise the worker's body. The wrapping `via-subagent` scenario is the only path that drives the worker as the SDK does in production. Pattern mirrored from `deep-research-worker`, which is also tested via its orchestrator only.
-
-### FR-IDE-BRIDGE-DELEGATE: Cross-IDE Delegation Skill Wrapper — `delegate-to-ide` [ANC:fr:ide-bridge-delegate]
-
-- **Description:** Agent-invocable skill that routes "delegate this task to another IDE" requests to the `worker` subagent (FR-IDE-BRIDGE-WORKER) instead of running the target CLI inline from the parent context. Preserves context isolation: the child CLI's transcript stays in the subagent's window, only the worker's relayed reply reaches the parent.
-- **Tasks:** [ide-bridge-pack](tasks/2026/05/ide-bridge-pack.md)
-- **Scope:** Lives under `framework/beta/skills/delegate-to-ide/`. Model-invocable. Triggered by queries like "delegate to <ide>", "have <ide> do <task>", "execute <task> in <ide>", "offload to <ide>". Disambiguation from FR-AI-IDE-RUNNER: that skill is the right fit for one-shot relay / fan-out comparison ("compare X vs Y", "try on <model>"); this skill is for delegating a task whose intermediate work should NOT flood the parent.
-- **Constraints:**
-  - MUST invoke the `worker` subagent via the host IDE's subagent-dispatch mechanism. MUST NOT shell out to the target CLI inline from the parent session — that defeats the context-isolation rationale of the skill.
-  - On hosts without a native subagent mechanism (Cursor, Codex), MUST surface the limitation and route the user to `ai-ide-runner` for one-shot relay; MUST NOT silently fall back to inline parent-side Bash.
-  - MUST relay the worker's quoted block verbatim to the user — no paraphrase, translation, or grammar fixes inside the block. Thin framing (target IDE label) outside the block is allowed.
-  - MUST NOT fan out across multiple IDEs or run cross-model comparisons (use `ai-ide-runner` for those flows).
-- **Acceptance verified by acceptance tests:** `delegate-to-ide-via-subagent`, `delegate-to-ide-trigger-pos-1`, `delegate-to-ide-trigger-adj-1`, `delegate-to-ide-trigger-false-1`
-
-### FR-MEMEX: Memex Pack — `memex` [ANC:fr:memex]
-
-- **Description:** Long-term knowledge bank for AI agents, packaged as a separate `memex` pack. Three agent-invocable skills operating on a memex directory (`raw/` + `pages/` + `AGENTS.md` schema + `log.md`):
-  1. `save <path|url|text>` — atomic save: store source in `raw/` → extract entities → create / update memex pages → backlink audit → update index → append log. Scaffolds the memex on first call if no `AGENTS.md + pages/` ancestor is found.
-  2. `ask <question>` — read index, open relevant pages, follow one wikilink hop, synthesise answer with `[[wikilink]]` citations, file the answer to `pages/answers/`, optionally promote to `pages/`. Honest about gaps; never falls back on training-data knowledge.
-  3. `audit [--fix]` — deterministic structural audit (dead links, orphans, missing concept-gap sections, index drift) plus LLM-judgement layer (contradictions, stale claims, gap-question suggestions). `--fix` applies trivial auto-fixes (stub pages, missing-section append, index drift). Never auto-deletes or auto-resolves contradictions.
-- **Tasks:** [adopt-salp-anchors](tasks/2026/06/adopt-salp-anchors.md)
-- **Pack provides:**
-  - `framework/memex/skills/memex-{save,ask,audit}/SKILL.md` — three agent-invocable skills.
-  - `framework/memex/skills/audit/scripts/audit.ts` — deterministic Deno audit script, bundled inside the skill so `scripts/audit.ts` resolves relative to the installed skill directory on every IDE (a pack-level `scripts/` dir is not installed by the acceptance runner: `audit-clean` and `audit-defects` were red on codex on 2026-09-02 with `.codex/skills/audit/` holding only `SKILL.md`) (Map-based link graph, frontmatter-aware checks, no external deps).
-  - `framework/memex/hooks/status/{hook.yaml,run.ts}` — `SessionStart` hook that walks up from cwd for `AGENTS.md + pages/`, injects memex status (page count, source count, last log entry, last audit date, ≥5 uncompiled-source nudge) as `additionalContext`.
-  - `framework/memex/assets/AGENTS.md` — schema asset dropped into the memex root on scaffold.
-- **Inherited primitives:**
-  - From Karpathy's `llmwiki` (Memex-style persistent wiki maintained by an LLM): three operations, `raw/` / `pages/` / schema layering, `index.md` (catalog) + `log.md` (chronological, grep-friendly `## [YYYY-MM-DD] op | title`), one-source-touches-many-pages atomicity.
-  - From ekadetov-llm-wiki: active memex detection (walk up from cwd), entity types (concept / person / source-summary), backlink audit via grep, deterministic audit script, contradiction callouts.
-  - From nvk-llm-wiki: nested `AGENTS.md` as portable schema (vs `CLAUDE.md`), frontmatter-as-data, optional dual-link `[[slug|Name]] ([Name](slug.md))` when the memex is an Obsidian vault, structural-guardian nudge on session start, honest-gaps rule, ask-answer promotion two-step (file then offer promote).
-- **Out of scope (intentionally minimal vs nvk):** multi-memex hub, research / thesis / librarian / projects commands, volatility / freshness scoring, qmd dependency.
-- **Acceptance verified by acceptance tests:** `save-new`, `save-update`, `ask-citations`, `ask-honest-gap`, `audit-clean`, `audit-defects`.
-- **Acceptance verified by tests:** `framework/memex/skills/audit/scripts/audit_test.ts` (6 tests covering DEAD_LINK, ORPHAN, MISSING_SECTION, INDEX_MISSING, INDEX_DEAD, clean-pass, missing-dir error); `framework/memex/hooks/status/run_test.ts` (4 tests covering page / source count, last-log / last-audit extraction, uncompiled detection, format nudge thresholds).
-- **Status:** [x]
-
 ### FR-DOC-ANCHORS: SALP as Canonical Anchor Mechanism [ANC:fr:doc-anchors]
 
-- **Description:** Adopt **SALP (Semantic Anchor / Link Protocol)** as the single canonical cross-reference grammar across every project surface — SRS, SDS, README, AGENTS, framework, code comments, memex pages. Grammar:
+- **Description:** Adopt **SALP (Semantic Anchor / Link Protocol)** as the single canonical cross-reference grammar across every project surface — SRS, SDS, README, AGENTS, framework, code comments. Grammar:
   - Anchor — `[ANC:<ns>:<id>]` — declares a named target.
   - Reference — `[REF:<ns>:<id>]` or `[REF:<ns>:<id> | <display>]` — points at a target.
-  - `<ns>` matches `[a-z][a-z0-9-]*`. The set is open — any grammar-conformant value is accepted by the validator. Examples currently in use: `fr`, `sds`, `task`, `nfr`, `code`, `mx-concept`, `mx-person`, `mx-source`, `mx-answer`. New consumers may introduce new namespaces without amending this list; `scripts/lib/salp.ts` ships `EXAMPLE_NAMESPACES` as a documentation hint only.
+  - `<ns>` matches `[a-z][a-z0-9-]*`. The set is open — any grammar-conformant value is accepted by the validator. Examples currently in use: `fr`, `sds`, `task`, `nfr`, `code`. New consumers may introduce new namespaces without amending this list; `scripts/lib/salp.ts` ships `EXAMPLE_NAMESPACES` as a documentation hint only.
   - `<id>` is lower-kebab.
-  Salp-short form (`[ANC:id]` / `[REF:id]` without namespace) is REJECTED — the namespace is what carries the multi-hop disambiguation value the empirical sweep measured. Supersedes `FR-DOC-LINKS` (GFM-link mandate) and `FR-DOC-IDS` (GFM-link migration of `// FR-…` comments). Replaces wikilink (`[[X]]`) inside the memex pack.
+  Salp-short form (`[ANC:id]` / `[REF:id]` without namespace) is REJECTED — the namespace is what carries the multi-hop disambiguation value the empirical sweep measured. Supersedes `FR-DOC-LINKS` (GFM-link mandate) and `FR-DOC-IDS` (GFM-link migration of `// FR-…` comments).
 - **Tasks:** [REF:task:2026-06-adopt-salp-anchors | adopt-salp-anchors]
 - **Rationale:** The 2026-05-13/14/15 anchor-systems experiment (`flowai-experiments/anchor-systems/`, 240 trials, gpt-5.4-mini, six formats) measured SALP winning on every variant except `boundary`: mapping 0% → 80%, linting 20% → 100%, multi-hop 13% → 40% versus GFM-link baseline. The namespace is what produces the multi-hop gain (wikilinks lost 26.7% → 40% precisely because they lack namespace disambiguation between `mx-concept:oauth` and `mx-source:oauth`).
 - **Scope:** Atomic replacement, no dual-link transition. After the four-phase cutover lands, no `[FR-X](path.md#…)`, no `[[slug]]`, and no `// FR-X` comment survives in target surfaces (excludes `flowai-experiments/` snapshot and `acceptance-tests/runs/` historical traces).
 - **Out of scope:** `scripts/migrate-to-salp.ts` is a repository-only tool (no pack ships it), so the AGENTS.template does not reference it — a downstream project initialised pre-SALP runs it from a clone of this repository. Guarded by `scripts/check-agents-template_test.ts`.
 - **Acceptance verified by tests:** `scripts/lib/salp_test.ts` (parse, serialize, salp-short rejection, open-namespace acceptance, legacy-grammar detection); `scripts/check-salp_test.ts` (dead REF, duplicate ANC, open-namespace acceptance, legacy grammar, clean fixture, cross-file resolution); `scripts/migrate-to-salp_test.ts` (13 tests: GFM-FR conversion, SDS link, wikilink, dual-link, comment migration, idempotency, fail-fast, template-variable preservation); `scripts/check-fr-coverage_test.ts` (FR-DOC-ANCHORS has Acceptance field).
-- **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`, `plan-updates-srs-task-back-pointer` (rewritten checklists assert SALP row format); memex scenarios `save-new`, `save-update`, `ask-citations`, `ask-honest-gap`, `audit-clean`, `audit-defects` (SALP-rewritten fixtures).
+- **Acceptance verified by acceptance tests:** `plan-updates-index-on-new-fr`, `plan-updates-srs-task-back-pointer` (rewritten checklists assert SALP row format).
 - **Acceptance verified by command:** three grep guards return zero hits across the target surface (post-Phase-4): `! git grep -nE '\[\[[a-z0-9-]+(\|[^]]+)?\]\]' -- framework/ documents/ README.md scripts/ AGENTS.md ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '// FR-[A-Z]' -- scripts/ framework/ ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`; `! git grep -nE '\[FR-[A-Z][A-Z-]*\]\(' -- documents/ README.md AGENTS.md framework/ ':!flowai-experiments/' ':!acceptance-tests/runs/' ':!acceptance-tests/cache/'`.
 - **Status:** [ ]
 
 #### FR-DOC-ANCHORS.HOOK: Turn-End SALP Validation Hook [ANC:fr:doc-anchors.hook]
 
-- **Desc:** Framework hook `doc-anchors-validate` that, on turn-end (`Stop`), validates SALP anchors/refs across the user's repo and feeds dangling/duplicate findings back to the AGENT. The `reason` itself prescribes the fix method: the agent DELEGATES the mechanical fix to a subagent (Task / Agent / subagent tool) and then resumes its primary task — it does NOT fix inline and is NOT forced to stop — so mechanical clean-up never derails the main thread. Ships in the **opt-in `beta` pack** (plugin `flowai-beta`), NOT bundled into core — the turn-end mechanism is Claude-Code-only and beta-grade, so users adopt it deliberately. Self-contained `run.ts` (vendored pure parser; `jsr:` specifiers; no dependency on dev `scripts/`). Scan set comes from `git ls-files --cached --others --exclude-standard` in a git work tree (so `.gitignore`d paths are never scanned), falling back to a manual denylist walk (skip `.git`, `node_modules`, `dist`, `build`, `.{ide}`) outside a repo; both layers also drop `_test.ts` / fixtures / run-artifact surfaces (`isSkippedPath`). A consuming project narrows the scan two further ways, both additive to the built-ins: (1) committed `.salpignore` dot-files — `.gitignore`-style glob lists, each rooted at its own directory (patterns matched relative to it), deeper files overriding shallower, `!` re-including, `#`/blank lines skipped; this is the preferred mechanism because the exclusion lives in-repo next to the fixtures it silences; (2) the `FLOWAI_DOC_ANCHORS_SKIP` env var (comma-separated path substrings) for ad-hoc/non-committed skips — for repos whose fixture/example layout differs from flowai's own conventions (e.g. plural `fixtures/`, or an experiment's tree of intentionally-malformed/duplicate tokens). Reuses `stripNonReferenceContext` semantics so grammar examples in fenced/inline code are not parsed as real anchors.
+- **Desc:** Framework hook `doc-anchors-validate` that, on turn-end (`Stop`), validates SALP anchors/refs across the user's repo and feeds dangling/duplicate findings back to the AGENT. The `reason` itself prescribes the fix method: the agent DELEGATES the mechanical fix to a subagent (Task / Agent / subagent tool) and then resumes its primary task — it does NOT fix inline and is NOT forced to stop — so mechanical clean-up never derails the main thread. Ships in the `core` pack (plugin `flowai`), next to `chat-links-validate`: every flowai install gets it, and it stays silent in a repository that holds no SALP token. The turn-end mechanism is Claude-Code-only. Self-contained `run.ts` (vendored pure parser; `jsr:` specifiers; no dependency on dev `scripts/`). Scan set comes from `git ls-files --cached --others --exclude-standard` in a git work tree (so `.gitignore`d paths are never scanned), falling back to a manual denylist walk (skip `.git`, `node_modules`, `dist`, `build`, `.{ide}`) outside a repo; both layers also drop `_test.ts` / fixtures / run-artifact surfaces (`isSkippedPath`). A consuming project narrows the scan two further ways, both additive to the built-ins: (1) committed `.salpignore` dot-files — `.gitignore`-style glob lists, each rooted at its own directory (patterns matched relative to it), deeper files overriding shallower, `!` re-including, `#`/blank lines skipped; this is the preferred mechanism because the exclusion lives in-repo next to the fixtures it silences; (2) the `FLOWAI_DOC_ANCHORS_SKIP` env var (comma-separated path substrings) for ad-hoc/non-committed skips — for repos whose fixture/example layout differs from flowai's own conventions (e.g. plural `fixtures/`, or an experiment's tree of intentionally-malformed/duplicate tokens). Reuses `stripNonReferenceContext` semantics so grammar examples in fenced/inline code are not parsed as real anchors.
 - **Tasks:** [REF:task:2026-06-hook-findings-subagent-delegation | hook-findings-subagent-delegation]
 - **Scenario:** Agent edits docs across several files within a turn, leaving a `[REF:ns:id]` whose `[ANC:ns:id]` it never added. At turn-end the hook scans the settled tree, finds the dead-ref, and returns `decision: block` + `reason` listing it; the agent delegates the fix to a subagent (which adds the anchor or removes the ref) and resumes its primary task.
 - **Design:**
@@ -1792,7 +1723,7 @@ Rules:
   - Project-supplied skip folders: `FLOWAI_DOC_ANCHORS_SKIP` (comma-separated path substrings) is read via `readSkipEnv` and merged into `isSkippedPath`; production runs the hook under `deno run -A` so the env read is permitted (dev shebang grants `--allow-env=FLOWAI_DOC_ANCHORS_SKIP` explicitly).
   - Committed per-directory skips: `.salpignore` files (basename `SALP_IGNORE_FILE`) are discovered during `collectFiles` (from `git ls-files` in a work tree, from the manual walk otherwise), parsed by `parseSalpIgnore` into anchored/`**`/`?`/dir-only/negated glob patterns, and applied via `isIgnoredBySalpIgnore` (ordered shallow→deep so a nested `.salpignore` overrides its parent; last matching pattern wins within a file). Read under `deno run -A`; fail-open on unreadable files.
   - Cross-IDE support (empirically probed 2026-06, live headless CLIs): **Claude Code only.** Claude `Stop` block→reason continues the agent and `stop_hook_active` flips true on the re-triggered stop (anti-loop verified). Codex (0.135) does NOT emit a turn-end hook in `codex exec` (`SessionStart` fires, `Stop` never does; feature flag renamed `codex_hooks`→`hooks`). OpenCode (1.15) `session.idle` is observation-only (no block/continue). Cursor `cursor-agent` CLI executes NO `.cursor/hooks.json` hooks (project or user level) — hooks are a Cursor IDE-app feature, not the CLI. On non-Claude IDEs the hook is not active (no degraded fallback).
-- **Acceptance verified by tests:** `framework/beta/hooks/doc-anchors-validate/run_test.ts` (cross-file dead-ref, duplicate-anchor, settled-forward-ref-clean, code-span-ignored, no-tokens-silent, blocks-with-findings-reason, stop-hook-active-guard, collectFiles-respects-gitignore, isSkippedPath-honors-extra-substrings, readSkipEnv-parses-comma-list, collectFiles-respects-skip-env, salpignore-matches-gitignore-style-patterns, salpignore-deeper-file-overrides-shallower, collectFiles-respects-salpignore, ignores-salp-tokens-inside-template-literals); `scripts/check-salp_test.ts::hook-strips-non-reference-context-like-the-validator` (the hook strips `.md`/`.ts`/`.js` context exactly as `check-salp.ts` does); `scripts/build-plugins_test.ts::emits-stop-event-hooks-json` (Stop emission), `scripts/build-plugins_test.ts::beta-pack ships-doc-anchors-stop-hook` (pack placement).
+- **Acceptance verified by tests:** `framework/core/hooks/doc-anchors-validate/run_test.ts` (cross-file dead-ref, duplicate-anchor, settled-forward-ref-clean, code-span-ignored, no-tokens-silent, blocks-with-findings-reason, stop-hook-active-guard, collectFiles-respects-gitignore, isSkippedPath-honors-extra-substrings, readSkipEnv-parses-comma-list, collectFiles-respects-skip-env, salpignore-matches-gitignore-style-patterns, salpignore-deeper-file-overrides-shallower, collectFiles-respects-salpignore, ignores-salp-tokens-inside-template-literals); `scripts/check-salp_test.ts::hook-strips-non-reference-context-like-the-validator` (the hook strips `.md`/`.ts`/`.js` context exactly as `check-salp.ts` does); `scripts/build-plugins_test.ts::emits-stop-event-hooks-json` (Stop emission), `scripts/build-plugins_test.ts::core-pack ships-doc-anchors-stop-hook` (pack placement).
 - **Status:** [ ]
 
 ### FR-DOC-LINKS: Interconnectedness Principle for Documentation (Superseded) [ANC:fr:doc-links]
@@ -1906,14 +1837,6 @@ Rules:
   - Missing storage or unreadable task → exit 2 naming the path; no silent skip.
 - **Acceptance verified by acceptance tests:** `tasks-overview-basic`, `tasks-overview-single-file-roadmap`, `tasks-overview-reuses-existing-script`, `tasks-overview-trigger-pos-1`, `tasks-overview-trigger-adj-1`, `tasks-overview-trigger-false-1`.
 - **Status:** [ ]
-
-### FR-MODEL-SELECT: Task-Driven LLM Model Recommender (beta) [ANC:fr:model-select]
-
-- **Description:** Beta-pack skill `select-llm-model` recommends which LLM to use for a concrete task. Input: free-form task description. The skill derives **benchmark-category** weights (closed set: general, coding, math, agentic, instruction, long-context, diff-edit, web, computer-use, swe — documented in SKILL.md so the agent knows them) from the task, then **live-fetches** current standings through **two CLI tools with subcommands** (not bulk dumpers): `scripts/benchmarks.ts` (`scores --category <c> [--benchmark <b>] [--model] [--top]`, `model --name`) and `scripts/openrouter.ts` (`models`, `price`, `providers --model <slug>`, `speed`). A `scripts/catalog.ts` bridges each category→benchmark→(source, parser axis, URL); the tools reuse the pure per-source parsers (`parse-<source>.ts`) and `catalog_test.ts` proves every benchmark maps to an axis its parser actually emits. The canonical invocation is `curl <url> | deno run scripts/<tool>.ts <subcmd> … --stdin` — the `curl` stays the single mockable seam (IDE-neutral per FR-UNIVERSAL). The `curl`-pipe is the ONLY form the agent uses: Phase 0 does not probe `curl` (a `command -v`/`which` probe leaks a binary path the agent then misuses), and a blocked/failed `curl` is the fail-fast signal the agent must not route around (no absolute path, alternate binary, proxy, or `/tmp` download) — bypassing an unavailable fetch tool yields fabricated-looking results. A tool that cannot parse exits non-zero so the source becomes an explicit Gap, never a fabricated score. Sources (4 active + documented Gaps): **Artificial Analysis** (keyed API via `AA_API_KEY`; **absorbs** ~15 individual benchmarks — intelligence/mmlu-pro/GPQA/HLE/coding/LiveCodeBench/scicode/math/aime/aime-25/math-500/Terminal-Bench-hard/τ²-bench/ifbench/lcr — plus its own blended price + median speed, with correlated fields tagged a shared `group` so Phase 3 collapses them to one contribution), **OpenRouter** (public API; model-level input/output/blended $/Mtok + context, AND a **per-provider** breakdown via `/models/<slug>/endpoints` — input/output/cache-read price, uptime/reliability, context, quantization; latency/throughput are NOT emitted — both `null` in the documented API, with AA median tok/s kept as the `speed` proxy), **Aider Polyglot** (repo YAML; diff-edit, not in AA), **Steel.dev** (server-rendered per-benchmark agent tables; one adapter `parse-steel.ts` picks the axis from the page title — WebArena→web-agent, OSWorld→computer-use, SWE-bench Verified→swe-bench; agent-board scores are system/submission-attributed, SWE-bench lists bare models). Documented Gaps (no stable keyless endpoint → not scraped): LMArena Elo, ARC-AGI, LLM-Stats, BenchLM, AgentBench (Google Sheet), Epoch AI, Scale SEAL/Showdown, SWE-bench Pro. Phase 3 normalizes each benchmark to a within-set percentile, collapses a category's benchmarks to one contribution (avoids multi-counting broadly-smart models), then weighted-sums; price/speed stay post-rank filters/tie-breakers unless the task states a budget/latency (or an explicit value/$ ask). Phase 4 optionally enriches the top picks with the cheapest/most-reliable provider via `openrouter.ts providers`. Architecture: live-fetch, no bundled snapshot; tool + parser logic is unit-tested against inline fixtures (Code-TDD). Requires a `deno` runtime (absent → sources Gap, fail-fast). First skill in the opt-in `beta` pack → flips the pack from hook-only to skill-bearing (Codex manifest now emitted for `flowai-beta`).
-- **Tasks:** [select-llm-model-skill](tasks/2026/06/select-llm-model-skill.md), [select-llm-model-source-scripts](tasks/2026/06/select-llm-model-source-scripts.md), [select-llm-model-cli-tools](tasks/2026/06/select-llm-model-cli-tools.md)
-- **Scenario:** User asks "which model is best at editing code via diffs?" → skill detects `curl`+`deno`, derives the diff-edit weight, runs `curl … | deno run scripts/parse-aider.ts`, ranks models on the parsed rows with per-axis rationale + citations + fetch timestamp, lists source gaps (e.g. AA without `AA_API_KEY`). No fetch tool / parser exit≠0 / unset key → that source is a Gap; nothing fetchable → STOP + report, no ranking, no fabrication.
-- **Acceptance verified by acceptance tests:** `select-llm-model-recommends-for-coding-task`, `select-llm-model-cites-sources`, `select-llm-model-source-parse-failure-becomes-gap`, `select-llm-model-fails-fast-no-fetch`. Parser logic: `deno test framework/beta/skills/select-llm-model/scripts/`.
-- **Status:** [x]
 
 ### FR-WRITE-PRD: PRD Writer — `write-prd` [ANC:fr:write-prd]
 

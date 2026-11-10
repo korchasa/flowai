@@ -19,7 +19,7 @@ import {
   type Finding,
   stripNonReferenceContext,
 } from "./check-salp.ts";
-import { stripNonReferenceContext as hookStrip } from "../framework/beta/hooks/doc-anchors-validate/run.ts";
+import { stripNonReferenceContext as hookStrip } from "../framework/core/hooks/doc-anchors-validate/run.ts";
 
 async function withTempDir(fn: (dir: string) => Promise<void>): Promise<void> {
   const dir = await Deno.makeTempDir({ prefix: "salp-test-" });

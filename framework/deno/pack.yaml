@@ -1,4 +1,0 @@
-name: deno
-version: "1.0.0"
-description: Deno-specific skills (CLI, deploy, configure commands)
-scaffolds: {}

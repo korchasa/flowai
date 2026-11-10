@@ -791,17 +791,6 @@ Configure claude-opus-4-6 as the default.
   assertEquals(errors.length, 1);
 });
 
-Deno.test("validateIdeNeutrality: ai-ide-runner is exempt (intentional provider model IDs)", () => {
-  const body = `---
-name: ai-ide-runner
-description: bar
----
-
-Prefer the native provider: openai/gpt-5.4, anthropic/claude-sonnet-4.6.
-`;
-  assertEquals(validateIdeNeutrality("ai-ide-runner", body), []);
-});
-
 Deno.test("validateIdeNeutrality: frontmatter-only model tier is allowed", () => {
   // Abstract tier `smart` in frontmatter must NOT trigger. Body is clean.
   const body = `---

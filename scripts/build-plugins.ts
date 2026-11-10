@@ -39,13 +39,9 @@ import { parse as parseYaml, stringify as stringifyYaml } from "@std/yaml";
 
 export const DEFAULT_MARKETPLACE_NAME = "flowai-plugins";
 export const DEFAULT_PACKS = [
-  "beta",
   "core",
-  "deno",
   "devtools",
   "engineering",
-  "memex",
-  "typescript",
 ] as const;
 const DEFAULT_OWNER_NAME = "korchasa";
 const DEFAULT_REPO = "https://github.com/korchasa/flowai";
@@ -415,7 +411,7 @@ async function emitCodexPluginManifest(
     skills: "./skills/",
     interface: {
       // displayName MUST equal pluginName so Codex renders the same identifier
-      // a user installs (`flowai`, `flowai-deno`, …). Deriving from packName
+      // a user installs (`flowai`, `flowai-devtools`, …). Deriving from packName
       // produced `flowai core` → Codex UI rendered as `flowai-core`, hiding
       // the actual plugin id.
       displayName: opts.pluginName,
@@ -767,7 +763,7 @@ interface EmitHooksOpts {
  *   { hooks: { <EventName>: [{ matcher, hooks: [{ type: "command", command }] }] } }
  * The `command` field shells `deno run -A "${CLAUDE_PLUGIN_ROOT}/hooks/<name>/run.ts"`.
  *
- * Every pack with a `hooks/` directory goes through here: core, devtools, memex, beta.
+ * Every pack with a `hooks/` directory goes through here: core, devtools.
  */
 async function emitHooks(opts: EmitHooksOpts): Promise<boolean> {
   if (!(await exists(opts.sourceDir))) return false;

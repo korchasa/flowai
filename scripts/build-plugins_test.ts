@@ -82,7 +82,7 @@ Deno.test("codex-marketplace emits-codex-marketplace-for-all-packs", async () =>
   const out = await tempOut();
   try {
     await buildPlugins({
-      packs: ["typescript", "core", "deno"],
+      packs: ["engineering", "core", "devtools"],
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
@@ -99,7 +99,7 @@ Deno.test("codex-marketplace emits-codex-marketplace-for-all-packs", async () =>
     const plugins = mp.plugins as Array<Record<string, unknown>>;
     assertEquals(
       plugins.map((p) => p.name),
-      ["flowai", "flowai-deno", "flowai-typescript"],
+      ["flowai", "flowai-devtools", "flowai-engineering"],
     );
     assertEquals(
       plugins.map((
@@ -107,8 +107,8 @@ Deno.test("codex-marketplace emits-codex-marketplace-for-all-packs", async () =>
       ) => ((p.source as Record<string, unknown>).path as string)),
       [
         "./plugins/flowai",
-        "./plugins/flowai-deno",
-        "./plugins/flowai-typescript",
+        "./plugins/flowai-devtools",
+        "./plugins/flowai-engineering",
       ],
     );
     for (const plugin of plugins) {
@@ -139,14 +139,14 @@ Deno.test("codex-plugin-manifest displayName matches pluginName for every pack",
   const out = await tempOut();
   try {
     await buildPlugins({
-      packs: ["core", "deno", "engineering"],
+      packs: ["core", "devtools", "engineering"],
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
     for (
       const [packName, pluginName] of [
         ["core", "flowai"],
-        ["deno", "flowai-deno"],
+        ["devtools", "flowai-devtools"],
         ["engineering", "flowai-engineering"],
       ] as const
     ) {
@@ -242,105 +242,46 @@ Deno.test("core-pack ships-chat-links-stop-hook", async () => {
   }
 });
 
-// Locks the pack move: the doc-anchors-validate Stop hook ships in the opt-in
-// `beta` pack (plugin `flowai-beta`), NOT in core.
+// The doc-anchors-validate Stop hook ships in core (plugin `flowai`) next to
+// chat-links-validate; the opt-in `beta` pack that used to carry it is gone.
 // [REF:fr:doc-anchors.hook | FR-DOC-ANCHORS.HOOK]
-Deno.test("beta-pack ships-doc-anchors-stop-hook", async () => {
+Deno.test("core-pack ships-doc-anchors-stop-hook", async () => {
   const out = await tempOut();
   try {
     await buildPlugins({
-      packs: ["beta"],
+      packs: ["core"],
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
 
     const hooks = await readJson(
-      join(out, "plugins", "flowai-beta", "hooks", "hooks.json"),
+      join(out, "plugins", "flowai", "hooks", "hooks.json"),
     ) as {
       hooks: Record<
         string,
         Array<{ hooks: Array<{ command: string; timeout?: number }> }>
       >;
     };
-    assert(
-      Array.isArray(hooks.hooks.Stop),
-      "beta must emit a Stop hook",
+    const commands = (hooks.hooks.Stop ?? []).flatMap((entry) =>
+      entry.hooks.map((hook) => hook.command)
     );
-    assertStringIncludes(
-      hooks.hooks.Stop[0].hooks[0].command,
-      "hooks/doc-anchors-validate/run.ts",
+    assert(
+      commands.some((command) =>
+        command.includes("hooks/doc-anchors-validate/run.ts")
+      ),
+      `core must emit the doc-anchors Stop hook, got: ${commands.join(" | ")}`,
+    );
+    assert(
+      commands.some((command) =>
+        command.includes("hooks/chat-links-validate/run.ts")
+      ),
+      "the chat-links Stop hook must stay next to it",
     );
 
     const runCopied = await Deno.stat(
-      join(
-        out,
-        "plugins",
-        "flowai-beta",
-        "hooks",
-        "doc-anchors-validate",
-        "run.ts",
-      ),
+      join(out, "plugins", "flowai", "hooks", "doc-anchors-validate", "run.ts"),
     ).then(() => true).catch(() => false);
-    assert(runCopied, "beta plugin must copy the hook run.ts");
-
-    // beta ships BOTH the hook AND the select-llm-model skill, so the Claude
-    // manifest is present. (Codex emission is asserted in the dedicated test
-    // below — once the pack carries a skill it is no longer hook-only.)
-    const claudeManifest = await readJson(
-      join(
-        out,
-        "plugins",
-        "flowai-beta",
-        ".claude-plugin",
-        "plugin.json",
-      ),
-    ) as Record<string, unknown>;
-    assertEquals(claudeManifest.name, "flowai-beta");
-  } finally {
-    await Deno.remove(out, { recursive: true });
-  }
-});
-
-// implements [REF:fr:model-select | FR-MODEL-SELECT] — the first skill in the
-// opt-in `beta` pack flips it from hook-only (Claude-only) to skill-bearing, so
-// it now ALSO emits a Codex manifest/marketplace entry alongside the Stop hook.
-Deno.test("beta-pack ships select-llm-model skill", async () => {
-  const out = await tempOut();
-  try {
-    await buildPlugins({
-      packs: ["beta"],
-      frameworkDir: FRAMEWORK,
-      outDir: out,
-    });
-
-    // Skill copied into the Claude plugin.
-    const skillCopied = await Deno.stat(
-      join(
-        out,
-        "plugins",
-        "flowai-beta",
-        "skills",
-        "select-llm-model",
-        "SKILL.md",
-      ),
-    ).then(() => true).catch(() => false);
-    assert(skillCopied, "beta plugin must copy the select-llm-model SKILL.md");
-
-    // hasSkills now true → Codex manifest emitted (was absent when hook-only).
-    const codexManifest = await readJson(
-      join(out, "plugins", "flowai-beta", ".codex-plugin", "plugin.json"),
-    ) as Record<string, unknown>;
-    assertEquals(codexManifest.name, "flowai-beta");
-    assertEquals(codexManifest.skills, "./skills/");
-
-    // Codex marketplace now lists flowai-beta (skill-less packs are filtered).
-    const codexMarket = await readJson(
-      join(out, ".agents", "plugins", "marketplace.json"),
-    ) as { plugins: Array<{ name: string }> };
-    assert(
-      codexMarket.plugins.some((p) => p.name === "flowai-beta"),
-      "Codex marketplace must list flowai-beta once it ships a skill",
-    );
+    assert(runCopied, "core plugin must copy the hook run.ts");
   } finally {
     await Deno.remove(out, { recursive: true });
   }

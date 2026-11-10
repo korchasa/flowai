@@ -70,7 +70,7 @@ An **IDE slash command** is a flat `.md` file under `.{ide}/commands/` (e.g. `.c
 2. **SRS** (`documents/requirements.md`): "What" & "Why", plus the constitution (mission, failure modes, principles). Source of truth for requirements AND vision.
 3. **SDS** (`documents/design.md`): "How". Architecture and implementation. Depends on SRS.
 4. **Tasks** (`documents/tasks/<YYYY>/<MM>/<slug>.md`): Temporary plans/notes per task.
-5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs the cross-IDE clauses — FR-HOOK-RESOURCES, FR-DIST.MAPPING, FR-IDE-BRIDGE-WORKER.
+5. **IDE Differences** (`documents/ides-difference.md`): Reference. Cross-IDE capability comparison (primitives, hooks, agents, MCP). Informs the cross-IDE clauses — FR-HOOK-RESOURCES, FR-DIST.MAPPING.
 6. **`README.md`**: Public-facing overview. Derived from AGENTS.md + SRS + SDS. Installation, usage, pack/skill catalog, project structure. Keep in sync with framework state.
 7. **Investigations** (`documents/research/<slug>/`): Preserved record of an investigation that produced no accepted change — hypotheses, failed candidates, independent controls, retrospective. Keeps material a future session would otherwise re-measure. An investigation is not a task: its folder is self-contained, holds its own working record and evidence, and is not scanned by `check-task-format`. Do not leave a task file behind for it — when work that started as a task ends as an investigation, move the whole record into the folder and delete the task. The SRS clause the investigation informs links to the folder.
 
@@ -95,7 +95,7 @@ contradicts new code → update the section.
 - `scripts/acceptance-tests/lib/process_watchdog.ts` / `scripts/acceptance-tests/lib/system_health.ts` → [REF:fr:accept-guards | FR-ACCEPT-GUARDS], [REF:sds:3-4-2 | SDS §3.4.2 Resource Guards]
 - `scripts/check-*.ts` → SDS §5 Logic / validation rules; SRS where the rule is first defined
 - `scripts/task-*.ts` → [README §Development Setup](README.md#development-setup), AGENTS.md §Standard Interface
-- `documents/ides-difference.md` is READ-ONLY reference for the cross-IDE clauses (FR-HOOK-RESOURCES, FR-DIST.MAPPING, FR-IDE-BRIDGE-WORKER) — update only when IDE capabilities change.
+- `documents/ides-difference.md` is READ-ONLY reference for the cross-IDE clauses (FR-HOOK-RESOURCES, FR-DIST.MAPPING) — update only when IDE capabilities change.
 - Files whose changes NEVER require doc sync: `*_test.ts`, `**/acceptance-tests/*/mod.ts`, `**/acceptance-tests/*/fixture/**`, `.github/`, `.devcontainer/`, formatting-only edits, `deno.lock`.
 
 ## Documentation Rules

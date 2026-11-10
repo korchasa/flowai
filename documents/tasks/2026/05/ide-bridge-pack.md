@@ -1,10 +1,6 @@
 ---
 date: 2026-05-17
 status: done
-implements:
-  - FR-AI-IDE-RUNNER
-  - FR-IDE-BRIDGE-WORKER
-  - FR-IDE-BRIDGE-DELEGATE
 tags:
   - pack
   - agent

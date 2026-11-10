@@ -1,6 +1,6 @@
 ---
 name: skill-reads
-description: Count how often each flowai framework skill was actually loaded into Claude Code sessions, across both config roots (~/.claude and ~/.claude-work), over the last N days. Use when the user asks which flowai skills are really used or read, which are never loaded, or how skill usage splits between the accounts. Triggers on "skill reads", "чтения скилов", "какие скилы используются", "/skill-reads".
+description: Count how often each flowai framework skill was loaded into Claude Code sessions, across both config roots (~/.claude and ~/.claude-work), over the last N days. Use when the user asks which flowai skills are really used or read, or which are never loaded. Triggers on "skill reads", "чтения скилов", "/skill-reads".
 ---
 
 # flowai skill reads

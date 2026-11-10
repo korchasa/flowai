@@ -1,8 +1,0 @@
-name: typescript
-version: "1.0.0"
-description: TypeScript-specific setup skills (code style, strict mode)
-scaffolds:
-  setup-agent-code-style-deno:
-    - AGENTS.md
-  setup-agent-code-style-strict:
-    - AGENTS.md

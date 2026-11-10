@@ -1,18 +1,16 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: deploy (deploy to Deno Deploy cloud) —
-// production deploy is a different concern from a local devcontainer.
+// Adjacent skill: configure-deno-commands (the project's check, test and dev
+// tasks) — setting up task commands is a different concern from a devcontainer.
+// It lives in core, which the runner always mounts.
 export const SetupAiIdeDevcontainerTriggerAdj1 = new class
   extends AcceptanceTestScenario {
   id = "setup-ai-ide-devcontainer-trigger-adj-1";
-  name = "deno deploy production (adjacent)";
+  name = "deno task commands (adjacent)";
   skill = "setup-ai-ide-devcontainer";
-  // Mount the `deno` pack so the correct adjacent skill (`deploy`) is installed
-  // and the agent has a neighbour to defer to instead of over-triggering.
-  extraPacks = ["deno"];
   agentsTemplateVars = { PROJECT_NAME: "Sandbox" };
   userQuery =
-    "Help me deploy this app to Deno Deploy with separate Build, Dev, and Prod contexts.";
+    "Set up the standard check, test and dev commands in deno.json for this project, with the scripts they call.";
   checklist = [{
     id: "skill_not_invoked",
     description:
