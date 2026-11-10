@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.15.0](https://github.com/korchasa/flowai/compare/v0.14.45...v0.15.0) (2026-11-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **packs:** the flowai-engineering plugin drops eight skills and
+flowai-devtools drops three.
+
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+* **packs:** the flowai-beta, flowai-deno, flowai-memex and
+flowai-typescript plugins are no longer published.
+
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+
+### Features
+
+* **packs:** remove eleven skills the agent works without ([2ae9e3d](https://github.com/korchasa/flowai/commit/2ae9e3d06394326e27b77452c6379042d8507582))
+* **packs:** remove the beta, deno, memex and typescript packs ([70b7228](https://github.com/korchasa/flowai/commit/70b7228acc659c5b1f71f3d58af92cd44b3d5d58))
+
+
+### Chores
+
+* **dev:** count loads of flowai skills across both config roots ([b769b10](https://github.com/korchasa/flowai/commit/b769b105f17bbef2ba56bd225159924fc91bacc3))
+
 ### [0.14.45](https://github.com/korchasa/flowai/compare/v0.14.44...v0.14.45) (2026-11-10)
 
 
