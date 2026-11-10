@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.1](https://github.com/korchasa/flowai/compare/v0.15.0...v0.15.1) (2026-11-10)
+
+
+### Features
+
+* **swarm:** add the swarm pack for a manager and its child sessions ([344643c](https://github.com/korchasa/flowai/commit/344643c81f8f8ce4ed459aaaf85a731231a0c71e))
+
 ## [0.15.0](https://github.com/korchasa/flowai/compare/v0.14.45...v0.15.0) (2026-11-10)
 
 
