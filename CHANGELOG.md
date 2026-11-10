@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.14.45](https://github.com/korchasa/flowai/compare/v0.14.44...v0.14.45) (2026-11-10)
+
+
+### Features
+
+* **core:** add check-goals and finish-session skills ([4632b31](https://github.com/korchasa/flowai/commit/4632b31c7d22c16824b0f0223f017492bdabe1a4))
+
 ### [0.14.44](https://github.com/korchasa/flowai/compare/v0.14.43...v0.14.44) (2026-10-24)
 
 
