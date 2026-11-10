@@ -1,7 +1,7 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
 // False-use: surface vocabulary match ("research") but the user actually wants
-// to look up a single property listing — that is a browser-automation task.
+// to look up a single property listing — that is a job for a browser tool.
 export const DeepResearchTriggerFalse1 = new class
   extends AcceptanceTestScenario {
   id = "deep-research-trigger-false-1";

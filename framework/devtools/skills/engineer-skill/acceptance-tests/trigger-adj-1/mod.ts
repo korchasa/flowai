@@ -1,7 +1,7 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: engineer-command (user-invoked workflow, not an
-// agent-invocable skill).
+// Adjacent work: an IDE slash command (a user-invoked workflow file, not an
+// agent-invocable skill). No skill covers it; the agent answers directly.
 export const EngineerSkillTriggerAdj1 = new class
   extends AcceptanceTestScenario {
   id = "engineer-skill-trigger-adj-1";

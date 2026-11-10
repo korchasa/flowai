@@ -228,15 +228,7 @@ Procedural engineering knowledge (research, diagrams, writing, testing, etc.).
 - `diagnose-benchmark-failure` — diagnose a failed judged scenario from its run artifacts
 - `write-prd` — Product Requirements Documents
 - `write-dep` — Development Enhancement Proposals
-- `write-in-informational-style` — informational writing style
-- `browser-automation` — browser automation
-- `analyze-context` — token usage analysis
-- `engineer-ai-ide-plugin` — AI IDE plugin design and packaging
 - `engineer-plugin-marketplace` — AI IDE plugin marketplace design and validation
-- `engineer-plugin-mcp` — AI IDE plugin MCP servers and host wiring
-- `engineer-plugin-hooks` — AI IDE plugin hook adapters
-- `engineer-prompts-for-instant` — prompts for fast models
-- `engineer-prompts-for-reasoning` — prompts for reasoning models
 - `interactive-teaching-materials` — interactive HTML teaching materials
 
 **Agents:**
@@ -248,9 +240,6 @@ Skill and agent authoring tools.
 
 **Skills:**
 - `engineer-skill` — create/modify a skill
-- `engineer-command` — create/modify an IDE slash command (one Markdown file in `.cursor/commands/`, `.claude/commands/` or `.opencode/commands/`)
-- `engineer-rule` — create/modify a rule
-- `engineer-hook` — create/modify a hook
 - `engineer-subagent` — create/modify a subagent
 - `write-agent-benchmarks` — agent acceptance tests
 

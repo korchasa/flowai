@@ -10,9 +10,8 @@ marketplace for AI IDE plugins. Focus on marketplace-level distribution:
 catalog roots, per-host payloads, release sync, install flows, local dogfood,
 cache refresh, trust, and validation.
 
-For a single plugin package, prefer `engineer-ai-ide-plugin`. For one MCP server
-or hook adapter, prefer the focused skills listed in
-`references/related-skills.md`.
+This skill is for a marketplace of plugins. For one skill or one subagent,
+prefer the authoring skills listed in `references/related-skills.md`.
 
 ## Evidence First
 

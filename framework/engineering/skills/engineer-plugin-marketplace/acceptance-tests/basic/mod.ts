@@ -12,7 +12,7 @@ export const EngineerPluginMarketplaceBasic = new class
   };
 
   userQuery =
-    "Create requirements for a Claude Code and Codex plugin marketplace. Include constraints, anti-patterns, validation gates, local dogfood flow, and links to related skills for plugin packaging, MCP, hooks, and skill authoring.";
+    "Create requirements for a Claude Code and Codex plugin marketplace. Include constraints, anti-patterns, validation gates, local dogfood flow, and links to related skills for skill authoring, subagent authoring, and acceptance scenarios.";
 
   checklist = [
     {
@@ -36,7 +36,7 @@ export const EngineerPluginMarketplaceBasic = new class
     {
       id: "related_skills_links",
       description:
-        "Did the agent include related skill references for `engineer-ai-ide-plugin`, `engineer-plugin-mcp`, `engineer-plugin-hooks`, and `engineer-skill` or equivalent skill-authoring guidance?",
+        "Did the agent include related skill references for `engineer-skill`, `engineer-subagent` and `write-agent-benchmarks`, or equivalent guidance on authoring skills, subagents and acceptance scenarios?",
       critical: true,
     },
     {
