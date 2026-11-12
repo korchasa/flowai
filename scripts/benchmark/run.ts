@@ -49,7 +49,7 @@ import { copyFrameworkToIdeDir } from "@acceptance-tests/utils.ts";
 import { prepareBenchCodexHome } from "@acceptance-tests/acp/auth.ts";
 import type { InstanceData } from "./dataset.ts";
 import { prepareSandbox } from "./prepare_sandbox.ts";
-import { installProjectDeps } from "./install_env.ts";
+import { agentPythonEnv, installProjectDeps, VENV_DIR } from "./install_env.ts";
 import { externalSandboxRoot, linkIntoRunDir } from "./sandbox_root.ts";
 import { installAgentsMd, installDocStubs } from "./agents_md.ts";
 import {
@@ -527,24 +527,25 @@ export async function runArm(
   // `virtualizarr-979` produced no patch). The recipes were written for the
   // graders' Debian images, so a step that cannot run here (apt-get, a missing
   // toolchain) stops the recipe and is REPORTED — a partial environment beats a
-  // bare one, and the gap is on the record instead of hidden.
-  const install = data.installConfig
-    ? await installProjectDeps(sandboxDir, data.installConfig, {
+  // bare one, and the gap is on the record instead of hidden. A row with no
+  // recipe still gets an EMPTY venv, and a venv that cannot be built throws:
+  // either way the agent's `pip` would otherwise be the host's own
+  // (FR-BENCH-SWE.POOL2, `agentPythonEnv`).
+  const install = await installProjectDeps(
+    sandboxDir,
+    data.installConfig ?? null,
+    {
       pipCacheDir: join(cacheDir, "_pip-cache"),
-    })
-    : null;
-  if (install) {
-    await Deno.writeTextFile(join(instDir, "install.log"), install.log);
-    console.log(
-      install.ok
-        ? `  env: installed (${install.steps.length} step(s), ${install.pythonBin})`
-        : `  env: PARTIAL — stopped at: ${
-          install.failedStep ?? "(venv creation)"
-        }`,
-    );
-  } else {
-    console.log(`  env: none (dataset row carries no install recipe)`);
-  }
+    },
+  );
+  await Deno.writeTextFile(join(instDir, "install.log"), install.log);
+  console.log(
+    !data.installConfig
+      ? `  env: empty venv (dataset row carries no install recipe)`
+      : install.ok
+      ? `  env: installed (${install.steps.length} step(s), ${install.pythonBin})`
+      : `  env: PARTIAL — stopped at: ${install.failedStep}`,
+  );
 
   // IDE under test (FR-BENCH-SWE.IDE). The config dir comes from the ACP
   // registry (`.claude` / `.codex` / …), never a literal, so installing the
@@ -611,13 +612,13 @@ export async function runArm(
     // The sandbox venv goes FIRST on the agent's PATH, so `python` and `pytest`
     // resolve to the installed project without the agent being told anything —
     // an instruction it could ignore, whereas PATH it cannot. Same in both arms.
-    ...(install
-      ? {
-        PATH: `${install.venvBin}:${
-          baseEnv.PATH ?? Deno.env.get("PATH") ?? ""
-        }`,
-      }
-      : {}),
+    // The same env confines every pip install to that venv, so the agent can
+    // never write into the host's own Python again.
+    ...(await agentPythonEnv(
+      join(sandboxDir, VENV_DIR),
+      benchHome,
+      baseEnv.PATH ?? Deno.env.get("PATH") ?? "",
+    )),
   };
 
   // implements [FR-BENCH-SWE.SYMMETRY](../../documents/requirements.md#fr-bench-swe.symmetry-one-human-emulator-for-both-arms-equal-human-availability-ancfrbench-swe-symmetry):

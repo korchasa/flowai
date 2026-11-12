@@ -26,6 +26,7 @@
  */
 
 import { join } from "@std/path";
+import { writeLoginShellPathPrepend } from "@acceptance-tests/acp/mock_bin.ts";
 
 /** Sandbox-relative venv location. Already excluded from the captured diff
  * (`DIFF_EXCLUDES` in `predictions.ts`), so it cannot leak into a prediction. */
@@ -179,7 +180,82 @@ async function excludeVenvLocally(sandboxDir: string): Promise<void> {
 }
 
 /**
+ * pip switches inherited from the operator's shell that would let a pip
+ * outside the venv write anyway. Booleans are pinned off by value; pip parses
+ * "0" as false (verified against pip 26.2).
+ */
+const PIP_SWITCHES_OFF = ["PIP_BREAK_SYSTEM_PACKAGES", "PIP_USER"] as const;
+
+/**
+ * pip install-location overrides. No value neutralises them — an empty string
+ * is still a location to pip — and the agent's env cannot unset what the
+ * launcher inherits, so their presence stops the run.
+ */
+const PIP_LOCATION_VARS = ["PIP_TARGET", "PIP_PREFIX", "PIP_ROOT"] as const;
+
+/**
+ * Confine every Python install the AGENT makes to the sandbox venv
+ * (FR-BENCH-SWE.POOL2).
+ *
+ * Before the venv existed (until 2026-07-30) bench agents reached the host's
+ * Homebrew pip, hit PEP 668's "externally-managed-environment", and retried
+ * with `--break-system-packages`: ~970 packages (4 GB, editable installs
+ * pointing into deleted sandboxes) landed in `/opt/homebrew/lib/python3.*`,
+ * blocked `brew link` for weeks and overwrote `/opt/homebrew/bin/mcp`. A venv
+ * first on PATH alone does not close that: macOS `path_helper` reorders PATH
+ * in login shells and puts the venv behind `/usr/bin`, and an interpreter of
+ * another minor version (`python3.12 -m pip`) is never in the venv at all.
+ *
+ * So the env carries three layers: the venv first on PATH, repeated in the
+ * isolated HOME's login profile so `path_helper` cannot demote it;
+ * `PIP_REQUIRE_VIRTUALENV=1`, which makes any pip running outside a venv
+ * refuse to install, `--break-system-packages` and `--user` included; and the
+ * operator's pip escape switches pinned off. It is env, so pip obeys it by
+ * choice — `uv pip install --system` and an explicit `--no-require-virtualenv`
+ * still get through (user decision 2026-11-13: env layer only).
+ *
+ * `inherited` is the env the launcher passes down (Deno.Command merges, it
+ * never clears).
+ */
+export async function agentPythonEnv(
+  venvDir: string,
+  homeDir: string,
+  parentPath: string,
+  inherited: Record<string, string> = Deno.env.toObject(),
+): Promise<Record<string, string>> {
+  const env = venvOnlyEnv(venvDir, parentPath, inherited);
+  await writeLoginShellPathPrepend(homeDir, join(venvDir, "bin"));
+  return env;
+}
+
+/** The env overrides that confine pip to `venvDir`; see {@link agentPythonEnv}. */
+function venvOnlyEnv(
+  venvDir: string,
+  parentPath: string,
+  inherited: Record<string, string>,
+): Record<string, string> {
+  const set = PIP_LOCATION_VARS.filter((k) => (inherited[k] ?? "") !== "");
+  if (set.length > 0) {
+    throw new Error(
+      `${set.join(", ")} set in the bench's environment would redirect pip ` +
+        `installs out of the sandbox venv; unset ${set.join(" ")} and rerun`,
+    );
+  }
+  const env: Record<string, string> = {
+    PATH: `${join(venvDir, "bin")}:${parentPath}`,
+    VIRTUAL_ENV: venvDir,
+    PIP_REQUIRE_VIRTUALENV: "1",
+  };
+  for (const k of PIP_SWITCHES_OFF) env[k] = "0";
+  return env;
+}
+
+/**
  * Build `<sandbox>/.venv` and replay the recipe inside it.
+ *
+ * `cfg` null (the row carries no recipe) still builds an EMPTY venv: without
+ * one, `pip` on the agent's PATH is the host's own. A venv that cannot be built
+ * is thrown for the same reason — a failing recipe STEP is reported instead.
  *
  * `pipCacheDir` is shared across instances so the wheels are downloaded once
  * per campaign rather than once per session — the same recipe runs 45 times
@@ -187,16 +263,18 @@ async function excludeVenvLocally(sandboxDir: string): Promise<void> {
  */
 export async function installProjectDeps(
   sandboxDir: string,
-  cfg: InstallConfig,
+  cfg: InstallConfig | null,
   { pipCacheDir }: { pipCacheDir?: string } = {},
 ): Promise<InstallOutcome> {
   const venv = join(sandboxDir, VENV_DIR);
   const venvBin = join(venv, "bin");
-  const pythonBin = await resolvePython(cfg.python);
+  const pythonBin = await resolvePython(cfg?.python ?? "");
   const lines: string[] = [];
   const steps: StepResult[] = [];
 
-  const { steps: recipe, unsupported } = buildInstallSteps(cfg);
+  const { steps: recipe, unsupported } = cfg
+    ? buildInstallSteps(cfg)
+    : { steps: [], unsupported: [] };
   for (const u of unsupported) {
     lines.push(`[install] UNSUPPORTED (venv cannot honour a conda spec): ${u}`);
   }
@@ -211,20 +289,20 @@ export async function installProjectDeps(
   );
   lines.push(venvRes.output);
   if (venvRes.code !== 0) {
-    return {
-      ok: false,
-      venvBin,
-      pythonBin,
-      steps: [{ cmd: `${pythonBin} -m venv ${VENV_DIR}`, code: venvRes.code }],
-      failedStep: `${pythonBin} -m venv ${VENV_DIR}`,
-      log: lines.join("\n"),
-    };
+    throw new Error(
+      `cannot build the sandbox venv (${pythonBin} -m venv ${VENV_DIR}, ` +
+        `exit ${venvRes.code}) — the agent would get the host's pip:\n` +
+        venvRes.output,
+    );
   }
 
+  // The recipe is dataset text: confine it exactly like the agent, so a
+  // `python3.12 -m pip install` line cannot reach the host either. Its HOME is
+  // the operator's, so no login profile is written for it.
+  const inherited = Deno.env.toObject();
   const env: Record<string, string> = {
-    ...Deno.env.toObject(),
-    PATH: `${venvBin}:${Deno.env.get("PATH") ?? ""}`,
-    VIRTUAL_ENV: venv,
+    ...inherited,
+    ...venvOnlyEnv(venv, inherited.PATH ?? "", inherited),
     PIP_DISABLE_PIP_VERSION_CHECK: "1",
     ...(pipCacheDir ? { PIP_CACHE_DIR: pipCacheDir } : {}),
   };

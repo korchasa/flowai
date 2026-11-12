@@ -1,6 +1,12 @@
-import { assert, assertEquals } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStringIncludes,
+} from "@std/assert";
 import { join } from "@std/path";
 import {
+  agentPythonEnv,
   buildInstallSteps,
   type InstallConfig,
   installProjectDeps,
@@ -155,5 +161,201 @@ Deno.test("installProjectDeps: a failing step stops the recipe and is reported, 
     );
   } finally {
     await Deno.remove(sandbox, { recursive: true });
+  }
+});
+
+Deno.test("installProjectDeps: a row without a recipe still gets an empty venv", async () => {
+  // No recipe used to mean no venv, and then `pip` on the agent's PATH was the
+  // host's own — the channel that put ~970 packages into Homebrew's Python.
+  const sandbox = await Deno.makeTempDir({ prefix: "install-env-test-" });
+  try {
+    const outcome = await installProjectDeps(sandbox, null);
+    assert(outcome.ok, `venv failed: ${outcome.log.slice(0, 400)}`);
+    assertEquals(outcome.steps, []);
+    assertEquals(outcome.venvBin, join(sandbox, VENV_DIR, "bin"));
+    assert(
+      (await Deno.stat(join(outcome.venvBin, "pip"))).isFile,
+      "the venv must carry its own pip",
+    );
+  } finally {
+    await Deno.remove(sandbox, { recursive: true });
+  }
+});
+
+Deno.test("installProjectDeps: a venv that cannot be built is thrown, not reported", async () => {
+  // A missing venv leaves the host's pip first on the agent's PATH, so the
+  // session must not start at all.
+  const sandbox = await Deno.makeTempDir({ prefix: "install-env-test-" });
+  try {
+    await Deno.writeTextFile(join(sandbox, VENV_DIR), "not a directory");
+    await assertRejects(
+      () => installProjectDeps(sandbox, ANYIO),
+      Error,
+      "venv",
+    );
+  } finally {
+    await Deno.remove(sandbox, { recursive: true });
+  }
+});
+
+Deno.test("agentPythonEnv: venv first, pip confined to it, escape switches neutralised", async () => {
+  const home = await Deno.makeTempDir({ prefix: "install-env-home-" });
+  try {
+    const env = await agentPythonEnv("/sb/.venv", home, "/usr/bin:/bin", {
+      PIP_BREAK_SYSTEM_PACKAGES: "1",
+      PIP_USER: "1",
+    });
+    assertEquals(env, {
+      PATH: "/sb/.venv/bin:/usr/bin:/bin",
+      VIRTUAL_ENV: "/sb/.venv",
+      PIP_REQUIRE_VIRTUALENV: "1",
+      PIP_BREAK_SYSTEM_PACKAGES: "0",
+      PIP_USER: "0",
+    });
+    // A pip install path inherited from the operator's shell cannot be
+    // neutralised by a value, so it stops the run instead.
+    await assertRejects(
+      () =>
+        agentPythonEnv("/sb/.venv", home, "/usr/bin", {
+          PIP_TARGET: "/opt/homebrew/lib/python3.13/site-packages",
+        }),
+      Error,
+      "PIP_TARGET",
+    );
+  } finally {
+    await Deno.remove(home, { recursive: true });
+  }
+});
+
+/** Every site-packages directory of the host interpreter, outside any venv. */
+async function hostSitePackages(): Promise<{ python: string; dirs: string[] }> {
+  const python = new TextDecoder().decode(
+    (await new Deno.Command("bash", {
+      args: ["-c", "command -v python3"],
+      stdout: "piped",
+    }).output()).stdout,
+  ).trim();
+  const { stdout } = await new Deno.Command(python, {
+    args: ["-c", "import json,site; print(json.dumps(site.getsitepackages()))"],
+    stdout: "piped",
+  }).output();
+  return { python, dirs: JSON.parse(new TextDecoder().decode(stdout)) };
+}
+
+/** name -> mtime of every top-level entry, so an added OR rewritten package shows. */
+async function snapshotDirs(dirs: string[]): Promise<Map<string, number>> {
+  const snap = new Map<string, number>();
+  for (const dir of dirs) {
+    try {
+      for await (const e of Deno.readDir(dir)) {
+        const st = await Deno.lstat(join(dir, e.name));
+        snap.set(join(dir, e.name), st.mtime?.getTime() ?? 0);
+      }
+    } catch (e) {
+      if (!(e instanceof Deno.errors.NotFound)) throw e;
+    }
+  }
+  return snap;
+}
+
+/** A minimal pure-Python wheel, so the install needs no network and no build. */
+async function writeProbeWheel(dir: string, python: string): Promise<string> {
+  const wheel = join(dir, "flowai_bench_probe-0.0.1-py3-none-any.whl");
+  const script = `
+import sys, zipfile
+info = "flowai_bench_probe-0.0.1.dist-info"
+files = {
+  "flowai_bench_probe/__init__.py": "MARK = 1\\n",
+  info + "/METADATA": "Metadata-Version: 2.1\\nName: flowai-bench-probe\\nVersion: 0.0.1\\n",
+  info + "/WHEEL": "Wheel-Version: 1.0\\nGenerator: test\\nRoot-Is-Purelib: true\\nTag: py3-none-any\\n",
+}
+files[info + "/RECORD"] = "".join(p + ",,\\n" for p in files) + info + "/RECORD,,\\n"
+with zipfile.ZipFile(sys.argv[1], "w") as z:
+  for p, body in files.items():
+    z.writestr(p, body)
+`;
+  const out = await new Deno.Command(python, { args: ["-c", script, wheel] })
+    .output();
+  assertEquals(out.code, 0, new TextDecoder().decode(out.stderr));
+  return wheel;
+}
+
+/**
+ * The guarantee itself, end to end against the real host interpreter: inside
+ * the agent's environment every pip route ends in the sandbox venv or is
+ * refused, and the host's site-packages is byte-for-byte untouched. Covers the
+ * routes the bench agents actually took — a bare `pip`, `python3 -m pip` from
+ * a login shell (where `path_helper` used to push the venv behind /usr/bin),
+ * and the host interpreter by absolute path with `--break-system-packages`.
+ */
+Deno.test("agentPythonEnv: a pip install inside the sandbox never reaches the host site-packages", async () => {
+  const root = await Deno.makeTempDir({ prefix: "install-env-iso-" });
+  try {
+    const sandbox = join(root, "sandbox");
+    const home = join(root, "home");
+    await Deno.mkdir(sandbox);
+    await Deno.mkdir(home);
+    const host = await hostSitePackages();
+    const install = await installProjectDeps(sandbox, null);
+    const wheel = await writeProbeWheel(root, host.python);
+    const env = {
+      ...Deno.env.toObject(),
+      HOME: home,
+      ...(await agentPythonEnv(
+        join(sandbox, VENV_DIR),
+        home,
+        Deno.env.get("PATH") ?? "",
+      )),
+    };
+    const sh = async (cmd: string) => {
+      const o = await new Deno.Command("bash", {
+        args: ["-lc", cmd],
+        cwd: sandbox,
+        env,
+        stdout: "piped",
+        stderr: "piped",
+      }).output();
+      const dec = new TextDecoder();
+      return { code: o.code, out: dec.decode(o.stdout) + dec.decode(o.stderr) };
+    };
+    const before = await snapshotDirs(host.dirs);
+
+    // A login shell resolves the interpreter to the venv, not the host.
+    const which = await sh("command -v python3");
+    assertEquals(
+      await Deno.realPath(which.out.trim()),
+      await Deno.realPath(join(install.venvBin, "python3")),
+      "a login shell must still put the sandbox venv first",
+    );
+
+    const viaPip = await sh(`pip install --no-index --quiet ${wheel}`);
+    assertEquals(viaPip.code, 0, viaPip.out);
+    const viaModule = await sh(
+      `python3 -m pip install --no-index --quiet --force-reinstall ${wheel}`,
+    );
+    assertEquals(viaModule.code, 0, viaModule.out);
+    const landed = await sh(
+      `python3 -c "import flowai_bench_probe, sys; print(flowai_bench_probe.__file__)"`,
+    );
+    assert(
+      landed.out.includes(join(VENV_DIR, "lib")),
+      `the probe must land in the sandbox venv: ${landed.out}`,
+    );
+
+    // The host interpreter by absolute path, with the PEP 668 override an
+    // agent reaches for after "externally-managed-environment".
+    const escape = await sh(
+      `${host.python} -m pip install --break-system-packages --no-index ${wheel}`,
+    );
+    assert(escape.code !== 0, `host pip must refuse: ${escape.out}`);
+    assertStringIncludes(escape.out, "virtualenv (required)");
+
+    assertEquals(
+      await snapshotDirs(host.dirs),
+      before,
+      "the host site-packages must not change",
+    );
+  } finally {
+    await Deno.remove(root, { recursive: true });
   }
 });
