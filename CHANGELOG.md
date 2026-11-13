@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.2](https://github.com/korchasa/flowai/compare/v0.15.1...v0.15.2) (2026-11-13)
+
+
+### Bug Fixes
+
+* **bench:** confine sandbox pip installs to the sandbox venv ([c718198](https://github.com/korchasa/flowai/commit/c7181981c67b97baaa6c874c312fdedfc74e2685))
+
+
+### Agent Changes
+
+* record three lessons from shipping the swarm pack ([0fed2fb](https://github.com/korchasa/flowai/commit/0fed2fb184e7a488eb21afa557bc32083c80bbf1))
+
 ### [0.15.1](https://github.com/korchasa/flowai/compare/v0.15.0...v0.15.1) (2026-11-10)
 
 
