@@ -42,6 +42,7 @@ export const DEFAULT_PACKS = [
   "core",
   "devtools",
   "engineering",
+  "swarm",
 ] as const;
 const DEFAULT_OWNER_NAME = "korchasa";
 const DEFAULT_REPO = "https://github.com/korchasa/flowai";

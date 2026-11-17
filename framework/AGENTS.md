@@ -21,6 +21,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 - `core` — Base workflows (commit, plan, review, push, ship, init, etc.) + core agents.
 - `devtools` — Skill/agent authoring tools.
 - `engineering` — Procedural engineering knowledge (deep-research, write-prd, etc.).
+- `swarm` — One manager session and its child sessions on task files (four skills: start-child, children-status, close-swarm, session-status). Session control exists only in the Claude desktop app; elsewhere each skill does its file-side work and says what it could not do.
 
 ## Key Decisions
 
@@ -36,7 +37,7 @@ Source of truth for end-user packs (skills, agents) distributed via [flowai](htt
 
 ## Composite Skill Authoring (FR-SKILL-COMPOSE)
 
-Composite and atomic SKILL.md files are **gitignored build artefacts** — never hand-edit, and don't expect to see them in git. Source of truth: `framework/atoms/<name>.md` atom files + `framework/composites/<name>.md` composite wrappers + the `framework/composites.yaml` manifest, all consumed by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts). Every consumer regenerates first: `deno task check`, `deno task acceptance-tests`, `deno task build-plugins`, and the CI `Build framework tarball` step each run `--write` as a prerequisite before reading SKILL.md, so the rendered output is always current and there is no tracked rendered copy that can drift. Manual regeneration: `deno run -A scripts/generate-skill-composites.ts --write` (idempotent). The 9 generated paths are explicitly listed in `.gitignore`; the generator's `checkGitignoreParity` fails the build if the list goes out of sync with `--list-targets`.
+Composite and atomic SKILL.md files are **gitignored build artefacts** — never hand-edit, and don't expect to see them in git. Source of truth: `framework/atoms/<name>.md` atom files + `framework/composites/<name>.md` composite wrappers + the `framework/composites.yaml` manifest, all consumed by [scripts/generate-skill-composites.ts](../scripts/generate-skill-composites.ts). Every consumer regenerates first: `deno task check`, `deno task acceptance-tests`, `deno task build-plugins`, and the CI `Build framework tarball` step each run `--write` as a prerequisite before reading SKILL.md, so the rendered output is always current and there is no tracked rendered copy that can drift. Manual regeneration: `deno run -A scripts/generate-skill-composites.ts --write` (idempotent). The 12 generated paths are explicitly listed in `.gitignore`; the generator's `checkGitignoreParity` fails the build if the list goes out of sync with `--list-targets`.
 
 The rules below describe **what the generator emits** and what its canon validator enforces. They are written for the maintainer who edits `framework/atoms/*.md` or `framework/composites/*.md`, not for the agent that runs the SKILL.md.
 

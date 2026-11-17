@@ -15,6 +15,7 @@ import { parse as parseYaml } from "@std/yaml";
 import {
   buildPlugins,
   DEFAULT_MARKETPLACE_NAME,
+  DEFAULT_PACKS,
   resolveModelTier,
   transformAgentFrontmatter,
   transformSkillFile,
@@ -282,6 +283,40 @@ Deno.test("core-pack ships-doc-anchors-stop-hook", async () => {
       join(out, "plugins", "flowai", "hooks", "doc-anchors-validate", "run.ts"),
     ).then(() => true).catch(() => false);
     assert(runCopied, "core plugin must copy the hook run.ts");
+  } finally {
+    await Deno.remove(out, { recursive: true });
+  }
+});
+
+// implements [REF:fr:swarm | FR-SWARM] — the `swarm` pack ships through the
+// default pack list as its own plugin with the four swarm skills.
+Deno.test("swarm-pack ships its four skills as flowai-swarm", async () => {
+  assert(
+    (DEFAULT_PACKS as readonly string[]).includes("swarm"),
+    "DEFAULT_PACKS must list the swarm pack",
+  );
+  const out = await tempOut();
+  try {
+    await buildPlugins({
+      packs: ["swarm"],
+      frameworkDir: FRAMEWORK,
+      outDir: out,
+    });
+    const skillsDir = join(out, "plugins", "flowai-swarm", "skills");
+    const shipped: string[] = [];
+    for await (const entry of Deno.readDir(skillsDir)) {
+      if (entry.isDirectory) shipped.push(entry.name);
+    }
+    assertEquals(shipped.sort(), [
+      "children-status",
+      "close-swarm",
+      "session-status",
+      "start-child",
+    ]);
+    const claudeManifest = await readJson(
+      join(out, "plugins", "flowai-swarm", ".claude-plugin", "plugin.json"),
+    ) as Record<string, unknown>;
+    assertEquals(claudeManifest.name, "flowai-swarm");
   } finally {
     await Deno.remove(out, { recursive: true });
   }

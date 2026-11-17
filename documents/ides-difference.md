@@ -349,6 +349,18 @@ Verified empirically against `codex-cli 0.118.0` (2026-04-11).
 
 ---
 
+### 2.14 Session Control (sibling sessions)
+
+Whether an agent can start, list, message, stop or archive ANOTHER session of the same host from inside its own session. This is what the `swarm` pack (FR-SWARM) depends on; in-session subagents (§2.8) are a different mechanism — a subagent has no session of its own to list, message or archive.
+
+- **Claude desktop app (Code tab):** yes. The app gives the agent tools to start a session (fresh or forked context, own worktree or the shared checkout), list sessions with their state, read a session's events, send it a message, stop it and archive it. A session that ends a turn sends its starter a note quoting the beginning of its last message.
+- **Claude Code CLI:** no. One session per process; no tool reaches another session.
+- **Cursor:** no agent-side tool.
+- **OpenCode:** no agent-side tool.
+- **OpenAI Codex (`codex` CLI):** no agent-side tool.
+
+Consequence for the framework: a swarm skill decides from its own tool list, names a host tool only as an example, and on a host without session control does its file-side work and says in one line what it could not do. The acceptance sandbox drives a CLI, so only that branch is covered by scenarios; the live branch is accepted by hand.
+
 ## 3. Cursor → Claude Code Conversion
 
 ### 3.1 Project Rules

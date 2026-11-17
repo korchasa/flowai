@@ -2,6 +2,80 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.15.2](https://github.com/korchasa/flowai/compare/v0.15.1...v0.15.2) (2026-11-13)
+
+
+### Bug Fixes
+
+* **bench:** confine sandbox pip installs to the sandbox venv ([c718198](https://github.com/korchasa/flowai/commit/c7181981c67b97baaa6c874c312fdedfc74e2685))
+
+
+### Agent Changes
+
+* record three lessons from shipping the swarm pack ([0fed2fb](https://github.com/korchasa/flowai/commit/0fed2fb184e7a488eb21afa557bc32083c80bbf1))
+
+### [0.15.1](https://github.com/korchasa/flowai/compare/v0.15.0...v0.15.1) (2026-11-10)
+
+
+### Features
+
+* **swarm:** add the swarm pack for a manager and its child sessions ([344643c](https://github.com/korchasa/flowai/commit/344643c81f8f8ce4ed459aaaf85a731231a0c71e))
+
+## [0.15.0](https://github.com/korchasa/flowai/compare/v0.14.45...v0.15.0) (2026-11-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **packs:** the flowai-engineering plugin drops eight skills and
+flowai-devtools drops three.
+
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+* **packs:** the flowai-beta, flowai-deno, flowai-memex and
+flowai-typescript plugins are no longer published.
+
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+
+### Features
+
+* **packs:** remove eleven skills the agent works without ([2ae9e3d](https://github.com/korchasa/flowai/commit/2ae9e3d06394326e27b77452c6379042d8507582))
+* **packs:** remove the beta, deno, memex and typescript packs ([70b7228](https://github.com/korchasa/flowai/commit/70b7228acc659c5b1f71f3d58af92cd44b3d5d58))
+
+
+### Chores
+
+* **dev:** count loads of flowai skills across both config roots ([b769b10](https://github.com/korchasa/flowai/commit/b769b105f17bbef2ba56bd225159924fc91bacc3))
+
+### [0.14.45](https://github.com/korchasa/flowai/compare/v0.14.44...v0.14.45) (2026-11-10)
+
+
+### Features
+
+* **core:** add check-goals and finish-session skills ([4632b31](https://github.com/korchasa/flowai/commit/4632b31c7d22c16824b0f0223f017492bdabe1a4))
+
+### [0.14.44](https://github.com/korchasa/flowai/compare/v0.14.43...v0.14.44) (2026-10-24)
+
+
+### Features
+
+* **benchmark:** run the SWE-rebench A/B on Claude Code sonnet-5.5 ([de37818](https://github.com/korchasa/flowai/commit/de37818ab990d83d872deaf079b4d502d97ec4d5))
+
+
+### Bug Fixes
+
+* **implement,review:** never stash the work to look at the parent revision ([0084f73](https://github.com/korchasa/flowai/commit/0084f73ca293578cb5adbfc4496975fd13f29c6a))
+* **implement,review:** take one background record of the failing tests ([bd9439a](https://github.com/korchasa/flowai/commit/bd9439a3e1d21b6b238f10cd0b3ae0635a5bf92f))
+* **review:** run only the covering test modules on the parent revision ([ac04b96](https://github.com/korchasa/flowai/commit/ac04b964b4a643a6cc630f2f4b286fd8a916a698))
+
+
+### Documentation
+
+* **tasks:** close the rule-6 item of chat-rules-claude-reds ([8c91cc8](https://github.com/korchasa/flowai/commit/8c91cc88b59cacb26ba6c9ea6c4518d5e085e1f1))
+
+
+### Continuous Integration
+
+* bump the pinned Deno version to 2.9.8 ([f6a8b84](https://github.com/korchasa/flowai/commit/f6a8b8484430115cc78f6d5bd2da94ef3de626ca))
+
 ### [0.14.43](https://github.com/korchasa/flowai/compare/v0.14.42...v0.14.43) (2026-10-18)
 
 

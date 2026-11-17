@@ -1,0 +1,3 @@
+name: swarm
+version: "1.0.0"
+description: One manager session and its child sessions on task files (start-child, children-status, close-swarm, session-status). Starting, messaging and archiving children need a host with session control.
