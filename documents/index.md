@@ -69,7 +69,7 @@ Agent-maintained navigation aggregator across all linkable artifacts (FR / SDS /
 - [REF:fr:packs.skill-invariant | FR-PACKS.SKILL-INVARIANT] — scripts/check-skills.ts rejects any framework/<pack>/skills/*/SKILL.md that carries disable-model-invocation in source. — [ ]
 - [REF:fr:packs.struct | FR-PACKS.STRUCT] — pack.yaml format: name (string), version (semver), description (string). — [ ]
 - [REF:fr:atom-check-goals | FR-ATOM-CHECK-GOALS] — read-only check of the session's goals against evidence gathered now, one verdict line — [x]
-- [REF:fr:finish-session | FR-FINISH-SESSION] — Session finish composite: goal check → commit → push → archive (3 gates) — [x]
+- [REF:fr:finish-session | FR-FINISH-SESSION] — Session finish composite: goal check → commit → push → reflect → archive (4 gates) — [x]
 - [REF:fr:swarm | FR-SWARM] — Swarm pack: one manager session and its child sessions on task files — [ ]
 - [REF:fr:swarm.ledger | FR-SWARM.LEDGER] — the manager's task file is the swarm ledger; a child's state lives in its own task file — [x]
 - [REF:fr:swarm.start | FR-SWARM.START] — start-child: child task file, ledger row, commit, brief, session start — [x]

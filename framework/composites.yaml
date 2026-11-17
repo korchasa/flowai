@@ -143,5 +143,9 @@ composites:
         atom: push
         params:
           TERMINATION: HAND_OFF_TO_NEXT
+      - title: Reflect Phase
+        atom: reflect-gate
+        params:
+          TERMINATION: HAND_OFF_TO_NEXT
       - title: Archive Phase
         inline: true

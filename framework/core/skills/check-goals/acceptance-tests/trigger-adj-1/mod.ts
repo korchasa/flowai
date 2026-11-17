@@ -1,6 +1,6 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: reflect — the user wants a critique of HOW the agent worked, not a check of WHAT was delivered.
+// Adjacent work: the reflect phase of the closing workflows — the user wants a critique of HOW the agent worked, not a check of WHAT was delivered.
 export const CheckGoalsTriggerAdj1 = new class extends AcceptanceTestScenario {
   id = "check-goals-trigger-adj-1";
   name = "session process retrospective (adjacent)";

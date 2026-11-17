@@ -1,6 +1,6 @@
 ---
 date: 2026-11-10
-status: in progress
+status: done
 implements:
   - FR-ATOM-REFLECT-GATE
   - FR-FINISH-SESSION
@@ -108,10 +108,11 @@ reflect phase; standalone `reflect-gate` 0; `reflect` 2; `reflect-by-history` 0;
   - Evidence: `deno task acceptance-tests -f review-and-commit-reflect-skips-declined-edit`
   - Result 2026-11-10: PASSED 1/1 before and after — a regression guard: the agent honoured a log it found in the
     repository even without the rule.
-- [ ] FR-FINISH-SESSION: `finish-session` runs the reflect phase after the Push Phase and before the Archive Phase,
+- [x] FR-FINISH-SESSION: `finish-session` runs the reflect phase after the Push Phase and before the Archive Phase,
   and the archive still happens after the push question is answered.
   - Benchmark: `finish-session-reflect-before-archive` (new)
   - Evidence: `deno task acceptance-tests -f finish-session-reflect-before-archive`
+  - Result 2026-11-17, claude `claude-sonnet-5-5`: 2 of 6 items passed before the phase was added (no `agent:` commit), 6 of 6 after.
 - [x] FR-REFLECT: the standalone `reflect` skill and the standalone `reflect-gate` target are gone from the build,
   and no shipped file routes the reader to either.
   - Test: `scripts/generate-skill-composites_test.ts` (an atom without a standalone target renders into composites)
