@@ -1,7 +1,8 @@
 import { AcceptanceTestScenario } from "@acceptance-tests/types.ts";
 
-// Adjacent skill: reflect (current-session self-review, not a
-// historical multi-session pattern audit).
+// Adjacent request: a self-review of the current session, not a
+// historical multi-session pattern audit. No skill owns it since the
+// standalone `reflect` skill was removed on 2026-11-10.
 export const ReflectByHistoryTriggerAdj1 = new class
   extends AcceptanceTestScenario {
   id = "reflect-by-history-trigger-adj-1";

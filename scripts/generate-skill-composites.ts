@@ -24,8 +24,11 @@ export const MANIFEST_PATH = "framework/composites.yaml";
 export interface AtomEntry {
   /** Source atom path under framework/atoms/. */
   source: string;
-  /** Target `SKILL.md` path. */
-  target: string;
+  /**
+   * Target `SKILL.md` path of the standalone skill. Omitted for an atom that
+   * only composites consume: it is validated but no standalone skill is written.
+   */
+  target?: string;
   /** Default values for the atom's `{{PARAM}}` placeholders. */
   default_params?: Record<string, string>;
 }
@@ -155,7 +158,8 @@ export async function renderAll(manifest: Manifest): Promise<RenderedTarget[]> {
   const out: RenderedTarget[] = [];
   // Stable iteration order: sort atoms then composites by id.
   for (const id of Object.keys(manifest.atoms).sort()) {
-    out.push(await renderAtomTarget(id, manifest.atoms[id]));
+    const rendered = await renderAtomTarget(id, manifest.atoms[id]);
+    if (manifest.atoms[id].target) out.push(rendered);
   }
   for (const id of Object.keys(manifest.composites).sort()) {
     out.push(await renderCompositeTarget(id, manifest));
@@ -371,12 +375,12 @@ export async function renderAtomTarget(
     overrides,
     entry.source,
   );
-  validateAtomCanon(id, renderedBody, entry.target);
+  validateAtomCanon(id, renderedBody, entry.target ?? entry.source);
   const marker =
     `<!-- GENERATED FROM ${entry.source} via scripts/generate-skill-composites.ts — DO NOT EDIT BY HAND -->`;
   const body =
     `---\n${parsed.frontmatterYaml}\n---\n\n${marker}\n\n${renderedBody.trimEnd()}\n`;
-  return { target: entry.target, sources: [entry.source], body };
+  return { target: entry.target ?? "", sources: [entry.source], body };
 }
 
 /** Atom canon: exactly one `<step_by_step>` block, ≤ ATOM_MAX_LINES lines. */
@@ -665,7 +669,8 @@ export async function listTargets(): Promise<string[]> {
   const manifest = await loadManifest();
   const out: string[] = [];
   for (const id of Object.keys(manifest.atoms).sort()) {
-    out.push(manifest.atoms[id].target);
+    const target = manifest.atoms[id].target;
+    if (target) out.push(target);
   }
   for (const id of Object.keys(manifest.composites).sort()) {
     out.push(manifest.composites[id].target);

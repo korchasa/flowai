@@ -319,7 +319,7 @@ Deno.test("renderAtomTarget: drift detection on edited target", async () => {
   const m = await loadManifest();
   const entry = m.atoms["plan"];
   const r = await renderAtomTarget("plan", entry);
-  const onDisk = await Deno.readTextFile(entry.target);
+  const onDisk = await Deno.readTextFile(entry.target!);
   assertEquals(r.body, onDisk);
 });
 
@@ -406,4 +406,21 @@ Deno.test("checkGitignoreParity: reports a missing target", async () => {
     "framework/core/skills/nonexistent/SKILL.md",
   ]);
   assertEquals(diff?.extra, []);
+});
+
+Deno.test("renderAll: an atom without a target yields no standalone skill", async () => {
+  // implements [REF:fr:skill-compose | FR-SKILL-COMPOSE]
+  // An atom that only composites consume declares no `target:`. Its canon is
+  // still validated, and nothing is written for it.
+  const manifest: Manifest = {
+    schema_version: 1,
+    atoms: {
+      "reflect-gate": {
+        source: "framework/atoms/reflect-gate.md",
+        default_params: { TERMINATION: "TOTAL_STOP" },
+      },
+    },
+    composites: {},
+  };
+  assertEquals(await renderAll(manifest), []);
 });

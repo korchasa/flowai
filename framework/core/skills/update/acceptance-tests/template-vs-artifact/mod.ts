@@ -45,7 +45,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
         message: "Initial sync (baseline)",
         files: [
           "<configDir>/assets/AGENTS.template.md",
-          "<configDir>/skills/reflect/SKILL.md",
+          "<configDir>/skills/push/SKILL.md",
           "<configDir>/skills/review/SKILL.md",
           "<configDir>/skills/commit/SKILL.md",
         ],
@@ -53,7 +53,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
     ],
     modified: [
       "<configDir>/assets/AGENTS.template.md",
-      "<configDir>/skills/reflect/SKILL.md",
+      "<configDir>/skills/push/SKILL.md",
       "<configDir>/skills/review/SKILL.md",
       "<configDir>/skills/commit/SKILL.md",
     ],
@@ -113,7 +113,7 @@ export const FlowUpdateTemplateVsArtifactBench = new class
 
     // 2. Create additional formatting-only noise in other skills
     const noisySkills = [
-      "reflect",
+      "push",
       "review",
       "commit",
     ];

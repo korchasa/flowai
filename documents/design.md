@@ -44,18 +44,18 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 - atom `implement`: `framework/atoms/implement.md` → `framework/core/skills/implement/SKILL.md` (used by 2 composites)
 - atom `plan`: `framework/atoms/plan.md` → `framework/core/skills/plan/SKILL.md` (used by 1 composite)
 - atom `push`: `framework/atoms/push.md` → `framework/core/skills/push/SKILL.md` (used by 3 composites)
-- atom `reflect-gate`: `framework/atoms/reflect-gate.md` → `framework/core/skills/reflect-gate/SKILL.md` (used by 4 composites)
+- atom `reflect-gate`: `framework/atoms/reflect-gate.md` → no standalone skill, the manifest entry has no `target:` (used by 4 composites)
 - atom `review`: `framework/atoms/review.md` → `framework/core/skills/review/SKILL.md` (used by 4 composites)
 - composite `review-and-commit`: `framework/composites/review-and-commit.md` → `framework/core/skills/review-and-commit/SKILL.md` (atoms: review, commit, reflect-gate)
 - composite `review-commit-push`: `framework/composites/review-commit-push.md` → `framework/core/skills/review-commit-push/SKILL.md` (atoms: review, commit, push, reflect-gate)
 - composite `ship`: `framework/composites/ship.md` → `framework/core/skills/ship/SKILL.md` (atoms: plan, implement, review, commit, push, reflect-gate)
 - composite `ship-task`: `framework/composites/ship-task.md` → `framework/core/skills/ship-task/SKILL.md` (atoms: implement, review, commit, push, reflect-gate)
 
-#### Skills by pack (32)
+#### Skills by pack (30)
 
 There is one primitive kind: every workflow is an agent-invocable skill under `framework/<pack>/skills/` (FR-PACKS.AGENT-COMMIT).
 
-**core (22):**
+**core (20):**
 
 - `adapt` — standalone
 - `commit` — generated from atom `commit`
@@ -67,9 +67,7 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 - `maintenance` — standalone
 - `plan` — generated from atom `plan`
 - `push` — generated from atom `push`
-- `reflect` — standalone
 - `reflect-by-history` — standalone
-- `reflect-gate` — generated from atom `reflect-gate`
 - `review` — generated from atom `review`
 - `review-and-commit` — generated from composite `review-and-commit`
 - `review-commit-push` — generated from composite `review-commit-push`
@@ -104,9 +102,9 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 
 #### Summary
 
-- Skills: 32 (6 atom-generated and 4 composite-generated, all in `core`; 22 standalone across 3 packs).
+- Skills: 30 (5 atom-generated and 4 composite-generated, all in `core`; 21 standalone across 3 packs).
 - Agents: 12 (all standalone — 11 in `core`, 1 in `engineering`).
-- Gitignored generated paths: 10 (6 atom targets + 4 composite targets).
+- Gitignored generated paths: 9 (5 atom targets + 4 composite targets).
 
 ### 3.1 Dev Resources (`.claude/skills/`, `.claude/agents/`) [ANC:sds:3-1]
 
@@ -611,7 +609,7 @@ graph TD
 - **FR rationale (FR-DOCS.RATIONALE):** the FR block in `documents/AGENTS.md` and in `framework/core/assets/SRS.template.md` carries `- **Rationale:**` after `**Desc:**`, and `init` step 9 names it among the per-FR fields. `AGENTS.template.md` declares `Rationale-as-gate` next to `Acceptance-as-gate` and repeats it in the Plan and Review lifecycle lines. The gate lives in `framework/atoms/review.md` step 4a as check 5, and the composites that inline step 4a (`review-and-commit`, `review-commit-push`, `ship`, `ship-task`) inherit it on regeneration. Two conditions keep it from blocking work it was not meant for: it fires only when the project's AGENTS.md declares the rule, so a project on an older template is not blocked after a plugin update; and only on FR sections the diff adds or modifies, so a fix that cites an old FR does not force a backfill. No check script enforces the field: `check-fr-coverage.ts` is outside `deno task check`, and a deterministic check over this SRS would fail on the 127 FRs written before the rule.
 - **Index maintenance (FR-DOC-INDEX):** `plan` writes/updates `documents/index.md` rows under `## FR` (`- [<FR-ID>](requirements.md#anchor) — <summary> — <status>`). Anchor falls back to `<fr-id>-tbd` when the SRS section does not yet exist; develop/commit fixes the anchor on FR introduction. The legacy `## ADR` section is removed; FR-inline `**Tasks:**` carries the navigation load.
 - **Missing requirements document (FR-DOC-NO-SRS):** a resolved `SRS` role whose file does not exist is a degradation, not a blocker, in all three phases. `plan` rule 8 forbids an FR-ID whose text is recorded nowhere: the agent asks the user where the requirement lives or records it in an existing document such as the README, and with no record it writes `implements: []` and FR-less DoD tuples (no index row follows, since step 5b iterates `implements:`); `review` step 4a skips the FR Coverage Audit with the Degradation Notes line `FR coverage gate not applicable — <SRS path> does not exist`; `commit` rule 6 reports `Documentation sync: SRS → <path> is missing — not created`. The template's Lifecycle Plan and Review lines carry the same exception. A user-named FR still goes into `implements:`, so `plan-updates-index-on-new-fr` keeps registering its row.
-- **Decision rescue (FR-DOC-RESCUE):** `reflect` Step 2b "Surface Decisions for Task Capture" scans the source for decision passages (≥2 weighed alternatives + explicit reasoning) and recommends `/plan` on its `**Recommended action:**` line. Reflect remains read-only — never writes a task file, never edits SRS/SDS, never creates an ADR. The legacy `documents/adr/` directory is phased out.
+- **Decision rescue (FR-DOC-RESCUE):** the `reflect-gate` atom lists the session's decisions (≥2 weighed alternatives + a reason), looks for each in the task file and the requirement and design documents, and appends an unrecorded one to the session's task file inside its `agent:` commit. With no task file it only reports. There is no ADR primitive.
 - **Health audit (FR-DOC-LINT):** `maintenance` adds Category 9 "Documentation Health" — broken GFM cross-links, stale `[x]` FRs (acceptance reference missing), orphan FRs (`[x]` in SRS, no source-code link), SRS↔SDS contradictions, `documents/index.md` drift. DISTINCT from Category 5 Consistency (doc-vs-code drift) and Category 6 Documentation Coverage (jsdoc per symbol) — this group covers doc-vs-doc integrity.
 - **Severity scoring (FR-MAINT-SEVERITY):** every finding the audit emits carries one of four literal English tiers `[Critical] | [High] | [Medium] | [Low]` placed immediately after the bracketed number (`- [N] [Severity] <site>: <problem>. (Fix: <fix>)`). Tier choice follows the per-category rubric in `framework/core/skills/maintenance/references/severity-rubric.md` and the anti-inflation tie-breaker "when in doubt, pick the lower one". The Verify Findings gate (Step 12) requires every surviving finding to quote a rubric anchor; `[verified false]` drop lines carry no tag. The Resolution Phase summary lists per-severity counters alongside per-category counters and the "how to proceed" prompt accepts severity tokens (`critical`, `high`, `medium`, `low`) and plus-separated compounds (`critical+high`) as a filter on the per-finding loop. Critical share ≤ 35 % of total findings under the rubric.
 - **Parallel scan delegation (FR-MAINT-SCAN):** the Scan Phase fans its 16 categories out to 5 specialized SELF-CONTAINED read-only subagents — one per thematic bucket: W1 `maintenance-scan-hygiene`, W2 `maintenance-scan-dependencies`, W3 `maintenance-scan-contracts`, W4 `maintenance-scan-docs`, W5 `maintenance-scan-coverage` — whose `(Cats …)` description clauses partition categories 1–16 exactly once. Each agent embeds its full per-category check detail in its body (single source) and depends on no skill file and no spawn payload; the former `scan-buckets.md` / `architectural-categories.md` detail files are deleted. NO inline fallback: an unavailable/failing agent is retried once, then the bucket is reported loudly as `Not scanned: W<n> (<categories>) — <reason>` after the summary's closing total — coverage never shrinks silently. Workers return raw leads (no severity, read-only at the tool layer via `disallowedTools: Write, Edit`); the Verify gate, severity calibration, and the Resolution loop run parent-only over the consolidated union — never per worker. The SKILL.md Scan Phase carries only an orchestration step + Cat→bucket→agent index, with no inline check detail. Deterministic gate: `scripts/maintenance_scan_buckets_test.ts` (partition across agent descriptions + per-agent read-only confinement + self-containment + removal of legacy template and detail files + SKILL.md decoupling); an LLM agent benchmark was rejected because the harness lets the model substitute a generic `Explore` subagent for the named one.

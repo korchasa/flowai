@@ -31,7 +31,6 @@ atoms:
       TERMINATION: TOTAL_STOP
   reflect-gate:
     source: framework/atoms/reflect-gate.md
-    target: framework/core/skills/reflect-gate/SKILL.md
     default_params:
       TERMINATION: TOTAL_STOP
 composites:

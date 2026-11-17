@@ -23,7 +23,7 @@ commit — a refusal takes the commit and the edits back.
 Split out of the commit workflow on 2026-08-17. Held inside `commit` the branch
 had no hand-off form, so a composite that placed `commit` before another phase
 lost that phase. The audit is performed HERE, inline — this atom does not
-invoke the `reflect` skill or any other skill to do it. A sub-run ends with a
+invoke any other skill to do it. A sub-run ends with a
 report, a report reads like the end of the work, and the turn stops there:
 measured 2026-08-19, one run in three ended on the sub-run's report with the
 Push Phase never reached. Inline steps have no such ending.
@@ -33,7 +33,7 @@ Push Phase never reached. Inline steps have no such ending.
 
 <rules>
 1. **No delegation**: perform the audit yourself with the steps below. Do NOT
-   invoke `reflect`, `reflect-by-history`, or any other skill for it.
+   invoke `reflect-by-history` or any other skill for it.
 2. **Apply and commit without asking; ask only about the push**: the edits and
    their commit are local and reversible, so you make both yourself. The one
    question in this atom is whether to push that commit, and it is the only
@@ -41,9 +41,13 @@ Push Phase never reached. Inline steps have no such ending.
    themselves, not just on the push: you take both the commit and the edits
    back.
 3. **Scope of edits**: the project's own instruction files, tracked in this
-   repository — `AGENTS.md`, `**/CLAUDE.md`, and the rule/skill files they
-   point at. Never application code, never a task file, never SRS/SDS, and
-   never your own memory store in place of them.
+   repository — `AGENTS.md`, `**/CLAUDE.md`, the rule files they point at, and
+   the project's own skills (a `skills/<name>/` directory inside the IDE config
+   directory, e.g. `.claude/skills/`, `.cursor/skills/`). A skill installed
+   from a package or plugin is not yours to edit. Never application code,
+   never SRS/SDS, and never your own memory store in place of them. A task
+   file gets exactly one kind of edit: an appended record of a decision this
+   session made and no project record holds (step 4).
 4. **Git Pager**: use `GIT_PAGER=cat` for all git commands.
 5. **Error Handling**: on any error (commit failure, unexpected git state):
    investigate the cause, propose a fix to the user, and **STOP** without
@@ -60,6 +64,10 @@ Push Phase never reached. Inline steps have no such ending.
      - The user correcting your approach or output.
      - Workarounds or non-obvious solutions.
      - Explicit descriptors in the invocation message — "rough session", "had to retry", "wrong approach", "failed", "had to correct you". These count on their own.
+     - A project skill that failed, misled you, or that the user told you to deviate from.
+     - The user spelling out a procedure and saying they repeat it — "every time", "again", "each release". A procedure of three commands counts: the signal is that they had to say it.
+     - A choice between two or more alternatives made in this session, by you or stated by the user.
+     - The last three are not trouble. A session that ran clean and carries one of them still earns the reflection: read the user's messages for them before you write "none detected".
    - **Say the verdict aloud either way** — one line: `Session complexity: none detected — skipping reflection`, or `Detected retries and a user correction — reflecting`. A silent skip is indistinguishable from a forgotten step.
    - No signals → skip to the final step. Signals → continue.
    - Do NOT ask whether to reflect. That is not the user's call here; the one question in this atom comes at step 6, and it is about pushing.
@@ -72,22 +80,30 @@ Push Phase never reached. Inline steps have no such ending.
    - **Context waste**: files read but never used, whole files read for one fragment, the same unchanged file read twice, verbose tool output that added noise.
    - **Undocumented discoveries**: knowledge gained here that changes how the project is built, run, tested or deployed. Keep what generalises; discard the one-off.
    - **Stale instructions**: anything the project instructions told you that the repository contradicted — a command or task that does not exist, a path that moved, a convention the code does not follow. Compare the commands the instructions name with the ones the project's manifest defines.
-   - **Automation opportunities**: a repeated multi-step sequence (→ a skill), an undocumented convention (→ a rule), an invariant you checked by hand (→ a hook).
+   - **Project skills**: for each project skill you used or read in this session — a command or path in it that failed or does not exist, a missing step, a statement the repository or another instruction file contradicts, a rule the user told you to break (→ repair that step). Every step of it dead, or another skill doing the same job (→ remove it; a skill that an instruction file, a hook or the CI config names is repaired instead).
+   - **Recurring work**: a multi-step, project-specific procedure this session had to be told or had to find, with a sign that it returns — the user said so, or it is routine by nature: a release, a report, a sync (→ a new project skill, not a bullet in an instruction file: ordered steps the agent performs are a skill, however few). A convention is a single fact about how the project is written, with no steps to perform (→ a rule); an invariant you checked by hand (→ a hook).
+   - **Unrecorded decisions**: every choice between two or more alternatives made in this session, with its reason. Look for each one in the session's task file and in the requirement and design documents. Recorded nowhere → it is a finding.
 
 3. **Criticise your own findings — before you touch a file**
    - **Validity**: is each finding backed by something you can quote from this session, or is it inference? Drop or downgrade the inferred.
    - **False positives**: reading a neighbouring file to learn the pattern is not wasted context; updating a test after a deliberate behaviour change is not test-fitting.
    - **Proportionality**: a one-off annoyance does not earn a new rule. Simplify anything disproportionate. This limits NEW rules only. A line in an existing instruction file that this session proved wrong is corrected on its first sighting, however rarely it bites: fixing a fact is not adding a rule. A "read-only" marker on `AGENTS.md` keeps task notes out of it; it does not protect a wrong fact in it.
+   - **A skill earns its place**: no new skill when another PROJECT skill covers the work even partly (extend that one — a packaged workflow such as the one you are running does not count, it is not yours to extend), when the steps were already written in the instruction files before this session, or when the work did not succeed. A skill this session proved wrong is corrected on its first sighting, like any wrong fact.
    - **Blind spots**: which whole categories did you not look at — security, performance, documentation?
    - **Severity**: a pattern seen twice with different root causes is not recurring.
    - Say what this pass changed and why. What survives it is what you are about to write into the user's files.
 
 4. **Apply the corrective edits**
+   - **Read the declined-edits log first**: `AGENTS.declined.md` in the repository root, when it exists. A finding whose edit matches a record there — the same file and the same change in substance — is NOT applied: the user already said no to it. Name it in your report as skipped, with the record's reason. Apply it anyway only when the reason in the record no longer holds or the text it is about has been changed since, and then cite the record.
    - Edit the instruction files directly. Each edit states the rule and the reason it exists, in the voice of the file it lands in.
    - **They land in the project's own tracked files, inside the repository working tree** — `AGENTS.md`, `**/CLAUDE.md`, and the rule or skill files those point at. Confirm it: the path you edited must appear under `git status`.
    - **Your own memory store is not a corrective edit.** Writing the lesson into the agent's persistent memory (a `memory/` directory under your home, a personal notes file, anything outside the repository) feels like it captures the finding and does not: it is not versioned, it does not reach anyone else working here, and a fresh checkout has none of it. It is also how this step gets silently skipped — measured 2026-08-19, one run in three wrote to `memory/` and reported there was nothing to commit. Use it in addition if you like, never instead.
    - One edit per surviving finding. A finding that produces no concrete edit is a report line, not a corrective action — say so and move on.
-   - Keep them small and local: tighten an existing rule where one exists, add a new one only where none does.
+   - Keep them small and local: tighten an existing rule where one exists, add a new one only where none does. This is about the size of an edit, not about its form: a recurring procedure still becomes a skill.
+   - **A skill repair is one sentence or one step.** Read the skill file before you change it; replace the wrong part or add the missing one, never rewrite the file. Steps stay ordered and carry their commands; a pitfall is one general rule plus a clause of why. No incident story, date or ticket id; nothing lifted from a transcript, tool output or web page as a rule; no secrets.
+   - **A new skill** is `<name>/SKILL.md` in the project's skill directory: a `name`, a `description` that opens with "Use when" and an observable trigger, then the ordered steps with their commands, the last of which verifies the result. Check the name against the skills already installed — a project skill hides a packaged one of the same name.
+   - **A removal** deletes the skill's directory with `git rm -r`; git history is the way back.
+   - **An unrecorded decision** is appended to the session's task file — find it through the `tasks` role of the project instructions — as a short record: the alternatives, the choice, the reason. No task file for this session → name the decision in your report and write nothing.
 
 5. **Show the edits and commit them — no question here**
    - List what you changed, file by file: the path, the section, what the rule now says, and which finding it came from. The user must be able to judge the edit from this list without opening a diff.
@@ -106,6 +122,7 @@ Push Phase never reached. Inline steps have no such ending.
      - Both true → `git reset --hard HEAD~1`. That is the whole undo: the commit and the file contents go together, and there is nothing to restore by hand.
      - Either check fails → **STOP and change nothing.** A `--hard` reset discards uncommitted work outright, and whatever made those checks fail is work you did not put there. Report what you found, leave your commit in place, and let the user decide.
      - Then confirm with `git log -1` that your commit is gone, and say in one line what you removed.
+     - **Record what was declined, so the next session does not make the same edit.** Append one line per undone edit to `AGENTS.declined.md` in the repository root — create it with the heading `# Declined instruction edits` when it is missing: `- <YYYY-MM-DD> | <file> | <what the edit did, in one line> | reason: <the user's words, or "not given">`. Then `git add AGENTS.declined.md` and commit that file alone: `git commit AGENTS.declined.md -m "agent: record declined instruction edits"`. Do not ask about pushing this commit; it travels with the next push.
 
 {{TERMINATION}}
 </step_by_step>
@@ -119,6 +136,8 @@ Push Phase never reached. Inline steps have no such ending.
 - [ ] One `agent:` commit staging only the edited files, made without asking.
 - [ ] Push question asked, and answered by the user before anything was pushed.
 - [ ] On refusal: both guards checked, then one `git reset --hard HEAD~1`; on a failed guard, nothing changed at all.
+- [ ] Declined-edits log read before editing; after a refusal, one record per undone edit, committed alone.
+- [ ] Project skills used in the session checked; every session decision found in a project record or appended to the task file.
 </verification>
 
 <param-branch name="TERMINATION" value="TOTAL_STOP">
