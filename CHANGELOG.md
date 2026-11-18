@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.16.0](https://github.com/korchasa/flowai/compare/v0.15.2...v0.16.0) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** the standalone `reflect` and `reflect-gate` skills
+are removed. The atom stays and has no target in the manifest; the
+generator accepts an atom without a standalone skill.
+
+Co-Authored-By: Claude Fable 5.2 <noreply@anthropic.com>
+
+### Features
+
+* **core:** let the reflect phase maintain project skills ([22753bf](https://github.com/korchasa/flowai/commit/22753bfb22099730b70b268341998e708a4f6bfb))
+* **core:** run the reflect phase in finish-session ([3ce98d7](https://github.com/korchasa/flowai/commit/3ce98d71423ae5fcc77b9683140445bbea5bd7e5))
+
+
+### Bug Fixes
+
+* **bench:** confine sandbox pip installs to the sandbox venv ([72d74b6](https://github.com/korchasa/flowai/commit/72d74b6d899b9afd4ce3a2c4fc9b5dbf0425c932))
+
 ### [0.15.2](https://github.com/korchasa/flowai/compare/v0.15.1...v0.15.2) (2026-11-13)
 
 
