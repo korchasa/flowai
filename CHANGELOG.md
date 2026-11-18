@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.1](https://github.com/korchasa/flowai/compare/v0.16.0...v0.16.1) (2026-11-18)
+
+
+### Features
+
+* **core:** require a Rationale for design decisions in the SDS template ([6be0ea0](https://github.com/korchasa/flowai/commit/6be0ea05ed6c332cc48caab1dca29ca9532610f6))
+
 ## [0.16.0](https://github.com/korchasa/flowai/compare/v0.15.2...v0.16.0) (2026-11-17)
 
 
