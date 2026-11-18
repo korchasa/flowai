@@ -85,14 +85,18 @@ If this section is empty or absent, commit workflows use a default mapping:
 Your memory resets between sessions. Documentation is the only link to past decisions and context. Keeping it accurate is not optional — stale docs actively mislead future sessions.
 
 - Follow AGENTS.md, SRS, and SDS strictly — they define what the project is and how it works.
-- Workflow for changes: new or updated requirement → update SRS → update SDS → implement. Skipping steps leads to docs-code drift.
+- Workflow for changes: new or updated requirement → update SRS → update SDS → implement. Skipping steps leads to docs-code drift. A requirement or design decision that is added or edited gets its `**Rationale:**` filled in the same edit, not later.
 - Status markers: `[x]` = implemented, `[ ]` = pending.
 - **Traceability**: Every `[x]` criterion requires evidence. Placement depends on evidence type:
   1. **Code-evidenced**: Source files contain a SALP REF (in a `//` or `#` comment) pointing at the relevant SRS / SDS anchor near the implementing logic — e.g., `// [REF:fr:cmd-exec] — execution gate`. The REF IS the evidence; no paths are stored in SRS. Bare `// FR-<ID>` and GFM-form `// [FR-X](path.md#…)` comments are rejected by the SALP validator.
   2. **Non-code evidence** (acceptance tests, URLs, config files without comment support, file/dir existence): Placed directly in SRS/SDS next to the criterion.
   Without evidence of either type, the criterion stays `[ ]`.
 - **Acceptance-as-gate**: Every FR in SRS MUST declare a runnable `**Acceptance:**` reference — a test path + test name, a benchmark scenario ID, or a verification command. Prose-only acceptance is not sufficient. An FR stays `[ ]` until its acceptance reference exists and passes on the current commit. Exception: when automation cost exceeds defect cost (pure visual design, external vendor dependency), mark `**Acceptance: manual — <reviewer> — <checklist path>**`. Manual is the exception, not the default.
-- **Rationale-as-gate**: Every FR in SRS MUST declare a non-empty `**Rationale:**` — why the requirement exists: the problem it removes, the incident or measurement behind it, or the decision it records. A requirement without its reason cannot be weighed against a conflicting one, and a later reader cannot tell a load-bearing constraint from a historical accident. An FR written before this rule gets its rationale when it is next edited.
+- **Rationale-as-gate**: Every FR in SRS MUST declare a non-empty `**Rationale:**` — why the requirement exists: the problem it removes, the incident or measurement behind it, or the decision it records. A requirement without its reason cannot be weighed against a conflicting one, and a later reader cannot tell a load-bearing constraint from a historical accident. An FR written before this rule gets its rationale when it is next edited. The same holds for the SDS: the architecture, each component, the data shape, each rule or algorithm that could have gone another way, each simplification, and any other entry that records a decision (a choice of library, protocol, storage, order or limit) carry their own `**Rationale:**`. What a rationale says:
+  - At least one sentence: the alternative the entry beat and what decided against it, the measurement that settled it, or the user's instruction with its date.
+  - Why the entry holds now, not what it replaced. The SRS and SDS stay current-state documents; the story of the change belongs to the task file.
+  - A commit message or a task file does not replace it. The field may link to a task or a decision record for the full weighing, but the sentence itself stays in the document.
+  - A choice nobody made on purpose is written as such: `**Rationale:** not decided; kept as found`. The next session then knows it may change the choice instead of hunting for a reason that does not exist.
 
 ### Tasks (`documents/tasks/`)
 

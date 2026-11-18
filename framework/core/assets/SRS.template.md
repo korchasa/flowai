@@ -17,6 +17,7 @@
 ## 4. Non-Functional
 
 - **Perf/Reliability/Sec/Scale/UX:**
+- **Rationale:** <why each target is set at this level>
 
 ## 5. Interfaces
 

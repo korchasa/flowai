@@ -69,6 +69,12 @@ Always confirm when asked to apply diffs.`;
       critical: true,
     },
     {
+      id: "sds_rationale_field",
+      description:
+        "Does the generated SDS state why its design decisions were made? The '## 2. Arch' section and every component entry under '## 3. Components' must each carry a non-empty '**Rationale:**' field that gives a reason for the decision (for example, why the project is a monolith, or why the component exists) — an empty field, a bare placeholder, or a repetition of the Purpose fails. The field name comes from the pack's SDS template, not from AGENTS.md (FR-DOCS.RATIONALE). Fail if the SDS has no component entry at all — the persona named an architecture and a first feature. Judge from the file's actual contents.",
+      critical: true,
+    },
+    {
       id: "dev_commands_configured",
       description:
         "Were development commands configured with real scripts (not just stub echo commands)?",
