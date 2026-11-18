@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.2](https://github.com/korchasa/flowai/compare/v0.16.1...v0.16.2) (2026-11-18)
+
+
+### Features
+
+* **core:** accept a task link as a Rationale when the task states the reason ([89e0500](https://github.com/korchasa/flowai/commit/89e0500f25a3783f21043fbc3ea0915279248df7))
+
 ### [0.16.1](https://github.com/korchasa/flowai/compare/v0.16.0...v0.16.1) (2026-11-18)
 
 
