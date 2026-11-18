@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.16.3](https://github.com/korchasa/flowai/compare/v0.16.2...v0.16.3) (2026-11-18)
+
+
+### Features
+
+* **core:** move session-status from the swarm pack to core ([389fad6](https://github.com/korchasa/flowai/commit/389fad60927577a6cb5ffd6ae5a56da9d0537350))
+
+
+### Documentation
+
+* **tasks:** record the session status of the reflect skill work ([3db85da](https://github.com/korchasa/flowai/commit/3db85da9a3600091ecb9657c995c26575f582867))
+
 ### [0.16.2](https://github.com/korchasa/flowai/compare/v0.16.1...v0.16.2) (2026-11-18)
 
 
