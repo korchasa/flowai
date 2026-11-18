@@ -186,6 +186,7 @@ Base workflows for development (commit, plan, review, push, ship, init, etc.). E
 - `review-commit-push` — tail-of-cycle composite: review → commit → push → reflect on an already-written uncommitted diff (3 explicit gates; no planning or implementation phase)
 - `finish-session` — closes a session: goal check → commit → push → reflect → archive (4 explicit gates; stops when a goal is not met; archives only where the host can)
 - `check-goals` — read-only check that everything asked for in the session is delivered, with evidence per goal
+- `session-status` — a session writes its own state into its task file and opens its report with the state, what it needs from you and what is left
 - `push` — safe git push (no `--force`, explicit upstream confirmation, post-push `@{u}==HEAD` verification)
 - `ship` — terminal full-cycle composite: plan → implement → review → commit → push (4 explicit gates)
 - `ship-task` — SDLC continuation composite: takes a ready task file (with filled `## Solution`) and runs implement → review → commit → push (3 explicit gates; no planning phase)
@@ -245,13 +246,12 @@ Skill and agent authoring tools.
 
 ### swarm
 
-One manager session and the child sessions it starts, run on task files: the manager's task file is the swarm ledger, each child keeps its state in its own task file, and git says where each branch stands. Starting, listing, messaging and archiving child sessions need a host with session control (today the Claude desktop app); on any other host each skill does its file-side work and says in one line what it could not do. Every session, parent or child, still finishes itself with `finish-session` from `core`.
+One manager session and the child sessions it starts, run on task files: the manager's task file is the swarm ledger, each child keeps its state in its own task file, and git says where each branch stands. Starting, listing, messaging and archiving child sessions need a host with session control (today the Claude desktop app); on any other host each skill does its file-side work and says in one line what it could not do. Every session, parent or child, records its state with `session-status` and finishes itself with `finish-session`, both from `core`.
 
 **Skills:**
 - `start-child` — write the child's task file and its row in the manager's task file, commit both, build a self-contained brief and start the child session
 - `children-status` — one board of all children from their task files, branches and the host's session list, ending with what you must do next
 - `close-swarm` — check that no child work is lost, move follow-ups into the manager's task file, settle branches and worktrees, archive the sessions, list what is still open
-- `session-status` — a session writes its own state into its task file and opens its report with the state, what it needs from you and what is left
 
 ## Developer Workflow
 

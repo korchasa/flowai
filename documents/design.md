@@ -57,7 +57,7 @@ tracked in git). Detailed per-component descriptions live in §3.1 onwards.
 
 There is one primitive kind: every workflow is an agent-invocable skill under `framework/<pack>/skills/` (FR-PACKS.AGENT-COMMIT).
 
-**core (22):**
+**core (23):**
 
 - `adapt` — standalone
 - `check-goals` — generated from atom `check-goals`
@@ -75,6 +75,7 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 - `review` — generated from atom `review`
 - `review-and-commit` — generated from composite `review-and-commit`
 - `review-commit-push` — generated from composite `review-commit-push`
+- `session-status` — standalone; any single session, and the child side of a swarm (§3.26)
 - `setup-ai-ide-devcontainer` — standalone
 - `ship` — generated from composite `ship`
 - `ship-task` — generated from composite `ship-task`
@@ -89,8 +90,8 @@ There is one primitive kind: every workflow is an agent-invocable skill under `f
 `draw-mermaid-diagrams`, `engineer-plugin-marketplace`,
 `interactive-teaching-materials`, `write-dep`, `write-prd` — all standalone
 
-**swarm (4):** `children-status`, `close-swarm`, `session-status`,
-`start-child` (see §3.26) — standalone
+**swarm (3):** `children-status`, `close-swarm`, `start-child` (see §3.26) —
+standalone
 
 #### Agents by pack (12) — all standalone
 
@@ -709,7 +710,7 @@ graph TD
 ### 3.26 Swarm Pack — FR-SWARM (`framework/swarm/`) [ANC:sds:3-26]
 
 - **Purpose:** Realize [REF:fr:swarm | FR-SWARM] — one working cycle for a manager session and the child sessions it starts, with the state kept in task files and git instead of in any session's memory.
-- **Components:** four standalone agent-invocable skills under `framework/swarm/skills/`, shipped as the plugin `flowai-swarm`: `start-child`, `children-status`, `close-swarm` (manager side) and `session-status` (child side, usable in any single session). No script, hook or agent. The pack references only `core` skills by name: `finish-session`, `tasks-overview`, `check-goals`.
+- **Components:** three standalone agent-invocable skills under `framework/swarm/skills/`, shipped as the plugin `flowai-swarm`: `start-child`, `children-status`, `close-swarm` (manager side). The child side is `session-status`, a `core` skill (`framework/core/skills/session-status/`): it serves any single session, so it ships with every install and the swarm only relies on it. No script, hook or agent. The pack references only `core` skills by name: `session-status`, `finish-session`, `tasks-overview`, `check-goals`.
 - **State model ([REF:fr:swarm.ledger | FR-SWARM.LEDGER]):**
   - Manager's task file — the ledger. `## Swarm`: a rule line, then one plain bullet per child with links only (title, session reference, the child's task file, branch and worktree, the manager's Definition-of-Done item served, `closed`). `## Decisions`: dated decisions with recipients. `## Follow-ups`: collected from closed children. A `Swarm closed` Definition-of-Done item gates the manager's `finish-session`.
   - Child's task file — `related_tasks:` to the manager's file; done and left are its Definition-of-Done checkboxes; `## Status` holds six plain bullets: `State:` (`working` | `blocked on operator` | `done` | `failed`), `Needs from the operator:`, `Not verified:`, `Branch:`, `Told directly by the operator:`, `Updated:`.

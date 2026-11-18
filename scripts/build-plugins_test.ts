@@ -290,7 +290,7 @@ Deno.test("core-pack ships-doc-anchors-stop-hook", async () => {
 
 // implements [REF:fr:swarm | FR-SWARM] — the `swarm` pack ships through the
 // default pack list as its own plugin with the four swarm skills.
-Deno.test("swarm-pack ships its four skills as flowai-swarm", async () => {
+Deno.test("swarm-pack ships its three skills as flowai-swarm, session-status ships in core", async () => {
   assert(
     (DEFAULT_PACKS as readonly string[]).includes("swarm"),
     "DEFAULT_PACKS must list the swarm pack",
@@ -298,10 +298,15 @@ Deno.test("swarm-pack ships its four skills as flowai-swarm", async () => {
   const out = await tempOut();
   try {
     await buildPlugins({
-      packs: ["swarm"],
+      packs: ["core", "swarm"],
       frameworkDir: FRAMEWORK,
       outDir: out,
     });
+    // The children of a swarm run session-status, but it serves any single session, so it ships in core.
+    const coreStatus = await Deno.stat(
+      join(out, "plugins", "flowai", "skills", "session-status", "SKILL.md"),
+    );
+    assertEquals(coreStatus.isFile, true);
     const skillsDir = join(out, "plugins", "flowai-swarm", "skills");
     const shipped: string[] = [];
     for await (const entry of Deno.readDir(skillsDir)) {
@@ -310,7 +315,6 @@ Deno.test("swarm-pack ships its four skills as flowai-swarm", async () => {
     assertEquals(shipped.sort(), [
       "children-status",
       "close-swarm",
-      "session-status",
       "start-child",
     ]);
     const claudeManifest = await readJson(
