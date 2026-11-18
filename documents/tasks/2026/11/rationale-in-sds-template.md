@@ -19,6 +19,8 @@ Every design decision a project records states why it was made this way, not onl
 
 User decision 2026-11-18: every requirement in an SRS and every design decision in an SDS carries a short written reason, at least one sentence on why it was decided this way, filled in the same edit as the entry. The field keeps the existing name `**Rationale:**` (decision of the same day, chosen over renaming it to `Why`, so the review gate recognises it unchanged).
 
+User refinement of the same day: a Rationale may be just a link to the task that states the reason (`**Rationale:** see [REF:task:<id>]`) instead of a sentence. The link counts only when that task names the reason for this particular choice (in its Overview or weighed variants); a task that merely did the work is not a reason; when an entry lists several tasks, the link names the one that decided its present form. A commit message or a code comment still does not count, and a change made without a task gets the sentence. The review check must accept such a link.
+
 ### Current State
 
 - `framework/core/assets/SRS.template.md` carries `**Rationale:**` in the FR block only; section 4 (Non-Functional) has none.
@@ -45,6 +47,9 @@ User decision 2026-11-18: every requirement in an SRS and every design decision 
 - [x] FR-DOCS.RATIONALE: the shipped AGENTS template widens `Rationale-as-gate` to SDS decisions, describes what the field says (alternative beaten, measurement, or owner instruction with date; current state, not history; a commit message or task file does not replace it; `not decided; kept as found` for an unchosen choice), and its "Workflow for changes" rule says the field is filled in the same edit.
   - Test: `scripts/check-agents-template_test.ts`
   - Evidence: `grep -c -F 'not decided; kept as found' framework/core/assets/AGENTS.template.md` prints 1, and `grep -n -F 'Workflow for changes' framework/core/assets/AGENTS.template.md` shows the word `Rationale`
+- [x] FR-DOCS.RATIONALE: a `**Rationale:**` that links a task counts when that task names the reason, and does not count when the task only records the work; the template describes the link form and the review check 5 accepts it.
+  - Test: `Benchmark: review-rationale-task-ref`; regression `Benchmark: review-missing-rationale-blocks`
+  - Evidence: `deno task acceptance-tests -f review-rationale-task-ref` and `deno task acceptance-tests -f review-missing-rationale-blocks` pass; `grep -c -F 'see [REF:task:<id>]' framework/core/assets/AGENTS.template.md` prints 1; `grep -c -F 'only records the work done' framework/atoms/review.md` prints 1
 - [x] FR-DOCS.RATIONALE: the SRS clause and the SDS section describe the widened field; `deno task check` is green.
   - Test: `scripts/task-check.ts`
   - Evidence: `deno task check` ends with `0 failed`
@@ -55,6 +60,7 @@ User decision 2026-11-18: every requirement in an SRS and every design decision 
 2. RED: add checklist item `sds_rationale_field` to `init-greenfield` (Arch section and every component entry carry a non-empty `**Rationale:**`). Run it on HEAD; it must fail on that item.
 3. GREEN: add the lines to `SDS.template.md` and the NFR section of `SRS.template.md`; widen `Rationale-as-gate` and add the field description and the same-edit clause to `AGENTS.template.md`; name the SDS fields in `init/SKILL.md` step 9. Rerun `init-greenfield`.
 4. CHECK: `deno task check`; hand the full `init` sweep to the user.
+5. Task-link refinement. RED: scenario `review-rationale-task-ref` — the diff adds FR-TRIM, whose Rationale links a task that names the problem and the alternative it beat, and FR-SLUG, whose Rationale links a task that only records the work. Run on the current text; it must fail on `trim_ref_accepted`. GREEN: describe the link form in `AGENTS.template.md` (rule body and Review lifecycle line) and let `framework/atoms/review.md` check 5 accept a task REF whose task names the reason. Rerun the new scenario and `review-missing-rationale-blocks`.
 
 ## Results
 
@@ -62,4 +68,5 @@ User decision 2026-11-18: every requirement in an SRS and every design decision 
 - GREEN after the edits: `init-greenfield` passed all 10 items, one run. `review-missing-rationale-blocks` passed on the edited `AGENTS.template.md`, so the review gate still recognises the widened `Rationale-as-gate` rule.
 - `deno task check`: exit 0, 0 failed.
 - Not run: the full sweep of every `init` and `review` scenario, handed to the user (`deno task acceptance-tests -f init`, `deno task acceptance-tests -f review`).
+- Task-link refinement, RED on the previous text: `review-rationale-task-ref` failed on `trim_ref_accepted` — the review acknowledged that the linked task held the reason and still demanded a copied sentence. GREEN after the edits: `review-rationale-task-ref` passed 5/5 and the regression `review-missing-rationale-blocks` passed 5/5, one run each.
 - Not changed: the `commit` doc-sync step names the SDS section it updates but no fields, so the same-edit rule reaches it through the project's AGENTS.md. This project's own SDS format in `documents/AGENTS.md` keeps no Rationale field.
