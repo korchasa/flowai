@@ -180,3 +180,18 @@ reflect phase; standalone `reflect-gate` 0; `reflect` 2; `reflect-by-history` 0;
 Open point carried from the discussion: in a session whose tree holds uncommitted work the phase's refusal path stops
 (its `git reset --hard` guard requires a clean tree). `finish-session` reaches the phase after its own Commit and Push
 phases, so the guard holds there; a free-standing automatic run outside any composite is out of scope.
+
+## Status
+
+- State: done
+- Needs from the operator: nothing
+- Not verified: the changed chains were run on the default claude arm only, not on codex; the generated plugin
+  marketplace repository was not inspected after release 0.16.0
+- Branch: main; committed (`22753bfb`, `ddd257e1`, `3ce98d71`); pushed, CI green; local `main` is level with
+  `origin/main` after the CI releases up to 0.16.2
+- Told directly by the operator: no new user-facing skill, the instruction lives in the reflect phase; keep the
+  order "edit, commit, ask whether to push", with a log of declined edits; remove the standalone `reflect` and
+  `reflect-gate` skills and keep `reflect-by-history`; the automatic run outside the review and ship chains goes into
+  `finish-session`; the phase appends unrecorded session decisions to the task file; the full acceptance sweep was
+  authorised for this task
+- Updated: 2026-11-18 14:51 EET
