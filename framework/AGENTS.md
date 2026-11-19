@@ -74,6 +74,8 @@ Without these, the sandbox's `deno fmt --check` and `deno lint` apply to the cop
 
 Every new workflow primitive goes to `framework/<pack>/skills/<name>/` with a short kebab-case name, including one the user mostly calls by `/<name>` (`push`, `ship`, `update`). Its description carries a WHEN-trigger and names the neighbouring primitive it is NOT for, and it ships the three trigger scenarios (FR-ACCEPT.TRIGGER). Do NOT set `disable-model-invocation` in source: `check-skills.ts` and the plugin build both reject it.
 
+Choose the pack by who can use the skill, not by the feature that motivated it: a skill that any single session can run goes to `core` even when a new pack is its first consumer, because users who never install that pack would otherwise lose it.
+
 ### Acceptance Test Infrastructure Smoke Test
 
 Before writing or modifying a benchmark scenario for a skill, run one **existing** scenario for the same primitive to verify infrastructure works:
